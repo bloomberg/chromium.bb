@@ -29,6 +29,9 @@ Profile::Profile()
       accessibility_pause_level_(0) {
 }
 
+Profile::~Profile() {
+}
+
 // static
 Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
   // This is safe; this is the only implementation of the browser context.
@@ -44,8 +47,11 @@ TestingProfile* Profile::AsTestingProfile() {
   return NULL;
 }
 
+Profile::Delegate::~Delegate() {
+}
+
 // static
-const char* const Profile::kProfileKey = "__PROFILE__";
+const char Profile::kProfileKey[] = "__PROFILE__";
 
 // static
 void Profile::RegisterUserPrefs(PrefRegistrySyncable* registry) {

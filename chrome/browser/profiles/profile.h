@@ -123,6 +123,8 @@ class Profile : public content::BrowserContext {
 
   class Delegate {
    public:
+    virtual ~Delegate();
+
     // Called when creation of the profile is finished.
     virtual void OnProfileCreated(Profile* profile,
                                   bool success,
@@ -130,10 +132,10 @@ class Profile : public content::BrowserContext {
   };
 
   // Key used to bind profile to the widget with which it is associated.
-  static const char* const kProfileKey;
+  static const char kProfileKey[];
 
   Profile();
-  virtual ~Profile() {}
+  virtual ~Profile();
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
   // time.
@@ -376,11 +378,6 @@ class Profile : public content::BrowserContext {
   // Creates an OffTheRecordProfile which points to this Profile.
   Profile* CreateOffTheRecordProfile();
 
- protected:
-  // TODO(erg, willchan): Remove friendship once |ProfileIOData| is made into
-  //     a |ProfileKeyedService|.
-  friend class OffTheRecordProfileImpl;
-
  private:
   bool restored_last_session_;
 
@@ -393,6 +390,8 @@ class Profile : public content::BrowserContext {
   // increment and decrement the level, respectively, rather than set it to
   // true or false, so that calls can be nested.
   int accessibility_pause_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(Profile);
 };
 
 #if defined(COMPILER_GCC)
