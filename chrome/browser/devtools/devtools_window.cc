@@ -240,7 +240,7 @@ DevToolsWindow* DevToolsWindow::Create(
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
 
-  if (url.path().find(chrome::kChromeUIDevToolsHostedPath) == 0) {
+  if (url.host() == chrome::kChromeUIDevToolsBundledHost) {
     // Only allow file scheme in embedded front-end by default.
     int process_id = render_view_host->GetProcess()->GetID();
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(

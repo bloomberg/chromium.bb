@@ -244,8 +244,7 @@ const size_t RenderViewContextMenu::kMaxSelectionTextLength = 50;
 
 // static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-      url.host() == chrome::kChromeUIDevToolsHost;
+  return url.SchemeIs(chrome::kChromeDevToolsScheme);
 }
 
 // static

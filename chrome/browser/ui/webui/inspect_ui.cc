@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -429,11 +427,8 @@ bool InspectUI::HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   if (path == kDataFile)
     return HandleDataRequestCallback(path, callback);
-  if (path.find(kAdbPages) == 0) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kEnableHostedDevToolsFrontend))
-      return HandleAdbPagesCallback(path, callback);
-  }
+  if (path.find(kAdbPages) == 0)
+    return HandleAdbPagesCallback(path, callback);
   return false;
 }
 

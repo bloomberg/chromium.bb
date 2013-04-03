@@ -43,7 +43,6 @@ CONTENT_EXPORT extern const char kChromeUIAccessibilityHost[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
-CONTENT_EXPORT extern const char kChromeUIDevToolsHost[];
 CONTENT_EXPORT extern const char kChromeUIHistogramHost[];
 CONTENT_EXPORT extern const char kChromeUIMediaInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];

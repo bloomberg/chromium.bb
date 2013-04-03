@@ -144,6 +144,8 @@ const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICrashHost[] = "crash";
 const char kChromeUICreditsHost[] = "credits";
 const char kChromeUIDefaultHost[] = "version";
+const char kChromeUIDevToolsBundledHost[] = "devtools";
+const char kChromeUIDevToolsRemoteHost[] = "remote";
 const char kChromeUIDNSHost[] = "dns";
 const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIDriveInternalsHost[] = "drive-internals";
@@ -209,7 +211,6 @@ const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWorkersHost[] = "workers";
 
-const char kChromeUIDevToolsHostedPath[] = "hosted/";
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThemePath[] = "theme";
 

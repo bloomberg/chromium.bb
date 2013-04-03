@@ -6,14 +6,12 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
@@ -35,8 +33,8 @@ std::string PathWithoutParams(const std::string& path) {
       .path().substr(1);
 }
 
-const char kHostedFrontendDomain[] = "chrome-devtools-frontend.appspot.com";
-const char kHostedFrontendBase[] =
+const char kRemoteFrontendDomain[] = "chrome-devtools-frontend.appspot.com";
+const char kRemoteFrontendBase[] =
     "https://chrome-devtools-frontend.appspot.com/";
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
@@ -46,10 +44,7 @@ class FetchRequest : public net::URLFetcherDelegate {
                const GURL& url,
                const content::URLDataSource::GotDataCallback& callback)
       : callback_(callback) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    bool hosted_frontend =
-        command_line.HasSwitch(switches::kEnableHostedDevToolsFrontend);
-    if (!hosted_frontend || !url.is_valid()) {
+    if (!url.is_valid()) {
       OnURLFetchComplete(NULL);
       return;
     }
@@ -77,64 +72,7 @@ class FetchRequest : public net::URLFetcherDelegate {
   content::URLDataSource::GotDataCallback callback_;
 };
 
-}  // namespace
-
-class DevToolsDataSource : public content::URLDataSource {
- public:
-  explicit DevToolsDataSource(net::URLRequestContextGetter* request_context);
-
-  // content::URLDataSource implementation.
-  virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(
-      const std::string& path,
-      bool is_incognito,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
-
- private:
-  virtual ~DevToolsDataSource() {}
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
-};
-
-
-DevToolsDataSource::DevToolsDataSource(
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {
-}
-
-std::string DevToolsDataSource::GetSource() {
-  return chrome::kChromeUIDevToolsHost;
-}
-
-void DevToolsDataSource::StartDataRequest(
-    const std::string& path,
-    bool is_incognito,
-    const content::URLDataSource::GotDataCallback& callback) {
-  std::string filename = PathWithoutParams(path);
-
-  if (filename.find(chrome::kChromeUIDevToolsHostedPath) == 0) {
-    GURL url = GURL(kHostedFrontendBase +
-        filename.substr(strlen(chrome::kChromeUIDevToolsHostedPath)));
-    CHECK(url.host() == kHostedFrontendDomain);
-    new FetchRequest(request_context_, url, callback);
-    return;
-  }
-
-  int resource_id =
-      content::DevToolsHttpHandler::GetFrontendResourceId(filename);
-
-  DLOG_IF(WARNING, -1 == resource_id) << "Unable to find dev tool resource: "
-      << filename << ". If you compiled with debug_devtools=1, try running"
-      " with --debug-devtools.";
-  const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
-      resource_id));
-  callback.Run(bytes);
-}
-
-std::string DevToolsDataSource::GetMimeType(const std::string& path) const {
+std::string GetMimeTypeForPath(const std::string& path) {
   std::string filename = PathWithoutParams(path);
   if (EndsWith(filename, ".html", false)) {
     return "text/html";
@@ -153,29 +91,92 @@ std::string DevToolsDataSource::GetMimeType(const std::string& path) const {
   return "text/plain";
 }
 
-bool DevToolsDataSource::ShouldAddContentSecurityPolicy() const {
-  return false;
-}
-
-// static
-void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  static bool registered = false;
-  if (!registered) {
-    content::URLDataSource::Add(profile, new DevToolsDataSource(
-        profile->GetRequestContext()));
-    registered = true;
+class BundledDataSource : public content::URLDataSource {
+ public:
+  explicit BundledDataSource() {
   }
-}
+
+  // content::URLDataSource implementation.
+  virtual std::string GetSource() OVERRIDE {
+    return chrome::kChromeUIDevToolsBundledHost;
+  }
+
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+    std::string filename = PathWithoutParams(path);
+
+    int resource_id =
+        content::DevToolsHttpHandler::GetFrontendResourceId(filename);
+
+    DLOG_IF(WARNING, -1 == resource_id) << "Unable to find dev tool resource: "
+        << filename << ". If you compiled with debug_devtools=1, try running"
+        " with --debug-devtools.";
+    const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
+        resource_id));
+    callback.Run(bytes);
+  }
+
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+    return GetMimeTypeForPath(path);
+  }
+
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return false;
+  }
+
+ private:
+  virtual ~BundledDataSource() {}
+  DISALLOW_COPY_AND_ASSIGN(BundledDataSource);
+};
+
+class RemoteDataSource : public content::URLDataSource {
+ public:
+  explicit RemoteDataSource(net::URLRequestContextGetter*
+      request_context) : request_context_(request_context) {
+  }
+
+  // content::URLDataSource implementation.
+  virtual std::string GetSource() OVERRIDE {
+    return chrome::kChromeUIDevToolsRemoteHost;
+  }
+
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+
+    GURL url = GURL(kRemoteFrontendBase + path);
+    CHECK_EQ(url.host(), kRemoteFrontendDomain);
+    new FetchRequest(request_context_, url, callback);
+  }
+
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+    return GetMimeTypeForPath(path);
+  }
+
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return false;
+  }
+
+ private:
+  virtual ~RemoteDataSource() {}
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoteDataSource);
+};
+
+}  // namespace
 
 // static
 GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
   GURL url(frontend_url);
   CHECK(url.is_valid());
-  CHECK_EQ(url.host(), kHostedFrontendDomain);
-  return GURL(base::StringPrintf("%s://%s/%s%s", chrome::kChromeDevToolsScheme,
-              chrome::kChromeUIDevToolsHost,
-              chrome::kChromeUIDevToolsHostedPath,
+  CHECK_EQ(url.host(), kRemoteFrontendDomain);
+  return GURL(base::StringPrintf("%s://%s/%s", chrome::kChromeDevToolsScheme,
+              chrome::kChromeUIDevToolsRemoteHost,
               url.path().substr(1).c_str()));
 }
 
@@ -184,5 +185,8 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
       profile,
-      new DevToolsDataSource(profile->GetRequestContext()));
+      new BundledDataSource());
+  content::URLDataSource::Add(
+      profile,
+      new RemoteDataSource(profile->GetRequestContext()));
 }

@@ -15,9 +15,6 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     const std::string& ip,
     int port,
     const std::string& frontend_url) {
-  // Initialize DevTools data source.
-  DevToolsUI::RegisterDevToolsDataSource(profile);
-
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory(ip, port),
       frontend_url,

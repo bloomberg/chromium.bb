@@ -137,6 +137,8 @@ extern const char kChromeUICrashesHost[];
 extern const char kChromeUICrashHost[];
 extern const char kChromeUICreditsHost[];
 extern const char kChromeUIDefaultHost[];
+extern const char kChromeUIDevToolsBundledHost[];
+extern const char kChromeUIDevToolsRemoteHost[];
 extern const char kChromeUIDNSHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIDriveInternalsHost[];
@@ -201,7 +203,6 @@ extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 
-extern const char kChromeUIDevToolsHostedPath[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
 

@@ -12,7 +12,6 @@ class Profile;
 
 class DevToolsUI : public content::WebUIController {
  public:
-  static void RegisterDevToolsDataSource(Profile* profile);
   static GURL GetProxyURL(const std::string& frontend_url);
 
   explicit DevToolsUI(content::WebUI* web_ui);
