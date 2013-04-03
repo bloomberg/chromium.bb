@@ -256,8 +256,10 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
 };
 
 // Test cases for webstore origin frame blocking.
+// TODO(mkwst): Disabled until new X-Frame-Options behavior rolls into
+// Chromium, see crbug.com/226018.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       FrameWebstorePageBlocked) {
+                       DISABLED_FrameWebstorePageBlocked) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   string16 expected_title = UTF8ToUTF16("PASS: about:blank");
@@ -271,8 +273,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   EXPECT_EQ(expected_title, final_title);
 }
 
+// TODO(mkwst): Disabled until new X-Frame-Options behavior rolls into
+// Chromium, see crbug.com/226018.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       FrameErrorPageBlocked) {
+                       DISABLED_FrameErrorPageBlocked) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   string16 expected_title = UTF8ToUTF16("PASS: about:blank");
