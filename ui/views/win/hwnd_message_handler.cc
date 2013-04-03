@@ -1502,10 +1502,6 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     // Reroute the mouse wheel to the window under the pointer if applicable.
     return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
             delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
-  } else if (message == WM_NCLBUTTONDOWN && w_param == HTSYSMENU) {
-    // Explicitly show the system menu at a good location on HTSYSMENU clicks.
-    ui::ShowSystemMenu(hwnd());
-    return 0;
   }
 
   bool handled = delegate_->HandleMouseEvent(event);
