@@ -2,2444 +2,620 @@
   "description": "Sites of Interest",
   "archive_data_file": "../data/sites_of_interest.json",
   "credentials_path": "../data/credentials.json",
+  "smoothness": { "action": "scroll" },
   "pages": [
     {
       "url": "http://facebook.com",
-      "credentials": "facebook",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://youtube.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://twitter.com/nbc",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbc.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://imdb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://espn.go.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cnn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbc.co.uk/news/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weather.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://livejournal.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://deviantart.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foxnews.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nbcnews.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://scribd.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://movies.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tv.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pandora.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tmz.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hulu.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://abcnews.go.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://youtube.com/videos",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ndtv.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://money.cnn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://msn.foxsports.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cbsnews.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wired.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cnbc.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sportsillustrated.cnn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://home.disney.go.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://urbandictionary.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rottentomatoes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foodnetwork.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://npr.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gawker.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://last.fm",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sky.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://eonline.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://egotastic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://copyscape.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mtv.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ultimate-guitar.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://comcast.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cbc.ca",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fanfiction.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://discovery.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://deezer.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://metrolyrics.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foxnews.com/entertainment/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cartoonnetwork.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://paypal.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://finance.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://alibaba.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bankofamerica.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.chase.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wellsfargo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://skype.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://online.wsj.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://indeed.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://samsung.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reuters.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ups.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://forbes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://clickbank.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://target.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://att.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cj.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://constantcontact.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ezinearticles.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shutterstock.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://americanexpress.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://freelancer.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://istockphoto.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fedex.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://verizonwireless.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://capitalone.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bloomberg.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://monster.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hdfcbank.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fotolia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thesun.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://zillow.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nokia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tradedoubler.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://icicibank.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://123rf.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://elance.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://icbc.com.cn",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.cnet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://verizon.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://careerbuilder.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sears.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://getresponse.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sitesell.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://manta.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.blogger.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://avg.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://google.com/analytics/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://go.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://flickr.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://aol.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thepiratebay.se",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://zedo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://about.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://stackoverflow.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://godaddy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mediafire.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wordpress.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://adwords.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://imgur.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://4shared.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://vimeo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://play.google.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://badoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://aweber.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mozilla.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.stumbleupon.com/stumbler/chimacintosh",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.google.com/adsense/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://my.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sourceforge.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://answers.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wordpress.org/extend/plugins/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://photobucket.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://clicksor.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://google.com/reader/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://store.apple.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wikia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://statcounter.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fiverr.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://slideshare.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://salesforce.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://myspace.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hootsuite.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://domaintools.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rediff.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://soundcloud.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://download.cnet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://archive.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://filestube.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://developers.facebook.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hostgator.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://battle.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pch.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ign.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pogo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://miniclip.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://888.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gamespot.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://steampowered.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gamefaqs.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://xbox.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://games.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://betfair.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://kongregate.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ea.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://leagueoflegends.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://roblox.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://williamhill.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://playstation.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wowhead.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://king.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://minecraft.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://chess.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://minecraftwiki.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://addictinggames.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mmo-champion.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://runescape.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://travian.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://zone.msn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ubi.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://calottery.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://freeonlinegames.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://games.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://n4g.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nvidia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://callofduty.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://us.playstation.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bet-at-home.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gametrailers.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://teamliquid.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nick.com/games/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://planetminecraft.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nintendo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://popcap.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gamehouse.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://curse.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bulbagarden.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rockstargames.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://partycasino.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://square-enix.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://perfectworld.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nih.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://webmd.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ncbi.nlm.nih.gov/pubmed/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://focusoncrohnsdisease.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mayoclinic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mercola.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://drugs.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://menshealth.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nlm.nih.gov/medlineplus/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weightwatchers.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cdc.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://caloriecount.about.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://patents.uspto.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://psychologytoday.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nhs.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://medscape.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foxnews.com/health/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://who.int",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://healthboards.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://self.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://health.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://kidshealth.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fda.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://netdoctor.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://prevention.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://makeupalley.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://stevepavlina.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://realage.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fitnessmagazine.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://healthcentral.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rxlist.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://vitals.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://totalbeauty.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nuance.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://telegraph.co.uk/health/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://drbatras.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://emedtv.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bmj.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://medcohealth.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://webmd.com/skin-problems-and-treatments/default.htm",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tums.ac.ir",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://apa.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cancer.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://healthguru.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://earthclinic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://curezone.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://beauty.about.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.kaiserpermanente.org/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://drweil.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://24hourfitness.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ehow.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yelp.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://groupon.com/san-francisco",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://engadget.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gsmarena.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reviews.cnet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://allrecipes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://autos.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shopping.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gizmodo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://marketwatch.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://babycenter.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nextag.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fixya.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dpreview.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tomshardware.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://theverge.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://instructables.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cafemom.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://google.com/products",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbb.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shopping.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://irs.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://kbb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://retailmenot.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://edmunds.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mobile9.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bankrate.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fatwallet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fool.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hgtv.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://coupons.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://apartmenttherapy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://phonearena.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shopzilla.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://marthastewart.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://consumerreports.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pricegrabber.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://epinions.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cooks.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bhg.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mouthshut.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://travel.state.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://realsimple.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://opendns.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gardenweb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://blu-ray.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thesaurus.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://espncricinfo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weebly.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbc.co.uk/sport/0/football/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://y8.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://xe.com/ucc/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://timeanddate.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://soccernet.espn.go.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://howstuffworks.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://en.wikipedia.org/wiki/Main_Page",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reverso.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://timeanddate.com/worldclock/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sitepoint.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://usopen.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://stardoll.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://london2012.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lego.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://000webhost.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://fifa.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://uefa.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nick.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://girlsgogames.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pbskids.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thestar.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dynamicdrive.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nickjr.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://manutd.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://earthquake.usgs.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://khanacademy.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://barbie.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sciencedaily.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gocomics.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://webdeveloper.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www2.warnerbros.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jpl.nasa.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yola.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bom.gov.au",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nationalpost.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://booking.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tripadvisor.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://agoda.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://xe.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://expedia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://metacafe.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://priceline.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://southwest.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cracked.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://kayak.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://travelocity.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://united.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://delta.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ryanair.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lonelyplanet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://orbitz.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://aa.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://easyjet.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hilton.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://travel.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://marriott.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://couchsurfing.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hotwire.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://autoblog.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lufthansa.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://theonion.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://britishairways.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://travelzoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ebaumsworld.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://emirates.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://venere.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wikitravel.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jal.co.jp",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://collegehumor.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ford.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://vrbo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://opentable.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hyatt.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://klm.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://airberlin.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://usairways.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://skyscanner.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://timeout.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://homeaway.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lonelyplanet.com/thorntree/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://virgin-atlantic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://huffingtonpost.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reddit.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://guardian.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://timesofindia.indiatimes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://washingtonpost.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://usatoday.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://drudgereport.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://latimes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wunderground.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://accuweather.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://examiner.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.com.au",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://time.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://alarabiya.net",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://businessweek.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://smh.com.au",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weather.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foxnews.com/politics/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://economictimes.indiatimes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nationalgeographic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ft.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nypost.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sfgate.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://topix.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hindustantimes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://chicagotribune.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://newsmax.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://breitbart.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://economist.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://theatlantic.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://prweb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://theglobeandmail.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://answers.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wiki.answers.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wordreference.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thefreedictionary.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dict.leo.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://w3.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nlm.nih.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://goodreads.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mapquest.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yellowpages.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wiktionary.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dict.cc",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bing.com/maps/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://whitepages.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://m-w.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://classmates.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://blackboard.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://justanswer.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mit.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://medterms.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://stanford.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://brainyquote.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://harvard.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://superpages.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mylife.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://en.wiktionary.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://investopedia.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lumosity.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://phoenix.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://berkeley.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ecollege.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ed.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yellowpages.sulekha.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wisegeek.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://utexas.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wwp.greenwichmeantime.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cornell.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://psu.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://maps.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://linkedin.com/answers",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yahoo.co.jp",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://translate.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://noaa.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ncbi.nlm.nih.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nhc.noaa.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ted.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jma.go.jp",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://usgs.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://care2.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sciencedirect.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://intellicast.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://guardian.co.uk/technology",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nature.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wunderground.com/tropical/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ieee.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://elsevier.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://usda.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://redorbit.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://scientificamerican.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nps.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://metoffice.gov.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://space.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foreignpolicy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbc.co.uk/news/technology/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://newscientist.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://livescience.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jstor.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mnn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://foxnews.com/scitech/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://census.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://epa.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bls.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://metric-conversions.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.nationalgeographic.com/index.rss",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bbc.co.uk/news/science_and_environment/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://colorado.edu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://popsci.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://amazon.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ebay.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://netflix.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://amazon.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://walmart.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ikea.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bestbuy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://multiply.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://newegg.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://homedepot.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://macys.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://livingsocial.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gap.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bodybuilding.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://kohls.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://barnesandnoble.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lowes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://zappos.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://overstock.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://legacy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://staples.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shutterfly.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nike.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nordstrom.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pixmania.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://costco.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bhphotovideo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hm.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ticketmaster.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jcpenney.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://walgreens.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://qvc.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://autotrader.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://tigerdirect.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://trademe.co.nz",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sony.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://directv.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://buy.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://victoriassecret.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cars.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gamestop.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cvs.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dealextreme.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cafepress.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://6pm.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://facebook.com/home.php#!/OccupyAirForce",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://deviantart.com/#catpath=anthro",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://shine.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://match.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://siteadvisor.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://digg.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hi5.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ancestry.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sulekha.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://europa.eu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://biblegateway.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://slate.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://correios.com.br",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wonderwall.msn.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://change.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://state.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://salon.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://askmen.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://infowars.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wnd.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://ec.europa.eu",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://justjared.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sheknows.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://slashdot.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://newgrounds.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weeklystandard.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://royalmail.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://snopes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://lds.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://dailykos.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://complex.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://avaaz.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://aarp.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://theregister.co.uk",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://creativecommons.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://jw.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://peoplesmart.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://uspto.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://uscis.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://whitehouse.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://townhall.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sec.gov",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sports.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nfl.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mlb.mlb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://cbssports.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://bleacherreport.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://livescore.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://espn.go.com/nfl/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sports.yahoo.com/nfl",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://espn.go.com/mlb/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://premierleague.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://skysports.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sports.yahoo.com/mlb",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://games.espn.go.com/frontpage",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://uk.eurosport.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://baseball.fantasysports.yahoo.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://baseball.fantasysports.yahoo.com/b1",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://skysports.com/football/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nba.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hattrick.org",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://wwe.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://telegraph.co.uk/sport/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rivals.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sports.yahoo.com/fantasy",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://espn.go.com/nba/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://scout.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://msn.foxsports.com/nfl",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sports.yahoo.com/nfl/players/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://guardian.co.uk/football",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rotoworld.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nascar.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://arsenal.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://formula1.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://yardbarker.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pgatour.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://rei.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://liverpoolfc.tv",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://deadspin.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://sbnation.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://www.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://www.google.com/search?q=barack%20obama",
-      "smoothness": { "action": "scroll" }
-    },
+      "credentials": "facebook"
+    },
+    { "url": "http://youtube.com" },
+    { "url": "http://twitter.com/nbc" },
+    { "url": "http://bbc.co.uk" },
+    { "url": "http://imdb.com" },
+    { "url": "http://espn.go.com" },
+    { "url": "http://cnn.com" },
+    { "url": "http://bbc.co.uk/news/" },
+    { "url": "http://weather.com" },
+    { "url": "http://livejournal.com" },
+    { "url": "http://deviantart.com" },
+    { "url": "http://foxnews.com" },
+    { "url": "http://nbcnews.com" },
+    { "url": "http://scribd.com" },
+    { "url": "http://movies.yahoo.com" },
+    { "url": "http://tv.yahoo.com" },
+    { "url": "http://pandora.com" },
+    { "url": "http://tmz.com" },
+    { "url": "http://hulu.com" },
+    { "url": "http://abcnews.go.com" },
+    { "url": "http://youtube.com/videos" },
+    { "url": "http://ndtv.com" },
+    { "url": "http://money.cnn.com" },
+    { "url": "http://msn.foxsports.com" },
+    { "url": "http://cbsnews.com" },
+    { "url": "http://wired.com" },
+    { "url": "http://cnbc.com" },
+    { "url": "http://sportsillustrated.cnn.com" },
+    { "url": "http://home.disney.go.com" },
+    { "url": "http://urbandictionary.com" },
+    { "url": "http://rottentomatoes.com" },
+    { "url": "http://foodnetwork.com" },
+    { "url": "http://npr.org" },
+    { "url": "http://gawker.com" },
+    { "url": "http://last.fm" },
+    { "url": "http://sky.com" },
+    { "url": "http://eonline.com" },
+    { "url": "http://egotastic.com" },
+    { "url": "http://copyscape.com" },
+    { "url": "http://mtv.com" },
+    { "url": "http://ultimate-guitar.com" },
+    { "url": "http://comcast.com" },
+    { "url": "http://cbc.ca" },
+    { "url": "http://fanfiction.net" },
+    { "url": "http://discovery.com" },
+    { "url": "http://deezer.com" },
+    { "url": "http://metrolyrics.com" },
+    { "url": "http://foxnews.com/entertainment/" },
+    { "url": "http://cartoonnetwork.com" },
+    { "url": "http://paypal.com" },
+    { "url": "http://finance.yahoo.com" },
+    { "url": "http://alibaba.com" },
+    { "url": "http://bankofamerica.com" },
+    { "url": "http://www.chase.com/" },
+    { "url": "http://wellsfargo.com" },
+    { "url": "http://skype.com" },
+    { "url": "http://online.wsj.com" },
+    { "url": "http://indeed.com" },
+    { "url": "http://samsung.com" },
+    { "url": "http://reuters.com" },
+    { "url": "http://ups.com" },
+    { "url": "http://forbes.com" },
+    { "url": "http://clickbank.com" },
+    { "url": "http://target.com" },
+    { "url": "http://att.com" },
+    { "url": "http://cj.com" },
+    { "url": "http://constantcontact.com" },
+    { "url": "http://ezinearticles.com" },
+    { "url": "http://shutterstock.com" },
+    { "url": "http://americanexpress.com" },
+    { "url": "http://freelancer.com" },
+    { "url": "http://istockphoto.com" },
+    { "url": "http://fedex.com" },
+    { "url": "http://verizonwireless.com" },
+    { "url": "http://capitalone.com" },
+    { "url": "http://bloomberg.com" },
+    { "url": "http://monster.com" },
+    { "url": "http://hdfcbank.com" },
+    { "url": "http://fotolia.com" },
+    { "url": "http://thesun.co.uk" },
+    { "url": "http://zillow.com" },
+    { "url": "http://nokia.com" },
+    { "url": "http://tradedoubler.com" },
+    { "url": "http://icicibank.com" },
+    { "url": "http://123rf.com" },
+    { "url": "http://elance.com" },
+    { "url": "http://icbc.com.cn" },
+    { "url": "http://news.cnet.com" },
+    { "url": "http://verizon.com" },
+    { "url": "http://careerbuilder.com" },
+    { "url": "http://sears.com" },
+    { "url": "http://getresponse.com" },
+    { "url": "http://sitesell.com" },
+    { "url": "http://manta.com" },
+    { "url": "http://www.blogger.com/" },
+    { "url": "http://avg.com" },
+    { "url": "http://google.com/analytics/" },
+    { "url": "http://go.com" },
+    { "url": "http://flickr.com" },
+    { "url": "http://aol.com" },
+    { "url": "http://thepiratebay.se" },
+    { "url": "http://zedo.com" },
+    { "url": "http://about.com" },
+    { "url": "http://stackoverflow.com" },
+    { "url": "http://godaddy.com" },
+    { "url": "http://mediafire.com" },
+    { "url": "http://wordpress.org" },
+    { "url": "http://adwords.google.com" },
+    { "url": "http://imgur.com" },
+    { "url": "http://4shared.com" },
+    { "url": "http://vimeo.com" },
+    { "url": "http://play.google.com/" },
+    { "url": "http://badoo.com" },
+    { "url": "http://aweber.com" },
+    { "url": "http://mozilla.org" },
+    { "url": "http://www.stumbleupon.com/stumbler/chimacintosh" },
+    { "url": "http://www.google.com/adsense/" },
+    { "url": "http://my.yahoo.com" },
+    { "url": "http://sourceforge.net" },
+    { "url": "http://answers.com" },
+    { "url": "http://wordpress.org/extend/plugins/" },
+    { "url": "http://photobucket.com" },
+    { "url": "http://clicksor.com" },
+    { "url": "http://google.com/reader/" },
+    { "url": "http://store.apple.com" },
+    { "url": "http://wikia.com" },
+    { "url": "http://statcounter.com" },
+    { "url": "http://fiverr.com" },
+    { "url": "http://slideshare.net" },
+    { "url": "http://salesforce.com" },
+    { "url": "http://myspace.com" },
+    { "url": "http://hootsuite.com" },
+    { "url": "http://domaintools.com" },
+    { "url": "http://rediff.com" },
+    { "url": "http://soundcloud.com" },
+    { "url": "http://download.cnet.com" },
+    { "url": "http://archive.org" },
+    { "url": "http://filestube.com" },
+    { "url": "http://developers.facebook.com" },
+    { "url": "http://hostgator.com" },
+    { "url": "http://battle.net" },
+    { "url": "http://pch.com" },
+    { "url": "http://ign.com" },
+    { "url": "http://pogo.com" },
+    { "url": "http://miniclip.com" },
+    { "url": "http://888.com" },
+    { "url": "http://gamespot.com" },
+    { "url": "http://steampowered.com" },
+    { "url": "http://gamefaqs.com" },
+    { "url": "http://xbox.com" },
+    { "url": "http://games.yahoo.com" },
+    { "url": "http://betfair.com" },
+    { "url": "http://kongregate.com" },
+    { "url": "http://ea.com" },
+    { "url": "http://leagueoflegends.com" },
+    { "url": "http://roblox.com" },
+    { "url": "http://williamhill.com" },
+    { "url": "http://playstation.com" },
+    { "url": "http://wowhead.com" },
+    { "url": "http://king.com" },
+    { "url": "http://minecraft.net" },
+    { "url": "http://chess.com" },
+    { "url": "http://minecraftwiki.net" },
+    { "url": "http://addictinggames.com" },
+    { "url": "http://mmo-champion.com" },
+    { "url": "http://runescape.com" },
+    { "url": "http://travian.com" },
+    { "url": "http://zone.msn.com" },
+    { "url": "http://ubi.com" },
+    { "url": "http://calottery.com" },
+    { "url": "http://freeonlinegames.com" },
+    { "url": "http://games.com" },
+    { "url": "http://n4g.com" },
+    { "url": "http://nvidia.com" },
+    { "url": "http://callofduty.com" },
+    { "url": "http://us.playstation.com" },
+    { "url": "http://bet-at-home.com" },
+    { "url": "http://gametrailers.com" },
+    { "url": "http://teamliquid.net" },
+    { "url": "http://nick.com/games/" },
+    { "url": "http://planetminecraft.com" },
+    { "url": "http://nintendo.com" },
+    { "url": "http://popcap.com" },
+    { "url": "http://gamehouse.com" },
+    { "url": "http://curse.com" },
+    { "url": "http://bulbagarden.net" },
+    { "url": "http://rockstargames.com" },
+    { "url": "http://partycasino.com" },
+    { "url": "http://square-enix.com" },
+    { "url": "http://perfectworld.com" },
+    { "url": "http://nih.gov" },
+    { "url": "http://webmd.com" },
+    { "url": "http://ncbi.nlm.nih.gov/pubmed/" },
+    { "url": "http://focusoncrohnsdisease.com" },
+    { "url": "http://mayoclinic.com" },
+    { "url": "http://mercola.com" },
+    { "url": "http://drugs.com" },
+    { "url": "http://menshealth.com" },
+    { "url": "http://nlm.nih.gov/medlineplus/" },
+    { "url": "http://weightwatchers.com" },
+    { "url": "http://cdc.gov" },
+    { "url": "http://caloriecount.about.com" },
+    { "url": "http://patents.uspto.gov" },
+    { "url": "http://psychologytoday.com" },
+    { "url": "http://nhs.uk" },
+    { "url": "http://medscape.com" },
+    { "url": "http://foxnews.com/health/" },
+    { "url": "http://who.int" },
+    { "url": "http://healthboards.com" },
+    { "url": "http://self.com" },
+    { "url": "http://health.com" },
+    { "url": "http://kidshealth.org" },
+    { "url": "http://fda.gov" },
+    { "url": "http://netdoctor.co.uk" },
+    { "url": "http://prevention.com" },
+    { "url": "http://makeupalley.com" },
+    { "url": "http://stevepavlina.com" },
+    { "url": "http://realage.com" },
+    { "url": "http://fitnessmagazine.com" },
+    { "url": "http://healthcentral.com" },
+    { "url": "http://rxlist.com" },
+    { "url": "http://vitals.com" },
+    { "url": "http://totalbeauty.com" },
+    { "url": "http://nuance.com" },
+    { "url": "http://telegraph.co.uk/health/" },
+    { "url": "http://drbatras.com" },
+    { "url": "http://emedtv.com" },
+    { "url": "http://bmj.com" },
+    { "url": "http://medcohealth.com" },
+    { "url": "http://webmd.com/skin-problems-and-treatments/default.htm" },
+    { "url": "http://tums.ac.ir" },
+    { "url": "http://apa.org" },
+    { "url": "http://cancer.org" },
+    { "url": "http://healthguru.com" },
+    { "url": "http://earthclinic.com" },
+    { "url": "http://curezone.com" },
+    { "url": "http://beauty.about.com" },
+    { "url": "http://www.kaiserpermanente.org/" },
+    { "url": "http://drweil.com" },
+    { "url": "http://24hourfitness.com" },
+    { "url": "http://ehow.com" },
+    { "url": "http://yelp.com" },
+    { "url": "http://groupon.com/san-francisco" },
+    { "url": "http://engadget.com" },
+    { "url": "http://gsmarena.com" },
+    { "url": "http://reviews.cnet.com" },
+    { "url": "http://allrecipes.com" },
+    { "url": "http://autos.yahoo.com" },
+    { "url": "http://shopping.yahoo.com" },
+    { "url": "http://gizmodo.com" },
+    { "url": "http://marketwatch.com" },
+    { "url": "http://babycenter.com" },
+    { "url": "http://nextag.com" },
+    { "url": "http://fixya.com" },
+    { "url": "http://dpreview.com" },
+    { "url": "http://tomshardware.com" },
+    { "url": "http://theverge.com" },
+    { "url": "http://instructables.com" },
+    { "url": "http://cafemom.com" },
+    { "url": "http://google.com/products" },
+    { "url": "http://bbb.org" },
+    { "url": "http://shopping.com" },
+    { "url": "http://irs.gov" },
+    { "url": "http://kbb.com" },
+    { "url": "http://retailmenot.com" },
+    { "url": "http://edmunds.com" },
+    { "url": "http://mobile9.com" },
+    { "url": "http://bankrate.com" },
+    { "url": "http://fatwallet.com" },
+    { "url": "http://fool.com" },
+    { "url": "http://hgtv.com" },
+    { "url": "http://coupons.com" },
+    { "url": "http://apartmenttherapy.com" },
+    { "url": "http://phonearena.com" },
+    { "url": "http://shopzilla.com" },
+    { "url": "http://marthastewart.com" },
+    { "url": "http://consumerreports.org" },
+    { "url": "http://pricegrabber.com" },
+    { "url": "http://epinions.com" },
+    { "url": "http://cooks.com" },
+    { "url": "http://bhg.com" },
+    { "url": "http://mouthshut.com" },
+    { "url": "http://travel.state.gov" },
+    { "url": "http://realsimple.com" },
+    { "url": "http://opendns.com" },
+    { "url": "http://gardenweb.com" },
+    { "url": "http://blu-ray.com" },
+    { "url": "http://thesaurus.com" },
+    { "url": "http://espncricinfo.com" },
+    { "url": "http://weebly.com" },
+    { "url": "http://bbc.co.uk/sport/0/football/" },
+    { "url": "http://y8.com" },
+    { "url": "http://xe.com/ucc/" },
+    { "url": "http://timeanddate.com" },
+    { "url": "http://soccernet.espn.go.com" },
+    { "url": "http://howstuffworks.com" },
+    { "url": "http://en.wikipedia.org/wiki/Main_Page" },
+    { "url": "http://reverso.net" },
+    { "url": "http://timeanddate.com/worldclock/" },
+    { "url": "http://sitepoint.com" },
+    { "url": "http://usopen.org" },
+    { "url": "http://stardoll.com" },
+    { "url": "http://london2012.com" },
+    { "url": "http://lego.com" },
+    { "url": "http://000webhost.com" },
+    { "url": "http://fifa.com" },
+    { "url": "http://uefa.com" },
+    { "url": "http://nick.com" },
+    { "url": "http://girlsgogames.com" },
+    { "url": "http://pbskids.org" },
+    { "url": "http://thestar.com" },
+    { "url": "http://dynamicdrive.com" },
+    { "url": "http://nickjr.com" },
+    { "url": "http://manutd.com" },
+    { "url": "http://earthquake.usgs.gov" },
+    { "url": "http://khanacademy.org" },
+    { "url": "http://barbie.com" },
+    { "url": "http://sciencedaily.com" },
+    { "url": "http://gocomics.com" },
+    { "url": "http://webdeveloper.com" },
+    { "url": "http://www2.warnerbros.com" },
+    { "url": "http://jpl.nasa.gov" },
+    { "url": "http://yola.com" },
+    { "url": "http://bom.gov.au" },
+    { "url": "http://nationalpost.com" },
+    { "url": "http://booking.com" },
+    { "url": "http://tripadvisor.com" },
+    { "url": "http://agoda.com" },
+    { "url": "http://xe.com" },
+    { "url": "http://expedia.com" },
+    { "url": "http://metacafe.com" },
+    { "url": "http://priceline.com" },
+    { "url": "http://southwest.com" },
+    { "url": "http://cracked.com" },
+    { "url": "http://kayak.com" },
+    { "url": "http://travelocity.com" },
+    { "url": "http://united.com" },
+    { "url": "http://delta.com" },
+    { "url": "http://ryanair.com" },
+    { "url": "http://lonelyplanet.com" },
+    { "url": "http://orbitz.com" },
+    { "url": "http://aa.com" },
+    { "url": "http://easyjet.com" },
+    { "url": "http://hilton.com" },
+    { "url": "http://travel.yahoo.com" },
+    { "url": "http://marriott.com" },
+    { "url": "http://couchsurfing.org" },
+    { "url": "http://hotwire.com" },
+    { "url": "http://autoblog.com" },
+    { "url": "http://lufthansa.com" },
+    { "url": "http://theonion.com" },
+    { "url": "http://britishairways.com" },
+    { "url": "http://travelzoo.com" },
+    { "url": "http://ebaumsworld.com" },
+    { "url": "http://emirates.com" },
+    { "url": "http://venere.com" },
+    { "url": "http://wikitravel.org" },
+    { "url": "http://jal.co.jp" },
+    { "url": "http://collegehumor.com" },
+    { "url": "http://ford.com" },
+    { "url": "http://vrbo.com" },
+    { "url": "http://opentable.com" },
+    { "url": "http://hyatt.com" },
+    { "url": "http://klm.com" },
+    { "url": "http://airberlin.com" },
+    { "url": "http://usairways.com" },
+    { "url": "http://skyscanner.net" },
+    { "url": "http://timeout.com" },
+    { "url": "http://homeaway.com" },
+    { "url": "http://lonelyplanet.com/thorntree/" },
+    { "url": "http://virgin-atlantic.com" },
+    { "url": "http://news.yahoo.com" },
+    { "url": "http://huffingtonpost.com" },
+    { "url": "http://news.google.com" },
+    { "url": "http://reddit.com" },
+    { "url": "http://guardian.co.uk" },
+    { "url": "http://timesofindia.indiatimes.com" },
+    { "url": "http://washingtonpost.com" },
+    { "url": "http://usatoday.com" },
+    { "url": "http://drudgereport.com" },
+    { "url": "http://latimes.com" },
+    { "url": "http://wunderground.com" },
+    { "url": "http://accuweather.com" },
+    { "url": "http://examiner.com" },
+    { "url": "http://news.com.au" },
+    { "url": "http://time.com" },
+    { "url": "http://alarabiya.net" },
+    { "url": "http://businessweek.com" },
+    { "url": "http://smh.com.au" },
+    { "url": "http://weather.yahoo.com" },
+    { "url": "http://foxnews.com/politics/" },
+    { "url": "http://economictimes.indiatimes.com" },
+    { "url": "http://nationalgeographic.com" },
+    { "url": "http://ft.com" },
+    { "url": "http://nypost.com" },
+    { "url": "http://sfgate.com" },
+    { "url": "http://topix.com" },
+    { "url": "http://hindustantimes.com" },
+    { "url": "http://chicagotribune.com" },
+    { "url": "http://newsmax.com" },
+    { "url": "http://breitbart.com" },
+    { "url": "http://economist.com" },
+    { "url": "http://theatlantic.com" },
+    { "url": "http://prweb.com" },
+    { "url": "http://theglobeandmail.com" },
+    { "url": "http://answers.yahoo.com" },
+    { "url": "http://wiki.answers.com" },
+    { "url": "http://wordreference.com" },
+    { "url": "http://thefreedictionary.com" },
+    { "url": "http://dict.leo.org" },
+    { "url": "http://w3.org" },
+    { "url": "http://nlm.nih.gov" },
+    { "url": "http://goodreads.com" },
+    { "url": "http://mapquest.com" },
+    { "url": "http://yellowpages.com" },
+    { "url": "http://wiktionary.org" },
+    { "url": "http://dict.cc" },
+    { "url": "http://bing.com/maps/" },
+    { "url": "http://whitepages.com" },
+    { "url": "http://m-w.com" },
+    { "url": "http://classmates.com" },
+    { "url": "http://blackboard.com" },
+    { "url": "http://justanswer.com" },
+    { "url": "http://mit.edu" },
+    { "url": "http://medterms.com" },
+    { "url": "http://stanford.edu" },
+    { "url": "http://brainyquote.com" },
+    { "url": "http://harvard.edu" },
+    { "url": "http://superpages.com" },
+    { "url": "http://mylife.com" },
+    { "url": "http://en.wiktionary.org" },
+    { "url": "http://investopedia.com" },
+    { "url": "http://lumosity.com" },
+    { "url": "http://phoenix.edu" },
+    { "url": "http://berkeley.edu" },
+    { "url": "http://ecollege.com" },
+    { "url": "http://ed.gov" },
+    { "url": "http://yellowpages.sulekha.com" },
+    { "url": "http://wisegeek.com" },
+    { "url": "http://utexas.edu" },
+    { "url": "http://wwp.greenwichmeantime.com" },
+    { "url": "http://cornell.edu" },
+    { "url": "http://psu.edu" },
+    { "url": "http://maps.yahoo.com" },
+    { "url": "http://linkedin.com/answers" },
+    { "url": "http://yahoo.co.jp" },
+    { "url": "http://translate.google.com" },
+    { "url": "http://noaa.gov" },
+    { "url": "http://ncbi.nlm.nih.gov" },
+    { "url": "http://nhc.noaa.gov" },
+    { "url": "http://ted.com" },
+    { "url": "http://jma.go.jp" },
+    { "url": "http://usgs.gov" },
+    { "url": "http://care2.com" },
+    { "url": "http://sciencedirect.com" },
+    { "url": "http://intellicast.com" },
+    { "url": "http://guardian.co.uk/technology" },
+    { "url": "http://nature.com" },
+    { "url": "http://wunderground.com/tropical/" },
+    { "url": "http://ieee.org" },
+    { "url": "http://elsevier.com" },
+    { "url": "http://usda.gov" },
+    { "url": "http://redorbit.com" },
+    { "url": "http://scientificamerican.com" },
+    { "url": "http://nps.gov" },
+    { "url": "http://metoffice.gov.uk" },
+    { "url": "http://space.com" },
+    { "url": "http://foreignpolicy.com" },
+    { "url": "http://bbc.co.uk/news/technology/" },
+    { "url": "http://newscientist.com" },
+    { "url": "http://livescience.com" },
+    { "url": "http://jstor.org" },
+    { "url": "http://mnn.com" },
+    { "url": "http://foxnews.com/scitech/" },
+    { "url": "http://census.gov" },
+    { "url": "http://epa.gov" },
+    { "url": "http://bls.gov" },
+    { "url": "http://metric-conversions.org" },
+    { "url": "http://news.nationalgeographic.com/index.rss" },
+    { "url": "http://bbc.co.uk/news/science_and_environment/" },
+    { "url": "http://colorado.edu" },
+    { "url": "http://popsci.com" },
+    { "url": "http://amazon.com" },
+    { "url": "http://ebay.com" },
+    { "url": "http://netflix.com" },
+    { "url": "http://amazon.co.uk" },
+    { "url": "http://walmart.com" },
+    { "url": "http://ikea.com" },
+    { "url": "http://bestbuy.com" },
+    { "url": "http://multiply.com" },
+    { "url": "http://newegg.com" },
+    { "url": "http://homedepot.com" },
+    { "url": "http://macys.com" },
+    { "url": "http://livingsocial.com" },
+    { "url": "http://gap.com" },
+    { "url": "http://bodybuilding.com" },
+    { "url": "http://kohls.com" },
+    { "url": "http://barnesandnoble.com" },
+    { "url": "http://lowes.com" },
+    { "url": "http://zappos.com" },
+    { "url": "http://overstock.com" },
+    { "url": "http://legacy.com" },
+    { "url": "http://staples.com" },
+    { "url": "http://shutterfly.com" },
+    { "url": "http://nike.com" },
+    { "url": "http://nordstrom.com" },
+    { "url": "http://pixmania.com" },
+    { "url": "http://costco.com" },
+    { "url": "http://bhphotovideo.com" },
+    { "url": "http://hm.com" },
+    { "url": "http://ticketmaster.com" },
+    { "url": "http://jcpenney.com" },
+    { "url": "http://walgreens.com" },
+    { "url": "http://qvc.com" },
+    { "url": "http://autotrader.com" },
+    { "url": "http://tigerdirect.com" },
+    { "url": "http://trademe.co.nz" },
+    { "url": "http://sony.com" },
+    { "url": "http://directv.com" },
+    { "url": "http://buy.com" },
+    { "url": "http://victoriassecret.com" },
+    { "url": "http://cars.com" },
+    { "url": "http://gamestop.com" },
+    { "url": "http://cvs.com" },
+    { "url": "http://dealextreme.com" },
+    { "url": "http://cafepress.com" },
+    { "url": "http://6pm.com" },
+    { "url": "http://facebook.com/home.php#!/OccupyAirForce" },
+    { "url": "http://deviantart.com/#catpath=anthro" },
+    { "url": "http://shine.yahoo.com" },
+    { "url": "http://match.com" },
+    { "url": "http://siteadvisor.com" },
+    { "url": "http://digg.com" },
+    { "url": "http://hi5.com" },
+    { "url": "http://ancestry.com" },
+    { "url": "http://sulekha.com" },
+    { "url": "http://europa.eu" },
+    { "url": "http://biblegateway.com" },
+    { "url": "http://slate.com" },
+    { "url": "http://correios.com.br" },
+    { "url": "http://wonderwall.msn.com" },
+    { "url": "http://change.org" },
+    { "url": "http://state.gov" },
+    { "url": "http://salon.com" },
+    { "url": "http://askmen.com" },
+    { "url": "http://infowars.com" },
+    { "url": "http://wnd.com" },
+    { "url": "http://ec.europa.eu" },
+    { "url": "http://justjared.com" },
+    { "url": "http://sheknows.com" },
+    { "url": "http://slashdot.org" },
+    { "url": "http://newgrounds.com" },
+    { "url": "http://weeklystandard.com" },
+    { "url": "http://royalmail.com" },
+    { "url": "http://snopes.com" },
+    { "url": "http://lds.org" },
+    { "url": "http://dailykos.com" },
+    { "url": "http://complex.com" },
+    { "url": "http://avaaz.org" },
+    { "url": "http://aarp.org" },
+    { "url": "http://theregister.co.uk" },
+    { "url": "http://creativecommons.org" },
+    { "url": "http://jw.org" },
+    { "url": "http://peoplesmart.com" },
+    { "url": "http://uspto.gov" },
+    { "url": "http://uscis.gov" },
+    { "url": "http://whitehouse.gov" },
+    { "url": "http://townhall.com" },
+    { "url": "http://sec.gov" },
+    { "url": "http://sports.yahoo.com" },
+    { "url": "http://nfl.com" },
+    { "url": "http://mlb.mlb.com" },
+    { "url": "http://cbssports.com" },
+    { "url": "http://bleacherreport.com" },
+    { "url": "http://livescore.com" },
+    { "url": "http://espn.go.com/nfl/" },
+    { "url": "http://sports.yahoo.com/nfl" },
+    { "url": "http://espn.go.com/mlb/" },
+    { "url": "http://premierleague.com" },
+    { "url": "http://skysports.com" },
+    { "url": "http://sports.yahoo.com/mlb" },
+    { "url": "http://games.espn.go.com/frontpage" },
+    { "url": "http://uk.eurosport.yahoo.com" },
+    { "url": "http://baseball.fantasysports.yahoo.com" },
+    { "url": "http://baseball.fantasysports.yahoo.com/b1" },
+    { "url": "http://skysports.com/football/" },
+    { "url": "http://nba.com" },
+    { "url": "http://hattrick.org" },
+    { "url": "http://wwe.com" },
+    { "url": "http://telegraph.co.uk/sport/" },
+    { "url": "http://rivals.com" },
+    { "url": "http://sports.yahoo.com/fantasy" },
+    { "url": "http://espn.go.com/nba/" },
+    { "url": "http://scout.com" },
+    { "url": "http://msn.foxsports.com/nfl" },
+    { "url": "http://sports.yahoo.com/nfl/players/" },
+    { "url": "http://guardian.co.uk/football" },
+    { "url": "http://rotoworld.com" },
+    { "url": "http://nascar.com" },
+    { "url": "http://arsenal.com" },
+    { "url": "http://formula1.com" },
+    { "url": "http://yardbarker.com" },
+    { "url": "http://pgatour.com" },
+    { "url": "http://rei.com" },
+    { "url": "http://liverpoolfc.tv" },
+    { "url": "http://deadspin.com" },
+    { "url": "http://sbnation.com" },
+    { "url": "https://www.google.com" },
+    { "url": "https://www.google.com/search?q=barack%20obama" },
     {
       "url": "https://mail.google.com/mail/",
       "credentials": "google",
@@ -2452,8 +628,7 @@
     {
       "url": "https://www.google.com/calendar/",
       "credentials": "google",
-      "scrollable_element_function": "function(callback) { callback(document.getElementById('scrolltimedeventswk')); }",
-      "smoothness": { "action": "scroll" }
+      "scrollable_element_function": "function(callback) { callback(document.getElementById('scrolltimedeventswk')); }"
     },
     {
       "url": "https://drive.google.com",
@@ -2473,393 +648,102 @@
         "wait_for_javascript_expression": "document.getElementsByClassName('kix-appview-editor').length"
       }
     },
-    {
-      "url": "https://maps.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reader.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://plus.google.com/110031535020051778989/posts/2wP4KPPBMG8",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://plus.google.com/110031535020051778989/photos",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://googleblog.blogspot.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://chrome.google.com/webstore/category/home",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://staff.tumblr.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mashable.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.buzzfeed.com/celebrity",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.thedailybeast.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.theverge.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://techcrunch.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.engadget.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gizmodo.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thinkprogress.org/?mobile=nc",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gawker.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://arstechnica.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://boingboing.net/category/featured/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thenextweb.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://politicalticker.blogs.cnn.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://deadspin.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://news.yahoo.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.cnn.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.nbcnews.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.bbc.co.uk/news/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.reddit.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://my.yahoo.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.foxnews.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.guardiannews.com/uk-home",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://timesofindia.indiatimes.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://online.wsj.com/home-page",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.forbes.com/home_usa/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.washingtonpost.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.usatoday.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://drudgereport.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://abcnews.go.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.latimes.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.bloomberg.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://money.cnn.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.news.com.au/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.cbsnews.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.examiner.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.cnbc.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.alarabiya.net/default.html",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.time.com/time/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.foxnews.com/politics/index.html",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.smh.com.au/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.businessweek.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.nationalgeographic.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=94035&sp=KCAMOUNT24",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.accuweather.com/en/search-locations?zipcode=mountain%20view,%20ca",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.weather.com/weather/right-now/Mountain+View+CA+94043",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://weather.yahoo.com/united-states/california/mountain-view-12797130/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.yr.no/place/Norway/Oslo/Oslo/Oslo/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.metoffice.gov.uk/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.intellicast.com/Local/Weather.aspx?location=USCA0746",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.shutterstock.com/cat.mhtml?searchterm=google&search_group=&lang=en&search_source=search_form",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.flickr.com/search/?q=monkeys&f=hp",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/?page=3",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/show/with/4403158307/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.apple.com/iphone/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.taobao.com/index_global.php",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://hootsuite.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.android.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://www.change.org/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.nytimes.com/skimmer/#/Technology",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.glennbeck.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.pengyou.com/mobile?from=loginAndroid",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://en.wikipedia.org/wiki/Cat",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://en.wikipedia.org/wiki/British_Royal_Family",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://9gag.com/gag/5202885",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://twitter.github.com/bootstrap/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://reviews.cnet.com/8301-13727_7-57431192-263/disable-elastic-scrolling-in-os-x/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mlb.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://thenounproject.com/zh-cn/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://allrecipes.com/recipe/chicken-pot-pie-ix/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.gamespot.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://valleywag.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://gawker.com/5939683/based-on-a-true-story-is-a-rotten-lie-i-hope-you-never-believe",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.imdb.com/title/tt0910970/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.html5rocks.com/en/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://athome.kimvallee.com/2010/03/why-to-splurge-on-a-high-end-dishwasher/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2012_08_31_sfnmlb_chnmlb_1&mode=wrap#gid=2012_08_31_sfnmlb_chnmlb_1&mode=box",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://nytimes.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://arstechnica.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://pinterest.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.theregister.co.uk/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://forum.xda-developers.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://maps.google.com",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://www.google.com/search?num=10&hl=en&site=&tbm=isch&q=cats",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://code.google.com/p/chromium/issues/list",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://code.google.com/p/chromium/issues/detail?id=142038&q=black%20screen%20amd&colspec=ID%20Pri%20Mstone%20ReleaseBlock%20OS%20Area%20Feature%20Status%20Owner%20Summary",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://mlb.mlb.com/index.jsp",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://www.nfl.com/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://airbnb.github.com/infinity/demo-on.html",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "http://habrahabr.ru/post/149892/#habracut",
-      "smoothness": { "action": "scroll" }
-    }
+    { "url": "https://maps.google.com" },
+    { "url": "http://reader.google.com" },
+    { "url": "https://plus.google.com/110031535020051778989/posts/2wP4KPPBMG8" },
+    { "url": "https://plus.google.com/110031535020051778989/photos" },
+    { "url": "http://googleblog.blogspot.com/" },
+    { "url": "https://chrome.google.com/webstore/category/home" },
+    { "url": "http://staff.tumblr.com/" },
+    { "url": "http://mashable.com/" },
+    { "url": "http://www.buzzfeed.com/celebrity" },
+    { "url": "http://www.thedailybeast.com/" },
+    { "url": "http://www.theverge.com/" },
+    { "url": "http://techcrunch.com/" },
+    { "url": "http://www.engadget.com/" },
+    { "url": "http://gizmodo.com/" },
+    { "url": "http://thinkprogress.org/?mobile=nc" },
+    { "url": "http://gawker.com/" },
+    { "url": "http://arstechnica.com/" },
+    { "url": "http://boingboing.net/category/featured/" },
+    { "url": "http://thenextweb.com/" },
+    { "url": "http://politicalticker.blogs.cnn.com/" },
+    { "url": "http://deadspin.com/" },
+    { "url": "http://news.yahoo.com/" },
+    { "url": "http://www.cnn.com/" },
+    { "url": "http://www.nbcnews.com/" },
+    { "url": "http://www.bbc.co.uk/news/" },
+    { "url": "http://www.reddit.com/" },
+    { "url": "http://my.yahoo.com/" },
+    { "url": "http://www.foxnews.com/" },
+    { "url": "http://www.guardiannews.com/uk-home" },
+    { "url": "http://timesofindia.indiatimes.com/" },
+    { "url": "http://online.wsj.com/home-page" },
+    { "url": "http://www.forbes.com/home_usa/" },
+    { "url": "http://www.washingtonpost.com/" },
+    { "url": "http://www.usatoday.com/" },
+    { "url": "http://drudgereport.com/" },
+    { "url": "http://abcnews.go.com/" },
+    { "url": "http://www.latimes.com/" },
+    { "url": "http://www.bloomberg.com/" },
+    { "url": "http://money.cnn.com/" },
+    { "url": "http://www.news.com.au/" },
+    { "url": "http://www.cbsnews.com/" },
+    { "url": "http://www.examiner.com/" },
+    { "url": "http://www.cnbc.com/" },
+    { "url": "http://www.alarabiya.net/default.html" },
+    { "url": "http://www.time.com/time/" },
+    { "url": "http://www.foxnews.com/politics/index.html" },
+    { "url": "http://www.smh.com.au/" },
+    { "url": "http://www.businessweek.com/" },
+    { "url": "http://www.nationalgeographic.com/" },
+    { "url": "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=94035&sp=KCAMOUNT24" },
+    { "url": "http://www.accuweather.com/en/search-locations?zipcode=mountain%20view,%20ca" },
+    { "url": "http://www.weather.com/weather/right-now/Mountain+View+CA+94043" },
+    { "url": "http://weather.yahoo.com/united-states/california/mountain-view-12797130/" },
+    { "url": "http://www.yr.no/place/Norway/Oslo/Oslo/Oslo/" },
+    { "url": "http://www.metoffice.gov.uk/" },
+    { "url": "http://www.intellicast.com/Local/Weather.aspx?location=USCA0746" },
+    { "url": "http://www.shutterstock.com/cat.mhtml?searchterm=google&search_group=&lang=en&search_source=search_form" },
+    { "url": "http://www.flickr.com/search/?q=monkeys&f=hp" },
+    { "url": "http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/?page=3" },
+    { "url": "http://www.flickr.com/photos/davidgutierrez/sets/72157604615916402/show/with/4403158307/" },
+    { "url": "http://www.apple.com/iphone/" },
+    { "url": "http://www.taobao.com/index_global.php" },
+    { "url": "http://hootsuite.com/" },
+    { "url": "http://www.android.com/" },
+    { "url": "https://www.change.org/" },
+    { "url": "http://www.nytimes.com/skimmer/#/Technology" },
+    { "url": "http://www.glennbeck.com/" },
+    { "url": "http://www.pengyou.com/mobile?from=loginAndroid" },
+    { "url": "http://en.wikipedia.org/wiki/Cat" },
+    { "url": "http://en.wikipedia.org/wiki/British_Royal_Family" },
+    { "url": "http://9gag.com/gag/5202885" },
+    { "url": "http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria" },
+    { "url": "http://twitter.github.com/bootstrap/" },
+    { "url": "http://reviews.cnet.com/8301-13727_7-57431192-263/disable-elastic-scrolling-in-os-x/" },
+    { "url": "http://mlb.com" },
+    { "url": "http://thenounproject.com/zh-cn/" },
+    { "url": "http://allrecipes.com/recipe/chicken-pot-pie-ix/" },
+    { "url": "http://www.gamespot.com/" },
+    { "url": "http://valleywag.com/" },
+    { "url": "http://gawker.com/5939683/based-on-a-true-story-is-a-rotten-lie-i-hope-you-never-believe" },
+    { "url": "http://www.imdb.com/title/tt0910970/" },
+    { "url": "http://www.html5rocks.com/en/" },
+    { "url": "http://athome.kimvallee.com/2010/03/why-to-splurge-on-a-high-end-dishwasher/" },
+    { "url": "http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2012_08_31_sfnmlb_chnmlb_1&mode=wrap#gid=2012_08_31_sfnmlb_chnmlb_1&mode=box" },
+    { "url": "http://nytimes.com" },
+    { "url": "http://arstechnica.com" },
+    { "url": "http://pinterest.com" },
+    { "url": "http://www.theregister.co.uk/" },
+    { "url": "http://forum.xda-developers.com/" },
+    { "url": "http://maps.google.com" },
+    { "url": "https://www.google.com/search?num=10&hl=en&site=&tbm=isch&q=cats" },
+    { "url": "http://code.google.com/p/chromium/issues/list" },
+    { "url": "http://code.google.com/p/chromium/issues/detail?id=142038&q=black%20screen%20amd&colspec=ID%20Pri%20Mstone%20ReleaseBlock%20OS%20Area%20Feature%20Status%20Owner%20Summary" },
+    { "url": "http://mlb.mlb.com/index.jsp" },
+    { "url": "http://www.nfl.com/" },
+    { "url": "http://airbnb.github.com/infinity/demo-on.html" },
+    { "url": "http://habrahabr.ru/post/149892/#habracut" }
   ]
 }
