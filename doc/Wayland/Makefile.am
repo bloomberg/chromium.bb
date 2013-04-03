@@ -5,7 +5,7 @@
 #
 # How this build works:
 # * the main target is Wayland, documentation ends up in $(builddir)/Wayland/
-# * hand-written chapters are located in en_US
+# * hand-written chapters are located in sources
 #   Publican does not take a source path, so to support out-of-tree builds
 #   these are copied to $(builddir)/en-US which is the actual directory
 #   Publican uses.
@@ -16,29 +16,29 @@
 #   $(builddir)/en-US
 # * run Publican on en-US
 publican_sources = \
-	$(srcdir)/en_US/Wayland.ent \
-	$(srcdir)/en_US/Wayland.xml \
-	$(srcdir)/en_US/Book_Info.xml \
-	$(srcdir)/en_US/Author_Group.xml \
-	$(srcdir)/en_US/Foreword.xml \
-	$(srcdir)/en_US/Preface.xml \
-	$(srcdir)/en_US/Revision_History.xml \
-	$(srcdir)/en_US/Introduction.xml \
-	$(srcdir)/en_US/Architecture.xml \
-	$(srcdir)/en_US/Protocol.xml \
-	$(srcdir)/en_US/Library.xml \
-	$(srcdir)/en_US/Compositors.xml \
-	$(srcdir)/en_US/images/icon.svg  \
-	$(srcdir)/en_US/images/wayland-architecture.png \
-	$(srcdir)/en_US/images/wayland.png  \
-	$(srcdir)/en_US/images/x-architecture.png
+	$(srcdir)/sources/Wayland.ent \
+	$(srcdir)/sources/Wayland.xml \
+	$(srcdir)/sources/Book_Info.xml \
+	$(srcdir)/sources/Author_Group.xml \
+	$(srcdir)/sources/Foreword.xml \
+	$(srcdir)/sources/Preface.xml \
+	$(srcdir)/sources/Revision_History.xml \
+	$(srcdir)/sources/Introduction.xml \
+	$(srcdir)/sources/Architecture.xml \
+	$(srcdir)/sources/Protocol.xml \
+	$(srcdir)/sources/Library.xml \
+	$(srcdir)/sources/Compositors.xml \
+	$(srcdir)/sources/images/icon.svg  \
+	$(srcdir)/sources/images/wayland-architecture.png \
+	$(srcdir)/sources/images/wayland.png  \
+	$(srcdir)/sources/images/x-architecture.png
 
 if HAVE_PUBLICAN
 if HAVE_XSLTPROC
 noinst_DATA = Wayland $(publican_targets)
 pubdir = $(docdir)/Wayland/en-US
 
-publican_targets = $(publican_sources:$(srcdir)/en_US%=$(builddir)/en-US%) \
+publican_targets = $(publican_sources:$(srcdir)/sources%=$(builddir)/en-US%) \
 	en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml \
 	en-US/WaylandClientAPI.xml
 
@@ -71,10 +71,10 @@ en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/index.xml $(srcdir)/
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/doxygen-to-publican.xsl \
 		$(top_builddir)/doc/doxygen/xml/clientAPI.xml > en-US/WaylandClientAPI.xml
 
-# Copy the en_US source files into en-US destination
+# Copy the sources source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us
 # to specify the location of the source code.
-$(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_sources)
+$(builddir)/en-US/%: $(srcdir)/sources/% en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_sources)
 	$(AM_V_GEN)cp -f $< $@
 	$(AM_V_GEN)chmod a+w $@
 
