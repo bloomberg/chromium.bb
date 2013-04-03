@@ -41,8 +41,9 @@ class Checkout(object):
     |root|: the directory into which the checkout will be performed, as returned
         by the recipe. This is a relative path from |base|.
   """
-  def __init__(self, spec, root):
+  def __init__(self, dryrun, spec, root):
     self.base = os.getcwd()
+    self.dryrun = dryrun
     self.spec = spec
     self.root = root
 
@@ -58,24 +59,24 @@ class Checkout(object):
 
 class GclientCheckout(Checkout):
 
-  @staticmethod
-  def run_gclient(*cmd, **kwargs):
+  def run_gclient(self, *cmd, **kwargs):
     print 'Running: gclient %s' % ' '.join(pipes.quote(x) for x in cmd)
-    return subprocess.check_call(('gclient',) + cmd, **kwargs)
+    if not self.dryrun:
+      return subprocess.check_call(('gclient',) + cmd, **kwargs)
 
 
 class GitCheckout(Checkout):
 
-  @staticmethod
-  def run_git(*cmd, **kwargs):
+  def run_git(self, *cmd, **kwargs):
     print 'Running: git %s' % ' '.join(pipes.quote(x) for x in cmd)
-    return subprocess.check_call(('git',) + cmd, **kwargs)
+    if not self.dryrun:
+      return subprocess.check_call(('git',) + cmd, **kwargs)
 
 
 class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
 
-  def __init__(self, spec, root):
-    super(GclientGitSvnCheckout, self).__init__(spec, root)
+  def __init__(self, dryrun, spec, root):
+    super(GclientGitSvnCheckout, self).__init__(dryrun, spec, root)
     assert 'solutions' in self.spec
     keys = ['solutions', 'target_os', 'target_os_only']
     gclient_spec = '\n'.join('%s = %s' % (key, self.spec[key])
@@ -129,12 +130,12 @@ CHECKOUT_TYPE_MAP = {
 }
 
 
-def CheckoutFactory(type_name, spec, root):
+def CheckoutFactory(type_name, dryrun, spec, root):
   """Factory to build Checkout class instances."""
   class_ = CHECKOUT_TYPE_MAP.get(type_name)
   if not class_:
     raise KeyError('unrecognized checkout type: %s' % type_name)
-  return class_(spec, root)
+  return class_(dryrun, spec, root)
 
 
 #################################################
@@ -147,7 +148,7 @@ def usage(msg=None):
 
   print (
 """
-usage: %s <recipe> [--property=value [--property2=value2 ...]]
+usage: %s [-n|--dry-run] <recipe> [--property=value [--property2=value2 ...]]
 """ % os.path.basename(sys.argv[0]))
   sys.exit(bool(msg))
 
@@ -159,6 +160,10 @@ def handle_args(argv):
   if argv[1] in ('-h', '--help', 'help'):
     usage()
 
+  if argv[1] in ('-n', '--dry-run'):
+    dryrun = True
+    argv.pop(1)
+
   def looks_like_arg(arg):
     return arg.startswith('--') and arg.count('=') == 1
 
@@ -168,7 +173,7 @@ def handle_args(argv):
 
   recipe = argv[1]
   props = argv[2:]
-  return recipe, props
+  return dryrun, recipe, props
 
 
 def run_recipe_fetch(recipe, props, aliased=False):
@@ -188,10 +193,11 @@ def run_recipe_fetch(recipe, props, aliased=False):
   return spec, root
 
 
-def run(spec, root):
+def run(dryrun, spec, root):
   """Perform a checkout with the given type and configuration.
 
     Args:
+      dryrun: if True, don't actually execute the commands
       spec: Checkout configuration returned by the the recipe's fetch_spec
           method (checkout type, repository url, etc.).
       root: The directory into which the repo expects to be checkout out.
@@ -200,7 +206,7 @@ def run(spec, root):
   checkout_type = spec['type']
   checkout_spec = spec['%s_spec' % checkout_type]
   try:
-    checkout = CheckoutFactory(checkout_type, checkout_spec, root)
+    checkout = CheckoutFactory(checkout_type, dryrun, checkout_spec, root)
   except KeyError:
     return 1
   if checkout.exists():
@@ -212,9 +218,9 @@ def run(spec, root):
 
 
 def main():
-  recipe, props = handle_args(sys.argv)
+  dryrun, recipe, props = handle_args(sys.argv)
   spec, root = run_recipe_fetch(recipe, props)
-  return run(spec, root)
+  return run(dryrun, spec, root)
 
 
 if __name__ == '__main__':
