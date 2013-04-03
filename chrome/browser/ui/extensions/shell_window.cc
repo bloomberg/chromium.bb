@@ -73,7 +73,7 @@ ShellWindow::CreateParams::CreateParams()
     frame(ShellWindow::FRAME_CHROME),
     transparent_background(false),
     bounds(INT_MIN, INT_MIN, 0, 0),
-    creator_process_id(0), hidden(false), resizable(true) {
+    creator_process_id(0), hidden(false), resizable(true), focused(true) {
 }
 
 ShellWindow::CreateParams::~CreateParams() {

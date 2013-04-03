@@ -598,6 +598,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   ShellWindow::CreateParams params;
   params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+  params.focused = false;
   ShellWindow* panel = CreateShellWindowFromParams(extension1, params);
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   // Panels should not be active by default.

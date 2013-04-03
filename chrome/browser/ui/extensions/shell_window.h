@@ -104,6 +104,9 @@ class ShellWindow : public content::NotificationObserver,
 
     // If true, the window will be resizable by the user. Defaults to true.
     bool resizable;
+
+    // If true, the window will be focused on creation. Defaults to true.
+    bool focused;
   };
 
   // Helper function for creating and intiailizing a v2 app window.

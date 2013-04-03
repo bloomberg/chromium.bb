@@ -378,6 +378,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPanelWindow) {
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   ShellWindow::CreateParams params;
   params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+  params.focused = false;
   ShellWindow* window = CreateShellWindowFromParams(extension, params);
   ++item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
