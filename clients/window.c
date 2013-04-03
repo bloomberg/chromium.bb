@@ -3312,7 +3312,6 @@ handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 	 * be a window vfunc that the menu can set.  And we need the
 	 * time. */
 
-	menu->func(window->parent, menu->current, window->parent->user_data);
 	input_ungrab(menu->input);
 	menu_destroy(menu);
 }
