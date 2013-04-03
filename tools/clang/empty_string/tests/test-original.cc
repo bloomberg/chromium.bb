@@ -36,3 +36,11 @@ void TestTemporaries(const std::string& reference_argument,
   TestTemporaries("", "");
   TestTemporaries(std::string(""), std::string(""));
 }
+
+// Tests for temporary std::wstrings.
+void TestWideTemporaries(const std::wstring& reference_argument,
+                         const std::wstring value_argument) {
+  TestWideTemporaries(L"", L"");
+  TestWideTemporaries(std::wstring(L""), std::wstring(L""));
+}
+

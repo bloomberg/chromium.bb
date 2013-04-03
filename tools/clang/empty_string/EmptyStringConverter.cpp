@@ -152,13 +152,16 @@ void TemporaryCallback::run(const MatchFinder::MatchResult& result) {
       result.Nodes.getNodeAs<clang::CXXConstructExpr>("call");
   // Differentiate between explicit and implicit calls to std::string's
   // constructor. An implicitly generated constructor won't have a valid
-  // source range for the parenthesis.
+  // source range for the parenthesis. We do this because the matched expression
+  // for |call| in the explicit case doesn't include the closing parenthesis.
   clang::SourceRange range = call->getParenRange();
   if (range.isValid()) {
     replacements_->insert(Replacement(*result.SourceManager, literal, ""));
   } else {
     replacements_->insert(
-        Replacement(*result.SourceManager, call, "std::string()"));
+        Replacement(*result.SourceManager,
+                    call,
+                    literal->isWide() ? "std::wstring()" : "std::string()"));
   }
 }
 
