@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/tcp_listen_socket.h"
 #include "net/test/test_server.h"
@@ -630,74 +632,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
       "DevToolsAgentHost is not released when the tab is closed";
 }
 
-class DISABLED_RemoteDebuggingTest : public ExtensionBrowserTest {
+class RemoteDebuggingTest: public ExtensionApiTest {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
 
-  class ResultCatcher : public content::NotificationObserver {
-   public:
-    ResultCatcher()
-        : notification_(chrome::NOTIFICATION_CHROME_END) {
-      registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-                     content::NotificationService::AllSources());
-      registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-                     content::NotificationService::AllSources());
-    }
-
-    virtual ~ResultCatcher() {
-    }
-
-    // Pumps the UI loop until a notification is received that an API test
-    // succeeded or failed. Returns true if the test succeeded, false otherwise.
-    bool GetNextResult() {
-      if (!received())
-        content::RunMessageLoop();
-
-      if (!received())
-        NOTREACHED();
-
-      return notification_ == chrome::NOTIFICATION_EXTENSION_TEST_PASSED;
-    }
-
-   private:
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) OVERRIDE {
-      if (received())
-        return;
-      notification_ = static_cast<chrome::NotificationType>(type);
-      MessageLoopForUI::current()->Quit();
-    }
-
-    content::NotificationRegistrar registrar_;
-
-    chrome::NotificationType notification_;
-
-    bool received() { return notification_ != chrome::NOTIFICATION_CHROME_END; }
-  };
-
- protected:
-
-  bool RunExtensionTest(const std::string& directory) {
-    content::DevToolsHttpHandler* devtools_http_handler_ =
-        content::DevToolsHttpHandler::Start(
-            new net::TCPListenSocketFactory("127.0.0.1", 9222),
-            "",
-            new BrowserListTabContentsProvider(
-                profile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
-
-    base::FilePath test_data_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_path);
-    LoadExtension(
-        test_data_path.AppendASCII("devtools").AppendASCII(directory));
-
-    ResultCatcher catcher;
-    bool result = catcher.GetNextResult();
-    devtools_http_handler_->Stop();
-    return result;
+    // Override the extension root path.
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+    test_data_dir_ = test_data_dir_.AppendASCII("devtools");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DISABLED_RemoteDebuggingTest, TargetList) {
-  ASSERT_TRUE(RunExtensionTest("target_list"));
+IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, RemoteDebugger) {
+  ASSERT_TRUE(RunExtensionTest("target_list")) << message_;
 }
 
 }  // namespace

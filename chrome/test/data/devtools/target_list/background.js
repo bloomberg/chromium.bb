@@ -30,7 +30,10 @@ function checkTarget(targets, url, type, opt_title, opt_faviconUrl) {
   chrome.test.assertEq(
       '/devtools/devtools.html?ws=' + wsAddress,
       target.devtoolsFrontendUrl);
-  chrome.test.assertEq(opt_faviconUrl || '', target.faviconUrl);
+  // On some platforms (e.g. Chrome OS) target.faviconUrl might be empty for
+  // a freshly created tab. Ignore the check then.
+  if (target.faviconUrl)
+    chrome.test.assertEq(opt_faviconUrl, target.faviconUrl);
   chrome.test.assertEq('/thumb/' + target.id, target.thumbnailUrl);
   chrome.test.assertEq(opt_title || target.url, target.title);
   chrome.test.assertEq(type, target.type);
