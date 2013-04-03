@@ -160,6 +160,7 @@ def handle_args(argv):
   if argv[1] in ('-h', '--help', 'help'):
     usage()
 
+  dryrun = False
   if argv[1] in ('-n', '--dry-run'):
     dryrun = True
     argv.pop(1)
@@ -180,7 +181,7 @@ def run_recipe_fetch(recipe, props, aliased=False):
   """Invoke a recipe's fetch method with the passed-through args
   and return its json output as a python object."""
   recipe_path = os.path.abspath(os.path.join(SCRIPT_PATH, 'recipes', recipe))
-  if not os.path.exists(recipe_path):
+  if not os.path.exists(recipe_path + '.py'):
     print "Could not find a recipe for %s" % recipe
     sys.exit(1)
 
