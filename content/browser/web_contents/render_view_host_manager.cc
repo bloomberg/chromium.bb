@@ -407,9 +407,13 @@ void RenderViewHostManager::Observe(
 }
 
 bool RenderViewHostManager::ShouldTransitionCrossSite() {
+  // False in the single-process mode, as it makes RVHs to accumulate
+  // in swapped_out_hosts_.
   // True if we are using process-per-site-instance (default) or
   // process-per-site (kProcessPerSite).
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab);
+  return
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab);
 }
 
 bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
