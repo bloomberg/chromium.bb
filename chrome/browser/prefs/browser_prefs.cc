@@ -302,7 +302,6 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   TranslatePrefs::RegisterUserPrefs(registry);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::BrowserPolicyConnector::RegisterUserPrefs(registry);
   policy::URLBlacklistManager::RegisterUserPrefs(registry);
 #endif
 

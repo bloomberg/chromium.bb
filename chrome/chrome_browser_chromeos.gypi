@@ -584,8 +584,6 @@
         'browser/chromeos/policy/enterprise_install_attributes.h',
         'browser/chromeos/policy/network_configuration_updater.cc',
         'browser/chromeos/policy/network_configuration_updater.h',
-        'browser/chromeos/policy/policy_cert_verifier.cc',
-        'browser/chromeos/policy/policy_cert_verifier.h',
         'browser/chromeos/policy/proxy_policy_provider.cc',
         'browser/chromeos/policy/proxy_policy_provider.h',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos.cc',

@@ -1503,9 +1503,6 @@ const char kDisableDrive[]                  = "disable-drive";
 // Enables file prefetching in Google Drive Client for Chrome OS.
 const char kEnableDrivePrefetch[]           = "enable-drive-prefetch";
 
-// Disable policy-configured local accounts.
-const char kDisableLocalAccounts[]          = "disable-local-accounts";
-
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 
@@ -1535,17 +1532,15 @@ const char kEnableTouchpadThreeFingerSwipe[]
 // Enable Kiosk mode for ChromeOS.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
+// Disable policy-configured local accounts.
+const char kDisableLocalAccounts[]          = "disable-local-accounts";
+
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
-
-// Enables setting TRUST_SSL for server and CA certificates imported from user
-// ONC policy. This flag will be removed once the feature can be turned on by
-// default, which needs additional UI work.
-const char kEnableWebTrustCerts[]           = "enable-web-trust-certs";
 
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";

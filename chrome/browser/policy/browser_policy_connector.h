@@ -19,12 +19,10 @@
 #endif
 
 class PrefRegistrySimple;
-class PrefRegistrySyncable;
 class PrefService;
 class Profile;
 
 namespace net {
-class CertTrustAnchorProvider;
 class URLRequestContextGetter;
 }
 
@@ -121,8 +119,6 @@ class BrowserPolicyConnector {
 
   NetworkConfigurationUpdater* GetNetworkConfigurationUpdater();
 
-  net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
-
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
     return device_cloud_policy_manager_.get();
   }
@@ -160,16 +156,8 @@ class BrowserPolicyConnector {
   // false if the username is empty.
   static bool IsNonEnterpriseUser(const std::string& username);
 
-  // Returns true if |profile| has used certificates installed via policy
-  // to establish a secure connection before. This means that it may have
-  // cached content from an untrusted source.
-  static bool UsedPolicyCertificates(Profile* profile);
-
   // Registers refresh rate prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Registers Profile prefs related to policy features.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  private:
   // Set the timezone as soon as the policies are available.

@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -237,8 +236,6 @@ void BrowserPolicyConnector::Shutdown() {
   // Delete it first.
   app_pack_updater_.reset();
 
-  network_configuration_updater_.reset();
-
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
   if (device_local_account_policy_provider_)
@@ -307,7 +304,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   // If the user is managed then importing certificates from ONC policy is
   // allowed, otherwise it's not. Update this flag once the user has signed in,
   // and before user policy is loaded.
-  GetNetworkConfigurationUpdater()->set_allow_trusted_certificates_from_policy(
+  GetNetworkConfigurationUpdater()->set_allow_web_trust(
       GetUserAffiliation(user_name) == USER_AFFILIATION_MANAGED);
 
   // Re-initializing user policy is disallowed for two reasons:
@@ -392,7 +389,9 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
   }
   return app_pack_updater_.get();
 }
+#endif
 
+#if defined(OS_CHROMEOS)
 NetworkConfigurationUpdater*
     BrowserPolicyConnector::GetNetworkConfigurationUpdater() {
   if (!network_configuration_updater_) {
@@ -401,11 +400,6 @@ NetworkConfigurationUpdater*
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
   }
   return network_configuration_updater_.get();
-}
-
-net::CertTrustAnchorProvider*
-    BrowserPolicyConnector::GetCertTrustAnchorProvider() {
-  return GetNetworkConfigurationUpdater()->GetCertTrustAnchorProvider();
 }
 #endif
 
@@ -484,30 +478,12 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 }
 
 // static
-bool BrowserPolicyConnector::UsedPolicyCertificates(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  if (profile->GetPrefs()->GetBoolean(prefs::kUsedPolicyCertificatesOnce))
-    return true;
-#endif
-  return false;
-}
-
-// static
 void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
                                 kDefaultPolicyRefreshRateMs);
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
                                 kDefaultPolicyRefreshRateMs);
-#endif
-}
-
-// static
-void BrowserPolicyConnector::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kUsedPolicyCertificatesOnce,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 

@@ -234,11 +234,10 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // virtual GetIPConfigs implemented in derived classes.
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
-  virtual bool LoadOncNetworks(
-      const std::string& onc_blob,
-      const std::string& passphrase,
-      onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates) OVERRIDE;
+  virtual bool LoadOncNetworks(const std::string& onc_blob,
+                               const std::string& passphrase,
+                               onc::ONCSource source,
+                               bool allow_web_trust_from_policy) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
 

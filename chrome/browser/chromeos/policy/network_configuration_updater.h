@@ -17,10 +17,6 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class CertTrustAnchorProvider;
-}
-
 namespace policy {
 
 class PolicyMap;
@@ -49,20 +45,9 @@ class NetworkConfigurationUpdater
   void OnUserPolicyInitialized();
 
   // Web trust isn't given to certificates imported from ONC by default. Setting
-  // |allow| to true allows giving Web trust to the certificates that
+  // |allow_web_trust| to true allows giving Web trust to the certificates that
   // request it.
-  void set_allow_trusted_certificates_from_policy(bool allow) {
-    allow_trusted_certificates_from_policy_ = allow;
-  }
-
-  // Returns a CertTrustAnchorProvider that provides the list of server and
-  // CA certificates with the Web trust flag set that were retrieved from the
-  // last user ONC policy update.
-  // This getter must be used on the UI thread, and the provider must be used
-  // on the IO thread. It is only valid as long as the
-  // NetworkConfigurationUpdater is valid; the NetworkConfigurationUpdater
-  // outlives all the profiles, and deletes the provider on the IO thread.
-  net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
+  void set_allow_web_trust(bool allow) { allow_web_trust_ = allow; }
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
@@ -91,14 +76,10 @@ class NetworkConfigurationUpdater
   bool user_policy_initialized_;
 
   // Whether Web trust is allowed or not.
-  bool allow_trusted_certificates_from_policy_;
+  bool allow_web_trust_;
 
   // The policy service storing the ONC policies.
   PolicyService* policy_service_;
-
-  // An implementation of CertTrustAnchorProvider. Owned by the updater, but
-  // lives on the IO thread.
-  net::CertTrustAnchorProvider* cert_trust_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdater);
 };

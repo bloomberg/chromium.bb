@@ -312,7 +312,6 @@ extern const char kPowerUseAudioActivity[];
 extern const char kPowerUseVideoActivity[];
 extern const char kPowerPresentationIdleDelayFactor[];
 extern const char kTermsOfServiceURL[];
-extern const char kUsedPolicyCertificatesOnce[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

@@ -5,7 +5,6 @@
 #include <cert.h>
 #include <pk11pub.h>
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -33,8 +32,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
 using ::testing::Return;
+using ::testing::AtLeast;
 
 namespace chromeos {
 
@@ -169,7 +168,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
     ScopedMockUserManagerEnabler mock_user_manager;
     mock_user_manager.user_manager()->SetLoggedInUser("madmax@my.domain.com");
     EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
-        .Times(AnyNumber())
+        .Times(AtLeast(0))
         .WillRepeatedly(Return(true));
 
     std::string onc_blob =
@@ -180,9 +179,8 @@ class NetworkLibraryStubTest : public ::testing::Test {
     base::DictionaryValue* expected_configs;
     expected_value->GetAsDictionary(&expected_configs);
 
-    net::CertificateList cert_list;
     EXPECT_EQ(expect_successful_import,
-              cros_->LoadOncNetworks(onc_blob, "", source, &cert_list));
+              cros_->LoadOncNetworks(onc_blob, "", source, true));
 
     const std::map<std::string, base::DictionaryValue*>& configs =
         cros_->GetConfigurations();
@@ -326,10 +324,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifiWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(true /* allow trust imports */);
-  net::CertificateList cert_list;
+  onc::CertificateImporter importer(true /* allow webtrust */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, &cert_list));
+            importer.ParseAndStoreCertificates(*certificates));
 
   WifiNetwork* wifi = cros_->FindWifiNetworkByPath("wifi_cert_pattern");
 
@@ -356,10 +353,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectVPNWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(true /* allow trust imports */);
-  net::CertificateList cert_list;
+  onc::CertificateImporter importer(true /* allow webtrust */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, &cert_list));
+            importer.ParseAndStoreCertificates(*certificates));
 
   VirtualNetwork* vpn = cros_->FindVirtualNetworkByPath("vpn_cert_pattern");
 
