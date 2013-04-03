@@ -1293,7 +1293,7 @@ def CMDupload(parser, args):
   if cl.GetIssue():
     latest_patchset = cl.GetMostRecentPatchset(cl.GetIssue())
     local_patchset = cl.GetPatchset()
-    if local_patchset != latest_patchset:
+    if latest_patchset and local_patchset and local_patchset != latest_patchset:
       print ('The last upload made from this repository was patchset #%d but '
             'the most recent patchset on the server is #%d.'
             % (local_patchset, latest_patchset))
