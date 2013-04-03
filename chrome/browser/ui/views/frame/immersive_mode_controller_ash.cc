@@ -33,6 +33,11 @@ namespace {
 // after the mouse stops moving.
 const int kTopEdgeRevealDelayMs = 200;
 
+// The slide open/closed animation looks better if it starts and ends just a
+// few pixels before the view goes completely off the screen, which reduces
+// the visual "pop" as the 2-pixel tall immersive-style tabs become visible.
+const int kAnimationOffsetY = 3;
+
 // Duration for the reveal show/hide slide animation. The slower duration is
 // used for the initial slide out to give the user more change to see what
 // happened.
@@ -453,8 +458,10 @@ void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {
   views::View* top_container = browser_view_->top_container();
   gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
       native_window_)->GetCursorScreenPoint();
-  views::View::ConvertPointFromScreen(top_container, &cursor_pos);
-
+  // Transform to the parent of |top_container|. This avoids problems with
+  // coordinate conversion while |top_container|'s layer has an animating
+  // transform and also works properly if |top_container| is not at 0, 0.
+  views::View::ConvertPointFromScreen(top_container->parent(), &cursor_pos);
   if (top_container->bounds().Contains(cursor_pos))
     AcquireMouseRevealedLock();
   else
@@ -527,7 +534,7 @@ void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
       // Now that we have a layer, move it to the initial offscreen position.
       ui::Layer* layer = top_container->layer();
       gfx::Transform transform;
-      transform.Translate(0, -layer->bounds().height());
+      transform.Translate(0, -layer->bounds().height() + kAnimationOffsetY);
       layer->SetTransform(transform);
     }
     // Slide in the reveal view.
@@ -598,7 +605,7 @@ void ImmersiveModeControllerAsh::AnimateSlideClosed(int duration_ms) {
       base::TimeDelta::FromMilliseconds(duration_ms));
   settings.AddObserver(slide_closed_observer_.get());
   gfx::Transform transform;
-  transform.Translate(0, -layer->bounds().height());
+  transform.Translate(0, -layer->bounds().height() + kAnimationOffsetY);
   layer->SetTransform(transform);
 }
 
