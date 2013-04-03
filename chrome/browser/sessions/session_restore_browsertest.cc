@@ -627,8 +627,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
             new_tab->GetRenderViewHost()->GetEnabledBindings());
 }
 
-// If this test fails, please add the failure logs to http://crbug.com/176304
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUISettings) {
+// http://crbug.com/176304
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, DISABLED_RestoreWebUISettings) {
   const GURL webui_url("chrome://settings");
   ui_test_utils::NavigateToURL(browser(), webui_url);
   const content::WebContents* old_tab =
