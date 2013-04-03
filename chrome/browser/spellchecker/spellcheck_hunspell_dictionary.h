@@ -14,6 +14,7 @@
 #include "base/platform_file.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class GURL;
 class Profile;
 class SpellcheckService;
 struct DictionaryFile;
@@ -45,8 +46,6 @@ class SpellcheckHunspellDictionary
     virtual void OnHunspellDictionaryDownloadFailure() = 0;
   };
 
-  // TODO(rlp): Passing in the host is very temporary. In the next CL this
-  // will be removed.
   SpellcheckHunspellDictionary(
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,
@@ -92,8 +91,11 @@ class SpellcheckHunspellDictionary
   // finishes.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
+  // Determine the correct url to download the dictionary.
+  GURL GetDictionaryURL();
+
   // Attempt to download the dictionary.
-  void DownloadDictionary();
+  void DownloadDictionary(GURL url);
 
   // The reply point for PostTaskAndReplyWithResult, called after the dictionary
   // file has been initialized.
