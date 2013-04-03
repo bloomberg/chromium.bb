@@ -69,6 +69,9 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
     return CompositorFrameMetadata();
   }
+  virtual bool AllowPartialSwap() const OVERRIDE {
+    return true;
+  }
 
  protected:
   scoped_ptr<FakeOutputSurface> output_surface_;

@@ -30,6 +30,7 @@ class CC_EXPORT RendererClient {
   virtual bool HasImplThread() const = 0;
   virtual bool ShouldClearRootRenderPass() const = 0;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
+  virtual bool AllowPartialSwap() const = 0;
 
  protected:
   virtual ~RendererClient() {}

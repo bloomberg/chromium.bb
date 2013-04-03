@@ -1861,7 +1861,7 @@ bool GLRenderer::SwapBuffers() {
   TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
-  if (capabilities_.using_partial_swap) {
+  if (capabilities_.using_partial_swap && client_->AllowPartialSwap()) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
     swap_buffer_rect_.Intersect(gfx::Rect(ViewportSize()));

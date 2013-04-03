@@ -188,7 +188,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
   DrawingFrame frame;
   frame.root_render_pass = root_render_pass;
   frame.root_damage_rect =
-      Capabilities().using_partial_swap ?
+      Capabilities().using_partial_swap && client_->AllowPartialSwap() ?
       root_render_pass->damage_rect : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(ViewportSize()));
 
@@ -257,7 +257,8 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   if (!UseRenderPass(frame, render_pass))
     return;
 
-  bool using_scissor_as_optimization = Capabilities().using_partial_swap;
+  bool using_scissor_as_optimization =
+      Capabilities().using_partial_swap && client_->AllowPartialSwap();
   gfx::RectF render_pass_scissor;
 
   if (using_scissor_as_optimization) {

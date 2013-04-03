@@ -4271,6 +4271,9 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
       OVERRIDE { return CompositorFrameMetadata(); }
+  virtual bool AllowPartialSwap() const OVERRIDE {
+    return true;
+  }
 
  protected:
   TestRenderer(ResourceProvider* resource_provider,

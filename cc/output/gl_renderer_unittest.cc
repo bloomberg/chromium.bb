@@ -184,6 +184,9 @@ class FakeRendererClient : public RendererClient {
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
     return CompositorFrameMetadata();
   }
+  virtual bool AllowPartialSwap() const OVERRIDE {
+    return true;
+  }
 
   // Methods added for test.
   int set_full_root_layer_damage_count() const {

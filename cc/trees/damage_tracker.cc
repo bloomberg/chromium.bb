@@ -7,9 +7,11 @@
 #include <algorithm>
 
 #include "cc/base/math_util.h"
+#include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 
 namespace cc {
@@ -191,6 +193,12 @@ gfx::RectF DamageTracker::TrackDamageFromActiveLayers(
   for (size_t layer_index = 0; layer_index < layer_list.size(); ++layer_index) {
     // Visit layers in back-to-front order.
     LayerImpl* layer = layer_list[layer_index];
+
+    // We skip damage from the HUD layer because (a) the HUD layer damages the
+    // whole frame and (b) we don't want HUD layer damage to be shown by the
+    // HUD damage rect visualization.
+    if (layer == layer->layer_tree_impl()->hud_layer())
+      continue;
 
     if (LayerTreeHostCommon::RenderSurfaceContributesToTarget<LayerImpl>(
             layer, target_surface_layer_id))

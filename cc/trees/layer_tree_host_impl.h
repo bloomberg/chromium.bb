@@ -174,6 +174,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual bool HasImplThread() const OVERRIDE;
   virtual bool ShouldClearRootRenderPass() const OVERRIDE;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
+  virtual bool AllowPartialSwap() const OVERRIDE;
 
   // TileManagerClient implementation.
   virtual void ScheduleManageTiles() OVERRIDE;

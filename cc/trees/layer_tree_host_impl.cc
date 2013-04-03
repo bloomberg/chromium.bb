@@ -979,6 +979,13 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   return metadata;
 }
 
+bool LayerTreeHostImpl::AllowPartialSwap() const {
+  // We don't track damage on the HUD layer (it interacts with damage tracking
+  // visualizations), so disable partial swaps to make the HUD layer display
+  // properly.
+  return !debug_state_.ShowHudRects();
+}
+
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");

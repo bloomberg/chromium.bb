@@ -43,6 +43,9 @@ class PixelTest::PixelTestRendererClient : public RendererClient {
       OVERRIDE {
     return CompositorFrameMetadata();
   }
+  virtual bool AllowPartialSwap() const OVERRIDE {
+    return true;
+  }
 
  private:
   gfx::Size device_viewport_size_;
