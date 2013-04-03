@@ -132,11 +132,13 @@ inline void WriteReal(double data, SerializeObject* obj) {
 inline double ReadReal(const SerializeObject* obj) {
   const void* tmp = NULL;
   int length = 0;
+  double value = 0.0;
   ReadData(obj, &tmp, &length);
-  if (tmp && length > 0 && length >= static_cast<int>(sizeof(0.0)))
-    return *static_cast<const double*>(tmp);
-  else
-    return 0.0;
+  if (tmp && length >= static_cast<int>(sizeof(double))) {
+    // Use memcpy, as tmp may not be correctly aligned.
+    memcpy(&value, tmp, sizeof(double));
+  }
+  return value;
 }
 
 inline void WriteBoolean(bool data, SerializeObject* obj) {
