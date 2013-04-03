@@ -295,7 +295,7 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   CrasAudioClientStubImpl() {
     VLOG(1) << "CrasAudioClientStubImpl is created";
   }
-  ~CrasAudioClientStubImpl() {}
+  virtual ~CrasAudioClientStubImpl() {}
 
   // CrasAudioClient overrides:
   // TODO(jennyz): Implement the observers and callbacks in the stub for UI
