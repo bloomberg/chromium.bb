@@ -1052,7 +1052,7 @@ wl_display_get_error(struct wl_display *display)
 	return ret;
 }
 
-/** Send all buffered request on the display to the server
+/** Send all buffered requests on the display to the server
  *
  * \param display The display context object
  * \return The number of bytes send on success or -1 on failure
@@ -1061,6 +1061,11 @@ wl_display_get_error(struct wl_display *display)
  * should call this function before blocking. On success, the number
  * of bytes sent to the server is returned. On failure, this
  * function returns -1 and errno is set appropriately.
+ *
+ * wl_display_flush() never blocks.  It will write as much data as
+ * possible, but if all data could not be written, errno will be set
+ * to EAGAIN and -1 returned.  In that case, use poll on the display
+ * file descriptor to wait for it to become writable again.
  *
  * \memberof wl_display
  */
