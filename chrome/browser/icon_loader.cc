@@ -10,10 +10,10 @@
 
 using content::BrowserThread;
 
-IconLoader::IconLoader(const IconGroupID& group, IconSize size,
+IconLoader::IconLoader(const base::FilePath& file_path, IconSize size,
                        Delegate* delegate)
     : target_message_loop_(NULL),
-      group_(group),
+      file_path_(file_path),
       icon_size_(size),
       image_(NULL),
       delegate_(delegate) {
@@ -25,13 +25,25 @@ IconLoader::~IconLoader() {
 void IconLoader::Start() {
   target_message_loop_ = base::MessageLoopProxy::current();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&IconLoader::ReadIcon, this));
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&IconLoader::ReadGroup, this),
+      base::Bind(&IconLoader::OnReadGroup, this));
+}
+
+void IconLoader::ReadGroup() {
+  group_ = ReadGroupIDFromFilepath(file_path_);
+}
+
+void IconLoader::OnReadGroup() {
+  if (!delegate_->OnGroupLoaded(this, group_)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&IconLoader::ReadIcon, this));
+  }
 }
 
 void IconLoader::NotifyDelegate() {
   // If the delegate takes ownership of the Image, release it from the scoped
   // pointer.
-  if (delegate_->OnImageLoaded(this, image_.get()))
+  if (delegate_->OnImageLoaded(this, image_.get(), group_))
     ignore_result(image_.release());  // Can't ignore return value.
 }

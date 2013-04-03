@@ -1118,7 +1118,7 @@ bool DownloadsDragFunction::RunImpl() {
     return false;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
-  gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
+  gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       download_item->GetUserVerifiedFilePath(), IconLoader::NORMAL);
   gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {

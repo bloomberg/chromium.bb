@@ -408,8 +408,8 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
   if (dragging_) {
     if (download()->IsComplete()) {
       IconManager* im = g_browser_process->icon_manager();
-      gfx::Image* icon = im->LookupIcon(download()->GetUserVerifiedFilePath(),
-                                        IconLoader::SMALL);
+      gfx::Image* icon = im->LookupIconFromFilepath(
+          download()->GetUserVerifiedFilePath(), IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
         download_util::DragDownload(download(), icon,
@@ -775,8 +775,8 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
   // Load the icon.
   IconManager* im = g_browser_process->icon_manager();
-  gfx::Image* image = im->LookupIcon(download()->GetUserVerifiedFilePath(),
-                                     IconLoader::SMALL);
+  gfx::Image* image = im->LookupIconFromFilepath(
+      download()->GetUserVerifiedFilePath(),IconLoader::SMALL);
   const gfx::ImageSkia* icon = NULL;
   if (IsShowingWarningDialog())
     icon = warning_icon_;

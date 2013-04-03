@@ -106,7 +106,7 @@ void FileIconSource::FetchFileIcon(
     IconLoader::IconSize icon_size,
     const content::URLDataSource::GotDataCallback& callback) {
   IconManager* im = g_browser_process->icon_manager();
-  gfx::Image* icon = im->LookupIcon(path, icon_size);
+  gfx::Image* icon = im->LookupIconFromFilepath(path, icon_size);
 
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);

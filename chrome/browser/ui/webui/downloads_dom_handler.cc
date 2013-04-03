@@ -348,7 +348,7 @@ void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   // |web_contents| is only NULL in the test.
   if (!file || !web_contents || !file->IsComplete())
     return;
-  gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
+  gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       file->GetTargetFilePath(), IconLoader::NORMAL);
   gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {

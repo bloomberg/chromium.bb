@@ -17,6 +17,12 @@
 
 using std::string;
 
+// static
+IconGroupID IconLoader::ReadGroupIDFromFilepath(
+    const base::FilePath& filepath) {
+  return base::nix::GetFileMimeType(filepath);
+}
+
 void IconLoader::ReadIcon() {
   int size_pixels = 0;
   switch (icon_size_) {

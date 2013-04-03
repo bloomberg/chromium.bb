@@ -9,9 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/icon_loader.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -176,6 +178,12 @@ int IconSizeToDIPSize(IconLoader::IconSize size) {
 }
 
 }  // namespace
+
+// static
+IconGroupID IconLoader::ReadGroupIDFromFilepath(
+    const base::FilePath& filepath) {
+  return StringToLowerASCII(filepath.Extension());
+}
 
 void IconLoader::ReadIcon() {
   static base::LazyInstance<IconMapper>::Leaky icon_mapper =

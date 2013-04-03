@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -41,16 +42,25 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   class Delegate {
    public:
+    // Invoked when an icon group has been read, but before the icon data
+    // is read. If the icon is already cached, this method should call and
+    // return the results of OnImageLoaded with the cached image.
+    virtual bool OnGroupLoaded(IconLoader* source,
+                               const IconGroupID& group) = 0;
     // Invoked when an icon has been read. |source| is the IconLoader. If the
     // icon has been successfully loaded, result is non-null. This method must
     // return true if it is taking ownership of the returned image.
-    virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result) = 0;
+    virtual bool OnImageLoaded(IconLoader* source,
+                               gfx::Image* result,
+                               const IconGroupID& group) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  IconLoader(const IconGroupID& group, IconSize size, Delegate* delegate);
+  IconLoader(const base::FilePath& file_path,
+             IconSize size,
+             Delegate* delegate);
 
   // Start reading the icon on the file thread.
   void Start();
@@ -60,12 +70,20 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   virtual ~IconLoader();
 
+  // Get the identifying string for the given file. The implementation
+  // is in icon_loader_[platform].cc.
+  static IconGroupID ReadGroupIDFromFilepath(const base::FilePath& path);
+
+  void ReadGroup();
+  void OnReadGroup();
   void ReadIcon();
 
   void NotifyDelegate();
 
   // The message loop object of the thread in which we notify the delegate.
   scoped_refptr<base::MessageLoopProxy> target_message_loop_;
+
+  base::FilePath file_path_;
 
   IconGroupID group_;
 

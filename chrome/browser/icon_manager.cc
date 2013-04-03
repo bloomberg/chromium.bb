@@ -27,7 +27,7 @@ void RunCallbackIfNotCanceled(
 
 struct IconManager::ClientRequest {
   IconRequestCallback callback;
-  IconGroupID group;
+  base::FilePath file_path;
   IconLoader::IconSize size;
 };
 
@@ -38,9 +38,17 @@ IconManager::~IconManager() {
   STLDeleteValues(&icon_cache_);
 }
 
-gfx::Image* IconManager::LookupIcon(const base::FilePath& file_name,
-                                    IconLoader::IconSize size) {
-  IconGroupID group = GetGroupIDFromFilepath(file_name);
+gfx::Image* IconManager::LookupIconFromFilepath(const base::FilePath& file_name,
+                                                IconLoader::IconSize size) {
+  GroupMap::iterator it = group_cache_.find(file_name);
+  if (it != group_cache_.end())
+    return LookupIconFromGroup(it->second, size);
+
+  return NULL;
+}
+
+gfx::Image* IconManager::LookupIconFromGroup(const IconGroupID& group,
+                                             IconLoader::IconSize size) {
   IconMap::iterator it = icon_cache_.find(CacheKey(group, size));
   if (it != icon_cache_.end())
     return it->second;
@@ -53,9 +61,7 @@ CancelableTaskTracker::TaskId IconManager::LoadIcon(
     IconLoader::IconSize size,
     const IconRequestCallback& callback,
     CancelableTaskTracker* tracker) {
-  IconGroupID group = GetGroupIDFromFilepath(file_name);
-
-  IconLoader* loader = new IconLoader(group, size, this);
+  IconLoader* loader = new IconLoader(file_name, size, this);
   loader->AddRef();
   loader->Start();
 
@@ -64,14 +70,31 @@ CancelableTaskTracker::TaskId IconManager::LoadIcon(
   IconRequestCallback callback_runner = base::Bind(
       &RunCallbackIfNotCanceled, is_canceled, callback);
 
-  ClientRequest client_request = { callback_runner, group, size };
+  ClientRequest client_request = { callback_runner, file_name, size };
   requests_[loader] = client_request;
   return id;
 }
 
 // IconLoader::Delegate implementation -----------------------------------------
 
-bool IconManager::OnImageLoaded(IconLoader* loader, gfx::Image* result) {
+bool IconManager::OnGroupLoaded(IconLoader* loader,
+                                const IconGroupID& group) {
+  ClientRequests::iterator rit = requests_.find(loader);
+  if (rit == requests_.end()) {
+    NOTREACHED();
+    return false;
+  }
+
+  gfx::Image* result = LookupIconFromGroup(group, rit->second.size);
+  if (!result) {
+    return false;
+  }
+
+  return OnImageLoaded(loader, result, group);
+}
+
+bool IconManager::OnImageLoaded(
+    IconLoader* loader, gfx::Image* result, const IconGroupID& group) {
   ClientRequests::iterator rit = requests_.find(loader);
 
   // Balances the AddRef() in LoadIcon().
@@ -87,15 +110,19 @@ bool IconManager::OnImageLoaded(IconLoader* loader, gfx::Image* result) {
 
   // Cache the bitmap. Watch out: |result| or the cached bitmap may be NULL to
   // indicate a current or past failure.
-  CacheKey key(client_request.group, client_request.size);
+  CacheKey key(group, client_request.size);
   IconMap::iterator it = icon_cache_.find(key);
   if (it != icon_cache_.end() && result && it->second) {
-    it->second->SwapRepresentations(result);
-    delete result;
-    result = it->second;
+    if (it->second != result) {
+      it->second->SwapRepresentations(result);
+      delete result;
+      result = it->second;
+    }
   } else {
     icon_cache_[key] = result;
   }
+
+  group_cache_[client_request.file_path] = group;
 
   // Inform our client that the request has completed.
   client_request.callback.Run(result);
