@@ -23,7 +23,6 @@ const int kPadding = 14;
 const int kIconDimension = 32;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
-const int kEditHeight = 19;
 const int kMenuButtonDimension = 29;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
@@ -107,7 +106,8 @@ void SearchBoxView::Layout() {
   edit_frame.set_x(icon_frame.right());
   edit_frame.set_width(
       rect.width() - icon_frame.width() - kPadding - menu_button_frame.width());
-  edit_frame.ClampToCenteredSize(gfx::Size(edit_frame.width(), kEditHeight));
+  edit_frame.ClampToCenteredSize(
+      gfx::Size(edit_frame.width(), search_box_->GetPreferredSize().height()));
   search_box_->SetBoundsRect(edit_frame);
 }
 
