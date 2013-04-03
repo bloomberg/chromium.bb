@@ -429,6 +429,21 @@ TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
   EXPECT_FALSE([bbfc folderController]);
 }
 
+TEST_F(BookmarkBarFolderControllerTest, DeleteOpenFolder) {
+  scoped_nsobject<BookmarkBarFolderController> parent_controller(
+      SimpleBookmarkBarFolderController());
+
+  // Open a folder.
+  EXPECT_FALSE([parent_controller folderController]);
+  BookmarkButton* button = [[parent_controller buttons] objectAtIndex:0];
+  [parent_controller openBookmarkFolderFromButton:button];
+  EXPECT_EQ([[parent_controller folderController] parentButton], button);
+
+  // Delete the folder's button - the folder should close.
+  [parent_controller removeButton:0 animate:NO];
+  EXPECT_FALSE([parent_controller folderController]);
+}
+
 TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
   scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());

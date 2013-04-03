@@ -1871,6 +1871,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
   NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
 
+  // If this button has an open sub-folder, close it.
+  if ([folderController_ parentButton] == oldButton)
+    [self closeBookmarkFolder:self];
+
   // If a hover-open is pending, cancel it.
   if (oldButton == buttonThatMouseIsIn_) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
