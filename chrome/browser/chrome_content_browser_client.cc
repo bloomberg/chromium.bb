@@ -832,11 +832,18 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   if (!profile)
     return true;
 
+  // Instant URLs should only be in the instant process and instant process
+  // should only have Instant URLs.
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
-  if (instant_service &&
-      instant_service->IsInstantProcess(process_host->GetID()))
-    return chrome::ShouldAssignURLToInstantRenderer(site_url, profile);
+  if (instant_service) {
+    bool is_instant_process = instant_service->IsInstantProcess(
+        process_host->GetID());
+    bool should_be_in_instant_process =
+        chrome::ShouldAssignURLToInstantRenderer(site_url, profile);
+    if (is_instant_process || should_be_in_instant_process)
+      return is_instant_process && should_be_in_instant_process;
+  }
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   if (signin_manager && signin_manager->IsSigninProcess(process_host->GetID()))
