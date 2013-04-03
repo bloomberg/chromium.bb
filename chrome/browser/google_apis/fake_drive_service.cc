@@ -65,6 +65,28 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
   return true;
 }
 
+// Gets the upload URL from the given entry. Returns an empty URL if not
+// found.
+GURL GetUploadUrl(const base::DictionaryValue& entry) {
+  std::string upload_url;
+  const base::ListValue* links = NULL;
+  if (entry.GetList("link", &links) && links) {
+    for (size_t link_index = 0;
+         link_index < links->GetSize();
+         ++link_index) {
+      const base::DictionaryValue* link = NULL;
+      std::string rel;
+      if (links->GetDictionary(link_index, &link) &&
+          link && link->GetString("rel", &rel) &&
+          rel == kUploadUrlRel &&
+          link->GetString("href", &upload_url)) {
+        break;
+      }
+    }
+  }
+  return GURL(upload_url);
+}
+
 }  // namespace
 
 FakeDriveService::FakeDriveService()
@@ -490,6 +512,7 @@ void FakeDriveService::DownloadFile(
   // Write "x"s of the file size specified in the entry.
   std::string file_size_string;
   entry->GetString("docs$size.$t", &file_size_string);
+  // TODO(satorux): To be correct, we should update docs$md5Checksum.$t here.
   int64 file_size = 0;
   if (base::StringToInt64(file_size_string, &file_size)) {
     std::string content(file_size, 'x');
@@ -712,85 +735,24 @@ void FakeDriveService::AddNewDirectory(
     return;
   }
 
-  // If the parent content URL is not matched to the root resource id,
-  // the parent should exist.
-  if (parent_resource_id != GetRootResourceId()) {
-    base::DictionaryValue* parent_entry =
-        FindEntryByResourceId(parent_resource_id);
-    if (!parent_entry) {
-      scoped_ptr<ResourceEntry> null;
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
-      return;
-    }
+  const char kContentType[] = "application/atom+xml;type=feed";
+  const base::DictionaryValue* new_entry = AddNewEntry(kContentType,
+                                                       0,  // content_length
+                                                       parent_resource_id,
+                                                       directory_name,
+                                                       "folder");
+  if (!new_entry) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+    return;
   }
 
-  const std::string new_resource_id = GetNewResourceId();
-
-  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
-  // Set the resource ID and the title
-  new_entry->SetString("gd$resourceId.$t", new_resource_id);
-  new_entry->SetString("title.$t", directory_name);
-
-  // Add "category" which sets the resource type to folder.
-  base::ListValue* categories = new base::ListValue;
-  base::DictionaryValue* category = new base::DictionaryValue;
-  category->SetString("label", "folder");
-  category->SetString("scheme", "http://schemas.google.com/g/2005#kind");
-  category->SetString("term", "http://schemas.google.com/docs/2007#folder");
-  categories->Append(category);
-  new_entry->Set("category", categories);
-
-  // Add "content" which sets the content URL.
-  base::DictionaryValue* content = new base::DictionaryValue;
-  content->SetString("src", "https://xxx/content/" + new_resource_id);
-  new_entry->Set("content", content);
-
-  // Add "link" which sets the parent URL and the edit URL.
-  base::ListValue* links = new base::ListValue;
-
-  base::DictionaryValue* parent_link = new base::DictionaryValue;
-  parent_link->SetString(
-      "href", GetFakeLinkUrl(parent_resource_id).spec());
-  parent_link->SetString("rel",
-                         "http://schemas.google.com/docs/2007#parent");
-  links->Append(parent_link);
-
-  base::DictionaryValue* edit_link = new base::DictionaryValue;
-  edit_link->SetString("href", "https://xxx/edit/" + new_resource_id);
-  edit_link->SetString("rel", "edit");
-  links->Append(edit_link);
-  new_entry->Set("link", links);
-
-  AddNewChangestamp(new_entry.get());
-
-  // Add the new entry to the resource list.
-  base::DictionaryValue* resource_list_dict = NULL;
-  base::ListValue* entries = NULL;
-  if (resource_list_value_->GetAsDictionary(&resource_list_dict)) {
-    // If there are no entries, prepare an empty entry to add.
-    if (!resource_list_dict->HasKey("entry"))
-      resource_list_dict->Set("entry", new ListValue);
-
-    if (resource_list_dict->GetList("entry", &entries)) {
-      // Parse the entry before releasing it.
-      scoped_ptr<ResourceEntry> parsed_entry(
-          ResourceEntry::CreateFrom(*new_entry));
-
-      entries->Append(new_entry.release());
-
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
-      return;
-    }
-  }
-
-  scoped_ptr<ResourceEntry> null;
+  scoped_ptr<ResourceEntry> parsed_entry(ResourceEntry::CreateFrom(*new_entry));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+      base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
 }
 
 void FakeDriveService::InitiateUploadNewFile(
@@ -810,81 +772,21 @@ void FakeDriveService::InitiateUploadNewFile(
     return;
   }
 
-  if (parent_resource_id != GetRootResourceId() &&
-      !FindEntryByResourceId(parent_resource_id)) {
+  // Content length should be zero, as we'll create an empty file first. The
+  // content will be added in ResumeUpload().
+  const base::DictionaryValue* new_entry = AddNewEntry(content_type,
+                                                       0,  // content_length
+                                                       parent_resource_id,
+                                                       title,
+                                                       "file");
+  if (!new_entry) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_NOT_FOUND, GURL()));
     return;
   }
-
-  // If the title was set, the upload_location is the location of the parent
-  // directory of the file that will be uploaded. The file does not yet exist
-  // and it must be created. Its title will be the passed title param.
-  std::string resource_id = GetNewResourceId();
-  GURL upload_url = GURL("https://xxx/upload/" + resource_id);
-
-  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
-  // Set the resource ID and the title
-  new_entry->SetString("gd$resourceId.$t", resource_id);
-  new_entry->SetString("title.$t", title);
-  new_entry->SetString("docs$filename", title);
-  new_entry->SetString("docs$size", "0");
-  new_entry->SetString("docs$md5Checksum.$t",
-                       "3b4385ebefec6e743574c76bbd0575de");
-
-  // Add "category" which sets the resource type to file.
-  base::ListValue* categories = new base::ListValue;
-  base::DictionaryValue* category = new base::DictionaryValue;
-  category->SetString("label", "test/foo");
-  category->SetString("scheme", "http://schemas.google.com/g/2005#kind");
-  category->SetString("term", "http://schemas.google.com/docs/2007#file");
-  categories->Append(category);
-  new_entry->Set("category", categories);
-
-  // Add "content" which sets the content URL.
-  base::DictionaryValue* content = new base::DictionaryValue;
-  content->SetString("src", "https://xxx/content/" + resource_id);
-  content->SetString("type", content_type);
-  new_entry->Set("content", content);
-
-  // Add "link" which sets the parent URL, the edit URL and the upload URL.
-  base::ListValue* links = new base::ListValue;
-
-  base::DictionaryValue* parent_link = new base::DictionaryValue;
-  parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
-  parent_link->SetString("rel",
-                         "http://schemas.google.com/docs/2007#parent");
-  links->Append(parent_link);
-
-  base::DictionaryValue* edit_link = new base::DictionaryValue;
-  edit_link->SetString("href", "https://xxx/edit/" + resource_id);
-  edit_link->SetString("rel", "edit");
-  links->Append(edit_link);
-
-  base::DictionaryValue* upload_link = new base::DictionaryValue;
-  upload_link->SetString("href", upload_url.spec());
-  upload_link->SetString("rel", kUploadUrlRel);
-  links->Append(upload_link);
-  new_entry->Set("link", links);
-
-  AddNewChangestamp(new_entry.get());
-
-  base::DictionaryValue* resource_list_dict = NULL;
-  base::ListValue* entries = NULL;
-  if (!resource_list_value_->GetAsDictionary(&resource_list_dict)) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_NOT_FOUND, GURL()));
-    return;
-  }
-
-  // If there are no entries, prepare an empty entry to add.
-  if (!resource_list_dict->HasKey("entry"))
-    resource_list_dict->Set("entry", new ListValue);
-
-  if (resource_list_dict->GetList("entry", &entries))
-    entries->Append(new_entry.release());
+  const GURL upload_url = GetUploadUrl(*new_entry);
+  DCHECK(upload_url.is_valid());
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -925,27 +827,12 @@ void FakeDriveService::InitiateUploadExistingFile(
     return;
   }
 
-  std::string upload_url;
-  base::ListValue* links = NULL;
-  if (entry->GetList("link", &links) && links) {
-    for (size_t link_index = 0;
-         link_index < links->GetSize();
-         ++link_index) {
-      base::DictionaryValue* link = NULL;
-      std::string rel;
-      if (links->GetDictionary(link_index, &link) &&
-          link && link->GetString("rel", &rel) &&
-          rel == kUploadUrlRel &&
-          link->GetString("href", &upload_url)) {
-        break;
-      }
-    }
-  }
+  const GURL upload_url = GetUploadUrl(*entry);
+  DCHECK(upload_url.is_valid());
 
-  DCHECK(!upload_url.empty());
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, GURL(upload_url)));
+      base::Bind(callback, HTTP_SUCCESS, upload_url));
 }
 
 void FakeDriveService::GetUploadStatus(
@@ -1125,6 +1012,88 @@ void FakeDriveService::AddNewChangestamp(base::DictionaryValue* entry) {
   ++largest_changestamp_;
   entry->SetString("docs$changestamp.value",
                    base::Int64ToString(largest_changestamp_));
+}
+
+const base::DictionaryValue* FakeDriveService::AddNewEntry(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const std::string& entry_kind) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (parent_resource_id != GetRootResourceId() &&
+      !FindEntryByResourceId(parent_resource_id)) {
+    return NULL;
+  }
+
+  base::DictionaryValue* resource_list_dict = NULL;
+  if (!resource_list_value_->GetAsDictionary(&resource_list_dict))
+    return NULL;
+
+  std::string resource_id = GetNewResourceId();
+  GURL upload_url = GURL("https://xxx/upload/" + resource_id);
+
+  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
+  // Set the resource ID and the title
+  new_entry->SetString("gd$resourceId.$t", resource_id);
+  new_entry->SetString("title.$t", title);
+  new_entry->SetString("docs$filename", title);
+  // Set the content size and MD5 for a file.
+  if (entry_kind == "file") {
+    new_entry->SetString("docs$size.$t", base::Int64ToString(content_length));
+    // TODO(satorux): Set the correct MD5 here.
+    new_entry->SetString("docs$md5Checksum.$t",
+                         "3b4385ebefec6e743574c76bbd0575de");
+  }
+
+  // Add "category" which sets the resource type to |entry_kind|.
+  base::ListValue* categories = new base::ListValue;
+  base::DictionaryValue* category = new base::DictionaryValue;
+  category->SetString("scheme", "http://schemas.google.com/g/2005#kind");
+  category->SetString("term", "http://schemas.google.com/docs/2007#" +
+                      entry_kind);
+  categories->Append(category);
+  new_entry->Set("category", categories);
+
+  // Add "content" which sets the content URL.
+  base::DictionaryValue* content = new base::DictionaryValue;
+  content->SetString("src", "https://xxx/content/" + resource_id);
+  content->SetString("type", content_type);
+  new_entry->Set("content", content);
+
+  // Add "link" which sets the parent URL, the edit URL and the upload URL.
+  base::ListValue* links = new base::ListValue;
+
+  base::DictionaryValue* parent_link = new base::DictionaryValue;
+  parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
+  parent_link->SetString("rel",
+                         "http://schemas.google.com/docs/2007#parent");
+  links->Append(parent_link);
+
+  base::DictionaryValue* edit_link = new base::DictionaryValue;
+  edit_link->SetString("href", "https://xxx/edit/" + resource_id);
+  edit_link->SetString("rel", "edit");
+  links->Append(edit_link);
+
+  base::DictionaryValue* upload_link = new base::DictionaryValue;
+  upload_link->SetString("href", upload_url.spec());
+  upload_link->SetString("rel", kUploadUrlRel);
+  links->Append(upload_link);
+  new_entry->Set("link", links);
+
+  AddNewChangestamp(new_entry.get());
+
+  // If there are no entries, prepare an empty entry to add.
+  if (!resource_list_dict->HasKey("entry"))
+    resource_list_dict->Set("entry", new ListValue);
+
+  base::DictionaryValue* raw_new_entry = new_entry.release();
+  base::ListValue* entries = NULL;
+  if (resource_list_dict->GetList("entry", &entries))
+    entries->Append(raw_new_entry);
+
+  return raw_new_entry;
 }
 
 }  // namespace google_apis

@@ -189,6 +189,16 @@ class FakeDriveService : public DriveServiceInterface {
   // |entry|.
   void AddNewChangestamp(base::DictionaryValue* entry);
 
+  // Adds a new entry based on the given parameters. |entry_kind| should be
+  // "file" or "folder". Returns a pointer to the newly added entry, or NULL
+  // if failed.
+  const base::DictionaryValue* AddNewEntry(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const std::string& entry_kind);
+
   scoped_ptr<base::Value> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
