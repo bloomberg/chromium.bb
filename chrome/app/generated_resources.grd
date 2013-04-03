@@ -250,6 +250,9 @@ are declared in build/common.gypi.
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <!-- Bookmarks specific strings -->
+      <part file="bookmarks_strings.grdp" />
+
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
@@ -7613,9 +7616,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!--Action Box menu-->
-      <message name="IDS_BOOKMARK_STAR" desc="The text for bookmark menu item">
-        Bookmark this page
-      </message>
       <message name="IDS_CHROME_TO_MOBILE" desc="The text for chrome to mobile menu item">
         Send tab to device
       </message>
@@ -9003,157 +9003,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
-      <!-- Bookmarks bar -->
-      <message name="IDS_BOOKMARKS_NO_ITEMS" desc="Text shown when the user has no bookmarks">
-        For quick access, place your bookmarks here on the bookmarks bar.
-      </message>
-
-      <!-- The location for special bookmark groups -->
-      <message name="IDS_BOOKMARK_GROUP_FROM_IE" desc="The group name of bookmarks from Internet Explorer">
-        Imported From IE
-      </message>
-      <message name="IDS_BOOKMARK_GROUP_FROM_FIREFOX" desc="The group name of bookmarks from Firefox">
-        Imported From Firefox
-      </message>
-      <message name="IDS_BOOKMARK_GROUP_FROM_SAFARI" desc="The group name of bookmarks from Safari">
-        Imported From Safari
-      </message>
-      <message name="IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR" desc="The group name of bookmarks from Google Toolbar">
-        Imported From Google Toolbar
-      </message>
-      <message name="IDS_BOOKMARK_GROUP" desc="The group name of bookmarks imported from a file">
-        Imported
-      </message>
-
-  <!-- bookmark editor messages-->
-      <message name="IDS_BOOKMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
-        Name:
-      </message>
-      <message name="IDS_BOOKMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
-        URL:
-      </message>
-      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON" desc="Text on the new folder button.">
-        New folder
-      </message>
-      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
-        &amp;New folder
-      </message>
-      <message name="IDS_BOOKMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
-        Edit Bookmark
-      </message>
-      <message name="IDS_BOOKMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder.">
-        This folder contains <ph name="COUNT">$1<ex>5</ex></ph> bookmarks. Are you sure you want to delete it?
-      </message>
-      <message name="IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME" desc="Name shown in the bookmark bar for the apps page shortcut">
-        Apps
-      </message>
-      <message name="IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP" desc="Text shown in the tooltip of the apps page shortcut in the bookmark bar">
-        Show apps
-      </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="Name shown in the tree for the mobile bookmarks folder">
-          Mobile bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
-          Other bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
-          Show apps shortcut
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
-          Mobile Bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
-          Other Bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="In Title Case: Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
-          Show Apps Shortcut
-        </message>
-      </if>
-      <if expr="not pp_ifdef('android') and not pp_ifdef('ios') and pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
-          Bookmarks Bar
-        </message>
-      </if>
-      <if expr="not pp_ifdef('android') and not pp_ifdef('ios') and not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
-          Bookmarks bar
-        </message>
-      </if>
-      <if expr="pp_ifdef('android')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-          Desktop bookmarks
-        </message>
-      </if>
-      <if expr="pp_ifdef('ios')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-          Desktop Bookmarks
-        </message>
-      </if>
-      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
-        New folder
-      </message>
-      <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
-        Edit folder name
-      </message>
-      <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
-        New folder
-      </message>
-      <if expr="pp_ifdef('ios')">
-        <message name="IDS_BOOKMARK_FOLDER_CHOOSER_TITLE" desc="Title of the window the bookmark folder chooser is in.">
-          Choose Folder
-        </message>
-        <message name="IDS_BOOKMARK_ADD_EDITOR_TITLE" desc="Title of the window the bookmark editor is in when adding a bookmark. [Length: 10em]">
-          Add Bookmark
-        </message>
-        <message name="IDS_BOOKMARK_NEW_FOLDER_BUTTON_TITLE" desc="Title for button to create a new folder in Bookmarks [Length: 14em]">
-          New Folder
-        </message>
-        <message name="IDS_BOOKMARK_FOLDER_EDITOR_TITLE" desc="Title of the window the bookmark folder editor is in.">
-          Edit Folder
-        </message>
-      </if>
-
-      <!-- bookmark info bubble messages -->
-      <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking something">
-        Bookmark Added!
-      </message>
-      <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
-        Bookmark
-      </message>
-      <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the link the user can click to edit details of the bookmark">
-        Edit...
-      </message>
-      <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Link for removing the bookmark">
-        Remove
-      </message>
-      <message name="IDS_BOOKMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
-        Name:
-      </message>
-      <message name="IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
-        Folder:
-      </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
-          Choose another folder...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
-          Choose Another Folder...
-        </message>
-      </if>
-
-      <!-- bookmark prompt messages -->
-      <message name="IDS_BOOKMARK_PROMPT_MESSAGE" desc="Message of bookmark prompt">
-        Like this site? Click here to bookmark it!
-      </message>
-      <message name="IDS_BOOKMARK_PROMPT_DISMISS" desc="Link for dismissing bookmark prompt">
-        Dismiss
-      </message>
-
       <!-- Chrome To Mobile bubble messages -->
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE" desc="Title of the bubble when a single mobile device is available.">
         Send this page to <ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>.
@@ -9215,93 +9064,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Open Browser Window
         </message>
       </if>
-
-      <!-- bookmark bar messages -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
-          &amp;Open in new tab
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW" desc="Menu description for loading bookmark in a new window">
-          Open in &amp;new window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
-          Open in &amp;incognito window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK" desc="Menu title for adding a new bookmark entry">
-          Add pa&amp;ge...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="Menu title for adding a new folder">
-          Add &amp;folder...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
-          &amp;Open all bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
-          Open all bookmarks in &amp;new window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
-          Open all bookmarks in &amp;incognito window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_REMOVE" desc="Menu title for removing/unstarring a bookmark">
-          &amp;Delete
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB" desc="In Title Case: Menu description for loading bookmark in a new tab">
-          &amp;Open in New Tab
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW" desc="In Title Case: Menu description for loading bookmark in a new window">
-          Open in &amp;New Window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
-          Open in &amp;Incognito Window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK" desc="In Title Case: Menu title for adding a new bookmark entry">
-          Add Pa&amp;ge...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="In Title Case: Menu title for adding a new folder">
-          Add &amp;Folder...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
-          &amp;Open All Bookmarks
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="In Title Case: Menu title for opening all urls in a bookmark folder in a new window">
-          Open All Bookmarks in &amp;New Window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for opening all urls in a bookmark folder in an incognito window">
-          Open All Bookmarks in &amp;Incognito Window
-        </message>
-        <message name="IDS_BOOKMARK_BAR_REMOVE" desc="In Title Case: Menu title for removing/unstarring a bookmark">
-          &amp;Delete
-        </message>
-      </if>
-      <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
-        Name:
-      </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_EDIT"
-                 desc="Title of the bookmark context menu item that brings up the bookmark editor">
-          &amp;Edit...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER"
-                 desc="Title of the bookmark context menu item that brings up a dialog to rename a folder">
-          &amp;Rename...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_EDIT"
-                 desc="In Title Case: Title of the bookmark context menu item that brings up the bookmark editor">
-          &amp;Edit...
-        </message>
-        <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER"
-                 desc="In Title Case: Title of the bookmark context menu item that brings up a dialog to rename a folder">
-          &amp;Rename...
-        </message>
-      </if>
-      <message name="IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL"
-               desc="Message in the message box shown if user asks to open a lot of bookmarks in a folder">
-        Are you sure you want to open <ph name="TAB_COUNT">$1<ex>20</ex></ph> tabs?
-      </message>
 
       <!-- error page messages -->
       <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Label for the button that expands the details on an error page">
@@ -11669,12 +11431,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_NEW_TAB_CONTEXT_MENU_BOOKMARK_SHORTCUT" desc="Context menu description for creating a shortcut to bookmark on home screen">
           Add to home screen
         </message>
-        <message name="IDS_BOOKMARK_EDIT_FOLDER" desc="Context menu item for editing a bookmark folder">
-          Edit folder
-        </message>
-        <message name="IDS_BOOKMARK_REMOVE_FOLDER" desc="Context menu item for removing a bookmark folder">
-          Remove folder
-        </message>
         <message name="IDS_SYNC_PROMO_DESKTOP_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
           &lt;p&gt;
           Access the tabs you have open on your computer, right here.
@@ -13263,110 +13019,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Help
       </message>
 
-      <!-- Bookmark manager -->
-      <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
-        Bookmark Manager
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_SEARCH_BUTTON" desc="Title of the button in the bookmark manager that triggers a search">
-        Search bookmarks
-      </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_MANAGER" desc="The label of the menu item that shows the bookmark manager">
-          &amp;Bookmark manager
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
-          Show in folder
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SORT" desc="The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
-          Reorder by title
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
-          Organize
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="Title of the tools menu in the bookmark manager.">
-          Tools
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="Title of the import menu item in the bookmark manager.">
-          Import bookmarks from HTML file...
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="Title of the export menu item in the bookmark manager.">
-          Export bookmarks to HTML file...
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-          Name
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-          URL
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalid URL.">
-          Invalid URL.
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_RECENT" desc="The label for the tree item that shows the recently added bookmarks.">
-          Recent
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="The label for the tree item that shows the search results for the bookmarks.">
-          Search
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS" desc="Title of the window the bookmark all tabs dialog.">
-          Bookmark all tabs
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
-          &amp;Bookmark Manager
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="In Title Case: The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
-          Show in Folder
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SORT" desc="In Title Case: The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
-          Reorder by Title
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="In Title Case: Title of the organize menu in the bookmark manager.">
-          Organize
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="In Title Case: Title of the tools menu in the bookmark manager.">
-          Tools
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="In Title Case: Title of the import menu item in the bookmark manager.">
-          Import Bookmarks from HTML File...
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="In Title Case: Title of the export menu item in the bookmark manager.">
-          Export Bookmarks to HTML File...
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
-          Name
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
-          URL
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="In Title Case: Error message to display when the user tries to edit or create a bookmark with an invalid URL.">
-          Invalid URL.
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_RECENT" desc="In Title Case: The label for the tree item that shows the recently added bookmarks.">
-          Recent
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="In Title Case: The label for the tree item that shows the search results for the bookmarks.">
-          Search
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS" desc="Title of the window the bookmark all tabs dialog.">
-          Bookmark All Tabs
-        </message>
-      </if>
-      <if expr="pp_ifdef('ios')">
-        <message name="IDS_BOOKMARK_MANAGER_FOLDER_SECTION" desc="The label for the folder section when editing or creating bookmarks on a phone.">
-          In Folder:
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_FOLDER_TITLE" desc="The label for the folder selector field when editing or creating bookmarks.">
-          Folder
-        </message>
-        <message name="IDS_BOOKMARK_MANAGER_REMOVE_TITLE" desc="The label for the remove button when editing bookmarks.">
-          Remove
-        </message>
-      </if>
-      <message name="IDS_BOOKMARKS_MENU" desc="The title of the bookmarks menu in the wrench menu and in the mac menu bar">
-        &amp;Bookmarks
-      </message>
-
       <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
         Recent Tabs
       </message>
@@ -14680,10 +14332,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <if expr="pp_ifdef('chromeos')">
       <part file="chromeos_strings.grdp" />
     </if>
-
-    <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
-      Import bookmarks now...
-    </message>
 
     <if expr="is_posix and not is_macosx">
       <!-- Linux proxy configuration fallback help -->
