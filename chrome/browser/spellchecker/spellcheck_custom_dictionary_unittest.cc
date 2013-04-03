@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"

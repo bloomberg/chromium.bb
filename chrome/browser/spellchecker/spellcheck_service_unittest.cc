@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"

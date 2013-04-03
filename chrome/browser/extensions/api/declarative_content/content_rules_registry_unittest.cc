@@ -9,6 +9,7 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"

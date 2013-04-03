@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/common/autofill_switches.h"

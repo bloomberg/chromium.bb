@@ -4,6 +4,7 @@
 
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"

@@ -16,6 +16,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/power_save_blocker.h"
 
 namespace utils = extension_function_test_utils;

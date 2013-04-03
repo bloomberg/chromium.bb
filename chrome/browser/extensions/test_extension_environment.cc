@@ -7,12 +7,14 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +43,10 @@ TestExtensionEnvironment::~TestExtensionEnvironment() {
   run_loop.Run();
 }
 
+TestingProfile* TestExtensionEnvironment::profile() const {
+  return profile_.get();
+}
+
 ExtensionService* TestExtensionEnvironment::GetExtensionService() {
   if (extension_service_ == NULL) {
     TestExtensionSystem* extension_system =
@@ -52,13 +58,13 @@ ExtensionService* TestExtensionEnvironment::GetExtensionService() {
 }
 
 const Extension* TestExtensionEnvironment::MakeExtension(
-    const Value& manifest_extra) {
+    const base::Value& manifest_extra) {
   scoped_ptr<base::DictionaryValue> manifest = DictionaryBuilder()
       .Set("name", "Extension")
       .Set("version", "1.0")
       .Set("manifest_version", 2)
       .Build();
-  const DictionaryValue* manifest_extra_dict;
+  const base::DictionaryValue* manifest_extra_dict;
   if (manifest_extra.GetAsDictionary(&manifest_extra_dict)) {
     manifest->MergeDictionary(manifest_extra_dict);
   } else {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/external_pref_loader.h"
-
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/default_apps.h"
+#include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -15,7 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using default_apps::Provider;
-using namespace extensions;
+
+namespace extensions {
 
 class MockExternalLoader : public ExternalLoader {
  public:
@@ -41,8 +42,7 @@ class DefaultAppsTest : public testing::Test {
 // Android does not currently support installing apps via Chrome.
 TEST_F(DefaultAppsTest, Install) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
-  extensions::ExternalLoader* loader = new MockExternalLoader();
-
+  ExternalLoader* loader = new MockExternalLoader();
 
   Provider provider(profile.get(), NULL, loader, Manifest::INTERNAL,
                     Manifest::INTERNAL, Extension::NO_FLAGS);
@@ -91,3 +91,5 @@ TEST_F(DefaultAppsTest, Install) {
   EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
 }
 #endif
+
+}  // namespace extensions

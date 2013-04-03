@@ -17,6 +17,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -560,4 +562,4 @@ TEST_F(IdleTest, UnloadWhileListening) {
       content::Details<UnloadedExtensionInfo>(&details));
 }
 
-}  // extensions
+}  // namespace extensions
