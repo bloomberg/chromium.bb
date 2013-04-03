@@ -87,7 +87,7 @@ DisabledExtensionsView::DisabledExtensionsView(
   set_close_on_esc(true);
 
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
   UMA_HISTOGRAM_COUNTS_100("DisabledExtension.SideloadWipeoutCount",
                            wiped_out->size());

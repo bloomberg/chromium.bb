@@ -84,7 +84,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   if (anchor->border())
     insets += anchor->border()->GetInsets();
 
-  set_anchor_insets(insets);
+  set_anchor_view_insets(insets);
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);

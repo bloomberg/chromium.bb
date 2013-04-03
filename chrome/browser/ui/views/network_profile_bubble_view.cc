@@ -60,7 +60,7 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
       navigator_(navigator),
       profile_(profile) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(
+  set_anchor_view_insets(
       gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
 }
 

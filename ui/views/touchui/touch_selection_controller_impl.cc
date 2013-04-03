@@ -303,7 +303,7 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
 }
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
-  gfx::Point anchor = context_menu_->anchor_point();
+  gfx::Point anchor = context_menu_->anchor_rect().origin();
   anchor.Offset(0, -kSelectionHandleRadius);
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);

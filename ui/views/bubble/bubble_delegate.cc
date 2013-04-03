@@ -231,9 +231,10 @@ void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
 }
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
-  gfx::Rect anchor_bounds = anchor_view() ? anchor_view()->GetBoundsInScreen() :
-      gfx::Rect(anchor_point_, gfx::Size());
-  anchor_bounds.Inset(anchor_insets_);
+  if (!anchor_view())
+    return anchor_rect_;
+  gfx::Rect anchor_bounds = anchor_view()->GetBoundsInScreen();
+  anchor_bounds.Inset(anchor_view_insets_);
   return anchor_bounds;
 }
 

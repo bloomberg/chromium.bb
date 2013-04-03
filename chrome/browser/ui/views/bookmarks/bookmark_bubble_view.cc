@@ -255,7 +255,7 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
       remove_bookmark_(false),
       apply_edits_(true) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 }
 
 string16 BookmarkBubbleView::GetTitle() {

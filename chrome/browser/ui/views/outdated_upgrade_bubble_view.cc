@@ -169,7 +169,7 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
       later_button_(NULL),
       navigator_(navigator) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 }
 
 void OutdatedUpgradeBubbleView::ButtonPressed(

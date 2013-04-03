@@ -63,8 +63,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   View* anchor_view() const { return anchor_view_; }
   Widget* anchor_widget() const { return anchor_widget_; }
 
-  // The anchor point is used in the absence of an anchor view.
-  const gfx::Point& anchor_point() const { return anchor_point_; }
+  // The anchor rect is used in the absence of an anchor view.
+  const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
   BubbleBorder::ArrowLocation arrow_location() const { return arrow_location_; }
   void set_arrow_location(BubbleBorder::ArrowLocation arrow_location) {
@@ -83,8 +83,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
 
-  void set_anchor_insets(const gfx::Insets& insets) { anchor_insets_ = insets; }
-  const gfx::Insets& anchor_insets() const { return anchor_insets_; }
+  const gfx::Insets& anchor_view_insets() const { return anchor_view_insets_; }
+  void set_anchor_view_insets(const gfx::Insets& insets) {
+    anchor_view_insets_ = insets;
+  }
 
   gfx::NativeView parent_window() const { return parent_window_; }
   void set_parent_window(gfx::NativeView window) { parent_window_ = window; }
@@ -121,7 +123,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void SetAlignment(BubbleBorder::BubbleAlignment alignment);
 
  protected:
-  // Get bubble bounds from the anchor point and client view's preferred size.
+  // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
 
   // View overrides:
@@ -135,14 +137,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
 
-  // Set the anchor view, this (or set_anchor_point) must be done before
+  // Set the anchor view, this (or set_anchor_rect) must be done before
   // calling CreateBubble or Show.
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
-
-  // The anchor point or anchor view must be set before calling CreateBubble or
-  // Show.
-  void set_anchor_point(gfx::Point anchor_point) {
-    anchor_point_ = anchor_point;
+  void set_anchor_rect(gfx::Rect anchor_rect) {
+    anchor_rect_ = anchor_rect;
   }
 
   bool move_with_anchor() const { return move_with_anchor_; }
@@ -179,8 +178,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   View* anchor_view_;
   Widget* anchor_widget_;
 
-  // The anchor point used in the absence of an anchor view.
-  gfx::Point anchor_point_;
+  // The anchor rect used in the absence of an anchor view.
+  gfx::Rect anchor_rect_;
 
   // If true, the bubble will re-anchor (and may resize) with |anchor_widget_|.
   bool move_with_anchor_;
@@ -199,7 +198,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   gfx::Insets margins_;
 
   // Insets applied to the |anchor_view_| bounds.
-  gfx::Insets anchor_insets_;
+  gfx::Insets anchor_view_insets_;
 
   // Original opacity of the bubble.
   int original_opacity_;

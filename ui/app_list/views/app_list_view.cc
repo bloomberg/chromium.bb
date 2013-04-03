@@ -84,15 +84,15 @@ void AppListView::InitAsBubble(
   OnSigninStatusChanged();
 
   set_anchor_view(anchor);
-  set_anchor_point(anchor_point);
+  set_anchor_rect(gfx::Rect(anchor_point, gfx::Size()));
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
   set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
   set_close_on_esc(false);
-  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset,
-                                kArrowOffset, kArrowOffset));
+  set_anchor_view_insets(gfx::Insets(kArrowOffset, kArrowOffset,
+                                     kArrowOffset, kArrowOffset));
   set_border_accepts_events(border_accepts_events);
   set_shadow(views::BubbleBorder::BIG_SHADOW);
   views::BubbleDelegateView::CreateBubble(this);
@@ -119,7 +119,7 @@ void AppListView::SetBubbleArrowLocation(
 }
 
 void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
-  set_anchor_point(anchor_point);
+  set_anchor_rect(gfx::Rect(anchor_point, gfx::Size()));
   SizeToContents();  // Repositions view relative to the anchor.
 }
 

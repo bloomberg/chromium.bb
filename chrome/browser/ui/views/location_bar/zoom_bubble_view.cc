@@ -105,7 +105,7 @@ ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
       web_contents_(web_contents),
       auto_close_(auto_close) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
 
@@ -125,9 +125,9 @@ void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
   const int x_pos = base::i18n::IsRTL() ?
       screen_bounds.x() + bubble_half_width + kFullscreenPaddingEnd :
       screen_bounds.right() - bubble_half_width - kFullscreenPaddingEnd;
-  set_anchor_point(gfx::Point(x_pos, screen_bounds.y()));
+  set_anchor_rect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 
-  // Used to update |views::BubbleDelegate::anchor_point_| in a semi-hacky way.
+  // Used to update |views::BubbleDelegate::anchor_rect_| in a semi-hacky way.
   // TODO(dbeam): update only the bounds of this view or its border or frame.
   SizeToContents();
 }

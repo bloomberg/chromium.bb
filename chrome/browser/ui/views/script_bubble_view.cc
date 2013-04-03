@@ -57,7 +57,7 @@ ScriptBubbleView::ScriptBubbleView(views::View* anchor_view,
       height_(0),
       web_contents_(web_contents) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
   extensions::ScriptBubbleController* script_bubble_controller =
       GetScriptBubbleController();

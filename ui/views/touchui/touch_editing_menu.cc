@@ -61,11 +61,7 @@ TouchEditingMenuView::TouchEditingMenuView(
     gfx::NativeView context)
     : BubbleDelegateView(NULL, views::BubbleBorder::BOTTOM_CENTER),
       controller_(controller) {
-  set_anchor_point(anchor_rect.CenterPoint());
-  set_anchor_insets(gfx::Insets(-anchor_rect.height() / 2,
-                                -anchor_rect.width() / 2,
-                                -anchor_rect.height() / 2,
-                                -anchor_rect.width() / 2));
+  set_anchor_rect(anchor_rect);
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   set_margins(gfx::Insets());

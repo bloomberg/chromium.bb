@@ -222,8 +222,8 @@ void PopupHeaderView::SetIdentityStatus(const string16& status,
 InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
-                                kLocationIconVerticalMargin, 0));
+  set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
+                                     kLocationIconVerticalMargin, 0));
 
   const int kSpacing = 4;
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
@@ -291,8 +291,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       connection_info_content_(NULL),
       page_info_content_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
-                                kLocationIconVerticalMargin, 0));
+  set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
+                                     kLocationIconVerticalMargin, 0));
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
