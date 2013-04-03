@@ -13,11 +13,13 @@ package metrics;
 //
 // See $kernel/tools/perf/design.txt for more details.
 
+// Next tag: 5
 message PerfDataProto {
 
   // Perf event attribute. Stores the event description.
   // This data structure is defined in the linux kernel:
   // $kernel/tools/perf/util/event.h.
+  // Next tag: 36
   message PerfEventAttr {
     // Type of the event. Type is an enumeration and can be:
     // IP: an instruction-pointer was stored in the event.
@@ -137,6 +139,7 @@ message PerfDataProto {
   }
 
   // Describes a perf.data file attribute.
+  // Next tag: 3
   message PerfFileAttr {
     optional PerfEventAttr attr = 1;
 
@@ -144,32 +147,72 @@ message PerfDataProto {
     repeated uint64 ids = 2;
   }
 
+  // This message contains information about a perf sample itself, as opposed to
+  // a perf event captured by a sample.
+  // Next tag: 6
+  message SampleInfo {
+    // Process ID / thread ID from which this sample was taken.
+    optional uint32 pid = 1;
+    optional uint32 tid = 2;
+
+    // Time this sample was taken (NOT the same as an event time).
+    // It is the number of nanoseconds since bootup.
+    optional uint64 sample_time_ns = 3;
+
+    // The ID of the sample's event type (cycles, instructions, etc).
+    // The event type IDs are defined in PerfFileAttr.
+    optional uint64 id = 4;
+
+    // The CPU on which this sample was taken.
+    optional uint32 cpu = 5;
+  }
+
+  // Next tag: 7
   message CommEvent {
     // Process id.
     optional uint32 pid = 1;
+
     // Thread id.
     optional uint32 tid = 2;
+
     // Comm string's md5 prefix.
     // The comm string was field 3 and has been intentionally left out.
     optional uint64 comm_md5_prefix = 4;
+
+    // Time the sample was taken.
+    // Deprecated, use |sample_info| instead.
+    optional uint64 sample_time = 5 [deprecated=true];
+
+    // Info about the perf sample containing this event.
+    optional SampleInfo sample_info = 6;
   }
 
+  // Next tag: 9
   message MMapEvent {
     // Process id.
     optional uint32 pid = 1;
+
     // Thread id.
     optional uint32 tid = 2;
+
     // Start address.
     optional uint64 start = 3;
+
     // Length.
     optional uint64 len = 4;
+
     // PG Offset.
     optional uint64 pgoff = 5;
+
     // Filename's md5 prefix.
     // The filename was field 6 and has been intentionally left out.
     optional uint64 filename_md5_prefix = 7;
+
+    // Info about the perf sample containing this event.
+    optional SampleInfo sample_info = 8;
   }
 
+  // Next tag: 11
   message SampleEvent {
     // Instruction pointer.
     optional uint64 ip = 1;
@@ -180,8 +223,8 @@ message PerfDataProto {
     // Thread id.
     optional uint32 tid = 3;
 
-    // The time at which the sample was recorded.
-    optional uint64 time = 4;
+    // The time after boot when the sample was recorded, in nanoseconds.
+    optional uint64 sample_time_ns = 4;
 
     // The address of the sample.
     optional uint64 addr = 5;
@@ -202,6 +245,31 @@ message PerfDataProto {
     optional uint32 raw_size = 10;
   }
 
+  // ForkEvent is used for both FORK and EXIT events, which have the same data
+  // format.  We don't want to call this "ForkOrExitEvent", in case a separate
+  // exit event is introduced in the future.
+  // Next tag: 12
+  message ForkEvent {
+    // Forked process ID.
+    optional uint32 pid = 1;
+
+    // Parent process ID.
+    optional uint32 ppid = 2;
+
+    // Forked process thread ID.
+    optional uint32 tid = 3;
+
+    // Parent process thread ID.
+    optional uint32 ptid = 4;
+
+    // Time of fork event in nanoseconds since bootup.
+    optional uint64 fork_time_ns = 5;
+
+    // Info about the perf sample containing this event.
+    optional SampleInfo sample_info = 11;
+  }
+
+  // Next tag: 4
   message EventHeader {
     // Type of event.
     optional uint32 type = 1;
@@ -210,14 +278,44 @@ message PerfDataProto {
     optional uint32 size = 3;
   }
 
+  // Next tag: 6
   message PerfEvent {
     optional EventHeader header = 1;
 
     optional MMapEvent mmap_event = 2;
     optional SampleEvent sample_event = 3;
     optional CommEvent comm_event = 4;
+    optional ForkEvent fork_event = 5;
+  }
+
+  // Next tag: 8
+  message PerfEventStats {
+    // Total number of events read from perf data.
+    optional uint32 num_events_read = 1;
+
+    // Total number of various types of events.
+    optional uint32 num_sample_events = 2;
+    optional uint32 num_mmap_events = 3;
+    optional uint32 num_fork_events = 4;
+    optional uint32 num_exit_events = 5;
+
+    // Number of sample events that were successfully mapped by the address
+    // mapper, a quipper module that is used to obscure addresses and convert
+    // them to DSO name + offset.  Sometimes it fails to process sample events.
+    // This field allows us to track the success rate of the address mapper.
+    optional uint32 num_sample_events_mapped = 6;
+
+    // Whether address remapping was enabled.
+    optional bool did_remap = 7;
   }
 
   repeated PerfFileAttr file_attrs = 1;
   repeated PerfEvent events = 2;
+
+  // Time when quipper generated this perf data / protobuf, given as seconds
+  // since the epoch.
+  optional uint64 timestamp_sec = 3;
+
+  // Records some stats about the serialized perf events.
+  optional PerfEventStats stats = 4;
 }
