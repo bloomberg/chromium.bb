@@ -159,6 +159,9 @@ class BrowserView : public BrowserWindow,
   // Accessor for the Toolbar.
   ToolbarView* toolbar() { return toolbar_; }
 
+  // Bookmark bar may be NULL, for example for pop-ups.
+  BookmarkBarView* bookmark_bar() { return bookmark_bar_view_.get(); }
+
   // Accessor for the InfobarContainer.
   InfoBarContainerView* infobar_container() { return infobar_container_; }
 
@@ -494,6 +497,11 @@ class BrowserView : public BrowserWindow,
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
   bool MaybeShowBookmarkBar(content::WebContents* contents);
+
+  // Moves the bookmark bar view to the specified parent, which may be NULL,
+  // |this|, or |top_container_|. Ensures that |top_container_| stays in front
+  // of |bookmark_bar_view_|.
+  void SetBookmarkBarParent(views::View* new_parent);
 
   // Prepare to show an Info Bar for the specified WebContents. Returns
   // true if there is an Info Bar to show and one is supported for this Browser

@@ -58,12 +58,18 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserView) {
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_TRUE(bookmark_bar->IsDetached());
   EXPECT_EQ(browser_view, bookmark_bar->parent());
+  // Top container is still in front.
+  EXPECT_EQ(browser_view->child_count() - 1,
+            browser_view->GetIndexOf(top_container));
 
   // Bookmark bar is parented back to top container on normal page.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_FALSE(bookmark_bar->IsDetached());
   EXPECT_EQ(top_container, bookmark_bar->parent());
+  // Top container is still in front.
+  EXPECT_EQ(browser_view->child_count() - 1,
+            browser_view->GetIndexOf(top_container));
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }

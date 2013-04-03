@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -212,7 +213,6 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     return;
   enabled_ = enabled;
 
-  TopContainerView* top_container = browser_view_->top_container();
   if (enabled_) {
     // Animate enabling immersive mode by sliding out the top-of-window views.
     // No animation occurs if a lock is holding the top-of-window views open.
@@ -244,8 +244,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     top_timer_.Stop();
     // Snap immediately to the closed state.
     reveal_state_ = CLOSED;
-    top_container->SetFillsBoundsOpaquely(false);
-    top_container->SetPaintToLayer(false);
+    EnablePaintToLayer(false);
     browser_view_->GetWidget()->non_client_view()->frame_view()->
         ResetWindowControls();
     browser_view_->tabstrip()->SetImmersiveStyle(false);
@@ -522,9 +521,7 @@ void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
   if (reveal_state_ == CLOSED) {
     reveal_state_ = SLIDING_OPEN;
     // Turn on layer painting so we can smoothly animate.
-    TopContainerView* top_container = browser_view_->top_container();
-    top_container->SetPaintToLayer(true);
-    top_container->SetFillsBoundsOpaquely(true);
+    EnablePaintToLayer(true);
 
     // Ensure window caption buttons are updated and the view bounds are
     // computed at normal (non-immersive-style) size.
@@ -532,7 +529,7 @@ void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
 
     if (animate != ANIMATE_NO) {
       // Now that we have a layer, move it to the initial offscreen position.
-      ui::Layer* layer = top_container->layer();
+      ui::Layer* layer = browser_view_->top_container()->layer();
       gfx::Transform transform;
       transform.Translate(0, -layer->bounds().height() + kAnimationOffsetY);
       layer->SetTransform(transform);
@@ -544,6 +541,25 @@ void ImmersiveModeControllerAsh::StartReveal(Animate animate) {
     // Reverse the animation.
     AnimateSlideOpen(GetAnimationDuration(animate));
   }
+}
+
+void ImmersiveModeControllerAsh::EnablePaintToLayer(bool enable) {
+  browser_view_->top_container()->SetPaintToLayer(enable);
+
+  // Views software compositing is not fully layer aware. If the bookmark bar
+  // is detached while the top container layer slides on or off the screen,
+  // the pixels that become exposed are the remnants of the last software
+  // composite of the BrowserView, not the freshly-exposed bookmark bar.
+  // Force the bookmark bar to paint to a layer so the views composite
+  // properly. The infobar container does not need this treatment because
+  // BrowserView::PaintChildren() always draws it last when it is visible.
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar();
+  if (!bookmark_bar)
+    return;
+  if (enable && bookmark_bar->IsDetached())
+    bookmark_bar->SetPaintToLayer(true);
+  else
+    bookmark_bar->SetPaintToLayer(false);
 }
 
 void ImmersiveModeControllerAsh::LayoutBrowserView(bool immersive_style) {
@@ -586,10 +602,14 @@ void ImmersiveModeControllerAsh::EndReveal(Animate animate) {
   if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
     reveal_state_ = SLIDING_CLOSED;
     int duration_ms = GetAnimationDuration(animate);
-    if (duration_ms > 0)
+    if (duration_ms > 0) {
+      // Bookmark bar have become detached during the reveal so ensure
+      // layers are available. This is a no-op for top container.
+      EnablePaintToLayer(true);
       AnimateSlideClosed(duration_ms);
-    else
+    } else {
       OnSlideClosedAnimationCompleted();
+    }
   }
 }
 
@@ -612,10 +632,8 @@ void ImmersiveModeControllerAsh::AnimateSlideClosed(int duration_ms) {
 void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
   if (reveal_state_ == SLIDING_CLOSED) {
     reveal_state_ = CLOSED;
-    TopContainerView* top_container = browser_view_->top_container();
-    // Layer isn't needed after animation completes.
-    top_container->SetFillsBoundsOpaquely(false);
-    top_container->SetPaintToLayer(false);
+    // Layers aren't needed after animation completes.
+    EnablePaintToLayer(false);
     // Update tabstrip for closed state.
     LayoutBrowserView(true);
   }

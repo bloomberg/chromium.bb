@@ -2187,10 +2187,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
       new_parent = top_container_;
   }
   if (new_parent != bookmark_bar_view_->parent()) {
-    if (new_parent)
-      new_parent->AddChildView(bookmark_bar_view_.get());
-    else
-      bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
+    SetBookmarkBarParent(new_parent);
     needs_layout = true;
   }
 
@@ -2200,6 +2197,24 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     needs_layout = true;
 
   return needs_layout;
+}
+
+void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
+  if (new_parent == this) {
+    // Add it underneath |top_container_| or at the end if top container isn't
+    // found.
+    int top_container_index = GetIndexOf(top_container_);
+    if (top_container_index >= 0)
+      AddChildViewAt(bookmark_bar_view_.get(), top_container_index);
+    else
+      AddChildView(bookmark_bar_view_.get());
+  } else if (new_parent) {
+    // No special stacking is required for other parents.
+    new_parent->AddChildView(bookmark_bar_view_.get());
+  } else {
+    // Bookmark bar is being detached from all views because it is hidden.
+    bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
+  }
 }
 
 bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
