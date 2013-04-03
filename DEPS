@@ -16,7 +16,7 @@ vars = {
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "11040",  # native_client/DEPS: tools_rev
-  "gtm_revision": "578",
+  "gtm_revision": "608",
 
   "libjingle_revision": "302",
   "libphonenumber_revision": "456",
