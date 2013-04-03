@@ -62,7 +62,9 @@ class GclientCheckout(Checkout):
   def run_gclient(self, *cmd, **kwargs):
     print 'Running: gclient %s' % ' '.join(pipes.quote(x) for x in cmd)
     if not self.dryrun:
-      return subprocess.check_call(('gclient',) + cmd, **kwargs)
+      return subprocess.check_call(
+          (sys.executable, os.path.join(SCRIPT_PATH, 'gclient.py')) + cmd,
+          **kwargs)
 
 
 class GitCheckout(Checkout):
