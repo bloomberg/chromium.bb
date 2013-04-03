@@ -135,7 +135,7 @@
 It consumes byte by byte from <code>current_position</code> pointer until one of the following ending conditions is met:
 <ul>
   <li>there is no transition from given state for a given byte (that is, either instruction is unknown or explicitly disallowed);</li>
-  <li>end of bundle is reached (<code>current_position == end_of_bundle</code>).</li>
+  <li>end of bundle is reached (<code>current_position == end_position</code>).</li>
 </ul>
 
 If end of bundle is reached when automaton is not in accepting state, it means instruction we are currenly reading crosses bundle boundary (strictly speaking, it may be not a valid instruction at all, only a prefix of some valid instruction (we haven't seen what's in the next bundle yet), but anyway it's something that definitely violates ABI).
@@ -168,24 +168,53 @@ If end of bundle is reached when automaton is not in accepting state, it means i
 <code>0x77</code> and <code>0x0f&nbsp;0x87</code> are opcodes for <code>ja</code> (aka <code>jnbe</code>) instruction, but what are <code>branch_hint?</code> and <code>rel8</code>/<code>rel32</code> are doing here? Well, “<code>?</code>” means “optional” (like in most <a href="http://en.wikipedia.org/wiki/Regular_expression">RE</a>-engines) and both <code>branch_hint</code> and <code>rel8</code>/<code>rel32</code> definitions are references to machines defined in the <i>semi-manual simple helper machines and actions</i> part of <code>validator_x86_32_instruction.rl</code> file. The whole construct describes part of the DFA which is designed to accept <code>ja</code> (aka <code>jnbe</code>) instruction—complete with optional P4-inspired branch prediction prefix. Definition of <code>branch_hint</code> is trivial and obvious (“<code>branch_hint = 0x2e | 0x3e;</code>” if you want to know), but <code>rel8</code>/<code>rel32</code> are somewhat more “interesting”:<hr />
 &nbsp;&nbsp;&nbsp;&nbsp;<code>rel8&nbsp;=&nbsp;any&nbsp;@rel8_operand;</code><br />
 &nbsp;&nbsp;&nbsp;&nbsp;<code>rel32&nbsp;=&nbsp;any{4}&nbsp;@rel32_operand;</code><hr />
-It's "more interesting not because it's complex or non-obvious. The interesting part here is the fact that actions <code>rel8_operand</code>/<code>rel32_operand</code> are <b>not</b> present in <code>validator_x86_32_instruction.rl</code>, they are in <code>validator_x86_32.rl</code> file! But the definition itself is pretty trivial:<hr />
+It's "more interesting not because it's complex or non-obvious. The interesting part here is the fact that actions <code>rel8_operand</code>/<code>rel32_operand</code> are <b>not</b> present in <code>validator_x86_32_instruction.rl</code>, they are in <code>parse_instruction.rl</code> file! But the definition itself is pretty trivial—they just call simple functions from <code>validator_internal.h</code>:<hr />
 &nbsp;&nbsp;<code>action&nbsp;rel8_operand&nbsp;{</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>int8_t&nbsp;offset&nbsp;=&nbsp;(uint8_t)&nbsp;(p[0]);</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>size_t&nbsp;jump_dest&nbsp;=&nbsp;offset&nbsp;+&nbsp;(p&nbsp;-&nbsp;data)&nbsp;+&nbsp;1;</code><br /><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>if&nbsp;(!MarkJumpTarget(jump_dest,&nbsp;jump_dests,&nbsp;size))&nbsp;{</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected&nbsp;|=&nbsp;DIRECT_JUMP_OUT_OF_RANGE;</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>}</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>Rel8Operand(current_position&nbsp;+&nbsp;1,&nbsp;codeblock,&nbsp;jump_dests,&nbsp;size,</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;instruction_info_collected);</code><br />
 &nbsp;&nbsp;<code>}</code><br />
 &nbsp;&nbsp;<code>action&nbsp;rel32_operand&nbsp;{</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>int32_t&nbsp;offset&nbsp;=</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>(p[-3]&nbsp;+&nbsp;256U&nbsp;*&nbsp;(p[-2]&nbsp;+&nbsp;256U&nbsp;*&nbsp;(p[-1]&nbsp;+&nbsp;256U&nbsp;*&nbsp;((uint32_t)&nbsp;p[0]))));</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>size_t&nbsp;jump_dest&nbsp;=&nbsp;offset&nbsp;+&nbsp;(p&nbsp;-&nbsp;data)&nbsp;+&nbsp;1;</code><br /><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>if&nbsp;(!MarkJumpTarget(jump_dest,&nbsp;jump_dests,&nbsp;size))&nbsp;{</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected&nbsp;|=&nbsp;DIRECT_JUMP_OUT_OF_RANGE;</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>}</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>Rel32Operand(current_position&nbsp;+&nbsp;1,&nbsp;codeblock,&nbsp;jump_dests,&nbsp;size,</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;instruction_info_collected);</code></br />
 &nbsp;&nbsp;<code>}</code><hr />
+<code>static&nbsp;FORCEINLINE&nbsp;int&nbsp;MarkJumpTarget(size_t&nbsp;jump_dest,</code></br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bitmap_word&nbsp;*jump_dests,</code></br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;size)&nbsp;{</code></br>
+&nbsp;&nbsp;<code>if&nbsp;((jump_dest&nbsp;&amp;&nbsp;kBundleMask)&nbsp;==&nbsp;0)&nbsp;{</code></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<code>return&nbsp;TRUE;</code></br>
+&nbsp;&nbsp;<code>}</code></br>
+&nbsp;&nbsp;<code>if&nbsp;(jump_dest&nbsp;&gt;=&nbsp;size)&nbsp;{</code></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<code>return&nbsp;FALSE;</code></br>
+&nbsp;&nbsp;<code>}</code></br>
+&nbsp;&nbsp;<code>BitmapSetBit(jump_dests,&nbsp;jump_dest);</code></br>
+&nbsp;&nbsp;<code>return&nbsp;TRUE;</code></br>
+<code>}</code></br>
+<code>static&nbsp;FORCEINLINE&nbsp;void&nbsp;Rel8Operand(const&nbsp;uint8_t&nbsp;*rip,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;uint8_t&nbsp;codeblock[],</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bitmap_word&nbsp;*jump_dests,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;jumpdests_size,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uint32_t&nbsp;*instruction_info_collected)&nbsp;{</code><br />
+&nbsp;&nbsp;<code>int8_t&nbsp;offset&nbsp;=&nbsp;rip[-1];</code><br />
+&nbsp;&nbsp;<code>size_t&nbsp;jump_dest&nbsp;=&nbsp;offset&nbsp;+&nbsp;(rip&nbsp;-&nbsp;codeblock);</code><br /><br />
+&nbsp;&nbsp;<code>if&nbsp;(MarkJumpTarget(jump_dest,&nbsp;jump_dests,&nbsp;jumpdests_size))</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>*instruction_info_collected&nbsp;|=&nbsp;RELATIVE_8BIT;</code><br />
+&nbsp;&nbsp;<code>else</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>*instruction_info_collected&nbsp;|=&nbsp;RELATIVE_8BIT&nbsp;|&nbsp;DIRECT_JUMP_OUT_OF_RANGE;</code><br />
+<code>}</code><br /><br /><br />
+<code>static&nbsp;FORCEINLINE&nbsp;void&nbsp;Rel32Operand(const&nbsp;uint8_t&nbsp;*rip,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;uint8_t&nbsp;codeblock[],</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bitmap_word&nbsp;*jump_dests,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;jumpdests_size,</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uint32_t&nbsp;*instruction_info_collected)&nbsp;{</code><br />
+&nbsp;&nbsp;<code>int32_t&nbsp;offset&nbsp;=</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>rip[-4]&nbsp;+&nbsp;256U&nbsp;*&nbsp;(rip[-3]&nbsp;+&nbsp;256U&nbsp;*&nbsp;(rip[-2]&nbsp;+&nbsp;256U&nbsp;*&nbsp;(rip[-1])));</code><br />
+&nbsp;&nbsp;<code>size_t&nbsp;jump_dest&nbsp;=&nbsp;offset&nbsp;+&nbsp;(rip&nbsp;-&nbsp;codeblock);</code><br /><br />
+&nbsp;&nbsp;<code>if&nbsp;(MarkJumpTarget(jump_dest,&nbsp;jump_dests,&nbsp;jumpdests_size))</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>*instruction_info_collected&nbsp;|=&nbsp;RELATIVE_32BIT;</code><br />
+&nbsp;&nbsp;<code>else</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>*instruction_info_collected&nbsp;|=&nbsp;RELATIVE_32BIT&nbsp;|&nbsp;DIRECT_JUMP_OUT_OF_RANGE;</code><br />
+<code>}</code><hr />
 We just check if jump target passes preliminary check (direct jump to the outside of the region is always invalid) and that's not so then we detect error <code>DIRECT_JUMP_OUT_OF_RANGE</code>.</p>
-
 
 <h2><div style="float:right"><a href="#TOC">▲</a></div><a name="4">4. Validation for x86-64 mode.</a></h2>
 
@@ -206,16 +235,16 @@ We just check if jump target passes preliminary check (direct jump to the outsid
 <p>This approach works well, but only if violations are detected at the instruction end. E.g. the aforementioned <code>and $~0x1f,%rsp</code> instruction is encoded as </code>0x48&nbsp;0x83&nbsp;0xe4&nbsp;0xe0</code> and after we've read </code>0x48&nbsp;0x83&nbsp;0xe4</code> we already know it's normal instruction (opcode <code>0x83</code> means it's <code>and</code>) which writes to <code>%rsp</code> (<code>0x48&nbsp;</code><i>opcode</i><code>&nbsp;0xe4</code> means it's some instruction which accepts some kind of immediate and writes to <code>%rsp</code>) and we'll signal the error at this point then the fact that later we'll find out it's <code>special_instruction</code> which is accepted anyway will not matter: <code>SPL_MODIFIED</code> error will be triggered which will mean that code is rejected!</p>
 
 <p>This means that we can not do an actual conditions checking till the very end of normal instruction (we can try to process some of them but not all of them but this approach will be quite complex and fragile—not something you want in the most critical security piece). But there are an exception: memory access. <b>This</b> one is checked inline: memory access outside of “40GiB safe area” is strictly forbidden no matter how “special” the instruction is. That's why it's checked immediately after operands discovery. This is how relevant fragment for the <code>and</code> instruction look like:<hr />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_disp&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_rip&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_B?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;single_register_memory&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_X?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_sib_pure_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_XB?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_sib_base_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_disp&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_rip&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_B?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;single_register_memory&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_X?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_sib_pure_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_XB?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&&nbsp;any&nbsp;.&nbsp;any*&nbsp;&&nbsp;operand_sib_base_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operands)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_disp&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_rip&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_B?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;single_register_memory&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_X?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_sib_pure_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_XB?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_sib_base_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_disp&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_rip&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_B?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;single_register_memory&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_X?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_sib_pure_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>(lock&nbsp;REX_XB?&nbsp;0x83&nbsp;(opcode_4&nbsp;any*&nbsp;&amp;&nbsp;operand_sib_base_index&nbsp;@check_access)&nbsp;imm8&nbsp;@process_0_operand)&nbsp;|</code><br />
 &nbsp;&nbsp;&nbsp;&nbsp;<code>(REX_B?&nbsp;0x83&nbsp;(opcode_4&nbsp;@operand0_32bit&nbsp;any*&nbsp;&&nbsp;modrm_registers&nbsp;@operand0_from_modrm_rm)&nbsp;imm8&nbsp;@process_1_operand)&nbsp;|</code><hr />
 As you can see <code>check_access</code> is triggered after parsing ModRM/SIB bytes, but before parsing <code>imm<i>NN</i></code> field while <code>process_<i>N</i>_operands</code> action is triggered at the very end of the “normal” instruction. Even if instruction does not use <code>imm<i>NN</i></code> field <code>check_access</code> action is <b>still</b> triggerded before <code>process_<i>N</i>_operands</code> action. This is important because <code>check_access</code> action actually depends on <b>previous</b> state of <code>restricted_register</code> variable while <code>process_<i>N</i>_operands</code> action changes <code>restricted_register</code> variable. Note that it's only triggered for “normal” instructions—“special” instructions either do the work themselves (e.g. <code>add %r15,%rsp</code>—which is only valid if previous state of <code>restricted_register</code> variable was <code>REG_RSP</code> and changes it to <code>NO_REG</code> in case of succcess) or call the usual <code>process_<i>N</i>_operands</code> action (e.g. <code>mov %rsp,%rbp</code> calls <code>process_0_operands</code> which ensures that this operation is not called when <code>restricted_register</code> is set to <code>REG_RSP</code>/<code>REG_RBP</code> state and transtions it to <code>NO_REG</code> state).</p>
 
@@ -233,22 +262,31 @@ As you can see <code>check_access</code> is triggered after parsing ModRM/SIB by
 <p>Register names are defined in <code>register_name</code> enum: first 16 are identical to the AMD/Intel names (from <code>REG_RAX</code> to <code>REG_R15</code>) while other 16 are used (partially) to describe non-register operands (memory operand, immediate operand, <code>REG_RIP</code> and <code>REG_RIZ</code>, etc). This means that if operand's name is &gt;15 then it can be ignored. There are only four operand types: <code>OperandSandboxIrrelevant</code>, <code>OperandSandbox8bit</code>, <code>OperandSandboxRestricted</code>, and <code>OperandSandboxUnrestricted</code>. First type is something not related to general purpose register (x87, MMX, XMM, or YMM registers fall unto this category). We need to handle 8bit operands specially because they are finicky: if <code>REX</code> byte is used they access <code>%spl</code>, <code>%bps</code>, <code>%sil</code>, and <code>%dil</code>, but when <code>REX</code> byte is not used the same numbers are reused for <code>%ah</code>, <code>%ch</code>, <code>%dh</code>, and <code>%bh</code>! Last two types are the most important: these are 32bit operands (which will make the appropriate register “restricted”) or 16bit/64bit operands (these may affect register in question negatively if that's <code>%rbp</code>, <code>%rsp</code>, or <code>%r15</code>, but for other registers these are just ignored). Note that if you assign <code>0</code> to this variable then all operands will be of <code>OperandSandboxIrrelevant</code> type.</p>
 
 <p>Now the set of macros used to work with operands should look less mysterious:<hr />
-<code>#define&nbsp;SET_OPERAND_NAME(N,&nbsp;S)&nbsp;operand_states&nbsp;|=&nbsp;((S)&nbsp;&lt;&lt;&nbsp;((N)&nbsp;*&nbsp;8))</code><br />
-<code>#define&nbsp;SET_OPERAND_TYPE(N,&nbsp;T)&nbsp;SET_OPERAND_TYPE_&nbsp;##&nbsp;T(N)</code><br />
-<code>#define&nbsp;SET_OPERAND_TYPE_OPERAND_SIZE_8_BIT(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandbox8bit&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
-<code>#define&nbsp;SET_OPERAND_TYPE_OPERAND_SIZE_16_BIT(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandboxUnrestricted&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
-<code>#define&nbsp;SET_OPERAND_TYPE_OPERAND_SIZE_32_BIT(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandboxRestricted&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
-<code>#define&nbsp;SET_OPERAND_TYPE_OPERAND_SIZE_64_BIT(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandboxUnrestricted&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
-<code>#define&nbsp;CHECK_OPERAND(N,&nbsp;S,&nbsp;T)&nbsp;((operand_states&nbsp;&&nbsp;(0xff&nbsp;&lt;&lt;&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3)))&nbsp;==&nbsp;((S&nbsp;|&nbsp;(T&nbsp;&lt;&lt;&nbsp;5))&nbsp;&lt;&lt;&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3)))</code><hr />
-Calls like <code>SET_OPERAND_NAME(0, REG_RAX)</code> are used by actions to set name of the operand (this particular one is used by <code>operand0_rax</code> action) while calls like <code>SET_OPERAND_TYPE(0, OPERAND_SIZE_2_BIT)</code> are used by actions to set the type of operand (this particular one is used by <code>operand0_2bit</code> action). Note that we <b>don't</b> handle 2bit operands in the set of macros above. This is not a mistake: 2bit operands are only ever used as immediate operands (and then only in two instructions: <code>vpermil2pd</code> and <code>vpermil2ps</code>) and we don't process immediate operands here. If they will be by some reason left in the <code>validator_x86_64_instruction.rl</code> file this will lead to the compile-time error, not to some kind of weird overflow which may [potentially] produce security hole.</p>
+<code>#define&nbsp;SET_OPERAND_NAME(INDEX,&nbsp;REGISTER_NAME)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;operand_states&nbsp;|=&nbsp;((REGISTER_NAME)&nbsp;&lt;&lt;&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3))</code><br />
+<code>#define&nbsp;SET_OPERAND_FORMAT(INDEX,&nbsp;FORMAT)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;SET_OPERAND_FORMAT_&nbsp;##&nbsp;FORMAT(INDEX)</code><br />
+<code>#define&nbsp;SET_OPERAND_FORMAT_OPERAND_FORMAT_8_BIT(INDEX)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;operand_states&nbsp;|=&nbsp;OPERAND_SANDBOX_8BIT&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3))</code><br />
+<code>#define&nbsp;SET_OPERAND_FORMAT_OPERAND_FORMAT_16_BIT(INDEX)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;operand_states&nbsp;|=&nbsp;OPERAND_SANDBOX_UNRESTRICTED&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3))</code><br />
+<code>#define&nbsp;SET_OPERAND_FORMAT_OPERAND_FORMAT_32_BIT(INDEX)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;operand_states&nbsp;|=&nbsp;OPERAND_SANDBOX_RESTRICTED&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3))</code><br />
+<code>#define&nbsp;SET_OPERAND_FORMAT_OPERAND_FORMAT_64_BIT(INDEX)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;operand_states&nbsp;|=&nbsp;OPERAND_SANDBOX_UNRESTRICTED&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3))</code><br />
+<code>#define&nbsp;CHECK_OPERAND(INDEX,&nbsp;REGISTER_NAME,&nbsp;KIND)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;((operand_states&nbsp;&amp;&nbsp;(0xff&nbsp;&lt;&lt;&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3)))&nbsp;==&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((((KIND)&nbsp;&lt;&lt;&nbsp;5)&nbsp;|&nbsp;(REGISTER_NAME))&nbsp;&lt;&lt;&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3)))</code><br />
+<hr />
+Calls like <code>SET_OPERAND_NAME(0, REG_RAX)</code> are used by actions to set name of the operand (this particular one is used by <code>operand0_rax</code> action) while calls like <code>SET_OPERAND_FORMAT(0, OPERAND_FORMAT_2_BIT)</code> are used by actions to set the type of operand (this particular one is used by <code>operand0_2bit</code> action). Note that we <b>don't</b> handle 2bit operands in the set of macros above. This is not a mistake: 2bit operands are only ever used as immediate operands (and then only in two instructions: <code>vpermil2pd</code> and <code>vpermil2ps</code>) and we don't process immediate operands here. If they will be by some reason left in the <code>validator_x86_64_instruction.rl</code> file this will lead to the compile-time error, not to some kind of weird overflow which may [potentially] produce security hole.</p>
 
-<p>Almost all manipulations with <code>operand_states</code> are done using macros described above, but there are one construct in <code>process_<i>N</i>_operands</code> function which accesses the <code>operand_states</code> directly:<hr />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>/*&nbsp;Take&nbsp;2&nbsp;bits&nbsp;of&nbsp;operand&nbsp;type&nbsp;from&nbsp;operand_states&nbsp;as&nbsp;*restricted_register,</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>*&nbsp;make&nbsp;sure&nbsp;operand_states&nbsp;denotes&nbsp;a&nbsp;register&nbsp;(4th&nbsp;bit&nbsp;==&nbsp;0).&nbsp;*/</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>}&nbsp;else&nbsp;if&nbsp;((operand_states&nbsp;&&nbsp;0x70)&nbsp;==&nbsp;(OperandSandboxRestricted&nbsp;&lt;&lt;&nbsp;5))&nbsp;{</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>*restricted_register&nbsp;=&nbsp;operand_states&nbsp;&amp;&nbsp;0x0f;</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>}</code><hr />
-If you'll take a look on the layout of <code>operand_states</code> then it's pretty easy to understand what goes on here: <code>(operand_states &amp; 0x70) == (OperandSandboxRestricted &lt;&lt; 5)</code> yeilds <code>TRUE</code> if and only if zeroth operand is “normal” register <b>and</b> it's of type <code>OperandSandboxRestricted</code>. This is actually central piece of the <code>restricted_register</code> handling—most other pieces just return it back to <code>NO_REG</code> state.</p>
+<p>Almost all manipulations with <code>operand_states</code> are done using macros described above, but there are one another construct which accesses the <code>operand_states</code> directly:<hr />
+<code>#define&nbsp;CHECK_OPERAND_RESTRICTED(INDEX)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;/*&nbsp;Take&nbsp;2&nbsp;bits&nbsp;of&nbsp;operand&nbsp;type&nbsp;from&nbsp;operand_states&nbsp;as&nbsp;*restricted_register&nbsp;*/\</code><br />
+<code>&nbsp;&nbsp;/*&nbsp;and&nbsp;also&nbsp;make&nbsp;sure&nbsp;operand_states&nbsp;denotes&nbsp;a&nbsp;register&nbsp;(4th&nbsp;bit&nbsp;==&nbsp;0).&nbsp;&nbsp;&nbsp;&nbsp;*/\</code><br />
+<code>&nbsp;&nbsp;(operand_states&nbsp;&amp;&nbsp;(0x70&nbsp;&lt;&lt;&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3)))&nbsp;==&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\</code><br />
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(OPERAND_SANDBOX_RESTRICTED&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((INDEX)&nbsp;&lt;&lt;&nbsp;3)))</code><hr />
+If you'll take a look on the layout of <code>operand_states</code> then it's pretty easy to understand what goes on here: <code>(operand_states &amp; (0x70 &lt;&lt; ((INDEX) &lt;&lt; 3))) == (OPERAND_SANDBOX_RESTRICTED &lt;&lt; (5 + ((INDEX) &lt;&lt; 3)))</code> yeilds <code>TRUE</code> if and only if zeroth operand is “normal” register <b>and</b> it's of type <code>OperandSandboxRestricted</code>. This is actually central piece of the <code>restricted_register</code> handling—most other pieces just return it back to <code>NO_REG</code> state.</p>
 
 
 <h2><div style="float:right"><a href="#TOC">▲</a></div><a name="5">5. Features beyond minimal validation.</a></h2>
@@ -260,11 +298,11 @@ If you'll take a look on the layout of <code>operand_states</code> then it's pre
 &nbsp;&nbsp;&nbsp;&nbsp;<code>SET_CPU_FEATURE(CPUFeature_FXSR);</code><br />
 &nbsp;&nbsp;<code>}</code><hr />
 This time magic is in <code>validator_internal.h</code>. <code>SET_CPU_FEATURE</code> is defined as<hr />
-&nbsp;&nbsp;<code>if (!(F##_Allowed)) { \</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected |= UNRECOGNIZED_INSTRUCTION; \</code><br />
-&nbsp;&nbsp;<code>} \</code><br />
-&nbsp;&nbsp;<code>if (!(F)) { \</code><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected |= CPUID_UNSUPPORTED_INSTRUCTION; \</code><br />
+&nbsp;&nbsp;<code>if&nbsp;(!(FEATURE(kValidatorCPUIDFeatures.data)))&nbsp;{&nbsp;\</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected&nbsp;|=&nbsp;UNRECOGNIZED_INSTRUCTION;&nbsp;\</code><br />
+&nbsp;&nbsp;<code>}&nbsp;\</code><br />
+&nbsp;&nbsp;<code>if&nbsp;(!(FEATURE(cpu_features-&gt;data)))&nbsp;{&nbsp;\</code><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<code>instruction_info_collected&nbsp;|=&nbsp;CPUID_UNSUPPORTED_INSTRUCTION;&nbsp;\</code><br />
 &nbsp;&nbsp;<code>}</code><hr />
 IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeature_FXSR</code> is not the name of variable, but the name of macrodefinition. This is needed to handle special cases where <code>CPUFeature</code> does not correspond to a single <code>CPUID</code> bit. E.g. <code>prefetch</code> instruction is available when <b>any one</b> of two bits are set: <code>3DNnow!</code> bit or deficated <code>Prefetch instruction</code> bit. AMD documtntation also claims <code>prefetch</code> is always available if <code>LongMode</code> bit is set but Intel documentation does not support this assertion. On the other hand <code>vaesenc</code> is available when <b>both</b> <code>AES</code> and <code>AVX</code> bits are set. And our ABI <a href="http://code.google.com/p/nativeclient/issues/detail?id=2869">permits <code>lzcnt</code> and <code>tzcnt</code> uncoditionally</a> (thus <code>CPUFeature_LZCNT</code> does not check for anything but just returns <code>TRUE</code> in all cases).</p>
 
