@@ -13,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/webdata/autofill_web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "components/autofill/browser/autofill-inl.h"
 #include "components/autofill/browser/autofill_country.h"
@@ -27,6 +26,7 @@
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/webdata/autofill/autofill_webdata_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
 

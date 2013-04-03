@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_WEBDATA_WEB_DATA_RESULTS_H_
-#define CHROME_BROWSER_API_WEBDATA_WEB_DATA_RESULTS_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -131,4 +131,4 @@ template <class T> class WDObjectResult : public WDTypedResult {
   DISALLOW_COPY_AND_ASSIGN(WDObjectResult);
 };
 
-#endif  // CHROME_BROWSER_API_WEBDATA_WEB_DATA_RESULTS_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_

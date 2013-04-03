@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
-#define CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_TABLE_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_TABLE_H_
 
 #include "base/logging.h"
 
@@ -62,4 +62,4 @@ class WebDatabaseTable {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseTable);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_TABLE_H_

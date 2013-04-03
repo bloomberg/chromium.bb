@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
-#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
+#include "components/webdata/autofill/autofill_webdata_service_observer.h"
 
 class AutofillWebDataService;
 class PersonalDataManager;

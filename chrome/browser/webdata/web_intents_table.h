@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/webdata/web_database_table.h"
+#include "components/webdata/common/web_database_table.h"
 
 namespace sql {
 class Connection;

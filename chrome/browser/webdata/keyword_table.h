@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "chrome/browser/webdata/web_database_table.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "components/webdata/common/web_database_table.h"
 
 struct TemplateURLData;
 class WebDatabase;

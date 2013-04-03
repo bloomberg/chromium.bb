@@ -18,13 +18,13 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/api/webdata/web_data_results.h"
-#include "chrome/browser/api/webdata/web_data_service_base.h"
-#include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_consumer.h"
+#include "components/webdata/common/web_database.h"
 
 struct DefaultWebIntentService;
 class GURL;

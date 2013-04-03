@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
-#define CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
+#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_ENTRY_H__
+#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_ENTRY_H__
 
 #include <stddef.h>
 #include <vector>
@@ -68,4 +68,4 @@ class AutofillEntry {
   bool timestamps_culled_;
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
+#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_ENTRY_H__

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
-#define CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
+#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_CHANGE_H__
+#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_CHANGE_H__
 
 #include <vector>
 
-#include "chrome/browser/webdata/autofill_entry.h"
+#include "components/webdata/autofill/autofill_entry.h"
 
 class AutofillProfile;
 class CreditCard;
@@ -69,4 +69,4 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   const AutofillProfile* profile_;
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
+#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_CHANGE_H__

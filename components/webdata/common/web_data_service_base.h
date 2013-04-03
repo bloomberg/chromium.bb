@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
-#define CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -128,4 +128,4 @@ class WebDataServiceBase
   void DatabaseInitOnDB(sql::InitStatus status);
 };
 
-#endif  // CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_BASE_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_

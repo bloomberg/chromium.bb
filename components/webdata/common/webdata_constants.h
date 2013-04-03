@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEBDATA_CONSTANTS_H_
-#define CHROME_BROWSER_WEBDATA_WEBDATA_CONSTANTS_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEBDATA_CONSTANTS_H_
+#define COMPONENTS_WEBDATA_COMMON_WEBDATA_CONSTANTS_H_
 
 #include "base/files/file_path.h"
 
 extern const base::FilePath::CharType kWebDataFilename[];
 
-#endif  // CHROME_BROWSER_WEBDATA_WEBDATA_CONSTANTS_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEBDATA_CONSTANTS_H_

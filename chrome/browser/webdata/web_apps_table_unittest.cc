@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"

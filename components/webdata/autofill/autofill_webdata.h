@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_WEBDATA_AUTOFILL_WEB_DATA_H_
-#define CHROME_BROWSER_API_WEBDATA_AUTOFILL_WEB_DATA_H_
+#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_H_
+#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/api/webdata/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_base.h"
 
 class AutofillProfile;
 class CreditCard;
@@ -85,4 +85,4 @@ class AutofillWebData {
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
 };
 
-#endif  // CHROME_BROWSER_API_WEBDATA_AUTOFILL_WEB_DATA_H_
+#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_H_

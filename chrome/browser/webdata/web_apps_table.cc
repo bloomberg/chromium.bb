@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/webdata/token_service_table.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

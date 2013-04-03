@@ -13,11 +13,11 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "chrome/browser/api/webdata/web_data_service_consumer.h"
-#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
+#include "components/webdata/autofill/autofill_webdata_service_observer.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 
 class AutofillMetrics;
 class FormStructure;

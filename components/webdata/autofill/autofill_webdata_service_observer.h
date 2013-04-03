@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_WEB_DATA_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_WEBDATA_AUTOFILL_WEB_DATA_SERVICE_OBSERVER_H_
+#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
+#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
 
-#include "chrome/browser/webdata/autofill_change.h"
+#include "components/webdata/autofill/autofill_change.h"
 
 class AutofillWebDataServiceObserverOnDBThread {
  public:
@@ -34,4 +34,4 @@ class AutofillWebDataServiceObserverOnUIThread {
   virtual ~AutofillWebDataServiceObserverOnUIThread() {}
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_WEB_DATA_SERVICE_OBSERVER_H_
+#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_

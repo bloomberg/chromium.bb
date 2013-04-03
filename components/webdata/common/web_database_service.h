@@ -6,8 +6,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_SERVICE_H_
-#define CHROME_BROWSER_WEBDATA_WEB_DATABASE_SERVICE_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/api/webdata/web_data_service_base.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_database.h"
 
 class WebDataServiceBackend;
 class WebDataRequestManager;
@@ -103,4 +103,4 @@ class WebDatabaseService
   scoped_refptr<WebDataServiceBackend> wds_backend_;
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATABASE_SERVICE_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_

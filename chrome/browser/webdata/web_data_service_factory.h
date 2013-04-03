@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/webdata/web_database_service.h"
+#include "components/webdata/common/web_database_service.h"
 
 class AutofillWebDataService;
 class WebDataService;

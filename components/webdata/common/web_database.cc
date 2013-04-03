@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 
 #include <algorithm>
 

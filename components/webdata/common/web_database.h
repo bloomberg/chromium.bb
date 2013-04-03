@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
-#define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/webdata/web_database_table.h"
+#include "components/webdata/common/web_database_table.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
@@ -75,4 +75,4 @@ class WebDatabase {
   DISALLOW_COPY_AND_ASSIGN(WebDatabase);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_H_

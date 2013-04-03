@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/api/webdata/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_base.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/webdata/web_database_service.h"
+#include "components/webdata/common/web_database_service.h"
 #ifdef DEBUG
 #include "content/public/browser/browser_thread.h"
 #endif

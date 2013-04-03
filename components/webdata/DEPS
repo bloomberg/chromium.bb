@@ -1,0 +1,10 @@
+include_rules = [
+  # Webdata is being made into a component (it will end up at
+  # //components/webdata and not depend on //chrome), so we have these basic
+  # rules followed by temporary exceptions.  Please don't add to the list of
+  # exceptions!
+  "+components/encryptor",
+  "+content/public/browser",
+  "+sql",
+  "+ui",
+]

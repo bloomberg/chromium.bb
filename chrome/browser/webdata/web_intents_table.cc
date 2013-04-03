@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/webdata/web_intents_table.h"
+
 #include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "sql/statement.h"

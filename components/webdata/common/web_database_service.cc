@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/web_database_service.h"
+#include "components/webdata/common/web_database_service.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/api/webdata/web_data_results.h"
-#include "chrome/browser/api/webdata/web_data_service_consumer.h"
-#include "chrome/browser/webdata/web_data_request_manager.h"
+#include "components/webdata/common/web_data_request_manager.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 
 using base::Bind;
 using base::FilePath;

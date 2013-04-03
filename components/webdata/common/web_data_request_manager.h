@@ -6,16 +6,16 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_REQUEST_MANAGER_H__
-#define CHROME_BROWSER_WEBDATA_WEB_DATA_REQUEST_MANAGER_H__
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_REQUEST_MANAGER_H__
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_REQUEST_MANAGER_H__
 
 #include <map>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/api/webdata/web_data_results.h"
-#include "chrome/browser/api/webdata/web_data_service_base.h"
-#include "chrome/browser/api/webdata/web_data_service_consumer.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 
 class WebDataService;
 class WebDataServiceConsumer;
@@ -134,4 +134,4 @@ class WebDataRequestManager
   DISALLOW_COPY_AND_ASSIGN(WebDataRequestManager);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_REQUEST_MANAGER_H__
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_REQUEST_MANAGER_H__

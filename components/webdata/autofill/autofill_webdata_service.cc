@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/autofill_web_data_service.h"
+#include "components/webdata/autofill/autofill_webdata_service.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/webdata/autofill_change.h"
-#include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/autofill_web_data_service_observer.h"
-#include "chrome/browser/webdata/web_database_service.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/webdata/autofill/autofill_change.h"
+#include "components/webdata/autofill/autofill_entry.h"
+#include "components/webdata/autofill/autofill_table.h"
+#include "components/webdata/autofill/autofill_webdata_service_observer.h"
+#include "components/webdata/common/web_database_service.h"
 
 using base::Bind;
 using base::Time;

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_TABLE_H_
-#define CHROME_BROWSER_WEBDATA_AUTOFILL_TABLE_H_
+#ifndef COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_TABLE_H_
+#define COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_TABLE_H_
+
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "chrome/browser/webdata/web_database_table.h"
-
-#include <vector>
+#include "components/webdata/common/web_database_table.h"
 
 class AutofillChange;
 class AutofillEntry;
@@ -363,4 +363,4 @@ class AutofillTable : public WebDatabaseTable {
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_TABLE_H_
+#endif  // COMPONENTS_WEBDATA_AUTOFILL_AUTOFILL_TABLE_H_

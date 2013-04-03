@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_CONSUMER_H_
-#define CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_CONSUMER_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_CONSUMER_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_CONSUMER_H_
 
-#include "chrome/browser/api/webdata/web_data_results.h"
-#include "chrome/browser/api/webdata/web_data_service_base.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_data_service_base.h"
 
 // All requests to the web data service are asynchronous. When the request has
 // been performed, the data consumer is notified using the following interface.
@@ -23,4 +23,4 @@ class WebDataServiceConsumer {
 };
 
 
-#endif  // CHROME_BROWSER_API_WEBDATA_WEB_DATA_SERVICE_CONSUMER_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_CONSUMER_H_

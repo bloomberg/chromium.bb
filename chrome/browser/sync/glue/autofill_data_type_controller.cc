@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/autofill_web_data_service.h"
+#include "components/webdata/autofill/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/util/experiments.h"

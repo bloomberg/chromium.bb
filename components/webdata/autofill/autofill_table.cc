@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/autofill_table.h"
+#include "components/webdata/autofill/autofill_table.h"
 
 #include <algorithm>
 #include <limits>
@@ -17,15 +17,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "chrome/browser/webdata/autofill_change.h"
-#include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/browser/webdata/web_database.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/webdata/autofill/autofill_change.h"
+#include "components/webdata/autofill/autofill_entry.h"
+#include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"

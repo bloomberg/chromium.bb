@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/webdata_constants.h"
+#include "components/webdata/common/webdata_constants.h"
 
 const base::FilePath::CharType kWebDataFilename[] =
     FILE_PATH_LITERAL("Web Data");

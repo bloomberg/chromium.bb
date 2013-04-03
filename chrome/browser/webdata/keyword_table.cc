@@ -19,7 +19,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "components/webdata/common/web_database.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"

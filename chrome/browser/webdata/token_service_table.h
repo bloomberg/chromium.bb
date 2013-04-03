@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/webdata/web_database_table.h"
+#include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;
 
