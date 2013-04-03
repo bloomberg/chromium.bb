@@ -59,18 +59,6 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnImageDirCreated(bool success) OVERRIDE {
-    if (!success) {
-      // Failed to create the directory. Finish the burning process
-      // with failure state.
-      DownloadCompleted(false);
-      return;
-    }
-
-    burn_manager_->FetchConfigFile();
-  }
-
-  // BurnManager::Observer override.
   virtual void OnConfigFileFetched(bool success) OVERRIDE {
     if (!success) {
       DownloadCompleted(false);
@@ -199,7 +187,7 @@ class BurnControllerImpl
     if (burn_manager_->GetImageDir().empty()) {
       burn_manager_->CreateImageDir();
     } else {
-      OnImageDirCreated(true);
+      burn_manager_->FetchConfigFile();
     }
   }
 

@@ -217,10 +217,6 @@ class BurnManager : public net::URLFetcherDelegate,
     // Triggered when a network is detected.
     virtual void OnNetworkDetected() = 0;
 
-    // Triggered when the creating a ImageDir is done.
-    // The status of the creating the directory is passed to |success|.
-    virtual void OnImageDirCreated(bool success) = 0;
-
     // Triggered when the fetching of the config file is done.
     // The result status of the fetch is passed to |success|.
     virtual void OnConfigFileFetched(bool success) = 0;

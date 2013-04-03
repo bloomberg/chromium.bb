@@ -335,8 +335,15 @@ void BurnManager::CreateImageDir() {
 }
 
 void BurnManager::OnImageDirCreated(bool success) {
+  if (!success) {
+    // Failed to create the directory. Finish the burning process
+    // with failure state.
+    OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
+    return;
+  }
+
   zip_image_file_path_ = image_dir_.Append(kImageZipFileName);
-  FOR_EACH_OBSERVER(Observer, observers_, OnImageDirCreated(success));
+  FetchConfigFile();
 }
 
 const base::FilePath& BurnManager::GetImageDir() {
