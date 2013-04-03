@@ -262,7 +262,6 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
 
   POINT client_point = gesture.location().ToPOINT();
   POINT screen_point = gesture.location().ToPOINT();
-  MapWindowPoints(::GetParent(hwnd), hwnd, &client_point, 1);
   MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
 
   gesture_event.x = client_point.x;
@@ -2113,7 +2112,7 @@ bool WebTouchState::UpdateTouchPoint(
 
   touch_point->screenPosition.x = coordinates.x;
   touch_point->screenPosition.y = coordinates.y;
-  window_->GetParent().ScreenToClient(&coordinates);
+  window_->ScreenToClient(&coordinates);
   touch_point->position.x = coordinates.x;
   touch_point->position.y = coordinates.y;
   touch_point->radiusX = radius_x;
