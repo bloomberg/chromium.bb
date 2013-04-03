@@ -576,41 +576,45 @@ void ExtensionService::Init() {
   DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
-  CHECK(!ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()));
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  // TODO(mek): It might be cleaner to do the FinishDelayedInstallInfo stuff
-  // here instead of in installedloader.
-  if (g_browser_process->profile_manager() &&
-      g_browser_process->profile_manager()->will_import()) {
-    // Do not load any component extensions, since they may conflict with the
-    // import process.
+  CHECK(!ProfileManager::IsImportProcess(*cmd_line));
 
-    extensions::InstalledLoader(this).LoadAllExtensions();
-    RegisterForImportFinished();
+  if (cmd_line->HasSwitch(switches::kInstallFromWebstore) ||
+      cmd_line->HasSwitch(switches::kLimitedInstallFromWebstore)) {
+    // The sole purpose of this launch is to install a new extension from CWS
+    // and immediately terminate: loading already installed extensions is
+    // unnecessary and may interfere with the inline install dialog (e.g. if an
+    // extension listens to onStartup and opens a window).
+    SetReadyAndNotifyListeners();
   } else {
-    component_loader_->LoadAll();
-    extensions::InstalledLoader(this).LoadAllExtensions();
+    // TODO(mek): It might be cleaner to do the FinishDelayedInstallInfo stuff
+    // here instead of in installedloader.
+    if (g_browser_process->profile_manager() &&
+        g_browser_process->profile_manager()->will_import()) {
+      // Do not load any component extensions, since they may conflict with the
+      // import process.
 
-    // TODO(erikkay) this should probably be deferred to a future point
-    // rather than running immediately at startup.
-    CheckForExternalUpdates();
+      extensions::InstalledLoader(this).LoadAllExtensions();
+      RegisterForImportFinished();
+    } else {
+      // In this case, LoadAllExtensions() calls OnLoadedInstalledExtensions(),
+      // which calls SetReadyAndNotifyListeners().
+      component_loader_->LoadAll();
+      extensions::InstalledLoader(this).LoadAllExtensions();
 
-    // TODO(erikkay) this should probably be deferred as well.
-    GarbageCollectExtensions();
-  }
+      // TODO(erikkay) this should probably be deferred to a future point
+      // rather than running immediately at startup.
+      CheckForExternalUpdates();
 
-  // The Sideload Wipeout effort takes place during load (see above), so once
-  // that is done the flag can be set so that we don't have to check again.
-  if (wipeout_is_active_) {
-    extension_prefs_->SetSideloadWipeoutDone();
-    wipeout_is_active_ = false;  // Wipeout is only on during load.
-    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.SideloadWipeoutNeeded",
-                          wipeout_count_ > 0u);
-  }
+      // TODO(erikkay) this should probably be deferred as well.
+      GarbageCollectExtensions();
+    }
 
-  if (extension_prefs_->NeedsStorageGarbageCollection()) {
-    GarbageCollectIsolatedStorage();
-    extension_prefs_->SetNeedsStorageGarbageCollection(false);
+    if (extension_prefs_->NeedsStorageGarbageCollection()) {
+      GarbageCollectIsolatedStorage();
+      extension_prefs_->SetNeedsStorageGarbageCollection(false);
+    }
   }
 }
 
@@ -2011,17 +2015,30 @@ void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
   }
 }
 
+void ExtensionService::SetReadyAndNotifyListeners() {
+  ready_ = true;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSIONS_READY,
+      content::Source<Profile>(profile_),
+      content::NotificationService::NoDetails());
+}
+
 void ExtensionService::OnLoadedInstalledExtensions() {
   if (updater_.get())
     updater_->Start();
 
   OnBlacklistUpdated();
 
-  ready_ = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
+  // The Sideload Wipeout effort takes place during load (see above), so once
+  // that is done the flag can be set so that we don't have to check again.
+  if (wipeout_is_active_) {
+    extension_prefs_->SetSideloadWipeoutDone();
+    wipeout_is_active_ = false;  // Wipeout is only on during load.
+    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.SideloadWipeoutNeeded",
+                          wipeout_count_ > 0u);
+  }
+
+  SetReadyAndNotifyListeners();
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {

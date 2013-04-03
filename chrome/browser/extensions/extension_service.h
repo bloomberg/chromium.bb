@@ -714,6 +714,9 @@ class ExtensionService
   };
   typedef std::list<NaClModuleInfo> NaClModuleInfoList;
 
+  // Sets the ready_ flag and sends a notification to the listeners.
+  void SetReadyAndNotifyListeners();
+
   // Return true if the sync type of |extension| matches |type|.
   bool IsCorrectSyncType(const extensions::Extension& extension,
                          syncer::ModelType type)
