@@ -597,14 +597,15 @@ void Compositor::OnSwapBuffersComplete() {
 }
 
 void Compositor::OnSwapBuffersAborted() {
-  DCHECK(!g_compositor_thread);
-  DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
+  if (!g_compositor_thread) {
+    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
 
-  // We've just lost the context, so unwind all posted_swaps.
-  while (posted_swaps_->AreSwapsPosted()) {
-    if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
-      NotifyEnd();
-    posted_swaps_->EndSwap();
+    // We've just lost the context, so unwind all posted_swaps.
+    while (posted_swaps_->AreSwapsPosted()) {
+      if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
+        NotifyEnd();
+      posted_swaps_->EndSwap();
+    }
   }
 
   FOR_EACH_OBSERVER(CompositorObserver,
@@ -649,6 +650,11 @@ void Compositor::DidCommitAndDrawFrame() {
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this, start_time));
+  // If we're threaded without a swap complete callback, we have to
+  // call DidCompleteSwapBuffersManually.
+  if (g_compositor_thread &&
+      !host_->GetRendererCapabilities().using_swap_complete_callback)
+    DidCompleteSwapBuffers();
 }
 
 void Compositor::DidCompleteSwapBuffers() {
