@@ -352,7 +352,8 @@ const base::FilePath& BurnManager::GetImageDir() {
 
 void BurnManager::FetchConfigFile() {
   if (config_file_fetched_) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(true));
+    // The config file is already fetched. So start to fetch the image.
+    FetchImage();
     return;
   }
 
@@ -367,6 +368,16 @@ void BurnManager::FetchConfigFile() {
 }
 
 void BurnManager::FetchImage() {
+  if (state_machine_->download_finished()) {
+    DoBurn();
+    return;
+  }
+
+  if (state_machine_->download_started()) {
+    // The image downloading is already started. Do nothing.
+    return;
+  }
+
   tick_image_download_start_ = base::TimeTicks::Now();
   bytes_image_download_progress_last_reported_ = 0;
   image_fetcher_.reset(net::URLFetcher::Create(image_download_url_,
@@ -519,7 +530,12 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
     image_download_url_ = GURL();
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(fetched));
+  if (!fetched) {
+    OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
+    return;
+  }
+
+  FetchImage();
 }
 
 void BurnManager::OnImageUnzipped(

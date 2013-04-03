@@ -59,23 +59,6 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnConfigFileFetched(bool success) OVERRIDE {
-    if (!success) {
-      DownloadCompleted(false);
-      return;
-    }
-
-    if (state_machine_->download_finished()) {
-      burn_manager_->DoBurn();
-      return;
-    }
-
-    if (!state_machine_->download_started()) {
-      burn_manager_->FetchImage();
-    }
-  }
-
-  // BurnManager::Observer override.
   virtual void OnImageFileFetchDownloadProgressUpdated(
       int64 received_bytes,
       int64 total_bytes,
