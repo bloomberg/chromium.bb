@@ -69,6 +69,7 @@ public class ChromeBrowserProvider extends ContentProvider {
             "GET_MOBILE_BOOKMARKS_FOLDER_ID";
     static final String CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH =
             "IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH";
+    static final String CLIENT_API_DELETE_ALL_BOOKMARKS = "DELETE_ALL_BOOKMARKS";
     static final String CLIENT_API_RESULT_KEY = "result";
 
 
@@ -711,6 +712,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         } else if (CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH.equals(method)) {
             result.putBoolean(CLIENT_API_RESULT_KEY,
                     isBookmarkInMobileBookmarksBranch(extras.getLong(argKey(0))));
+        } else if(CLIENT_API_DELETE_ALL_BOOKMARKS.equals(method)) {
+            nativeRemoveAllBookmarks(mNativeChromeBrowserProvider);
         } else {
             Log.w(TAG, "Received invalid method " + method);
             return null;
@@ -1308,6 +1311,8 @@ public class ChromeBrowserProvider extends ContentProvider {
             String title, long parentId);
 
     private native BookmarkNode nativeGetAllBookmarkFolders(int nativeChromeBrowserProvider);
+
+    private native void nativeRemoveAllBookmarks(int nativeChromeBrowserProvider);
 
     private native BookmarkNode nativeGetBookmarkNode(int nativeChromeBrowserProvider,
             long id, boolean getParent, boolean getChildren);

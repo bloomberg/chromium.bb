@@ -80,6 +80,16 @@ public class ChromeBrowserProviderClient {
     }
 
     /**
+     * Removes all bookmarks and bookmark folders.
+     * Only the permanent bookmark folders remain after this operation.
+     */
+    public static void removeAllBookmarks(Context context) {
+        chromeBrowserProviderCall(BookmarkNode.class,
+                ChromeBrowserProvider.CLIENT_API_DELETE_ALL_BOOKMARKS, context,
+                argsToBundle());
+    }
+
+    /**
      * Retrieves a bookmark node given its ID or null if no such node exists.
      * The parent and immediate child nodes can be also retrieved by enabling the getParent
      * and getChildren flags. No deeper child nodes can be retrieved with this method.
