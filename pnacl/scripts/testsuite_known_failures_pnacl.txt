@@ -35,3 +35,15 @@ sse.stepfft
 
 # Assumes that pointers are 8 bytes (an x86-64 test).
 ms_struct-bitfield-1
+
+# The following tests use vectors, which PNaCl's ABI checker rejects.
+SingleSource/Benchmarks/BenchmarkGame/partialsums
+SingleSource/UnitTests/Vector/build
+SingleSource/UnitTests/Vector/build2
+SingleSource/UnitTests/Vector/multiplies
+SingleSource/UnitTests/Vector/simple
+SingleSource/UnitTests/Vector/sumarray
+SingleSource/UnitTests/Vector/sumarray-dbl
+
+# The following test uses computed gotos, which PNaCl's ABI checker rejects.
+SingleSource/Regression/C/2004-03-15-IndirectGoto
