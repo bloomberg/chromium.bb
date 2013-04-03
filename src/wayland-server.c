@@ -946,6 +946,31 @@ wl_pointer_end_grab(struct wl_pointer *pointer)
 			 pointer->current_x, pointer->current_y);
 }
 
+static void
+current_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct wl_pointer *pointer =
+		container_of(listener, struct wl_pointer, current_listener);
+
+	pointer->current = NULL;
+}
+
+WL_EXPORT void
+wl_pointer_set_current(struct wl_pointer *pointer, struct wl_surface *surface)
+{
+	if (pointer->current)
+		wl_list_remove(&pointer->current_listener.link);
+
+	pointer->current = surface;
+
+	if (!surface)
+		return;
+	
+	wl_signal_add(&surface->resource.destroy_signal,
+		      &pointer->current_listener);
+	pointer->current_listener.notify = current_surface_destroy;
+}
+
 WL_EXPORT void
 wl_touch_start_grab(struct wl_touch *touch, struct wl_touch_grab *grab)
 {

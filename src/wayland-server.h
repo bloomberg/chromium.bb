@@ -312,6 +312,7 @@ struct wl_pointer {
 
 	wl_fixed_t x, y;
 	struct wl_surface *current;
+	struct wl_listener current_listener;
 	wl_fixed_t current_x, current_y;
 
 	uint32_t button_count;
@@ -450,6 +451,8 @@ wl_pointer_start_grab(struct wl_pointer *pointer,
 		      struct wl_pointer_grab *grab);
 void
 wl_pointer_end_grab(struct wl_pointer *pointer);
+void
+wl_pointer_set_current(struct wl_pointer *pointer, struct wl_surface *surface);
 
 void
 wl_keyboard_init(struct wl_keyboard *keyboard);
