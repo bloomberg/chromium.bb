@@ -180,8 +180,13 @@ def run_recipe_fetch(recipe, props, aliased=False):
   """Invoke a recipe's fetch method with the passed-through args
   and return its json output as a python object."""
   recipe_path = os.path.abspath(os.path.join(SCRIPT_PATH, 'recipes', recipe))
+  if not os.path.exists(recipe_path):
+    print "Could not find a recipe for %s" % recipe
+    sys.exit(1)
+
   cmd = [sys.executable, recipe_path + '.py', 'fetch'] + props
   result = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+
   spec = json.loads(result)
   if 'alias' in spec:
     assert not aliased
