@@ -223,35 +223,79 @@ bool CallJNIMethod(
   return !base::android::ClearException(env);
 }
 
+double RoundDoubleTowardsZero(const double& x) {
+  if (std::isnan(x)) {
+    return 0.0;
+  }
+  return x > 0.0 ? floor(x) : ceil(x);
+}
+
+// Rounds to jlong using Java's type conversion rules.
+jlong RoundDoubleToLong(const double& x) {
+  double intermediate = RoundDoubleTowardsZero(x);
+  // The int64 limits can not be converted exactly to double values, so we
+  // compare to custom constants. kint64max is 2^63 - 1, but the spacing
+  // between double values in the the range 2^62 to 2^63 is 2^10. The cast is
+  // required to silence a spurious gcc warning for integer overflow.
+  const int64 limit = (GG_INT64_C(1) << 63) - static_cast<uint64>(1 << 10);
+  DCHECK(limit > 0);
+  const double kLargestDoubleLessThanInt64Max = limit;
+  const double kSmallestDoubleGreaterThanInt64Min = -limit;
+  if (intermediate > kLargestDoubleLessThanInt64Max) {
+    return kint64max;
+  }
+  if (intermediate < kSmallestDoubleGreaterThanInt64Min) {
+    return kint64min;
+  }
+  return static_cast<jlong>(intermediate);
+}
+
+// Rounds to jint using Java's type conversion rules.
+jint RoundDoubleToInt(const double& x) {
+  double intermediate = RoundDoubleTowardsZero(x);
+  // The int32 limits cast exactly to double values.
+  intermediate = std::min(intermediate, static_cast<double>(kint32max));
+  intermediate = std::max(intermediate, static_cast<double>(kint32min));
+  return static_cast<jint>(intermediate);
+}
+
 jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
                                          const JavaType& target_type,
                                          bool coerce_to_string) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
+
+  // For conversion to numeric types, we need to replicate Java's type
+  // conversion rules. This requires that for integer values, we simply discard
+  // all but the lowest n buts, where n is the number of bits in the target
+  // type. For double values, the logic is more involved.
   jvalue result;
   DCHECK(variant.type == NPVariantType_Int32 ||
          variant.type == NPVariantType_Double);
   bool is_double = variant.type == NPVariantType_Double;
   switch (target_type.type) {
     case JavaType::TypeByte:
-      result.b = is_double ? static_cast<jbyte>(NPVARIANT_TO_DOUBLE(variant)) :
-                             static_cast<jbyte>(NPVARIANT_TO_INT32(variant));
+      result.b = is_double ?
+          static_cast<jbyte>(RoundDoubleToInt(NPVARIANT_TO_DOUBLE(variant))) :
+          static_cast<jbyte>(NPVARIANT_TO_INT32(variant));
       break;
     case JavaType::TypeChar:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert double to 0.
-      // Spec requires converting doubles the same as int32.
+      // Spec requires converting doubles similarly to how we convert doubles to
+      // other numeric types.
       result.c = is_double ? 0 :
                              static_cast<jchar>(NPVARIANT_TO_INT32(variant));
       break;
     case JavaType::TypeShort:
-      result.s = is_double ? static_cast<jshort>(NPVARIANT_TO_DOUBLE(variant)) :
-                             static_cast<jshort>(NPVARIANT_TO_INT32(variant));
+      result.s = is_double ?
+          static_cast<jshort>(RoundDoubleToInt(NPVARIANT_TO_DOUBLE(variant))) :
+          static_cast<jshort>(NPVARIANT_TO_INT32(variant));
       break;
     case JavaType::TypeInt:
-      result.i = is_double ? static_cast<jint>(NPVARIANT_TO_DOUBLE(variant)) :
+      result.i = is_double ? RoundDoubleToInt(NPVARIANT_TO_DOUBLE(variant)) :
                              NPVARIANT_TO_INT32(variant);
       break;
     case JavaType::TypeLong:
-      result.j = is_double ? static_cast<jlong>(NPVARIANT_TO_DOUBLE(variant)) :
+      result.j = is_double ? RoundDoubleToLong(NPVARIANT_TO_DOUBLE(variant)) :
                              NPVARIANT_TO_INT32(variant);
       break;
     case JavaType::TypeFloat:

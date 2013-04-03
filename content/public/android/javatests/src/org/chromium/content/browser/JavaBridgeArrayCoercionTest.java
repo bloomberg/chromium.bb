@@ -248,12 +248,8 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
 
     // Test passing an array of JavaScript NaN values to a method which takes a
     // Java array.
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-      Bug: http://code.google.com/p/chromium/issues/detail?id=145881
-    */
-    @DisabledTest
     public void testPassNumberNaN() throws Throwable {
         executeJavaScript("testObject.setBooleanArray([Number.NaN]);");
         assertFalse(mTestObject.waitForBooleanArray()[0]);
@@ -294,12 +290,8 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
 
     // Test passing an array of JavaScript infinity values to a method which
     // takes a Java array.
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-      Bug: http://code.google.com/p/chromium/issues/detail?id=145881
-    */
-    @DisabledTest
     public void testPassNumberInfinity() throws Throwable {
         executeJavaScript("testObject.setBooleanArray([Infinity]);");
         assertFalse(mTestObject.waitForBooleanArray()[0]);
@@ -317,9 +309,8 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setIntArray([Infinity]);");
         assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntArray()[0]);
 
-        // LIVECONNECT_COMPLIANCE: Should be Long.MAX_VALUE.
         executeJavaScript("testObject.setLongArray([Infinity]);");
-        assertEquals(-1L, mTestObject.waitForLongArray()[0]);
+        assertEquals(Long.MAX_VALUE, mTestObject.waitForLongArray()[0]);
 
         executeJavaScript("testObject.setFloatArray([Infinity]);");
         assertEquals(Float.POSITIVE_INFINITY, mTestObject.waitForFloatArray()[0]);

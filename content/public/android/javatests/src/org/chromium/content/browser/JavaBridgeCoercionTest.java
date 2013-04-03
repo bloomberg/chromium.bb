@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.DisabledTest;
 
 /**
  * Part of the test suite for the Java Bridge. This class tests that
@@ -161,8 +160,10 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         setUpContentView(mTestObject, "testObject");
     }
 
-    // Test passing a JavaScript number in the int32 range to a method of an
-    // injected object.
+    // Test passing a 32-bit integer JavaScript number to a method of an
+    // injected object. Note that JavaScript may choose to represent these
+    // values as either 32-bit integers or doubles, though this should not
+    // affect the result.
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberInt32() throws Throwable {
@@ -212,21 +213,21 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         assertNull(mTestObject.waitForCustomTypeValue());
     }
 
-    // Test passing a JavaScript number in the double range to a method of an
-    // injected object.
-    /*
+    // Test passing a floating-point JavaScript number to a method of an
+    // injected object. JavaScript represents these values as doubles.
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-      Bug: http://code.google.com/p/chromium/issues/detail?id=145881
-    */
-    @DisabledTest
     public void testPassNumberDouble() throws Throwable {
         executeJavaScript("testObject.setByteValue(42.1);");
         assertEquals(42, mTestObject.waitForByteValue());
         executeJavaScript("testObject.setByteValue(" + Byte.MAX_VALUE + " + 42.1);");
         assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
+        executeJavaScript("testObject.setByteValue(" + Byte.MIN_VALUE + " - 42.1);");
+        assertEquals(Byte.MAX_VALUE - 42 + 1, mTestObject.waitForByteValue());
         executeJavaScript("testObject.setByteValue(" + Integer.MAX_VALUE + " + 42.1);");
         assertEquals(-1, mTestObject.waitForByteValue());
+        executeJavaScript("testObject.setByteValue(" + Integer.MIN_VALUE + " - 42.1);");
+        assertEquals(0, mTestObject.waitForByteValue());
 
         // LIVECONNECT_COMPLIANCE: Should convert to numeric char value.
         executeJavaScript("testObject.setCharValue(42.1);");
@@ -236,18 +237,25 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForShortValue());
         executeJavaScript("testObject.setShortValue(" + Short.MAX_VALUE + " + 42.1);");
         assertEquals(Short.MIN_VALUE + 42 - 1, mTestObject.waitForShortValue());
+        executeJavaScript("testObject.setShortValue(" + Short.MIN_VALUE + " - 42.1);");
+        assertEquals(Short.MAX_VALUE - 42 + 1, mTestObject.waitForShortValue());
         executeJavaScript("testObject.setShortValue(" + Integer.MAX_VALUE + " + 42.1);");
         assertEquals(-1, mTestObject.waitForShortValue());
+        executeJavaScript("testObject.setShortValue(" + Integer.MIN_VALUE + " - 42.1);");
+        assertEquals(0, mTestObject.waitForShortValue());
 
         executeJavaScript("testObject.setIntValue(42.1);");
         assertEquals(42, mTestObject.waitForIntValue());
         executeJavaScript("testObject.setIntValue(" + Integer.MAX_VALUE + " + 42.1);");
         assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
+        executeJavaScript("testObject.setIntValue(" + Integer.MIN_VALUE + " - 42.1);");
+        assertEquals(Integer.MIN_VALUE, mTestObject.waitForIntValue());
 
         executeJavaScript("testObject.setLongValue(42.1);");
         assertEquals(42L, mTestObject.waitForLongValue());
-        // LIVECONNECT_COMPLIANCE: Should be Long.MAX_VALUE.
         executeJavaScript("testObject.setLongValue(" + Long.MAX_VALUE + " + 42.1);");
+        assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
+        executeJavaScript("testObject.setLongValue(" + Long.MIN_VALUE + " - 42.1);");
         assertEquals(Long.MIN_VALUE, mTestObject.waitForLongValue());
 
         executeJavaScript("testObject.setFloatValue(42.1);");
@@ -275,12 +283,8 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     }
 
     // Test passing JavaScript NaN to a method of an injected object.
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-      Bug: http://code.google.com/p/chromium/issues/detail?id=145881
-    */
-    @DisabledTest
     public void testPassNumberNaN() throws Throwable {
         executeJavaScript("testObject.setByteValue(Number.NaN);");
         assertEquals(0, mTestObject.waitForByteValue());
@@ -319,12 +323,8 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     }
 
     // Test passing JavaScript infinity to a method of an injected object.
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-      Bug: http://code.google.com/p/chromium/issues/detail?id=145881
-    */
-    @DisabledTest
     public void testPassNumberInfinity() throws Throwable {
         executeJavaScript("testObject.setByteValue(Infinity);");
         assertEquals(-1, mTestObject.waitForByteValue());
@@ -339,9 +339,8 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setIntValue(Infinity);");
         assertEquals(Integer.MAX_VALUE, mTestObject.waitForIntValue());
 
-        // LIVECONNECT_COMPLIANCE: Should be Long.MAX_VALUE.
         executeJavaScript("testObject.setLongValue(Infinity);");
-        assertEquals(-1L, mTestObject.waitForLongValue());
+        assertEquals(Long.MAX_VALUE, mTestObject.waitForLongValue());
 
         executeJavaScript("testObject.setFloatValue(Infinity);");
         assertEquals(Float.POSITIVE_INFINITY, mTestObject.waitForFloatValue());
