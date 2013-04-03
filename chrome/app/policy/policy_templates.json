@@ -4557,7 +4557,9 @@
 
       The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
 
-      It starts with <ph name="CHROMIUM_KEY">Software\Policies\Chromium</ph> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY">Software\Policies\Google\Chrome</ph> for Google Chrome policies.'''
+      It starts with <ph name="CHROMIUM_KEY">Software\Policies\Chromium</ph> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY">Software\Policies\Google\Chrome</ph> for Google Chrome policies.
+
+      These policies are strictly intended to be used to configure instances of Chrome internal to your organization.  Use of these policies outside of your organization (for example, in a publicly distributed program) is considered malware and will likely be labeled as malware by Google and anti-virus vendors.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
