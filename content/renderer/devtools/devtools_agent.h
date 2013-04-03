@@ -65,6 +65,7 @@ class DevToolsAgent : public RenderViewObserver,
   void OnSetupDevToolsClient();
 
   bool is_attached_;
+  bool is_devtools_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

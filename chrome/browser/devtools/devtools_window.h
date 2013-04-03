@@ -128,8 +128,7 @@ class DevToolsWindow : private content::NotificationObserver,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,
                                 bool shared_worker_frontend);
-  DevToolsWindow(content::WebContents* web_contents,
-                 Profile* profile,
+  DevToolsWindow(Profile* profile,
                  const GURL& frontend_url,
                  content::RenderViewHost* inspected_rvh,
                  DevToolsDockSide dock_side);
@@ -220,6 +219,8 @@ class DevToolsWindow : private content::NotificationObserver,
 
   class InspectedWebContentsObserver;
   scoped_ptr<InspectedWebContentsObserver> inspected_contents_observer_;
+  class FrontendWebContentsObserver;
+  scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;
   content::WebContents* web_contents_;

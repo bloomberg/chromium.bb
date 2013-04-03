@@ -171,6 +171,8 @@ extern const char kHttpsScheme[];
 extern const char kHttpGETMethod[];
 extern const char kHttpHEADMethod[];
 
+WEBKIT_STORAGE_EXPORT void AddSupportedScheme(const char* scheme);
+
 bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
 bool IsSchemeAndMethodSupported(const net::URLRequest* request);

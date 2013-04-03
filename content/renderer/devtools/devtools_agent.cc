@@ -69,7 +69,9 @@ base::LazyInstance<IdToAgentMap>::Leaky
 } //  namespace
 
 DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view), is_attached_(false) {
+    : RenderViewObserver(render_view),
+      is_attached_(false),
+      is_devtools_client_(false) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
 
   render_view->webview()->setDevToolsAgentClient(this);
@@ -237,6 +239,10 @@ void DevToolsAgent::ContinueProgram() {
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {
+  // We only want to register once per render view.
+  if (is_devtools_client_)
+    return;
+  is_devtools_client_ = true;
   new DevToolsClient(static_cast<RenderViewImpl*>(render_view()));
 }
 

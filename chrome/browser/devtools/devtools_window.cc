@@ -98,13 +98,27 @@ const int kMinContentsSize = 50;
 const int kMinimizedDevToolsHeight = 24;
 
 class DevToolsWindow::InspectedWebContentsObserver
-  : public content::WebContentsObserver {
+    : public content::WebContentsObserver {
  public:
   explicit InspectedWebContentsObserver(content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {
-    }
+  }
 
   content::WebContents* Get() { return web_contents(); }
+};
+
+class DevToolsWindow::FrontendWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit FrontendWebContentsObserver(content::WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
+  }
+ private:
+  // Overriden from contents::WebContentsObserver.
+  virtual void AboutToNavigateRenderView(
+      RenderViewHost* render_view_host) OVERRIDE {
+    content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
+  }
 };
 
 // static
@@ -230,34 +244,16 @@ DevToolsWindow* DevToolsWindow::Create(
     DevToolsDockSide dock_side,
     bool shared_worker_frontend) {
   // Create WebContents with devtools.
-  WebContents* web_contents =
-      WebContents::Create(WebContents::CreateParams(profile));
   GURL url = GetDevToolsURL(profile, frontend_url, dock_side,
                             shared_worker_frontend);
-  web_contents->GetController().LoadURL(url, content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-
-  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
-  content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
-
-  if (url.host() == chrome::kChromeUIDevToolsBundledHost) {
-    // Only allow file scheme in embedded front-end by default.
-    int process_id = render_view_host->GetProcess()->GetID();
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process_id, chrome::kFileScheme);
-  }
-
-  return new DevToolsWindow(web_contents, profile, frontend_url, inspected_rvh,
-                            dock_side);
+  return new DevToolsWindow(profile, url, inspected_rvh, dock_side);
 }
 
-DevToolsWindow::DevToolsWindow(WebContents* web_contents,
-                               Profile* profile,
-                               const GURL& frontend_url,
+DevToolsWindow::DevToolsWindow(Profile* profile,
+                               const GURL& url,
                                RenderViewHost* inspected_rvh,
                                DevToolsDockSide dock_side)
     : profile_(profile),
-      web_contents_(web_contents),
       browser_(NULL),
       dock_side_(dock_side),
       is_loaded_(false),
@@ -266,13 +262,28 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
       width_(-1),
       height_(-1),
       dock_side_before_minimized_(dock_side) {
+  web_contents_ = WebContents::Create(WebContents::CreateParams(profile));
+  frontend_contents_observer_.reset(
+      new FrontendWebContentsObserver(web_contents_));
+
+  web_contents_->GetController().LoadURL(url, content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+
+  RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
+  if (url.host() == chrome::kChromeUIDevToolsBundledHost) {
+    // Only allow file scheme in embedded front-end by default.
+    int process_id = render_view_host->GetProcess()->GetID();
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+        process_id, chrome::kFileScheme);
+  }
+
   frontend_host_.reset(
-      DevToolsClientHost::CreateDevToolsFrontendHost(web_contents, this));
-  file_helper_.reset(new DevToolsFileHelper(web_contents, profile));
+      DevToolsClientHost::CreateDevToolsFrontendHost(web_contents_, this));
+  file_helper_.reset(new DevToolsFileHelper(web_contents_, profile));
 
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
   entry->GetFavicon().image = gfx::Image();
   entry->GetFavicon().valid = true;
 
@@ -280,11 +291,11 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
   registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&web_contents->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&web_contents->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,

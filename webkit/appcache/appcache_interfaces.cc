@@ -4,6 +4,9 @@
 
 #include "webkit/appcache/appcache_interfaces.h"
 
+#include <set>
+
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
@@ -12,6 +15,13 @@
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebConsoleMessage;
+
+namespace {
+
+base::LazyInstance<std::set<std::string> >::Leaky g_supported_schemes =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 namespace appcache {
 
@@ -77,8 +87,16 @@ bool Namespace::IsMatch(const GURL& url) const {
   return StartsWithASCII(url.spec(), namespace_url.spec(), true);
 }
 
+void AddSupportedScheme(const char* scheme) {
+  g_supported_schemes.Get().insert(scheme);
+}
+
 bool IsSchemeSupported(const GURL& url) {
-  bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
+  bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme) ||
+      (!(g_supported_schemes == NULL) &&
+       g_supported_schemes.Get().find(url.scheme()) !=
+           g_supported_schemes.Get().end());
+
 #ifndef NDEBUG
   // TODO(michaeln): It would be really nice if this could optionally work for
   // file and filesystem urls too to help web developers experiment and test

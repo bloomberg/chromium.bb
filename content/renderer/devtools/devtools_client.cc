@@ -9,12 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "ui/base/ui_base_switches.h"
+#include "webkit/appcache/appcache_interfaces.h"
 
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
@@ -35,6 +37,7 @@ DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
           render_view->webview(),
           this,
           ASCIIToUTF16(command_line.GetSwitchValueASCII(switches::kLang))));
+  appcache::AddSupportedScheme(chrome::kChromeDevToolsScheme);
 }
 
 DevToolsClient::~DevToolsClient() {
