@@ -121,7 +121,7 @@ AC_CONFIG_FILES([Makefile
 		 cursor/wayland-cursor.pc
 		 cursor/wayland-cursor-uninstalled.pc
 		 doc/Makefile
-		 doc/Wayland/Makefile
+		 doc/publican/Makefile
 		 doc/doxygen/Makefile
 		 doc/man/Makefile
 		 src/Makefile
