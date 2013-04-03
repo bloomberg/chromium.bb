@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
+
 #include <string>
 
 #include "base/message_loop.h"
@@ -10,11 +12,12 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/tree/tree_view.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -75,6 +78,10 @@ class BookmarkEditorViewTest : public testing::Test {
       editor_->url_tf_->SetText(text);
   }
 
+  void ApplyEdits() {
+    editor_->ApplyEdits();
+  }
+
   void ApplyEdits(BookmarkEditorView::EditorNode* node) {
     editor_->ApplyEdits(node);
   }
@@ -84,11 +91,21 @@ class BookmarkEditorViewTest : public testing::Test {
     return editor_->AddNewFolder(parent);
   }
 
+  void NewFolder() {
+    return editor_->NewFolder();
+  }
+
   bool URLTFHasParent() {
     if (editor_->details_.type == BookmarkEditor::EditDetails::NEW_FOLDER)
       return false;
     return editor_->url_tf_->parent();
   }
+
+  void ExpandAndSelect() {
+    editor_->ExpandAndSelect();
+  }
+
+  views::TreeView* tree_view() { return editor_->tree_view_; }
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -386,4 +403,32 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
   EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
   EXPECT_EQ(details.urls[0].first, new_child->url());
+}
+
+// Verifies the title of a new folder is updated correctly if ApplyEdits() is
+// is invoked while focus is still on the text field.
+TEST_F(BookmarkEditorViewTest, NewFolderTitleUpdatedOnCommit) {
+  const BookmarkNode* parent =
+      BookmarkModelFactory::GetForProfile(profile_.get())->
+      bookmark_bar_node() ->GetChild(2);
+
+  CreateEditor(profile_.get(), parent,
+               BookmarkEditor::EditDetails::AddNodeInFolder(
+                   parent, 1, GURL(), string16()),
+               BookmarkEditorView::SHOW_TREE);
+  ExpandAndSelect();
+
+  SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
+  SetTitleText(L"new_a");
+
+  NewFolder();
+  ASSERT_TRUE(tree_view()->editor() != NULL);
+  tree_view()->editor()->SetText(ASCIIToUTF16("modified"));
+  ApplyEdits();
+
+  // Verify the new folder was added and title set appropriately.
+  ASSERT_EQ(1, parent->child_count());
+  const BookmarkNode* new_folder = parent->GetChild(0);
+  ASSERT_TRUE(new_folder->is_folder());
+  EXPECT_EQ("modified", UTF16ToASCII(new_folder->GetTitle()));
 }

@@ -101,6 +101,8 @@ class VIEWS_EXPORT TreeView : public View,
     controller_ = controller;
   }
 
+  views::Textfield* editor() { return editor_; }
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;

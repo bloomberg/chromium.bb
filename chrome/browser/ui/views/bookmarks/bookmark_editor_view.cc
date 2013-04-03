@@ -523,6 +523,9 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
 void BookmarkEditorView::ApplyEdits() {
   DCHECK(bb_model_->IsLoaded());
 
+  if (tree_view_)
+    tree_view_->CommitEdit();
+
   EditorNode* parent = show_tree_ ?
       tree_model_->AsNode(tree_view_->GetSelectedNode()) : NULL;
   if (show_tree_ && !parent) {
