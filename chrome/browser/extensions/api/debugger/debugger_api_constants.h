@@ -24,7 +24,8 @@ extern const char kSilentDebuggingRequired[];
 
 // Target types.
 extern const char kTabTargetType[];
-extern const char kExtensionTargetType[];
+extern const char kBackgroundPageTargetType[];
+extern const char kOpaqueTargetType[];
 
 }  // namespace debugger_api_constants
 

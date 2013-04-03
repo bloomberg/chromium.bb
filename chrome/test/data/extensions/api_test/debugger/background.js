@@ -9,6 +9,9 @@ var tabId;
 var debuggee;
 var protocolVersion = "1.0";
 
+var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
+    "'silent-debugger-extension-api' flag is enabled.";
+
 chrome.test.runTests([
 
   function attachMalformedVersion() {
@@ -106,10 +109,10 @@ chrome.test.runTests([
         fail("No tab with given id " + missingDebuggee.tabId + "."));
   },
 
-  function attachToExtensionWithNoSilentFlag() {
-    debuggeeExtension = {extensionId: "foo"};
+  function attachToOwnBackgroundPageWithNoSilentFlag() {
+    var ownExtensionId = chrome.extension.getURL('').split('/')[2];
+    debuggeeExtension = {extensionId: ownExtensionId};
     chrome.debugger.attach(debuggeeExtension, protocolVersion,
-        fail("Cannot attach to an extension unless " +
-            "'silent-debugger-extension-api' flag is enabled."));
+        fail(SILENT_FLAG_REQUIRED));
   }
 ]);

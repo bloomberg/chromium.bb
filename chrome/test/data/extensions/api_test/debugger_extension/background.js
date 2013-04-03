@@ -19,14 +19,14 @@ chrome.test.runTests([
   function attachToMissing() {
     var missingDebuggee = {extensionId: "foo"};
     chrome.debugger.attach(missingDebuggee, protocolVersion,
-        fail("No extension with given id " +
+        fail("No background page with given id " +
             missingDebuggee.extensionId + "."));
   },
 
   function attachAgain() {
     chrome.debugger.attach(debuggee, protocolVersion,
-        fail("Another debugger is already attached to the extension with id: " +
-            debuggee.extensionId + "."));
+        fail("Another debugger is already attached " +
+            "to the background page with id: " + debuggee.extensionId + "."));
   },
 
   function detach() {
@@ -35,7 +35,7 @@ chrome.test.runTests([
 
   function detachAgain() {
     chrome.debugger.detach(debuggee,
-        fail("Debugger is not attached to the extension with id: " +
+        fail("Debugger is not attached to the background page with id: " +
             debuggee.extensionId + "."));
   }
 ]);
