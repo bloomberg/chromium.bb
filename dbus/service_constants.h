@@ -696,6 +696,7 @@ const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
 const char kVerifyDestinationFunction[] = "VerifyDestination";
 
 // Device property names.
+const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
 const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 const char kProviderRequiresRoamingProperty[] =
