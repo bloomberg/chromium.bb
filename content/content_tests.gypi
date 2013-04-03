@@ -338,7 +338,6 @@
         'browser/renderer_host/render_widget_host_view_guest_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_editcommand_helper_unittest.mm',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
-        'browser/renderer_host/smooth_scroll_gesture_controller_unittest.cc',
         'browser/renderer_host/text_input_client_mac_unittest.mm',
         'browser/renderer_host/web_input_event_aura_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',

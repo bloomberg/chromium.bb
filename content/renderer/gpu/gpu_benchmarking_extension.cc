@@ -305,14 +305,16 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
-    return render_view_impl->BeginSmoothScroll(
+    render_view_impl->BeginSmoothScroll(
         scroll_down,
         base::Bind(&OnSmoothScrollCompleted,
                    callback,
                    context),
         pixels_to_scroll,
         mouse_event_x,
-        mouse_event_y) ? v8::True() : v8::False();
+        mouse_event_y);
+
+    return v8::True();
   }
 
   static v8::Handle<v8::Value> RunRenderingBenchmarks(

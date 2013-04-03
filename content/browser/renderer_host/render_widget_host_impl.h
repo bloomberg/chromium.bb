@@ -70,7 +70,7 @@ class MockRenderWidgetHost;
 class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
-class SmoothScrollGestureController;
+class SmoothScrollGesture;
 class TouchEventQueue;
 struct EditCommand;
 
@@ -582,8 +582,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
                        InputEventAckState ack_result);
   void OnBeginSmoothScroll(
-      const ViewHostMsg_BeginSmoothScroll_Params& params,
-      bool* smooth_scroll_started);
+      int gesture_id,
+      const ViewHostMsg_BeginSmoothScroll_Params &params);
   void OnSelectRangeAck();
   void OnMsgMoveCaretAck();
   virtual void OnFocus();
@@ -664,6 +664,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // which may get in recursive loops).
   void DelayedAutoResized();
 
+  // Called periodically to advance the active scroll gesture after being
+  // initiated by OnBeginSmoothScroll.
+  void TickActiveSmoothScrollGesture();
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.
@@ -857,7 +860,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  scoped_ptr<SmoothScrollGestureController> smooth_scroll_gesture_controller_;
+  typedef std::map<int, scoped_refptr<SmoothScrollGesture> >
+      SmoothScrollGestureMap;
+  SmoothScrollGestureMap active_smooth_scroll_gestures_;
+  base::TimeTicks last_smooth_scroll_gestures_tick_time_;
+  bool tick_active_smooth_scroll_gestures_task_posted_;
+
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
   scoped_ptr<OverscrollController> overscroll_controller_;

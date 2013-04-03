@@ -819,8 +819,6 @@
     'browser/renderer_host/render_widget_host_view_mac.mm',
     'browser/renderer_host/render_widget_host_view_win.cc',
     'browser/renderer_host/render_widget_host_view_win.h',
-    'browser/renderer_host/smooth_scroll_gesture_controller.cc',
-    'browser/renderer_host/smooth_scroll_gesture_controller.h',
     'browser/renderer_host/socket_stream_dispatcher_host.cc',
     'browser/renderer_host/socket_stream_dispatcher_host.h',
     'browser/renderer_host/socket_stream_host.cc',
