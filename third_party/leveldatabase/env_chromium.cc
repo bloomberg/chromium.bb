@@ -549,11 +549,16 @@ class ChromiumEnv : public Env, public UMALogger {
                 ::base::PLATFORM_FILE_EXCLUSIVE_WRITE;
     bool created;
     ::base::PlatformFileError error_code;
-    ::base::PlatformFile file = ::base::CreatePlatformFile(
-        CreateFilePath(fname), flags, &created, &error_code);
+    ::base::PlatformFile file;
+    Retrier r(lockfile_time_histogram_, kMaxRenameTimeMillis);
+    do {
+      file = ::base::CreatePlatformFile(
+          CreateFilePath(fname), flags, &created, &error_code);
+    } while (error_code != ::base::PLATFORM_FILE_OK && r.ShouldKeepTrying());
+
     if (error_code != ::base::PLATFORM_FILE_OK) {
       result = Status::IOError(fname, PlatformFileErrorString(error_code));
-      RecordErrorAt(kLockFile);
+      RecordSpecificError(kLockFile, error_code);
     } else {
       ChromiumFileLock* my_lock = new ChromiumFileLock;
       my_lock->file_ = file;
@@ -686,6 +691,7 @@ class ChromiumEnv : public Env, public UMALogger {
   base::HistogramBase* io_error_histogram_;
   base::HistogramBase* random_access_file_histogram_;
   base::HistogramBase* rename_time_histogram_;
+  base::HistogramBase* lockfile_time_histogram_;
   std::map<MethodID, base::HistogramBase*> error_histograms_;
 };
 
@@ -725,16 +731,26 @@ void ChromiumEnv::InitHistograms(const std::string& uma_title) {
   uma_name.append(".");
   MakeErrnoHistogram(uma_name, kWritableFileAppend);
   MakePlatformFileErrorHistogram(uma_name, kNewRandomAccessFile);
+  MakePlatformFileErrorHistogram(uma_name, kLockFile);
+
+  const int kBucketSizeMillis = 25;
+  // Add 2, 1 for each of the buckets <1 and >max.
+  const int kNumBuckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
 
   std::string retry_name(uma_title);
   retry_name.append(".TimeToRename");
-  const int kBucketSizeMillis = 25;
-  // Add 2, 1 for each of the buckets <1 and >max.
-  int num_buckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
   rename_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
       retry_name, base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
-      num_buckets,
+      kNumBuckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
+
+  std::string lock_name(uma_title);
+  lock_name.append(".TimeToLockFile");
+  lockfile_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
+      lock_name, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
+      kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
