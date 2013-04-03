@@ -1416,4 +1416,70 @@ TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
                 changes_2);
 }
 
+// Any favicon urls with the "data" scheme should be ignored.
+TEST_F(SyncFaviconCacheTest, IgnoreDataScheme) {
+  EXPECT_EQ(0U, GetFaviconCount());
+  SetUpInitialSync(syncer::SyncDataList(), syncer::SyncDataList());
+  std::vector<int> expected_icons;
+
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    cache()->OnFaviconVisited(test_data.page_url, GURL());
+  }
+
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetTaskCount());
+
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    test_data.icon_url = GURL("data:image/png;base64;blabla");
+    EXPECT_TRUE(test_data.icon_url.is_valid());
+    OnCustomFaviconDataAvailable(test_data);
+  }
+
+  EXPECT_EQ(0U, GetTaskCount());
+  EXPECT_EQ(0U, GetFaviconCount());
+  syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+  EXPECT_TRUE(changes.empty());
+}
+
+// When visiting a page we've already loaded the favicon for, don't attempt to
+// reload the favicon, just update the visit time using the cached icon url.
+TEST_F(SyncFaviconCacheTest, ReuseCachedIconUrl) {
+  EXPECT_EQ(0U, GetFaviconCount());
+  SetUpInitialSync(syncer::SyncDataList(), syncer::SyncDataList());
+  std::vector<int> expected_icons;
+
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    expected_icons.push_back(i);
+    TestFaviconData test_data = BuildFaviconData(i);
+    cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+  }
+
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetTaskCount());
+
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    OnCustomFaviconDataAvailable(test_data);
+  }
+  processor()->GetAndResetChangeList();
+  EXPECT_EQ(0U, GetTaskCount());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+    syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+    ASSERT_EQ(1U, changes.size());
+    // Just verify the favicon url for the tracking specifics and that the
+    // timestamp is non-null.
+    EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[0].change_type());
+    EXPECT_EQ(test_data.icon_url.spec(),
+              changes[0].sync_data().GetSpecifics().favicon_tracking().
+                  favicon_url());
+    EXPECT_NE(changes[0].sync_data().GetSpecifics().favicon_tracking().
+                  last_visit_time_ms(), 0);
+  }
+  EXPECT_EQ(0U, GetTaskCount());
+}
+
 }  // namespace browser_sync

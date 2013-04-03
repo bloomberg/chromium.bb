@@ -30,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -57,6 +58,7 @@ using prefs::kSyncSessionsGUID;
 using syncer::SESSIONS;
 
 namespace {
+
 // Given a transaction, returns the GUID-based string that should be used for
 // |current_machine_tag_|.
 std::string GetMachineTagFromTransaction(
@@ -366,7 +368,6 @@ bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab,
 // static
 GURL SessionModelAssociator::GetCurrentVirtualURL(
     const SyncedTabDelegate& tab_delegate) {
-  GURL new_url;
   const int current_index = tab_delegate.GetCurrentEntryIndex();
   const int pending_index = tab_delegate.GetPendingEntryIndex();
   const NavigationEntry* current_entry =
@@ -374,6 +375,20 @@ GURL SessionModelAssociator::GetCurrentVirtualURL(
       tab_delegate.GetPendingEntry() :
       tab_delegate.GetEntryAtIndex(current_index);
   return current_entry->GetVirtualURL();
+}
+
+// static
+GURL SessionModelAssociator::GetCurrentFaviconURL(
+    const SyncedTabDelegate& tab_delegate) {
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
+  const NavigationEntry* current_entry =
+      (current_index == pending_index) ?
+      tab_delegate.GetPendingEntry() :
+      tab_delegate.GetEntryAtIndex(current_index);
+  return (current_entry->GetFavicon().valid ?
+          current_entry->GetFavicon().url :
+          GURL());
 }
 
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
@@ -399,8 +414,10 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   // Trigger the favicon load if needed. We do this before opening the write
   // transaction to avoid jank.
   tab_link->set_url(new_url);
-  if (new_url != old_tab_url)
-    favicon_cache_.OnFaviconVisited(new_url, GURL());
+  if (new_url != old_tab_url) {
+    favicon_cache_.OnFaviconVisited(new_url,
+                                    GetCurrentFaviconURL(tab_delegate));
+  }
 
   // Update our last modified time.
   synced_session_tracker_.GetSession(GetCurrentMachineTag())->modified_time =

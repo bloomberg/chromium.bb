@@ -308,6 +308,9 @@ class SessionModelAssociator
   // Return the virtual URL of the current tab, even if it's pending.
   static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate);
 
+  // Return the favicon url of the current tab, even if it's pending.
+  static GURL GetCurrentFaviconURL(const SyncedTabDelegate& tab_delegate);
+
   // Fills a tab sync node with data from a WebContents object. Updates
   // |tab_link| with the current url if it's valid and triggers a favicon
   // load if the url has changed.

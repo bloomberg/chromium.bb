@@ -375,6 +375,24 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
   if (page_task_map_.find(page_url) != page_task_map_.end())
     return;
 
+  PageFaviconMap::const_iterator url_iter = page_favicon_map_.find(page_url);
+  if (url_iter != page_favicon_map_.end()) {
+    FaviconMap::const_iterator icon_iter =
+        synced_favicons_.find(url_iter->second);
+    // TODO(zea): consider what to do when only a subset of supported
+    // resolutions are available.
+    if (icon_iter != synced_favicons_.end() &&
+        icon_iter->second->bitmap_data[SIZE_16].bitmap_data.get()) {
+      DVLOG(2) << "Using cached favicon url for " << page_url.spec()
+               << ": " << icon_iter->second->favicon_url.spec();
+      UpdateFaviconVisitTime(icon_iter->second->favicon_url, base::Time::Now());
+      UpdateSyncState(icon_iter->second->favicon_url,
+                      SYNC_TRACKING,
+                      syncer::SyncChange::ACTION_UPDATE);
+      return;
+    }
+  }
+
   DVLOG(1) << "Triggering favicon load for url " << page_url.spec();
 
   if (!profile_) {
@@ -454,7 +472,7 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
                                          const GURL& icon_url,
                                          const std::string& icon_bytes,
                                          int64 visit_time_ms) {
-  if (!icon_url.is_valid() || !page_url.is_valid())
+  if (!icon_url.is_valid() || !page_url.is_valid() || icon_url.SchemeIs("data"))
     return;
   DVLOG(1) << "Associating " << page_url.spec() << " with favicon at "
            << icon_url.spec();
@@ -580,7 +598,7 @@ void FaviconCache::OnFaviconDataAvailable(
   for (size_t i = 0; i < bitmap_results.size(); ++i) {
     const history::FaviconBitmapResult& bitmap_result = bitmap_results[i];
     GURL favicon_url = bitmap_result.icon_url;
-    if (!favicon_url.is_valid())
+    if (!favicon_url.is_valid() || favicon_url.SchemeIs("data"))
       continue;  // Can happen if the page is still loading.
 
     SyncedFaviconInfo* favicon_info = GetFaviconInfo(favicon_url);
@@ -699,14 +717,16 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
     return;
   // Erase, update the time, then re-insert to maintain ordering.
   recent_favicons_.erase(iter->second);
+  DVLOG(1) << "Updating " << icon_url.spec() << " visit time to "
+           << syncer::GetTimeDebugString(time);
   iter->second->last_visit_time = time;
   recent_favicons_.insert(iter->second);
 
   if (VLOG_IS_ON(2)) {
     for (RecencySet::const_iterator iter = recent_favicons_.begin();
          iter != recent_favicons_.end(); ++iter) {
-      DVLOG(2) << "Favicon " << iter->get()->favicon_url.spec()
-               << ": " << syncer::TimeToProtoTime(iter->get()->last_visit_time);
+      DVLOG(2) << "Favicon " << iter->get()->favicon_url.spec() << ": "
+               << syncer::GetTimeDebugString(iter->get()->last_visit_time);
     }
   }
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
