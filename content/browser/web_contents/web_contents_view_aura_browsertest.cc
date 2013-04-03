@@ -299,6 +299,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
       web_contents->GetRenderViewHost());
 
+  web_contents->GetController().set_min_screenshot_interval(0);
+
   // Do a few navigations initiated by the page.
   ExecuteSyncJSFunction(view_host, "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
@@ -390,6 +392,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
+  web_contents->GetController().set_min_screenshot_interval(0);
 
   struct {
     GURL url;
@@ -427,6 +430,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
         web_contents->GetController().GetActiveEntry());
     EXPECT_FALSE(entry->screenshot().get());
   }
+
+  // Increase the minimum interval between taking screenshots.
+  web_contents->GetController().set_min_screenshot_interval(60000);
+
+  // Navigate again. This should not take any screenshot because of the
+  // increased screenshot interval.
+  NavigationController::LoadURLParams params(navigations[0].url);
+  params.transition_type = PageTransitionFromInt(navigations[0].transition);
+  web_contents->GetController().LoadURLWithParams(params);
+  WaitForLoadStop(web_contents);
+
+  EXPECT_EQ(NULL, tracker.screenshot_taken_for());
 }
 
 }  // namespace content

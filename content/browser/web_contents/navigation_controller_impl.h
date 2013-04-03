@@ -191,6 +191,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   void SetTakeScreenshotCallbackForTest(
       const base::Callback<void(RenderViewHost*)>& take_screenshot_callback);
 
+  void set_min_screenshot_interval(int interval_ms) {
+    DCHECK_GE(interval_ms, 0);
+    min_screenshot_interval_ms_ = interval_ms;
+  }
+
  private:
   friend class RestoreHelper;
   friend class WebContentsImpl;  // For invoking OnReservedPageIDRange.
@@ -407,6 +412,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // sure that the screenshot completion callback does not trigger on a
   // destroyed NavigationControllerImpl.
   base::WeakPtrFactory<NavigationControllerImpl> take_screenshot_factory_;
+
+  base::Time last_screenshot_time_;
+  int min_screenshot_interval_ms_;
 
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or

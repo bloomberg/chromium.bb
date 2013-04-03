@@ -50,6 +50,9 @@ namespace {
 
 const int kInvalidateAll = 0xFFFFFFFF;
 
+// Minimum delay between taking screenshots.
+const int kMinScreenshotIntervalMS = 1000;
+
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
 // and the user types in cnet, then digg and yahoo are pruned.
@@ -220,7 +223,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       is_initial_navigation_(true),
       pending_reload_(NO_RELOAD),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(take_screenshot_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(take_screenshot_factory_(this)),
+      min_screenshot_interval_ms_(kMinScreenshotIntervalMS) {
   DCHECK(browser_context_);
 }
 
@@ -494,6 +498,15 @@ void NavigationControllerImpl::TakeScreenshot() {
   content::RenderWidgetHostView* view = render_view_host->GetView();
   if (!view)
     return;
+
+  // Make sure screenshots aren't taken too frequently.
+  base::Time now = base::Time::Now();
+  if (now - last_screenshot_time_ <
+          base::TimeDelta::FromMilliseconds(min_screenshot_interval_ms_)) {
+    return;
+  }
+
+  last_screenshot_time_ = now;
 
   if (!take_screenshot_callback_.is_null())
     take_screenshot_callback_.Run(render_view_host);
