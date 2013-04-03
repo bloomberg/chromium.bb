@@ -40,6 +40,8 @@ if util.IsWindows():
   _DESKTOP_OS_SPECIFIC_FILTER = [
       # https://code.google.com/p/chromedriver/issues/detail?id=214
       'ChromeDriverTest.testCloseWindow',
+      # https://code.google.com/p/chromedriver/issues/detail?id=299
+      'ChromeLogPathCapabilityTest.testChromeLogPath',
   ]
 
 
@@ -530,7 +532,7 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     driver = self.CreateDriver(chrome_log_path=tmp_log_path.name)
     driver.ExecuteScript('console.info("%s")' % self.LOG_MESSAGE)
     driver.Quit()
-    self.assertIn(self.LOG_MESSAGE, open(tmp_log_path.name).read())
+    self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
 
 
 if __name__ == '__main__':
