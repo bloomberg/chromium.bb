@@ -78,7 +78,7 @@ class BurnControllerImpl
     }
 
     if (state_machine_->download_finished()) {
-      BurnImage();
+      burn_manager_->DoBurn();
       return;
     }
 
@@ -150,7 +150,7 @@ class BurnControllerImpl
   virtual void Init() OVERRIDE {
     if (state_machine_->state() == StateMachine::BURNING) {
       // There is nothing else left to do but observe burn progress.
-      BurnImage();
+      burn_manager_->DoBurn();
     } else if (state_machine_->state() != StateMachine::INITIAL) {
       // User has started burn process, so let's start observing.
       StartBurnImage(base::FilePath(), base::FilePath());
@@ -206,16 +206,10 @@ class BurnControllerImpl
  private:
   void DownloadCompleted(bool success) {
     if (success) {
-      BurnImage();
+      burn_manager_->DoBurn();
     } else {
       burn_manager_->OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
     }
-  }
-
-  void BurnImage() {
-    if (state_machine_->state() == StateMachine::BURNING)
-      return;
-    burn_manager_->DoBurn();
   }
 
   void FinalizeBurn() {

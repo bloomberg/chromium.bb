@@ -380,6 +380,9 @@ void BurnManager::CancelImageFetch() {
 }
 
 void BurnManager::DoBurn() {
+  if (state_machine_->state() == StateMachine::BURNING)
+    return;
+
   if (unzipping_) {
     // We have unzip in progress, maybe it was "cancelled" before and did not
     // finish yet. In that case, let's pretend cancel did not happen.
