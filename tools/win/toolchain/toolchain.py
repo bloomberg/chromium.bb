@@ -35,6 +35,8 @@ def TempDir():
 
 def DeleteAllTempDirs():
   """Remove all temporary directories created by |TempDir()|."""
+  if len(sys.argv) >= 3 and sys.argv[2] == 'noclean':
+    return
   global g_temp_dirs
   if g_temp_dirs:
     sys.stdout.write('Cleaning up temporaries...\n')
@@ -104,6 +106,16 @@ def DownloadDirectXSDK():
   return target_path
 
 
+def DownloadVS2012ExIso():
+  ex_temp_dir = TempDir()
+  target_path = os.path.join(ex_temp_dir, 'VS2012_WDX_ENU.iso')
+  Download(
+      ('http://download.microsoft.com/download/'
+       '1/F/5/1F519CC5-0B90-4EA3-8159-33BFB97EF4D9/VS2012_WDX_ENU.iso'),
+      target_path)
+  return target_path
+
+
 def DownloadSDK8():
   """Download the Win8 SDK. This one is slightly different than the simple
   ones above. There is no .ISO distribution for the Windows 8 SDK. Rather, a
@@ -128,13 +140,34 @@ def DownloadSDK8():
                    '/layout ' + standalone_path)
     if rc == 0:
       return standalone_path
-      break
     count += 1
     sys.stdout.write('Windows 8 SDK failed to download, retrying.\n')
   raise SystemExit("After multiple retries, couldn't download Win8 SDK")
 
 
-class SourceImages(object):
+def DownloadVS2012Update1():
+  """Download Update1 to VS2012. See notes in DownloadSDK8."""
+  update_temp_dir = TempDir()
+  target_path = os.path.join(update_temp_dir, 'vsupdate_KB2707250.exe')
+  standalone_path = os.path.join(update_temp_dir, 'update1_standalone')
+  Download(
+      ('http://download.microsoft.com/download/'
+       '8/A/5/8A5083CE-CD1C-4294-B094-A6CF8F95AD94/vsupdate_KB2707250.exe'),
+      target_path)
+  sys.stdout.write(
+      "Running vsupdate_KB2707250.exe to download VS2012 Update 1... "
+      "(this will take a long time, and there's no progress bar)\n")
+  count = 0
+  while count < 5:
+    rc = os.system(target_path + ' /quiet ' + '/layout ' + standalone_path)
+    if rc == 0:
+      return standalone_path
+    count += 1
+    sys.stdout.write('VS2012 Update 1 failed to download, retrying.\n')
+  raise SystemExit("After multiple retries, couldn't download VS2012 Update 1")
+
+
+class SourceImages2010(object):
   def __init__(self, sdk8_path, wdk_iso, sdk7_update, sdk7_path, dxsdk_path):
     self.sdk8_path = sdk8_path
     self.wdk_iso = wdk_iso
@@ -143,10 +176,10 @@ class SourceImages(object):
     self.dxsdk_path = dxsdk_path
 
 
-def GetSourceImages():
+def GetSourceImages2010():
   """Download all distribution archives for the components we need."""
   if len(sys.argv) >= 2 and sys.argv[1] == 'local':
-    return SourceImages(
+    return SourceImages2010(
         sdk8_path=r'C:\Users\Scott\Desktop\wee\Standalone',
         wdk_iso=r'c:\users\scott\desktop\wee\GRMWDK_EN_7600_1.ISO',
         sdk7_update=r'c:\users\scott\desktop\wee\VC-Compiler-KB2519277.exe',
@@ -160,7 +193,32 @@ def GetSourceImages():
     sdk7_update = DownloadSDKUpdate()
     sdk7_path = DownloadSDK71Iso()
     dxsdk_path = DownloadDirectXSDK()
-    return SourceImages(sdk8_path, wdk_iso, sdk7_update, sdk7_path, dxsdk_path)
+    return SourceImages2010(
+        sdk8_path, wdk_iso, sdk7_update, sdk7_path, dxsdk_path)
+
+
+class SourceImages2012():
+  def __init__(self, ex_path, update_path, wdk_iso):
+    self.ex_path = ex_path
+    self.update_path = update_path
+    self.wdk_iso = wdk_iso
+
+
+def GetSourceImages2012():
+  """Download all distribution archives for the components we need."""
+  if len(sys.argv) >= 2 and sys.argv[1] == 'local':
+    return SourceImages2012(
+        ex_path='C:\Users\Scott\Desktop\wee\VS2012_WDX_ENU.iso',
+        update_path='C:\Users\Scott\Desktop\wee\update1_standalone',
+        wdk_iso=r'c:\users\scott\desktop\wee\GRMWDK_EN_7600_1.ISO')
+  else:
+    ex_path = DownloadVS2012ExIso()
+    update_path = DownloadVS2012Update1()
+    wdk_iso = DownloadWDKIso()
+    return SourceImages2012(
+        ex_path=ex_path,
+        update_path=update_path,
+        wdk_iso=wdk_iso)
 
 
 def ExtractIso(iso_path):
@@ -186,7 +244,7 @@ def ExtractMsi(msi_path):
   return target_path
 
 
-class ExtractedComponents(object):
+class ExtractedComponents2010(object):
   def __init__(self,
       vc_x86, vc_x64,
       buildtools_x86, buildtools_x64, libs_x86, libs_x64, headers,
@@ -207,8 +265,8 @@ class ExtractedComponents(object):
     self.dxsdk = dxsdk
 
 
-def ExtractComponents(images):
-  """Given the paths to the images, extract the required parts, and return the
+def ExtractComponents2010(images):
+  """Given the paths to the images, extract the required parts, and return
   an object containing paths to all the pieces."""
   extracted_sdk7 = ExtractIso(images.sdk7_path)
   extracted_vc_x86 = \
@@ -249,7 +307,7 @@ def ExtractComponents(images):
 
   extracted_dxsdk = ExtractExe(images.dxsdk_path)
 
-  return ExtractedComponents(
+  return ExtractedComponents2010(
       vc_x86=extracted_vc_x86,
       vc_x64=extracted_vc_x64,
       buildtools_x86=extracted_buildtools_x86,
@@ -264,6 +322,92 @@ def ExtractComponents(images):
       dxsdk=extracted_dxsdk)
 
 
+class ExtractedComponents2012(object):
+  def __init__(self,
+               vc_x86, vc_x86_res, librarycore,
+               vc_x86_update, vc_x86_res_update, librarycore_update,
+               sdk_path, metro_sdk_path,
+               buildtools_x86, buildtools_x64, libs_x86, libs_x64, headers):
+    self.vc_x86 = vc_x86
+    self.vc_x86_res = vc_x86_res
+    self.librarycore = librarycore
+    self.vc_x86_update = vc_x86_update
+    self.vc_x86_res_update = vc_x86_res_update
+    self.librarycore_update = librarycore_update
+    self.buildtools_x86 = buildtools_x86
+    self.buildtools_x64 = buildtools_x64
+    self.libs_x86 = libs_x86
+    self.libs_x64 = libs_x64
+    self.headers = headers
+    self.sdk_path = sdk_path
+    self.metro_sdk_path = metro_sdk_path
+
+
+def ExtractComponents2012(images):
+  """Given the paths to the images, extract the required parts and return an
+  object containing paths to all the pieces."""
+  extracted_ex = ExtractIso(images.ex_path)
+
+  extracted_compilercore = ExtractMsi(os.path.join(
+      extracted_ex,
+      r'packages\vc_compilerCore86\vc_compilerCore86.msi'))
+
+  extracted_compilercore_res = ExtractMsi(os.path.join(
+      extracted_ex,
+      r'packages\vc_compilerCore86res\vc_compilerCore86res.msi'))
+
+  extracted_librarycore = ExtractMsi(os.path.join(
+      extracted_ex,
+      r'packages\vc_librarycore86\vc_librarycore86.msi'))
+
+  extracted_wdk = ExtractIso(images.wdk_iso)
+  extracted_buildtools_x86 = \
+      ExtractMsi(os.path.join(extracted_wdk, r'WDK\buildtools_x86fre.msi'))
+  extracted_buildtools_x64 = \
+      ExtractMsi(os.path.join(extracted_wdk, r'WDK\buildtools_x64fre.msi'))
+  extracted_libs_x86 = \
+      ExtractMsi(os.path.join(extracted_wdk, r'WDK\libs_x86fre.msi'))
+  extracted_libs_x64 = \
+      ExtractMsi(os.path.join(extracted_wdk, r'WDK\libs_x64fre.msi'))
+  extracted_headers = \
+      ExtractMsi(os.path.join(extracted_wdk, r'WDK\headers.msi'))
+
+  sdk_msi_path = os.path.join(
+      extracted_ex, 'packages', 'Windows_SDK',
+      r'Windows Software Development Kit-x86_en-us.msi')
+  extracted_sdk_path = ExtractMsi(sdk_msi_path)
+
+  sdk_metro_msi_path = os.path.join(
+      extracted_ex, 'packages', 'Windows_SDK',
+      'Windows Software Development Kit for Metro style Apps-x86_en-us.msi')
+  extracted_metro_sdk_path = ExtractMsi(sdk_metro_msi_path)
+
+  extracted_compilercore_update = ExtractMsi(os.path.join(
+      images.update_path, r'packages\vc_compilercore86\vc_compilercore86.msi'))
+
+  extracted_compilercore_res_update = ExtractMsi(os.path.join(
+      images.update_path,
+      r'packages\vc_compilercore86res\enu\vc_compilercore86res.msi'))
+
+  extracted_librarycore_update = ExtractMsi(os.path.join(
+      images.update_path, r'packages\vc_librarycore86\vc_librarycore86.msi'))
+
+  return ExtractedComponents2012(
+      vc_x86=extracted_compilercore,
+      vc_x86_res=extracted_compilercore_res,
+      librarycore=extracted_librarycore,
+      vc_x86_update=extracted_compilercore_update,
+      vc_x86_res_update=extracted_compilercore_res_update,
+      librarycore_update=extracted_compilercore_update,
+      sdk_path=extracted_sdk_path,
+      metro_sdk_path=extracted_metro_sdk_path,
+      buildtools_x86=extracted_buildtools_x86,
+      buildtools_x64=extracted_buildtools_x64,
+      libs_x86=extracted_libs_x86,
+      libs_x64=extracted_libs_x64,
+      headers=extracted_headers)
+
+
 def PullFrom(list_of_path_pairs, source_root, target_dir):
   """Each pair in |list_of_path_pairs| is (from, to). Join the 'from' with
   |source_root| and the 'to' with |target_dir| and perform a recursive copy."""
@@ -276,7 +420,7 @@ def PullFrom(list_of_path_pairs, source_root, target_dir):
       raise SystemExit("Couldn't copy %s to %s" % (full_source, full_target))
 
 
-def CopyToFinalLocation(extracted, target_dir):
+def CopyToFinalLocation2010(extracted, target_dir):
   """Copy all the directories we need to the target location."""
   sys.stdout.write('Pulling together required pieces...\n')
 
@@ -290,7 +434,6 @@ def CopyToFinalLocation(extracted, target_dir):
 
   from_buildtools_x86 = [
       (r'WinDDK\7600.16385.win7_wdk.100208-1538\bin\x86', r'WDK\bin'),
-      (r'WinDDK\7600.16385.win7_wdk.100208-1538\bin\amd64', r'WDK\bin'),
       ]
   PullFrom(from_buildtools_x86, extracted.buildtools_x86, target_dir)
 
@@ -354,10 +497,64 @@ def CopyToFinalLocation(extracted, target_dir):
   PullFrom(from_dxsdk, extracted.dxsdk, target_dir)
 
 
+def CopyToFinalLocation2012(extracted, target_dir):
+  """Copy all directories we need to the target location."""
+  sys.stdout.write('Pulling together required pieces...\n')
+
+  # Note that order is important because some of the older ones are
+  # overwritten by updates.
+  from_sdk = [(r'Windows Kits\8.0', r'win8sdk')]
+  PullFrom(from_sdk, extracted.sdk_path, target_dir)
+
+  from_metro_sdk = [(r'Windows Kits\8.0', r'win8sdk')]
+  PullFrom(from_sdk, extracted.metro_sdk_path, target_dir)
+
+  # Stock compiler.
+  from_compiler = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_compiler, extracted.vc_x86, target_dir)
+
+  from_compiler_res = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_compiler_res, extracted.vc_x86_res, target_dir)
+
+  from_library = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_library, extracted.librarycore, target_dir)
+
+  # WDK.
+  from_buildtools_x86 = [
+      (r'WinDDK\7600.16385.win7_wdk.100208-1538\bin\x86', r'WDK\bin'),
+      ]
+  PullFrom(from_buildtools_x86, extracted.buildtools_x86, target_dir)
+
+  from_buildtools_x64 = [
+      (r'WinDDK\7600.16385.win7_wdk.100208-1538\bin\amd64', r'WDK\bin'),
+      ]
+  PullFrom(from_buildtools_x64, extracted.buildtools_x64, target_dir)
+
+  from_libs_x86 = [(r'WinDDK\7600.16385.win7_wdk.100208-1538\lib', r'WDK\lib')]
+  PullFrom(from_libs_x86, extracted.libs_x86, target_dir)
+
+  from_libs_x64 = [(r'WinDDK\7600.16385.win7_wdk.100208-1538\lib', r'WDK\lib')]
+  PullFrom(from_libs_x64, extracted.libs_x64, target_dir)
+
+  from_headers = [(r'WinDDK\7600.16385.win7_wdk.100208-1538\inc', r'WDK\inc')]
+  PullFrom(from_headers, extracted.headers, target_dir)
+
+  # Update 1 bits.
+  from_compiler = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_compiler, extracted.vc_x86_update, target_dir)
+
+  from_compiler_res = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_compiler_res, extracted.vc_x86_res_update, target_dir)
+
+  from_library = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
+  PullFrom(from_library, extracted.librarycore_update, target_dir)
+
+
 def PatchAsyncInfo(target_dir):
   """Apply patch from
   http://www.chromium.org/developers/how-tos/build-instructions-windows for
   asyncinfo.h."""
+  # This is only required for the 2010 compiler.
   sys.stdout.write('Patching asyncinfo.h...\n')
   asyncinfo_h_path = os.path.join(
       target_dir, r'win8sdk\Include\winrt\asyncinfo.h')
@@ -369,7 +566,7 @@ def PatchAsyncInfo(target_dir):
     f.write(patched)
 
 
-def GenerateSetEnvCmd(target_dir):
+def GenerateSetEnvCmd(target_dir, vsversion):
   """Generate a batch file that gyp expects to exist to set up the compiler
   environment. This is normally generated by a full install of the SDK, but we
   do it here manually since we do not do a full install."""
@@ -377,6 +574,7 @@ def GenerateSetEnvCmd(target_dir):
         target_dir, r'win8sdk\bin\SetEnv.cmd'), 'w') as file:
     file.write('@echo off\n')
     file.write(':: Generated by tools\\win\\toolchain\\toolchain.py.\n')
+    file.write(':: Targeting VS%s.\n' % vsversion)
     # Common to x86 and x64
     file.write('set PATH=%s;%%PATH%%\n' % (
         os.path.join(target_dir, r'Common7\IDE')))
@@ -396,35 +594,62 @@ def GenerateSetEnvCmd(target_dir):
         os.path.join(target_dir, r'win8sdk\Lib\win8\um\x86')))
     file.write('goto done\n')
 
-    # x64 only.
-    file.write(':x64\n')
-    file.write('set PATH=%s;%s;%s;%%PATH%%\n' % (
-        os.path.join(target_dir, r'win8sdk\bin\x64'),
-        os.path.join(target_dir, r'VC\bin\amd64'),
-        os.path.join(target_dir, r'WDK\bin\amd64')))
-    file.write('set LIB=%s;%s\n' % (
-        os.path.join(target_dir, r'VC\lib\amd64'),
-        os.path.join(target_dir, r'win8sdk\Lib\win8\um\x64')))
+    # Unfortunately, 2012 Express does not include a native 64 bit compiler,
+    # so we have to use the x86->x64 cross.
+    if vsversion == '2012':
+      # x64 only.
+      file.write(':x64\n')
+      file.write('set PATH=%s;%s;%s;%%PATH%%\n' % (
+          os.path.join(target_dir, r'win8sdk\bin\x64'),
+          os.path.join(target_dir, r'VC\bin\x86_amd64'),
+          os.path.join(target_dir, r'WDK\bin\amd64')))
+      file.write('set LIB=%s;%s\n' % (
+          os.path.join(target_dir, r'VC\lib\amd64'),
+          os.path.join(target_dir, r'win8sdk\Lib\win8\um\x64')))
+    else:
+      # x64 only.
+      file.write(':x64\n')
+      file.write('set PATH=%s;%s;%s;%%PATH%%\n' % (
+          os.path.join(target_dir, r'win8sdk\bin\x64'),
+          os.path.join(target_dir, r'VC\bin\amd64'),
+          os.path.join(target_dir, r'WDK\bin\amd64')))
+      file.write('set LIB=%s;%s\n' % (
+          os.path.join(target_dir, r'VC\lib\amd64'),
+          os.path.join(target_dir, r'win8sdk\Lib\win8\um\x64')))
 
     file.write(':done\n')
 
 
-def GenerateTopLevelEnv(target_dir):
+def GenerateTopLevelEnv(target_dir, vsversion):
   """Generate a batch file that sets up various environment variables that let
   the Chromium build files and gyp find SDKs and tools."""
   with open(os.path.join(target_dir, r'env.bat'), 'w') as file:
     file.write('@echo off\n')
     file.write(':: Generated by tools\\win\\toolchain\\toolchain.py.\n')
+    file.write(':: Targeting VS%s.\n' % vsversion)
     file.write('set GYP_DEFINES=windows_sdk_path="%s" '
                 'component=shared_library\n' % (
                     os.path.join(target_dir, 'win8sdk')))
-    file.write('set GYP_MSVS_VERSION=2010e\n')
+    file.write('set GYP_MSVS_VERSION=%se\n' % vsversion)
     file.write('set GYP_MSVS_OVERRIDE_PATH=%s\n' % target_dir)
     file.write('set GYP_GENERATORS=ninja\n')
+    file.write('set GYP_PARALLEL=1\n')
     file.write('set WDK_DIR=%s\n' % os.path.join(target_dir, r'WDK'))
-    file.write('set DXSDK_DIR=%s\n' % os.path.join(target_dir, r'DXSDK'))
+    if vsversion == '2010':
+      file.write('set DXSDK_DIR=%s\n' % os.path.join(target_dir, r'DXSDK'))
     file.write('set WindowsSDKDir=%s\n' %
         os.path.join(target_dir, r'win8sdk'))
+    if vsversion == '2012':
+      # TODO: For 2010 too.
+      base = os.path.join(target_dir, r'VC\redist')
+      paths = [
+          r'Debug_NonRedist\x64\Microsoft.VC110.DebugCRT',
+          r'Debug_NonRedist\x86\Microsoft.VC110.DebugCRT',
+          r'x64\Microsoft.VC110.CRT',
+          r'x86\Microsoft.VC110.CRT',
+        ]
+      additions = ';'.join(os.path.join(base, x) for x in paths)
+      file.write('set PATH=%s;%%PATH%%\n' % additions)
     file.write('echo Environment set for toolchain in %s.\n' % target_dir)
     file.write('cd /d %s\\..\n' % target_dir)
 
@@ -435,18 +660,32 @@ def main():
     parser.add_option('--targetdir', metavar='DIR',
                       help='put toolchain into DIR',
                       default=os.path.abspath('win_toolchain'))
+    parser.add_option('--vsversion', metavar='VSVERSION',
+                      help='select VS version: 2010 or 2012', default='2010')
     options, args = parser.parse_args()
     target_dir = os.path.abspath(options.targetdir)
+    if os.path.exists(target_dir):
+      sys.stderr.write('%s already exists. Please [re]move it or use '
+                       '--targetdir to select a different target.\n' %
+                       target_dir)
+      return 1
     # Set the working directory to 7z subdirectory. 7-zip doesn't find its
     # codec dll very well, so this is the simplest way to make sure it runs
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '7z'))
-    images = GetSourceImages()
-    extracted = ExtractComponents(images)
-    CopyToFinalLocation(extracted, target_dir)
-    PatchAsyncInfo(target_dir)
-    GenerateSetEnvCmd(target_dir)
-    GenerateTopLevelEnv(target_dir)
+    assert options.vsversion in ('2010', '2012')
+    if options.vsversion == '2012':
+      images = GetSourceImages2012()
+      extracted = ExtractComponents2012(images)
+      CopyToFinalLocation2012(extracted, target_dir)
+    else:
+      images = GetSourceImages2010()
+      extracted = ExtractComponents2010(images)
+      CopyToFinalLocation2010(extracted, target_dir)
+      PatchAsyncInfo(target_dir)
+
+    GenerateSetEnvCmd(target_dir, options.vsversion)
+    GenerateTopLevelEnv(target_dir, options.vsversion)
   finally:
     DeleteAllTempDirs()
 
