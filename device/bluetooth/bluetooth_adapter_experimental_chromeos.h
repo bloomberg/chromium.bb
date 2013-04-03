@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_EXPERIMENTAL_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_EXPERIMENTAL_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_
 
 #include <string>
 
@@ -18,11 +18,11 @@ class BluetoothAdapterFactory;
 
 namespace chromeos {
 
-// The BluetoothAdapterChromeOSExperimental class is an alternate implementation
+// The BluetoothAdapterExperimentalChromeOS class is an alternate implementation
 // of BluetoothAdapter for the Chrome OS platform using the Bluetooth Smart
 // capable backend. It will become the sole implementation for Chrome OS, and
 // be renamed to BluetoothAdapterChromeOS, once the backend is switched,
-class BluetoothAdapterChromeOSExperimental
+class BluetoothAdapterExperimentalChromeOS
     : public device::BluetoothAdapter {
  public:
   // BluetoothAdapter override
@@ -54,16 +54,16 @@ class BluetoothAdapterChromeOSExperimental
  private:
   friend class device::BluetoothAdapterFactory;
 
-  BluetoothAdapterChromeOSExperimental();
-  virtual ~BluetoothAdapterChromeOSExperimental();
+  BluetoothAdapterExperimentalChromeOS();
+  virtual ~BluetoothAdapterExperimentalChromeOS();
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapterChromeOSExperimental> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterExperimentalChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterChromeOSExperimental);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterExperimentalChromeOS);
 };
 
 }  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_EXPERIMENTAL_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_

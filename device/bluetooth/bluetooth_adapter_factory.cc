@@ -16,7 +16,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos_experimental.h"
+#include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #elif defined(OS_MACOSX)
@@ -79,12 +79,12 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
 #if defined(OS_CHROMEOS)
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         chromeos::switches::kEnableExperimentalBluetooth)) {
-      chromeos::BluetoothAdapterChromeOSExperimental* new_adapter =
-          new chromeos::BluetoothAdapterChromeOSExperimental;
+      chromeos::BluetoothAdapterExperimentalChromeOS* new_adapter =
+          new chromeos::BluetoothAdapterExperimentalChromeOS();
       default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
     } else {
       chromeos::BluetoothAdapterChromeOS* new_adapter =
-          new chromeos::BluetoothAdapterChromeOS;
+          new chromeos::BluetoothAdapterChromeOS();
       default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
     }
 #elif defined(OS_WIN)

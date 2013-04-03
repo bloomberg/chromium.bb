@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_adapter_chromeos_experimental.h"
+#include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
 
 #include <string>
 
@@ -10,65 +10,65 @@ using device::BluetoothAdapter;
 
 namespace chromeos {
 
-BluetoothAdapterChromeOSExperimental::BluetoothAdapterChromeOSExperimental()
+BluetoothAdapterExperimentalChromeOS::BluetoothAdapterExperimentalChromeOS()
     : BluetoothAdapter(),
       weak_ptr_factory_(this) {
 }
 
-BluetoothAdapterChromeOSExperimental::~BluetoothAdapterChromeOSExperimental() {
+BluetoothAdapterExperimentalChromeOS::~BluetoothAdapterExperimentalChromeOS() {
 }
 
-void BluetoothAdapterChromeOSExperimental::AddObserver(
+void BluetoothAdapterExperimentalChromeOS::AddObserver(
     BluetoothAdapter::Observer* observer) {
 }
 
-void BluetoothAdapterChromeOSExperimental::RemoveObserver(
+void BluetoothAdapterExperimentalChromeOS::RemoveObserver(
     BluetoothAdapter::Observer* observer) {
 }
 
-std::string BluetoothAdapterChromeOSExperimental::address() const {
+std::string BluetoothAdapterExperimentalChromeOS::address() const {
   return std::string();
 }
 
-std::string BluetoothAdapterChromeOSExperimental::name() const {
+std::string BluetoothAdapterExperimentalChromeOS::name() const {
   return std::string();
 }
 
-bool BluetoothAdapterChromeOSExperimental::IsInitialized() const {
+bool BluetoothAdapterExperimentalChromeOS::IsInitialized() const {
   return true;
 }
 
-bool BluetoothAdapterChromeOSExperimental::IsPresent() const {
+bool BluetoothAdapterExperimentalChromeOS::IsPresent() const {
   return false;
 }
 
-bool BluetoothAdapterChromeOSExperimental::IsPowered() const {
+bool BluetoothAdapterExperimentalChromeOS::IsPowered() const {
   return false;
 }
 
-void BluetoothAdapterChromeOSExperimental::SetPowered(bool powered,
+void BluetoothAdapterExperimentalChromeOS::SetPowered(bool powered,
                                           const base::Closure& callback,
                                           const ErrorCallback& error_callback) {
   error_callback.Run();
 }
 
-bool BluetoothAdapterChromeOSExperimental::IsDiscovering() const {
+bool BluetoothAdapterExperimentalChromeOS::IsDiscovering() const {
   return false;
 }
 
-void BluetoothAdapterChromeOSExperimental::StartDiscovering(
+void BluetoothAdapterExperimentalChromeOS::StartDiscovering(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   error_callback.Run();
 }
 
-void BluetoothAdapterChromeOSExperimental::StopDiscovering(
+void BluetoothAdapterExperimentalChromeOS::StopDiscovering(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   error_callback.Run();
 }
 
-void BluetoothAdapterChromeOSExperimental::ReadLocalOutOfBandPairingData(
+void BluetoothAdapterExperimentalChromeOS::ReadLocalOutOfBandPairingData(
     const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
     const ErrorCallback& error_callback) {
   error_callback.Run();
