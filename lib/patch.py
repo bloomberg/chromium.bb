@@ -361,7 +361,7 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
     changeId: If False, throw ValueError if the dep is a ChangeId.
     gerrit_number: If False, throw ValueError if the dep is a gerrit number.
     allow_CL: If True, allow CL: prefix; else view it as an error.
-      That format is primarily used for -g, and in CQ-Depend.
+      That format is primarily used for -g, and in CQ-DEPEND.
   """
   if not text:
     raise ValueError("FormatPatchDep invoked with an empty value: %r"
@@ -403,6 +403,25 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
                 force_external=force_external, strict=strict)
 
 
+def GetPaladinDeps(commit_message):
+  """Get the paladin dependencies for the given |commit_message|."""
+  PALADIN_DEPENDENCY_RE = re.compile(r'^(CQ\W?DEPEND.)(.*)$',
+                                     re.MULTILINE | re.IGNORECASE)
+  PATCH_RE = re.compile('[^, ]+')
+  EXPECTED_PREFIX = 'CQ-DEPEND='
+  matches = PALADIN_DEPENDENCY_RE.findall(commit_message)
+  dependencies = []
+  for prefix, match in matches:
+    if prefix != EXPECTED_PREFIX:
+      msg = 'Expected %r, but got %r' % (EXPECTED_PREFIX, prefix)
+      raise ValueError(msg)
+    for chunk in PATCH_RE.findall(match):
+      chunk = FormatPatchDep(chunk, sha1=False, allow_CL=True)
+      if chunk not in dependencies:
+        dependencies.append(chunk)
+  return dependencies
+
+
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
@@ -414,7 +433,6 @@ class GitRepoPatch(object):
   _STRICT_VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
                                  re.I | re.MULTILINE)
-  _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
                sha1=None, change_id=None):
@@ -828,7 +846,7 @@ class GitRepoPatch(object):
     Parses the Commit message for this change looking for lines that follow
     the format:
 
-    CQ-DEPEND:change_num+ e.g.
+    CQ-DEPEND=change_num+ e.g.
 
     A commit which depends on a couple others.
 
@@ -841,18 +859,10 @@ class GitRepoPatch(object):
 
     self.Fetch(git_repo)
 
-    matches = self._PALADIN_DEPENDENCY_RE.findall(self.commit_message)
-    for match in matches:
-      chunks = ' '.join(match.split(','))
-      chunks = chunks.split()
-      for chunk in chunks:
-        try:
-          chunk = FormatPatchDep(chunk, sha1=False, allow_CL=True)
-        except ValueError, e:
-          raise BrokenCQDepends(self, chunk, str(e))
-
-        if chunk not in dependencies:
-          dependencies.append(chunk)
+    try:
+      dependencies = GetPaladinDeps(self.commit_message)
+    except ValueError as e:
+      raise BrokenCQDepends(self, str(e))
 
     if dependencies:
       logging.debug('Found %s Paladin dependencies for change %s', dependencies,
