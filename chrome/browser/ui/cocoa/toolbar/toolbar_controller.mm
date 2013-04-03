@@ -39,6 +39,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view.h"
+#import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -97,7 +98,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)badgeWrenchMenuIfNeeded;
+- (void)updateWrenchButtonSeverity;
 @end
 
 namespace ToolbarControllerInternal {
@@ -123,7 +124,7 @@ class NotificationBridge
     switch (type) {
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
       case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
-        [controller_ badgeWrenchMenuIfNeeded];
+        [controller_ updateWrenchButtonSeverity];
         break;
       default:
         NOTREACHED();
@@ -254,7 +255,7 @@ class NotificationBridge
   [[wrenchButton_ cell] setImageID:IDR_TOOLS_P
                     forButtonState:image_button_cell::kPressedState];
 
-  [self badgeWrenchMenuIfNeeded];
+  [self updateWrenchButtonSeverity];
 
   [wrenchButton_ setOpenMenuOnClick:YES];
 
@@ -556,22 +557,24 @@ class NotificationBridge
   return wrenchMenuController_;
 }
 
-- (void)badgeWrenchMenuIfNeeded {
+- (void)updateWrenchButtonSeverity {
+  WrenchToolbarButtonCell* cell =
+      base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    [[wrenchButton_ cell]
-        setOverlayImageID:UpgradeDetector::GetInstance()->GetIconResourceID(
-            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE)];
+    [cell setSeverity:WrenchIconPainter::SeverityFromUpgradeLevel(
+        UpgradeDetector::GetInstance()->upgrade_notification_stage())];
     return;
   }
 
   GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
       browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
   if (error) {
-    [[wrenchButton_ cell] setOverlayImageID:IDR_UPDATE_BADGE4];
+    [cell setSeverity:WrenchIconPainter::SeverityFromGlobalErrorSeverity(
+        error->GetSeverity())];
     return;
   }
 
-  [[wrenchButton_ cell] setOverlayImageID:0];
+  [cell setSeverity:WrenchIconPainter::SEVERITY_NONE];
 }
 
 - (void)prefChanged:(const std::string&)prefName {

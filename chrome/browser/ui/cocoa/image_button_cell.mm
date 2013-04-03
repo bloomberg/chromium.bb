@@ -13,10 +13,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-// Adjust the overlay position relative to the top right of the button image.
-const CGFloat kOverlayOffsetX = -3;
-const CGFloat kOverlayOffsetY = 5;
-
 // When the window doesn't have focus then we want to draw the button with a
 // slightly lighter color. We do this by just reducing the alpha.
 const CGFloat kImageNoFocusAlpha = 0.65;
@@ -30,7 +26,6 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 @implementation ImageButtonCell
 
-@synthesize overlayImageID = overlayImageID_;
 @synthesize isMouseInside = isMouseInside_;
 
 // For nib instantiations
@@ -68,7 +63,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   image_button_cell::ButtonState state = [self currentButtonState];
   BOOL windowHasFocus = [[controlView window] isMainWindow] ||
                         [[controlView window] isKeyWindow];
-  CGFloat alpha = windowHasFocus ? 1.0 : kImageNoFocusAlpha;
+  CGFloat alpha = [self imageAlphaForWindowState:[controlView window]];
   NSImage* image = [self imageForState:state view:controlView];
 
   if (!windowHasFocus) {
@@ -103,36 +98,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
      respectFlipped:YES
               hints:nil];
 
-  if (overlayImageID_) {
-    NSImage* overlayImage = [self imageForID:overlayImageID_
-                                 controlView:controlView];
-    NSRect overlayRect;
-    overlayRect.size = [overlayImage size];
-    overlayRect.origin.x = NSMaxX(imageRect) - NSWidth(overlayRect) +
-                           kOverlayOffsetX;
-    overlayRect.origin.y = NSMinY(imageRect) + kOverlayOffsetY;
-
-    [overlayImage drawInRect:overlayRect
-                    fromRect:NSZeroRect
-                   operation:NSCompositeSourceOver
-                    fraction:1.0
-              respectFlipped:YES
-                       hints:nil];
-  }
-
-  // Draws the blue focus ring.
-  if ([self showsFirstResponder]) {
-    gfx::ScopedNSGraphicsContextSaveGState scoped_state;
-    const CGFloat lineWidth = [controlView cr_lineWidth];
-    rect_path_utils::FrameRectWithInset(rect_path_utils::RoundedCornerAll,
-                                        NSInsetRect(cellFrame, 0, lineWidth),
-                                        0.0,            // insetX
-                                        0.0,            // insetY
-                                        3.0,            // outerRadius
-                                        lineWidth * 2,  // lineWidth
-                                        [controlView
-                                            cr_keyboardFocusIndicatorColor]);
-  }
+  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 - (void)setImageID:(NSInteger)imageID
@@ -156,11 +122,24 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   [[self controlView] setNeedsDisplay:YES];
 }
 
-- (void)setOverlayImageID:(NSInteger)imageID {
-  if (overlayImageID_ != imageID) {
-    overlayImageID_ = imageID;
-    [[self controlView] setNeedsDisplay:YES];
-  }
+- (CGFloat)imageAlphaForWindowState:(NSWindow*)window {
+  BOOL windowHasFocus = [window isMainWindow] || [window isKeyWindow];
+  return windowHasFocus ? 1.0 : kImageNoFocusAlpha;
+}
+
+- (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  if (![self showsFirstResponder])
+    return;
+  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
+  const CGFloat lineWidth = [controlView cr_lineWidth];
+  rect_path_utils::FrameRectWithInset(rect_path_utils::RoundedCornerAll,
+                                      NSInsetRect(cellFrame, 0, lineWidth),
+                                      0.0,            // insetX
+                                      0.0,            // insetY
+                                      3.0,            // outerRadius
+                                      lineWidth * 2,  // lineWidth
+                                      [controlView
+                                          cr_keyboardFocusIndicatorColor]);
 }
 
 - (image_button_cell::ButtonState)currentButtonState {

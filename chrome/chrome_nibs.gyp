@@ -249,6 +249,8 @@
         'browser/ui/cocoa/toolbar/toolbar_controller.mm',
         'browser/ui/cocoa/toolbar/toolbar_view.h',
         'browser/ui/cocoa/toolbar/toolbar_view.mm',
+        'browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h',
+        'browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.mm',
         'browser/ui/cocoa/ui_localizer.h',
         'browser/ui/cocoa/ui_localizer.mm',
         'browser/ui/cocoa/vertical_gradient_view.h',

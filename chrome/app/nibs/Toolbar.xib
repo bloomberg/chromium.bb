@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">12B19</string>
-		<string key="IBDocument.InterfaceBuilderVersion">2549</string>
-		<string key="IBDocument.AppKitVersion">1187</string>
-		<string key="IBDocument.HIToolboxVersion">624.00</string>
+		<string key="IBDocument.SystemVersion">12C3012</string>
+		<string key="IBDocument.InterfaceBuilderVersion">2844</string>
+		<string key="IBDocument.AppKitVersion">1187.34</string>
+		<string key="IBDocument.HIToolboxVersion">625.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">2549</string>
+			<string key="NS.object.0">2844</string>
 		</object>
 		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -50,6 +50,7 @@
 						<string key="NSFrame">{{572, -2}, {2, 35}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="602421009"/>
 						<string key="NSClassName">BrowserActionsContainerView</string>
 					</object>
 					<object class="NSTextField" id="535508469">
@@ -58,12 +59,13 @@
 						<string key="NSFrame">{{119, 4}, {454, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="421615633"/>
 						<int key="NSTag">33004</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="464583340">
 							<int key="NSCellFlags">-1804599231</int>
 							<int key="NSCellFlags2">66560</int>
-							<string key="NSContents"></string>
+							<string key="NSContents"/>
 							<object class="NSFont" key="NSSupport">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">13</double>
@@ -98,6 +100,7 @@
 						<string key="NSFrame">{{87, 3}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="535508469"/>
 						<int key="NSTag">33003</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="760046712">
@@ -125,6 +128,7 @@
 						<string key="NSFrame">{{59, 3}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="368496192"/>
 						<int key="NSTag">33002</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="386107000">
@@ -148,6 +152,7 @@
 						<string key="NSFrame">{{31, 3}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="458854861"/>
 						<int key="NSTag">33001</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="3781855">
@@ -171,6 +176,7 @@
 						<string key="NSFrame">{{3, 3}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="781044416"/>
 						<int key="NSTag">33000</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="697431051">
@@ -214,6 +220,7 @@
 				<string key="NSFrameSize">{608, 34}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
+				<reference key="NSNextKeyView" ref="634265909"/>
 				<string key="NSClassName">ToolbarView</string>
 			</object>
 			<object class="NSCustomObject" id="1044322163">
@@ -573,7 +580,7 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>ClickHoldButtonCell</string>
+					<string>WrenchToolbarButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>AutocompleteTextField</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -661,17 +668,6 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">ClickHoldButtonCell</string>
 					<string key="superclassName">ImageButtonCell</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">clickHoldTarget_</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<string key="NS.key.0">clickHoldTarget_</string>
-						<object class="IBToOneOutletInfo" key="NS.object.0">
-							<string key="name">clickHoldTarget_</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/ClickHoldButtonCell.h</string>
@@ -791,22 +787,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">MenuController</string>
-					<string key="superclassName">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/MenuController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">MenuTrackedRootView</string>
-					<string key="superclassName">NSView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/MenuTrackedRootView.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">ReloadButton</string>
 					<string key="superclassName">ToolbarButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -851,9 +831,7 @@
 							<string>homeButton_</string>
 							<string>locationBar_</string>
 							<string>reloadButton_</string>
-							<string>resizeDelegate_</string>
 							<string>wrenchButton_</string>
-							<string>wrenchMenuController_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -863,9 +841,7 @@
 							<string>ToolbarButton</string>
 							<string>AutocompleteTextField</string>
 							<string>ReloadButton</string>
-							<string>id</string>
 							<string>MenuButton</string>
-							<string>WrenchMenuController</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -878,9 +854,7 @@
 							<string>homeButton_</string>
 							<string>locationBar_</string>
 							<string>reloadButton_</string>
-							<string>resizeDelegate_</string>
 							<string>wrenchButton_</string>
-							<string>wrenchMenuController_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -909,16 +883,8 @@
 								<string key="candidateClassName">ReloadButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">resizeDelegate_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
 								<string key="name">wrenchButton_</string>
 								<string key="candidateClassName">MenuButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">wrenchMenuController_</string>
-								<string key="candidateClassName">WrenchMenuController</string>
 							</object>
 						</object>
 					</object>
@@ -936,103 +902,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WrenchMenuController</string>
-					<string key="superclassName">MenuController</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">dispatchWrenchMenuCommand:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<string key="NS.key.0">dispatchWrenchMenuCommand:</string>
-						<object class="IBActionInfo" key="NS.object.0">
-							<string key="name">dispatchWrenchMenuCommand:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>editCopy_</string>
-							<string>editCut_</string>
-							<string>editItem_</string>
-							<string>editPaste_</string>
-							<string>zoomDisplay_</string>
-							<string>zoomFullScreen_</string>
-							<string>zoomItem_</string>
-							<string>zoomMinus_</string>
-							<string>zoomPlus_</string>
-						</object>
-						<object class="NSArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>MenuTrackedRootView</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>MenuTrackedRootView</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>editCopy_</string>
-							<string>editCut_</string>
-							<string>editItem_</string>
-							<string>editPaste_</string>
-							<string>zoomDisplay_</string>
-							<string>zoomFullScreen_</string>
-							<string>zoomItem_</string>
-							<string>zoomMinus_</string>
-							<string>zoomPlus_</string>
-						</object>
-						<object class="NSArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editCopy_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editCut_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editItem_</string>
-								<string key="candidateClassName">MenuTrackedRootView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editPaste_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">zoomDisplay_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">zoomFullScreen_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">zoomItem_</string>
-								<string key="candidateClassName">MenuTrackedRootView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">zoomMinus_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">zoomPlus_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-						</object>
-					</object>
+					<string key="className">WrenchToolbarButtonCell</string>
+					<string key="superclassName">ClickHoldButtonCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WrenchMenuController.h</string>
+						<string key="minorKey">./Classes/WrenchToolbarButtonCell.h</string>
 					</object>
 				</object>
 			</object>
