@@ -105,10 +105,8 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
           io_callback_(base::Bind(&SocketStream::OnIOCompleted,
                                   base::Unretained(this)))),
       read_buf_(NULL),
-      write_buf_(NULL),
       current_write_buf_(NULL),
-      write_buf_offset_(0),
-      write_buf_size_(0),
+      waiting_for_write_completion_(false),
       closing_(false),
       server_closed_(false),
       metrics_(new SocketStreamMetrics(url)) {
@@ -188,39 +186,58 @@ void SocketStream::Connect() {
       base::Bind(&SocketStream::DoLoop, this, OK));
 }
 
+size_t SocketStream::GetTotalSizeOfPendingWriteBufs() const {
+  size_t total_size = 0;
+  for (PendingDataQueue::const_iterator iter = pending_write_bufs_.begin();
+       iter != pending_write_bufs_.end();
+       ++iter)
+    total_size += (*iter)->size();
+  return total_size;
+}
+
 bool SocketStream::SendData(const char* data, int len) {
   DCHECK(MessageLoop::current()) <<
       "The current MessageLoop must exist";
   DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type()) <<
       "The current MessageLoop must be TYPE_IO";
+  DCHECK_GT(len, 0);
+
   if (!socket_.get() || !socket_->IsConnected() || next_state_ == STATE_NONE)
     return false;
-  if (write_buf_) {
-    int current_amount_send = write_buf_size_ - write_buf_offset_;
-    for (PendingDataQueue::const_iterator iter = pending_write_bufs_.begin();
-         iter != pending_write_bufs_.end();
-         ++iter)
-      current_amount_send += (*iter)->size();
 
-    current_amount_send += len;
-    if (current_amount_send > max_pending_send_allowed_)
-      return false;
-
-    pending_write_bufs_.push_back(make_scoped_refptr(
-        new IOBufferWithSize(len)));
-    memcpy(pending_write_bufs_.back()->data(), data, len);
-    return true;
+  int total_buffered_bytes = len;
+  if (current_write_buf_) {
+    // Since
+    // - the purpose of this check is to limit the amount of buffer used by
+    //   this instance.
+    // - the DrainableIOBuffer doesn't release consumed memory.
+    // we need to use not BytesRemaining() but size() here.
+    total_buffered_bytes += current_write_buf_->size();
   }
-  DCHECK(!current_write_buf_);
-  write_buf_ = new IOBuffer(len);
-  memcpy(write_buf_->data(), data, len);
-  write_buf_size_ = len;
-  write_buf_offset_ = 0;
-  // Send pending data asynchronously, so that delegate won't be called
-  // back before returning SendData().
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&SocketStream::DoLoop, this, OK));
+  total_buffered_bytes += GetTotalSizeOfPendingWriteBufs();
+  if (total_buffered_bytes > max_pending_send_allowed_)
+    return false;
+
+  // TODO(tyoshino): Split data into smaller chunks e.g. 8KiB to free consumed
+  // buffer progressively
+  pending_write_bufs_.push_back(make_scoped_refptr(
+      new IOBufferWithSize(len)));
+  memcpy(pending_write_bufs_.back()->data(), data, len);
+
+  // If current_write_buf_ is not NULL, it means that a) there's ongoing write
+  // operation or b) the connection is being closed. If a), the buffer we just
+  // pushed will be automatically handled when the completion callback runs
+  // the loop, and therefore we don't need to enqueue DoLoop(). If b), it's ok
+  // to do nothing. If current_write_buf_ is NULL, to make sure DoLoop() is
+  // ran soon, enequeue it.
+  if (!current_write_buf_) {
+    // Send pending data asynchronously, so that delegate won't be called
+    // back before returning from SendData().
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SocketStream::DoLoop, this, OK));
+  }
+
   return true;
 }
 
@@ -378,30 +395,29 @@ int SocketStream::DidReceiveData(int result) {
   return OK;
 }
 
-int SocketStream::DidSendData(int result) {
+void SocketStream::DidSendData(int result) {
   DCHECK_GT(result, 0);
+  DCHECK(current_write_buf_);
   net_log_.AddEvent(NetLog::TYPE_SOCKET_STREAM_SENT);
-  int len = result;
-  metrics_->OnWrite(len);
-  current_write_buf_ = NULL;
-  if (delegate_)
-    delegate_->OnSentData(this, len);
 
-  int remaining_size = write_buf_size_ - write_buf_offset_ - len;
-  if (remaining_size == 0) {
-    if (!pending_write_bufs_.empty()) {
-      write_buf_size_ = pending_write_bufs_.front()->size();
-      write_buf_ = pending_write_bufs_.front();
-      pending_write_bufs_.pop_front();
-    } else {
-      write_buf_size_ = 0;
-      write_buf_ = NULL;
-    }
-    write_buf_offset_ = 0;
-  } else {
-    write_buf_offset_ += len;
-  }
-  return OK;
+  int bytes_sent = result;
+
+  metrics_->OnWrite(bytes_sent);
+
+  current_write_buf_->DidConsume(result);
+
+  if (current_write_buf_->BytesRemaining())
+    return;
+
+  size_t bytes_freed = current_write_buf_->size();
+
+  current_write_buf_ = NULL;
+
+  // We freed current_write_buf_ and this instance is now able to accept more
+  // data via SendData() (note that DidConsume() doesn't free consumed memory).
+  // We can tell that to delegate_ by calling OnSentData().
+  if (delegate_)
+    delegate_->OnSentData(this, bytes_freed);
 }
 
 void SocketStream::OnIOCompleted(int result) {
@@ -420,8 +436,10 @@ void SocketStream::OnReadCompleted(int result) {
 }
 
 void SocketStream::OnWriteCompleted(int result) {
-  if (result > 0 && write_buf_) {
-    result = DidSendData(result);
+  waiting_for_write_completion_ = false;
+  if (result > 0) {
+    DidSendData(result);
+    result = OK;
   }
   DoLoop(result);
 }
@@ -1077,7 +1095,7 @@ int SocketStream::DoReadWrite(int result) {
   // If client has requested close(), and there's nothing to write, then
   // let's close the socket.
   // We don't care about receiving data after the socket is closed.
-  if (closing_ && !write_buf_ && pending_write_bufs_.empty()) {
+  if (closing_ && !current_write_buf_ && pending_write_bufs_.empty()) {
     socket_->Disconnect();
     next_state_ = STATE_CLOSE;
     return OK;
@@ -1114,28 +1132,39 @@ int SocketStream::DoReadWrite(int result) {
     DCHECK(read_buf_);
   }
 
-  if (write_buf_ && !current_write_buf_) {
-    // No write pending.
-    current_write_buf_ = new DrainableIOBuffer(write_buf_, write_buf_size_);
-    current_write_buf_->SetOffset(write_buf_offset_);
-    result = socket_->Write(current_write_buf_,
-                            current_write_buf_->BytesRemaining(),
-                            base::Bind(&SocketStream::OnWriteCompleted,
-                                       base::Unretained(this)));
-    if (result > 0) {
-      return DidSendData(result);
+  if (waiting_for_write_completion_)
+    return ERR_IO_PENDING;
+
+  if (!current_write_buf_) {
+    if (pending_write_bufs_.empty()) {
+      // Nothing buffered for send.
+      return ERR_IO_PENDING;
     }
-    // If write is not pending, return the result and do next loop (to close
-    // the connection).
-    if (result != 0 && result != ERR_IO_PENDING) {
-      next_state_ = STATE_CLOSE;
-      return result;
-    }
-    return result;
+
+    current_write_buf_ =
+        new DrainableIOBuffer(pending_write_bufs_.front(),
+                              pending_write_bufs_.front()->size());
+    pending_write_bufs_.pop_front();
   }
 
-  // We arrived here when both operation is pending.
-  return ERR_IO_PENDING;
+  result = socket_->Write(current_write_buf_,
+                          current_write_buf_->BytesRemaining(),
+                          base::Bind(&SocketStream::OnWriteCompleted,
+                                     base::Unretained(this)));
+
+  if (result == ERR_IO_PENDING) {
+    waiting_for_write_completion_ = true;
+  } else if (result < 0) {
+    // Shortcut. Enter STATE_CLOSE now by changing next_state_ here than by
+    // calling DoReadWrite() again with the error code.
+    next_state_ = STATE_CLOSE;
+  } else if (result > 0) {
+    // Write is not pending. Return OK and do next loop.
+    DidSendData(result);
+    result = OK;
+  }
+
+  return result;
 }
 
 GURL SocketStream::ProxyAuthOrigin() const {

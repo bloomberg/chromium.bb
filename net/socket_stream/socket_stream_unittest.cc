@@ -258,6 +258,13 @@ class SocketStreamTest : public PlatformTest {
     event->socket->Close();
   }
 
+  virtual void DoFailByTooBigDataAndClose(SocketStreamEvent* event) {
+    std::string frame(event->number + 1, 0x00);
+    VLOG(1) << event->number;
+    EXPECT_FALSE(event->socket->SendData(&frame[0], frame.size()));
+    event->socket->Close();
+  }
+
   virtual int DoSwitchToSpdyTest(SocketStreamEvent* event) {
     return ERR_PROTOCOL_SWITCHED;
   }
@@ -361,6 +368,43 @@ TEST_F(SocketStreamTest, CloseFlushPendingWrite) {
   EXPECT_EQ(SocketStreamEvent::EVENT_ERROR, events[6].event_type);
   EXPECT_EQ(ERR_CONNECTION_CLOSED, events[6].error_code);
   EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[7].event_type);
+}
+
+TEST_F(SocketStreamTest, ExceedMaxPendingSendAllowed) {
+  TestCompletionCallback test_callback;
+
+  scoped_ptr<SocketStreamEventRecorder> delegate(
+      new SocketStreamEventRecorder(test_callback.callback()));
+  delegate->SetOnConnected(base::Bind(
+      &SocketStreamTest::DoFailByTooBigDataAndClose, base::Unretained(this)));
+
+  TestURLRequestContext context;
+
+  scoped_refptr<SocketStream> socket_stream(
+      new SocketStream(GURL("ws://example.com/demo"), delegate.get()));
+
+  socket_stream->set_context(&context);
+
+  DelayedSocketData data_provider(1, NULL, 0, NULL, 0);
+
+  MockClientSocketFactory* mock_socket_factory =
+      GetMockClientSocketFactory();
+  mock_socket_factory->AddSocketDataProvider(&data_provider);
+
+  socket_stream->SetClientSocketFactory(mock_socket_factory);
+
+  socket_stream->Connect();
+
+  test_callback.WaitForResult();
+
+  const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
+  ASSERT_EQ(4U, events.size());
+
+  EXPECT_EQ(SocketStreamEvent::EVENT_START_OPEN_CONNECTION,
+            events[0].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CONNECTED, events[1].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_ERROR, events[2].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[3].event_type);
 }
 
 TEST_F(SocketStreamTest, BasicAuthProxy) {

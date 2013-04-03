@@ -60,10 +60,11 @@ class NET_EXPORT SocketStream
     virtual int OnStartOpenConnection(SocketStream* socket,
                                       const CompletionCallback& callback);
 
-    // Called when socket stream has been connected.  The socket stream accepts
-    // at most |max_pending_send_allowed| so that a client of the socket stream
-    // should keep track of how much it has pending and shouldn't go over
-    // |max_pending_send_allowed| bytes.
+    // Called when a socket stream has been connected.  The socket stream is
+    // allowed to buffer pending send data at most |max_pending_send_allowed|
+    // bytes.  A client of the socket stream should keep track of how much
+    // pending send data it has and must not call SendData() if the pending
+    // data goes over |max_pending_send_allowed| bytes.
     virtual void OnConnected(SocketStream* socket,
                              int max_pending_send_allowed) = 0;
 
@@ -135,10 +136,9 @@ class NET_EXPORT SocketStream
   // Once the connection is established, calls delegate's OnConnected.
   virtual void Connect();
 
-  // Requests to send |len| bytes of |data| on the connection.
-  // Returns true if |data| is buffered in the job.
-  // Returns false if size of buffered data would exceeds
-  // |max_pending_send_allowed_| and |data| is not sent at all.
+  // Buffers |data| of |len| bytes for send and returns true if successful.
+  // If size of buffered data exceeds |max_pending_send_allowed_|, sends no
+  // data and returns false. |len| must be positive.
   virtual bool SendData(const char* data, int len);
 
   // Requests to close the connection.
@@ -270,7 +270,13 @@ class NET_EXPORT SocketStream
 
   int DidEstablishConnection();
   int DidReceiveData(int result);
-  int DidSendData(int result);
+  // Given the number of bytes sent,
+  // - notifies the |delegate_| and |metrics_| of this event.
+  // - drains sent data from |current_write_buf_|.
+  // - if |current_write_buf_| has been fully sent, sets NULL to
+  //   |current_write_buf_| to get ready for next write.
+  // and then, returns OK.
+  void DidSendData(int result);
 
   void OnIOCompleted(int result);
   void OnReadCompleted(int result);
@@ -318,9 +324,17 @@ class NET_EXPORT SocketStream
   SSLConfigService* ssl_config_service() const;
   ProxyService* proxy_service() const;
 
+  // Returns the sum of the size of buffers in |pending_write_bufs_|.
+  size_t GetTotalSizeOfPendingWriteBufs() const;
+
   BoundNetLog net_log_;
 
   GURL url_;
+  // The number of bytes allowed to be buffered in this object. If the size of
+  // buffered data which is
+  //   current_write_buf_.BytesRemaining() +
+  //   sum of the size of buffers in |pending_write_bufs_|
+  // exceeds this limit, SendData() fails.
   int max_pending_send_allowed_;
   const URLRequestContext* context_;
 
@@ -358,16 +372,11 @@ class NET_EXPORT SocketStream
   scoped_refptr<IOBuffer> read_buf_;
   int read_buf_size_;
 
-  // Total amount of buffer (|write_buf_size_| - |write_buf_offset_| +
-  // sum of size of |pending_write_bufs_|) should not exceed
-  // |max_pending_send_allowed_|.
-  // |write_buf_| holds requested data and |current_write_buf_| is used
-  // for Write operation, that is, |current_write_buf_| is
-  // |write_buf_| + |write_buf_offset_|.
-  scoped_refptr<IOBuffer> write_buf_;
+  // Buffer to hold data to pass to socket_.
   scoped_refptr<DrainableIOBuffer> current_write_buf_;
-  int write_buf_offset_;
-  int write_buf_size_;
+  // True iff there's no error and this instance is waiting for completion of
+  // Write operation by socket_.
+  bool waiting_for_write_completion_;
   PendingDataQueue pending_write_bufs_;
 
   bool closing_;
