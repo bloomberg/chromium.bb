@@ -493,10 +493,17 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
 
   url_parse::Component query, key, value;
   query.len = static_cast<int>(params.size());
+  bool key_found = false;
   while (url_parse::ExtractQueryKeyValue(params.c_str(), &query, &key,
                                          &value)) {
     if (key.is_nonempty()) {
       if (params.substr(key.begin, key.len) == search_term_key_) {
+        // Fail if search term key is found twice.
+        if (key_found) {
+          search_terms->clear();
+          return false;
+        }
+        key_found = true;
         // Extract the search term.
         *search_terms = net::UnescapeAndDecodeUTF8URLComponent(
             params.substr(value.begin, value.len),
@@ -508,11 +515,10 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
           *search_terms_component = search_term_key_location_;
         if (search_terms_position)
           *search_terms_position = value;
-        return true;
       }
     }
   }
-  return false;
+  return key_found;
 }
 
 void TemplateURLRef::InvalidateCachedValues() const {

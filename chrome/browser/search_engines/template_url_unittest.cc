@@ -759,7 +759,6 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/?q=something"), &result));
-
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
@@ -788,11 +787,14 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/#espv=0&q=something"), &result));
-
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.ca/?q=something"), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.ca/?q=something&q=anything"), &result));
   EXPECT_EQ(string16(), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(

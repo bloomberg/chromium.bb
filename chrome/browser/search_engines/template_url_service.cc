@@ -1852,10 +1852,8 @@ PrefService* TemplateURLService::GetPrefs() {
 void TemplateURLService::UpdateKeywordSearchTermsForURL(
     const history::URLVisitedDetails& details) {
   const history::URLRow& row = details.row;
-  if (!row.url().is_valid() ||
-      !row.url().parsed_for_possibly_invalid_spec().query.is_nonempty()) {
+  if (!row.url().is_valid())
     return;
-  }
 
   const TemplateURLSet* urls_for_host =
       provider_map_->GetURLsForHost(row.url().host());
@@ -1863,31 +1861,13 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
     return;
 
   QueryTerms query_terms;
-  bool built_terms = false;  // Most URLs won't match a TemplateURLs host;
-                             // so we lazily build the query_terms.
   const std::string path = row.url().path();
 
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
-    const TemplateURLRef& search_ref = (*i)->url_ref();
-
-    // Count the URL against a TemplateURL if the host and path of the
-    // visited URL match that of the TemplateURL as well as the search term's
-    // key of the TemplateURL occurring in the visited url.
-    //
-    // NOTE: Even though we're iterating over TemplateURLs indexed by the host
-    // of the URL we still need to call GetHost on the search_ref. In
-    // particular, GetHost returns an empty string if search_ref doesn't support
-    // replacement or isn't valid for use in keyword search terms.
-
-    if (search_ref.GetHost() == row.url().host() &&
-        search_ref.GetPath() == path) {
-      if (!built_terms && !BuildQueryTerms(row.url(), &query_terms)) {
-        // No query terms. No need to continue with the rest of the
-        // TemplateURLs.
-        return;
-      }
-      built_terms = true;
+    string16 search_terms;
+    if ((*i)->ExtractSearchTermsFromURL(row.url(), &search_terms) &&
+        !search_terms.empty()) {
 
       if (content::PageTransitionStripQualifier(details.transition) ==
           content::PAGE_TRANSITION_KEYWORD) {
@@ -1896,12 +1876,7 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
         // count is boosted.
         AddTabToSearchVisit(**i);
       }
-
-      QueryTerms::iterator j(query_terms.find(search_ref.GetSearchTermKey()));
-      if (j != query_terms.end() && !j->second.empty()) {
-        SetKeywordSearchTermsForURL(*i, row.url(),
-                                    search_ref.SearchTermToString16(j->second));
-      }
+      SetKeywordSearchTermsForURL(*i, row.url(), search_terms);
     }
   }
 }
