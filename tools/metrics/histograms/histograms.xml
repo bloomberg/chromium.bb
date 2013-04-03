@@ -8,9 +8,8 @@ found in the LICENSE file.
 This file is used to generate a comprehensive list of Chrome histograms along
 with a detailed description for each histogram.
 
-TODO(isherman): Update this prose.
 Please pretty-print and validate your edits by running the pretty_print.py
-and update_descriptions.py scripts in the same directory as this file before
+and validate_format.py scripts in the same directory as this file before
 uploading your change for review.
 
 Take a moment to page through the contents of this file. You will find
@@ -55,6 +54,93 @@ other types of suffix sets.
 <!-- Histogram definitions -->
 
 <histograms>
+
+<histogram name="Autocheckout.Bubble" enum="AutocheckoutBubble">
+  <summary>
+    Measures the frequency of user interactions with the Autocheckout bubble,
+    which prompts users to invoke Autocheckout on supported websites.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.FlowDuration" units="ms">
+  <summary>
+    Measures the time elapsed between when the user submitted the Autocheckout
+    dialog and when the Autocheckout flow, or filling process, concluded.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.FlowDuration.Failed" units="ms">
+  <summary>
+    Measures the time elapsed between when the user submitted the Autocheckout
+    dialog and when the Autocheckout flow concluded, in cases where the flow
+    failed.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.FlowDuration.Succeeded" units="ms">
+  <summary>
+    Measures the time elapsed between when the user submitted the Autocheckout
+    dialog and when the Autocheckout flow concluded, in cases where the flow
+    succeeded.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.InitialUserState"
+    enum="AutofillDialogInitialUserState">
+  <summary>
+    The initial state of a user that's interacting with a freshly shown
+    Autocheckout dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.PopupInDialog" enum="AutofillDialogPopupEvent">
+  <summary>
+    User interactions with the Autofill popup shown while filling an
+    Autocheckout dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.Security" enum="AutofillDialogSecurity">
+  <summary>
+    Measures the frequency of security warnings and errors in the Autocheckout
+    dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.UiDuration" units="ms">
+  <summary>
+    Measures the duration for which an Autocheckout dialog was shown.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.UiDuration.Cancel" units="ms">
+  <summary>
+    Measures the duration for which an Autocheckout dialog was shown, in cases
+    where the user ended up canceling out of the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.UiDuration.Submit" units="ms">
+  <summary>
+    Measures the duration for which an Autocheckout dialog was shown, in cases
+    where the user ended up accepting the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.WalletErrors" enum="WalletErrors">
+  <summary>
+    Measures the frequency of errors in communicating with the Google Online
+    Wallet server.
+  </summary>
+</histogram>
+
+<histogram name="Autocheckout.WalletRequiredActions"
+    enum="WalletRequiredActions">
+  <summary>
+    Measures the frequency of required user actions returned by the Google
+    Online Wallet server.
+  </summary>
+</histogram>
 
 <histogram name="Autofill.AddressSuggestionsCount">
   <summary>
@@ -252,11 +338,76 @@ other types of suffix sets.
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
+<histogram name="RequestAutocomplete.InitialUserState"
+    enum="AutofillDialogInitialUserState">
+  <summary>
+    The initial state of a user that's interacting with a freshly shown
+    requestAutocomplete() dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.PopupInDialog"
+    enum="AutofillDialogPopupEvent">
+  <summary>
+    User interactions with the Autofill popup shown while filling an
+    requestAutocomplete() dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.Security" enum="AutofillDialogSecurity">
+  <summary>
+    Measures the frequency of security warnings and errors in the
+    RequestAutocomplete dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.UiDuration" units="ms">
+  <summary>
+    Measures the duration for which an requestAutocomplete() dialog was shown.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.UiDuration.Cancel" units="ms">
+  <summary>
+    Measures the duration for which an requestAutocomplete() dialog was shown,
+    in cases where the user ended up canceling out of the dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.UiDuration.Submit" units="ms">
+  <summary>
+    Measures the duration for which an requestAutocomplete() dialog was shown,
+    in cases where the user ended up accepting the dialog.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.WalletErrors" enum="WalletErrors">
+  <summary>
+    Measures the frequency of errors in communicating with the Google Online
+    Wallet server.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.WalletRequiredActions"
+    enum="WalletRequiredActions">
+  <summary>
+    Measures the frequency of required user actions returned by the Google
+    Online Wallet server.
+  </summary>
+</histogram>
+
 </histograms>
 
 <!-- Enum types -->
 
 <enums>
+
+<enum name="AutocheckoutBubble" type="int">
+  <int value="0" label="Created"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Dismissed"/>
+  <int value="3" label="Ignored"/>
+</enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">
   <int value="0" label="Shown"/>
@@ -268,6 +419,26 @@ other types of suffix sets.
 <enum name="AutofillDeveloperEngagement" type="int">
   <int value="0" label="Fillable form parsed"/>
   <int value="1" label="Includes type hints"/>
+</enum>
+
+<enum name="AutofillDialogInitialUserState" type="int">
+  <int value="0" label="Not signed in, no Autofill"/>
+  <int value="1" label="Not signed in, has Autofill"/>
+  <int value="2" label="Signed in, no Wallet, no Autofill"/>
+  <int value="3" label="Signed in, no Wallet, has Autofill"/>
+  <int value="4" label="Signed in, has Wallet, no Autofill"/>
+  <int value="5" label="Signed in, ha Wallet, has Autofill"/>
+</enum>
+
+<enum name="AutofillDialogPopupEvent" type="int">
+  <int value="0" label="Popup shown"/>
+  <int value="1" label="Form Autofilled"/>
+</enum>
+
+<enum name="AutofillDialogSecurity" type="int">
+  <int value="0" label="Baseline: Dialog shown"/>
+  <int value="1" label="Credit card over HTTP"/>
+  <int value="2" label="Cross-origin frame"/>
 </enum>
 
 <enum name="AutofillExperimentId" type="int">
@@ -1139,6 +1310,35 @@ other types of suffix sets.
   <int value="436" label="SYNCFILESYSTEM_GETFILESYNCSTATUSES"/>
   <int value="437" label="MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
   <int value="438" label="WALLPAPERPRIVATE_RESETWALLPAPER"/>
+</enum>
+
+<enum name="WalletErrors" type="int">
+  <int value="0" label="Baseline: Issued request"/>
+  <int value="1" label="Fatal error (deprecated)"/>
+  <int value="2" label="Malformed response"/>
+  <int value="3" label="Network error"/>
+  <int value="4" label="Bad request"/>
+  <int value="5" label="Internal error"/>
+  <int value="6" label="Invalid params"/>
+  <int value="7" label="Service unavailable"/>
+  <int value="8" label="Spending limit exceeded"/>
+  <int value="9" label="Unsupported API version"/>
+  <int value="10" label="Unknown error"/>
+</enum>
+
+<enum name="WalletRequiredActions" type="int">
+  <int value="0" label="Baseline: Issued request"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="GAIA auth"/>
+  <int value="3" label="Passive GAIA auth"/>
+  <int value="4" label="Set up Wallet"/>
+  <int value="5" label="Accept ToS"/>
+  <int value="6" label="Update expiration date"/>
+  <int value="7" label="Upgrade min address"/>
+  <int value="8" label="Choose another instrument or address"/>
+  <int value="9" label="Verify CVV"/>
+  <int value="10" label="Invalid form field"/>
+  <int value="11" label="Require phone number"/>
 </enum>
 
 </enums>
