@@ -203,8 +203,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
 
 #if defined(USE_AURA)
-  bool overscroll_enabled = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableOverscrollHistoryNavigation);
+  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
   SetOverscrollControllerEnabled(overscroll_enabled);
 #endif
 }
