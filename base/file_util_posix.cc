@@ -159,54 +159,6 @@ bool AbsolutePath(FilePath* path) {
   return true;
 }
 
-int CountFilesCreatedAfter(const FilePath& path,
-                           const base::Time& comparison_time) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  int file_count = 0;
-
-  DIR* dir = opendir(path.value().c_str());
-  if (dir) {
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_BSD) && \
-    !defined(OS_SOLARIS) && !defined(OS_ANDROID)
-  #error Port warning: depending on the definition of struct dirent, \
-         additional space for pathname may be needed
-#endif
-    struct dirent ent_buf;
-    struct dirent* ent;
-    while (readdir_r(dir, &ent_buf, &ent) == 0 && ent) {
-      if ((strcmp(ent->d_name, ".") == 0) ||
-          (strcmp(ent->d_name, "..") == 0))
-        continue;
-
-      stat_wrapper_t st;
-      int test = CallStat(path.Append(ent->d_name).value().c_str(), &st);
-      if (test != 0) {
-        DPLOG(ERROR) << "stat64 failed";
-        continue;
-      }
-      // Here, we use Time::TimeT(), which discards microseconds. This
-      // means that files which are newer than |comparison_time| may
-      // be considered older. If we don't discard microseconds, it
-      // introduces another issue. Suppose the following case:
-      //
-      // 1. Get |comparison_time| by Time::Now() and the value is 10.1 (secs).
-      // 2. Create a file and the current time is 10.3 (secs).
-      //
-      // As POSIX doesn't have microsecond precision for |st_ctime|,
-      // the creation time of the file created in the step 2 is 10 and
-      // the file is considered older than |comparison_time|. After
-      // all, we may have to accept either of the two issues: 1. files
-      // which are older than |comparison_time| are considered newer
-      // (current implementation) 2. files newer than
-      // |comparison_time| are considered older.
-      if (static_cast<time_t>(st.st_ctime) >= comparison_time.ToTimeT())
-        ++file_count;
-    }
-    closedir(dir);
-  }
-  return file_count;
-}
-
 // TODO(erikkay): The Windows version of this accepts paths like "foo/bar/*"
 // which works both with and without the recursive flag.  I'm not sure we need
 // that functionality. If not, remove from file_util_win.cc, otherwise add it
@@ -857,11 +809,6 @@ bool FileEnumerator::ReadDirectory(std::vector<DirectoryEntryInfo>* entries,
 
   closedir(dir);
   return true;
-}
-
-bool HasFileBeenModifiedSince(const FileEnumerator::FindInfo& find_info,
-                              const base::Time& cutoff_time) {
-  return static_cast<time_t>(find_info.stat.st_mtime) >= cutoff_time.ToTimeT();
 }
 
 bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {

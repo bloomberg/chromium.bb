@@ -310,28 +310,6 @@ static const struct dir_case {
 #endif
 };
 
-TEST_F(FileUtilTest, CountFilesCreatedAfter) {
-  FilePath file_name =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("f.txt"));
-  CreateTextFile(file_name, L"test");
-
-  base::PlatformFileInfo info;
-  file_util::GetFileInfo(file_name, &info);
-  base::Time file_time = info.creation_time;
-
-  base::TimeDelta two_secs = base::TimeDelta::FromSeconds(2);
-  base::Time after = file_time + two_secs;
-  EXPECT_EQ(0, file_util::CountFilesCreatedAfter(temp_dir_.path(), after));
-
-  base::Time before = file_time - two_secs;
-  EXPECT_EQ(1, file_util::CountFilesCreatedAfter(temp_dir_.path(), before));
-
-  // After deleting the file, shouldn't find it any more.
-  EXPECT_TRUE(file_util::Delete(file_name, false));
-  EXPECT_EQ(0, file_util::CountFilesCreatedAfter(temp_dir_.path(), before));
-  EXPECT_EQ(0, file_util::CountFilesCreatedAfter(temp_dir_.path(), after));
-}
-
 TEST_F(FileUtilTest, FileAndDirectorySize) {
   // Create three files of 20, 30 and 3 chars (utf8). ComputeDirectorySize
   // should return 53 bytes.
@@ -358,13 +336,6 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
 
   int64 computed_size = file_util::ComputeDirectorySize(temp_dir_.path());
   EXPECT_EQ(size_f1 + size_f2 + 3, computed_size);
-
-  computed_size =
-      file_util::ComputeFilesSize(temp_dir_.path(), FPL("The file*"));
-  EXPECT_EQ(size_f1, computed_size);
-
-  computed_size = file_util::ComputeFilesSize(temp_dir_.path(), FPL("bla*"));
-  EXPECT_EQ(0, computed_size);
 }
 
 TEST_F(FileUtilTest, NormalizeFilePathBasic) {

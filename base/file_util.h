@@ -67,32 +67,12 @@ BASE_EXPORT bool ContainsPath(const base::FilePath& parent,
 //-----------------------------------------------------------------------------
 // Functions that involve filesystem access or modification:
 
-// Returns the number of files matching the current path that were
-// created on or after the given |file_time|.  Doesn't count ".." or ".".
-//
-// Note for POSIX environments: a file created before |file_time|
-// can be mis-detected as a newer file due to low precision of
-// timestmap of file creation time. If you need to avoid such
-// mis-detection perfectly, you should wait one second before
-// obtaining |file_time|.
-BASE_EXPORT int CountFilesCreatedAfter(const base::FilePath& path,
-                                       const base::Time& file_time);
-
 // Returns the total number of bytes used by all the files under |root_path|.
 // If the path does not exist the function returns 0.
 //
 // This function is implemented using the FileEnumerator class so it is not
 // particularly speedy in any platform.
 BASE_EXPORT int64 ComputeDirectorySize(const base::FilePath& root_path);
-
-// Returns the total number of bytes used by all files matching the provided
-// |pattern|, on this |directory| (without recursion). If the path does not
-// exist the function returns 0.
-//
-// This function is implemented using the FileEnumerator class so it is not
-// particularly speedy in any platform.
-BASE_EXPORT int64 ComputeFilesSize(const base::FilePath& directory,
-                                   const base::FilePath::StringType& pattern);
 
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the
@@ -559,11 +539,6 @@ class BASE_EXPORT FileEnumerator {
 
   DISALLOW_COPY_AND_ASSIGN(FileEnumerator);
 };
-
-// Returns whether the file has been modified since a particular date.
-BASE_EXPORT bool HasFileBeenModifiedSince(
-    const FileEnumerator::FindInfo& find_info,
-    const base::Time& cutoff_time);
 
 #if defined(OS_LINUX)
 // Broad categories of file systems as returned by statfs() on Linux.

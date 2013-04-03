@@ -440,15 +440,22 @@ base::FilePath UITestBase::ComputeTypicalUserDataSource(
 int UITestBase::GetCrashCount() const {
   base::FilePath crash_dump_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
-  int actual_crashes = file_util::CountFilesCreatedAfter(
-      crash_dump_path, test_start_time_);
+
+  int files_found = 0;
+  file_util::FileEnumerator en(crash_dump_path, false,
+                               file_util::FileEnumerator::FILES);
+  while (!en.Next().empty()) {
+    file_util::FileEnumerator::FindInfo info;
+    if (file_util::FileEnumerator::GetLastModifiedTime(info) > test_start_time_)
+      files_found++;
+  }
 
 #if defined(OS_WIN)
-  // Each crash creates two dump files, so we divide by two here.
-  actual_crashes /= 2;
-#endif
-
-  return actual_crashes;
+  // Each crash creates two dump files on Windows.
+  return files_found / 2;
+#else
+  return files_found;
+ #endif
 }
 
 std::string UITestBase::CheckErrorsAndCrashes() const {

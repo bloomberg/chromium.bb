@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <set>
-
 #include "chrome/browser/profiles/profile_manager.h"
+
+#include <set>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -83,51 +83,65 @@ std::vector<base::FilePath>& ProfilesToDelete() {
   return profiles_to_delete;
 }
 
+int64 ComputeFilesSize(const base::FilePath& directory,
+                       const base::FilePath::StringType& pattern) {
+  int64 running_size = 0;
+  file_util::FileEnumerator iter(directory, false,
+                                 file_util::FileEnumerator::FILES,
+                                 pattern);
+  while (!iter.Next().empty()) {
+    file_util::FileEnumerator::FindInfo info;
+    iter.GetFindInfo(&info);
+    running_size += file_util::FileEnumerator::GetFilesize(info);
+  }
+  return running_size;
+}
+
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const base::FilePath& path, int extension_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  int64 size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
+  int64 size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
   int size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("History"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("History"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.HistorySize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("History*"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("History*"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalHistorySize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Cookies"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Cookies"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.CookiesSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Bookmarks"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Bookmarks"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Favicons"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Favicons"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.FaviconsSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Top Sites"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Top Sites"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TopSitesSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Visited Links"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Visited Links"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.VisitedLinksSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Web Data"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Web Data"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.WebDataSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Extension*"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Extension*"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Policy"));
+  size = ComputeFilesSize(path, FILE_PATH_LITERAL("Policy"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.PolicySize", size_MB);
 

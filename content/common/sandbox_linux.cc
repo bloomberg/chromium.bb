@@ -209,13 +209,19 @@ bool LinuxSandbox::IsSingleThreaded() const {
   // TODO(jln): re-implement this properly and use our proc_fd_ if available.
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
-  int num_threads = file_util::CountFilesCreatedAfter(
-      base::FilePath("/proc/self/task"),
-      base::Time::UnixEpoch());
+  file_util::FileEnumerator en(base::FilePath("/proc/self/task"), false,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
+  bool found_file = false;
+  while (!en.Next().empty()) {
+    if (found_file)
+      return false;  // Found a second match.
+    found_file = true;
+  }
 
-  // We pass the test if we don't know ( == 0), because the setuid sandbox
-  // will prevent /proc access in some contexts.
-  return num_threads == 1 || num_threads == 0;
+  // We pass the test if we found 0 files becase the setuid sandbox will
+  // prevent /proc access in some contexts.
+  return true;
 }
 
 bool LinuxSandbox::seccomp_bpf_started() const {

@@ -46,36 +46,6 @@ bool AbsolutePath(FilePath* path) {
   return true;
 }
 
-int CountFilesCreatedAfter(const FilePath& path,
-                           const base::Time& comparison_time) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  int file_count = 0;
-  FILETIME comparison_filetime(comparison_time.ToFileTime());
-
-  WIN32_FIND_DATA find_file_data;
-  // All files in given dir
-  std::wstring filename_spec = path.Append(L"*").value();
-  HANDLE find_handle = FindFirstFile(filename_spec.c_str(), &find_file_data);
-  if (find_handle != INVALID_HANDLE_VALUE) {
-    do {
-      // Don't count current or parent directories.
-      if ((wcscmp(find_file_data.cFileName, L"..") == 0) ||
-          (wcscmp(find_file_data.cFileName, L".") == 0))
-        continue;
-
-      long result = CompareFileTime(&find_file_data.ftCreationTime,  // NOLINT
-                                    &comparison_filetime);
-      // File was created after or on comparison time
-      if ((result == 1) || (result == 0))
-        ++file_count;
-    } while (FindNextFile(find_handle,  &find_file_data));
-    FindClose(find_handle);
-  }
-
-  return file_count;
-}
-
 bool Delete(const FilePath& path, bool recursive) {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -753,15 +723,6 @@ FilePath FileEnumerator::Next() {
   }
 
   return FilePath();
-}
-
-bool HasFileBeenModifiedSince(const FileEnumerator::FindInfo& find_info,
-                              const base::Time& cutoff_time) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  FILETIME file_time = cutoff_time.ToFileTime();
-  long result = CompareFileTime(&find_info.ftLastWriteTime,  // NOLINT
-                                &file_time);
-  return result == 1 || result == 0;
 }
 
 bool NormalizeFilePath(const FilePath& path, FilePath* real_path) {
