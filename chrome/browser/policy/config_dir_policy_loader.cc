@@ -156,7 +156,7 @@ void ConfigDirPolicyLoader::Merge3rdPartyPolicy(
   supported_domains["extensions"] = POLICY_DOMAIN_EXTENSIONS;
 
   for (base::DictionaryValue::Iterator domains_it(*domains_dictionary);
-       domains_it.HasNext(); domains_it.Advance()) {
+       !domains_it.IsAtEnd(); domains_it.Advance()) {
     if (!ContainsKey(supported_domains, domains_it.key())) {
       LOG(WARNING) << "Unsupported 3rd party policy domain: "
                    << domains_it.key();
@@ -172,7 +172,7 @@ void ConfigDirPolicyLoader::Merge3rdPartyPolicy(
 
     PolicyDomain domain = supported_domains[domains_it.key()];
     for (base::DictionaryValue::Iterator components_it(*components_dictionary);
-         components_it.HasNext(); components_it.Advance()) {
+         !components_it.IsAtEnd(); components_it.Advance()) {
       const base::DictionaryValue* policy_dictionary;
       if (!components_it.value().GetAsDictionary(&policy_dictionary)) {
         LOG(WARNING) << "3rdparty/" << domains_it.key() << "/"

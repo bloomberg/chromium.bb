@@ -92,7 +92,7 @@ void PolicyMap::LoadFrom(
     const DictionaryValue* policies,
     PolicyLevel level,
     PolicyScope scope) {
-  for (DictionaryValue::Iterator it(*policies); it.HasNext(); it.Advance())
+  for (DictionaryValue::Iterator it(*policies); !it.IsAtEnd(); it.Advance())
     Set(it.key(), level, scope, it.value().DeepCopy());
 }
 

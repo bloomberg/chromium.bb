@@ -215,7 +215,7 @@ void DeviceStatusCollector::TrimStoredActivityPeriods(int64 min_day_key,
       local_state_->GetDictionary(prefs::kDeviceActivityTimes);
 
   scoped_ptr<base::DictionaryValue> copy(activity_times->DeepCopy());
-  for (base::DictionaryValue::Iterator it(*activity_times); it.HasNext();
+  for (base::DictionaryValue::Iterator it(*activity_times); !it.IsAtEnd();
        it.Advance()) {
     int64 timestamp;
     if (base::StringToInt64(it.key(), &timestamp)) {
