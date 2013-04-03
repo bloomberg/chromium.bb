@@ -332,11 +332,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool InstallAttributesIsReady(bool* is_ready) OVERRIDE {
+  virtual void InstallAttributesIsReady(const BoolDBusMethodCallback& callback)
+      OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeInstallAttributesIsReady);
-    return CallBoolMethodAndBlock(&method_call, is_ready);
+    return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -945,9 +946,10 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool InstallAttributesIsReady(bool* is_ready) OVERRIDE {
-    *is_ready = true;
-    return true;
+  virtual void InstallAttributesIsReady(const BoolDBusMethodCallback& callback)
+      OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.

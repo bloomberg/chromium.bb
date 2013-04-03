@@ -195,9 +195,9 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // succeeds.  This method blocks until the call returns.
   virtual bool InstallAttributesFinalize(bool* successful) = 0;
 
-  // Calls InstallAttributesIsReady method and returns true when the call
-  // succeeds.  This method blocks until the call returns.
-  virtual bool InstallAttributesIsReady(bool* is_ready) = 0;
+  // Calls InstallAttributesIsReady method.
+  virtual void InstallAttributesIsReady(
+      const BoolDBusMethodCallback& callback) = 0;
 
   // Calls InstallAttributesIsInvalid method and returns true when the call
   // succeeds.  This method blocks until the call returns.

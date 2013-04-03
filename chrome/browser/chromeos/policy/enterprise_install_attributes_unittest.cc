@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -34,7 +35,9 @@ class EnterpriseInstallAttributesTest : public testing::Test {
  protected:
   EnterpriseInstallAttributesTest()
       : cryptohome_(chromeos::CryptohomeLibrary::GetImpl(true)),
-        install_attributes_(cryptohome_.get()) {}
+        stub_cryptohome_client_(chromeos::CryptohomeClient::Create(
+            chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION, NULL)),
+        install_attributes_(cryptohome_.get(), stub_cryptohome_client_.get()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -54,8 +57,10 @@ class EnterpriseInstallAttributesTest : public testing::Test {
     attribute->set_value(value);
   }
 
+  MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
+  scoped_ptr<chromeos::CryptohomeClient> stub_cryptohome_client_;
   EnterpriseInstallAttributes install_attributes_;
 
   EnterpriseInstallAttributes::LockResult LockDeviceAndWaitForResult(
@@ -158,7 +163,10 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_.GetMode());
   // Lock the attributes empty.
   ASSERT_TRUE(cryptohome_->InstallAttributesFinalize());
-  install_attributes_.ReadImmutableAttributes();
+  base::RunLoop loop;
+  install_attributes_.ReadImmutableAttributes(base::Bind(loop.QuitClosure()));
+  loop.Run();
+
   ASSERT_FALSE(cryptohome_->InstallAttributesIsFirstInstall());
   EXPECT_EQ(DEVICE_MODE_CONSUMER, install_attributes_.GetMode());
 }
@@ -172,7 +180,10 @@ TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
   ASSERT_TRUE(cryptohome_->InstallAttributesSet(
       EnterpriseInstallAttributes::kAttrEnterpriseUser, kTestUser));
   ASSERT_TRUE(cryptohome_->InstallAttributesFinalize());
-  install_attributes_.ReadImmutableAttributes();
+  base::RunLoop loop;
+  install_attributes_.ReadImmutableAttributes(base::Bind(loop.QuitClosure()));
+  loop.Run();
+
   ASSERT_FALSE(cryptohome_->InstallAttributesIsFirstInstall());
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
   EXPECT_EQ(kTestDomain, install_attributes_.GetDomain());

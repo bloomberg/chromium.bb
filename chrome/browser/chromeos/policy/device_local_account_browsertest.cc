@@ -300,9 +300,8 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
   virtual bool InstallAttributesFinalize(bool* successful) OVERRIDE {
     return false;
   }
-  virtual bool InstallAttributesIsReady(bool* is_ready) OVERRIDE {
-    return false;
-  }
+  virtual void InstallAttributesIsReady(
+      const chromeos::BoolDBusMethodCallback& callback) OVERRIDE {}
   virtual bool InstallAttributesIsInvalid(bool* is_invalid) OVERRIDE {
     return true;
   }

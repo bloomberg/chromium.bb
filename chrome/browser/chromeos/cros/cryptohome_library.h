@@ -39,7 +39,6 @@ class CryptohomeLibrary {
   virtual bool InstallAttributesSet(const std::string& name,
                                     const std::string& value) = 0;
   virtual bool InstallAttributesFinalize() = 0;
-  virtual bool InstallAttributesIsReady() = 0;
   virtual bool InstallAttributesIsInvalid() = 0;
   virtual bool InstallAttributesIsFirstInstall() = 0;
 

@@ -95,13 +95,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return success;
   }
 
-  virtual bool InstallAttributesIsReady() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        InstallAttributesIsReady(&result);
-    return result;
-  }
-
   virtual bool InstallAttributesIsInvalid() OVERRIDE {
     bool result = false;
     DBusThreadManager::Get()->GetCryptohomeClient()->
@@ -178,10 +171,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual bool InstallAttributesFinalize() OVERRIDE {
     locked_ = true;
-    return true;
-  }
-
-  virtual bool InstallAttributesIsReady() OVERRIDE {
     return true;
   }
 

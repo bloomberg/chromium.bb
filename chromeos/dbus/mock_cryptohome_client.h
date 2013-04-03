@@ -70,7 +70,8 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const std::vector<uint8>& value,
                     bool* successful));
   MOCK_METHOD1(InstallAttributesFinalize, bool(bool* successful));
-  MOCK_METHOD1(InstallAttributesIsReady, bool(bool* is_ready));
+  MOCK_METHOD1(InstallAttributesIsReady,
+               void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(InstallAttributesIsInvalid, bool(bool* is_invalid));
   MOCK_METHOD1(InstallAttributesIsFirstInstall, bool(bool* is_first_install));
   MOCK_METHOD1(TpmAttestationIsPrepared,

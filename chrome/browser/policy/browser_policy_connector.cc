@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
@@ -123,11 +124,15 @@ BrowserPolicyConnector::BrowserPolicyConnector()
 
 #if defined(OS_CHROMEOS)
   chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-  // |cros_library| may be NULL on unit tests.
-  if (cros_library) {
+  // |cros_library| may be NULL on unit tests. DBusThreadManager may not be
+  // initialized on unit tests..
+  if (cros_library && chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::CryptohomeLibrary* cryptohome =
         cros_library->GetCryptohomeLibrary();
-    install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
+    chromeos::CryptohomeClient* cryptohome_client =
+        chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+    install_attributes_.reset(
+        new EnterpriseInstallAttributes(cryptohome, cryptohome_client));
     base::FilePath install_attrs_file;
     CHECK(PathService::Get(chrome::FILE_INSTALL_ATTRIBUTES,
                            &install_attrs_file));

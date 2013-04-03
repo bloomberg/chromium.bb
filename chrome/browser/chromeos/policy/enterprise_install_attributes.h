@@ -12,7 +12,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 class CryptohomeLibrary;
@@ -48,7 +51,10 @@ class EnterpriseInstallAttributes {
   static const char kAttrEnterpriseOwned[];
   static const char kAttrEnterpriseUser[];
 
-  explicit EnterpriseInstallAttributes(chromeos::CryptohomeLibrary* cryptohome);
+  explicit EnterpriseInstallAttributes(
+      chromeos::CryptohomeLibrary* cryptohome,
+      chromeos::CryptohomeClient* cryptohome_client);
+  ~EnterpriseInstallAttributes();
 
   // Reads data from the cache file. The cache file is used to work around slow
   // cryptohome startup, which takes a while to register its DBus interface.
@@ -56,8 +62,10 @@ class EnterpriseInstallAttributes {
   void ReadCacheFile(const base::FilePath& cache_file);
 
   // Makes sure the local caches for enterprise-related install attributes are
-  // up-to-date with what cryptohome has.
-  void ReadImmutableAttributes();
+  // up-to-date with what cryptohome has. This method checks the readiness of
+  // attributes and read them if ready. Actual read will be performed in
+  // ReadAttributesIfReady().
+  void ReadImmutableAttributes(const base::Closure& callback);
 
   // Locks the device to be an enterprise device registered by the given user.
   // This can also be called after the lock has already been taken, in which
@@ -93,13 +101,35 @@ class EnterpriseInstallAttributes {
   void DecodeInstallAttributes(
       const std::map<std::string, std::string>& attr_map);
 
+  // Helper for ReadImmutableAttributes.
+  void ReadAttributesIfReady(
+      const base::Closure& callback,
+      chromeos::DBusMethodCallStatus call_status,
+      bool result);
+
+  // Helper for LockDevice(). Handles the result of InstallAttributesIsReady()
+  // and continue processing LockDevice if the result is true.
+  void LockDeviceIfAttributesIsReady(
+      const std::string& user,
+      DeviceMode device_mode,
+      const std::string& device_id,
+      const LockResultCallback& callback,
+      chromeos::DBusMethodCallStatus call_status,
+      bool result);
+
+  // Confirms the registered user and invoke the callback.
+  void OnReadImmutableAttributes(const std::string& user,
+                                 const LockResultCallback& callback);
+
   chromeos::CryptohomeLibrary* cryptohome_;
+  chromeos::CryptohomeClient* cryptohome_client_;
 
   bool device_locked_;
   std::string registration_user_;
   std::string registration_domain_;
   std::string registration_device_id_;
   DeviceMode registration_mode_;
+  base::WeakPtrFactory<EnterpriseInstallAttributes> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseInstallAttributes);
 };

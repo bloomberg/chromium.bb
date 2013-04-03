@@ -64,6 +64,8 @@
 #include "rlz/lib/rlz_value_store.h"
 #endif
 
+using ::testing::AnyNumber;
+
 namespace chromeos {
 
 namespace {
@@ -170,6 +172,7 @@ class LoginUtilsTest : public testing::Test,
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
+        cryptohome_client_(NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
@@ -243,8 +246,6 @@ class LoginUtilsTest : public testing::Test,
     ASSERT_TRUE(test_api);
 
     cryptohome_ = new MockCryptohomeLibrary();
-    EXPECT_CALL(*cryptohome_, InstallAttributesIsReady())
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, InstallAttributesIsInvalid())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
@@ -284,8 +285,8 @@ class LoginUtilsTest : public testing::Test,
                               Return(true)));
     test_api->SetCryptohomeLibrary(cryptohome_, true);
 
-    EXPECT_CALL(*mock_dbus_thread_manager_.mock_cryptohome_client(),
-                IsMounted(_));
+    cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
+    EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
@@ -525,6 +526,7 @@ class LoginUtilsTest : public testing::Test,
 
   policy::BrowserPolicyConnector* connector_;
   MockCryptohomeLibrary* cryptohome_;
+  MockCryptohomeClient* cryptohome_client_;
   Profile* prepared_profile_;
 
   base::Closure rlz_initialized_cb_;
@@ -563,6 +565,9 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
+
+  EXPECT_CALL(*cryptohome_client_,
+              InstallAttributesIsReady(_)).Times(AnyNumber());
 
   // Enroll the device.
   EnrollDevice(kUsername);

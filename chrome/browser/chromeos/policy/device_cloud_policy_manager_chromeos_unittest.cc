@@ -19,6 +19,8 @@
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +49,10 @@ class DeviceCloudPolicyManagerChromeOSTest
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
       : cryptohome_library_(chromeos::CryptohomeLibrary::GetImpl(true)),
-        install_attributes_(cryptohome_library_.get()),
+        stub_cryptohome_client_(chromeos::CryptohomeClient::Create(
+            chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION, NULL)),
+        install_attributes_(cryptohome_library_.get(),
+                            stub_cryptohome_client_.get()),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   &install_attributes_)),
         manager_(make_scoped_ptr(store_), &install_attributes_) {}
@@ -64,6 +69,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   }
 
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
+  scoped_ptr<chromeos::CryptohomeClient> stub_cryptohome_client_;
   EnterpriseInstallAttributes install_attributes_;
 
   TestingPrefServiceSimple local_state_;

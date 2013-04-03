@@ -25,6 +25,8 @@ void RunCallbackWithTrue(const BoolDBusMethodCallback& callback) {
 MockCryptohomeClient::MockCryptohomeClient() {
   ON_CALL(*this, IsMounted(_))
       .WillByDefault(Invoke(&RunCallbackWithTrue));
+  ON_CALL(*this, InstallAttributesIsReady(_))
+      .WillByDefault(Invoke(&RunCallbackWithTrue));
 }
 
 MockCryptohomeClient::~MockCryptohomeClient() {}
