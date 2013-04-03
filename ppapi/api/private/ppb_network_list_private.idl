@@ -7,6 +7,8 @@
  * This file defines the <code>PPB_NetworkList_Private</code> interface.
  */
 
+[generate_thunk]
+
 label Chrome {
   M19 = 0.2
 };
@@ -90,6 +92,7 @@ interface PPB_NetworkList_Private {
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
+  [on_failure=PP_NETWORKLIST_UNKNOWN]
   PP_NetworkListType_Private GetType([in] PP_Resource resource,
                                      [in] uint32_t index);
 
@@ -97,6 +100,7 @@ interface PPB_NetworkList_Private {
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
+  [on_failure=PP_NETWORKLIST_DOWN]
   PP_NetworkListState_Private GetState([in] PP_Resource resource,
                                        [in] uint32_t index);
 
