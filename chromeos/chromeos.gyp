@@ -336,6 +336,8 @@
         'dbus/mock_update_engine_client.h',
         'disks/mock_disk_mount_manager.cc',
         'disks/mock_disk_mount_manager.h',
+        'ime/mock_component_extension_ime_manager_delegate.cc',
+        'ime/mock_component_extension_ime_manager_delegate.h',
         'network/onc/onc_test_utils.cc',
         'network/onc/onc_test_utils.h',
       ],

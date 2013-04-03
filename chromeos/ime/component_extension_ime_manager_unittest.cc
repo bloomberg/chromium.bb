@@ -5,70 +5,13 @@
 #include "base/logging.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace input_method {
 
 namespace {
-
-class MockComponentExtensionIMEManagerDelegate
-    : public ComponentExtensionIMEManagerDelegate {
- public:
-  MockComponentExtensionIMEManagerDelegate()
-      : load_call_count_(0), unload_call_count_(0) {
-
-  }
-
-  virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE {
-    return ime_list_;
-  }
-
-  virtual bool Load(const std::string& extension_id,
-                    const std::string& manifest,
-                    const base::FilePath& path) OVERRIDE {
-    last_loaded_extension_id_ = extension_id;
-    load_call_count_++;
-    return true;
-  }
-
-  virtual bool Unload(const std::string& extension_id,
-                      const base::FilePath& path) OVERRIDE {
-    unload_call_count_++;
-    last_unloaded_extension_id_ = extension_id;
-    return false;
-  }
-
-  int load_call_count() const { return load_call_count_; }
-  int unload_call_count() const { return unload_call_count_; }
-  const std::string& last_loaded_extension_id() const {
-    return last_loaded_extension_id_;
-  }
-  const std::string& last_unloaded_extension_id() const {
-    return last_unloaded_extension_id_;
-  }
-  const base::FilePath& last_loaded_file_path() const {
-    return last_loaded_file_path_;
-  }
-  const base::FilePath& last_unloaded_file_path() const {
-    return last_unloaded_file_path_;
-  }
-  void set_ime_list(const std::vector<ComponentExtensionIME>& ime_list) {
-    ime_list_ = ime_list;
-  }
-
- private:
-  int load_call_count_;
-  int unload_call_count_;
-  std::string last_loaded_extension_id_;
-  std::string last_unloaded_extension_id_;
-  base::FilePath last_loaded_file_path_;
-  base::FilePath last_unloaded_file_path_;
-
-  std::vector<ComponentExtensionIME> ime_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockComponentExtensionIMEManagerDelegate);
-};
 
 class TestableComponentExtensionIMEManager
     : public ComponentExtensionIMEManager {
@@ -172,7 +115,7 @@ class ComponentExtensionIMEManagerTest :
 
     ime_list_.push_back(ext3);
 
-    mock_delegate_ = new MockComponentExtensionIMEManagerDelegate();
+    mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     component_ext_mgr_.reset(new ComponentExtensionIMEManager());
     component_ext_mgr_->AddObserver(this);
@@ -190,7 +133,7 @@ class ComponentExtensionIMEManagerTest :
   }
 
  protected:
-  MockComponentExtensionIMEManagerDelegate* mock_delegate_;
+  MockComponentExtIMEManagerDelegate* mock_delegate_;
   scoped_ptr<ComponentExtensionIMEManager> component_ext_mgr_;
   std::vector<ComponentExtensionIME> ime_list_;
 
