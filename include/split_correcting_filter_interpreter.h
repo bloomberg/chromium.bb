@@ -27,7 +27,7 @@ namespace gestures {
 // be the case.
 struct UnmergedContact {
   UnmergedContact() : input_id(-1) {}
-  bool Valid() const { return input_id >= 0; }
+  bool Valid() const { return input_id != -1; }
   void Invalidate() { input_id = -1; }
   short input_id;
   short output_id;
@@ -39,7 +39,7 @@ struct UnmergedContact {
 // because we believe they are actually two parts of the same real contact.
 struct MergedContact {
   MergedContact() : output_id(-1) {}
-  bool Valid() const { return output_id >= 0; }
+  bool Valid() const { return output_id != -1; }
   void Invalidate() { output_id = -1; }
   FingerState input_fingers[2];  // initial state
   short output_id;
