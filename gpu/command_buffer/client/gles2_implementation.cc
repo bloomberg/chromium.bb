@@ -192,7 +192,7 @@ GLES2Implementation::~GLES2Implementation() {
   // shared memory (mapped_memory_) which will free the memory used
   // by the queries. The GPU process when validating that memory is still
   // shared will fail and abort (ie, it will stop running).
-  Finish();
+  WaitForCmd();
   query_tracker_.reset();
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
@@ -206,7 +206,7 @@ GLES2Implementation::~GLES2Implementation() {
   share_group_->SetGLES2ImplementationForDestruction(this);
   share_group_ = NULL;
   // Make sure the commands make it the service.
-  Finish();
+  WaitForCmd();
 }
 
 GLES2CmdHelper* GLES2Implementation::helper() const {
@@ -250,7 +250,7 @@ void GLES2Implementation::FreeUnusedSharedMemory() {
 }
 
 void GLES2Implementation::FreeEverything() {
-  Finish();
+  WaitForCmd();
   query_tracker_->Shrink();
   FreeUnusedSharedMemory();
   transfer_buffer_->Free();
@@ -758,7 +758,7 @@ void GLES2Implementation::Finish() {
 bool GLES2Implementation::MustBeContextLost() {
   bool context_lost = helper_->IsContextLost();
   if (!context_lost) {
-    FinishHelper();
+    WaitForCmd();
     context_lost = helper_->IsContextLost();
   }
   GPU_CHECK(context_lost);
@@ -3056,7 +3056,7 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
   }
 
   if (query_pending) {
-    FinishHelper();
+    WaitForCmd();
   }
 
   for (GLsizei ii = 0; ii < n; ++ii) {
@@ -3204,7 +3204,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
         helper_->WaitForToken(query->token());
         if (!query->CheckResultsAvailable(helper_)) {
           // TODO(gman): Speed this up.
-          FinishHelper();
+          WaitForCmd();
           GPU_CHECK(query->CheckResultsAvailable(helper_));
         }
       }
