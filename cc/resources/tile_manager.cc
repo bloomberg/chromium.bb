@@ -510,8 +510,12 @@ void TileManager::AssignGpuMemoryToTiles() {
       unreleasable_bytes += tile->bytes_consumed_if_allocated();
   }
 
+  // Global state's memory limit can decrease, causing
+  // it to be less than unreleasable_bytes
   size_t bytes_allocatable =
-      global_state_.memory_limit_in_bytes - unreleasable_bytes;
+      global_state_.memory_limit_in_bytes > unreleasable_bytes ?
+      global_state_.memory_limit_in_bytes - unreleasable_bytes :
+      0;
   size_t bytes_that_exceeded_memory_budget_in_now_bin = 0;
   size_t bytes_left = bytes_allocatable;
   for (TileVector::iterator it = live_or_allocated_tiles_.begin();
