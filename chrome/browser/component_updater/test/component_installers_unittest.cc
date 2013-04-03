@@ -38,8 +38,13 @@ const base::FilePath::CharType kDataPath[] =
 #endif
 }
 
-// TODO(jschuh): Get Pepper Flash supported on Win64 build. crbug.com/179716
+// TODO(jschuh): Get Pepper Flash supported on Win64 build.
+// http://crbug.com/179716
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_PepperFlashCheck DISABLED_PepperFlashCheck
+// TODO(avi): Get Pepper Flash supported on the Mac 64 bit build.
+// http://crbug.com/225777
+#elif defined(OS_MACOSX) && defined(ARCH_CPU_X86_64)
 #define MAYBE_PepperFlashCheck DISABLED_PepperFlashCheck
 #else
 #define MAYBE_PepperFlashCheck PepperFlashCheck
