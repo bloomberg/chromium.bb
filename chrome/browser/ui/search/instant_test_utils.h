@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
+#include "base/string16.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -112,6 +113,12 @@ class InstantTestBase {
   bool LoadImage(content::RenderViewHost* rvh,
                  const std::string& image,
                  bool* loaded);
+
+  // Returns the omnibox's inline autocompletion (shown in blue highlight).
+  string16 GetBlueText();
+
+  // Returns the omnibox's suggest text (shown as gray text).
+  string16 GetGrayText();
 
  private:
   GURL instant_url_;

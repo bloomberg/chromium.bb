@@ -106,14 +106,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
     return active_tab()->GetController().GetActiveEntry()->GetURL();
   }
 
-  string16 GetBlueText() {
-    size_t start = 0, end = 0;
-    omnibox()->GetSelectionBounds(&start, &end);
-    if (start > end)
-      std::swap(start, end);
-    return omnibox()->GetText().substr(start, end - start);
-  }
-
   bool GetSelectionState(bool* selected) {
     return GetBoolFromJS(instant()->GetOverlayContents(),
                          "google.ac.gs().api.i()", selected);
@@ -169,12 +161,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   // [facebook], the query.
   SetOmniboxTextAndWaitForOverlayToShow("face");
   EXPECT_EQ(ASCIIToUTF16("face"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("book"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("book"), GetGrayText());
 
   // Backspace to the text "fac".
   EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
   EXPECT_EQ(ASCIIToUTF16("fac"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("ebook"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("ebook"), GetGrayText());
 
   // Press Enter. The page should show search results for [fac].
   EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
@@ -192,13 +184,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   // [fandango], the query.
   SetOmniboxTextAndWaitForOverlayToShow("fan");
   EXPECT_EQ(ASCIIToUTF16("fan"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("dango"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("dango"), GetGrayText());
 
   // Backspace to the text "fa". Expect Google to set gray text for "cebook" to
   // suggest [facebook], the query.
   EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
   EXPECT_EQ(ASCIIToUTF16("fa"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("cebook"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("cebook"), GetGrayText());
 
   // Press Enter. Instant should clear gray text and submit the query [fa].
   EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
@@ -227,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
   EXPECT_EQ(ASCIIToUTF16("facebook.c"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
   EXPECT_TRUE(GetSelectionState(&selected));
   EXPECT_FALSE(selected);
 
@@ -256,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
   EXPECT_EQ(ASCIIToUTF16("facebook.com/"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
   selected = false;
   EXPECT_TRUE(GetSelectionState(&selected));
   EXPECT_TRUE(selected);
@@ -276,14 +268,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   // query [a.copland].
   SetOmniboxTextAndWaitForOverlayToShow("a.cop");
   EXPECT_EQ(ASCIIToUTF16("a.cop"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("land"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("land"), GetGrayText());
 
   // Backspace to the text "a.co". Expect no suggestion text, but the
   // first suggestion should be selected URL "a.co".
   EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
   EXPECT_EQ(ASCIIToUTF16("a.co"), omnibox()->GetText());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
   bool selected = false;
   EXPECT_TRUE(GetSelectionState(&selected));
   EXPECT_TRUE(selected);
@@ -302,8 +294,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   // Type "e.co/" and expect the top suggestion to be the URL "e.co/".
   SetOmniboxTextAndWaitForOverlayToShow("e.co/");
   EXPECT_EQ(ASCIIToUTF16("e.co/"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
   bool selected = false;
   EXPECT_TRUE(GetSelectionState(&selected));
   EXPECT_TRUE(selected);
@@ -311,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   // Backspace to the text "e.co". Expect Google to suggest the query [e.coli].
   EXPECT_TRUE(PressBackspaceAndWaitForOverlayToShow());
   EXPECT_EQ(ASCIIToUTF16("e.co"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("li"), omnibox()->GetInstantSuggestion());
   EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16("li"), GetGrayText());
   selected = true;
   EXPECT_TRUE(GetSelectionState(&selected));
   EXPECT_FALSE(selected);

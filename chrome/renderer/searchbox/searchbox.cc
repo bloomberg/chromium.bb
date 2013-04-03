@@ -309,11 +309,14 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
   }
 }
 
-void SearchBox::OnCancelSelection(const string16& query) {
-  // TODO(sreeram): crbug.com/176101 The state reset below are somewhat wrong.
+void SearchBox::OnCancelSelection(const string16& query,
+                                  bool verbatim,
+                                  size_t selection_start,
+                                  size_t selection_end) {
   query_ = query;
-  verbatim_ = true;
-  selection_start_ = selection_end_ = query_.size();
+  verbatim_ = verbatim;
+  selection_start_ = selection_start;
+  selection_end_ = selection_end;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnKeyPress ESC";
     extensions_v8::SearchBoxExtension::DispatchEscKeyPress(

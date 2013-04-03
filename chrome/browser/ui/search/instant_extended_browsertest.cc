@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_TRUE(content::ExecuteScript(instant_tab,
                                      "suggestion = 'santa claus';"));
   SetOmniboxTextAndWaitForSuggestion("santa ");
-  EXPECT_EQ(ASCIIToUTF16("claus"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("claus"), GetGrayText());
   EXPECT_TRUE(content::ExecuteScript(instant_tab,
       "onChangeCalls = onNativeSuggestionsCalls = 0;"));
 
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
   EXPECT_EQ(ASCIIToUTF16("santa"), omnibox()->GetText());
 
   // Test that the current suggestion is correctly set.
-  EXPECT_EQ(ASCIIToUTF16(" claus"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(" claus"), GetGrayText());
 
   // Commit the search by pressing Enter.
   browser()->window()->GetLocationBar()->AcceptInput();
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
   EXPECT_EQ(ASCIIToUTF16("santa"), omnibox()->GetText());
 
   // Suggestion should be cleared at this point.
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
 // Test that omnibox text is correctly set when committed with focus lost.
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
   EXPECT_EQ(ASCIIToUTF16("johnny"), omnibox()->GetText());
 
   // Test that the current suggestion is correctly set.
-  EXPECT_EQ(ASCIIToUTF16(" depp"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(" depp"), GetGrayText());
 
   // Commit the overlay by lost focus (e.g. clicking on the page).
   instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
   EXPECT_EQ(ASCIIToUTF16("johnny depp"), omnibox()->GetText());
 
   // Suggestion should be cleared at this point.
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
 // Test that omnibox text is correctly set when clicking on committed SERP.
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16("hello kitty"), omnibox()->GetText());
 
   // Suggestion should be cleared at this point.
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
 // Checks that a previous Navigation suggestion is not re-used when a search
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Tell the page to send a URL suggestion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
-                            "behavior = 0;"));
+                            "behavior = 1;"));
   SetOmniboxTextAndWaitForOverlayToShow("exa");
   EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
 
@@ -482,10 +482,82 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsAndHitEscape) {
   EXPECT_FALSE(HasTemporaryText());
 
   // Commit the search by pressing Enter.
-  // TODO(sreeram): Enable this check once @mathp's CL lands:
-  //     https://codereview.chromium.org/12179025/
-  // browser()->window()->GetLocationBar()->AcceptInput();
-  // EXPECT_EQ("hello", GetOmniboxText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  EXPECT_EQ("hello", GetOmniboxText());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PressEscapeWithBlueText) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Set blue text completion.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'chimichanga.com';"
+                            "behavior = 1;"));
+
+  SetOmniboxTextAndWaitForOverlayToShow("chimi");
+
+  EXPECT_EQ(ASCIIToUTF16("chimichanga.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("changa.com"), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+
+  EXPECT_TRUE(ExecuteScript("onChangeCalls = onNativeSuggestionsCalls = 0;"));
+
+  SendDownArrow();
+
+  EXPECT_EQ(ASCIIToUTF16("result 1"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
+      content::NotificationService::AllSources());
+  SendEscape();
+  observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("chimichanga.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("changa.com"), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_EQ(0, on_native_suggestions_calls_);
+  EXPECT_EQ(0, on_change_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PressEscapeWithGrayText) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  // Set gray text completion.
+  EXPECT_TRUE(ExecuteScript("suggestion = 'cowabunga';"
+                            "behavior = 2;"));
+
+  SetOmniboxTextAndWaitForOverlayToShow("cowa");
+
+  EXPECT_EQ(ASCIIToUTF16("cowa"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16("bunga"), GetGrayText());
+
+  EXPECT_TRUE(ExecuteScript("onChangeCalls = onNativeSuggestionsCalls = 0;"));
+
+  SendDownArrow();
+
+  EXPECT_EQ(ASCIIToUTF16("result 1"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
+      content::NotificationService::AllSources());
+  SendEscape();
+  observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("cowa"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16("bunga"), GetGrayText());
+
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_EQ(0, on_native_suggestions_calls_);
+  EXPECT_EQ(0, on_change_calls_);
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
@@ -752,41 +824,37 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   FocusOmniboxAndWaitForInstantExtendedSupport();
 
   // Do not set gray text that is not a suffix of the query.
-  EXPECT_TRUE(ExecuteScript("behavior = 2"));
-  EXPECT_TRUE(ExecuteScript("suggestion = 'potato'"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'potato';"
+                            "behavior = 2;"));
   SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 
   omnibox()->RevertAll();
 
   // Do not set blue text that is not a valid URL completion.
-  EXPECT_TRUE(ExecuteScript("behavior = 1"));
-  EXPECT_TRUE(ExecuteScript("suggestion = 'this is not a url!'"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'this is not a url!';"
+                            "behavior = 1;"));
   SetOmniboxTextAndWaitForOverlayToShow("this is");
   EXPECT_EQ(ASCIIToUTF16("this is"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 
   omnibox()->RevertAll();
 
   // Do not set gray text when blue text is already set.
   // First set up some blue text completion.
-  EXPECT_TRUE(ExecuteScript("behavior = 1"));
-  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com'"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com';"
+                            "behavior = 1;"));
   SetOmniboxTextAndWaitForOverlayToShow("http://www.ex");
-  string16 text = omnibox()->GetText();
-  EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), text);
-  size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-  EXPECT_EQ(ASCIIToUTF16("ample.com"), text.substr(start, end - start));
+  EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("ample.com"), GetBlueText());
+
   // Now try to set gray text for the same query.
-  EXPECT_TRUE(ExecuteScript("behavior = 2"));
-  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com rocks'"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com rocks';"
+                            "behavior = 2;"));
   SetOmniboxText("http://www.ex");
   EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 
   omnibox()->RevertAll();
 
@@ -827,8 +895,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
 
   // When asked to suggest blue text in verbatim mode, suggest the exact
   // omnibox text rather than using the supplied suggestion text.
-  EXPECT_TRUE(ExecuteScript("behavior = 1"));
-  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com/q'"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com/q';"
+                            "behavior = 1;"));
   SetOmniboxText("www.example.com/q");
   omnibox()->OnBeforePossibleChange();
   SetOmniboxText("www.example.com/");
@@ -845,7 +913,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Tell the page to send a URL suggestion.
   EXPECT_TRUE(ExecuteScript("suggestion = 'http://www.example.com';"
-                            "behavior = 0;"));
+                            "behavior = 1;"));
   SetOmniboxTextAndWaitForOverlayToShow("exa");
   EXPECT_EQ(ASCIIToUTF16("example.com"), omnibox()->GetText());
   SetOmniboxText("exam");
@@ -888,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   // Delete the fist Most Visited Item.
   int rid = first_most_visited_item_id_;
   std::ostringstream stream;
-  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -900,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
 
   // Undo the deletion of the fist Most Visited Item.
   stream.str(std::string());
-  stream << "newTabPageHandle.undoMostVisitedDeletion(" << rid << ")";
+  stream << "newTabPageHandle.undoMostVisitedDeletion(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -913,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   // Delete the fist Most Visited Item.
   rid = first_most_visited_item_id_;
   stream.str(std::string());
-  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -923,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   // Delete the second Most Visited Item.
   rid = first_most_visited_item_id_;
   stream.str(std::string());
-  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -935,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
 
   // Delete the second Most Visited Item.
   stream.str(std::string());
-  stream << "newTabPageHandle.undoAllMostVisitedDeletions()";
+  stream << "newTabPageHandle.undoAllMostVisitedDeletions();";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -1318,7 +1386,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
   // Set the query text to the first restricted autocomplete item.
   int rid = 1;
   stream.str(std::string());
-  stream << "apiHandle.setRestrictedValue(" << rid << ")";
+  stream << "apiHandle.setRestrictedValue(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
 
   // Expect that we now receive the empty string when reading the value back.

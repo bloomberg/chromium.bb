@@ -125,7 +125,9 @@ class InstantPage : public content::WebContentsObserver {
   // Tells the page that the user typed |text| into the omnibox. If |verbatim|
   // is false, the page predicts the query the user means to type and fetches
   // results for the prediction. If |verbatim| is true, |text| is taken as the
-  // exact query (no prediction is made).
+  // exact query (no prediction is made). |selection_start| and |selection_end|
+  // mark the inline autocompleted portion (i.e., blue highlighted text). The
+  // omnibox caret (cursor) is at |selection_end|.
   virtual void Update(const string16& text,
                       size_t selection_start,
                       size_t selection_end,
@@ -164,8 +166,11 @@ class InstantPage : public content::WebContentsObserver {
 
   // Tells the page that the user pressed Esc in the omnibox after having
   // arrowed down in the suggestions. The page should reset the selection to
-  // the first suggestion. |user_text| is what the omnibox has been reset to.
-  void CancelSelection(const string16& user_text);
+  // the first suggestion. Arguments are the same as those for Update().
+  void CancelSelection(const string16& user_text,
+                       size_t selection_start,
+                       size_t selection_end,
+                       bool verbatim);
 
   // Tells the page about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);

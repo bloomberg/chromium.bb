@@ -624,10 +624,17 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   last_user_text_ = user_text;
   last_suggestion_ = InstantSuggestion();
 
-  if (UseInstantTabToShowSuggestions())
-    instant_tab_->CancelSelection(full_text);
-  else
-    overlay_->CancelSelection(full_text);
+  // Say |full_text| is "amazon.com" and |user_text| is "ama". This means the
+  // inline autocompletion is "zon.com"; so the selection should span from
+  // user_text.size() to full_text.size(). The selection bounds are inverted
+  // because the caret is at the end of |user_text|, not |full_text|.
+  if (UseInstantTabToShowSuggestions()) {
+    instant_tab_->CancelSelection(user_text, full_text.size(), user_text.size(),
+                                  last_verbatim_);
+  } else {
+    overlay_->CancelSelection(user_text, full_text.size(), user_text.size(),
+                              last_verbatim_);
+  }
 }
 
 content::WebContents* InstantController::GetOverlayContents() const {

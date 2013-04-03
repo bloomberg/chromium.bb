@@ -307,15 +307,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   SetOmniboxTextAndWaitForOverlayToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
-  string16 text = omnibox()->GetText();
-  size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-
-  EXPECT_EQ(ASCIIToUTF16("query suggestion"), text);
-  EXPECT_EQ(ASCIIToUTF16(" suggestion"), text.substr(start, end - start));
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(" suggestion"), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
 // Test that the INSTANT_COMPLETE_NEVER behavior works as expected.
@@ -330,15 +324,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
   SetOmniboxTextAndWaitForOverlayToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
-  string16 text = omnibox()->GetText();
-  size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-
-  EXPECT_EQ(ASCIIToUTF16("query"), text);
-  EXPECT_EQ(ASCIIToUTF16(""), text.substr(start, end - start));
-  EXPECT_EQ(ASCIIToUTF16(" suggestion"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
+  EXPECT_EQ(ASCIIToUTF16(" suggestion"), GetGrayText());
 }
 
 // Test that a valid suggestion is accepted.
@@ -949,16 +937,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
                             "behavior = 'never';"));
 
   SetOmniboxTextAndWaitForOverlayToShow("in");
-  EXPECT_EQ(ASCIIToUTF16("stant"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("stant"), GetGrayText());
 
   SetOmniboxText("ins");
-  EXPECT_EQ(ASCIIToUTF16("tant"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("tant"), GetGrayText());
 
   SetOmniboxText("in");
-  EXPECT_EQ(ASCIIToUTF16("stant"), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16("stant"), GetGrayText());
 
   SetOmniboxText("insane");
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
 // Test that the Instant overlay is recreated if it gets destroyed.

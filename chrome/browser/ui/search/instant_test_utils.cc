@@ -209,3 +209,15 @@ bool InstantTestBase::LoadImage(content::RenderViewHost* rvh,
       "img.src = '" + image + "';";
   return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
 }
+
+string16 InstantTestBase::GetBlueText() {
+  size_t start = 0, end = 0;
+  omnibox()->GetSelectionBounds(&start, &end);
+  if (start > end)
+    std::swap(start, end);
+  return omnibox()->GetText().substr(start, end - start);
+}
+
+string16 InstantTestBase::GetGrayText() {
+  return omnibox()->GetInstantSuggestion();
+}

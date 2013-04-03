@@ -606,6 +606,17 @@ void OmniboxViewGtk::OnRevertTemporaryText() {
   StartUpdatingHighlightedText();
   SetSelectedRange(saved_temporary_selection_);
   FinishUpdatingHighlightedText();
+  // We got here because the user hit the Escape key. We explicitly don't call
+  // TextChanged(), since calling it breaks Instant-Extended, and isn't needed
+  // otherwise (in regular non-Instant or Instant-but-not-Extended modes).
+  //
+  // Why it breaks Instant-Extended: Instant handles the Escape key separately
+  // (cf: OmniboxEditModel::RevertTemporaryText). Calling TextChanged() makes
+  // the page think the user additionally typed some text, causing it to update
+  // its suggestions dropdown with new suggestions, which is wrong.
+  //
+  // Why it isn't needed: OmniboxPopupModel::ResetToDefaultMatch() has already
+  // been called by now; it would've called TextChanged() if it was warranted.
 }
 
 void OmniboxViewGtk::OnBeforePossibleChange() {
