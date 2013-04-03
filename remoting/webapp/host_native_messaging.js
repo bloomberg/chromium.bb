@@ -55,6 +55,16 @@ remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
     return;
   }
 
+  // NativeMessaging API exists on Chrome 26.xxx but fails to notify
+  // onDisconnect in the case where the Host components are not installed. Need
+  // to blacklist these versions of Chrome.
+  var majorVersion = navigator.appVersion.match('Chrome/(\\d+)\.')[1];
+  if (!majorVersion || majorVersion <= 26) {
+    console.log('Native Messaging not supported on this version of Chrome');
+    onDone(false);
+    return;
+  }
+
   try {
     this.port_ = chrome.runtime.connectNative(
         'com.google.chrome.remote_desktop');
