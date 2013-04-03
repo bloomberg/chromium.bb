@@ -7,12 +7,25 @@ html {
 }
 
 body {
+  -webkit-app-region: drag;
   background-color: rgba(20, 20, 20, 0.93);
   color: #999;
   font-size: 80%;
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Click events are not received in draggable area. Making all clickable areas
+ * not draggable to receive click events.
+ * TODO(bshe): Remove this when http://crbug.com/142275 fixed.
+ */
+.dialog-topbar #navstrip,
+.dialog-topbar #close,
+.image-picker li,
+.overlay-container .page,
+#surprise-me {
+  -webkit-app-region: no-drag;
 }
 
 .dialog-container {
