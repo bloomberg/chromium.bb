@@ -6815,18 +6815,17 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN6chrome12_GLOBAL__N_18ReadMtab*
-   fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
-   fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
+   fun:_ZNK6chrome16MtabWatcherLinux8ReadMtab*
+   fun:_ZN6chrome16MtabWatcherLinuxC1ERKN4base8FilePath*
+   fun:_ZN6chrome12_GLOBAL__N_134CreateMtabWatcherLinuxOnFileThread*
 }
 {
    bug_222687b
    Memcheck:Leak
    ...
-   fun:_ZN6chrome12_GLOBAL__N_113GetDeviceInfo*
-   fun:_ZN6chrome19StorageMonitorLinux11AddNewMountERKN4base8FilePathES4_
-   fun:_ZN6chrome19StorageMonitorLinux10UpdateMtabEv
-   fun:_ZN6chrome19StorageMonitorLinux16InitOnFileThreadEv
+   fun:_ZN4base26PostTaskAndReplyWithResultIPN6chrome16MtabWatcherLinux*
+   fun:_ZN7content13BrowserThread26PostTaskAndReplyWithResultIPN6chrome16MtabWatcherLinux*
+   fun:_ZN6chrome19StorageMonitorLinux4InitEv
 }
 {
    bug_222687c
@@ -6917,4 +6916,13 @@
   fun:_ZN8chromeos12input_method22InputMethodManagerImpl4InitERK13scoped_refptrIN4base19SequencedTaskRunnerEES7_
   fun:_ZN8chromeos12input_method10InitializeERK13scoped_refptrIN4base19SequencedTaskRunnerEES6_
   fun:_ZN8chromeos12input_method48InputMethodConfigurationTest_TestInitialize_Test8TestBodyEv
+}
+{
+   bug_226254
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN10extensions16UserScriptMaster14ScriptReloader*
+   fun:_ZN10extensions16UserScriptMaster14ScriptReloader9StartLoad*
+   fun:_ZN10extensions16UserScriptMaster9StartLoadEv
+   fun:_ZN10extensions16UserScriptMaster7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
 }
