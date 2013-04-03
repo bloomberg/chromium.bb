@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_MENU_BUTTON_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_MENU_BUTTON_WIN_H_
 
-#include "ui/views/controls/button/menu_button.h"
+#include "chrome/browser/ui/views/wrench_toolbar_button.h"
 
 // Button used for showing the app menu. Special cases space to show the system
 // menu.
-class AppMenuButtonWin : public views::MenuButton {
+class AppMenuButtonWin : public WrenchToolbarButton {
  public:
   explicit AppMenuButtonWin(views::MenuButtonListener* menu_button_listener);
 

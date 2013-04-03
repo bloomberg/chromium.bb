@@ -27,6 +27,7 @@ class Browser;
 class HomeImageButton;
 class WrenchMenu;
 class WrenchMenuModel;
+class WrenchToolbarButton;
 
 namespace views {
 class MenuListener;
@@ -71,10 +72,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Remove a menu listener.
   void RemoveMenuListener(views::MenuListener* listener);
 
-  // Gets an image with the icon for the app menu and any overlaid notification
-  // badge.
-  gfx::ImageSkia GetAppMenuIcon(views::CustomButton::ButtonState state);
-
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
   // Returns the view to which the bookmark bubble should be anchored.
@@ -85,7 +82,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  views::MenuButton* app_menu() const { return app_menu_; }
+  views::MenuButton* app_menu() const;
 
   // Overridden from AccessiblePaneView
   virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
@@ -196,6 +193,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Updates the badge and the accessible name of the app menu (Wrench).
   void UpdateAppMenuState();
 
+  // Updates the severity level on the wrench menu button.
+  void UpdateWrenchButtonSeverity();
+
   void OnShowHomeButtonChanged();
 
   int content_shadow_height() const;
@@ -210,7 +210,7 @@ class ToolbarView : public views::AccessiblePaneView,
   HomeImageButton* home_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
-  views::MenuButton* app_menu_;
+  WrenchToolbarButton* app_menu_;
   Browser* browser_;
 
   // Controls whether or not a home button should be shown on the toolbar.

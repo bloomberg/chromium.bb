@@ -9,7 +9,7 @@
 #include "ui/views/widget/widget.h"
 
 AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonListener* listener)
-    : views::MenuButton(NULL, string16(), listener, false) {
+    : WrenchToolbarButton(listener) {
 }
 
 bool AppMenuButtonWin::OnKeyPressed(const ui::KeyEvent& event) {

@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
+#include "chrome/browser/ui/views/wrench_toolbar_button.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -137,31 +138,6 @@ int button_spacing() {
   }
   return value;
 }
-
-class BadgeImageSource: public gfx::CanvasImageSource {
- public:
-  BadgeImageSource(const gfx::ImageSkia& icon, const gfx::ImageSkia& badge)
-      : gfx::CanvasImageSource(icon.size(), false),
-        icon_(icon),
-        badge_(badge) {
-  }
-
-  virtual ~BadgeImageSource() {
-  }
-
-  // Overridden from gfx::CanvasImageSource:
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
-    canvas->DrawImageInt(icon_, 0, 0);
-    canvas->DrawImageInt(badge_, icon_.width() - badge_.width(),
-                         kBadgeTopMargin);
-  }
-
- private:
-  const gfx::ImageSkia icon_;
-  const gfx::ImageSkia badge_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgeImageSource);
-};
 
 }  // namespace
 
@@ -279,7 +255,7 @@ void ToolbarView::Init() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   app_menu_ = new AppMenuButtonWin(this);
 #else
-  app_menu_ = new views::MenuButton(NULL, string16(), this, false);
+  app_menu_ = new WrenchToolbarButton(this);
 #endif
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
@@ -346,67 +322,14 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
   menu_listeners_.RemoveObserver(listener);
 }
 
-gfx::ImageSkia ToolbarView::GetAppMenuIcon(
-    views::CustomButton::ButtonState state) {
-  ui::ThemeProvider* tp = GetThemeProvider();
-
-  int id = 0;
-  switch (state) {
-    case views::CustomButton::STATE_NORMAL:  id = IDR_TOOLS;   break;
-    case views::CustomButton::STATE_HOVERED: id = IDR_TOOLS_H; break;
-    case views::CustomButton::STATE_PRESSED: id = IDR_TOOLS_P; break;
-    default:                                 NOTREACHED();     break;
-  }
-  gfx::ImageSkia icon = *tp->GetImageSkiaNamed(id);
-
-#if defined(OS_WIN)
-  // Keep track of whether we were showing the badge before, so we don't send
-  // multiple UMA events for example when multiple Chrome windows are open.
-  static bool incompatibility_badge_showing = false;
-  // Save the old value before resetting it.
-  bool was_showing = incompatibility_badge_showing;
-  incompatibility_badge_showing = false;
-#endif
-
-  GlobalError* global_error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
-
-  bool add_badge = ShouldShowUpgradeRecommended() ||
-                   ShouldShowIncompatibilityWarning() || global_error;
-  if (!add_badge)
-    return icon;
-
-  gfx::ImageSkia badge;
-  // Only one badge can be active at any given time. The Upgrade notification
-  // is deemed most important, then the DLL conflict badge.
-  if (ShouldShowUpgradeRecommended()) {
-    badge = *tp->GetImageSkiaNamed(
-        UpgradeDetector::GetInstance()->GetIconResourceID(
-            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
-  } else if (ShouldShowIncompatibilityWarning()) {
-#if defined(OS_WIN)
-    if (!was_showing)
-      content::RecordAction(UserMetricsAction("ConflictBadge"));
-    badge = *tp->GetImageSkiaNamed(IDR_CONFLICT_BADGE);
-    incompatibility_badge_showing = true;
-#else
-    NOTREACHED();
-#endif
-  } else if (global_error) {
-    badge = *tp->GetImageSkiaNamed(IDR_UPDATE_BADGE4);
-  } else {
-    NOTREACHED();
-  }
-
-  gfx::CanvasImageSource* source = new BadgeImageSource(icon, badge);
-  // ImageSkia takes ownership of |source|.
-  return gfx::ImageSkia(source, source->size());
-}
-
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
   if (star_view && star_view->visible())
     return star_view;
+  return app_menu_;
+}
+
+views::MenuButton* ToolbarView::app_menu() const {
   return app_menu_;
 }
 
@@ -855,10 +778,6 @@ void ToolbarView::LoadImages() {
       tp->GetImageSkiaNamed(IDR_HOME_H));
   home_->SetImage(views::CustomButton::STATE_PRESSED,
       tp->GetImageSkiaNamed(IDR_HOME_P));
-
-  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::STATE_NORMAL));
-  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::STATE_HOVERED));
-  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::STATE_PRESSED));
 }
 
 void ToolbarView::ShowCriticalNotification() {
@@ -883,10 +802,43 @@ void ToolbarView::UpdateAppMenuState() {
   }
   app_menu_->SetAccessibleName(accname_app);
 
-  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::STATE_NORMAL));
-  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::STATE_HOVERED));
-  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::STATE_PRESSED));
+  UpdateWrenchButtonSeverity();
   SchedulePaint();
+}
+
+void ToolbarView::UpdateWrenchButtonSeverity() {
+  // Keep track of whether we were showing the badge before, so we don't send
+  // multiple UMA events for example when multiple Chrome windows are open.
+  static bool incompatibility_badge_showing = false;
+  // Save the old value before resetting it.
+  bool was_showing = incompatibility_badge_showing;
+  incompatibility_badge_showing = false;
+
+  if (ShouldShowUpgradeRecommended()) {
+    app_menu_->SetSeverity(WrenchIconPainter::SeverityFromUpgradeLevel(
+        UpgradeDetector::GetInstance()->upgrade_notification_stage()));
+    return;
+  }
+
+  if (ShouldShowIncompatibilityWarning()) {
+    if (!was_showing)
+      content::RecordAction(UserMetricsAction("ConflictBadge"));
+    app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_HIGH);
+    incompatibility_badge_showing = true;
+    return;
+  }
+
+  GlobalErrorService* service =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile());
+  GlobalError* error =
+      service->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
+  if (error) {
+    app_menu_->SetSeverity(WrenchIconPainter::SeverityFromGlobalErrorSeverity(
+        error->GetSeverity()));
+    return;
+  }
+
+  app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_NONE);
 }
 
 void ToolbarView::OnShowHomeButtonChanged() {
