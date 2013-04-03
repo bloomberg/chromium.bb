@@ -180,6 +180,7 @@
       ],
       'sources': [
         'browser/browser_keyevents_browsertest.cc',
+        'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
         'browser/extensions/api/tabs/tabs_interactive_test.cc',
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
@@ -732,13 +733,13 @@
       'target_name': 'chrome_devtools_lib',
       'type': 'static_library',
       'hard_dependency': 1,
-      'dependencies': [   
+      'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../third_party/zlib/zlib.gyp:minizip',
-        '../third_party/zlib/zlib.gyp:zlib',          
+        '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -868,7 +869,7 @@
     {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
-      'dependencies': [   
+      'dependencies': [
         'chrome_devtools_lib',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -1235,7 +1236,7 @@
         'browser/extensions/api/metrics_private/metrics_apitest.cc',
         'browser/extensions/api/module/module_apitest.cc',
         'browser/extensions/api/notifications/notifications_apitest.cc',
-        'browser/extensions/api/omnibox/omnibox_apitest.cc',
+        'browser/extensions/api/omnibox/omnibox_api_browsertest.cc',
         'browser/extensions/api/page_capture/page_capture_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
         'browser/extensions/api/preference/preference_apitest.cc',
