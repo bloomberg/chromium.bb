@@ -17,8 +17,8 @@
           "focused": {"type": "boolean", "description": "Whether the window is currently the focused window."},
           "top": {"type": "integer", "optional": true, "description": "The offset of the window from the top edge of the screen in pixels. Under some circumstances a Window may not be assigned top property, for example when querying closed windows from the $ref:sessionRestore API."},
           "left": {"type": "integer", "optional": true, "description": "The offset of the window from the left edge of the screen in pixels. Under some circumstances a Window may not be assigned left property, for example when querying closed windows from the $ref:sessionRestore API."},
-          "width": {"type": "integer", "optional": true, "description": "The width of the window in pixels. Under some circumstances a Window may not be assigned width property, for example when querying closed windows from the $ref:sessionRestore API."},
-          "height": {"type": "integer", "optional": true, "description": "The height of the window in pixels. Under some circumstances a Window may not be assigned height property, for example when querying closed windows from the $ref:sessionRestore API."},
+          "width": {"type": "integer", "optional": true, "description": "The width of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned width property, for example when querying closed windows from the $ref:sessionRestore API."},
+          "height": {"type": "integer", "optional": true, "description": "The height of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned height property, for example when querying closed windows from the $ref:sessionRestore API."},
           "tabs": {"type": "array", "items": { "$ref": "tabs.Tab" }, "optional": true, "description": "Array of $ref:tabs.Tab objects representing the current tabs in the window."},
           "incognito": {"type": "boolean", "description": "Whether the window is incognito."},
           "type": {
@@ -170,8 +170,8 @@
               "tabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The id of the tab for which you want to adopt to the new window."},
               "left": {"type": "integer", "optional": true, "description": "The number of pixels to position the new window from the left edge of the screen. If not specified, the new window is offset naturally from the last focused window. This value is ignored for panels."},
               "top": {"type": "integer", "optional": true, "description": "The number of pixels to position the new window from the top edge of the screen. If not specified, the new window is offset naturally from the last focused window. This value is ignored for panels."},
-              "width": {"type": "integer", "minimum": 0, "optional": true, "description": "The width in pixels of the new window. If not specified defaults to a natural width."},
-              "height": {"type": "integer", "minimum": 0, "optional": true, "description": "The height in pixels of the new window. If not specified defaults to a natural height."},
+              "width": {"type": "integer", "minimum": 0, "optional": true, "description": "The width in pixels of the new window, including the frame. If not specified defaults to a natural width."},
+              "height": {"type": "integer", "minimum": 0, "optional": true, "description": "The height in pixels of the new window, including the frame. If not specified defaults to a natural height."},
               "focused": {"type": "boolean", "optional": true, "description": "If true, opens an active window. If false, opens an inactive window."},
               "incognito": {"type": "boolean", "optional": true, "description": "Whether the new window should be an incognito window."},
               "type": {

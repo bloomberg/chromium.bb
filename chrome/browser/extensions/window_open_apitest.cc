@@ -402,6 +402,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
   ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
 }
 
+#if defined(OS_MACOSX)
+// Extension popup windows are incorrectly sized on OSX, crbug.com/225601
+#define MAYBE_WindowOpenSized DISABLED_WindowOpenSized
+#else
+#define MAYBE_WindowOpenSized WindowOpenSized
+#endif
+// Ensure that the width and height properties of a window opened with
+// chrome.windows.create match the creation parameters. See crbug.com/173831.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WindowOpenSized) {
+  ASSERT_TRUE(RunExtensionTest("window_open/window_size")) << message_;
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 1, 0));
+}
+
 // Tests that an extension page can call window.open to an extension URL and
 // the new window has extension privileges.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
