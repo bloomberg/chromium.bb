@@ -144,11 +144,7 @@ class Manifest(object):
          'swarm_data.zip'],
       ],
       'tests': self.tasks,
-      'env_vars': {
-        'GTEST_FILTER': self.test_filter,
-        'GTEST_SHARD_INDEX': '%(instance_index)s',
-        'GTEST_TOTAL_SHARDS': '%(num_instances)s',
-      },
+      'env_vars': {},
       'configurations': [
         {
           'min_instances': self.shards,
@@ -163,6 +159,14 @@ class Manifest(object):
       'cleanup': 'root',
     }
 
+    # These flags are chromium-specific.
+    if self.test_filter and self.test_filter != '*':
+      test_case['env_vars']['GTEST_FILTER'] = self.test_filter
+    if self.shards > 1:
+      test_case['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
+      test_case['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
+
+    # This flag is chromium infrastructure specific.
     if vlan:
       test_case['configurations'][0]['dimensions']['vlan'] = vlan
 

@@ -18,14 +18,8 @@ import swarm_trigger_step
 FILE_NAME = "test.isolated"
 FILE_HASH = hashlib.sha1(FILE_NAME).hexdigest()
 TEST_NAME = "unit_tests"
-TEST_FILTER = '*'
 CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
 
-ENV_VARS = {
-    'GTEST_FILTER': TEST_FILTER,
-    'GTEST_SHARD_INDEX': '%(instance_index)s',
-    'GTEST_TOTAL_SHARDS': '%(num_instances)s'
-}
 
 class Options(object):
   def __init__(self, working_dir="swarm_tests", shards=1,
@@ -57,34 +51,37 @@ def GenerateExpectedJSON(options):
           'python', swarm_trigger_step.RUN_TEST_NAME,
           '--hash', FILE_HASH,
           '--remote', retrieval_url + 'default-gzip/',
-          '-v'
+          '-v',
         ],
         'test_name': 'Run Test',
-        'time_out': 600
+        'time_out': 600,
       },
       {
         'action' : [
-            'python', CLEANUP_SCRIPT_NAME
+            'python', CLEANUP_SCRIPT_NAME,
         ],
         'test_name': 'Clean Up',
-        'time_out': 600
+        'time_out': 600,
       }
     ],
-    'env_vars': ENV_VARS,
+    'env_vars': {},
     'configurations': [
       {
         'min_instances': options.shards,
         'config_name': platform_mapping[options.os_image],
         'dimensions': {
           'os': platform_mapping[options.os_image],
-          'vlan': 'm4'
+          'vlan': 'm4',
         },
       },
     ],
     'working_dir': options.working_dir,
     'restart_on_failure': True,
-    'cleanup': 'root'
+    'cleanup': 'root',
   }
+  if options.shards > 1:
+    expected['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
+    expected['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
   return expected
 
 
