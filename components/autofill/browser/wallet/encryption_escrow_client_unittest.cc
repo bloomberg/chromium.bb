@@ -52,6 +52,18 @@ class MockEncryptionEscrowClientObserver :
 
 }  // namespace
 
+class TestEncryptionEscrowClient : public EncryptionEscrowClient {
+ public:
+  TestEncryptionEscrowClient(
+      net::URLRequestContextGetter* context_getter,
+      EncryptionEscrowClientObserver* observer)
+      : EncryptionEscrowClient(context_getter, observer) {}
+
+  bool HasRequestInProgress() const {
+    return request() != NULL;
+  }
+};
+
 class EncryptionEscrowClientTest : public testing::Test {
  public:
   EncryptionEscrowClientTest()
@@ -61,8 +73,8 @@ class EncryptionEscrowClientTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     io_thread_.StartIOThread();
     profile_.CreateRequestContext();
-    encryption_escrow_client_.reset(
-        new EncryptionEscrowClient(profile_.GetRequestContext(), &observer_));
+    encryption_escrow_client_.reset(new TestEncryptionEscrowClient(
+        profile_.GetRequestContext(), &observer_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -94,7 +106,7 @@ class EncryptionEscrowClientTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<EncryptionEscrowClient> encryption_escrow_client_;
+  scoped_ptr<TestEncryptionEscrowClient> encryption_escrow_client_;
   testing::StrictMock<MockEncryptionEscrowClientObserver> observer_;
   scoped_ptr<Instrument> instrument_;
 
@@ -177,6 +189,16 @@ TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadFailure) {
 
   encryption_escrow_client_->EncryptOneTimePad(MakeOneTimePad());
   VerifyAndFinishRequest(net::HTTP_OK, kEncryptOtpRequest, std::string());
+}
+
+TEST_F(EncryptionEscrowClientTest, CancelRequest) {
+  EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
+
+  encryption_escrow_client_->EncryptOneTimePad(MakeOneTimePad());
+  EXPECT_TRUE(encryption_escrow_client_->HasRequestInProgress());
+
+  encryption_escrow_client_->CancelRequest();
+  EXPECT_FALSE(encryption_escrow_client_->HasRequestInProgress());
 }
 
 }  // namespace wallet

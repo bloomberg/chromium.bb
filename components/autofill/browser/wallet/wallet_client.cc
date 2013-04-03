@@ -586,7 +586,11 @@ bool WalletClient::HasRequestInProgress() const {
   return request_.get() != NULL;
 }
 
-void WalletClient::CancelPendingRequests() {
+void WalletClient::CancelRequests() {
+  encryption_escrow_client_.CancelRequest();
+  pending_request_body_.Clear();
+  request_.reset();
+  request_type_ = NO_PENDING_REQUEST;
   while (!pending_requests_.empty()) {
     pending_requests_.pop();
   }

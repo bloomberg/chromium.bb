@@ -1325,6 +1325,8 @@ void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
 }
 
 void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   // TODO(dbeam): use the returned full wallet. b/8332329
   if (success)
     GetFullWallet();
@@ -1334,6 +1336,8 @@ void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
 
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
     scoped_ptr<wallet::FullWallet> full_wallet) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   full_wallet_ = full_wallet.Pass();
 
   if (full_wallet_->required_actions().empty()) {
@@ -1390,8 +1394,11 @@ void AutofillDialogControllerImpl::OnAutomaticSigninFailure(
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
+  DCHECK(account_chooser_model_.WalletIsSelected());
+
   legal_documents_text_.clear();
   legal_document_link_ranges_.clear();
+
   // TODO(dbeam): verify all items support kCartCurrency?
   wallet_items_ = wallet_items.Pass();
   OnWalletOrSigninUpdate();
@@ -1408,6 +1415,8 @@ void AutofillDialogControllerImpl::OnDidSaveAddress(
 void AutofillDialogControllerImpl::OnDidSaveInstrument(
     const std::string& instrument_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   // TODO(dbeam): handle required actions.
   active_instrument_id_ = instrument_id;
   GetFullWallet();
@@ -1417,6 +1426,8 @@ void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
     const std::string& instrument_id,
     const std::string& address_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   // TODO(dbeam): handle required actions.
   active_instrument_id_ = instrument_id;
   active_address_id_ = address_id;
@@ -1426,6 +1437,8 @@ void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
 void AutofillDialogControllerImpl::OnDidUpdateAddress(
     const std::string& address_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   // TODO(dbeam): Handle this callback.
   NOTIMPLEMENTED() << " address_id=" << address_id;
 }
@@ -1433,6 +1446,8 @@ void AutofillDialogControllerImpl::OnDidUpdateAddress(
 void AutofillDialogControllerImpl::OnDidUpdateInstrument(
     const std::string& instrument_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
   // TODO(dbeam): handle required actions.
 }
 
@@ -1469,6 +1484,12 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   // This will trigger a passive sign-in if required.
   // TODO(aruslan): integrate an automatic sign-in.
   wallet_items_.reset();
+  full_wallet_.reset();
+  GetWalletClient()->CancelRequests();
+
+  is_submitting_ = false;
+  view_->UpdateButtonStrip();
+
   if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
 
@@ -1560,21 +1581,23 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
 
 void AutofillDialogControllerImpl::DisableWallet() {
   is_submitting_ = false;
-  if (view_)
-    view_->UpdateButtonStrip();
-
   signin_helper_.reset();
   current_username_.clear();
   account_chooser_model_.SetHadWalletError();
-  GetWalletClient()->CancelPendingRequests();
+  GetWalletClient()->CancelRequests();
+
+  wallet_items_.reset();
   full_wallet_.reset();
+
+  if (view_)
+    view_->UpdateButtonStrip();
 }
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
   signin_helper_.reset();
   current_username_.clear();
   account_chooser_model_.SetHadWalletSigninError();
-  GetWalletClient()->CancelPendingRequests();
+  GetWalletClient()->CancelRequests();
 }
 
 bool AutofillDialogControllerImpl::IsFirstRun() const {
@@ -1874,6 +1897,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   active_instrument_id_.clear();
   active_address_id_.clear();
+  full_wallet_.reset();
 
   if (!section_editing_state_[SECTION_CC_BILLING]) {
     SuggestionsMenuModel* billing =

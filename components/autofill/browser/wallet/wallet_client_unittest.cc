@@ -1718,7 +1718,7 @@ TEST_F(WalletClientTest, PendingRequest) {
                          kErrorResponse);
 }
 
-TEST_F(WalletClientTest, CancelPendingRequests) {
+TEST_F(WalletClientTest, CancelRequests) {
   ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            0);
@@ -1730,8 +1730,9 @@ TEST_F(WalletClientTest, CancelPendingRequests) {
   wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(2U, wallet_client_->pending_requests_.size());
 
-  wallet_client_->CancelPendingRequests();
+  wallet_client_->CancelRequests();
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
+  EXPECT_FALSE(wallet_client_->HasRequestInProgress());
 }
 
 }  // namespace wallet

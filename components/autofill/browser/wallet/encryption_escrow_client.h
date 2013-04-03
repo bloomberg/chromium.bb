@@ -38,16 +38,23 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
   // crypto/random.h.
   void EncryptOneTimePad(const std::vector<uint8>& one_time_pad);
 
-  // Escrows the card verfication number of an existing instrument with Online
-  // Wallet. The escrow is keyed off of |obfuscated_gaia_id|.
-  void EscrowCardVerificationNumber(const std::string& card_verification_number,
-                                    const std::string& obfuscated_gaia_id);
-
   // Escrows the primary account number and card verfication number of
   // |new_instrument| with Online Wallet. The escrow is keyed off of
   // |obfuscated_gaia_id|.
   void EscrowInstrumentInformation(const Instrument& new_instrument,
                                    const std::string& obfuscated_gaia_id);
+
+  // Escrows the card verfication number of an existing instrument with Online
+  // Wallet. The escrow is keyed off of |obfuscated_gaia_id|.
+  void EscrowCardVerificationNumber(const std::string& card_verification_number,
+                                    const std::string& obfuscated_gaia_id);
+
+  // Cancels |request_| (if it exists).
+  void CancelRequest();
+
+ protected:
+  // Exposed for testing.
+  const net::URLFetcher* request() const { return request_.get(); }
 
  private:
   enum RequestType {

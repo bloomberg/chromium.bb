@@ -104,6 +104,11 @@ void EncryptionEscrowClient::EscrowCardVerificationNumber(
   MakeRequest(GetEscrowUrl(), post_body);
 }
 
+void EncryptionEscrowClient::CancelRequest() {
+  request_.reset();
+  request_type_ = NO_PENDING_REQUEST;
+}
+
 void EncryptionEscrowClient::MakeRequest(const GURL& url,
                                          const std::string& post_body) {
   DCHECK(!request_.get());

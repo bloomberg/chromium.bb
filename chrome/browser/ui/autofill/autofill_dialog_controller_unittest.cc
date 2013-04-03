@@ -138,12 +138,11 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      callback),
         ALLOW_THIS_IN_INITIALIZER_LIST(test_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this)),
-        is_paying_with_wallet_(false) {}
+                GetRequestContext(), this)) {}
   virtual ~TestAutofillDialogController() {}
 
   virtual AutofillDialogView* CreateView() OVERRIDE {
-    return new TestAutofillDialogView();
+    return new testing::NiceMock<TestAutofillDialogView>();
   }
 
   void Init(content::BrowserContext* browser_context) {
@@ -162,10 +161,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_wallet_client_;
   }
 
-  void set_is_paying_with_wallet(bool is_paying_with_wallet) {
-    is_paying_with_wallet_ = is_paying_with_wallet;
-  }
-
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -175,14 +170,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_wallet_client_;
   }
 
-  virtual bool IsPayingWithWallet() const OVERRIDE {
-    return is_paying_with_wallet_;
-  }
-
  private:
   TestPersonalDataManager test_manager_;
   testing::NiceMock<TestWalletClient> test_wallet_client_;
-  bool is_paying_with_wallet_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -242,6 +232,19 @@ class AutofillDialogControllerTest : public testing::Test {
         ++count;
     }
     return count;
+  }
+
+  static scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
+    base::DictionaryValue dict;
+    scoped_ptr<base::ListValue> list(new base::ListValue());
+    list->AppendString("verify_cvv");
+    dict.Set("required_action", list.release());
+    return wallet::FullWallet::CreateFullWallet(dict);
+  }
+
+  void SetUpWallet() {
+    controller()->MenuModelForAccountChooser()->ActivatedAt(0);
+    controller()->OnUserNameFetchSuccess("user@example.com");
   }
 
   TestAutofillDialogController* controller() { return controller_; }
@@ -359,9 +362,8 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
 }
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               AcceptLegalDocuments(_, _, _)).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
@@ -376,7 +378,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
 }
 
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
@@ -389,7 +391,7 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
@@ -402,9 +404,8 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveInstrumentAndAddress(_, _, _, _)).Times(1);
 
@@ -413,7 +414,8 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
 }
 
 TEST_F(AutofillDialogControllerTest, CancelNoSave) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
+
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveInstrumentAndAddress(_, _, _, _)).Times(0);
 
@@ -461,9 +463,8 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
 }
 
 TEST_F(AutofillDialogControllerTest, VerifyCvv) {
-  controller()->set_is_paying_with_wallet(true);
+  SetUpWallet();
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
@@ -486,11 +487,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
       controller()->SuggestionStateForSection(SECTION_CC_BILLING);
   EXPECT_TRUE(suggestion_state.extra_text.empty());
 
-  base::DictionaryValue dict;
-  scoped_ptr<base::ListValue> list(new base::ListValue());
-  list->AppendString("verify_cvv");
-  dict.Set("required_action", list.release());
-  controller()->OnDidGetFullWallet(wallet::FullWallet::CreateFullWallet(dict));
+  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
 
   EXPECT_EQ(1U, CountNotificationsOfType(DialogNotification::REQUIRED_ACTION));
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
@@ -507,6 +504,102 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   controller()->OnAccept();
+}
+
+TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {
+  SetUpWallet();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+}
+
+// TODO(dbeam): disallow changing accounts instead and remove this test.
+TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
+  SetUpWallet();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
+  ASSERT_TRUE(account_menu);
+  ASSERT_GE(2, account_menu->GetItemCount());
+  account_menu->ActivatedAt(0);
+  account_menu->ActivatedAt(1);
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+}
+
+TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
+  SetUpWallet();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
+
+  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+}
+
+// TODO(dbeam): disallow changing accounts instead and remove this test.
+TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
+  SetUpWallet();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetFullWallet(_)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
+
+  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
+  ASSERT_TRUE(account_menu);
+  ASSERT_GE(2, account_menu->GetItemCount());
+  account_menu->ActivatedAt(0);
+  account_menu->ActivatedAt(1);
+
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 }
 
 }  // namespace autofill

@@ -228,12 +228,12 @@ class WalletClient
   // Whether there is a currently running request (i.e. |request_| != NULL).
   bool HasRequestInProgress() const;
 
-  // Cancels and clears all |pending_requests_|.
-  void CancelPendingRequests();
+  // Cancels and clears the current |request_| and |pending_requests_| (if any).
+  void CancelRequests();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WalletClientTest, PendingRequest);
-  FRIEND_TEST_ALL_PREFIXES(WalletClientTest, CancelPendingRequests);
+  FRIEND_TEST_ALL_PREFIXES(WalletClientTest, CancelRequests);
 
   enum RequestType {
     NO_PENDING_REQUEST,
