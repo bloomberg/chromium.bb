@@ -105,8 +105,8 @@ struct wl_list {
 void wl_list_init(struct wl_list *list);
 void wl_list_insert(struct wl_list *list, struct wl_list *elm);
 void wl_list_remove(struct wl_list *elm);
-int wl_list_length(struct wl_list *list);
-int wl_list_empty(struct wl_list *list);
+int wl_list_length(const struct wl_list *list);
+int wl_list_empty(const struct wl_list *list);
 void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 
 #ifdef __GNUC__

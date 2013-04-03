@@ -55,7 +55,7 @@ wl_list_remove(struct wl_list *elm)
 }
 
 WL_EXPORT int
-wl_list_length(struct wl_list *list)
+wl_list_length(const struct wl_list *list)
 {
 	struct wl_list *e;
 	int count;
@@ -71,7 +71,7 @@ wl_list_length(struct wl_list *list)
 }
 
 WL_EXPORT int
-wl_list_empty(struct wl_list *list)
+wl_list_empty(const struct wl_list *list)
 {
 	return list->next == list;
 }
