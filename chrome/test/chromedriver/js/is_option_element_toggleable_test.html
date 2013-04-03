@@ -6,7 +6,7 @@
 
 function testNonoptionElement() {
   try {
-    isOptionElementTogglable(document.getElementById("s"));
+    isOptionElementToggleable(document.getElementById("s"));
     assert(false);
   } catch (error) {
     assert(error.message);
@@ -16,7 +16,7 @@ function testNonoptionElement() {
 
 function testOptionNotInSelect() {
   try {
-    isOptionElementTogglable(document.getElementById("b"));
+    isOptionElementToggleable(document.getElementById("b"));
     assert(false);
   } catch (error) {
     assert(error.message);
@@ -26,12 +26,12 @@ function testOptionNotInSelect() {
 
 function testTogglable() {
   document.getElementById("s").multiple = 'multiple';
-    assert(isOptionElementTogglable(document.getElementById("a")));
+    assert(isOptionElementToggleable(document.getElementById("a")));
 }
 
 function testNotTogglable() {
   document.getElementById("s").multiple = '';
-    assert(!isOptionElementTogglable(document.getElementById("a")));
+    assert(!isOptionElementToggleable(document.getElementById("a")));
 }
 
 </script>
