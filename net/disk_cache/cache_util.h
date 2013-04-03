@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE CacheCreator {
   net::CompletionCallback callback_;
   disk_cache::Backend* created_cache_;
   net::NetLog* net_log_;
+  bool use_simple_cache_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheCreator);
 };
