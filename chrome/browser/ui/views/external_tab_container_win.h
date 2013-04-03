@@ -126,9 +126,10 @@ class ExternalTabContainerWin : public ExternalTabContainer,
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* render_view_host,
+  virtual void CanDownload(content::RenderViewHost* render_view_host,
                            int request_id,
-                           const std::string& request_method) OVERRIDE;
+                           const std::string& request_method,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;

@@ -218,6 +218,14 @@ class DownloadRequestLimiter
                        const std::string& request_method,
                        const Callback& callback);
 
+  // Invoked when decision to download has been made.
+  void OnCanDownloadDecided(int render_process_host_id,
+                            int render_view_id,
+                            int request_id,
+                            const std::string& request_method,
+                            const Callback& orig_callback,
+                            bool allow);
+
   // Invoked on the UI thread. Schedules a call to NotifyCallback on the io
   // thread.
   void ScheduleNotification(const Callback& callback, bool allow);
@@ -233,6 +241,10 @@ class DownloadRequestLimiter
   // the TabDownloadState is removed and deleted (by way of Remove).
   typedef std::map<content::WebContents*, TabDownloadState*> StateMap;
   StateMap state_map_;
+
+  // Weak ptr factory used when |CanDownload| asks the delegate asynchronously
+  // about the download.
+  base::WeakPtrFactory<DownloadRequestLimiter> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiter);
 };

@@ -228,19 +228,20 @@ ChromeWebContentsDelegateAndroid::GetJavaScriptDialogManager() {
   return GetJavaScriptDialogManagerInstance();
 }
 
-bool ChromeWebContentsDelegateAndroid::CanDownload(
+void ChromeWebContentsDelegateAndroid::CanDownload(
     content::RenderViewHost* source,
     int request_id,
-    const std::string& request_method) {
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
   if (request_method == net::HttpRequestHeaders::kGetMethod) {
     content::DownloadControllerAndroid::Get()->CreateGETDownload(
         source, request_id);
-    return false;
+    callback.Run(false);
   }
   // DownloadControllerAndroid::OnPostDownloadStarted() is called for the
   // started download by the default DownloadUIController::Delegate
   // implementation.
-  return true;
+  callback.Run(true);
 }
 
 void ChromeWebContentsDelegateAndroid::DidNavigateToPendingEntry(

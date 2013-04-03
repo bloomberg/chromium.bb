@@ -56,6 +56,74 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
  private:
   bool requested_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
+};
+
+// This class intercepts download request from the guest.
+class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  explicit MockDownloadWebContentsDelegate(
+      content::WebContentsDelegate* orig_delegate)
+      : orig_delegate_(orig_delegate),
+        waiting_for_decision_(false),
+        expect_allow_(false),
+        decision_made_(false),
+        last_download_allowed_(false) {}
+  virtual ~MockDownloadWebContentsDelegate() {}
+
+  virtual void CanDownload(
+      content::RenderViewHost* render_view_host,
+      int request_id,
+      const std::string& request_method,
+      const base::Callback<void(bool)>& callback) OVERRIDE {
+    orig_delegate_->CanDownload(
+        render_view_host, request_id, request_method,
+        base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
+                   base::Unretained(this)));
+  }
+
+  void WaitForCanDownload(bool expect_allow) {
+    EXPECT_FALSE(waiting_for_decision_);
+    waiting_for_decision_ = true;
+
+    if (decision_made_) {
+      EXPECT_EQ(expect_allow, last_download_allowed_);
+      return;
+    }
+
+    expect_allow_ = expect_allow;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+  void DownloadDecided(bool allow) {
+    EXPECT_FALSE(decision_made_);
+    decision_made_ = true;
+
+    if (waiting_for_decision_) {
+      EXPECT_EQ(expect_allow_, allow);
+      if (message_loop_runner_)
+        message_loop_runner_->Quit();
+      return;
+    }
+    last_download_allowed_ = allow;
+  }
+
+  void Reset() {
+    waiting_for_decision_ = false;
+    decision_made_ = false;
+  }
+
+ private:
+  content::WebContentsDelegate* orig_delegate_;
+  bool waiting_for_decision_;
+  bool expect_allow_;
+  bool decision_made_;
+  bool last_download_allowed_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDownloadWebContentsDelegate);
 };
 
 class WebViewTest : public extensions::PlatformAppBrowserTest {
@@ -859,4 +927,49 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_NewWindow) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/download");
+
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+
+  // Grab the guest's WebContents.
+  GURL guest_url = test_server()->GetURL(
+      "files/extensions/platform_apps/web_view/download/guest.html");
+  guest_url = guest_url.ReplaceComponents(replace_host);
+  ui_test_utils::UrlLoadObserver observer(
+      guest_url, content::NotificationService::AllSources());
+  observer.Wait();
+  content::Source<content::NavigationController> source = observer.source();
+  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+  content::WebContents* guest_web_contents = source->GetWebContents();
+
+  // Replace WebContentsDelegate with mock version so we can intercept download
+  // requests.
+  content::WebContentsDelegate* delegate = guest_web_contents->GetDelegate();
+  MockDownloadWebContentsDelegate* mock_delegate =
+      new MockDownloadWebContentsDelegate(delegate);
+  guest_web_contents->SetDelegate(mock_delegate);
+
+  // Start test.
+  // 1. Guest requests a download that its embedder denies.
+  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+                                     "startDownload('download-link-1')"));
+  mock_delegate->WaitForCanDownload(false); // Expect to not allow.
+  mock_delegate->Reset();
+
+  // 2. Guest requests a download that its embedder allows.
+  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+                                     "startDownload('download-link-2')"));
+  mock_delegate->WaitForCanDownload(true); // Expect to allow.
+  mock_delegate->Reset();
+
+  // 3. Guest requests a download that its embedder ignores, this implies deny.
+  EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
+                                     "startDownload('download-link-3')"));
+  mock_delegate->WaitForCanDownload(false); // Expect to not allow.
 }

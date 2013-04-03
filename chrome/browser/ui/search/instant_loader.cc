@@ -195,11 +195,12 @@ void InstantLoader::WebContentsFocused(content::WebContents* /* contents */) {
   delegate_->OnFocus();
 }
 
-bool InstantLoader::CanDownload(content::RenderViewHost* /* render_view_host */,
+void InstantLoader::CanDownload(content::RenderViewHost* /* render_view_host */,
                                 int /* request_id */,
-                                const std::string& /* request_method */) {
+                                const std::string& /* request_method */,
+                                const base::Callback<void(bool)>& callback) {
   // Downloads are disabled.
-  return false;
+  callback.Run(false);
 }
 
 void InstantLoader::HandleMouseDown() {

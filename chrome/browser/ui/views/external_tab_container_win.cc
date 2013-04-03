@@ -664,9 +664,11 @@ bool ExternalTabContainerWin::TakeFocus(content::WebContents* source,
   return true;
 }
 
-bool ExternalTabContainerWin::CanDownload(RenderViewHost* render_view_host,
-                                          int request_id,
-                                          const std::string& request_method) {
+void ExternalTabContainerWin::CanDownload(
+    RenderViewHost* render_view_host,
+    int request_id,
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
   if (load_requests_via_automation_) {
     if (automation_) {
       // In case the host needs to show UI that needs to take the focus.
@@ -686,7 +688,7 @@ bool ExternalTabContainerWin::CanDownload(RenderViewHost* render_view_host,
   }
 
   // Never allow downloads.
-  return false;
+  callback.Run(false);
 }
 
 void ExternalTabContainerWin::RegisterRenderViewHostForAutomation(

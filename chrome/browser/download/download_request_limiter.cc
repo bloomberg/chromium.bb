@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -208,7 +209,8 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
 
 // DownloadRequestLimiter ------------------------------------------------------
 
-DownloadRequestLimiter::DownloadRequestLimiter() {
+DownloadRequestLimiter::DownloadRequestLimiter()
+    : factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 DownloadRequestLimiter::~DownloadRequestLimiter() {
@@ -273,11 +275,48 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
     return;
   }
 
-  CanDownloadImpl(
-      originating_contents,
+  if (!originating_contents->GetDelegate()) {
+    ScheduleNotification(callback, false);
+    return;
+  }
+
+  // Note that because |originating_contents| might go away before
+  // OnCanDownloadDecided is invoked, we look it up by |render_process_host_id|
+  // and |render_view_id|.
+  base::Callback<void(bool)> can_download_callback = base::Bind(
+      &DownloadRequestLimiter::OnCanDownloadDecided,
+      factory_.GetWeakPtr(),
+      render_process_host_id,
+      render_view_id,
       request_id,
       request_method,
       callback);
+
+  originating_contents->GetDelegate()->CanDownload(
+      originating_contents->GetRenderViewHost(),
+      request_id,
+      request_method,
+      can_download_callback);
+}
+
+void DownloadRequestLimiter::OnCanDownloadDecided(
+    int render_process_host_id,
+    int render_view_id,
+    int request_id,
+    const std::string& request_method,
+    const Callback& orig_callback, bool allow) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* originating_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
+  if (!originating_contents || !allow) {
+    ScheduleNotification(orig_callback, false);
+    return;
+  }
+
+  CanDownloadImpl(originating_contents,
+                  request_id,
+                  request_method,
+                  orig_callback);
 }
 
 void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
@@ -285,18 +324,6 @@ void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
                                              const std::string& request_method,
                                              const Callback& callback) {
   DCHECK(originating_contents);
-
-  // FYI: Chrome Frame overrides CanDownload in ExternalTabContainer in order
-  // to cancel the download operation in chrome and let the host browser
-  // take care of it.
-  if (originating_contents->GetDelegate() &&
-      !originating_contents->GetDelegate()->CanDownload(
-          originating_contents->GetRenderViewHost(),
-          request_id,
-          request_method)) {
-    ScheduleNotification(callback, false);
-    return;
-  }
 
   // If the tab requesting the download is a constrained popup that is not
   // shown, treat the request as if it came from the parent.

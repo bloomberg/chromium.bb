@@ -9,20 +9,24 @@ enum BrowserPluginPermissionType {
   // Unknown type of permission request.
   BrowserPluginPermissionTypeUnknown,
 
+  // Download.
+  BrowserPluginPermissionTypeDownload,
+
+  // Geolocation.
+  BrowserPluginPermissionTypeGeolocation,
+
+  // Media access (audio/video) permission request type.
+  BrowserPluginPermissionTypeMedia,
+
+  // PointerLock
+  BrowserPluginPermissionTypePointerLock,
+
+
   // New window requests.
   // Note: Even though new windows don't use the permission API, the new window
   // API is sufficiently similar that it's convenient to consider it a
   // permission type for code reuse.
   BrowserPluginPermissionTypeNewWindow,
-
-  // Media access (audio/video) permission request type.
-  BrowserPluginPermissionTypeMedia,
-
-  // Geolocation.
-  BrowserPluginPermissionTypeGeolocation,
-
-  // PointerLock
-  BrowserPluginPermissionTypePointerLock,
 };
 
 #endif  // CONTENT_COMMON_BROWSER_PLUGIN_BROWSER_PLUGIN_MESSAGE_ENUMS_H_

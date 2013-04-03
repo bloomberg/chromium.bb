@@ -52,13 +52,15 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
                                                 final_update);
 }
 
-bool AwWebContentsDelegate::CanDownload(content::RenderViewHost* source,
-                                        int request_id,
-                                        const std::string& request_method) {
+void AwWebContentsDelegate::CanDownload(
+    content::RenderViewHost* source,
+    int request_id,
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
   // Android webview intercepts download in its resource dispatcher host
   // delegate, so should not reach here.
   NOTREACHED();
-  return false;
+  callback.Run(false);
 }
 
 void AwWebContentsDelegate::AddNewContents(content::WebContents* source,

@@ -69,10 +69,12 @@ int WebContentsDelegate::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-bool WebContentsDelegate::CanDownload(RenderViewHost* render_view_host,
-                                      int request_id,
-                                      const std::string& request_method) {
-  return true;
+void WebContentsDelegate::CanDownload(
+    RenderViewHost* render_view_host,
+    int request_id,
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
 }
 
 bool WebContentsDelegate::HandleContextMenu(

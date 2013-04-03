@@ -13,6 +13,8 @@
 #include "content/browser/browser_plugin/browser_plugin_guest_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
+#include "content/browser/browser_thread_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -37,6 +39,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/resource_type.h"
@@ -75,6 +78,21 @@ static std::string WindowOpenDispositionToString(
         NOTREACHED() << "Unknown Window Open Disposition";
         return "ignore";
   }
+}
+
+// Called on IO thread.
+static std::string RetrieveDownloadURLFromRequestId(
+    RenderViewHost* render_view_host,
+    int url_request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  int render_process_id = render_view_host->GetProcess()->GetID();
+  GlobalRequestID global_id(render_process_id, url_request_id);
+  net::URLRequest* url_request =
+      ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
+  if (url_request)
+    return url_request->url().possibly_invalid_spec();
+  return "";
 }
 
 }
@@ -309,14 +327,32 @@ void BrowserPluginGuest::AddNewContents(WebContents* source,
                              disposition, initial_pos, user_gesture);
 }
 
-bool BrowserPluginGuest::CanDownload(RenderViewHost* render_view_host,
-                                    int request_id,
-                                    const std::string& request_method) {
-  // TODO(fsamuel): We disable downloads in guests for now, but we will later
-  // expose API to allow embedders to handle them.
-  // Note: it seems content_shell ignores this. This should be fixed
-  // for debugging and test purposes.
-  return false;
+void BrowserPluginGuest::CanDownload(
+    RenderViewHost* render_view_host,
+    int request_id,
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
+  if (download_request_callback_map_.size() >=
+          kNumMaxOutstandingPermissionRequests) {
+    // Deny the download request.
+    callback.Run(false);
+    return;
+  }
+
+  // TODO(lazyboy): Remove download specific map
+  // |download_request_callback_map_| once we have generalized request items for
+  // all permission types.
+  int permission_request_id = next_permission_request_id_++;
+  download_request_callback_map_[permission_request_id] = callback;
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RetrieveDownloadURLFromRequestId,
+                 render_view_host, request_id),
+      base::Bind(&BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 request_method,
+                 permission_request_id));
 }
 
 bool BrowserPluginGuest::HandleContextMenu(
@@ -958,6 +994,9 @@ void BrowserPluginGuest::OnRespondPermission(
     int request_id,
     bool should_allow) {
   switch (permission_type) {
+    case BrowserPluginPermissionTypeDownload:
+      OnRespondPermissionDownload(request_id, should_allow);
+      break;
     case BrowserPluginPermissionTypeGeolocation:
       OnRespondPermissionGeolocation(request_id, should_allow);
       break;
@@ -1170,6 +1209,20 @@ void BrowserPluginGuest::OnUpdateRect(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }
 
+void BrowserPluginGuest::OnRespondPermissionDownload(int request_id,
+                                                     bool should_allow) {
+  DownloadRequestMap::iterator download_request_iter =
+      download_request_callback_map_.find(request_id);
+  if (download_request_iter == download_request_callback_map_.end()) {
+    LOG(INFO) << "Not a valid request ID.";
+    return;
+  }
+
+  const base::Callback<void(bool)>& can_download_callback =
+    download_request_iter->second;
+  can_download_callback.Run(should_allow);
+}
+
 void BrowserPluginGuest::OnRespondPermissionGeolocation(
     int request_id, bool should_allow) {
   if (should_allow && embedder_web_contents_) {
@@ -1247,6 +1300,27 @@ void BrowserPluginGuest::OnRespondPermissionNewWindow(
     guest->Destroy();
   // If we do not destroy the guest then we allow the new window.
   new_window_request_map_.erase(new_window_request_iter);
+}
+
+void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
+    const std::string& request_method,
+    int permission_request_id,
+    const std::string& url) {
+  if (url.empty()) {
+    OnRespondPermissionDownload(permission_request_id,
+                                false /* should_allow */);
+    return;
+  }
+
+  base::DictionaryValue request_info;
+  request_info.Set(browser_plugin::kRequestMethod,
+                   base::Value::CreateStringValue(request_method));
+  request_info.Set(browser_plugin::kURL, base::Value::CreateStringValue(url));
+
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_RequestPermission(instance_id(),
+          BrowserPluginPermissionTypeDownload, permission_request_id,
+          request_info));
 }
 
 }  // namespace content

@@ -16,7 +16,7 @@ var WebView = require('webView').WebView;
 var forEach = require('utils').forEach;
 
 /** @type {Array.<string>} */
-var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock'];
+var PERMISSION_TYPES = ['download', 'media', 'geolocation', 'pointerLock'];
 
 /** @type {string} */
 var REQUEST_TYPE_NEW_WINDOW = 'newwindow';
@@ -28,6 +28,7 @@ var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
 var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
     'lastUnlockedBySelf',
     'permission',
+    'requestMethod',
     'url',
     'userGesture'
 ];

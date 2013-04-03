@@ -36,7 +36,7 @@ WebContentsViewGuest::~WebContentsViewGuest() {
 }
 
 gfx::NativeView WebContentsViewGuest::GetNativeView() const {
-  return NULL;
+  return platform_view_->GetNativeView();
 }
 
 gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {

@@ -172,9 +172,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
-  virtual bool CanDownload(RenderViewHost* render_view_host,
+  virtual void CanDownload(RenderViewHost* render_view_host,
                            int request_id,
-                           const std::string& request_method) OVERRIDE;
+                           const std::string& request_method,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
@@ -219,7 +220,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void Attach(WebContentsImpl* embedder_web_contents,
               BrowserPluginHostMsg_CreateGuest_Params params);
 
-  // Requests geolocation permission through embedder js api.
+  // Requests geolocation permission through Embedder JavaScript API.
   void AskEmbedderForGeolocationPermission(int bridge_id,
                                            const GURL& requesting_frame,
                                            const GeolocationCallback& callback);
@@ -227,6 +228,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void CancelGeolocationRequest(int bridge_id);
   // Embedder sets permission to allow or deny geolocation request.
   void SetGeolocationPermission(int request_id, bool allowed);
+
 
   // Allow the embedder to call this for unhandled messages when
   // BrowserPluginGuest is already destroyed.
@@ -388,9 +390,16 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
   // Helpers for |OnRespondPermission|.
+  void OnRespondPermissionDownload(int request_id, bool should_allow);
   void OnRespondPermissionGeolocation(int request_id, bool should_allow);
   void OnRespondPermissionMedia(int request_id, bool should_allow);
   void OnRespondPermissionNewWindow(int request_id, bool should_allow);
+
+  // Requests download permission through embedder JavaScript API after
+  // retrieving url information from IO thread.
+  void DidRetrieveDownloadURLFromRequestId(const std::string& request_method,
+                                           int permission_request_id,
+                                           const std::string& url);
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.
@@ -440,6 +449,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // A map from request ID to instance ID for use by the New Window API.
   typedef std::map<int, int> NewWindowRequestMap;
   NewWindowRequestMap new_window_request_map_;
+
+  typedef std::map<int, base::Callback<void(bool)> > DownloadRequestMap;
+  DownloadRequestMap download_request_callback_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

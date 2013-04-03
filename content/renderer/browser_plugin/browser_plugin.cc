@@ -95,6 +95,8 @@ static std::string GetInternalEventName(const char* event_name) {
 
 static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
+    case BrowserPluginPermissionTypeDownload:
+      return browser_plugin::kPermissionTypeDownload;
     case BrowserPluginPermissionTypeGeolocation:
       return browser_plugin::kPermissionTypeGeolocation;
     case BrowserPluginPermissionTypeMedia:

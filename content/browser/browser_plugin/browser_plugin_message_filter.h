@@ -7,8 +7,6 @@
 
 #include "content/public/browser/browser_message_filter.h"
 
-struct ViewHostMsg_CreateWindow_Params;
-
 namespace content {
 
 class BrowserContext;

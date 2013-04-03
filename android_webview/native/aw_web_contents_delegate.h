@@ -27,9 +27,11 @@ class AwWebContentsDelegate
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* source,
+  virtual void CanDownload(content::RenderViewHost* source,
                            int request_id,
-                           const std::string& request_method) OVERRIDE;
+                           const std::string& request_method,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
+
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,

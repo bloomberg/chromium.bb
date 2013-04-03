@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> download permission API",
+  "description": "Loads a guest which initiates download",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

@@ -54,9 +54,10 @@ class ChromeWebContentsDelegateAndroid
                                    const gfx::RectF& active_rect) OVERRIDE;
   virtual content::JavaScriptDialogManager*
   GetJavaScriptDialogManager() OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* source,
+  virtual void CanDownload(content::RenderViewHost* source,
                            int request_id,
-                           const std::string& request_method) OVERRIDE;
+                           const std::string& request_method,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void DidNavigateToPendingEntry(content::WebContents* source) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       content::WebContents* source) OVERRIDE;

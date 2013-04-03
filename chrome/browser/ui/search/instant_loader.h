@@ -103,9 +103,10 @@ class InstantLoader : public content::NotificationObserver,
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
   virtual void LostCapture() OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* render_view_host,
+  virtual void CanDownload(content::RenderViewHost* render_view_host,
                            int request_id,
-                           const std::string& request_method) OVERRIDE;
+                           const std::string& request_method,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandlePointerActivate() OVERRIDE;
