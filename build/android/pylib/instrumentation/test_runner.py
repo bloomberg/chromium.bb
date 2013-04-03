@@ -373,6 +373,24 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return 3 * 60
     return 1 * 60
 
+  def _RunUIAutomatorTest(self, test, timeout):
+    """Runs a single uiautomator test.
+
+    Args:
+      test: Test class/method.
+      timeout: Timeout time in seconds.
+
+    Returns:
+      An instance of am_instrument_parser.TestResult object.
+    """
+    self.adb.ClearApplicationState(self.package_name)
+    if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
+      self.flags.RemoveFlags(['--disable-fre'])
+    else:
+      self.flags.AddFlags(['--disable-fre'])
+    return self.adb.RunUIAutomatorTest(
+        test, self.test_pkg.GetPackageName(), timeout)
+
   #override.
   def RunTest(self, test):
     raw_result = None
@@ -386,14 +404,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       start_date_ms = int(time.time()) * 1000
 
       if self.is_uiautomator_test:
-        self.adb.ClearApplicationState(self.package_name)
-        # TODO(frankf): Stop-gap solution. Should use annotations.
-        if 'FirstRun' in test:
-          self.flags.RemoveFlags(['--disable-fre'])
-        else:
-          self.flags.AddFlags(['--disable-fre'])
-        raw_result = self.adb.RunUIAutomatorTest(
-            test, self.test_pkg.GetPackageName(), timeout)
+        raw_result = self._RunUIAutomatorTest(test, timeout)
       else:
         raw_result = self.adb.RunInstrumentationTest(
             test, self.test_pkg.GetPackageName(),

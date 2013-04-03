@@ -194,11 +194,11 @@ def AddInstrumentationOptions(option_parser):
   AddCommonInstrumentationOptions(option_parser)
   option_parser.add_option('-I', dest='install_apk',
                            help='Install APK.', action='store_true')
-  option_parser.add_option('--test-apk', dest='test_apk',
-                           help=('The name of the apk containing the tests '
-                                 '(without the .apk extension). For SDK '
-                                 'builds, the apk name without the debug '
-                                 'suffix(for example, ContentShellTest).'))
+  option_parser.add_option(
+      '--test-apk', dest='test_apk',
+      help=('The name of the apk containing the tests (without the .apk '
+            'extension; e.g. "ContentShellTest"). Alternatively, this can '
+            'be a full path to the apk.'))
 
 
 def AddUIAutomatorOptions(option_parser):
@@ -209,11 +209,10 @@ def AddUIAutomatorOptions(option_parser):
       '--package-name',
       help=('The package name used by the apk containing the application.'))
   option_parser.add_option(
-      '--uiautomator-jar',
-      help=('Path to the uiautomator jar to be installed on the device.'))
-  option_parser.add_option(
-      '--uiautomator-info-jar',
-      help=('Path to the uiautomator jar for use by proguard.'))
+      '--test-jar', dest='test_jar',
+      help=('The name of the dexed jar containing the tests (without the '
+            '.dex.jar extension). Alternatively, this can be a full path to '
+            'the jar.'))
 
 
 def ValidateCommonInstrumentationOptions(option_parser, options, args):
@@ -269,9 +268,17 @@ def ValidateUIAutomatorOptions(option_parser, options, args):
   if not options.package_name:
     option_parser.error('--package-name must be specified.')
 
-  if not options.uiautomator_jar:
-    option_parser.error('--uiautomator-jar must be specified.')
+  if not options.test_jar:
+    option_parser.error('--test-jar must be specified.')
 
-  if not options.uiautomator_info_jar:
-    option_parser.error('--uiautomator-info-jar must be specified.')
+  if os.path.exists(options.test_jar):
+    # The dexed JAR is fully qualified, assume the info JAR lives along side.
+    options.uiautomator_jar = options.test_jar
+  else:
+    options.uiautomator_jar = os.path.join(
+        _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_JAVALIB_DIR,
+        '%s.dex.jar' % options.test_jar)
+  options.uiautomator_info_jar = (
+      options.uiautomator_jar[:options.uiautomator_jar.find('.dex.jar')] +
+      '_java.jar')
 

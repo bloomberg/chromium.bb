@@ -52,12 +52,12 @@ def DispatchUIAutomatorTests(options):
   report_results.LogFull(
       results=all_results,
       test_type='UIAutomator',
-      test_package=os.path.basename(options.uiautomator_jar),
+      test_package=os.path.basename(options.test_jar),
       annotation=options.annotation,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 
-  return len(all_results.GetAllBroken())
+  return len(all_results.GetNotPass())
 
 
 def main(argv):
