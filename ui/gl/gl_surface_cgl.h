@@ -40,6 +40,7 @@ class GL_EXPORT NoOpGLSurfaceCGL : public GLSurfaceCGL {
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
+  virtual void* GetDisplay() OVERRIDE;
 
  protected:
   virtual ~NoOpGLSurfaceCGL();

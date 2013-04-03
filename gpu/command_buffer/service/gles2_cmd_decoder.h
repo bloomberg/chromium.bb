@@ -95,6 +95,14 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   virtual ~GLES2Decoder();
 
+  bool initialized() const {
+    return initialized_;
+  }
+
+  void set_initialized() {
+    initialized_ = true;
+  }
+
   bool debug() const {
     return debug_;
   }
@@ -306,6 +314,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   GLES2Decoder();
 
  private:
+  bool initialized_;
   bool debug_;
   bool log_commands_;
   bool log_synthesized_gl_errors_;

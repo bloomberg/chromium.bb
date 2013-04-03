@@ -532,7 +532,8 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
 }
 
 GLES2Decoder::GLES2Decoder()
-    : debug_(false),
+    : initialized_(false),
+      debug_(false),
       log_commands_(false),
       log_synthesized_gl_errors_(true) {
 }
@@ -2284,6 +2285,7 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
+  set_initialized();
   gpu_tracer_ = GPUTracer::Create();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -3172,6 +3174,9 @@ void GLES2DecoderImpl::AddProcessingCommandsTime(base::TimeDelta time) {
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {
+  if (!initialized())
+    return;
+
   DCHECK(!have_context || context_->IsCurrent(NULL));
 
   ChildList children = children_;

@@ -95,6 +95,10 @@ void* NoOpGLSurfaceCGL::GetHandle() {
   return NULL;
 }
 
+void* NoOpGLSurfaceCGL::GetDisplay() {
+  return NULL;
+}
+
 NoOpGLSurfaceCGL::~NoOpGLSurfaceCGL() {
   Destroy();
 }

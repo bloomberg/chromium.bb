@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
@@ -44,7 +45,7 @@ void GLContextVirtual::Destroy() {
 }
 
 bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
-  if (decoder_.get())
+  if (decoder_.get() && decoder_->initialized())
     shared_context_->MakeVirtuallyCurrent(this, surface);
   else
     shared_context_->MakeCurrent(surface);
