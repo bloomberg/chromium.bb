@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
 #include "grit/generated_resources.h"
@@ -359,7 +360,10 @@ bool InputMethodUtil::StringIsSupported(
 
 bool InputMethodUtil::IsValidInputMethodId(
     const std::string& input_method_id) const {
-  return GetInputMethodDescriptorFromId(input_method_id) != NULL;
+  // We can't check the component extension is whilelisted or not here because
+  // it might not be initialized.
+  return GetInputMethodDescriptorFromId(input_method_id) != NULL ||
+      ComponentExtensionIMEManager::IsComponentExtensionIMEId(input_method_id);
 }
 
 // static

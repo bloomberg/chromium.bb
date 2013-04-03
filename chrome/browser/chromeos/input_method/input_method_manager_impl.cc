@@ -247,6 +247,14 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   if (state_ == STATE_TERMINATING)
     return;
 
+  if (!component_extension_ime_manager_->IsInitialized()) {
+    // We can't change input method before the initialization of component
+    // extension ime manager. ChangeInputMethod will be called with
+    // |pending_input_method_| when the initialization is done.
+    pending_input_method_ = input_method_id;
+    return;
+  }
+
   std::string input_method_id_to_switch = input_method_id;
 
   // Sanity check.
@@ -324,6 +332,12 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
   component_extension_ime_manager_->Initialize(delegate.Pass());
   util_.SetComponentExtensions(
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
+
+  if (!pending_input_method_.empty()) {
+    ChangeInputMethod(pending_input_method_);
+    pending_input_method_.clear();
+  }
+
 }
 
 void InputMethodManagerImpl::ActivateInputMethodProperty(
@@ -661,6 +675,11 @@ void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
 
 void InputMethodManagerImpl::SetXKeyboardForTesting(XKeyboard* xkeyboard) {
   xkeyboard_.reset(xkeyboard);
+}
+
+void InputMethodManagerImpl::InitializeComponentExtensionForTesting(
+    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
+  OnComponentExtensionInitialized(delegate.Pass());
 }
 
 void InputMethodManagerImpl::PropertyChanged() {

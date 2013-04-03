@@ -17,6 +17,7 @@
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "chromeos/ime/mock_ibus_daemon_controller.h"
 #include "chromeos/ime/mock_input_method_delegate.h"
 #include "chromeos/ime/mock_xkeyboard.h"
@@ -61,6 +62,36 @@ class InputMethodManagerImplTest :  public testing::Test {
         candidate_window_controller_);
     xkeyboard_ = new MockXKeyboard;
     manager_->SetXKeyboardForTesting(xkeyboard_);
+
+    ime_list_.clear();
+
+    ComponentExtensionIME ext1;
+    ext1.id = "ext1_id";
+    ext1.description = "ext1_description";
+    ext1.path = base::FilePath("ext1_file_path");
+
+    IBusComponent::EngineDescription ext1_engine1;
+    ext1_engine1.engine_id = "ext1_engine1_engine_id";
+    ext1_engine1.display_name = "ext1_engine_1_display_name";
+    ext1_engine1.language_code = "en";
+    ext1_engine1.layout = "us";
+    ext1.engines.push_back(ext1_engine1);
+
+    ime_list_.push_back(ext1);
+
+    ComponentExtensionIME ext2;
+    ext2.id = "ext2_id";
+    ext2.description = "ext2_description";
+    ext2.path = base::FilePath("ext2_file_path");
+
+    IBusComponent::EngineDescription ext2_engine1;
+    ext2_engine1.engine_id = "ext2_engine1_engine_id";
+    ext2_engine1.display_name = "ext2_engine_1_display_name";
+    ext2_engine1.language_code = "en";
+    ext2_engine1.layout = "us";
+    ext2.engines.push_back(ext2_engine1);
+
+    ime_list_.push_back(ext2);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -74,6 +105,13 @@ class InputMethodManagerImplTest :  public testing::Test {
   }
 
  protected:
+  void ComponentExtensionInitialize() {
+    mock_delegate_ = new MockComponentExtIMEManagerDelegate();
+    mock_delegate_->set_ime_list(ime_list_);
+    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(mock_delegate_);
+    manager_->InitializeComponentExtensionForTesting(delegate.Pass());
+  }
+
   scoped_ptr<InputMethodManagerImpl> manager_;
   MockInputMethodDelegate* delegate_;
   MockIBusController* controller_;
@@ -84,9 +122,17 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
   MockXKeyboard* xkeyboard_;
   MessageLoop message_loop_;
+  MockComponentExtIMEManagerDelegate* mock_delegate_;
+  std::vector<ComponentExtensionIME> ime_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);
+};
+
+class TestableComponentExtensionIMEManager
+    : public ComponentExtensionIMEManager {
+ public:
+  using ComponentExtensionIMEManager::GetComponentExtensionIMEId;
 };
 
 class TestObserver : public InputMethodManager::Observer {
@@ -166,6 +212,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   // For http://crbug.com/19655#c11 - (3). browser_state_monitor_unittest.cc is
   // also for the scenario.
   TestObserver observer;
+  ComponentExtensionInitialize();
   manager_->AddObserver(&observer);
   EXPECT_EQ(0, observer.input_method_changed_count_);
   manager_->EnableLayouts("en-US", "xkb:us::eng");
@@ -218,6 +265,7 @@ TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
 TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
   // Currently 5 keyboard layouts are supported for en-US, and 1 for ja. See
   // ibus_input_method.txt.
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   {
@@ -296,6 +344,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableTwoLayouts) {
   // For http://crbug.com/19655#c11 - (8), step 6.
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -323,6 +372,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableThreeLayouts) {
   // For http://crbug.com/19655#c11 - (9).
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -353,6 +403,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme) {
   // For http://crbug.com/19655#c11 - (10).
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -387,6 +438,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme2) {
   // For http://crbug.com/19655#c11 - (11).
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -410,6 +462,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme2) {
 TEST_F(InputMethodManagerImplTest, TestEnableImes) {
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("mozc-chewing");
@@ -442,6 +495,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   // For http://crbug.com/19655#c11 - (14).
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -482,6 +536,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
   // For http://crbug.com/19655#c11 - (15).
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -524,6 +579,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
 
 TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
   // For http://crbug.com/19655#c11 - (8), step 7-11.
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -565,6 +621,7 @@ TEST_F(InputMethodManagerImplTest, TestActivateInputMethodProperty) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
+  ComponentExtensionInitialize();
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
@@ -598,6 +655,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
+  ComponentExtensionInitialize();
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
@@ -639,6 +697,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
 TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   // For http://crbug.com/19655#c11 - (1)
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
@@ -671,6 +730,7 @@ TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
 TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -714,6 +774,7 @@ TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -750,6 +811,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   // Enable "xkb:jp::jpn" and press Muhenkan/ZenkakuHankaku.
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("ja", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -776,6 +838,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
   // Do the same tests for Korean.
+  ComponentExtensionInitialize();
   manager_->EnableLayouts("ko", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -794,6 +857,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:jp::jpn");
@@ -842,6 +906,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:kr:kr104:kor");
@@ -876,6 +941,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
 TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   TestObserver observer;
   manager_->AddObserver(&observer);
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
@@ -940,6 +1006,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
 
 TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   TestObserver observer;
+  ComponentExtensionInitialize();
   manager_->AddObserver(&observer);
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
@@ -996,6 +1063,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestReset) {
+  ComponentExtensionInitialize();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us::eng");
@@ -1011,6 +1079,124 @@ TEST_F(InputMethodManagerImplTest, TestReset) {
   EXPECT_EQ(2, controller_->change_input_method_count_);
   EXPECT_EQ("mozc", controller_->change_input_method_id_);
   EXPECT_EQ(1, mock_ibus_input_context_client_->reset_call_count());
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethodBeforeComponentExtensionInitialization_OneIME) {
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  std::vector<std::string> ids;
+  ids.push_back("mozc");
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+  manager_->ChangeInputMethod("mozc");
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+
+  ComponentExtensionInitialize();
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ("mozc", controller_->change_input_method_id_);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethodBeforeComponentExtensionInitialization_TwoIME) {
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  std::vector<std::string> ids;
+  ids.push_back("mozc");
+  ids.push_back("m17n:kn:itrans");
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  manager_->ChangeInputMethod("mozc");
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+  manager_->ChangeInputMethod("m17n:kn:itrans");
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+
+  ComponentExtensionInitialize();
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ("m17n:kn:itrans", controller_->change_input_method_id_);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethodBeforeComponentExtensionInitialization_CompOneIME) {
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  const std::string ext_id =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[0].id,
+          ime_list_[0].engines[0].engine_id);
+  std::vector<std::string> ids;
+  ids.push_back(ext_id);
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+  manager_->ChangeInputMethod(ext_id);
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+
+  ComponentExtensionInitialize();
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ(ext_id, controller_->change_input_method_id_);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethodBeforeComponentExtensionInitialization_CompTwoIME) {
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  const std::string ext_id1 =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[0].id,
+          ime_list_[0].engines[0].engine_id);
+  const std::string ext_id2 =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[1].id,
+          ime_list_[1].engines[0].engine_id);
+  std::vector<std::string> ids;
+  ids.push_back(ext_id1);
+  ids.push_back(ext_id2);
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  manager_->ChangeInputMethod(ext_id1);
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+  manager_->ChangeInputMethod(ext_id2);
+  EXPECT_EQ(0, controller_->change_input_method_count_);
+
+  ComponentExtensionInitialize();
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethod_ComponenteExtensionOneIME) {
+  ComponentExtensionInitialize();
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  const std::string ext_id =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[0].id,
+          ime_list_[0].engines[0].engine_id);
+  std::vector<std::string> ids;
+  ids.push_back(ext_id);
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ(ext_id, controller_->change_input_method_id_);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       ChangeInputMethod_ComponenteExtensionTwoIME) {
+  ComponentExtensionInitialize();
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  const std::string ext_id1 =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[0].id,
+          ime_list_[0].engines[0].engine_id);
+  const std::string ext_id2 =
+      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
+          ime_list_[1].id,
+          ime_list_[1].engines[0].engine_id);
+  std::vector<std::string> ids;
+  ids.push_back(ext_id1);
+  ids.push_back(ext_id2);
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ(ext_id1, controller_->change_input_method_id_);
+  manager_->ChangeInputMethod(ext_id2);
+  EXPECT_EQ(2, controller_->change_input_method_count_);
+  EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
 }
 
 }  // namespace input_method

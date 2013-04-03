@@ -98,6 +98,9 @@ class InputMethodManagerImpl : public InputMethodManager,
       CandidateWindowController* candidate_window_controller);
   // Sets |xkeyboard_|.
   void SetXKeyboardForTesting(XKeyboard* xkeyboard);
+  // Initialize |component_extension_manager_|.
+  void InitializeComponentExtensionForTesting(
+      scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
  private:
   // IBusController overrides:
@@ -200,6 +203,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
   scoped_ptr<XKeyboard> xkeyboard_;
+
+  std::string pending_input_method_;
 
   base::ThreadChecker thread_checker_;
 
