@@ -53,7 +53,10 @@ def _dump_command_result(command, output_dir_path, basename, suffix):
   return filename_out
 
 
-def prepare_symbol_info(maps_path, output_dir_path=None, use_tempdir=False):
+def prepare_symbol_info(maps_path,
+                        output_dir_path=None,
+                        use_tempdir=False,
+                        use_source_file_name=False):
   """Prepares (collects) symbol information files for find_runtime_symbols.
 
   1) If |output_dir_path| is specified, it tries collecting symbol information
@@ -75,6 +78,8 @@ def prepare_symbol_info(maps_path, output_dir_path=None, use_tempdir=False):
       output_dir_path: A path to a directory where files are prepared.
       use_tempdir: If True, it creates a temporary directory when it cannot
           create a new directory.
+      use_source_file_name: If True, it adds reduced result of 'readelf -wL'
+          to find source file names.
 
   Returns:
       A pair of a path to the prepared directory and a boolean representing
@@ -144,9 +149,11 @@ def prepare_symbol_info(maps_path, output_dir_path=None, use_tempdir=False):
         output_dir_path, os.path.basename(entry.name), '.readelf-e')
     if not readelf_e_filename:
       continue
-    readelf_reduced_debugline_filename = _dump_command_result(
-        'readelf -wLW %s | %s' % (entry.name, REDUCE_DEBUGLINE_PATH),
-        output_dir_path, os.path.basename(entry.name), '.readelf-debugline')
+    readelf_reduced_debugline_filename = None
+    if use_source_file_name:
+      readelf_reduced_debugline_filename = _dump_command_result(
+          'readelf -wLW %s | %s' % (entry.name, REDUCE_DEBUGLINE_PATH),
+          output_dir_path, os.path.basename(entry.name), '.readelf-debugline')
 
     files[entry.name] = {}
     files[entry.name]['nm'] = {
