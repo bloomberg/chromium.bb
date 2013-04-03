@@ -24,6 +24,19 @@ using ::testing::_;
 namespace gpu {
 namespace gles2 {
 
+class TextureTestHelper {
+ public:
+  static bool IsNPOT(const Texture* texture) {
+    return texture->npot();
+  }
+  static bool IsTextureComplete(const Texture* texture) {
+    return texture->texture_complete();
+  }
+  static bool IsCubeComplete(const Texture* texture) {
+    return texture->cube_complete();
+  }
+};
+
 class TextureManagerTest : public testing::Test {
  public:
   static const GLint kMaxTextureSize = 16;
@@ -427,10 +440,10 @@ class TextureMemoryTrackerTest : public TextureTestBase {
 
 TEST_F(TextureTest, Basic) {
   EXPECT_EQ(0u, texture_->target());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
-  EXPECT_FALSE(texture_->npot());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
   EXPECT_EQ(0, texture_->num_uncleared_mips());
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(texture_->SafeToRenderFrom());
@@ -443,6 +456,28 @@ TEST_F(TextureTest, Basic) {
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_EQ(0u, texture_->estimated_size());
+}
+
+TEST_F(TextureTest, SetTargetTexture2D) {
+  manager_->SetTarget(texture_, GL_TEXTURE_2D);
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
+  EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(manager_->CanRender(texture_));
+  EXPECT_TRUE(texture_->SafeToRenderFrom());
+  EXPECT_FALSE(texture_->IsImmutable());
+}
+
+TEST_F(TextureTest, SetTargetTextureExternalOES) {
+  manager_->SetTarget(texture_, GL_TEXTURE_EXTERNAL_OES);
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
+  EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_TRUE(manager_->CanRender(texture_));
+  EXPECT_TRUE(texture_->SafeToRenderFrom());
+  EXPECT_TRUE(texture_->IsImmutable());
 }
 
 TEST_F(TextureTest, EstimatedSize) {
@@ -491,8 +526,8 @@ TEST_F(TextureTest, POT2D) {
   // Check Setting level 0 to POT
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_EQ(0, texture_->num_uncleared_mips());
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
@@ -508,14 +543,14 @@ TEST_F(TextureTest, POT2D) {
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Change a mip.
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
@@ -526,7 +561,7 @@ TEST_F(TextureTest, POT2D) {
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
 
@@ -549,23 +584,23 @@ TEST_F(TextureTest, UnusedMips) {
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set level zero to large smaller (levels unused mips)
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set an unused level to some size
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 4, GL_RGBA, 16, 16, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
@@ -576,8 +611,8 @@ TEST_F(TextureTest, NPOT2D) {
   // Check Setting level 0 to NPOT
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_TRUE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
@@ -593,8 +628,8 @@ TEST_F(TextureTest, NPOT2D) {
   // Change it to POT.
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 }
@@ -615,13 +650,13 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   // Check Setting level 0 to NPOT
   manager.SetLevelInfo(texture,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_TRUE(texture->npot());
-  EXPECT_FALSE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsNPOT(texture));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanGenerateMipmaps(texture));
   EXPECT_FALSE(manager.CanRender(texture));
   EXPECT_TRUE(manager.HaveUnrenderableTextures());
   EXPECT_TRUE(manager.MarkMipmapsGenerated(texture));
-  EXPECT_TRUE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanRender(texture));
   EXPECT_FALSE(manager.HaveUnrenderableTextures());
   manager.Destroy(false);
@@ -634,62 +669,62 @@ TEST_F(TextureTest, POTCubeMap) {
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_POSITIVE_X,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_FALSE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_TRUE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   EXPECT_FALSE(manager_->CanRender(texture_));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
 
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_TRUE(texture_->texture_complete());
-  EXPECT_TRUE(texture_->cube_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_TRUE(manager_->CanRender(texture_));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 
@@ -697,9 +732,9 @@ TEST_F(TextureTest, POTCubeMap) {
   manager_->SetLevelInfo(texture_,
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
       1, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_FALSE(texture_->npot());
-  EXPECT_FALSE(texture_->texture_complete());
-  EXPECT_TRUE(texture_->cube_complete());
+  EXPECT_FALSE(TextureTestHelper::IsNPOT(texture_));
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture_));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   // Set a level past the number of mips that would get generated.
   manager_->SetLevelInfo(texture_,
@@ -708,8 +743,8 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_));
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_TRUE(texture_->texture_complete());
-  EXPECT_TRUE(texture_->cube_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
+  EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture_));
 }
 
 TEST_F(TextureTest, GetLevelSize) {
@@ -808,15 +843,15 @@ TEST_F(TextureTest, FloatNotLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
-  EXPECT_FALSE(texture->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
       gl_.get(), decoder_.get(), &manager,
       texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
-  EXPECT_FALSE(texture->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
       gl_.get(), decoder_.get(), &manager,
       texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
-  EXPECT_TRUE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
 
@@ -834,7 +869,7 @@ TEST_F(TextureTest, FloatLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
-  EXPECT_TRUE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
 
@@ -852,15 +887,15 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
-  EXPECT_FALSE(texture->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
       gl_.get(), decoder_.get(), &manager,
       texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
-  EXPECT_FALSE(texture->texture_complete());
+  EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameterWithExpectations(
       gl_.get(), decoder_.get(), &manager,
       texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
-  EXPECT_TRUE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
 
@@ -878,7 +913,7 @@ TEST_F(TextureTest, HalfFloatLinear) {
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   manager.SetLevelInfo(texture,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
-  EXPECT_TRUE(texture->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
 
@@ -1382,7 +1417,7 @@ TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
       GL_TEXTURE_2D, GL_RGBA, 4, 4, 1, 0, GL_UNSIGNED_BYTE, true);
   SetLevelInfo(texture_, 0, level0);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_));
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   LevelInfo level1 = GetLevelInfo(texture_.get(), GL_TEXTURE_2D, 1);
   LevelInfo level2 = GetLevelInfo(texture_.get(), GL_TEXTURE_2D, 2);
   scoped_ptr<TextureDefinition> definition(Save(texture_));
@@ -1398,7 +1433,7 @@ TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
       0,
       LevelInfo(GL_TEXTURE_2D, GL_RGBA, 16, 16, 1, 0, GL_UNSIGNED_BYTE, false));
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture2_));
-  EXPECT_TRUE(texture2_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture2_));
   EXPECT_EQ(1024U + 256U + 64U + 16U + 4U, texture2_->estimated_size());
   Restore(texture2_, definition.release());
   EXPECT_EQ(level0, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 0));
@@ -1417,7 +1452,7 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
   LevelInfo level0(
       GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, 1, 1, 1, 0, GL_UNSIGNED_BYTE, false);
   SetLevelInfo(texture_, 0, level0);
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   scoped_ptr<TextureDefinition> definition(Save(texture_));
   const TextureDefinition::LevelInfos& infos = definition->level_infos();
   EXPECT_EQ(1U, infos.size());
@@ -1455,7 +1490,7 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreCube) {
                   true);
   SetLevelInfo(texture_, 0, face0);
   SetLevelInfo(texture_, 0, face5);
-  EXPECT_TRUE(texture_->texture_complete());
+  EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture_));
   scoped_ptr<TextureDefinition> definition(Save(texture_));
   const TextureDefinition::LevelInfos& infos = definition->level_infos();
   EXPECT_EQ(6U, infos.size());

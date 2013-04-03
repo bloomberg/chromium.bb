@@ -255,6 +255,10 @@ void Texture::SetTarget(GLenum target, GLint max_levels) {
     min_filter_ = GL_LINEAR;
     wrap_s_ = wrap_t_ = GL_CLAMP_TO_EDGE;
   }
+
+  if (target == GL_TEXTURE_EXTERNAL_OES) {
+    immutable_ = true;
+  }
 }
 
 bool Texture::CanGenerateMipmaps(
@@ -292,9 +296,7 @@ bool Texture::CanGenerateMipmaps(
   return true;
 }
 
-void Texture::SetLevelCleared(GLenum target,
-                                                  GLint level,
-                                                  bool cleared) {
+void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
   DCHECK_GE(level, 0);
   DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
             level_infos_.size());
@@ -541,6 +543,7 @@ void Texture::Update(const FeatureInfo* feature_info) {
       max_level_set_ >= (levels_needed - 1) && max_level_set_ >= 0;
   cube_complete_ = (level_infos_.size() == 6) &&
                    (first_face.width == first_face.height);
+
   if (first_face.width == 0 || first_face.height == 0) {
     texture_complete_ = false;
   }

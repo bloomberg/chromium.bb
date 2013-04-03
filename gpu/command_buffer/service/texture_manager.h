@@ -84,24 +84,6 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
     return target_;
   }
 
-  // In GLES2 "texture complete" means it has all required mips for filtering
-  // down to a 1x1 pixel texture, they are in the correct order, they are all
-  // the same format.
-  bool texture_complete() const {
-    return texture_complete_;
-  }
-
-  // In GLES2 "cube complete" means all 6 faces level 0 are defined, all the
-  // same format, all the same dimensions and all width = height.
-  bool cube_complete() const {
-    return cube_complete_;
-  }
-
-  // Whether or not this texture is a non-power-of-two texture.
-  bool npot() const {
-    return npot_;
-  }
-
   bool SafeToRenderFrom() const {
     return cleared_;
   }
@@ -193,6 +175,7 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
 
  private:
   friend class TextureManager;
+  friend class TextureTestHelper;
   friend class base::RefCounted<Texture>;
 
   ~Texture();
@@ -229,6 +212,24 @@ class GPU_EXPORT Texture : public base::RefCounted<Texture> {
       GLenum format,
       GLenum type,
       bool cleared);
+
+  // In GLES2 "texture complete" means it has all required mips for filtering
+  // down to a 1x1 pixel texture, they are in the correct order, they are all
+  // the same format.
+  bool texture_complete() const {
+    return texture_complete_;
+  }
+
+  // In GLES2 "cube complete" means all 6 faces level 0 are defined, all the
+  // same format, all the same dimensions and all width = height.
+  bool cube_complete() const {
+    return cube_complete_;
+  }
+
+  // Whether or not this texture is a non-power-of-two texture.
+  bool npot() const {
+    return npot_;
+  }
 
   // Marks a particular level as cleared or uncleared.
   void SetLevelCleared(GLenum target, GLint level, bool cleared);
