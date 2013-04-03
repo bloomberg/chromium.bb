@@ -72,11 +72,15 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
 // ImageButton, View overrides:
 
 gfx::Size ImageButton::GetPreferredSize() {
+  gfx::Size size = preferred_size_;
   if (!images_[STATE_NORMAL].isNull()) {
-    return gfx::Size(images_[STATE_NORMAL].width(),
+    size = gfx::Size(images_[STATE_NORMAL].width(),
                      images_[STATE_NORMAL].height());
   }
-  return preferred_size_;
+
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 void ImageButton::OnPaint(gfx::Canvas* canvas) {

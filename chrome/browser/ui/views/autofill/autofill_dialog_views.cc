@@ -69,17 +69,27 @@ const size_t kAutocheckoutProgressBarHeight = 11;
 const size_t kArrowHeight = 7;
 const size_t kArrowWidth = 2 * kArrowHeight;
 
+// The top padding, in pixels, for the suggestions menu dropdown arrows.
+const size_t kMenuButtonTopOffset = 5;
+
+// The side padding, in pixels, for the suggestions menu dropdown arrows.
+const size_t kMenuButtonHorizontalPadding = 20;
+
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
+
+views::Border* CreateLabelAlignmentBorder() {
+  // TODO(estade): this should be made to match the native textfield top
+  // inset. It's hard to get at, so for now it's hard-coded.
+  return views::Border::CreateEmptyBorder(4, 0, 0, 0);
+}
 
 // Returns a label that describes a details section.
 views::Label* CreateDetailsSectionLabel(const string16& text) {
   views::Label* label = new views::Label(text);
   label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
-  // TODO(estade): this should be made to match the native textfield top
-  // inset. It's hard to get at, so for now it's hard-coded.
-  label->set_border(views::Border::CreateEmptyBorder(4, 0, 0, 0));
+  label->set_border(CreateLabelAlignmentBorder());
   return label;
 }
 
@@ -339,7 +349,7 @@ AutofillDialogViews::SectionContainer::SectionContainer(
                         views::GridLayout::FIXED,
                         180,
                         0);
-  column_set->AddPaddingColumn(0, 15);
+  column_set->AddPaddingColumn(0, 30);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::LEADING,
                         0,
@@ -437,6 +447,8 @@ AutofillDialogViews::SuggestionView::SuggestionView(
           new DecoratedTextfield(string16(), string16(), autofill_dialog)),
       edit_link_(new views::Link(edit_label)) {
   // Label and icon.
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_->set_border(CreateLabelAlignmentBorder());
   label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            kAroundTextPadding));
@@ -500,6 +512,9 @@ void AutofillDialogViews::SuggestionView::ShowTextfield(
   decorated_->textfield()->set_placeholder_text(placeholder_text);
   decorated_->textfield()->SetIcon(icon);
   decorated_->SetVisible(true);
+  // The textfield will increase the height of the first row and cause the
+  // label to be aligned properly, so the border is not necessary.
+  label_->set_border(NULL);
 }
 
 // AutofilDialogViews::AutocheckoutProgressBar ---------------------------------
@@ -1002,6 +1017,7 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  // A column for the menu button.
   column_set->AddColumn(views::GridLayout::CENTER,
                         views::GridLayout::LEADING,
                         0,
@@ -1038,6 +1054,11 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON));
   menu_button->SetImage(views::CustomButton::STATE_PRESSED,
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_P));
+  menu_button->set_border(views::Border::CreateEmptyBorder(
+      kMenuButtonTopOffset,
+      kMenuButtonHorizontalPadding,
+      0,
+      kMenuButtonHorizontalPadding));
   layout->AddView(menu_button);
 
   DetailsGroup* group = GroupForSection(section);
