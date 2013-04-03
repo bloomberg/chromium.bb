@@ -308,7 +308,7 @@
                   '|chrome/browser/ui/webui/metrics_handler'\
                   '|content/browser/user_metrics.cc'\
                   '|content/public/browser/user_metrics.h'\
-                  '|chrome/tools/extract_actions.py'
+                  '|tools/metrics/'
     },
     'mouse_lock': {
       'filepath': 'mouse_lock',
