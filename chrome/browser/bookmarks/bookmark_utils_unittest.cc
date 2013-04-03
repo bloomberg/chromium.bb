@@ -130,7 +130,6 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   EXPECT_TRUE(DoesBookmarkContainText(node, ASCIIToUTF16("FBA"), string()));
 }
 
-#if !defined(OS_MACOSX)
 TEST_F(BookmarkUtilsTest, CopyPaste) {
   BookmarkModel model(NULL);
   const BookmarkNode* node = model.AddURL(model.other_node(),
@@ -157,7 +156,6 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   // Now we shouldn't be able to paste from the clipboard.
   EXPECT_FALSE(CanPasteFromClipboard(model.bookmark_bar_node()));
 }
-#endif
 
 TEST_F(BookmarkUtilsTest, ApplyEditsWithNoFolderChange) {
   BookmarkModel model(NULL);
