@@ -205,14 +205,17 @@ void MessagePopupBubble::OnMouseEnteredView() {
 
 void MessagePopupBubble::OnMouseExitedView() {
   for (std::map<std::string, AutocloseTimer*>::iterator iter =
-           autoclose_timers_.begin(); iter != autoclose_timers_.end(); ++iter) {
-    iter->second->Restart();
+           autoclose_timers_.begin(); iter != autoclose_timers_.end();) {
+    // |iter| can be deleted if timer is already over.
+    AutocloseTimer* timer = iter->second;
+    ++iter;
+    timer->Restart();
   }
 }
 
 void MessagePopupBubble::OnAutoClose(const std::string& id) {
-  DeleteTimer(id);
   message_center()->notification_list()->MarkSinglePopupAsShown(id, false);
+  DeleteTimer(id);
   UpdateBubbleView();
 }
 
