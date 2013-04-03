@@ -411,7 +411,7 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
       &wd, -51, gfx::Rect(50, 50)));
   w5->AddTransientChild(w51.get());
   w51->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(wm::CanActivateWindow(w5.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(w5.get()));
   EXPECT_TRUE(wm::CanActivateWindow(w51.get()));
 }
 

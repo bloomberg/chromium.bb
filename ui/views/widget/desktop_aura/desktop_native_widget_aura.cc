@@ -25,6 +25,7 @@
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
+#include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
@@ -250,6 +251,13 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     views::corewm::SetChildWindowVisibilityChangesAnimated(
         GetNativeView()->GetRootWindow());
   }
+
+  if (params.type == Widget::InitParams::TYPE_WINDOW) {
+    window_modality_controller_.reset(
+        new views::corewm::WindowModalityController);
+    root_window_->AddPreTargetHandler(window_modality_controller_.get());
+  }
+
   window_->Show();
   desktop_root_window_host_->InitFocus(window_);
 
@@ -619,6 +627,10 @@ void DesktopNativeWidgetAura::OnWindowDestroying() {
     root_window_->RemovePreTargetHandler(tooltip_controller_.get());
     tooltip_controller_.reset();
     aura::client::SetTooltipClient(root_window_.get(), NULL);
+  }
+  if (window_modality_controller_) {
+    root_window_->RemovePreTargetHandler(window_modality_controller_.get());
+    window_modality_controller_.reset();
   }
 }
 

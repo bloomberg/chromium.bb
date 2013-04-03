@@ -38,6 +38,10 @@ bool TransientChildIsWindowModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
+bool TransientChildIsSystemModal(aura::Window* window) {
+  return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
+}
+
 bool TransientChildIsChildModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_CHILD;
 }
@@ -49,6 +53,7 @@ aura::Window* GetModalParent(aura::Window* window) {
 bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
   return transient->IsVisible() &&
       (TransientChildIsWindowModal(transient) ||
+       TransientChildIsSystemModal(transient) ||
        (TransientChildIsChildModal(transient) &&
         (HasAncestor(original, GetModalParent(transient)))));
 }

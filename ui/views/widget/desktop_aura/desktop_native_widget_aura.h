@@ -29,6 +29,7 @@ class InputMethodEventFilter;
 class ShadowController;
 class TooltipController;
 class VisibilityController;
+class WindowModalityController;
 }
 
 class DesktopRootWindowHost;
@@ -230,6 +231,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
   scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
+
+  scoped_ptr<views::corewm::WindowModalityController>
+      window_modality_controller_;
 
   // See comments in OnLostActive().
   bool restore_focus_on_activate_;
