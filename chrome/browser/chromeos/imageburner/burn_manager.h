@@ -225,10 +225,6 @@ class BurnManager : public net::URLFetcherDelegate,
         int64 total_bytes,
         const base::TimeDelta& estimated_remaining_time) = 0;
 
-    // Triggered when the fetching of the image file is done.
-    // The result status is passed to |success|.
-    virtual void OnImageFileFetched(bool success) = 0;
-
     // Triggered during the burning the image to the device.
     virtual void OnBurnProgressUpdated(BurnEvent event,
                                        const ImageBurnStatus& status) = 0;

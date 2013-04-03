@@ -436,18 +436,33 @@ void BurnManager::CancelBurnImage() {
 }
 
 void BurnManager::OnURLFetchComplete(const net::URLFetcher* source) {
+  // TODO(hidehiko): Split the handler implementation into two, for
+  // the config file fetcher and the image file fetcher.
   const bool success =
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
+
   if (source == config_fetcher_.get()) {
+    // Handler for the config file fetcher.
     std::string data;
     if (success)
       config_fetcher_->GetResponseAsString(&data);
     config_fetcher_.reset();
     ConfigFileFetched(success, data);
-  } else if (source == image_fetcher_.get()) {
-    state_machine_->OnDownloadFinished();
-    FOR_EACH_OBSERVER(Observer, observers_, OnImageFileFetched(success));
+    return;
   }
+
+  if (source == image_fetcher_.get()) {
+    // Handler for the image file fetcher.
+    state_machine_->OnDownloadFinished();
+    if (!success) {
+      OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
+      return;
+    }
+    DoBurn();
+    return;
+  }
+
+  NOTREACHED();
 }
 
 void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,

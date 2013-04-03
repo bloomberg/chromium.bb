@@ -72,11 +72,6 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnImageFileFetched(bool success) OVERRIDE {
-    DownloadCompleted(success);
-  }
-
-  // BurnManager::Observer override.
   virtual void OnBurnProgressUpdated(BurnEvent event,
                                      const ImageBurnStatus& status) OVERRIDE {
     switch (event) {
@@ -175,14 +170,6 @@ class BurnControllerImpl
   }
 
  private:
-  void DownloadCompleted(bool success) {
-    if (success) {
-      burn_manager_->DoBurn();
-    } else {
-      burn_manager_->OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
-    }
-  }
-
   void FinalizeBurn() {
     burn_manager_->ResetTargetPaths();
     delegate_->OnSuccess();
