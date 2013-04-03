@@ -696,13 +696,14 @@ const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
 const char kVerifyDestinationFunction[] = "VerifyDestination";
 
 // Device property names.
-const char kReceiveByteCountProperty[] = "ReceiveByteCount";
-const char kTransmitByteCountProperty[] = "TransmitByteCount";
+const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 const char kProviderRequiresRoamingProperty[] =
     "Cellular.ProviderRequiresRoaming";
+const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
+const char kTransmitByteCountProperty[] = "TransmitByteCount";
 
 // Error strings.
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
