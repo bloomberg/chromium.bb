@@ -535,6 +535,20 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   EXPECT_TRUE(success);
 }
 
+// Test that subframes can disown their openers.  http://crbug.com/225528.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownSubframeOpener) {
+  const GURL frame_url("data:text/html,<iframe name=\"foo\"></iframe>");
+  NavigateToURL(shell(), frame_url);
+
+  // Give the frame an opener using window.open.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.open('about:blank','foo');"));
+
+  // Now disown the frame's opener.  Shouldn't crash.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.frames[0].opener = null;"));
+}
+
 // Test for crbug.com/99202.  PostMessage calls should still work after
 // navigating the source and target windows to different sites.
 // Specifically:
