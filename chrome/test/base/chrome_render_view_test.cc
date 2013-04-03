@@ -15,7 +15,7 @@
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "components/autofill/renderer/password_autofill_manager.h"
+#include "components/autofill/renderer/password_autofill_agent.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -43,7 +43,7 @@ using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using autofill::AutofillAgent;
-using autofill::PasswordAutofillManager;
+using autofill::PasswordAutofillAgent;
 
 ChromeRenderViewTest::ChromeRenderViewTest() : extension_dispatcher_(NULL) {
 }
@@ -62,10 +62,10 @@ void ChromeRenderViewTest::SetUp() {
   render_thread_.reset(chrome_render_thread_);
   content::RenderViewTest::SetUp();
 
-  // RenderView doesn't expose it's PasswordAutofillManager or
+  // RenderView doesn't expose it's PasswordAutofillAgent or
   // AutofillAgent objects, because it has no need to store them directly
   // (they're stored as RenderViewObserver*).  So just create another set.
-  password_autofill_ = new PasswordAutofillManager(view_);
+  password_autofill_ = new PasswordAutofillAgent(view_);
   autofill_agent_ = new AutofillAgent(view_, password_autofill_);
 }
 

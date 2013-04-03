@@ -20,7 +20,7 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
 #include "components/autofill/renderer/form_autofill_util.h"
-#include "components/autofill/renderer/password_autofill_manager.h"
+#include "components/autofill/renderer/password_autofill_agent.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/renderer/render_view.h"
@@ -138,11 +138,10 @@ gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
 
 namespace autofill {
 
-AutofillAgent::AutofillAgent(
-    content::RenderView* render_view,
-    PasswordAutofillManager* password_autofill_manager)
+AutofillAgent::AutofillAgent(content::RenderView* render_view,
+                             PasswordAutofillAgent* password_autofill_agent)
     : content::RenderViewObserver(render_view),
-      password_autofill_manager_(password_autofill_manager),
+      password_autofill_agent_(password_autofill_agent),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
       topmost_frame_(NULL),
@@ -369,7 +368,7 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
                                                 const WebString& label,
                                                 int item_id,
                                                 unsigned index) {
-  if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
+  if (password_autofill_agent_->DidAcceptAutofillSuggestion(node, value))
     return;
 
   DCHECK(node == element_);
@@ -408,7 +407,7 @@ void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
                                                 const WebString& value,
                                                 const WebString& label,
                                                 int item_id) {
-  if (password_autofill_manager_->DidSelectAutofillSuggestion(node))
+  if (password_autofill_agent_->DidSelectAutofillSuggestion(node))
     return;
 
   didClearAutofillSelection(node);
@@ -418,7 +417,7 @@ void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
 }
 
 void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
-  if (password_autofill_manager_->DidClearAutofillSelection(node))
+  if (password_autofill_agent_->DidClearAutofillSelection(node))
     return;
 
   if (!element_.isNull() && node == element_) {
@@ -439,7 +438,7 @@ void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
-  password_autofill_manager_->TextFieldDidEndEditing(element);
+  password_autofill_agent_->TextFieldDidEndEditing(element);
   has_shown_autofill_popup_for_current_edit_ = false;
   Send(new AutofillHostMsg_DidEndTextFieldEditing(routing_id()));
 }
@@ -469,7 +468,7 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
   if (!element.focused())
     return;
 
-  if (password_autofill_manager_->TextDidChangeInTextField(element)) {
+  if (password_autofill_agent_->TextDidChangeInTextField(element)) {
     element_ = element;
     return;
   }
@@ -486,7 +485,7 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
-  if (password_autofill_manager_->TextFieldHandlingKeyDown(element, event)) {
+  if (password_autofill_agent_->TextFieldHandlingKeyDown(element, event)) {
     element_ = element;
     return;
   }
@@ -706,7 +705,7 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   // We need to make sure this is handled here because the browser process
   // skipped it handling because it believed it would be handled here. If it
   // isn't handled here then the browser logic needs to be updated.
-  bool handled = password_autofill_manager_->DidAcceptAutofillSuggestion(
+  bool handled = password_autofill_agent_->DidAcceptAutofillSuggestion(
       element_,
       value);
   DCHECK(handled);

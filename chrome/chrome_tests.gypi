@@ -1547,7 +1547,7 @@
         'renderer/autofill/autofill_renderer_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_autofill_browsertest.cc',
-        'renderer/autofill/password_autofill_manager_browsertest.cc',
+        'renderer/autofill/password_autofill_agent_browsertest.cc',
         'renderer/autofill/password_generation_manager_browsertest.cc',
         'renderer/automation/automation_renderer_helper_browsertest.cc',
         'renderer/content_settings_observer_browsertest.cc',

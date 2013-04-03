@@ -9,7 +9,7 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/renderer/autofill_agent.h"
-#include "components/autofill/renderer/password_autofill_manager.h"
+#include "components/autofill/renderer/password_autofill_agent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
@@ -54,9 +54,9 @@ const char* const kFormHTML =
 
 namespace autofill {
 
-class PasswordAutofillManagerTest : public ChromeRenderViewTest {
+class PasswordAutofillAgentTest : public ChromeRenderViewTest {
  public:
-  PasswordAutofillManagerTest() {
+  PasswordAutofillAgentTest() {
   }
 
   // Simulates the fill password form message being sent to the renderer.
@@ -170,12 +170,12 @@ class PasswordAutofillManagerTest : public ChromeRenderViewTest {
   WebInputElement password_element_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgentTest);
 };
 
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
-TEST_F(PasswordAutofillManagerTest, InitialAutocomplete) {
+TEST_F(PasswordAutofillAgentTest, InitialAutocomplete) {
   /*
    * Right now we are not sending the message to the browser because we are
    * loading a data URL and the security origin canAccessPasswordManager()
@@ -207,7 +207,7 @@ TEST_F(PasswordAutofillManagerTest, InitialAutocomplete) {
 }
 
 // Tests that we correctly fill forms having an empty 'action' attribute.
-TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForEmptyAction) {
+TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   const char kEmptyActionFormHTML[] =
       "<FORM name='LoginTestForm'>"
       "  <INPUT type='text' id='username'/>"
@@ -241,7 +241,7 @@ TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForEmptyAction) {
 }
 
 // Tests that changing the username does not fill a read-only password field.
-TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForReadOnly) {
+TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
                                  WebString::fromUTF8("true"));
 
@@ -255,7 +255,7 @@ TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForReadOnly) {
 }
 
 // Tests that having a non-matching username precludes the autocomplete.
-TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForFilledField) {
+TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
   username_element_.setValue(WebString::fromUTF8("bogus"));
 
   // Simulate the browser sending back the login info, it triggers the
@@ -267,7 +267,7 @@ TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForFilledField) {
 }
 
 // Tests that having a matching username does not preclude the autocomplete.
-TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForMatchingFilledField) {
+TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForMatchingFilledField) {
   username_element_.setValue(WebString::fromUTF8(kAliceUsername));
 
   // Simulate the browser sending back the login info, it triggers the
@@ -279,7 +279,7 @@ TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForMatchingFilledField) {
 }
 
 // Tests that editing the password clears the autocompleted password field.
-TEST_F(PasswordAutofillManagerTest, PasswordClearOnEdit) {
+TEST_F(PasswordAutofillAgentTest, PasswordClearOnEdit) {
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
@@ -293,7 +293,7 @@ TEST_F(PasswordAutofillManagerTest, PasswordClearOnEdit) {
 
 // Tests that we only autocomplete on focus lost and with a full username match
 // when |wait_for_username| is true.
-TEST_F(PasswordAutofillManagerTest, WaitUsername) {
+TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   // Simulate the browser sending back the login info.
   fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
@@ -326,7 +326,7 @@ TEST_F(PasswordAutofillManagerTest, WaitUsername) {
 }
 
 // Tests that inline autocompletion works properly.
-TEST_F(PasswordAutofillManagerTest, InlineAutocomplete) {
+TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -384,7 +384,7 @@ TEST_F(PasswordAutofillManagerTest, InlineAutocomplete) {
 }
 
 // Tests that accepting an item in the suggestion drop-down works.
-TEST_F(PasswordAutofillManagerTest, SuggestionAccept) {
+TEST_F(PasswordAutofillAgentTest, SuggestionAccept) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -404,7 +404,7 @@ TEST_F(PasswordAutofillManagerTest, SuggestionAccept) {
 }
 
 // Tests that selecting an item in the suggestion drop-down no-ops.
-TEST_F(PasswordAutofillManagerTest, SuggestionSelect) {
+TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 

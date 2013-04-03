@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_MANAGER_H_
-#define COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_AGENT_H_
+#define COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_AGENT_H_
 
 #include <map>
 #include <vector>
@@ -23,12 +23,12 @@ class WebView;
 namespace autofill {
 
 // This class is responsible for filling password forms.
-// There is one PasswordAutofillManager per RenderView.
-class PasswordAutofillManager : public content::RenderViewObserver,
-                                public PageClickListener {
+// There is one PasswordAutofillAgent per RenderView.
+class PasswordAutofillAgent : public content::RenderViewObserver,
+                              public PageClickListener {
  public:
-  explicit PasswordAutofillManager(content::RenderView* render_view);
-  virtual ~PasswordAutofillManager();
+  explicit PasswordAutofillAgent(content::RenderView* render_view);
+  virtual ~PasswordAutofillAgent();
 
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
@@ -51,7 +51,7 @@ class PasswordAutofillManager : public content::RenderViewObserver,
   bool DidClearAutofillSelection(const WebKit::WebNode& node);
 
  private:
-  friend class PasswordAutofillManagerTest;
+  friend class PasswordAutofillAgentTest;
 
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
@@ -121,11 +121,11 @@ class PasswordAutofillManager : public content::RenderViewObserver,
   // Pointer to the WebView. Used to access page scale factor.
   WebKit::WebView* web_view_;
 
-  base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
+  base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_RENDERER_PASSWORD_AUTOFILL_AGENT_H_

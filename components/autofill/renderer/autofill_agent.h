@@ -30,7 +30,7 @@ class WebView;
 namespace autofill {
 
 struct WebElementDescriptor;
-class PasswordAutofillManager;
+class PasswordAutofillAgent;
 
 // AutofillAgent deals with Autofill related communications between WebKit and
 // the browser.  There is one AutofillAgent per RenderView.
@@ -44,9 +44,9 @@ class AutofillAgent : public content::RenderViewObserver,
                       public PageClickListener,
                       public WebKit::WebAutofillClient {
  public:
-  // PasswordAutofillManager is guaranteed to outlive AutofillAgent.
+  // PasswordAutofillAgent is guaranteed to outlive AutofillAgent.
   AutofillAgent(content::RenderView* render_view,
-                PasswordAutofillManager* password_autofill_manager);
+                PasswordAutofillAgent* password_autofill_manager);
   virtual ~AutofillAgent();
 
  private:
@@ -208,7 +208,7 @@ class AutofillAgent : public content::RenderViewObserver,
 
   FormCache form_cache_;
 
-  PasswordAutofillManager* password_autofill_manager_;  // WEAK reference.
+  PasswordAutofillAgent* password_autofill_agent_;  // WEAK reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
@@ -266,13 +266,13 @@ class AutofillAgent : public content::RenderViewObserver,
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
-  friend class PasswordAutofillManagerTest;
+  friend class PasswordAutofillAgentTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendForms);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, ShowAutofillWarning);
-  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, WaitUsername);
-  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionAccept);
-  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionSelect);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, WaitUsername);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionAccept);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionSelect);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };

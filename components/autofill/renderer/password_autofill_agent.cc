@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/renderer/password_autofill_manager.h"
+#include "components/autofill/renderer/password_autofill_agent.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -202,20 +202,19 @@ bool DoUsernamesMatch(const string16& username1,
 namespace autofill {
 
 ////////////////////////////////////////////////////////////////////////////////
-// PasswordAutofillManager, public:
+// PasswordAutofillAgent, public:
 
-PasswordAutofillManager::PasswordAutofillManager(
-    content::RenderView* render_view)
+PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       disable_popup_(false),
       web_view_(render_view->GetWebView()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-PasswordAutofillManager::~PasswordAutofillManager() {
+PasswordAutofillAgent::~PasswordAutofillAgent() {
 }
 
-bool PasswordAutofillManager::TextFieldDidEndEditing(
+bool PasswordAutofillAgent::TextFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
@@ -241,7 +240,7 @@ bool PasswordAutofillManager::TextFieldDidEndEditing(
   return true;
 }
 
-bool PasswordAutofillManager::TextDidChangeInTextField(
+bool PasswordAutofillAgent::TextDidChangeInTextField(
     const WebKit::WebInputElement& element) {
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
@@ -289,7 +288,7 @@ bool PasswordAutofillManager::TextDidChangeInTextField(
   return true;
 }
 
-bool PasswordAutofillManager::TextFieldHandlingKeyDown(
+bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
   // If using the new Autofill UI that lives in the browser, it will handle
@@ -306,7 +305,7 @@ bool PasswordAutofillManager::TextFieldHandlingKeyDown(
   return true;
 }
 
-bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
+bool PasswordAutofillAgent::DidAcceptAutofillSuggestion(
     const WebKit::WebNode& node,
     const WebKit::WebString& value) {
   WebKit::WebInputElement input;
@@ -321,22 +320,22 @@ bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
                                  password.fill_data, true, true);
 }
 
-bool PasswordAutofillManager::DidSelectAutofillSuggestion(
+bool PasswordAutofillAgent::DidSelectAutofillSuggestion(
     const WebKit::WebNode& node) {
   WebKit::WebInputElement input;
   PasswordInfo password;
   return FindLoginInfo(node, &input, &password);
 }
 
-bool PasswordAutofillManager::DidClearAutofillSelection(
+bool PasswordAutofillAgent::DidClearAutofillSelection(
     const WebKit::WebNode& node) {
   WebKit::WebInputElement input;
   PasswordInfo password;
   return FindLoginInfo(node, &input, &password);
 }
 
-void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
-                                                bool only_visible) {
+void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
+                                              bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
   WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
   if (!origin.canAccessPasswordManager())
@@ -375,23 +374,23 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
   }
 }
 
-bool PasswordAutofillManager::OnMessageReceived(const IPC::Message& message) {
+bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PasswordAutofillManager, message)
+  IPC_BEGIN_MESSAGE_MAP(PasswordAutofillAgent, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PasswordAutofillManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+void PasswordAutofillAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   // The |frame| contents have been parsed, but not yet rendered.  Let the
   // PasswordManager know that forms are loaded, even though we can't yet tell
   // whether they're visible.
   SendPasswordForms(frame, false);
 }
 
-void PasswordAutofillManager::DidFinishLoad(WebKit::WebFrame* frame) {
+void PasswordAutofillAgent::DidFinishLoad(WebKit::WebFrame* frame) {
   // The |frame| contents have been rendered.  Let the PasswordManager know
   // which of the loaded frames are actually visible to the user.  This also
   // triggers the "Save password?" infobar if the user just submitted a password
@@ -399,11 +398,11 @@ void PasswordAutofillManager::DidFinishLoad(WebKit::WebFrame* frame) {
   SendPasswordForms(frame, true);
 }
 
-void PasswordAutofillManager::FrameDetached(WebKit::WebFrame* frame) {
+void PasswordAutofillAgent::FrameDetached(WebKit::WebFrame* frame) {
   FrameClosing(frame);
 }
 
-void PasswordAutofillManager::FrameWillClose(WebKit::WebFrame* frame) {
+void PasswordAutofillAgent::FrameWillClose(WebKit::WebFrame* frame) {
   FrameClosing(frame);
 }
 
@@ -411,7 +410,7 @@ void PasswordAutofillManager::FrameWillClose(WebKit::WebFrame* frame) {
 ////////////////////////////////////////////////////////////////////////////////
 // PageClickListener implementation:
 
-bool PasswordAutofillManager::InputElementClicked(
+bool PasswordAutofillAgent::InputElementClicked(
     const WebKit::WebInputElement& element,
     bool was_focused,
     bool is_focused) {
@@ -419,11 +418,11 @@ bool PasswordAutofillManager::InputElementClicked(
   return false;
 }
 
-bool PasswordAutofillManager::InputElementLostFocus() {
+bool PasswordAutofillAgent::InputElementLostFocus() {
   return false;
 }
 
-void PasswordAutofillManager::OnFillPasswordForm(
+void PasswordAutofillAgent::OnFillPasswordForm(
     const PasswordFormFillData& form_data,
     bool disable_popup) {
   disable_popup_ = disable_popup;
@@ -473,9 +472,9 @@ void PasswordAutofillManager::OnFillPasswordForm(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PasswordAutofillManager, private:
+// PasswordAutofillAgent, private:
 
-void PasswordAutofillManager::GetSuggestions(
+void PasswordAutofillAgent::GetSuggestions(
     const PasswordFormFillData& fill_data,
     const string16& input,
     std::vector<string16>* suggestions) {
@@ -490,7 +489,7 @@ void PasswordAutofillManager::GetSuggestions(
   }
 }
 
-bool PasswordAutofillManager::ShowSuggestionPopup(
+bool PasswordAutofillAgent::ShowSuggestionPopup(
     const PasswordFormFillData& fill_data,
     const WebKit::WebInputElement& user_input) {
   WebKit::WebFrame* frame = user_input.document().frame();
@@ -540,7 +539,7 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
   return true;
 }
 
-bool PasswordAutofillManager::FillUserNameAndPassword(
+bool PasswordAutofillAgent::FillUserNameAndPassword(
     WebKit::WebInputElement* username_element,
     WebKit::WebInputElement* password_element,
     const PasswordFormFillData& fill_data,
@@ -587,7 +586,7 @@ bool PasswordAutofillManager::FillUserNameAndPassword(
   return true;
 }
 
-void PasswordAutofillManager::PerformInlineAutocomplete(
+void PasswordAutofillAgent::PerformInlineAutocomplete(
     const WebKit::WebInputElement& username_input,
     const WebKit::WebInputElement& password_input,
     const PasswordFormFillData& fill_data) {
@@ -615,7 +614,7 @@ void PasswordAutofillManager::PerformInlineAutocomplete(
 #endif
 }
 
-void PasswordAutofillManager::FrameClosing(const WebKit::WebFrame* frame) {
+void PasswordAutofillAgent::FrameClosing(const WebKit::WebFrame* frame) {
   for (LoginToPasswordInfoMap::iterator iter = login_to_password_info_.begin();
        iter != login_to_password_info_.end();) {
     if (iter->first.document().frame() == frame)
@@ -625,10 +624,9 @@ void PasswordAutofillManager::FrameClosing(const WebKit::WebFrame* frame) {
   }
 }
 
-bool PasswordAutofillManager::FindLoginInfo(
-    const WebKit::WebNode& node,
-    WebKit::WebInputElement* found_input,
-    PasswordInfo* found_password) {
+bool PasswordAutofillAgent::FindLoginInfo(const WebKit::WebNode& node,
+                                          WebKit::WebInputElement* found_input,
+                                          PasswordInfo* found_password) {
   if (!node.isElementNode())
     return false;
 

@@ -72,7 +72,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "components/autofill/renderer/autofill_agent.h"
 #include "components/autofill/renderer/page_click_tracker.h"
-#include "components/autofill/renderer/password_autofill_manager.h"
+#include "components/autofill/renderer/password_autofill_agent.h"
 #include "components/autofill/renderer/password_generation_manager.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/common/content_constants.h"
@@ -112,7 +112,7 @@
 #endif
 
 using autofill::AutofillAgent;
-using autofill::PasswordAutofillManager;
+using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationManager;
 using content::RenderThread;
 using extensions::Extension;
@@ -364,10 +364,10 @@ void ChromeContentRendererClient::RenderViewCreated(
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 
-  PasswordAutofillManager* password_autofill_manager =
-      new PasswordAutofillManager(render_view);
+  PasswordAutofillAgent* password_autofill_agent =
+      new PasswordAutofillAgent(render_view);
   AutofillAgent* autofill_agent = new AutofillAgent(render_view,
-                                                    password_autofill_manager);
+                                                    password_autofill_agent);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnablePasswordGeneration))
@@ -379,7 +379,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   // Note that the order of insertion of the listeners is important.
   // The password_autocomplete_manager takes the first shot at processing the
   // notification and can stop the propagation.
-  page_click_tracker->AddListener(password_autofill_manager);
+  page_click_tracker->AddListener(password_autofill_agent);
   page_click_tracker->AddListener(autofill_agent);
 
   new ChromeRenderViewObserver(
