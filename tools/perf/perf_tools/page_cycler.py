@@ -15,13 +15,15 @@ MEMORY_HISTOGRAMS = [
 class PageCycler(page_benchmark.PageBenchmark):
   def WillNavigateToPage(self, page, tab):
     # pylint: disable=W0201
+    self.start_commit_charge = tab.browser.memory_stats['SystemCommitCharge']
+
+  def DidNavigateToPage(self, page, tab):
+    # pylint: disable=W0201
     self.histograms = [histogram_measurement.HistogramMeasurement(
                            h, histogram_measurement.RENDERER_HISTOGRAM)
                        for h in MEMORY_HISTOGRAMS]
     for h in self.histograms:
       h.Start(page, tab)
-    # pylint: disable=W0201
-    self.start_commit_charge = tab.browser.memory_stats['SystemCommitCharge']
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--dom-automation')
