@@ -415,7 +415,7 @@ const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
 const int ThreadWatcherList::kUnresponsiveCount = 9;
 // static
-const int ThreadWatcherList::kLiveThreadsThreshold = 3;
+const int ThreadWatcherList::kLiveThreadsThreshold = 2;
 
 ThreadWatcherList::CrashDataThresholds::CrashDataThresholds(
     uint32 live_threads_threshold,
@@ -644,9 +644,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
   StartWatching(BrowserThread::DB, "DB", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_threads);
-  StartWatching(BrowserThread::FILE_USER_BLOCKING, "FILE_USER_BLOCKING",
-                kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_threads);
