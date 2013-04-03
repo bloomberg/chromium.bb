@@ -332,6 +332,18 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   switch (event.key_code()) {
+    case ui::VKEY_A:
+      // control-a selects all.
+      if (event.IsControlDown() && !single_selection_ && RowCount()) {
+        ui::ListSelectionModel selection_model;
+        selection_model.SetSelectedIndex(selection_model_.active());
+        for (int i = 0; i < RowCount(); ++i)
+          selection_model.AddIndexToSelection(i);
+        SetSelectionModel(selection_model);
+        return true;
+      }
+      break;
+
     case ui::VKEY_HOME:
       if (RowCount())
         SelectByViewIndex(0);
