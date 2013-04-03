@@ -942,7 +942,7 @@ weston_device_repick(struct weston_seat *seat)
 
 	if (&surface->surface != pointer->current) {
 		interface = pointer->grab->interface;
-		pointer->current = &surface->surface;
+		wl_pointer_set_current(pointer, &surface->surface);
 		interface->focus(pointer->grab, &surface->surface,
 				 pointer->current_x,
 				 pointer->current_y);
