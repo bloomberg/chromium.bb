@@ -578,8 +578,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // StartupAppLauncher deletes itself when done.
     (new chromeos::StartupAppLauncher(
         last_used_profile,
-        command_line.GetSwitchValueASCII(switches::kAppId)))->Start(
-            chromeos::StartupAppLauncher::LAUNCH_ON_RESTART);
+        command_line.GetSwitchValueASCII(switches::kAppId)))->Start();
 
     // Skip browser launch since app mode launches its app window.
     silent_launch = true;

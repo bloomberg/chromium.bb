@@ -53,6 +53,13 @@ const base::FilePath::CharType kOAuthFileName[] =
 // Application install splash screen minimum show time in milliseconds.
 const int kAppInstallSplashScreenMinTimeMS = 3000;
 
+// Initial delay that gives an app 30 seconds during which the main app window
+// must be created. If app fails to create the main window in this timeframe,
+// chrome will exit.
+// TODO(xiyuan): Find a nicer way to trace process lifetime management at
+// startup. This just fixes a race that happens on faster machines.
+const int kInitialEndKeepAliveDelayinSec = 30;
+
 bool IsAppInstalled(Profile* profile, const std::string& app_id) {
   return extensions::ExtensionSystem::Get(profile)->extension_service()->
       GetInstalledExtension(app_id);
@@ -64,8 +71,7 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id)
     : profile_(profile),
       app_id_(app_id),
-      launch_splash_start_time_(0),
-      launch_type_(LAUNCH_ON_SESSION_START) {
+      launch_splash_start_time_(0) {
   DCHECK(profile_);
   DCHECK(Extension::IdIsValid(app_id_));
   DCHECK(ash::Shell::HasInstance());
@@ -77,8 +83,7 @@ StartupAppLauncher::~StartupAppLauncher() {
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-void StartupAppLauncher::Start(LaunchType launch_type) {
-  launch_type_ = launch_type;
+void StartupAppLauncher::Start() {
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
   DVLOG(1) << "Starting... connection = "
            <<  net::NetworkChangeNotifier::GetConnectionType();
@@ -104,14 +109,17 @@ void StartupAppLauncher::LoadOAuthFileOnBlockingPool(
   std::string error_msg;
   base::FilePath user_data_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  base::FilePath auth_file = user_data_dir.Append(kOAuthFileName);
   scoped_ptr<JSONFileValueSerializer> serializer(
       new JSONFileValueSerializer(user_data_dir.Append(kOAuthFileName)));
   scoped_ptr<base::Value> value(
       serializer->Deserialize(&error_code, &error_msg));
   base::DictionaryValue* dict = NULL;
   if (error_code != JSONFileValueSerializer::JSON_NO_ERROR ||
-      !value.get() || !value->GetAsDictionary(&dict))
+      !value.get() || !value->GetAsDictionary(&dict)) {
+    LOG(WARNING) << "Can't find auth file at " << auth_file.value();
     return;
+  }
 
   dict->GetString(kOAuthRefreshToken, &auth_params->refresh_token);
   dict->GetString(kOAuthClientId, &auth_params->client_id);
@@ -130,10 +138,7 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
 
   // If we are restarting chrome (i.e. on crash), we need to initialize
   // TokenService as well.
-  if (launch_type_ == LAUNCH_ON_RESTART)
-    InitializeTokenService();
-  else
-    InitializeNetwork();
+  InitializeTokenService();
 }
 
 void StartupAppLauncher::InitializeNetwork() {
@@ -216,10 +221,11 @@ void StartupAppLauncher::Cleanup() {
   // the just launched app on success or should be ended on failure.
   // Invoking it via a PostNonNestableTask because Cleanup() could be called
   // before main message loop starts.
-  BrowserThread::PostNonNestableTask(
+  BrowserThread::PostNonNestableDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&chrome::EndKeepAlive));
+      base::Bind(&chrome::EndKeepAlive),
+      base::TimeDelta::FromSeconds(kInitialEndKeepAliveDelayinSec));
 
   delete this;
 }

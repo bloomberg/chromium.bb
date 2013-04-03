@@ -543,8 +543,12 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
   if (!login_manager_.get())
     return;
 
+  if (chrome::IsRunningInForcedAppMode())
+    return;
+
   UserManager::Get()->SetMergeSessionState(
       UserManager::MERGE_STATUS_IN_PROCESS);
+
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
   // have OAuth2 refresh token in TokenService that could be used to retrieve
   // all other tokens and user_context.

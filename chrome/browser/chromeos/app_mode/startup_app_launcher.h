@@ -40,16 +40,11 @@ class StartupAppLauncher
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public ui::EventHandler {
  public:
-  enum LaunchType {
-    LAUNCH_ON_RESTART,
-    LAUNCH_ON_SESSION_START,
-  };
-
   StartupAppLauncher(Profile* profile, const std::string& app_id);
 
   // Starts app launcher. If |skip_auth_setup| is set, we will skip
   // TokenService initialization.
-  void Start(LaunchType launch_type);
+  void Start();
 
  private:
   // OAuth parameters from /home/chronos/kiosk_auth file.
@@ -101,7 +96,6 @@ class StartupAppLauncher
   content::NotificationRegistrar registrar_;
   base::OneShotTimer<StartupAppLauncher> network_wait_timer_;
   KioskOAuthParams auth_params_;
-  LaunchType launch_type_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupAppLauncher);
 };

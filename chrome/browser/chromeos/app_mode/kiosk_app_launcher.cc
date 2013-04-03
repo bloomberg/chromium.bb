@@ -229,8 +229,7 @@ void KioskAppLauncher::RemoveCallback(bool success,
 
 void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
   // StartupAppLauncher deletes itself when done.
-  (new chromeos::StartupAppLauncher(profile, app_id_))->Start(
-      chromeos::StartupAppLauncher::LAUNCH_ON_SESSION_START);
+  (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
 
   if (BaseLoginDisplayHost::default_host())
     BaseLoginDisplayHost::default_host()->OnSessionStart();
