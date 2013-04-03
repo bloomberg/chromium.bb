@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_LINUX_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
 
 #if !defined(OS_CHROMEOS)
@@ -30,7 +30,7 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 
  private:
 #if !defined(OS_CHROMEOS)
-  scoped_refptr<chrome::StorageMonitorLinux> storage_monitor_;
+  scoped_ptr<chrome::StorageMonitorLinux> storage_monitor_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);

@@ -2413,6 +2413,8 @@
             ['exclude', 'browser/password_manager/native_backend_kwallet_x.h'],
             ['exclude', 'browser/platform_util_linux.cc'],
             ['exclude', 'browser/speech/extension_api/tts_extension_api_linux.cc'],
+            ['exclude', 'browser/storage_monitor/mtab_watcher_linux.cc'],
+            ['exclude', 'browser/storage_monitor/mtab_watcher_linux.h'],
             ['exclude', 'browser/storage_monitor/storage_monitor_linux.cc'],
             ['exclude', 'browser/storage_monitor/storage_monitor_linux.h'],
             ['exclude', 'browser/ui/ash/caps_lock_delegate_views.cc'],

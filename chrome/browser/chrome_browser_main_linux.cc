@@ -126,7 +126,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 
 #if !defined(OS_CHROMEOS)
   const base::FilePath kDefaultMtabPath("/etc/mtab");
-  storage_monitor_ = new chrome::StorageMonitorLinux(kDefaultMtabPath);
+  storage_monitor_.reset(new chrome::StorageMonitorLinux(kDefaultMtabPath));
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
@@ -142,10 +142,10 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
 #if !defined(OS_CHROMEOS)
-  // Release it now. Otherwise the FILE thread would be gone when we try to
-  // release it in the dtor and Valgrind would report a leak on almost ever
+  // Delete it now. Otherwise the FILE thread would be gone when we try to
+  // release it in the dtor and Valgrind would report a leak on almost every
   // single browser_test.
-  storage_monitor_ = NULL;
+  storage_monitor_.reset();
 #endif
 
   ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
