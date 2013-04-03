@@ -96,6 +96,8 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
 
     # Configure git.
     wd = os.path.join(self.base, self.root)
+    if self.dryrun:
+      print "cd %s" % wd
     self.run_git(
         'submodule', 'foreach',
         'git config -f $toplevel/.git/config submodule.$name.ignore all',
@@ -115,6 +117,8 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
       subspec = submodules[path]
       ospath = os.path.join(*path.split('/'))
       wd = os.path.join(self.base, self.root, ospath)
+      if self.dryrun:
+        print "cd %s" % wd
       self.run_git('svn', 'init', '--prefix=origin/', '-T',
                    subspec['svn_branch'], subspec['svn_url'], cwd=wd)
       self.run_git('config', '--replace', 'svn-remote.svn.fetch',
