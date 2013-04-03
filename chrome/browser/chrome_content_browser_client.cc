@@ -1822,16 +1822,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->user_style_sheet_enabled = false;
   }
 
-  web_prefs->asynchronous_spell_checking_enabled =
-#if defined(OS_MACOSX)
-      // TODO(groby): Bug 107371: Implement asynchronous spellchecking API for
-      // Mac so it uses NSSpellChecker in the background.
-      false;
-#else
-      true;
-#endif
-  web_prefs->unified_textchecker_enabled =
-      web_prefs->asynchronous_spell_checking_enabled;
+  web_prefs->asynchronous_spell_checking_enabled = true;
+  web_prefs->unified_textchecker_enabled = true;
 
   web_prefs->uses_universal_detector =
       prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);

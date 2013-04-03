@@ -205,6 +205,9 @@ bool SpellCheck::SpellCheckParagraph(
   results->assign(textcheck_results);
   return false;
 #else
+  // This function is only invoked for spell checker functionality that runs
+  // on the render thread. OSX builds don't have that.
+  NOTREACHED();
   return true;
 #endif
 }

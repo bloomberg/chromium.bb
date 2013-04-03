@@ -159,17 +159,16 @@ void SpellCheckProvider::checkTextOfParagraph(
     const WebKit::WebString& text,
     WebKit::WebTextCheckingTypeMask mask,
     WebKit::WebVector<WebKit::WebTextCheckingResult>* results) {
-#if !defined(OS_MACOSX)
-  // Since Mac has its own spell checker, this method will not be used on Mac.
-
   if (!results)
     return;
 
   if (!(mask & WebKit::WebTextCheckingTypeSpelling))
     return;
 
+  // TODO(groby): As far as I can tell, this method is never invoked.
+  // UMA results seem to support that. Investigate, clean up if true.
+  NOTREACHED();
   spellcheck_->SpellCheckParagraph(string16(text), results);
-#endif
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 }
 
