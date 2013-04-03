@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_IMAGE_LAYER_UPDATER_H_
 #define CC_RESOURCES_IMAGE_LAYER_UPDATER_H_
 
+#include "cc/base/cc_export.h"
 #include "cc/resources/layer_updater.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -12,7 +13,7 @@ namespace cc {
 
 class ResourceUpdateQueue;
 
-class ImageLayerUpdater : public LayerUpdater {
+class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
  public:
   class Resource : public LayerUpdater::Resource {
    public:

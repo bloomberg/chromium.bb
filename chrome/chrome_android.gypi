@@ -15,7 +15,6 @@
       'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../jingle/jingle.gyp:notifier',
         'chrome_android_core',
         'chromium_testshell_jni_headers',
         'chrome.gyp:browser_ui',
@@ -103,6 +102,7 @@
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
         '../content/content.gyp:content',
+        '../jingle/jingle.gyp:notifier',
       ],
       'include_dirs': [
         '..',
