@@ -115,7 +115,7 @@ class _ImportLibraryGenerator(object):
     # Invoke on the assembler to compile it to .obj.
     obj_name = dll_name + '.obj'
     cmdline = ['ml.exe', '/nologo', '/c', asm_name, '/Fo', obj_name]
-    self._Shell(cmdline, cwd=self._temp_dir)
+    self._Shell(cmdline, cwd=self._temp_dir, stdout=open(os.devnull))
 
     return obj_name
 
@@ -151,7 +151,7 @@ class _ImportLibraryGenerator(object):
     if obj_file:
       cmdline.append(obj_file)
 
-    self._Shell(cmdline, cwd=self._temp_dir)
+    self._Shell(cmdline, cwd=self._temp_dir, stdout=open(os.devnull))
 
     # Copy the .lib file to the output directory.
     shutil.copyfile(os.path.join(self._temp_dir, lib_name), output_file)
@@ -181,7 +181,6 @@ def main():
 
   options, args = parser.parse_args()
 
-  print args
   if len(args) != 1:
     parser.error('You must provide an imports file.')
 
@@ -204,7 +203,7 @@ def main():
 
     ret = generator.CreateImportLib(args[0], options.output_file)
   except Exception, e:
-    _LOGGER.exception('Failed to create imports.')
+    _LOGGER.exception('Failed to create import lib.')
     ret = 1
   finally:
     if not options.keep_temp_dir:

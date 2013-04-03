@@ -43,7 +43,6 @@
       'action': [
         'python',
         '<(create_importlib)',
-        '--verbose',
         '--output-file', '<@(_outputs)',
         '<(RULE_INPUT_PATH)',
       ],
