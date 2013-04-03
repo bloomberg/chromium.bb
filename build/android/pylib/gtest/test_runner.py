@@ -217,9 +217,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
           self.tool,
           symbols_dir)
 
-
-  def StripAndCopyFiles(self):
-    """Strips and copies the required data files for the test suite."""
+  #override
+  def PushDependencies(self):
     self.test_package.StripAndCopyExecutable()
     self.test_package.PushDataAndPakFiles()
     self.tool.CopyFiles()
@@ -305,7 +304,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
-    self.StripAndCopyFiles()
     if _TestSuiteRequiresMockTestServer(self.test_package.test_suite_basename):
       self.LaunchChromeTestServerSpawner()
     self.tool.SetupEnvironment()

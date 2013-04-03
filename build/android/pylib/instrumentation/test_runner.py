@@ -27,6 +27,23 @@ import test_result
 _PERF_TEST_ANNOTATION = 'PerfTest'
 
 
+def _GetDataFilesForTestSuite(test_suite_basename):
+  """Returns a list of data files/dirs needed by the test suite.
+
+  Args:
+    test_suite_basename: The test suite basename for which to return file paths.
+
+  Returns:
+    A list of test file and directory paths.
+  """
+  test_files = []
+  if test_suite_basename in ['ChromeTest', 'ContentShellTest']:
+    test_files += [
+        'net/data/ssl/certificates/',
+    ]
+  return test_files
+
+
 class TestRunner(base_test_runner.BaseTestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
@@ -106,12 +123,24 @@ class TestRunner(base_test_runner.BaseTestRunner):
                         TestRunner._COVERAGE_WEB_ROOT_DIR +
                         '] does not exist.')
 
-  def CopyTestFilesOnce(self):
-    """Pushes the test data files to the device. Installs the apk if opted."""
+  #override.
+  def PushDependencies(self):
+    # TODO(frankf): Implement a general approach for copying/installing
+    # once across test runners.
     if TestRunner._DEVICE_HAS_TEST_FILES.get(self.device, False):
       logging.warning('Already copied test files to device %s, skipping.',
                       self.device)
       return
+
+    test_data = _GetDataFilesForTestSuite(self.test_pkg.GetApkName())
+    if test_data:
+      # Make sure SD card is ready.
+      self.adb.WaitForSdCardReady(20)
+      for data in test_data:
+        self.CopyTestData([data], self.adb.GetExternalStorage())
+
+    # TODO(frankf): Specify test data in this file as opposed to passing
+    # as command-line.
     for dest_host_pair in self.test_data:
       dst_src = dest_host_pair.split(':',1)
       dst_layer = dst_src[0]
@@ -121,11 +150,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.adb.PushIfNeeded(host_test_files_path,
                               self.adb.GetExternalStorage() + '/' +
                               TestRunner._DEVICE_DATA_DIR + '/' + dst_layer)
-    if self.is_uiautomator_test:
+    if self.is_uiautomator_test or self.install_apk:
       self.test_pkg.Install(self.adb)
-    elif self.install_apk:
-      self.test_pkg.Install(self.adb)
-
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[self.device] = True
 
@@ -206,7 +232,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       if self.adb.SetJavaAssertsEnabled(enable=not self.disable_assertions):
         self.adb.Reboot(full_reboot=False)
 
-    self.CopyTestFilesOnce()
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to
     # launch lighttpd with same port at same time.

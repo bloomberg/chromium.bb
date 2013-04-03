@@ -88,7 +88,7 @@ def DispatchPythonTests(options):
                                         options.test_apk_jar_path)
     test_files_copier = test_runner.TestRunner(options, device_id, 0, False,
                                                test_pkg, [])
-    test_files_copier.CopyTestFilesOnce()
+    test_files_copier.PushDependencies()
 
   # Actually run the tests.
   if len(attached_devices) > 1 and options.wait_for_debugger:
