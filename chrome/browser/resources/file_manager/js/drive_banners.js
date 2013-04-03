@@ -644,8 +644,13 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
  */
 FileListBannerController.prototype.maybeShowAuthFailBanner_ = function() {
   var connection = this.volumeManager_.getDriveConnectionState();
+  var reasons = connection.reasons;
   var showDriveNotReachedMessage =
+      this.isOnDrive() &&
       connection.type == VolumeManager.DriveConnectionType.OFFLINE &&
-      connection.reasons.indexOf('not_ready') !== -1;
+      // Show the banner only when authentication fails. Don't show it when the
+      // drive service is disabled.
+      reasons.indexOf(VolumeManager.DriveConnectionReason.NOT_READY) != -1 &&
+      reasons.indexOf(VolumeManager.DriveConnectionReason.NO_SERVICE) == -1;
   this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
 };
