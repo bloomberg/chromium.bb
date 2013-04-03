@@ -414,11 +414,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   for (LoaderList::iterator i = loaders_to_cancel.begin();
        i != loaders_to_cancel.end(); ++i) {
     // There is no strict requirement that this be the case, but currently
-    // downloads and transferred requests are the only requests that aren't
-    // cancelled when the associated processes go away. It may be OK for this
-    // invariant to change in the future, but if this assertion fires without
-    // the invariant changing, then it's indicative of a leak.
-    DCHECK((*i)->GetRequestInfo()->is_download() || (*i)->is_transferring());
+    // downloads, streams  and transferred requests are the only requests that
+    // aren't cancelled when the associated processes go away. It may be OK for
+    // this invariant to change in the future, but if this assertion fires
+    // without the invariant changing, then it's indicative of a leak.
+    DCHECK((*i)->GetRequestInfo()->is_download() ||
+           (*i)->GetRequestInfo()->is_stream() ||
+           (*i)->is_transferring());
   }
 #endif
 
@@ -1324,7 +1326,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
 
     // Don't cancel navigations that are transferring to another process,
     // since they belong to another process now.
-    if (!info->is_download() && !IsTransferredNavigation(id) &&
+    if (!info->is_download() && !info->is_stream() &&
+        !IsTransferredNavigation(id) &&
         (route_id == -1 || route_id == info->GetRouteID())) {
       matching_requests.push_back(id);
     }
