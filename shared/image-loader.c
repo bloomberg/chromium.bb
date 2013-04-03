@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <jpeglib.h>
 #include <png.h>
 #include <pixman.h>
