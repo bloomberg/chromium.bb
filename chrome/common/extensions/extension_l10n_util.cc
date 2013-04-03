@@ -170,6 +170,22 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     }
   }
 
+  // Initialize all input_components
+  ListValue* input_components = NULL;
+  if (manifest->GetList(keys::kInputComponents, &input_components)) {
+    for (size_t i = 0; i < input_components->GetSize(); ++i) {
+      DictionaryValue* module = NULL;
+      if (!input_components->GetDictionary(i, &module)) {
+        *error = errors::kInvalidInputComponents;
+        return false;
+      }
+      if (!LocalizeManifestValue(keys::kName, messages, module, error))
+        return false;
+      if (!LocalizeManifestValue(keys::kDescription, messages, module, error))
+        return false;
+    }
+  }
+
   // Initialize app.launch.local_path.
   if (!LocalizeManifestValue(keys::kLaunchLocalPath, messages, manifest, error))
     return false;
