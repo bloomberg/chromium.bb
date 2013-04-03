@@ -1,28 +1,59 @@
 {
+  "manifest_version": 2,
+  "version": "2.8.6.24",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7ctCVtjJUxR/gv6iYPkgLvhSG5j9IcbJEjqR1rbi1OvJOYQkAniDpYo46x9Ah68Fg4e0yTspvjABnB0N8YW+e7iOHhPWz7MfhRsM9AyXn8KvFwZ2BHvhXZVXBmk8wo/VkGZuw4RJWl/itpOCVwin7emaEboRQO6ETBXCVjmdYyQIDAQAB",
+  "name": "Chrome Office Viewer (beta)",
+  "description": "Chrome Office Viewer (beta)",
+  "minimum_chrome_version": "27.0.1453.6",
+  "icons": {
+    "16": "img/icon_16.png",
+    "128": "img/icon_128.png"
+  },
   "background": {
-     "page": "views/background/backgroundPage.html",
-     "persistent": false,
-     "transient": true
-   },
-   "content_security_policy": "default-src 'self'; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
-   "default_locale": "en",
-   "description": "Chrome Office Viewer",
-   "file_browser_handlers": [ {
-     "default_title": "Chrome Office Viewer",
-     "file_filters": [ "filesystem:*.doc", "filesystem:*.docx", "filesystem:*.ppt", "filesystem:*.pptx", "filesystem:*.xls", "filesystem:*.xlsx" ],
-     "id": "qoview"
-   } ],
-   "icons": {
-     "128": "img/icon_128.png",
-     "16": "img/icon_16.png"
-   },
-   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7ctCVtjJUxR/gv6iYPkgLvhSG5j9IcbJEjqR1rbi1OvJOYQkAniDpYo46x9Ah68Fg4e0yTspvjABnB0N8YW+e7iOHhPWz7MfhRsM9AyXn8KvFwZ2BHvhXZVXBmk8wo/VkGZuw4RJWl/itpOCVwin7emaEboRQO6ETBXCVjmdYyQIDAQAB",
-   "manifest_version": 2,
-   "minimum_chrome_version": "25",
-   "name": "Chrome Office Viewer",
-   "offline_enabled": true,
-   "permissions": [ "metricsPrivate", "unlimitedStorage", "fileBrowserHandler" ],
-   "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "2.8.1.25",
-   "web_accessible_resources": [ "views/qowt.html" ]
+    "persistent": false,
+    "page": "views/background/backgroundPage.html"
+  },
+  "content_security_policy": "default-src 'self'; connect-src blob: chrome-extension:; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
+  "default_locale": "en",
+  "web_accessible_resources": [
+    "views/qowt.html"],
+  "file_browser_handlers": [{
+    "id": "qoview",
+    "default_title": "Chrome Office Viewer",
+    "file_filters": [
+      "filesystem:*.doc",
+      "filesystem:*.docx",
+      "filesystem:*.ppt",
+      "filesystem:*.pptx",
+      "filesystem:*.xls",
+      "filesystem:*.xlsx"]
+  }],
+  "mime_types": [
+    "application/msword",
+    "application/vnd.ms-word",
+    "application/vnd.msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.wordprocessing-openxml",
+    "application/vnd.ces-quickword",
+    "application/vnd.ms-word.document.macroEnabled.12",
+    "application/vnd.ms-word.document.12",
+    "application/mspowerpoint",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ces-quickpoint",
+    "application/vnd.presentation-openxml",
+    "application/vnd.presentation-openxmlm",
+    "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+    "application/msexcel",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ces-quicksheet",
+    "application/vnd.spreadsheet-openxml",
+    "application/vnd.ms-excel.sheet.macroEnabled.12"],
+  "offline_enabled": true,
+  "permissions": [
+    "metricsPrivate",
+    "unlimitedStorage",
+    "fileBrowserHandler",
+    "streamsPrivate"]
 }

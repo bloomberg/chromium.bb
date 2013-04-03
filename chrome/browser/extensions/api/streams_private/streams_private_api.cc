@@ -60,8 +60,8 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       extension_id, event.Pass());
 
-  streams_[extension_id][stream->GetURL()] =
-      make_linked_ptr(stream.release());
+  GURL url = stream->GetURL();
+  streams_[extension_id][url] = make_linked_ptr(stream.release());
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<StreamsPrivateAPI> >
