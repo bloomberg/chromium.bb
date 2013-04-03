@@ -53,6 +53,7 @@ const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextColor = SkColorSetRGB(136, 136, 136);
 const SkColor kDimTextBackgroundColor = SK_ColorBLACK;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
+const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
 // Static.
 views::Background* MakeBackground(
@@ -242,6 +243,9 @@ class NotificationButton : public views::CustomButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
 
+  // Overridden from views::CustomButton:
+  virtual void StateChanged() OVERRIDE;
+
  private:
   views::ImageView* icon_;
   views::Label* title_;
@@ -300,6 +304,13 @@ gfx::Size NotificationButton::GetPreferredSize() {
 
 int NotificationButton::GetHeightForWidth(int width) {
   return kButtonHeight;
+}
+
+void NotificationButton::StateChanged() {
+  if (state() == STATE_HOVERED || state() == STATE_PRESSED)
+    set_background(MakeBackground(kHoveredButtonBackgroundColor));
+  else
+    set_background(NULL);
 }
 
 }  // namespace
