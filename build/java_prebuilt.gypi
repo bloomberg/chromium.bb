@@ -20,7 +20,7 @@
 
 {
   'dependencies': [
-    '<(DEPTH)/build/build_output_dirs_android.gyp:build_output_dirs'
+    '<(DEPTH)/build/android/setup.gyp:build_output_dirs'
   ],
   'variables': {
     'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',

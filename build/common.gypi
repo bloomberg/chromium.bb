@@ -1138,6 +1138,8 @@
           'android_ndk_root%': '<(android_ndk_root)',
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
+          'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
+          'android_libstdcpp_root': '<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
 
@@ -1180,8 +1182,18 @@
         'android_sdk%': '<(android_sdk)',
         'android_sdk_jar%': '<(android_sdk)/android.jar',
 
+        'android_stlport_root': '<(android_stlport_root)',
+        'android_libstdcpp_root': '<(android_libstdcpp_root)',
+        'android_stlport_include': '<(android_stlport_root)/stlport',
+        'android_libstdcpp_include': '<(android_libstdcpp_root)/include',
+        'android_stlport_libs_dir': '<(android_stlport_root)/libs/<(android_app_abi)',
+        'android_libstdcpp_libs_dir': '<(android_libstdcpp_root)/libs/<(android_app_abi)',
+
         # Location of the "strip" binary, used by both gyp and scripts.
         'android_strip%' : '<!(/bin/echo -n <(android_toolchain)/*-strip)',
+
+        # Location of the "readelf" binary.
+        'android_readelf%' : '<!(/bin/echo -n <(android_toolchain)/*-readelf)',
 
         # Provides an absolute path to PRODUCT_DIR (e.g. out/Release). Used
         # to specify the output directory for Ant in the Android build.
@@ -3329,28 +3341,12 @@
                 ],
               }, { # else: use_system_stlport!=1
                 'cflags': [
-                  '-I<(android_ndk_root)/sources/cxx-stl/stlport/stlport',
-                  '-I<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6/include',
+                  '-I<(android_stlport_include)',
+                  '-I<(android_libstdcpp_include)',
                 ],
-                'conditions': [
-                  ['target_arch=="arm" and armv7==1', {
-                    'ldflags': [
-                      '-L<(android_ndk_root)/sources/cxx-stl/stlport/libs/armeabi-v7a',
-                      '-L<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi-v7a',
-                    ],
-                  }],
-                  ['target_arch=="arm" and armv7==0', {
-                    'ldflags': [
-                      '-L<(android_ndk_root)/sources/cxx-stl/stlport/libs/armeabi',
-                      '-L<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6/libs/armeabi',
-                    ],
-                  }],
-                  ['target_arch=="ia32"', {
-                    'ldflags': [
-                      '-L<(android_ndk_root)/sources/cxx-stl/stlport/libs/x86',
-                      '-L<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6/libs/x86',
-                    ],
-                  }],
+                'ldflags': [
+                  '-L<(android_stlport_libs_dir)',
+                  '-L<(android_libstdcpp_libs_dir)',
                 ],
               }],
               ['target_arch=="ia32"', {

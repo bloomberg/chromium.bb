@@ -47,7 +47,7 @@
 
 {
   'dependencies': [
-    '<(DEPTH)/build/build_output_dirs_android.gyp:build_output_dirs'
+    '<(DEPTH)/build/android/setup.gyp:build_output_dirs'
   ],
   'variables': {
     'android_jar': '<(android_sdk)/android.jar',

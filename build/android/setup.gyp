@@ -2,6 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'conditions': [
+    ['component == "shared_library"', {
+      'targets': [
+        {
+          # These libraries from the Android ndk are required to be packaged with
+          # any APK that is built with them. build/java_apk.gypi expects any
+          # libraries that should be packaged with the apk to be in
+          # <(SHARED_LIB_DIR)
+          'target_name': 'copy_system_libraries',
+          'type': 'none',
+          'copies': [
+            {
+              'destination': '<(SHARED_LIB_DIR)/',
+              'files': [
+                '<(android_stlport_libs_dir)/libstlport_shared.so',
+                '<(android_libstdcpp_libs_dir)/libgnustl_shared.so',
+              ],
+            },
+          ],
+        },
+      ],
+    }],
+  ],
   'targets': [
     {
       # Target for creating common output build directories. Creating output
@@ -34,5 +57,6 @@
         },
       ],
     }, # build_output_dirs
-  ], # targets
+  ]
 }
+

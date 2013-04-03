@@ -99,4 +99,5 @@ def CheckCallDie(args, cwd=None):
   else:
     if stdout:
       print stdout,
+    return stdout
 

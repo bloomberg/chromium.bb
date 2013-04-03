@@ -126,6 +126,11 @@
         'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
       },
     }],
+    ['native_libs_paths != [] and component == "shared_library"', {
+      'dependencies': [
+        '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
+      ]
+    }],
     ['native_libs_paths != []', {
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
@@ -137,15 +142,16 @@
           'message': 'Writing dependency ordered libraries for <(_target_name).',
           'inputs': [
             '<(DEPTH)/build/android/pylib/build_utils.py',
-            '<(DEPTH)/build/android/write_ordered_libraries.py',
+            '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
             '<@(native_libs_paths)',
           ],
           'outputs': [
             '<(ordered_libraries_file)',
           ],
           'action': [
-            'python', '<(DEPTH)/build/android/write_ordered_libraries.py',
+            'python', '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
             '--input-libraries=<(native_libs_paths)',
+            '--readelf=<(android_readelf)',
             '--output=<(ordered_libraries_file)',
           ],
         },
