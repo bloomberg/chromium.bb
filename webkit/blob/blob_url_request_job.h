@@ -5,6 +5,8 @@
 #ifndef WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 #define WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"

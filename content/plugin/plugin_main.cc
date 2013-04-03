@@ -13,7 +13,7 @@
 #include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
 #include "content/plugin/plugin_thread.h"
@@ -55,7 +55,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrPluginMain");
 
-  base::SystemMonitor system_monitor;
+  base::PowerMonitor power_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line;

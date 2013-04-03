@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/base/auth.h"
@@ -34,9 +35,9 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       deferred_redirect_status_code_(-1),
       network_delegate_(network_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  if (system_monitor)
-    base::SystemMonitor::Get()->AddPowerObserver(this);
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->AddObserver(this);
 }
 
 void URLRequestJob::SetUpload(UploadDataStream* upload) {
@@ -229,9 +230,9 @@ void URLRequestJob::NotifyURLRequestDestroyed() {
 }
 
 URLRequestJob::~URLRequestJob() {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  if (system_monitor)
-    base::SystemMonitor::Get()->RemovePowerObserver(this);
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
 }
 
 void URLRequestJob::NotifyCertificateRequested(

@@ -7,9 +7,9 @@
 #include "base/hi_res_timer_manager.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -32,7 +32,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
-  base::SystemMonitor system_monitor;
+  base::PowerMonitor power_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;

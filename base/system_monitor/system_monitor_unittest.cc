@@ -14,45 +14,9 @@ namespace base {
 
 namespace {
 
-class PowerTest : public SystemMonitor::PowerObserver {
- public:
-  PowerTest()
-      : power_state_changes_(0),
-        suspends_(0),
-        resumes_(0) {
-  }
-
-  // PowerObserver callbacks.
-  virtual void OnPowerStateChange(bool on_battery_power) OVERRIDE {
-    power_state_changes_++;
-  }
-
-  virtual void OnSuspend() OVERRIDE {
-    suspends_++;
-  }
-
-  virtual void OnResume() OVERRIDE {
-    resumes_++;
-  }
-
-  // Test status counts.
-  int power_state_changes() { return power_state_changes_; }
-  int suspends() { return suspends_; }
-  int resumes() { return resumes_; }
-
- private:
-  int power_state_changes_;  // Count of OnPowerStateChange notifications.
-  int suspends_;  // Count of OnSuspend notifications.
-  int resumes_;  // Count of OnResume notifications.
-};
-
 class SystemMonitorTest : public testing::Test {
  protected:
   SystemMonitorTest() {
-#if defined(OS_MACOSX)
-    // This needs to happen before SystemMonitor's ctor.
-    SystemMonitor::AllocateSystemIOPorts();
-#endif
     system_monitor_.reset(new SystemMonitor);
   }
   virtual ~SystemMonitorTest() {}
@@ -62,46 +26,6 @@ class SystemMonitorTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitorTest);
 };
-
-TEST_F(SystemMonitorTest, PowerNotifications) {
-  const int kObservers = 5;
-
-  PowerTest test[kObservers];
-  for (int index = 0; index < kObservers; ++index)
-    system_monitor_->AddPowerObserver(&test[index]);
-
-  // Send a bunch of power changes.  Since the battery power hasn't
-  // actually changed, we shouldn't get notifications.
-  for (int index = 0; index < 5; index++) {
-    system_monitor_->ProcessPowerMessage(SystemMonitor::POWER_STATE_EVENT);
-    EXPECT_EQ(test[0].power_state_changes(), 0);
-  }
-
-  // Sending resume when not suspended should have no effect.
-  system_monitor_->ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
-  RunLoop().RunUntilIdle();
-  EXPECT_EQ(test[0].resumes(), 0);
-
-  // Pretend we suspended.
-  system_monitor_->ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
-  RunLoop().RunUntilIdle();
-  EXPECT_EQ(test[0].suspends(), 1);
-
-  // Send a second suspend notification.  This should be suppressed.
-  system_monitor_->ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
-  RunLoop().RunUntilIdle();
-  EXPECT_EQ(test[0].suspends(), 1);
-
-  // Pretend we were awakened.
-  system_monitor_->ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
-  RunLoop().RunUntilIdle();
-  EXPECT_EQ(test[0].resumes(), 1);
-
-  // Send a duplicate resume notification.  This should be suppressed.
-  system_monitor_->ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
-  RunLoop().RunUntilIdle();
-  EXPECT_EQ(test[0].resumes(), 1);
-}
 
 TEST_F(SystemMonitorTest, DeviceChangeNotifications) {
   const int kObservers = 5;

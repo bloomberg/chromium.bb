@@ -13,12 +13,15 @@ import android.os.Looper;
 
 
 /**
- * Integrates native SystemMonitor with the java side.
+ * Integrates native PowerMonitor with the java side.
  */
 @JNINamespace("base::android")
-public class SystemMonitor implements ActivityStatus.StateListener {
+public class PowerMonitor implements ActivityStatus.StateListener {
     private static final long SUSPEND_DELAY_MS = 1 * 60 * 1000;  // 1 minute.
-    private static SystemMonitor sInstance;
+    private static class LazyHolder {
+      private static final PowerMonitor INSTANCE = new PowerMonitor();
+    }
+    private static PowerMonitor sInstance;
 
     private boolean mIsBatteryPower;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -38,12 +41,12 @@ public class SystemMonitor implements ActivityStatus.StateListener {
         // Applications will create this once the JNI side has been fully wired up both sides. For
         // tests, we just need native -> java, that is, we don't need to notify java -> native on
         // creation.
-        sInstance = new SystemMonitor();
+        sInstance = LazyHolder.INSTANCE;
     }
 
     public static void create(Context context) {
         if (sInstance == null) {
-            sInstance = new SystemMonitor();
+            sInstance = LazyHolder.INSTANCE;
             ActivityStatus.registerStateListener(sInstance);
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatusIntent = context.registerReceiver(null, ifilter);
@@ -51,7 +54,7 @@ public class SystemMonitor implements ActivityStatus.StateListener {
         }
     }
 
-    private SystemMonitor() {
+    private PowerMonitor() {
     }
 
     public static void onBatteryChargingChanged(Intent intent) {

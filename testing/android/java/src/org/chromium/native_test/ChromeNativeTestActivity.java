@@ -13,7 +13,7 @@ import android.util.Log;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.base.PathUtils;
-import org.chromium.base.SystemMonitor;
+import org.chromium.base.PowerMonitor;
 
 import java.io.File;
 
@@ -43,7 +43,7 @@ public class ChromeNativeTestActivity extends ChromiumActivity {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
 
         // Needed by system_monitor_unittest.cc
-        SystemMonitor.createForTests(this);
+        PowerMonitor.createForTests(this);
 
 
         loadLibrary();

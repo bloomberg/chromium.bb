@@ -4,7 +4,6 @@
 
 #include "content/browser/gamepad/gamepad_test_helpers.h"
 
-#include "base/system_monitor/system_monitor.h"
 #include "content/browser/gamepad/gamepad_service.h"
 
 namespace content {
@@ -37,10 +36,6 @@ void MockGamepadDataFetcher::SetTestData(const WebKit::WebGamepads& new_data) {
 }
 
 GamepadTestHelper::GamepadTestHelper() {
-#if defined(OS_MACOSX)
-  base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-  system_monitor_.reset(new base::SystemMonitor);
 }
 
 GamepadTestHelper::~GamepadTestHelper() {

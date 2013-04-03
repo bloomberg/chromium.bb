@@ -67,7 +67,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
 #include "base/mach_ipc_mac.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #endif  // !OS_IOS
@@ -651,9 +651,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // We need to allocate the IO Ports before the Sandbox is initialized or
-    // the first instance of SystemMonitor is created.
+    // the first instance of PowerMonitor is created.
     // It's important not to allocate the ports for processes which don't
-    // register with the system monitor - see crbug.com/88867.
+    // register with the power monitor - see crbug.com/88867.
     if (process_type.empty() ||
         process_type == switches::kPluginProcess ||
         process_type == switches::kRendererProcess ||
@@ -661,7 +661,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         process_type == switches::kWorkerProcess ||
         (delegate &&
          delegate->ProcessRegistersWithSystemProcess(process_type))) {
-      base::SystemMonitor::AllocateSystemIOPorts();
+      base::PowerMonitor::AllocateSystemIOPorts();
     }
 
     if (!process_type.empty() &&

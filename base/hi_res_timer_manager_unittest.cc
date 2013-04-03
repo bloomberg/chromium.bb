@@ -5,7 +5,8 @@
 #include "base/hi_res_timer_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,12 +14,12 @@
 // http://crbug.com/114048
 TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
   MessageLoop loop;
-  scoped_ptr<base::SystemMonitor> system_monitor(new base::SystemMonitor());
+  scoped_ptr<base::PowerMonitor> power_monitor(new base::PowerMonitor());
   HighResolutionTimerManager manager;
 
   // At this point, we don't know if the high resolution timers are on or off,
   // it depends on what system the tests are running on (for example, if this
-  // test is running on a laptop/battery, then the SystemMonitor would have
+  // test is running on a laptop/battery, then the PowerMonitor would have
   // already set the PowerState to battery power; but if we're running on a
   // desktop, then the PowerState will be non-battery power).  Simulate a power
   // level change to get to a deterministic state.

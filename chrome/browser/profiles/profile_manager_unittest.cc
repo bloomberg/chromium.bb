@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -98,10 +97,6 @@ class ProfileManagerTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(local_state_.Get(), g_browser_process->policy_service(),
                    NULL, extension_event_router_forwarder_) {
-#if defined(OS_MACOSX)
-    base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-    system_monitor_dummy_.reset(new base::SystemMonitor);
     TestingBrowserProcess::GetGlobal()->SetIOThread(&io_thread_);
   }
 
@@ -141,8 +136,6 @@ class ProfileManagerTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   // IOThread is necessary for the creation of some services below.
   IOThread io_thread_;
-
-  scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {

@@ -14,6 +14,7 @@ class HighResolutionTimerManager;
 
 namespace base {
 class MessageLoop;
+class PowerMonitor;
 class SystemMonitor;
 }
 
@@ -95,6 +96,7 @@ class BrowserMainLoop {
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<base::MessageLoop> main_message_loop_;
   scoped_ptr<base::SystemMonitor> system_monitor_;
+  scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<media::AudioManager> audio_manager_;

@@ -535,6 +535,7 @@
         'platform_file_unittest.cc',
         'posix/file_descriptor_shuffle_unittest.cc',
         'posix/unix_domain_socket_linux_unittest.cc',
+        'power_monitor/power_monitor_unittest.cc',
         'pr_time_unittest.cc',
         'prefs/default_pref_store_unittest.cc',
         'prefs/json_pref_store_unittest.cc',
@@ -1119,8 +1120,8 @@
             'android/java/src/org/chromium/base/LocaleUtils.java',
             'android/java/src/org/chromium/base/PathService.java',
             'android/java/src/org/chromium/base/PathUtils.java',
+            'android/java/src/org/chromium/base/PowerMonitor.java',
             'android/java/src/org/chromium/base/SystemMessageHandler.java',
-            'android/java/src/org/chromium/base/SystemMonitor.java',
             'android/java/src/org/chromium/base/ThreadUtils.java',
           ],
           'variables': {

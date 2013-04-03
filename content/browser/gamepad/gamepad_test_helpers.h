@@ -12,10 +12,6 @@
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 
-namespace base {
-class SystemMonitor;
-}
-
 namespace content {
 
 class GamepadService;
@@ -59,8 +55,6 @@ class GamepadTestHelper {
  private:
   // This must be constructed before the system monitor.
   MessageLoop message_loop_;
-
-  scoped_ptr<base::SystemMonitor> system_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadTestHelper);
 };

@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/http/http_transaction_factory.h"
@@ -20,7 +20,7 @@ class HttpNetworkSession;
 
 class NET_EXPORT HttpNetworkLayer
     : public HttpTransactionFactory,
-      public base::SystemMonitor::PowerObserver,
+      public base::PowerObserver,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Construct a HttpNetworkLayer with an existing HttpNetworkSession which
@@ -47,7 +47,7 @@ class NET_EXPORT HttpNetworkLayer
   virtual HttpCache* GetCache() OVERRIDE;
   virtual HttpNetworkSession* GetSession() OVERRIDE;
 
-  // base::SystemMonitor::PowerObserver methods:
+  // base::PowerObserver methods:
   virtual void OnSuspend() OVERRIDE;
   virtual void OnResume() OVERRIDE;
 

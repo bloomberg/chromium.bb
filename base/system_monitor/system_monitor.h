@@ -5,35 +5,11 @@
 #ifndef BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
 #define BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "build/build_config.h"
-
-// Windows HiRes timers drain the battery faster so we need to know the battery
-// status.  This isn't true for other platforms.
-#if defined(OS_WIN)
-#define ENABLE_BATTERY_MONITORING 1
-#else
-#undef ENABLE_BATTERY_MONITORING
-#endif  // !OS_WIN
-
+#include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
-#if defined(ENABLE_BATTERY_MONITORING)
-#include "base/timer.h"
-#endif  // defined(ENABLE_BATTERY_MONITORING)
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include <IOKit/pwr_mgt/IOPMLib.h>
-#include <IOKit/IOMessage.h>
-#endif  // OS_MACOSX && !OS_IOS
-
-#if defined(OS_IOS)
-#include <objc/runtime.h>
-#endif  // OS_IOS
+#include "build/build_config.h"
 
 namespace base {
 
@@ -42,13 +18,6 @@ namespace base {
 // TODO(mbelshe):  Add support beyond just power management.
 class BASE_EXPORT SystemMonitor {
  public:
-  // Normalized list of power events.
-  enum PowerEvent {
-    POWER_STATE_EVENT,  // The Power status of the system has changed.
-    SUSPEND_EVENT,      // The system is being suspended.
-    RESUME_EVENT        // The system is being resumed.
-  };
-
   // Type of devices whose change need to be monitored, such as add/remove.
   enum DeviceType {
     DEVTYPE_AUDIO_CAPTURE,  // Audio capture device, e.g., microphone.
@@ -64,50 +33,6 @@ class BASE_EXPORT SystemMonitor {
   // Get the application-wide SystemMonitor (if not present, returns NULL).
   static SystemMonitor* Get();
 
-#if defined(OS_MACOSX)
-  // Allocate system resources needed by the SystemMonitor class.
-  //
-  // This function must be called before instantiating an instance of the class
-  // and before the Sandbox is initialized.
-#if !defined(OS_IOS)
-  static void AllocateSystemIOPorts();
-#else
-  static void AllocateSystemIOPorts() {}
-#endif  // OS_IOS
-#endif  // OS_MACOSX
-
-  //
-  // Power-related APIs
-  //
-
-  // Is the computer currently on battery power.
-  // Can be called on any thread.
-  bool BatteryPower() const {
-    // Using a lock here is not necessary for just a bool.
-    return battery_in_use_;
-  }
-
-  // Callbacks will be called on the thread which creates the SystemMonitor.
-  // During the callback, Add/RemoveObserver will block until the callbacks
-  // are finished. Observers should implement quick callback functions; if
-  // lengthy operations are needed, the observer should take care to invoke
-  // the operation on an appropriate thread.
-  class BASE_EXPORT PowerObserver {
-   public:
-    // Notification of a change in power status of the computer, such
-    // as from switching between battery and A/C power.
-    virtual void OnPowerStateChange(bool on_battery_power) {}
-
-    // Notification that the system is suspending.
-    virtual void OnSuspend() {}
-
-    // Notification that the system is resuming.
-    virtual void OnResume() {}
-
-   protected:
-    virtual ~PowerObserver() {}
-  };
-
   class BASE_EXPORT DevicesChangedObserver {
    public:
     // Notification that the devices connected to the system have changed.
@@ -121,87 +46,26 @@ class BASE_EXPORT SystemMonitor {
   // Add a new observer.
   // Can be called from any thread.
   // Must not be called from within a notification callback.
-  void AddPowerObserver(PowerObserver* obs);
   void AddDevicesChangedObserver(DevicesChangedObserver* obs);
 
   // Remove an existing observer.
   // Can be called from any thread.
   // Must not be called from within a notification callback.
-  void RemovePowerObserver(PowerObserver* obs);
   void RemoveDevicesChangedObserver(DevicesChangedObserver* obs);
 
   // The ProcessFoo() style methods are a broken pattern and should not
   // be copied. Any significant addition to this class is blocked on
   // refactoring to improve the state of affairs. See http://crbug.com/149059
 
-  // Cross-platform handling of a power event.
-  void ProcessPowerMessage(PowerEvent event_id);
-
   // Cross-platform handling of a device change event.
   void ProcessDevicesChanged(DeviceType device_type);
 
  private:
-#if defined(OS_WIN)
-  // Represents a message-only window for power message handling on Windows.
-  // Only allow SystemMonitor to create it.
-  class PowerMessageWindow {
-   public:
-    PowerMessageWindow();
-    ~PowerMessageWindow();
-
-   private:
-    void ProcessWmPowerBroadcastMessage(int event_id);
-    LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
-                             WPARAM wparam, LPARAM lparam);
-    static LRESULT CALLBACK WndProcThunk(HWND hwnd,
-                                         UINT message,
-                                         WPARAM wparam,
-                                         LPARAM lparam);
-    // Instance of the module containing the window procedure.
-    HMODULE instance_;
-    // A hidden message-only window.
-    HWND message_hwnd_;
-  };
-#endif
-
-#if defined(OS_MACOSX)
-  void PlatformInit();
-  void PlatformDestroy();
-#endif
-
-  // Platform-specific method to check whether the system is currently
-  // running on battery power.  Returns true if running on batteries,
-  // false otherwise.
-  bool IsBatteryPower();
-
-  // Checks the battery status and notifies observers if the battery
-  // status has changed.
-  void BatteryCheck();
-
   // Functions to trigger notifications.
   void NotifyDevicesChanged(DeviceType device_type);
-  void NotifyPowerStateChange();
-  void NotifySuspend();
-  void NotifyResume();
 
-  scoped_refptr<ObserverListThreadSafe<PowerObserver> > power_observer_list_;
   scoped_refptr<ObserverListThreadSafe<DevicesChangedObserver> >
       devices_changed_observer_list_;
-  bool battery_in_use_;
-  bool suspended_;
-
-#if defined(ENABLE_BATTERY_MONITORING)
-  base::OneShotTimer<SystemMonitor> delayed_battery_check_;
-#endif
-
-#if defined(OS_IOS)
-  // Holds pointers to system event notification observers.
-  std::vector<id> notification_observers_;
-#endif
-
-#if defined(OS_WIN)
-  PowerMessageWindow power_message_window_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };

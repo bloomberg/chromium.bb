@@ -1,16 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Implementation based on sample code from
 // http://developer.apple.com/library/mac/#qa/qa1340/_index.html.
 
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 
 namespace base {
+
+void ProcessPowerEventHelper(PowerMonitor::PowerEvent event) {
+  DCHECK(PowerMonitor::Get());
+  if (PowerMonitor::Get())
+    PowerMonitor::Get()->ProcessPowerEvent(event);
+}
 
 namespace {
 
@@ -22,17 +28,15 @@ void SystemPowerEventCallback(void*,
                               io_service_t service,
                               natural_t message_type,
                               void* message_argument) {
-  SystemMonitor* sys_monitor = SystemMonitor::Get();
-  DCHECK(sys_monitor);
   switch (message_type) {
     case kIOMessageSystemWillSleep:
-      sys_monitor->ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
+      ProcessPowerEventHelper(base::PowerMonitor::SUSPEND_EVENT);
       IOAllowPowerChange(g_system_power_io_port,
           reinterpret_cast<intptr_t>(message_argument));
       break;
 
     case kIOMessageSystemWillPowerOn:
-      sys_monitor->ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
+      ProcessPowerEventHelper(PowerMonitor::RESUME_EVENT);
       break;
   }
 }
@@ -45,11 +49,10 @@ void SystemPowerEventCallback(void*,
 // See crbug.com/83783 .
 
 // static
-void SystemMonitor::AllocateSystemIOPorts() {
+void PowerMonitor::AllocateSystemIOPorts() {
   DCHECK_EQ(g_system_power_io_port, 0u);
 
   // Notification port allocated by IORegisterForSystemPower.
-
   g_system_power_io_port = IORegisterForSystemPower(
       NULL, &g_notification_port_ref, SystemPowerEventCallback,
       &g_notifier_object);
@@ -57,8 +60,8 @@ void SystemMonitor::AllocateSystemIOPorts() {
   DCHECK_NE(g_system_power_io_port, 0u);
 }
 
-void SystemMonitor::PlatformInit() {
-  // Need to call AllocateSystemIOPorts() before constructing a SystemMonitor
+void PowerMonitor::PlatformInit() {
+  // Need to call AllocateSystemIOPorts() before creating a PowerMonitor
   // object.
   DCHECK_NE(g_system_power_io_port, 0u);
   if (g_system_power_io_port == 0)
@@ -71,7 +74,7 @@ void SystemMonitor::PlatformInit() {
       kCFRunLoopCommonModes);
 }
 
-void SystemMonitor::PlatformDestroy() {
+void PowerMonitor::PlatformDestroy() {
   DCHECK_NE(g_system_power_io_port, 0u);
   if (g_system_power_io_port == 0)
     return;

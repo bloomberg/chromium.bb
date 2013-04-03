@@ -13,7 +13,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -52,7 +52,7 @@ extern int BrowserMain(const content::MainFunctionParams&);
 BrowserTestBase::BrowserTestBase() {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
-  base::SystemMonitor::AllocateSystemIOPorts();
+  base::PowerMonitor::AllocateSystemIOPorts();
 #endif
 
 #if defined(OS_POSIX)

@@ -4,17 +4,18 @@
 
 #include "base/hi_res_timer_manager.h"
 
+#include "base/power_monitor/power_monitor.h"
 #include "base/time.h"
 
 HighResolutionTimerManager::HighResolutionTimerManager()
     : hi_res_clock_available_(false) {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  system_monitor->AddPowerObserver(this);
-  UseHiResClock(!system_monitor->BatteryPower());
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  power_monitor->AddObserver(this);
+  UseHiResClock(!power_monitor->BatteryPower());
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {
-  base::SystemMonitor::Get()->RemovePowerObserver(this);
+  base::PowerMonitor::Get()->RemoveObserver(this);
   UseHiResClock(false);
 }
 

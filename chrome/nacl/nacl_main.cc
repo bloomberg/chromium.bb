@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -23,7 +23,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClMain");
 
-  base::SystemMonitor system_monitor;
+  base::PowerMonitor power_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

@@ -13,6 +13,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/pending_task.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -367,6 +369,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   InitializeMainThread();
 
   system_monitor_.reset(new base::SystemMonitor);
+  power_monitor_.reset(new base::PowerMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   audio_manager_.reset(media::AudioManager::Create());

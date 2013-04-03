@@ -15,7 +15,7 @@
 #include "base/android/path_utils.h"
 #include "base/android/thread_utils.h"
 #include "base/message_pump_android.h"
-#include "base/system_monitor/system_monitor_android.h"
+#include "base/power_monitor/power_monitor_android.h"
 
 namespace base {
 namespace android {
@@ -29,7 +29,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "PathService", base::android::RegisterPathService },
   { "PathUtils", base::android::RegisterPathUtils },
   { "SystemMessageHandler", base::MessagePumpForUI::RegisterBindings },
-  { "SystemMonitor", base::RegisterSystemMonitor },
+  { "PowerMonitor", base::RegisterPowerMonitor },
   { "ThreadUtils", base::RegisterThreadUtils },
 };
 

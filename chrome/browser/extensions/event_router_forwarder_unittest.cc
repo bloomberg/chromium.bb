@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -92,9 +92,9 @@ class EventRouterForwarderTest : public testing::Test {
         profile_manager_(
             TestingBrowserProcess::GetGlobal()) {
 #if defined(OS_MACOSX)
-    base::SystemMonitor::AllocateSystemIOPorts();
+    base::PowerMonitor::AllocateSystemIOPorts();
 #endif
-    dummy.reset(new base::SystemMonitor);
+    dummy.reset(new base::PowerMonitor);
   }
 
   virtual void SetUp() {
@@ -118,7 +118,7 @@ class EventRouterForwarderTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfileManager profile_manager_;
-  scoped_ptr<base::SystemMonitor> dummy;
+  scoped_ptr<base::PowerMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

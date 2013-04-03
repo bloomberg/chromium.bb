@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor/system_monitor.h"
+#include "base/power_monitor/power_monitor.h"
 
 #include "base/win/wrapped_window_proc.h"
 
@@ -16,7 +16,7 @@ const wchar_t kWindowClassName[] = L"Base_PowerMessageWindow";
 
 // Function to query the system to see if it is currently running on
 // battery power.  Returns true if running on battery.
-bool SystemMonitor::IsBatteryPower() {
+bool PowerMonitor::IsBatteryPower() {
   SYSTEM_POWER_STATUS status;
   if (!GetSystemPowerStatus(&status)) {
     DLOG_GETLASTERROR(ERROR) << "GetSystemPowerStatus failed";
@@ -25,13 +25,13 @@ bool SystemMonitor::IsBatteryPower() {
   return (status.ACLineStatus == 0);
 }
 
-SystemMonitor::PowerMessageWindow::PowerMessageWindow()
+PowerMonitor::PowerMessageWindow::PowerMessageWindow()
     : instance_(NULL), message_hwnd_(NULL) {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       kWindowClassName,
       &base::win::WrappedWindowProc<
-          SystemMonitor::PowerMessageWindow::WndProcThunk>,
+          PowerMonitor::PowerMessageWindow::WndProcThunk>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
   instance_ = window_class.hInstance;
@@ -44,29 +44,29 @@ SystemMonitor::PowerMessageWindow::PowerMessageWindow()
                    reinterpret_cast<LONG_PTR>(this));
 }
 
-SystemMonitor::PowerMessageWindow::~PowerMessageWindow() {
+PowerMonitor::PowerMessageWindow::~PowerMessageWindow() {
   if (message_hwnd_) {
     DestroyWindow(message_hwnd_);
     UnregisterClass(kWindowClassName, instance_);
   }
 }
 
-void SystemMonitor::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
+void PowerMonitor::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
     int event_id) {
-  SystemMonitor::PowerEvent power_event;
+  PowerMonitor::PowerEvent power_event;
   switch (event_id) {
     case PBT_APMPOWERSTATUSCHANGE:  // The power status changed.
-      power_event = SystemMonitor::POWER_STATE_EVENT;
+      power_event = PowerMonitor::POWER_STATE_EVENT;
       break;
     case PBT_APMRESUMEAUTOMATIC:  // Resume from suspend.
     //case PBT_APMRESUMESUSPEND:  // User-initiated resume from suspend.
                                   // We don't notify for this latter event
                                   // because if it occurs it is always sent as a
                                   // second event after PBT_APMRESUMEAUTOMATIC.
-      power_event = SystemMonitor::RESUME_EVENT;
+      power_event = PowerMonitor::RESUME_EVENT;
       break;
     case PBT_APMSUSPEND:  // System has been suspended.
-      power_event = SystemMonitor::SUSPEND_EVENT;
+      power_event = PowerMonitor::SUSPEND_EVENT;
       break;
     default:
       return;
@@ -80,10 +80,10 @@ void SystemMonitor::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
     // PBT_POWERSETTINGCHANGE - user changed the power settings.
   }
 
-  SystemMonitor::Get()->ProcessPowerMessage(power_event);
+  PowerMonitor::Get()->ProcessPowerEvent(power_event);
 }
 
-LRESULT CALLBACK SystemMonitor::PowerMessageWindow::WndProc(
+LRESULT CALLBACK PowerMonitor::PowerMessageWindow::WndProc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   switch (message) {
     case WM_POWERBROADCAST: {
@@ -98,10 +98,10 @@ LRESULT CALLBACK SystemMonitor::PowerMessageWindow::WndProc(
 }
 
 // static
-LRESULT CALLBACK SystemMonitor::PowerMessageWindow::WndProcThunk(
+LRESULT CALLBACK PowerMonitor::PowerMessageWindow::WndProcThunk(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
-  SystemMonitor::PowerMessageWindow* message_hwnd =
-      reinterpret_cast<SystemMonitor::PowerMessageWindow*>(
+  PowerMonitor::PowerMessageWindow* message_hwnd =
+      reinterpret_cast<PowerMonitor::PowerMessageWindow*>(
           GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if (message_hwnd)
     return message_hwnd->WndProc(hwnd, message, wparam, lparam);
