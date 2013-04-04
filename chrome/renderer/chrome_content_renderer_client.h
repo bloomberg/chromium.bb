@@ -5,8 +5,8 @@
 #ifndef CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -184,7 +184,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
   // The whitelist for RequestOSFileHandle specified by commandline.
-  std::set<std::string> request_os_file_handle_allowed_hosts_;
+  std::vector<std::string> request_os_file_handle_allowed_hosts_;
 };
 
 }  // namespace chrome

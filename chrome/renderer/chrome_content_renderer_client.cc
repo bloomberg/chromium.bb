@@ -5,12 +5,12 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
 #include <string>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -1209,7 +1209,7 @@ void ChromeContentRendererClient::RegisterRequestOSFileHandleAllowedHosts(
   if (!allowed_list.empty()) {
     base::StringTokenizer t(allowed_list, ",");
     while (t.GetNext()) {
-      request_os_file_handle_allowed_hosts_.insert(t.token());
+      request_os_file_handle_allowed_hosts_.push_back(t.token());
     }
   }
 }
@@ -1231,8 +1231,10 @@ bool ChromeContentRendererClient::IsRequestOSFileHandleAllowedForURL(
       return true;
   }
 
-  if (request_os_file_handle_allowed_hosts_.count(inner.host()))
-    return true;
+  for (size_t i = 0; i < request_os_file_handle_allowed_hosts_.size(); ++i) {
+    if (MatchPattern(inner.host(), request_os_file_handle_allowed_hosts_[i]))
+      return true;
+  }
 
   return false;
 }

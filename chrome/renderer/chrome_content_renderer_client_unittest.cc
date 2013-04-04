@@ -321,6 +321,25 @@ TEST_F(ChromeContentRendererClientTest, IsRequestOSFileHandleAllowedForURL) {
       GURL("http://127.0.0.1/foo")));
   EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
       GURL("filesystem:http://192.168.0.1/foo")));
+
+  client.RegisterRequestOSFileHandleAllowedHosts("127.0.0.?");
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.0.1/foo")));
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.0.2/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.1.0/foo")));
+
+  client.RegisterRequestOSFileHandleAllowedHosts("*");
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:chrome-extension://" +
+           kRandomExtensionID + "/foo")));
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://127.0.0.1/foo")));
+  EXPECT_FALSE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("http://127.0.0.1/foo")));
+  EXPECT_TRUE(client.IsRequestOSFileHandleAllowedForURL(
+      GURL("filesystem:http://192.168.0.1/foo")));
 }
 
 }  // namespace chrome
