@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -25,6 +27,10 @@ using views::FocusManager;
 
 AccessibilityEventRouterViews::AccessibilityEventRouterViews()
     : most_recent_profile_(NULL) {
+  // Register for notification when profile is destroyed to ensure that all
+  // observers are detatched at that time.
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
 }
 
 AccessibilityEventRouterViews::~AccessibilityEventRouterViews() {
@@ -100,6 +106,16 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
       chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED, &info);
 }
 
+void AccessibilityEventRouterViews::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  Profile* profile = content::Source<Profile>(source).ptr();
+  if (profile == most_recent_profile_)
+    most_recent_profile_ = NULL;
+}
+
 //
 // Private methods
 //
@@ -117,10 +133,12 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   }
   if (!profile)
     profile = most_recent_profile_;
-  if (!profile)
-    profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (!profile) {
-    NOTREACHED();
+    if (g_browser_process->profile_manager())
+      profile = g_browser_process->profile_manager()->GetLastUsedProfile();
+  }
+  if (!profile) {
+    LOG(WARNING) << "Accessibility notification but no profile";
     return;
   }
 

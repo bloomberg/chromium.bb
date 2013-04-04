@@ -11,6 +11,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/accessibility/accessibility_types.h"
 
 class Profile;
@@ -36,7 +38,7 @@ class View;
 //
 // You can use Profile::PauseAccessibilityEvents to prevent a flurry
 // of accessibility events when a window is being created or initialized.
-class AccessibilityEventRouterViews {
+class AccessibilityEventRouterViews : public content::NotificationObserver {
  public:
   // Internal information about a particular view to override the
   // information we get directly from the view.
@@ -64,6 +66,11 @@ class AccessibilityEventRouterViews {
                              int item_index,
                              int item_count,
                              bool has_submenu);
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AccessibilityEventRouterViews>;
@@ -152,6 +159,10 @@ class AccessibilityEventRouterViews {
   // figure out where to route a few events that can't be directly traced
   // to a window with a profile (like menu events).
   Profile* most_recent_profile_;
+
+  // Notification registrar so we can clear most_recent_profile_ when a
+  // profile is destroyed.
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_ACCESSIBILITY_EVENT_ROUTER_VIEWS_H_
