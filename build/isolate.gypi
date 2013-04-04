@@ -69,7 +69,6 @@
             '--outdir', '<(PRODUCT_DIR)/ ',
             '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
             '--variable', 'OS', '<(OS)',
-            '--variable', 'chromeos', '<(chromeos)',
             '--result', '<@(_outputs)',
             '--isolate', '<(RULE_INPUT_PATH)',
           ],
@@ -84,7 +83,6 @@
             # the following arguments.
             '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
             '--variable', 'OS', '<(OS)',
-            '--variable', 'chromeos', '<(chromeos)',
             '--result', '<@(_outputs)',
             '--isolate', '<(RULE_INPUT_PATH)',
           ],
