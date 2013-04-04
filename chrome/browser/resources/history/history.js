@@ -1216,9 +1216,9 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 
     var searchResults = createElementWithClassName('ol', 'search-results');
     if (results.length == 0 && doneLoading) {
-      var noSearchResults = document.createElement('div');
+      var noSearchResults = searchResults.appendChild(
+          createElementWithClassName('div', 'no-results-message'));
       noSearchResults.textContent = loadTimeData.getString('noSearchResults');
-      searchResults.appendChild(noSearchResults);
     } else {
       for (var i = 0, visit; visit = results[i]; i++) {
         if (!visit.isRendered) {
@@ -1250,7 +1250,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 
     if (results.length == 0 && doneLoading) {
       var noResults = resultsFragment.appendChild(
-          document.createElement('div'));
+          createElementWithClassName('div', 'no-results-message'));
       noResults.textContent = loadTimeData.getString('noResults');
       this.resultDiv_.appendChild(resultsFragment);
       this.updateNavBar_();
@@ -1494,8 +1494,8 @@ function load() {
     var resultsDisplay = $('results-display');
     resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
 
-    // Move the button to the bottom of the page.
-    document.querySelector('.page').appendChild($('clear-browsing-data'));
+    // Move the button to the bottom of the body.
+    document.body.appendChild($('clear-browsing-data'));
 
     window.addEventListener('resize', function(e) {
       // Don't show the Clear Browsing Data button when the soft keyboard is up.
