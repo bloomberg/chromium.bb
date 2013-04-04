@@ -900,6 +900,26 @@ class IsolateTest(IsolateBase):
         expected_output,
         isolate.convert_old_to_new_format(isolate_with_default_variables))
 
+  def test_variable_arg(self):
+    parser = isolate.optparse.OptionParser()
+    isolate.add_variable_option(parser)
+    expected = [
+      ('OS', isolate.get_flavor()),
+      ('EXECUTABLE_SUFFIX', '.exe' if isolate.get_flavor() == 'win' else ''),
+      ('Foo', 'bar'),
+      ('Baz', 'sub=string'),
+    ]
+
+    options, args = parser.parse_args(
+        ['-V', 'Foo', 'bar', '-V', 'Baz=sub=string'])
+    self.assertEqual(expected, options.variables)
+    self.assertEqual([], args)
+
+  def test_variable_arg_fail(self):
+    parser = isolate.optparse.OptionParser()
+    isolate.add_variable_option(parser)
+    self.assertRaises(SystemExit, parser.parse_args, ['-V', 'Foo'])
+
   if sys.platform == 'darwin':
     def test_symlink_path_case(self):
       # Ensures that the resulting path case is fixed on case insensitive file

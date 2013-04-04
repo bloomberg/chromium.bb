@@ -2061,6 +2061,21 @@ def CMDtrace(args):
   return result
 
 
+def _process_variable_arg(_option, _opt, _value, parser):
+  if not parser.rargs:
+    raise optparse.OptionValueError(
+        'Please use --variable FOO=BAR or --variable FOO BAR')
+  k = parser.rargs.pop(0)
+  if '=' in k:
+    parser.values.variables.append(tuple(k.split('=', 1)))
+  else:
+    if not parser.rargs:
+      raise optparse.OptionValueError(
+          'Please use --variable FOO=BAR or --variable FOO BAR')
+    v = parser.rargs.pop(0)
+    parser.values.variables.append((k, v))
+
+
 def add_variable_option(parser):
   """Adds --isolated and --variable to an OptionParser."""
   parser.add_option(
@@ -2079,8 +2094,8 @@ def add_variable_option(parser):
     default_variables.append(('EXECUTABLE_SUFFIX', ''))
   parser.add_option(
       '-V', '--variable',
-      nargs=2,
-      action='append',
+      action='callback',
+      callback=_process_variable_arg,
       default=default_variables,
       dest='variables',
       metavar='FOO BAR',
