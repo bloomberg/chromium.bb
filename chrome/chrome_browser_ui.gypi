@@ -31,6 +31,7 @@
         'feedback_proto',
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../components/components.gyp:autofill_risk_proto',
         '../components/components.gyp:auto_login_parser',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
