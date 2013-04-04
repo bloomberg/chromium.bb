@@ -177,19 +177,31 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
 }
 
 .data-grid tr.parent td.disclosure::before {
-    float: left;
-    content: url(Images/treeRightTriangleBlack.png);
-    width: 8px;
-    height: 8px;
-    margin-right: 2px;
     -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    float: left;
+    width: 8px;
+    margin-right: 2px;
+    content: "a";
+    color: transparent;
+    position: relative;
+    top: 1px;
+}
+
+.data-grid tr.parent td.disclosure::before {
+    background-color: rgb(100, 100, 100);
+    -webkit-mask-position: -4px -96px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.data-grid tr.parent td.disclosure::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .data-grid tr.expanded td.disclosure::before {
-    content: url(Images/treeDownTriangleBlack.png);
-    width: 8px;
-    height: 8px;
-    margin-top: 1px;
+    -webkit-mask-position: -20px -96px;
 }
 
 .data-grid tr.selected {
@@ -207,11 +219,13 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
 }
 
 .data-grid:focus tr.parent.selected td.disclosure::before {
-    content: url(Images/treeRightTriangleWhite.png);
+    background-color: white;
+    -webkit-mask-position: -4px -96px;
 }
 
 .data-grid:focus tr.expanded.selected td.disclosure::before {
-    content: url(Images/treeDownTriangleWhite.png);
+    background-color: white;
+    -webkit-mask-position: -20px -96px;
 }
 
 .data-grid tr:not(.parent) td.disclosure {

@@ -40,6 +40,7 @@
 WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, showInElementsPanelEnabled, contextMenuCallback, setPseudoClassCallback)
 {
     this.element = document.createElement("ol");
+    this.element.className = "elements-tree-outline";
     this.element.addEventListener("mousedown", this._onmousedown.bind(this), false);
     this.element.addEventListener("mousemove", this._onmousemove.bind(this), false);
     this.element.addEventListener("mouseout", this._onmouseout.bind(this), false);

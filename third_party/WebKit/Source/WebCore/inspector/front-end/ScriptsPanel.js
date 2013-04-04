@@ -610,23 +610,23 @@ WebInspector.ScriptsPanel.prototype = {
         }
 
         if (this._paused) {
-            this._updateButtonTitle(this.pauseButton, WebInspector.UIString("Resume script execution (%s)."))
-            this.pauseButton.addStyleClass("paused");
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."))
+            this._pauseButton.state = true;
 
-            this.pauseButton.disabled = false;
-            this.stepOverButton.disabled = false;
-            this.stepIntoButton.disabled = false;
-            this.stepOutButton.disabled = false;
+            this._pauseButton.setEnabled(true);
+            this._stepOverButton.setEnabled(true);
+            this._stepIntoButton.setEnabled(true);
+            this._stepOutButton.setEnabled(true);
 
             this.debuggerStatusElement.textContent = WebInspector.UIString("Paused");
         } else {
-            this._updateButtonTitle(this.pauseButton, WebInspector.UIString("Pause script execution (%s)."))
-            this.pauseButton.removeStyleClass("paused");
+            this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)."))
+            this._pauseButton.state = false;
 
-            this.pauseButton.disabled = this._waitingToPause;
-            this.stepOverButton.disabled = true;
-            this.stepIntoButton.disabled = true;
-            this.stepOutButton.disabled = true;
+            this._pauseButton.setEnabled(!this._waitingToPause);
+            this._stepOverButton.setEnabled(false);
+            this._stepIntoButton.setEnabled(false);
+            this._stepOutButton.setEnabled(false);
 
             if (this._waitingToPause)
                 this.debuggerStatusElement.textContent = WebInspector.UIString("Pausing");
@@ -762,7 +762,7 @@ WebInspector.ScriptsPanel.prototype = {
     _breakpointsActiveStateChanged: function(event)
     {
         var active = event.data;
-        this._toggleBreakpointsButton.toggled = active;
+        this._toggleBreakpointsButton.toggled = !active;
         if (active) {
             this._toggleBreakpointsButton.title = WebInspector.UIString("Deactivate breakpoints.");
             WebInspector.inspectorView.element.removeStyleClass("breakpoints-deactivated");
@@ -798,29 +798,29 @@ WebInspector.ScriptsPanel.prototype = {
 
         // Continue.
         handler = this._togglePause.bind(this);
-        this.pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PauseContinue);
-        debugToolbar.appendChild(this.pauseButton);
+        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PauseContinue);
+        debugToolbar.appendChild(this._pauseButton.element);
 
         // Step over.
         title = WebInspector.UIString("Step over next function call (%s).");
         handler = this._stepOverClicked.bind(this);
-        this.stepOverButton = this._createButtonAndRegisterShortcuts("scripts-step-over", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOver);
-        debugToolbar.appendChild(this.stepOverButton);
+        this._stepOverButton = this._createButtonAndRegisterShortcuts("scripts-step-over", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOver);
+        debugToolbar.appendChild(this._stepOverButton.element);
 
         // Step into.
         title = WebInspector.UIString("Step into next function call (%s).");
         handler = this._stepIntoClicked.bind(this);
-        this.stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepInto);
-        debugToolbar.appendChild(this.stepIntoButton);
+        this._stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepInto);
+        debugToolbar.appendChild(this._stepIntoButton.element);
 
         // Step out.
         title = WebInspector.UIString("Step out of current function (%s).");
         handler = this._stepOutClicked.bind(this);
-        this.stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOut);
-        debugToolbar.appendChild(this.stepOutButton);
+        this._stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOut);
+        debugToolbar.appendChild(this._stepOutButton.element);
 
-        this._toggleBreakpointsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Deactivate breakpoints."), "toggle-breakpoints");
-        this._toggleBreakpointsButton.toggled = true;
+        this._toggleBreakpointsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Deactivate breakpoints."), "scripts-toggle-breakpoints");
+        this._toggleBreakpointsButton.toggled = false;
         this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
         debugToolbar.appendChild(this._toggleBreakpointsButton.element);
 
@@ -846,20 +846,17 @@ WebInspector.ScriptsPanel.prototype = {
      * @param {string} buttonTitle
      * @param {function(Event=):boolean} handler
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
+     * @return {WebInspector.StatusBarButton}
      */
     _createButtonAndRegisterShortcuts: function(buttonId, buttonTitle, handler, shortcuts)
     {
-        var button = document.createElement("button");
+        var button = new WebInspector.StatusBarButton(buttonTitle, buttonId);
+        button.addEventListener("click", handler);
         button.className = "status-bar-item";
         button.id = buttonId;
         button.shortcuts = shortcuts;
         this._updateButtonTitle(button, buttonTitle);
-        button.disabled = true;
-        button.appendChild(document.createElement("img"));
-        button.addEventListener("click", handler, false);
-
         this.registerShortcuts(shortcuts, handler);
-
         return button;
     },
 

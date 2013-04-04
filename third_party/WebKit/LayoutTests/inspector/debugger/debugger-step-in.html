@@ -30,7 +30,7 @@ var test = function()
         InspectorTest.captureStackTrace(callFrames);
         if (stepCount < 2) {
             InspectorTest.addResult("Stepping into...");
-            document.getElementById("scripts-step-into").click();
+            WebInspector.panels.scripts._stepIntoButton.element.click();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
         } else
             InspectorTest.completeDebuggerTest();

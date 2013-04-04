@@ -84,40 +84,35 @@
     margin-top: 2px;
 }
 
-#scripts-pause img {
-    content: url(Images/debuggerPause.png);
+#scripts-debug-toolbar .glyph {
+    opacity: 0.8;
 }
 
-#scripts-pause.paused img {
-    content: url(Images/debuggerContinue.png);
+.scripts-pause .glyph {
+    -webkit-mask-position: -32px -72px;
 }
 
-#scripts-step-over img {
-    content: url(Images/debuggerStepOver.png);
+.scripts-pause.toggled-on .glyph {
+    -webkit-mask-position: 0 -72px;
 }
 
-#scripts-step-into img {
-    content: url(Images/debuggerStepInto.png);
+.scripts-step-over .glyph {
+    -webkit-mask-position: -128px -72px;
 }
 
-#scripts-step-out img {
-    content: url(Images/debuggerStepOut.png);
+.scripts-step-into .glyph {
+    -webkit-mask-position: -64px -72px;
 }
 
-.toggle-breakpoints .glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+.scripts-step-out .glyph {
+    -webkit-mask-position: -96px -72px;
+}
+
+.scripts-toggle-breakpoints.toggled-on .glyph {
     -webkit-mask-position: -32px 0;
-    -webkit-mask-size: 320px 72px;
-    background-color: rgb(96, 96, 96) !important;
 }
 
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.toggle-breakpoints .glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);        
-}
-}
-
-.toggle-breakpoints.toggled-on .glyph {
+.scripts-toggle-breakpoints .glyph {
     -webkit-mask-position: 0 -24px;
 }
 
@@ -153,19 +148,21 @@
     background-position: center;
 }
 
-.status-bar-item.scripts-navigator-show-hide-button > .glyph {
-    background-color: rgba(0, 0, 0, 0.5);
-    -webkit-mask-image: url(Images/navigatorShowHideButton.png);
-    -webkit-mask-position: 0 0;
-    -webkit-mask-size: 48px 32px;
+.status-bar-item.scripts-navigator-show-hide-button,
+.scripts-debugger-show-hide-button {
+    opacity: 0.7;
 }
 
-.status-bar-item.scripts-navigator-show-hide-button.toggled-pinned > .glyph {
-    -webkit-mask-position: -16px 0;
+.status-bar-item.scripts-navigator-show-hide-button.toggled-hidden .glyph {
+    -webkit-mask-position: -167px -76px;
 }
 
-.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay > .glyph {
-    -webkit-mask-position: -32px 0;
+.status-bar-item.scripts-navigator-show-hide-button.toggled-pinned .glyph {
+    -webkit-mask-position: -199px -76px;
+}
+
+.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay .glyph {
+    -webkit-mask-position: -233px -76px;
 }
 
 button.status-bar-item.scripts-navigator-show-hide-button {
@@ -273,13 +270,6 @@ button.status-bar-item.scripts-debugger-show-hide-button:active {
     top: 1px;
 }
 
-.status-bar-item.scripts-debugger-show-hide-button > .glyph {
-    background-color: rgba(0, 0, 0, 0.5);
-    -webkit-mask-image: url(Images/navigatorShowHideButton.png);
-    -webkit-mask-position: 0 0;
-    -webkit-mask-size: 48px 32px;
-}
-
 button.status-bar-item.scripts-debugger-show-hide-button.toggled-shown {
     right: 16px;
 }
@@ -289,7 +279,7 @@ button.status-bar-item.scripts-debugger-show-hide-button.toggled-shown:active {
 }
 
 .status-bar-item.scripts-debugger-show-hide-button.toggled-shown > .glyph {
-    -webkit-mask-position: 0 -16px;
+    -webkit-mask-position: -168px -76px;
 }
 
 button.status-bar-item.scripts-debugger-show-hide-button.toggled-hidden {
@@ -301,7 +291,7 @@ button.status-bar-item.scripts-debugger-show-hide-button.toggled-hidden:active {
 }
 
 .status-bar-item.scripts-debugger-show-hide-button.toggled-hidden > .glyph {
-    -webkit-mask-position: -16px -16px;
+    -webkit-mask-position: -296px -76px;
 }
 
 div.sidebar-pane-stack#scripts-debug-sidebar-contents, #scripts-sidebar-stack-pane {

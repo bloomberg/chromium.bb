@@ -738,7 +738,7 @@ body.drawer-visible #floating-status-bar-container {
     background-color: rgba(0, 0, 0, 0.75);
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-position: -288px -48px;
-    -webkit-mask-size: 320px 72px;
+    -webkit-mask-size: 320px 120px;
     z-index: 1;
 }
 
@@ -824,7 +824,7 @@ select.status-bar-item, select.status-bar-item:hover {
 
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 72px;
+    -webkit-mask-size: 320px 120px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -1090,16 +1090,31 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 .console-group-title::before {
-    background-image: url(Images/disclosureTriangleSmallDown.png);
-    top: 0.6em;
-    width: 11px;
-    height: 12px;
-    left: -16px;
-    position: absolute;
+    -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    float: left;
+    width: 8px;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    margin-left: 3px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-group-title::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.console-group .console-group-title::before {
+    -webkit-mask-position: -20px -96px;
+    background-color: rgb(100, 100, 100);
 }
 
 .console-group.collapsed .console-group-title::before {
-    background-image: url(Images/disclosureTriangleSmallRight.png);
+    -webkit-mask-position: -4px -96px;
+    background-color: rgb(100, 100, 100);
 }
 
 .console-group.collapsed > .console-group-messages {
@@ -1192,16 +1207,7 @@ ol.watch-expressions > li.hovered {
 }
 
 .console-group-messages .section .header::before {
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 8px;
-    height: 8px;
-    content: url(Images/treeRightTriangleBlack.png);
-}
-
-.console-group-messages .section.expanded .header::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    margin-left: -12px;
 }
 
 .console-group-messages .section .header .title {
@@ -1462,32 +1468,46 @@ iframe.panel.extension {
 .outline-disclosure li.parent::before {
     float: left;
     width: 8px;
-    height: 8px;
     padding-right: 2px;
 }
 
 .outline-disclosure li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
+    -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    position: relative;
+    top: 2px;
 }
 
-.outline-disclosure ol:focus li.parent.selected::before {
-    content: url(Images/treeRightTriangleWhite.png);
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.outline-disclosure li.parent::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
+.outline-disclosure li.parent::before {
+    -webkit-mask-position: -4px -96px;
+    background-color: rgb(100, 100, 100);
+}
+
+.outline-disclosure ol:focus li.parent.selected::before,
 .outline-disclosure ol.search-match-found li.parent.selected::before {
-    content: url(Images/treeRightTriangleWhite.png);
+    -webkit-mask-position: -4px -96px;
+    background-color: white;
 }
 
 .outline-disclosure li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    -webkit-mask-position: -20px -96px;
+    background-color: rgb(100, 100, 100);
 }
 
-.outline-disclosure ol:focus li.parent.expanded.selected::before {
-    content: url(Images/treeDownTriangleWhite.png);
-}
-
+.outline-disclosure ol:focus li.parent.expanded.selected::before,
 .outline-disclosure ol.search-match-found li.parent.expanded.selected::before {
-    content: url(Images/treeDownTriangleWhite.png);
+    -webkit-mask-position: -20px -96px;
+    background-color: white;
 }
 
 .outline-disclosure ol.children {
@@ -1565,7 +1585,7 @@ iframe.panel.extension {
 
 .section .header {
     color: black;
-    padding: 0 8px 0 18px;
+    padding: 0 8px 0 4px;
     min-height: 18px;
     white-space: nowrap;
     -webkit-background-origin: padding;
@@ -1573,17 +1593,31 @@ iframe.panel.extension {
 }
 
 .section .header::before {
-    position: absolute;
-    top: 2px;
-    left: 7px;
+    -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    float: left;
     width: 8px;
-    height: 8px;
-    content: url(Images/treeRightTriangleBlack.png);
-    opacity: 0.8;
+    margin-right: 2px;
+    margin-top: 2px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.section .header::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.section .header::before {
+    background-color: rgb(100, 100, 100);
+    -webkit-mask-position: -4px -96px;
 }
 
 .section.expanded .header::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    -webkit-mask-position: -20px -96px;
 }
 
 .section .header .title, .event-bar .header .title {
@@ -1657,20 +1691,33 @@ iframe.panel.extension {
     margin-left: 1px;
 }
 
+
 .properties-tree li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    opacity: 0.75;
-    float: left;
-    width: 8px;
-    height: 8px;
-    margin-top: 0;
-    padding-right: 3px;
     -webkit-user-select: none;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
+    content: "a";
+    width: 8px;
+    float: left;
+    margin-right: 2px;
+    color: transparent;
+    text-shadow: none;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.properties-tree li.parent::before {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.properties-tree li.parent::before {
+    background-color: rgb(100, 100, 100);
+    -webkit-mask-position: -4px -96px;
 }
 
 .properties-tree li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
-    margin-top: 1px;
+    background-color: rgb(100, 100, 100);
+    -webkit-mask-position: -20px -96px;
 }
 
 .properties-tree li .info {
@@ -2867,4 +2914,8 @@ body.platform-mac .progress-bar-container progress {
     -webkit-user-select: text;
     font-size: 11px;
     cursor: text;
+}
+
+.elements-tree-outline li.parent::before {
+    top: 0 !important;
 }
