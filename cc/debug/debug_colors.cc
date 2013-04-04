@@ -237,6 +237,11 @@ SkColor DebugColors::NonPaintedFillColor() { return SK_ColorCYAN; }
 // Missing picture rects in magenta.
 SkColor DebugColors::MissingPictureFillColor() { return SK_ColorMAGENTA; }
 
+// Picture borders in transparent blue.
+SkColor DebugColors::PictureBorderColor() {
+  return SkColorSetARGB(100, 0, 0, 200);
+}
+
 // ======= HUD widget colors =======
 
 SkColor DebugColors::HUDBackgroundColor() {

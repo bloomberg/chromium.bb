@@ -94,6 +94,7 @@ class DebugColors {
 
   static SkColor NonPaintedFillColor();
   static SkColor MissingPictureFillColor();
+  static SkColor PictureBorderColor();
 
   static SkColor HUDBackgroundColor();
   static SkColor HUDSeparatorLineColor();

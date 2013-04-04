@@ -24,6 +24,7 @@ PicturePileBase::PicturePileBase()
     : min_contents_scale_(0),
       background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
       slow_down_raster_scale_factor_for_debug_(0),
+      show_debug_picture_borders_(false),
       num_raster_threads_(0) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
@@ -40,6 +41,7 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       background_color_(other->background_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
+      show_debug_picture_borders_(other->show_debug_picture_borders_),
       num_raster_threads_(other->num_raster_threads_) {
 }
 
@@ -52,6 +54,7 @@ PicturePileBase::PicturePileBase(
       background_color_(other->background_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
+      show_debug_picture_borders_(other->show_debug_picture_borders_),
       num_raster_threads_(other->num_raster_threads_) {
   const PictureListMap& other_pic_list_map = other->picture_list_map_;
   for (PictureListMap::const_iterator map_iter = other_pic_list_map.begin();

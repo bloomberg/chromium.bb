@@ -34,6 +34,10 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     slow_down_raster_scale_factor_for_debug_ = factor;
   }
 
+  void set_show_debug_picture_borders(bool show) {
+    show_debug_picture_borders_ = show;
+  }
+
  private:
   virtual ~PicturePile();
   friend class PicturePileImpl;

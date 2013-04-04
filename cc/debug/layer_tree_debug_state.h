@@ -29,6 +29,7 @@ class CC_EXPORT LayerTreeDebugState {
   bool show_non_occluding_rects;
 
   int slow_down_raster_scale_factor;
+  bool show_picture_borders;
 
   void SetRecordRenderingStats(bool enabled);
   bool RecordRenderingStats() const;

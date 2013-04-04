@@ -60,6 +60,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   SkTileGridPicture::TileGridInfo tile_grid_info_;
   SkColor background_color_;
   int slow_down_raster_scale_factor_for_debug_;
+  bool show_debug_picture_borders_;
   int num_raster_threads_;
 
  private:

@@ -153,6 +153,22 @@ int64 PicturePileImpl::Raster(
         (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
       }
 
+      if (show_debug_picture_borders_) {
+        gfx::Rect border = content_clip;
+        border.Inset(0, 0, 1, 1);
+
+        SkPaint picture_border_paint;
+        picture_border_paint.setColor(DebugColors::PictureBorderColor());
+        canvas->drawLine(border.x(), border.y(), border.right(), border.y(),
+                         picture_border_paint);
+        canvas->drawLine(border.right(), border.y(), border.right(),
+                         border.bottom(), picture_border_paint);
+        canvas->drawLine(border.right(), border.bottom(), border.x(),
+                         border.bottom(), picture_border_paint);
+        canvas->drawLine(border.x(), border.bottom(), border.x(), border.y(),
+                         picture_border_paint);
+      }
+
       // Don't allow pictures underneath to draw where this picture did.
       canvas->clipRect(
           gfx::RectToSkRect(content_clip),
