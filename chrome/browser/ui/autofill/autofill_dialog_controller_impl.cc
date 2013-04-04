@@ -763,7 +763,7 @@ string16 AutofillDialogControllerImpl::ExtraSuggestionTextForSection(
 scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     DialogSection section) {
   if (IsPayingWithWallet() && full_wallet_ &&
-      !IsSubmitPausedOn(wallet::VERIFY_CVV)) {
+      full_wallet_->required_actions().empty()) {
     if (section == SECTION_CC_BILLING) {
       return scoped_ptr<DataModelWrapper>(
           new FullWalletBillingWrapper(full_wallet_.get()));
@@ -1633,9 +1633,7 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
             instruments[i]->DisplayNameDetail(),
             instruments[i]->CardIcon());
       }
-    }
 
-    if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
       suggested_cc_billing_.AddKeyedItem(
           std::string(),
           l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
