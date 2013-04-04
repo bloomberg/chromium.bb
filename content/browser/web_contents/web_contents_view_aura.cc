@@ -493,6 +493,8 @@ class ShadowWindow : public aura::Window,
   friend class base::DeleteHelper<content::ShadowWindow>;
 
   virtual ~ShadowWindow() {
+    if (window_)
+      window_->RemoveObserver(this);
   }
 
   void UpdateShadowBounds() {
@@ -524,6 +526,14 @@ class ShadowWindow : public aura::Window,
                                      const gfx::Rect& new_bounds) OVERRIDE {
     SetBounds(gfx::Rect(new_bounds.size()));
     UpdateShadowBounds();
+  }
+
+  virtual void OnWindowParentChanged(Window* window, Window* parent) OVERRIDE {
+    DCHECK_EQ(window, window_);
+    DCHECK_NE(parent, this);
+    window_->RemoveObserver(this);
+    window_ = NULL;
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {

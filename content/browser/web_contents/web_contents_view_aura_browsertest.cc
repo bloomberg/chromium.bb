@@ -448,4 +448,51 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(NULL, tracker.screenshot_taken_for());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       ContentWindowReparent) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+
+  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  window->Init(ui::LAYER_NOT_DRAWN);
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ExecuteSyncJSFunction(web_contents->GetRenderViewHost(), "navigate_next()");
+  EXPECT_EQ(1, GetCurrentIndex());
+
+  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  gfx::Rect bounds = content->GetBoundsInRootWindow();
+  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+  generator.GestureScrollSequence(
+      gfx::Point(bounds.x() + 2, bounds.y() + 10),
+      gfx::Point(bounds.right() - 10, bounds.y() + 10),
+      base::TimeDelta::FromMilliseconds(20),
+      1);
+
+  window->AddChild(shell()->web_contents()->GetView()->GetContentNativeView());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       ContentWindowClose) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ExecuteSyncJSFunction(web_contents->GetRenderViewHost(), "navigate_next()");
+  EXPECT_EQ(1, GetCurrentIndex());
+
+  aura::Window* content = web_contents->GetView()->GetContentNativeView();
+  gfx::Rect bounds = content->GetBoundsInRootWindow();
+  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+  generator.GestureScrollSequence(
+      gfx::Point(bounds.x() + 2, bounds.y() + 10),
+      gfx::Point(bounds.right() - 10, bounds.y() + 10),
+      base::TimeDelta::FromMilliseconds(20),
+      1);
+
+  delete web_contents->GetView()->GetContentNativeView();
+}
+
 }  // namespace content
