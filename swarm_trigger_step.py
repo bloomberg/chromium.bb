@@ -35,6 +35,10 @@ RUN_TEST_NAME = 'run_isolated.py'
 RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
 
 
+class Failure(Exception):
+  pass
+
+
 class Manifest(object):
   def __init__(self, manifest_hash, test_name, shards, test_filter, switches):
     """Populates a manifest object.
@@ -60,11 +64,22 @@ class Manifest(object):
     self.target_platform = platform_mapping[switches.os_image]
     self.working_dir = switches.working_dir
     self.test_name = test_name
-    base_url = switches.data_server.rstrip('/')
-    self.data_server_retrieval = base_url + '/content/retrieve/default/'
-    self.data_server_storage = base_url + '/content/store/default/'
-    self.data_server_has = base_url + '/content/contains/default'
+    self.base_url = switches.data_server.rstrip('/')
+    self.data_server_retrieval = self.base_url + '/content/retrieve/default/'
+    self.data_server_storage = self.base_url + '/content/store/default/'
+    self.data_server_has = self.base_url + '/content/contains/default'
     self.zip_file_hash = ''
+    self._token = None
+
+  def token(self):
+    if not self._token:
+      result = run_isolated.url_open(
+          self.base_url + '/content/get_token')
+      if not result:
+        # TODO(maruel): Implement authentication.
+        raise Failure('Failed to get token, need authentication')
+      self._token = result.read()
+    return self._token
 
   def add_task(self, task_name, actions, time_out=600):
     """Appends a new task to the swarm manifest file."""
@@ -94,7 +109,7 @@ class Manifest(object):
     self.zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
 
     response = run_isolated.url_open(
-        self.data_server_has,
+        self.data_server_has + '?token=%s' % self.token(),
         data=self.zip_file_hash,
         content_type='application/octet-stream')
     if response is None:
@@ -108,7 +123,8 @@ class Manifest(object):
 
     print 'Zip file not on server, starting uploading.'
 
-    url = self.data_server_storage + self.zip_file_hash + '?priority=0'
+    url = '%s%s?priority=0&token=%s' % (
+        self.data_server_storage, self.zip_file_hash, self.token())
     response = run_isolated.url_open(
         url, zip_contents, content_type='application/octet-stream')
     if response is None:
@@ -235,21 +251,25 @@ def main():
   if not options.data_server:
     parser.error('Must specify the data directory')
 
-  # Send off the hash swarm test requests.
   highest_exit_code = 0
-  for (file_sha1, test_name, shards, testfilter) in options.run_from_hash:
-    try:
-      highest_exit_code = max(highest_exit_code,
-                              ProcessManifest(
-                                  file_sha1,
-                                  options.test_name_prefix + test_name,
-                                  int(shards),
-                                  testfilter,
-                                  options))
-    except ValueError:
-      print ('Unable to process %s because integer not given for shard count' %
-             test_name)
-
+  try:
+    # Send off the hash swarm test requests.
+    for (file_sha1, test_name, shards, testfilter) in options.run_from_hash:
+      try:
+        highest_exit_code = max(highest_exit_code,
+                                ProcessManifest(
+                                    file_sha1,
+                                    options.test_name_prefix + test_name,
+                                    int(shards),
+                                    testfilter,
+                                    options))
+      except ValueError:
+        print('Unable to process %s because integer not given for shard count' %
+              test_name)
+        highest_exit_code = max(1, highest_exit_code)
+  except Failure as e:
+    print >> sys.stderr, e.args[0]
+    highest_exit_code = max(1, highest_exit_code)
   return highest_exit_code
 
 
