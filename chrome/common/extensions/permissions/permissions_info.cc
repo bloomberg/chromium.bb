@@ -4,14 +4,50 @@
 
 #include "chrome/common/extensions/permissions/permissions_info.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 
 namespace extensions {
 
+static base::LazyInstance<PermissionsInfo> g_permissions_info =
+    LAZY_INSTANCE_INITIALIZER;
+// ScopedTestingPermissionsInfo can override the global instance for testing.
+static PermissionsInfo* g_permissions_info_override = NULL;
+
 // static
 PermissionsInfo* PermissionsInfo::GetInstance() {
-  return Singleton<PermissionsInfo>::get();
+  if (!g_permissions_info_override)
+    g_permissions_info_override = g_permissions_info.Pointer();
+  return g_permissions_info_override;
+}
+
+// static
+void PermissionsInfo::SetForTesting(PermissionsInfo* info) {
+  g_permissions_info_override = info;
+}
+
+PermissionsInfo::~PermissionsInfo() {
+  STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
+}
+
+void PermissionsInfo::InitializeWithDelegate(
+    const PermissionsInfo::Delegate& delegate) {
+  // TODO(yoz): Change into a DCHECK once StartupHelper browser tests
+  // are changed to unit tests.
+  if (initialized_)
+    return;
+  std::vector<APIPermissionInfo*> permissions = delegate.GetAllPermissions();
+  std::vector<AliasInfo> aliases = delegate.GetAllAliases();
+
+  for (size_t i = 0; i < permissions.size(); ++i)
+    RegisterPermission(permissions[i]);
+  for (size_t i = 0; i < aliases.size(); ++i)
+    RegisterAlias(aliases[i].name, aliases[i].alias);
+
+  initialized_ = true;
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByID(
@@ -51,44 +87,28 @@ bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
   return StartsWithASCII(i->first, name + '.', true);
 }
 
-PermissionsInfo::~PermissionsInfo() {
-  for (IDMap::iterator i = id_map_.begin(); i != id_map_.end(); ++i)
-    delete i->second;
-}
-
 PermissionsInfo::PermissionsInfo()
     : hosted_app_permission_count_(0),
-      permission_count_(0) {
-  APIPermissionInfo::RegisterAllPermissions(this);
+      permission_count_(0),
+      initialized_(false) {
 }
 
 void PermissionsInfo::RegisterAlias(
     const char* name,
     const char* alias) {
-  DCHECK(name_map_.find(name) != name_map_.end());
-  DCHECK(name_map_.find(alias) == name_map_.end());
+  DCHECK(ContainsKey(name_map_, name));
+  DCHECK(!ContainsKey(name_map_, alias));
   name_map_[alias] = name_map_[name];
 }
 
-const APIPermissionInfo* PermissionsInfo::RegisterPermission(
-    APIPermission::ID id,
-    const char* name,
-    int l10n_message_id,
-    PermissionMessage::ID message_id,
-    int flags,
-    const APIPermissionInfo::APIPermissionConstructor constructor) {
-  DCHECK(id_map_.find(id) == id_map_.end());
-  DCHECK(name_map_.find(name) == name_map_.end());
+void PermissionsInfo::RegisterPermission(APIPermissionInfo* permission) {
+  DCHECK(!ContainsKey(id_map_, permission->id()));
+  DCHECK(!ContainsKey(name_map_, permission->name()));
 
-  APIPermissionInfo* permission = new APIPermissionInfo(
-      id, name, l10n_message_id, message_id, flags, constructor);
-
-  id_map_[id] = permission;
-  name_map_[name] = permission;
+  id_map_[permission->id()] = permission;
+  name_map_[permission->name()] = permission;
 
   permission_count_++;
-
-  return permission;
 }
 
 }  // namespace extensions

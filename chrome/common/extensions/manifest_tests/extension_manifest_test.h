@@ -10,18 +10,16 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionManifestTest : public testing::Test {
+class ExtensionManifestTest : public extensions::ExtensionTest {
  public:
   ExtensionManifestTest();
 
  protected:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-
   // Helper class that simplifies creating methods that take either a filename
   // to a manifest or the manifest itself.
   class Manifest {

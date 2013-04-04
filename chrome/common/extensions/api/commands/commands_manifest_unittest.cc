@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -82,6 +83,18 @@ TEST_F(CommandsManifestTest, CommandManifestAllowNumbers) {
 TEST_F(CommandsManifestTest, CommandManifestRejectJustShift) {
   LoadAndExpectError("command_reject_just_shift.json",
       errors::kInvalidKeyBinding);
+}
+
+TEST_F(CommandsManifestTest, BrowserActionSynthesizesCommand) {
+  (new BrowserActionHandler)->Register();
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("browser_action_synthesizes_command.json");
+  // An extension with a browser action but no extension command specified
+  // should get a command assigned to it.
+  const extensions::Command* command =
+      CommandsInfo::GetBrowserActionCommand(extension);
+  ASSERT_TRUE(command != NULL);
+  ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }
 
 }  // namespace extensions

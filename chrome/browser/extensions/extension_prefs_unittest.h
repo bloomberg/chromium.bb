@@ -7,6 +7,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +21,7 @@ namespace extensions {
 class Extension;
 
 // Base class for extension preference-related unit tests.
-class ExtensionPrefsTest : public testing::Test {
+class ExtensionPrefsTest : public ExtensionTest {
  public:
   ExtensionPrefsTest();
   virtual ~ExtensionPrefsTest();

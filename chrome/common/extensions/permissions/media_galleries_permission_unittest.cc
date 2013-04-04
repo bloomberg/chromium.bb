@@ -5,9 +5,9 @@
 // These tests make sure MediaGalleriesPermission values are parsed correctly.
 
 #include "base/values.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SocketPermissionRequest;
@@ -17,10 +17,10 @@ namespace extensions {
 
 namespace {
 
-class MediaGalleriesPermissionTest : public testing::Test {
+class MediaGalleriesPermissionTest : public ExtensionTest {
 };
 
-TEST(MediaGalleriesPermissionTest, GoodValues) {
+TEST_F(MediaGalleriesPermissionTest, GoodValues) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
 
@@ -50,7 +50,7 @@ TEST(MediaGalleriesPermissionTest, GoodValues) {
   EXPECT_TRUE(permission->FromValue(value.get()));
 }
 
-TEST(MediaGalleriesPermissionTest, BadValues) {
+TEST_F(MediaGalleriesPermissionTest, BadValues) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
 
@@ -62,7 +62,7 @@ TEST(MediaGalleriesPermissionTest, BadValues) {
   EXPECT_FALSE(permission->FromValue(value.get()));
 }
 
-TEST(MediaGalleriesPermissionTest, Equal) {
+TEST_F(MediaGalleriesPermissionTest, Equal) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
 
@@ -90,7 +90,7 @@ TEST(MediaGalleriesPermissionTest, Equal) {
   EXPECT_TRUE(permission1->Equal(permission2.get()));
 }
 
-TEST(MediaGalleriesPermissionTest, ToFromValue) {
+TEST_F(MediaGalleriesPermissionTest, ToFromValue) {
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kMediaGalleries);
 

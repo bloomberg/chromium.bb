@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,6 +49,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
  public:
+  ActionBoxMenuBubbleControllerTest()
+      : permissions_info_(extensions::ChromeAPIPermissions()) {
+  }
+
   virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
@@ -121,9 +127,10 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(found);
   }
 
- public:
+ protected:
   ActionBoxMenuBubbleController* controller_;
   MenuDelegate menu_delegate_;
+  extensions::ScopedTestingPermissionsInfo permissions_info_;
   ExtensionService* service_;
 };
 

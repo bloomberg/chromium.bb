@@ -10,19 +10,47 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/singleton.h"
+#include "base/lazy_instance.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 
 namespace extensions {
 
-// Singleton that holds the extension permission instances and provides static
+class ChromeAPIPermissions;
+
+// A global object that holds the extension permission instances and provides
 // methods for accessing them.
 class PermissionsInfo {
  public:
-  // Returns a pointer to the singleton instance.
+  // An alias for a given permission |name|.
+  struct AliasInfo {
+    const char* name;
+    const char* alias;
+
+    AliasInfo(const char* name, const char* alias)
+        : name(name), alias(alias) {
+    }
+  };
+
+  // The delegate creates the APIPermissions instances. It is only
+  // needed at startup time.
+  class Delegate {
+   public:
+    // Returns all the known permissions. The caller, PermissionsInfo,
+    // takes ownership of the APIPermissionInfos.
+    virtual std::vector<APIPermissionInfo*> GetAllPermissions() const = 0;
+
+    // Returns all the known permission aliases.
+    virtual std::vector<AliasInfo> GetAllAliases() const = 0;
+  };
+
   static PermissionsInfo* GetInstance();
+
+  virtual ~PermissionsInfo();
+
+  // Initializes the permissions from the delegate.
+  void InitializeWithDelegate(const Delegate& delegate);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;
@@ -46,22 +74,20 @@ class PermissionsInfo {
   size_t get_permission_count() const { return permission_count_; }
 
  private:
-  friend class APIPermissionInfo;
+  friend class ScopedTestingPermissionsInfo;
+  friend struct base::DefaultLazyInstanceTraits<PermissionsInfo>;
 
-  ~PermissionsInfo();
   PermissionsInfo();
+
+  // Overrides the global PermissionsInfo for unit tests. Should only be
+  // called from ScopedTestingPermissionsInfo.
+  static void SetForTesting(PermissionsInfo* info);
 
   // Registers an |alias| for a given permission |name|.
   void RegisterAlias(const char* name, const char* alias);
 
   // Registers a permission with the specified attributes and flags.
-  const APIPermissionInfo* RegisterPermission(
-      APIPermission::ID id,
-      const char* name,
-      int l10n_message_id,
-      PermissionMessage::ID message_id,
-      int flags,
-      const APIPermissionInfo::APIPermissionConstructor constructor);
+  void RegisterPermission(APIPermissionInfo* permission);
 
   // Maps permission ids to permissions.
   typedef std::map<APIPermission::ID, APIPermissionInfo*> IDMap;
@@ -75,7 +101,9 @@ class PermissionsInfo {
   size_t hosted_app_permission_count_;
   size_t permission_count_;
 
-  friend struct DefaultSingletonTraits<PermissionsInfo>;
+  // Set to true after the delegate has created the known permissions.
+  bool initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(PermissionsInfo);
 };
 

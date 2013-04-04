@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,7 +57,8 @@ scoped_refptr<const Extension> CreateTestExtension(
 class ActiveTabTest : public ChromeRenderViewHostTestHarness {
  public:
   ActiveTabTest()
-      : extension(CreateTestExtension("deadbeef", true)),
+      : permissions_info_(ChromeAPIPermissions()),
+        extension(CreateTestExtension("deadbeef", true)),
         another_extension(CreateTestExtension("feedbeef", true)),
         extension_without_active_tab(CreateTestExtension("badbeef", false)),
         ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
@@ -109,6 +112,8 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                          int tab_id) {
     return extension->HasAPIPermissionForTab(tab_id, APIPermission::kTab);
   }
+
+  ScopedTestingPermissionsInfo permissions_info_;
 
   // An extension with the activeTab permission.
   scoped_refptr<const Extension> extension;

@@ -18,6 +18,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,7 +37,8 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
   ScriptBubbleControllerTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()),
-        enable_script_bubble_(FeatureSwitch::script_bubble(), true) {
+        enable_script_bubble_(FeatureSwitch::script_bubble(), true),
+        permissions_info_(ChromeAPIPermissions()) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -66,6 +69,7 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   FeatureSwitch::ScopedOverride enable_script_bubble_;
+  ScopedTestingPermissionsInfo permissions_info_;
 };
 
 TEST_F(ScriptBubbleControllerTest, Basics) {

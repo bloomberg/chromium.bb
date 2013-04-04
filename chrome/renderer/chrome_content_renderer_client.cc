@@ -32,6 +32,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/localized_error.h"
@@ -338,6 +339,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
       extension_resource_scheme);
 
+  extensions::ChromeAPIPermissions permissions;
+  extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
+      permissions);
   RegisterExtensionManifestHandlers();
 
   RegisterRequestOSFileHandleAllowedHosts(

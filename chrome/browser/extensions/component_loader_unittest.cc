@@ -14,8 +14,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/incognito_handler.h"
-#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -74,18 +73,16 @@ class MockExtensionService : public TestExtensionService {
 
 }  // namespace
 
-class ComponentLoaderTest : public testing::Test {
+class ComponentLoaderTest : public ExtensionTest {
  public:
-  ComponentLoaderTest() :
+  ComponentLoaderTest()
       // Note: we pass the same pref service here, to stand in for both
       // user prefs and local state.
-      component_loader_(&extension_service_, &prefs_, &local_state_) {
+      : component_loader_(&extension_service_, &prefs_, &local_state_) {
   }
 
   virtual void SetUp() OVERRIDE {
-    (new BackgroundManifestHandler)->Register();
-    (new IncognitoHandler)->Register();
-
+    ExtensionTest::SetUp();
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")
@@ -112,11 +109,6 @@ class ComponentLoaderTest : public testing::Test {
     local_state_.registry()->RegisterBooleanPref(
         prefs::kSpokenFeedbackEnabled, false);
 #endif
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ManifestHandler::ClearRegistryForTesting();
-    testing::Test::TearDown();
   }
 
  protected:

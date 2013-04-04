@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
@@ -145,6 +146,9 @@ void ChromeContentUtilityClient::OnUnpackExtension(
     int creation_flags) {
   CHECK(location > extensions::Manifest::INVALID_LOCATION);
   CHECK(location < extensions::Manifest::NUM_LOCATIONS);
+  extensions::ChromeAPIPermissions permissions;
+  extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
+      permissions);
   RegisterExtensionManifestHandlers();
   extensions::Unpacker unpacker(
       extension_path,

@@ -10,6 +10,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,13 +23,13 @@ using extensions::Manifest;
 
 namespace keys = extension_manifest_keys;
 
-class ExtensionSpecialStoragePolicyTest : public testing::Test {
- public:
+class ExtensionSpecialStoragePolicyTest : public extensions::ExtensionTest {
+ protected:
   virtual void SetUp() {
+    extensions::ExtensionTest::SetUp();
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
   }
 
- protected:
   scoped_refptr<Extension> CreateProtectedApp() {
 #if defined(OS_WIN)
     base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));

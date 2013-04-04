@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/web_apps.h"
 #include "extensions/common/extension_resource.h"
@@ -80,16 +81,11 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
 
 }  // namespace
 
-class ExtensionFromWebApp : public ::testing::Test {
- public:
+class ExtensionFromWebApp : public ExtensionTest {
+ protected:
   virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
+    ExtensionTest::SetUp();
     (new IconsHandler)->Register();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ManifestHandler::ClearRegistryForTesting();
-    testing::Test::TearDown();
   }
 };
 

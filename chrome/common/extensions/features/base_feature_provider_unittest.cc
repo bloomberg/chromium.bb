@@ -4,21 +4,19 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/permission_feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::VersionInfo;
-using extensions::BaseFeatureProvider;
-using extensions::DictionaryBuilder;
-using extensions::Extension;
-using extensions::Feature;
-using extensions::ListBuilder;
-using extensions::Manifest;
-using extensions::PermissionFeature;
-using extensions::SimpleFeature;
 
-TEST(BaseFeatureProvider, ManifestFeatures) {
+namespace extensions {
+
+class BaseFeatureProviderTest : public ExtensionTest {
+};
+
+TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
   BaseFeatureProvider* provider =
       BaseFeatureProvider::GetManifestFeatures();
   SimpleFeature* feature =
@@ -60,7 +58,7 @@ TEST(BaseFeatureProvider, ManifestFeatures) {
       extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 }
 
-TEST(BaseFeatureProvider, PermissionFeatures) {
+TEST_F(BaseFeatureProviderTest, PermissionFeatures) {
   BaseFeatureProvider* provider =
       BaseFeatureProvider::GetPermissionFeatures();
   SimpleFeature* feature =
@@ -106,7 +104,7 @@ SimpleFeature* CreatePermissionFeature() {
   return new PermissionFeature();
 }
 
-TEST(BaseFeatureProvider, Validation) {
+TEST_F(BaseFeatureProviderTest, Validation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   base::DictionaryValue* feature1 = new base::DictionaryValue();
@@ -141,7 +139,7 @@ TEST(BaseFeatureProvider, Validation) {
   EXPECT_TRUE(provider->GetFeature("feature2"));
 }
 
-TEST(BaseFeatureProvider, ComplexFeatures) {
+TEST_F(BaseFeatureProviderTest, ComplexFeatures) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("feature1",
@@ -189,3 +187,5 @@ TEST(BaseFeatureProvider, ComplexFeatures) {
         Feature::UNSPECIFIED_PLATFORM).result());
   }
 }
+
+}  // namespace extensions

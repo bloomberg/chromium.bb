@@ -6,18 +6,17 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/api/permissions.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::api::permissions::Permissions;
 using extensions::permissions_api_helpers::PackPermissionSet;
 using extensions::permissions_api_helpers::UnpackPermissionSet;
-using extensions::api::permissions::Permissions;
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::PermissionSet;
-using extensions::URLPatternSet;
+
+namespace extensions {
 
 namespace {
 
@@ -28,8 +27,11 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 }  // namespace
 
+class ExtensionPermissionsAPIHelpers : public ExtensionTest {
+};
+
 // Tests that we can convert PermissionSets to and from values.
-TEST(ExtensionPermissionsAPIHelpers, Pack) {
+TEST_F(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kWebRequest);
@@ -78,7 +80,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
 // Tests various error conditions and edge cases when unpacking values
 // into PermissionSets.
-TEST(ExtensionPermissionsAPIHelpers, Unpack) {
+TEST_F(ExtensionPermissionsAPIHelpers, Unpack) {
   scoped_ptr<ListValue> apis(new ListValue());
   apis->Append(Value::CreateStringValue("tabs"));
   scoped_ptr<ListValue> origins(new ListValue());
@@ -173,3 +175,5 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     EXPECT_EQ(error, "'unknown_permission' is not a recognized permission.");
   }
 }
+
+}  // namespace extensions

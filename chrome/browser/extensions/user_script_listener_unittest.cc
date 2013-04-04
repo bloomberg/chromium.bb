@@ -151,6 +151,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
   virtual void TearDown() OVERRIDE {
     listener_ = NULL;
     MessageLoop::current()->RunUntilIdle();
+    ExtensionServiceTestBase::TearDown();
   }
 
  protected:

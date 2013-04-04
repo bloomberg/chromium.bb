@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_unittest.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -15,10 +15,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/command.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -27,7 +27,9 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "chrome/common/url_constants.h"
@@ -105,21 +107,21 @@ static scoped_refptr<Extension> LoadManifestStrict(
 
 }  // namespace
 
-class ExtensionTest : public testing::Test {
- protected:
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-    (new BackgroundManifestHandler)->Register();
-    (new CommandsHandler)->Register();
-    (new ContentScriptsHandler)->Register();
-    (new PluginsHandler)->Register();
-    (new IncognitoHandler)->Register();
-  }
+ExtensionTest::ExtensionTest() : permissions_info_(ChromeAPIPermissions()) {}
 
-  virtual void TearDown() OVERRIDE {
-    ManifestHandler::ClearRegistryForTesting();
-  }
-};
+void ExtensionTest::SetUp() {
+  testing::Test::SetUp();
+  (new BackgroundManifestHandler)->Register();
+  // We need the IncognitoHandler registered for all tests, since
+  // Extension uses it in Extension::CheckPlatformAppFeatures() as part of the
+  // creation process.
+  (new IncognitoHandler)->Register();
+}
+
+void ExtensionTest::TearDown() {
+  ManifestHandler::ClearRegistryForTesting();
+  testing::Test::TearDown();
+}
 
 // We persist location values in the preferences, so this is a sanity test that
 // someone doesn't accidentally change them.
@@ -245,6 +247,7 @@ TEST_F(ExtensionTest, MimeTypeSniffing) {
 }
 
 TEST_F(ExtensionTest, EffectiveHostPermissions) {
+  (new ContentScriptsHandler)->Register();
   scoped_refptr<Extension> extension;
   URLPatternSet hosts;
 
@@ -419,6 +422,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
 }
 
 TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
+  (new ContentScriptsHandler)->Register();
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -428,6 +432,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
 }
 
 TEST_F(ExtensionTest, GetPermissionMessages_Plugins) {
+  (new PluginsHandler)->Register();
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -443,6 +448,7 @@ TEST_F(ExtensionTest, GetPermissionMessages_Plugins) {
 }
 
 TEST_F(ExtensionTest, WantsFileAccess) {
+  (new ContentScriptsHandler)->Register();
   scoped_refptr<Extension> extension;
   GURL file_url("file:///etc/passwd");
 
@@ -548,19 +554,6 @@ TEST_F(ExtensionTest, ExtraFlags) {
   extension = LoadManifest("app", "manifest.json", Extension::NO_FLAGS);
   EXPECT_FALSE(extension->from_bookmark());
   EXPECT_FALSE(extension->from_webstore());
-}
-
-TEST_F(ExtensionTest, BrowserActionSynthesizesCommand) {
-  scoped_refptr<Extension> extension;
-
-  extension = LoadManifest("api_test/browser_action/synthesized",
-                           "manifest.json");
-  // An extension with a browser action but no extension command specified
-  // should get a command assigned to it.
-  const extensions::Command* command =
-      CommandsInfo::GetBrowserActionCommand(extension);
-  ASSERT_TRUE(command != NULL);
-  ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }
 
 // Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage
@@ -929,210 +922,6 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 }
 
-namespace {
-enum SyncTestExtensionType {
-  EXTENSION,
-  APP,
-  USER_SCRIPT,
-  THEME
-};
-
-static scoped_refptr<Extension> MakeSyncTestExtension(
-    SyncTestExtensionType type,
-    const GURL& update_url,
-    const GURL& launch_url,
-    Manifest::Location location,
-    int num_plugins,
-    const base::FilePath& extension_path,
-    int creation_flags) {
-  DictionaryValue source;
-  source.SetString(extension_manifest_keys::kName,
-                   "PossiblySyncableExtension");
-  source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
-  if (type == APP)
-    source.SetString(extension_manifest_keys::kApp, "true");
-  if (type == THEME)
-    source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
-  if (!update_url.is_empty()) {
-    source.SetString(extension_manifest_keys::kUpdateURL,
-                     update_url.spec());
-  }
-  if (!launch_url.is_empty()) {
-    source.SetString(extension_manifest_keys::kLaunchWebURL,
-                     launch_url.spec());
-  }
-  if (type != THEME) {
-    source.SetBoolean(extension_manifest_keys::kConvertedFromUserScript,
-                      type == USER_SCRIPT);
-    ListValue* plugins = new ListValue();
-    for (int i = 0; i < num_plugins; ++i) {
-      DictionaryValue* plugin = new DictionaryValue();
-      plugin->SetString(extension_manifest_keys::kPluginsPath, "");
-      plugins->Set(i, plugin);
-    }
-    source.Set(extension_manifest_keys::kPlugins, plugins);
-  }
-
-  std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, location, source, creation_flags, &error);
-  EXPECT_TRUE(extension);
-  EXPECT_EQ("", error);
-  return extension;
-}
-
-static const char kValidUpdateUrl1[] =
-    "http://clients2.google.com/service/update2/crx";
-static const char kValidUpdateUrl2[] =
-    "https://clients2.google.com/service/update2/crx";
-}
-
-TEST_F(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-// http://crbug.com/172712
-TEST_F(ExtensionTest, DISABLED_GetSyncTypeUserScriptValidUpdateUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(THEME, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeExtensionExternal) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::EXTERNAL_PREF, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(
-          USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
-          Manifest::INTERNAL, 0, base::FilePath(), Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, OnlyDisplayAppsInLauncher) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-
-  EXPECT_FALSE(extension->ShouldDisplayInAppLauncher());
-  EXPECT_FALSE(extension->ShouldDisplayInNewTabPage());
-
-  scoped_refptr<Extension> app(
-      MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
-  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
-}
-
-TEST_F(ExtensionTest, DisplayInXManifestProperties) {
-  DictionaryValue manifest;
-  manifest.SetString(keys::kName, "TestComponentApp");
-  manifest.SetString(keys::kVersion, "0.0.0.0");
-  manifest.SetString(keys::kApp, "true");
-  manifest.SetString(keys::kPlatformAppBackgroundPage, "");
-
-  std::string error;
-  scoped_refptr<Extension> app;
-
-  // Default to true.
-  app = Extension::Create(
-      base::FilePath(), Manifest::COMPONENT, manifest, 0, &error);
-  EXPECT_EQ(error, std::string());
-  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
-  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
-
-  // Value display_in_NTP defaults to display_in_launcher.
-  manifest.SetBoolean(keys::kDisplayInLauncher, false);
-  app = Extension::Create(
-      base::FilePath(), Manifest::COMPONENT, manifest, 0, &error);
-  EXPECT_EQ(error, std::string());
-  EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
-  EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
-
-  // Value display_in_NTP = true overriding display_in_launcher = false.
-  manifest.SetBoolean(keys::kDisplayInNewTabPage, true);
-  app = Extension::Create(
-      base::FilePath(), Manifest::COMPONENT, manifest, 0, &error);
-  EXPECT_EQ(error, std::string());
-  EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
-  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
-
-  // Value display_in_NTP = false only, overrides default = true.
-  manifest.Remove(keys::kDisplayInLauncher, NULL);
-  manifest.SetBoolean(keys::kDisplayInNewTabPage, false);
-  app = Extension::Create(
-      base::FilePath(), Manifest::COMPONENT, manifest, 0, &error);
-  EXPECT_EQ(error, std::string());
-  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
-  EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
-
-  // Error checking.
-  manifest.SetString(keys::kDisplayInNewTabPage, "invalid");
-  app = Extension::Create(
-      base::FilePath(), Manifest::COMPONENT, manifest, 0, &error);
-  EXPECT_EQ(error, std::string(errors::kInvalidDisplayInNewTabPage));
-}
-
-TEST_F(ExtensionTest, OnlySyncInternal) {
-  scoped_refptr<Extension> extension_internal(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_TRUE(extension_internal->IsSyncable());
-
-  scoped_refptr<Extension> extension_noninternal(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::COMPONENT, 0, base::FilePath(),
-                            Extension::NO_FLAGS));
-  EXPECT_FALSE(extension_noninternal->IsSyncable());
-}
-
-TEST_F(ExtensionTest, DontSyncDefault) {
-  scoped_refptr<Extension> extension_default(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
-                            Extension::WAS_INSTALLED_BY_DEFAULT));
-  EXPECT_FALSE(extension_default->IsSyncable());
-}
-
 TEST_F(ExtensionTest, OptionalOnlyPermission) {
   // Set feature current channel to dev because the only permission that must
   // be optional (usbDevices) is only available on dev channel.
@@ -1157,27 +946,5 @@ TEST_F(ExtensionTest, OptionalOnlyPermission) {
   EXPECT_TRUE(extension != NULL);
   EXPECT_TRUE(error.empty());
 }
-
-// These last 2 tests don't make sense on Chrome OS, where extension plugins
-// are not allowed.
-#if !defined(OS_CHROMEOS)
-TEST_F(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 1, base::FilePath(),
-                            Extension::NO_FLAGS));
-  if (extension)
-    EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-
-TEST_F(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 2, base::FilePath(),
-                            Extension::NO_FLAGS));
-  if (extension)
-    EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
-}
-#endif // !defined(OS_CHROMEOS)
 
 }  // namespace extensions

@@ -186,6 +186,8 @@
         'common/extensions/extension_builder.h',
         'common/extensions/extension_test_util.cc',
         'common/extensions/extension_test_util.h',
+        'common/extensions/permissions/scoped_testing_permissions_info.cc',
+        'common/extensions/permissions/scoped_testing_permissions_info.h',
         'common/extensions/value_builder.cc',
         'common/extensions/value_builder.h',
         'renderer/chrome_mock_render_thread.cc',
@@ -1508,7 +1510,9 @@
         'common/extensions/extension_l10n_util_unittest.cc',
         'common/extensions/extension_localization_peer_unittest.cc',
         'common/extensions/extension_set_unittest.cc',
+        'common/extensions/extension_sync_type_unittest.cc',
         'common/extensions/extension_unittest.cc',
+        'common/extensions/extension_unittest.h',
         'common/extensions/feature_switch_unittest.cc',
         'common/extensions/features/base_feature_provider_unittest.cc',
         'common/extensions/features/complex_feature_unittest.cc',
@@ -1822,11 +1826,10 @@
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
             ['exclude', '^common/extensions/api/'],
           ],
-          'sources!':[
+          'sources!': [
             'browser/extensions/extension_context_menu_model_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
             'browser/extensions/permissions_updater_unittest.cc',
-            'common/extensions/extension_unittest.cc',
           ],
         }],
         ['use_ash==1', {

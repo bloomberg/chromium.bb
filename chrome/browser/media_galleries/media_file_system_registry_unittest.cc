@@ -34,6 +34,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/scoped_testing_permissions_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -372,6 +374,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   // Needed for extension service & friends to work.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  extensions::ScopedTestingPermissionsInfo permissions_info_;
 
 // TODO(gbillock): Eliminate windows-specific code from this test.
 #if defined(OS_WIN)
@@ -574,7 +577,8 @@ int ProfileState::GetAndClearComparisonCount() {
 
 MediaFileSystemRegistryTest::MediaFileSystemRegistryTest()
     : ui_thread_(content::BrowserThread::UI, MessageLoop::current()),
-      file_thread_(content::BrowserThread::FILE, MessageLoop::current()) {
+      file_thread_(content::BrowserThread::FILE, MessageLoop::current()),
+      permissions_info_(extensions::ChromeAPIPermissions()) {
 }
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -23,15 +23,15 @@
 using extensions::Extension;
 using extensions::Manifest;
 
-class ExtensionUITest : public testing::Test {
+class ExtensionUITest : public extensions::ExtensionTest {
  public:
   ExtensionUITest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {}
+        file_thread_(content::BrowserThread::FILE, &message_loop_)  {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
+    ExtensionTest::SetUp();
 
     // Create an ExtensionService and ManagementPolicy to inject into the
     // ExtensionSettingsHandler.
@@ -54,8 +54,7 @@ class ExtensionUITest : public testing::Test {
     profile_.reset();
     // Execute any pending deletion tasks.
     message_loop_.RunUntilIdle();
-    extensions::ManifestHandler::ClearRegistryForTesting();
-    testing::Test::TearDown();
+    ExtensionTest::TearDown();
   }
 
   static DictionaryValue* DeserializeJSONTestData(const base::FilePath& path,

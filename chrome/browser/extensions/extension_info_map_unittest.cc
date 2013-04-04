@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_unittest.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -25,7 +26,7 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-class ExtensionInfoMapTest : public testing::Test {
+class ExtensionInfoMapTest : public extensions::ExtensionTest {
  public:
   ExtensionInfoMapTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

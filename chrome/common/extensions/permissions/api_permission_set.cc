@@ -15,11 +15,11 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-using extensions::PermissionsInfo;
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionSet;
 using extensions::ErrorUtils;
+using extensions::PermissionsInfo;
 
 bool CreateAPIPermission(
     const std::string& permission_str,
@@ -27,9 +27,9 @@ bool CreateAPIPermission(
     APIPermissionSet* api_permissions,
     string16* error,
     std::vector<std::string>* unhandled_permissions) {
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
 
-  const APIPermissionInfo* permission_info = info->GetByName(permission_str);
+  const APIPermissionInfo* permission_info =
+      PermissionsInfo::GetInstance()->GetByName(permission_str);
   if (permission_info) {
     scoped_ptr<APIPermission> permission(
         permission_info->CreateAPIPermission());
@@ -55,10 +55,10 @@ bool CreateAPIPermission(
 }
 
 bool ParseChildPermissions(const std::string& base_name,
-                          const Value* permission_value,
-                          APIPermissionSet* api_permissions,
-                          string16* error,
-                          std::vector<std::string>* unhandled_permissions) {
+                           const Value* permission_value,
+                           APIPermissionSet* api_permissions,
+                           string16* error,
+                           std::vector<std::string>* unhandled_permissions) {
   if (permission_value) {
     const ListValue* permissions;
     if (!permission_value->GetAsList(&permissions)) {
@@ -88,7 +88,7 @@ bool ParseChildPermissions(const std::string& base_name,
       }
 
       if (!CreateAPIPermission(base_name + '.' + permission_str, NULL,
-          api_permissions, error, unhandled_permissions))
+                               api_permissions, error, unhandled_permissions))
         return false;
     }
   }
@@ -147,12 +147,11 @@ bool APIPermissionSet::operator==(const APIPermissionSet& rhs) const {
 
 void APIPermissionSet::insert(APIPermission::ID id) {
   const APIPermissionInfo* permission_info =
-    PermissionsInfo::GetInstance()->GetByID(id);
+      PermissionsInfo::GetInstance()->GetByID(id);
   insert(permission_info->CreateAPIPermission());
 }
 
-void APIPermissionSet::insert(
-    APIPermission* permission) {
+void APIPermissionSet::insert(APIPermission* permission) {
   map_[permission->id()].reset(permission);
 }
 
@@ -285,7 +284,6 @@ bool APIPermissionSet::ParseFromJSON(
     APIPermissionSet* api_permissions,
     string16* error,
     std::vector<std::string>* unhandled_permissions) {
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (size_t i = 0; i < permissions->GetSize(); ++i) {
     std::string permission_str;
     const base::Value* permission_value = NULL;
@@ -308,7 +306,7 @@ bool APIPermissionSet::ParseFromJSON(
 
     // Check if this permission is a special case where its value should
     // be treated as a list of child permissions.
-    if (info->HasChildPermissions(permission_str)) {
+    if (PermissionsInfo::GetInstance()->HasChildPermissions(permission_str)) {
       if (!ParseChildPermissions(permission_str, permission_value,
                                  api_permissions, error, unhandled_permissions))
         return false;
@@ -316,7 +314,7 @@ bool APIPermissionSet::ParseFromJSON(
     }
 
     if (!CreateAPIPermission(permission_str, permission_value,
-        api_permissions, error, unhandled_permissions))
+                             api_permissions, error, unhandled_permissions))
       return false;
   }
   return true;
