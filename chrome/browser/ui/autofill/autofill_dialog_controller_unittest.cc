@@ -224,15 +224,16 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
  protected:
-  size_t CountNotificationsOfType(DialogNotification::Type type) {
-    size_t count = 0;
+  std::vector<DialogNotification> NotificationsOfType(
+      DialogNotification::Type type) {
+    std::vector<DialogNotification> right_type;
     const std::vector<DialogNotification>& notifications =
         controller()->CurrentNotifications();
     for (size_t i = 0; i < notifications.size(); ++i) {
       if (notifications[i].type() == type)
-        ++count;
+        right_type.push_back(notifications[i]);
     }
-    return count;
+    return right_type;
   }
 
   static scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
@@ -477,7 +478,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
 
-  EXPECT_EQ(0U, CountNotificationsOfType(DialogNotification::REQUIRED_ACTION));
+  EXPECT_TRUE(NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_EMAIL));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
@@ -490,7 +491,12 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
 
   controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
 
-  EXPECT_EQ(1U, CountNotificationsOfType(DialogNotification::REQUIRED_ACTION));
+  EXPECT_FALSE(
+      NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
+  const std::vector<DialogNotification>& notifications =
+      NotificationsOfType(DialogNotification::WALLET_USAGE_CONFIRMATION);
+  EXPECT_FALSE(notifications.front().interactive());
+
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));

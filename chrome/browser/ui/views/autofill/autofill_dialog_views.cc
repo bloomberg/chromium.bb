@@ -266,6 +266,8 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
                                       kNotificationPadding,
                                       kNotificationPadding));
       checkbox->SetChecked(checkbox_state);
+      if (!notification.interactive())
+        checkbox->SetState(views::Button::STATE_DISABLED);
       checkbox->SetText(notification.display_text());
       checkbox->SetMultiLine(true);
       checkbox->set_alignment(views::TextButtonBase::ALIGN_LEFT);

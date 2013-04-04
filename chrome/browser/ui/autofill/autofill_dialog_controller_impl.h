@@ -359,6 +359,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the user wishes to save information locally to Autofill.
   bool ShouldSaveDetailsLocally();
 
+  // Change whether the controller is currently submitting details to Autofill
+  // or Online Wallet (|is_submitting_|) and update the view.
+  void SetIsSubmitting(bool submitting);
+
   // Start the submit proccess to interact with Online Wallet (might do various
   // things like accept documents, save details, update details, respond to
   // required actions, etc.).

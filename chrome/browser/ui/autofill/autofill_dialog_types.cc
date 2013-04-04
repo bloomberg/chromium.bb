@@ -11,7 +11,7 @@ namespace autofill {
 DialogNotification::DialogNotification() : type_(NONE) {}
 
 DialogNotification::DialogNotification(Type type, const string16& display_text)
-    : type_(type), display_text_(display_text) {}
+    : type_(type), display_text_(display_text), interactive_(true) {}
 
 SkColor DialogNotification::GetBackgroundColor() const {
   switch (type_) {

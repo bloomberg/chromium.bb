@@ -1105,6 +1105,7 @@ std::vector<DialogNotification>
             DialogNotification::WALLET_USAGE_CONFIRMATION,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET)));
+        notifications.back().set_interactive(!is_submitting_);
       }
     } else if (IsFirstRun()) {
       // If the user is not signed in, show an upsell notification on first run.
@@ -1205,9 +1206,7 @@ void AutofillDialogControllerImpl::OnCancel() {
 }
 
 void AutofillDialogControllerImpl::OnAccept() {
-  is_submitting_ = true;
-  view_->UpdateButtonStrip();
-
+  SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
     GetWalletClient()->AuthenticateInstrument(
@@ -1487,8 +1486,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   full_wallet_.reset();
   GetWalletClient()->CancelRequests();
 
-  is_submitting_ = false;
-  view_->UpdateButtonStrip();
+  SetIsSubmitting(false);
 
   if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
@@ -1580,17 +1578,13 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
 }
 
 void AutofillDialogControllerImpl::DisableWallet() {
-  is_submitting_ = false;
   signin_helper_.reset();
   current_username_.clear();
   account_chooser_model_.SetHadWalletError();
   GetWalletClient()->CancelRequests();
-
   wallet_items_.reset();
   full_wallet_.reset();
-
-  if (view_)
-    view_->UpdateButtonStrip();
+  SetIsSubmitting(false);
 }
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
@@ -1890,6 +1884,18 @@ bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
   // switching payment methods, so only ask the view whether to save details
   // locally if that checkbox is showing (currently if not paying with wallet).
   return !IsPayingWithWallet() && view_->SaveDetailsLocally();
+}
+
+void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
+  if (is_submitting_ == submitting)
+    return;
+
+  is_submitting_ = submitting;
+
+  if (view_) {
+    view_->UpdateButtonStrip();
+    view_->UpdateNotificationArea();
+  }
 }
 
 void AutofillDialogControllerImpl::SubmitWithWallet() {

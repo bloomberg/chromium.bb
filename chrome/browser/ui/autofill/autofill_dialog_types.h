@@ -88,9 +88,16 @@ class DialogNotification {
   const string16& display_text() const { return display_text_; }
   Type type() const { return type_; }
 
+  void set_interactive(bool interactive) { interactive_ = interactive; }
+  bool interactive() const { return interactive_; }
+
  private:
   Type type_;
   string16 display_text_;
+  // When false, this disables user interaction with the notification. For
+  // example, WALLET_USAGE_CONFIRMATION notifications set this to false after
+  // the submit flow has started.
+  bool interactive_;
 };
 
 enum DialogSignedInState {
