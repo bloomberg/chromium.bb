@@ -514,7 +514,8 @@ void DriveCacheMetadataDB::RemoveTemporaryFiles() {
         leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
     DriveCacheEntry cache_entry;
-    const bool ok = cache_entry.ParseFromString(iter->value().ToString());
+    const bool ok = cache_entry.ParseFromArray(iter->value().data(),
+                                               iter->value().size());
     if (ok && !cache_entry.is_persistent())
       level_db_->Delete(leveldb::WriteOptions(), iter->key());
   }
@@ -527,7 +528,8 @@ void DriveCacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
         leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
     DriveCacheEntry cache_entry;
-    const bool ok = cache_entry.ParseFromString(iter->value().ToString());
+    const bool ok = cache_entry.ParseFromArray(iter->value().data(),
+                                               iter->value().size());
     if (ok)
       callback.Run(iter->key().ToString(), cache_entry);
   }
