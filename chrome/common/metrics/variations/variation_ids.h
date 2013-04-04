@@ -159,6 +159,10 @@ enum VariationID {
   EXTENDED_INSTANT_ID_DEV_CONTROL_2    = 3310083,
   EXTENDED_INSTANT_ID_CANARY_GROUP_2   = 3310084,
   EXTENDED_INSTANT_ID_DEV_GROUP_2      = 3310085,
+  EXTENDED_INSTANT_ID_BETA_CONTROL_1   = 3310250,
+  EXTENDED_INSTANT_ID_BETA_CONTROL_2   = 3310251,
+  EXTENDED_INSTANT_ID_BETA_GROUP_1     = 3310252,
+  EXTENDED_INSTANT_ID_BETA_GROUP_2     = 3310253,
 
   // Reserve 100 IDs to be used by autocomplete dynamic field trials.
   // The dynamic field trials are activated by a call to
@@ -205,7 +209,7 @@ enum VariationID {
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310250,
+  NEXT_ID = 3310254,
 
   // USABLE IDs END HERE.
   //
