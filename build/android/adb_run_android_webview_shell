@@ -10,6 +10,6 @@ fi
 
 adb shell am start \
   -a android.intent.action.VIEW \
-  -n org.chromium.android_webview.shell/.AndroidWebViewTestShellActivity \
+  -n org.chromium.android_webview.shell/.AwShellActivity \
   $INTENT_ARGS
 
