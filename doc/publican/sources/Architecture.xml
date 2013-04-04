@@ -8,7 +8,7 @@
   <section id="sect-Wayland-Architecture-wayland_architecture">
     <title>X vs. Wayland Architecture</title>
     <para>
-      A good way to understand the wayland architecture
+      A good way to understand the Wayland architecture
       and how it is different from X is to follow an event
       from the input device to the point where the change
       it affects appears on screen.
@@ -119,8 +119,8 @@
       hardware.
     </para>
     <para>
-      In wayland the compositor is the display server. We transfer
-      the control of KMS and evdev to the compositor. The wayland
+      In Wayland the compositor is the display server. We transfer
+      the control of KMS and evdev to the compositor. The Wayland
       protocol lets the compositor send the input events directly
       to the clients and lets the client send the damage event
       directly to the compositor:
@@ -172,7 +172,7 @@
 	  <para>
 	    As in the X case, when the client
 	    receives the event, it updates the
-	    UI in response. But in the wayland
+	    UI in response. But in the Wayland
 	    case, the rendering happens in the
 	    client, and the client just sends a
 	    request to the compositor to
@@ -199,7 +199,7 @@
     <title>Wayland Rendering</title>
     <para>
       One of the details I left out in the above overview
-      is how clients actually render under wayland. By
+      is how clients actually render under Wayland. By
       removing the X server from the picture we also
       removed the mechanism by which X clients typically
       render. But there's another mechanism that we're

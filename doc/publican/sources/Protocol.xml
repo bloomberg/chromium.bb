@@ -8,7 +8,7 @@
   <section id="sect-Protocol-Basic-Principles">
     <title>Basic Principles</title>
     <para>
-      The wayland protocol is an asynchronous object oriented protocol.  All
+      The Wayland protocol is an asynchronous object oriented protocol.  All
       requests are method invocations on some object.  The requests include
       an object ID that uniquely identifies an object on the server.  Each
       object implements an interface and the requests include an opcode that
@@ -271,12 +271,12 @@
 	</listitem>
 	<listitem>
 	  <para>
-	    xkb on wayland
+	    xkb on Wayland
 	  </para>
 	</listitem>
 	<listitem>
 	  <para>
-	    multi pointer wayland
+	    multi pointer Wayland
 	  </para>
 	</listitem>
       </itemizedlist>
@@ -329,7 +329,7 @@
       </listitem>
       <listitem>
 	<para>
-	  basically xrandr over wayland
+	  basically xrandr over Wayland
 	</para>
       </listitem>
       <listitem>

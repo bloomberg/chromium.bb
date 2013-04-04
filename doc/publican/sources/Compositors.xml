@@ -77,7 +77,7 @@
 	</listitem>
 	<listitem>
 	  <para>
-	    fullscreen X session under wayland
+	    fullscreen X session under Wayland
 	  </para>
 	</listitem>
       </itemizedlist>
@@ -92,13 +92,13 @@
       Wayland doesn't directly allow this, but clients can communicate GEM
       buffer names out-of-band, for example, using D-Bus, or command line
       arguments when the panel launches the applet.  Another option is to
-      use a nested wayland instance.  For this, the wayland server will have
+      use a nested Wayland instance.  For this, the Wayland server will have
       to be a library that the host application links to.  The host
-      application will then pass the wayland server socket name to the
-      embedded application, and will need to implement the wayland
+      application will then pass the Wayland server socket name to the
+      embedded application, and will need to implement the Wayland
       compositor interface.  The host application composites the client
       surfaces as part of it's window, that is, in the web page or in the
-      panel.  The benefit of nesting the wayland server is that it provides
+      panel.  The benefit of nesting the Wayland server is that it provides
       the requests the embedded client needs to inform the host about buffer
       updates and a mechanism for forwarding input events from the host
       application.
