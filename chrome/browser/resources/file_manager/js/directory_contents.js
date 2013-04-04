@@ -296,9 +296,10 @@ DirectoryContents.prototype.onNewEntries = function(entries) {
       return;
     this.fileList_.push.apply(this.fileList_, entriesFiltered);
 
-    if (this.pendingMetadataRequests_ === 0 && this.allChunksFetched_) {
+    if (this.pendingMetadataRequests_ === 0 && this.allChunksFetched_)
       cr.dispatchSimpleEvent(this, 'scan-completed');
-    }
+    else
+      cr.dispatchSimpleEvent(this, 'scan-updated');
 
     if (!this.allChunksFetched_)
       this.readNextChunk();

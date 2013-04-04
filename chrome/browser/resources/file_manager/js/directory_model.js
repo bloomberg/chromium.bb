@@ -404,7 +404,7 @@ DirectoryModel.prototype.rescan = function() {
     cr.dispatchSimpleEvent(this, 'rescan-completed');
   }).bind(this);
 
-  this.scan_(dirContents, successCallback);
+  this.scan_(dirContents, successCallback, function() {});
 };
 
 /**
@@ -415,7 +415,7 @@ DirectoryModel.prototype.rescan = function() {
  *
  * @param {DirectoryContentes} newDirContents New DirectoryContents instance to
  *     replace currentDirContents_.
- * @param {function=} opt_callback Called on success.
+ * @param {function()=} opt_callback Called on success.
  * @private
  */
 DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
@@ -439,11 +439,15 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
       opt_callback();
   }.bind(this);
 
+  var onUpdated = function() {
+    cr.dispatchSimpleEvent(this, 'scan-updated');
+  }.bind(this);
+
   // Clear the table first.
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);
   cr.dispatchSimpleEvent(this, 'scan-started');
-  this.scan_(this.currentDirContents_, onDone);
+  this.scan_(this.currentDirContents_, onDone, onUpdated);
 };
 
 /**
@@ -452,10 +456,13 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
  *
  * @param {DirectoryContents} dirContents DirectoryContents instance on which
  *     the scan will be run.
- * @param {function} successCallback Callback on success.
+ * @param {function()} successCallback Callback on success.
+ * @param {function()} updatedCallback Callback on update. Only on the last
+ *     update, {@code successCallback} is called instead of this.
  * @private
  */
-DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
+DirectoryModel.prototype.scan_ = function(
+    dirContents, successCallback, updatedCallback) {
   var self = this;
 
   /**
@@ -493,6 +500,7 @@ DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
   this.runningScan_ = dirContents;
 
   dirContents.addEventListener('scan-completed', onSuccess);
+  dirContents.addEventListener('scan-updated', updatedCallback);
   dirContents.addEventListener('scan-failed', onFailure);
   dirContents.addEventListener('scan-cancelled', this.dispatchEvent.bind(this));
   dirContents.scan();
@@ -590,7 +598,7 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
  * @param {Entry} entry Entry to rename.
  * @param {string} newName New name.
  * @param {function} errorCallback Called on error.
- * @param {function=} opt_successCallback Called on success.
+ * @param {function()=} opt_successCallback Called on success.
  */
 DirectoryModel.prototype.renameEntry = function(entry, newName,
                                                 errorCallback,
@@ -736,7 +744,8 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
 
 /**
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
- * @param {function=} opt_callback Executed if the directory loads successfully.
+ * @param {function()=} opt_callback Executed if the directory loads
+ *     successfully.
  * @private
  */
 DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
@@ -763,7 +772,8 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * @param {boolean} initial True if it comes from setupPath and
  *                          false if caused by an user action.
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
- * @param {function=} opt_callback Executed if the directory loads successfully.
+ * @param {function()=} opt_callback Executed if the directory loads
+ *     successfully.
  * @private
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
@@ -831,11 +841,11 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
  * file or directory).
  *
  * @param {string} path The root path to use.
- * @param {function=} opt_pathResolveCallback Invoked as soon as the path has
- *     been resolved, and called with the base and leaf portions of the path
- *     name, and a flag indicating if the entry exists. Will be called even
- *     if another directory change happened while setupPath was in progress,
- *     but will pass |false| as |exist| parameter.
+ * @param {function(string, string, boolean)=} opt_pathResolveCallback Invoked
+ *     as soon as the path has been resolved, and called with the base and leaf
+ *     portions of the path name, and a flag indicating if the entry exists.
+ *     Will be called even if another directory change happened while setupPath
+ *     was in progress, but will pass |false| as |exist| parameter.
  */
 DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
   var tracker = this.createDirectoryChangeTracker();

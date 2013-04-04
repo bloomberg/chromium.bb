@@ -433,8 +433,9 @@ DialogType.isModal = function(type) {
       self.currentList_.endBatchUpdates();
     });
     dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
-    dm.addEventListener('scan-completed', this.showSpinner_.bind(this, false));
+    dm.addEventListener('scan-completed', this.hideSpinnerLater_.bind(this));
     dm.addEventListener('scan-cancelled', this.hideSpinnerLater_.bind(this));
+    dm.addEventListener('scan-updated', this.hideSpinnerLater_.bind(this));
     dm.addEventListener('scan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
     dm.addEventListener('rescan-completed',
@@ -798,10 +799,12 @@ DialogType.isModal = function(type) {
     // mouse-clicked.
     autocompleteList.handleEnterKeydown = function(event) {
       this.openAutocompleteSuggestion_();
+      this.lastQuery_ = '';
       this.autocompleteList_.suggestions = [];
     }.bind(this);
     autocompleteList.addEventListener('mousedown', function(event) {
       this.openAutocompleteSuggestion_();
+      this.lastQuery_ = '';
       this.autocompleteList_.suggestions = [];
     }.bind(this));
     autocompleteList.addEventListener('mouseover', function(event) {
@@ -2340,8 +2343,7 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.hideSpinnerLater_ = function() {
     this.cancelSpinnerTimeout_();
-    this.showSpinnerTimeout_ =
-        setTimeout(this.showSpinner_.bind(this, false), 100);
+    this.showSpinner_(false);
   };
 
   /**
@@ -2349,15 +2351,14 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.showSpinner_ = function(on) {
-    if (on && this.directoryModel_ && this.directoryModel_.isScanning()) {
-      if (this.directoryModel_.isSearching())
-        this.spinner_.style.display = 'none';
-      else
-        this.spinner_.style.display = '';
-    }
+    if (on && this.directoryModel_ && this.directoryModel_.isScanning())
+      this.spinner_.hidden = false;
 
-    if (!on && (!this.directoryModel_ || !this.directoryModel_.isScanning()))
-      this.spinner_.style.display = 'none';
+    if (!on && (!this.directoryModel_ ||
+                !this.directoryModel_.isScanning() ||
+                this.directoryModel_.getFileList().length != 0)) {
+      this.spinner_.hidden = true;
+    }
   };
 
   FileManager.prototype.createNewFolder = function() {

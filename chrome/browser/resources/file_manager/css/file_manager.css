@@ -607,6 +607,12 @@ button#detail-view:not([disabled]) {
   padding-left: 26px;
 }
 
+#spinner-with-text[hidden] {
+  -webkit-transition: opacity 200ms ease-in;
+  display: block;
+  opacity: 0;
+}
+
 .downloads-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
