@@ -61,7 +61,7 @@
         'java_in_dir': 'android/testshell/java',
         'resource_dir': 'android/testshell/res',
         'asset_location': '<(ant_build_out)/../assets/<(package_name)',
-        'native_libs_paths': [ '<(SHARED_LIB_DIR)/libchromiumtestshell.so', ],
+        'native_lib_target': 'libchromiumtestshell',
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
           '<(chrome_android_pak_output_folder)/devtools_resources.pak',

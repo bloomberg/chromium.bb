@@ -38,9 +38,9 @@
 #    should be filled automatically by depending on the appropriate targets.
 #  is_test_apk - Set to 1 if building a test apk.  This prevents resources from
 #    dependencies from being re-included.
-#  native_libs_paths - The path to any native library to be included in this
-#    target. This should be a path in <(SHARED_LIB_DIR). A stripped copy of
-#    the library will be included in the apk.
+#  native_lib_target - The target_name of the target which generates the final
+#    shared library to be included in this apk. A stripped copy of the
+#    library will be included in the apk.
 #  resource_dir - The directory for resources.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.
@@ -60,7 +60,7 @@
     'app_manifest_version_code%': '<(android_app_version_code)',
     'proguard_enabled%': 'false',
     'proguard_flags_paths%': ['<(DEPTH)/build/android/empty_proguard.flags'],
-    'native_libs_paths': [],
+    'native_lib_target%': '',
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
     'R_package%':'',
@@ -126,15 +126,16 @@
         'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
       },
     }],
-    ['native_libs_paths != [] and component == "shared_library"', {
+    ['native_lib_target != "" and component == "shared_library"', {
       'dependencies': [
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
       ]
     }],
-    ['native_libs_paths != []', {
+    ['native_lib_target != ""', {
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
+        'native_libs_paths': ['<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'],
       },
       'actions': [
         {
@@ -271,7 +272,7 @@
           },
         }],
       ],
-    }], # native_libs_paths != []
+    }], # native_lib_target != ''
     ['java_strings_grd != ""', {
       'variables': {
         'res_grit_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res_grit',

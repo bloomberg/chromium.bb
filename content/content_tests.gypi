@@ -1022,7 +1022,7 @@
             'apk_name': 'content_browsertests',
             'java_in_dir': 'shell/android/browsertests_apk',
             'resource_dir': 'shell/android/browsertests_apk/res',
-            'native_libs_paths': ['<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_browsertests<(SHARED_LIB_SUFFIX)'],
+            'native_lib_target': 'libcontent_browsertests',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(ant_build_out)/content_shell/assets',
           },

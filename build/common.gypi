@@ -3141,9 +3141,22 @@
       'target_defaults': {
         'variables': {
           'release_extra_cflags%': '',
+          'conditions': [
+            # If we're using the components build, append "cr" to all shared
+            # libraries to avoid naming collisions with android system library
+            # versions with the same name (e.g. skia, icu).
+            ['component=="shared_library"', {
+              'android_product_extension': 'cr.so',
+            }, {
+              'android_product_extension': 'so',
+            } ],
+          ],
         },
-
         'target_conditions': [
+          ['_type=="shared_library"', {
+           'product_extension': '<(android_product_extension)',
+          }],
+
           # Settings for building device targets using Android's toolchain.
           # These are based on the setup.mk file from the Android NDK.
           #
