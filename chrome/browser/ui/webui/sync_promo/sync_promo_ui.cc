@@ -233,10 +233,10 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
     //
     // The continue URL includes a source parameter that can be extracted using
     // the function GetSourceForSyncPromoURL() below.  This is used to know
-    // which of the chrome sign in access points was used to sign the userr in.
+    // which of the chrome sign in access points was used to sign the user in.
     // See OneClickSigninHelper for details.
     url_string = GaiaUrls::GetInstance()->service_login_url();
-    url_string.append("?service=chromiumsync&sarp=1&rm=hide");
+    url_string.append("?service=chromiumsync&sarp=1");
 
     const std::string& locale = g_browser_process->GetApplicationLocale();
     std::string continue_url = base::StringPrintf(kContinueUrl, locale.c_str(),
