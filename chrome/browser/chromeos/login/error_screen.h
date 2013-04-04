@@ -22,7 +22,8 @@ class ErrorScreen : public WizardScreen {
   enum UIState {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_UPDATE,
-    UI_STATE_SIGNIN
+    UI_STATE_SIGNIN,
+    UI_STATE_LOCALLY_MANAGED
   };
 
   enum ErrorState {

@@ -211,6 +211,8 @@ cr.define('login', function() {
     lastIncorrectUserName_: null,
     managerList_: null,
 
+    currentPage_: null,
+
     /** @override */
     decorate: function() {
       this.managerList_ = new ManagerPodList();
@@ -322,7 +324,7 @@ cr.define('login', function() {
         e.stopPropagation();
       });
       cancelButton.addEventListener('click', function(e) {
-        creationFlowScreen.abortFlow_();
+        creationFlowScreen.cancel();
         e.stopPropagation();
       });
 
@@ -524,6 +526,7 @@ cr.define('login', function() {
         var screen = $('managed-user-creation-flow-' + screenName);
         screen.hidden = (screenName != visiblePage);
       }
+      this.currentPage_ = visiblePage;
     },
 
     /**
@@ -558,10 +561,6 @@ cr.define('login', function() {
     retryFlow_: function() {
       this.setVisiblePage_('progress');
       chrome.send('retryLocalManagedUserCreation');
-    },
-
-    abortFlow_: function() {
-      chrome.send('abortLocalManagedUserCreation');
     },
 
     /**
@@ -619,6 +618,24 @@ cr.define('login', function() {
         this.managerList_.addPod(userList[i]);
       if (userList.length > 0)
         this.managerList_.selectPod(this.managerList_.pods[0]);
+    },
+
+    /**
+     * Cancels user creation and drops to user screen (either sign).
+     */
+    cancel: function() {
+      var notSignedInScreens = ['initial'];
+      if (notSignedInScreens.indexOf(this.currentPage_) >= 0) {
+        // Make sure no manager password is kept:
+        this.managerList_.clearPods();
+
+        $('pod-row').loadLastWallpaper();
+
+        Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+        Oobe.resetSigninUI(true);
+        return;
+      }
+      chrome.send('abortLocalManagedUserCreation');
     },
   };
 
@@ -691,4 +708,3 @@ cr.define('login', function() {
     LocallyManagedUserCreationScreen: LocallyManagedUserCreationScreen
   };
 });
-

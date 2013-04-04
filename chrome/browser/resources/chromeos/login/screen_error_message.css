@@ -9,6 +9,7 @@
 
 .show-with-ui-state-update,
 .show-with-ui-state-signin,
+.show-with-ui-state-locally-managed,
 .show-with-error-state-portal,
 .show-with-error-state-offline,
 .show-with-error-state-proxy,
@@ -20,6 +21,7 @@
 
 .ui-state-update .show-with-ui-state-update,
 .ui-state-signin .show-with-ui-state-signin,
+.ui-state-locally-managed .show-with-ui-state-locally-managed,
 .error-state-portal .show-with-error-state-portal,
 .error-state-offline .show-with-error-state-offline,
 .error-state-proxy .show-with-error-state-proxy,

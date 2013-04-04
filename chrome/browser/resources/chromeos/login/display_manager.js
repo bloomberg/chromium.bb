@@ -37,15 +37,15 @@
   GAIA_SIGNIN: 1,
   ACCOUNT_PICKER: 2,
   WRONG_HWID_WARNING: 3,
-  MANAGED_USER_CREATION_DIALOG: 4,
-  MANAGED_USER_CREATION_FLOW: 5,
+  MANAGED_USER_CREATION_FLOW: 4,
 };
 
 /* Possible UI states of the error screen. */
 /** @const */ var ERROR_SCREEN_UI_STATE = {
   UNKNOWN: 'ui-state-unknown',
   UPDATE: 'ui-state-update',
-  SIGNIN: 'ui-state-signin'
+  SIGNIN: 'ui-state-signin',
+  MANAGED_USER_CREATION_FLOW: 'ui-state-locally-managed'
 };
 
 cr.define('cr.ui.login', function() {
@@ -542,9 +542,6 @@ cr.define('cr.ui.login', function() {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
     else if (currentScreenId == SCREEN_ACCOUNT_PICKER)
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
-    else if (currentScreenId == SCREEN_CREATE_MANAGED_USER_DIALOG)
-      $('login-header-bar').signinUIState =
-          SIGNIN_UI_STATE.MANAGED_USER_CREATION_DIALOG;
     chrome.send('showAddUser', [opt_email]);
   };
 

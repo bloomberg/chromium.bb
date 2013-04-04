@@ -23,7 +23,8 @@ cr.define('login', function() {
   /** @const */ var UI_STATES = [
     ERROR_SCREEN_UI_STATE.UNKNOWN,
     ERROR_SCREEN_UI_STATE.UPDATE,
-    ERROR_SCREEN_UI_STATE.SIGNIN
+    ERROR_SCREEN_UI_STATE.SIGNIN,
+    ERROR_SCREEN_UI_STATE.MANAGED_USER_CREATION_FLOW
   ];
 
   // Possible error states of the screen.

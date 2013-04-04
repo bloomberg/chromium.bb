@@ -22,14 +22,16 @@
             class="show-with-ui-state-update"></span>
         <span id="signin-offline-message-text"
             i18n-content="signinOfflineMessageBody"
-            class="show-with-ui-state-signin"></span>
+            class="show-with-ui-state-signin
+                   show-with-ui-state-locally-managed"></span>
       </div>
       <div id="captive-portal-message-body"
           class="error-message-paragraph
                  show-with-error-state-portal">
         <span id="captive-portal-message-text"
             class="show-with-ui-state-update
-                   show-with-ui-state-signin"></span>
+                   show-with-ui-state-signin
+                   show-with-ui-state-locally-managed"></span>
       </div>
       <div id="captive-portal-proxy-message-body"
           class="error-message-paragraph
@@ -37,7 +39,8 @@
                  show-with-error-state-auth-ext-timeout">
         <span id="captive-portal-proxy-message-text"
             class="show-with-ui-state-update
-                   show-with-ui-state-signin"></span>
+                   show-with-ui-state-signin
+                   show-with-ui-state-locally-managed"></span>
       </div>
       <div id="proxy-message-body"
           class="error-message-paragraph
@@ -45,11 +48,13 @@
         <span id="update-proxy-message-text"
             class="show-with-ui-state-update"></span>
         <span id="signin-proxy-message-text"
-            class="show-with-ui-state-signin"></span>
+            class="show-with-ui-state-signin
+                   show-with-ui-state-locally-managed"></span>
       </div>
       <div id="offline-network-control-body"
           class="show-with-ui-state-update
-                 show-with-ui-state-signin">
+                 show-with-ui-state-signin
+                 show-with-ui-state-locally-managed">
         <div id="offline-network-control" class="error-message-paragraph">
           <label for="offline-networks-list-dropdown"
               i18n-content="selectNetwork"

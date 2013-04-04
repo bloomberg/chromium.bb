@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 
 namespace chromeos {
@@ -19,7 +20,8 @@ namespace chromeos {
 class LocallyManagedUserCreationScreen
     : public WizardScreen,
       public LocallyManagedUserCreationScreenHandler::Delegate,
-      public LocallyManagedUserController::StatusConsumer {
+      public LocallyManagedUserController::StatusConsumer,
+      public NetworkPortalDetector::Observer {
  public:
   LocallyManagedUserCreationScreen(
       ScreenObserver* observer,
@@ -68,10 +70,16 @@ class LocallyManagedUserCreationScreen
                                bool recoverable) OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
 
+  // ConnectivityStateHelperObserver implementation:
+  virtual void OnPortalDetectionCompleted(
+          const Network* network,
+          const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
  private:
   LocallyManagedUserCreationScreenHandler* actor_;
 
   scoped_ptr<LocallyManagedUserController> controller_;
+
+  bool on_error_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };

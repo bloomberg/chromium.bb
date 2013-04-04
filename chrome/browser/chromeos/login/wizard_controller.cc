@@ -371,7 +371,7 @@ void WizardController::ShowWrongHWIDScreen() {
 
 void WizardController::ShowLocallyManagedUserCreationScreen() {
   VLOG(1) << "Showing Locally managed user creation screen screen.";
-  SetStatusAreaVisible(false);
+  SetStatusAreaVisible(true);
   LocallyManagedUserCreationScreen* screen =
       GetLocallyManagedUserCreationScreen();
   SetCurrentScreen(screen);
