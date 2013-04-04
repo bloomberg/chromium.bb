@@ -243,30 +243,21 @@ void SymbolTable::AddSymbol(const string& name, uint64_t value,
   D64(size);
 }
 
-BuildIDNote::BuildIDNote(const uint8_t* id_bytes,
-                         size_t id_size,
-                         Endianness endianness) : Section(endianness) {
-  const char kNoteName[] = "GNU";
+void Notes::AddNote(int type, const string &name, const uint8_t* desc_bytes,
+                    size_t desc_size) {
   // Elf32_Nhdr and Elf64_Nhdr are exactly the same.
   Elf32_Nhdr note_header;
   memset(&note_header, 0, sizeof(note_header));
-  note_header.n_namesz = sizeof(kNoteName);
-  note_header.n_descsz = id_size;
-  note_header.n_type = NT_GNU_BUILD_ID;
+  note_header.n_namesz = name.length() + 1;
+  note_header.n_descsz = desc_size;
+  note_header.n_type = type;
 
   Append(reinterpret_cast<const uint8_t*>(&note_header),
          sizeof(note_header));
-  AppendCString(kNoteName);
-  Append(id_bytes, id_size);
-}
-
-// static
-void BuildIDNote::AppendSection(ELF& elf,
-                                const uint8_t* id_bytes,
-                                size_t id_size) {
-  const char kBuildIDSectionName[] = ".note.gnu.build-id";
-  BuildIDNote note(id_bytes, id_size, elf.endianness());
-  elf.AddSection(kBuildIDSectionName, note, SHT_NOTE);
+  AppendCString(name);
+  Align(4);
+  Append(desc_bytes, desc_size);
+  Align(4);
 }
 
 }  // namespace synth_elf

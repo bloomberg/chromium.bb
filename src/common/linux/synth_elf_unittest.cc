@@ -42,6 +42,7 @@
 using google_breakpad::ElfClass32;
 using google_breakpad::ElfClass64;
 using google_breakpad::synth_elf::ELF;
+using google_breakpad::synth_elf::Notes;
 using google_breakpad::synth_elf::Section;
 using google_breakpad::synth_elf::StringTable;
 using google_breakpad::synth_elf::SymbolTable;
@@ -367,6 +368,46 @@ TYPED_TEST(BasicElf, BasicLE) {
   EXPECT_EQ(4096U + 16U, phdr->p_memsz);
   EXPECT_EQ(0U, phdr->p_flags);
   EXPECT_EQ(0U, phdr->p_align);
+}
+
+class ElfNotesTest : public Test {};
+
+TEST_F(ElfNotesTest, Empty) {
+  Notes notes(kLittleEndian);
+  string contents;
+  ASSERT_TRUE(notes.GetContents(&contents));
+  EXPECT_EQ(0U, contents.size());
+}
+
+TEST_F(ElfNotesTest, Notes) {
+  Notes notes(kLittleEndian);
+  notes.AddNote(1, "Linux", reinterpret_cast<const uint8_t *>("\x42\x02\0\0"),
+                4);
+  notes.AddNote(2, "a", reinterpret_cast<const uint8_t *>("foobar"),
+                sizeof("foobar") - 1);
+
+  const uint8_t kExpectedNotesContents[] = {
+    // Note 1
+    0x06, 0x00, 0x00, 0x00, // name size, including terminating zero
+    0x04, 0x00, 0x00, 0x00, // desc size
+    0x01, 0x00, 0x00, 0x00, // type
+    'L', 'i', 'n', 'u', 'x', 0x00, 0x00, 0x00, // padded "Linux"
+    0x42, 0x02, 0x00, 0x00, // desc
+    // Note 2
+    0x02, 0x00, 0x00, 0x00, // name size
+    0x06, 0x00, 0x00, 0x00, // desc size
+    0x02, 0x00, 0x00, 0x00, // type
+    'a',  0x00, 0x00, 0x00, // padded "a"
+    'f', 'o', 'o', 'b', 'a', 'r', 0x00, 0x00, // padded "foobar"
+  };
+  const size_t kExpectedNotesSize = sizeof(kExpectedNotesContents);
+  EXPECT_EQ(kExpectedNotesSize, notes.Size());
+
+  string notes_contents;
+  ASSERT_TRUE(notes.GetContents(&notes_contents));
+  EXPECT_EQ(0, memcmp(kExpectedNotesContents,
+                      notes_contents.data(),
+                      notes_contents.size()));
 }
 
 #endif  // defined(__i386__) || defined(__x86_64__)

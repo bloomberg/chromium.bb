@@ -47,8 +47,8 @@ using namespace google_breakpad;
 using google_breakpad::ElfClass32;
 using google_breakpad::ElfClass64;
 using google_breakpad::SafeReadLink;
-using google_breakpad::synth_elf::BuildIDNote;
 using google_breakpad::synth_elf::ELF;
+using google_breakpad::synth_elf::Notes;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Section;
 using ::testing::Types;
@@ -160,9 +160,10 @@ TYPED_TEST(FileIDTest, BuildID) {
   Section text(kLittleEndian);
   text.Append(4096, 0);
   elf.AddSection(".text", text, SHT_PROGBITS);
-  BuildIDNote::AppendSection(elf,
-                             kExpectedIdentifier,
-                             sizeof(kExpectedIdentifier));
+  Notes notes(kLittleEndian);
+  notes.AddNote(NT_GNU_BUILD_ID, "GNU", kExpectedIdentifier,
+                sizeof(kExpectedIdentifier));
+  elf.AddSection(".note.gnu.build-id", notes, SHT_NOTE);
   elf.Finish();
   this->GetElfContents(elf);
 

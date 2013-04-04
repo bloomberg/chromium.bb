@@ -177,13 +177,16 @@ class SymbolTable : public Section {
   StringTable& table_;
 };
 
-// A class to build GNU Build ID note sections
-class BuildIDNote : public Section {
+// A class for note sections
+class Notes : public Section {
 public:
-  BuildIDNote(const uint8_t* id_bytes, size_t id_size, Endianness endianness);
+  Notes(Endianness endianness)
+  : Section(endianness) {
+  }
 
-  // Append a new Build ID note section to |elf|.
-  static void AppendSection(ELF& elf, const uint8_t* id_bytes, size_t id_size);
+  // Add a note.
+  void AddNote(int type, const string &name, const uint8_t* desc_bytes,
+               size_t desc_size);
 };
 
 }  // namespace synth_elf
