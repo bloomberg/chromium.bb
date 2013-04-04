@@ -1585,6 +1585,8 @@ void LocationBarViewGtk::UpdateStarIcon() {
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;
     gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
                               theme_service_->GetImageNamed(id).ToGdkPixbuf());
+    gtk_widget_set_tooltip_text(star_.get(), l10n_util::GetStringUTF8(
+          starred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR).c_str());
   } else {
     gtk_widget_hide_all(star_.get());
   }
