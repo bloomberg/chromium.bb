@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "testing/platform_test.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

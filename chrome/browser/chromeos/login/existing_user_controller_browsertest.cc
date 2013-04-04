@@ -54,6 +54,7 @@
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "crypto/rsa_private_key.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
