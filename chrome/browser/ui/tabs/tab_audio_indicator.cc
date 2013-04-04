@@ -15,25 +15,23 @@
 namespace {
 
 // The number of columns to draw for the equalizer graphic.
-const size_t kEqualizerColumnCount = 2;
-
-// The maximum level for the equalizer.
-const size_t kEqualizerMaxLevel = 4;
+const size_t kEqualizerColumnCount = 3;
 
 // The equalizer cycles between these frames. An equalizer frame is 2 columns
-// where each column ranges from 0 to |kEqualizerMaxLevel|. TODO(sail): Replace
-// this with levels from the actual audio source.
+// where each column ranges from 0 to 4.
 const size_t kEqualizerFrames[][kEqualizerColumnCount] = {
-  { 2, 1 },
-  { 3, 2 },
-  { 2, 3 },
-  { 2, 2 },
-  { 2, 3 },
-  { 3, 4 },
-  { 2, 3 },
-  { 3, 2 },
-  { 2, 3 },
-  { 3, 2 },
+  { 1, 2, 3 },
+  { 2, 3, 4 },
+  { 3, 4, 3 },
+  { 4, 3, 2 },
+  { 3, 2, 1 },
+  { 2, 1, 2 },
+  { 1, 2, 3 },
+  { 0, 1, 2 },
+  { 1, 0, 1 },
+  { 2, 1, 0 },
+  { 3, 2, 1 },
+  { 2, 1, 2 },
 };
 
 // The space between equalizer levels.
@@ -89,7 +87,7 @@ void TabAudioIndicator::Paint(gfx::Canvas* canvas, const gfx::Rect& rect) {
   canvas->Save();
   canvas->ClipRect(rect);
 
-  // Draw 2 equalizer columns. |IDR_AUDIO_EQUALIZER_COLUMN| is a column of the
+  // Draw 3 equalizer columns. |IDR_AUDIO_EQUALIZER_COLUMN| is a column of the
   // equalizer with 4 levels. The current level is between 0 and 4 so the
   // image is shifted down and then drawn.
   if (state_ != STATE_NOT_ANIMATING) {
@@ -98,6 +96,9 @@ void TabAudioIndicator::Paint(gfx::Canvas* canvas, const gfx::Rect& rect) {
     int x = rect.right();
     std::vector<int> levels = GetCurrentEqualizerLevels();
     for (int i = levels.size() - 1; i >= 0; --i) {
+      if (levels[i] == 0)
+        continue;
+
       // Shift the image down by the level.
       int y = rect.bottom() - levels[i] * 2;
       x -= image->width();
@@ -105,11 +106,11 @@ void TabAudioIndicator::Paint(gfx::Canvas* canvas, const gfx::Rect& rect) {
 
       // Clip the equalizer column so the favicon doesn't obscure it.
       gfx::Rect equalizer_rect(x, y, image->width(), image->height());
-      equalizer_rect.Inset(-kEqualizerColumnPadding, -kEqualizerColumnPadding);
       canvas->sk_canvas()->clipRect(
           gfx::RectToSkRect(equalizer_rect), SkRegion::kDifference_Op);
 
-      x -= kEqualizerColumnPadding;
+      // Padding is baked into both sides of the icons so overlap the images.
+      x += kEqualizerColumnPadding;
     }
 
     // Cache the levels that were just drawn. This is used to prevent
