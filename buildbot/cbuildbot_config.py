@@ -794,19 +794,6 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
 )
 
-# TODO(davidjames): Remove chrome_pgo builders as they are no longer needed.
-chrome_pgo = chrome_pfq.derive(
-  important=False,
-)
-
-chrome_pgo.add_config('alex-chrome-pgo',
-  boards=['x86-alex'],
-)
-
-chrome_pgo.add_config('lumpy-chrome-pgo',
-  boards=['lumpy'],
-)
-
 chromium_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
