@@ -236,13 +236,9 @@ def BuildAndTest(options):
   cmd.append('chrome_browser_tests')
 
   # Download the toolchain(s).
-  if options.enable_pnacl:
-    pnacl_toolchain = []
-  else:
-    pnacl_toolchain = ['--no-pnacl']
   RunCommand([python,
               os.path.join(nacl_dir, 'build', 'download_toolchains.py'),
-              '--no-arm-trusted'] + pnacl_toolchain + ['TOOL_REVISIONS'],
+              '--no-arm-trusted', '--no-pnacl', 'TOOL_REVISIONS'],
              nacl_dir, os.environ)
 
   CleanTempDir()
@@ -252,9 +248,6 @@ def BuildAndTest(options):
 
   if options.enable_glibc:
     RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env)
-
-  if options.enable_pnacl:
-    RunTests('pnacl', cmd + ['bitcode=1'], nacl_dir, env)
 
 
 def MakeCommandLineParser():
@@ -268,9 +261,6 @@ def MakeCommandLineParser():
                     type='int', help='Run newlib tests?')
   parser.add_option('--enable_glibc', dest='enable_glibc', default=-1,
                     type='int', help='Run glibc tests?')
-  parser.add_option('--enable_pnacl', dest='enable_pnacl', default=-1,
-                    type='int', help='Run pnacl tests?')
-
 
   # Deprecated, but passed to us by a script in the Chrome repo.
   # Replaced by --enable_glibc=0
@@ -322,13 +312,6 @@ def Main():
       options.enable_glibc = 1
     else:
       options.enable_glibc = 0
-
-  # Set defaults for enabling pnacl.
-  if options.enable_pnacl == -1:
-    if options.integration_bot or options.morenacl_bot:
-      options.enable_pnacl = 1
-    else:
-      options.enable_pnacl = 0
 
   if args:
     parser.error('ERROR: invalid argument')
