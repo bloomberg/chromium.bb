@@ -27,6 +27,9 @@
           'browser/nacl_host/test/debug_stub_browser_tests.py',
           'browser/nacl_host/test/gdb_rsp.py',
         ],
+        'isolate_dependency_touched': [
+          '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
+        ],
       },
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
