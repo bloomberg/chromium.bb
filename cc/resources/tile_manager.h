@@ -119,6 +119,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
 
+  void AssignBinsToTiles();
   void SortTiles();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);

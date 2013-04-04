@@ -238,23 +238,8 @@ class BinComparator {
   }
 };
 
-void TileManager::SortTiles() {
-  TRACE_EVENT0("cc", "TileManager::SortTiles");
-  TRACE_COUNTER_ID1(
-      "cc", "LiveTileCount", this, live_or_allocated_tiles_.size());
-
-  // Sort by bin, resolution and time until needed.
-  std::sort(live_or_allocated_tiles_.begin(),
-            live_or_allocated_tiles_.end(), BinComparator());
-}
-
-void TileManager::ManageTiles() {
-  TRACE_EVENT0("cc", "TileManager::ManageTiles");
-  manage_tiles_pending_ = false;
-  ++manage_tiles_call_count_;
-
+void TileManager::AssignBinsToTiles() {
   const TreePriority tree_priority = global_state_.tree_priority;
-  TRACE_COUNTER_ID1("cc", "TileCount", this, all_tiles_.size());
 
   // Memory limit policy works by mapping some bin states to the NEVER bin.
   TileManagerBin bin_map[NUM_BINS];
@@ -338,12 +323,30 @@ void TileManager::ManageTiles() {
 
     live_or_allocated_tiles_.push_back(tile);
   }
+
   TRACE_COUNTER_ID1("cc", "LiveOrAllocatedTileCount", this,
                     live_or_allocated_tiles_.size());
+}
 
+void TileManager::SortTiles() {
+  TRACE_EVENT0("cc", "TileManager::SortTiles");
+  TRACE_COUNTER_ID1(
+      "cc", "LiveTileCount", this, live_or_allocated_tiles_.size());
+
+  // Sort by bin, resolution and time until needed.
+  std::sort(live_or_allocated_tiles_.begin(),
+            live_or_allocated_tiles_.end(), BinComparator());
+}
+
+void TileManager::ManageTiles() {
+  TRACE_EVENT0("cc", "TileManager::ManageTiles");
+  TRACE_COUNTER_ID1("cc", "TileCount", this, all_tiles_.size());
+
+  manage_tiles_pending_ = false;
+  ++manage_tiles_call_count_;
+
+  AssignBinsToTiles();
   SortTiles();
-
-  // Assign gpu memory and determine what tiles need to be rasterized.
   AssignGpuMemoryToTiles();
 
   TRACE_EVENT_INSTANT1("cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
