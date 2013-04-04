@@ -616,7 +616,7 @@
         # target always calls tools/swarm_client/isolate.py. See the script's
         # --help for more information and the valid --mode values. Meant to be
         # overriden with GYP_DEFINES.
-        ['inside_chromium_build==1 and OS != "ios"', {
+        ['inside_chromium_build==1 and OS != "ios" and OS != "android"', {
           'test_isolation_mode%': 'check',
         }, {
           'test_isolation_mode%': 'noop',
