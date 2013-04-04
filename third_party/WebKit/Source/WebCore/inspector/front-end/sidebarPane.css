@@ -85,7 +85,7 @@
 }
 
 .sidebar-pane-title:active {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(231, 231, 231)), color-stop(0.05, rgb(231, 231, 231)), color-stop(0.05, rgb(207, 207, 207)), to(rgb(186, 186, 186)));
+    background-color: rgb(204, 204, 204);
     border-top: 1px solid rgb(178, 178, 178);
     border-bottom: 1px solid rgb(178, 178, 178);
 }
@@ -103,7 +103,7 @@
 }
 
 .sidebar-pane-title::before {
-    background-color: rgb(100, 100, 100);
+    background-color: rgb(110, 110, 110);
     -webkit-mask-position: -4px -96px;
 }
 
@@ -115,7 +115,6 @@
 
 .sidebar-pane-title.expanded::before {
     -webkit-mask-position: -20px -96px;
-    background-color: rgb(100, 100, 100);
 }
 
 .sidebar-pane-toolbar {

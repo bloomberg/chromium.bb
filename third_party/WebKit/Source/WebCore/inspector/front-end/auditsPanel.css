@@ -148,17 +148,37 @@
 }
 
 .audit-result-tree li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
     float: left;
     width: 8px;
-    height: 8px;
-    margin-top: 1px;
-    padding-right: 2px;
+    height: 10px;
+    content: "a";
+    color: transparent;
+    margin-left: 3px;
+    margin-right: 4px;
+    position: relative;
+    top: 1px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.audit-result-tree li.parent::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.audit-result-tree li.parent::before {
+    background-position: -4px -96px;
+}
+
+.audit-result-tree li.parent.expanded::before {
+    background-position: -20px -96px;
 }
 
 .audit-result-tree {
-    font-size: 11px;
-    line-height: 14px;
+    line-height: 16px;
     -webkit-user-select: text;
 }
 
@@ -166,7 +186,6 @@
     position: relative;
     padding: 2px 6px !important;
     margin: 0;
-    color: rgb(84, 84, 84);
     cursor: default;
     min-width: 100%;
 }
@@ -201,19 +220,6 @@
     margin-left: -12px
 }
 
-.audit-result-tree li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    float: left;
-    width: 8px;
-    height: 8px;
-    margin-top: 0;
-    padding-right: 2px;
-}
-
-.audit-result-tree li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
-}
-
 .audit-result-tree ol.children {
     display: none;
 }
@@ -224,7 +230,6 @@
 
 .audit-result {
     font-weight: bold;
-    color: black;
 }
 
 .audit-result img {

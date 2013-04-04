@@ -48,6 +48,6 @@
 }
 
 .filtered-item-list-dialog-item span.highlight {
-    color: black;
+    color: #222;
     font-weight: bold;
 }

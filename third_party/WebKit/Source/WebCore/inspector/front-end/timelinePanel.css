@@ -569,7 +569,7 @@
     overflow: hidden;
     background-color: rgb(220, 220, 220);
     opacity: 0.6;
-    color: black;
+    color: #222;
     text-align: center;
     padding-top: 3px;
     z-index: 350;

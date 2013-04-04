@@ -1099,6 +1099,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     color: transparent;
     text-shadow: none;
     margin-left: 3px;
+    margin-top: -7px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -1109,12 +1110,11 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 
 .console-group .console-group-title::before {
     -webkit-mask-position: -20px -96px;
-    background-color: rgb(100, 100, 100);
+    background-color: rgb(110, 110, 110);
 }
 
 .console-group.collapsed .console-group-title::before {
     -webkit-mask-position: -4px -96px;
-    background-color: rgb(100, 100, 100);
 }
 
 .console-group.collapsed > .console-group-messages {
@@ -1211,7 +1211,7 @@ ol.watch-expressions > li.hovered {
 }
 
 .console-group-messages .section .header .title {
-    color: black;
+    color: #222;
     font-weight: normal;
     line-height: 13px;
 }
@@ -1252,7 +1252,7 @@ ol.watch-expressions > li.hovered {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    color: black;
+    color: #222;
 }
 
 .console-formatted-node:hover {
@@ -1261,6 +1261,10 @@ ol.watch-expressions > li.hovered {
 
 .console-formatted-object .section, .console-formatted-node .section, .console-formatted-array .section {
     position: static;
+}
+
+.console-formatted-object .section .header::before {
+    margin-top: 0;
 }
 
 .console-formatted-object .properties, .console-formatted-node .properties {
@@ -1480,6 +1484,8 @@ iframe.panel.extension {
     text-shadow: none;
     position: relative;
     top: 2px;
+    margin-right: 1px;
+    height: 12px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -1490,7 +1496,7 @@ iframe.panel.extension {
 
 .outline-disclosure li.parent::before {
     -webkit-mask-position: -4px -96px;
-    background-color: rgb(100, 100, 100);
+    background-color: rgb(110, 110, 110);
 }
 
 .outline-disclosure ol:focus li.parent.selected::before,
@@ -1501,7 +1507,6 @@ iframe.panel.extension {
 
 .outline-disclosure li.parent.expanded::before {
     -webkit-mask-position: -20px -96px;
-    background-color: rgb(100, 100, 100);
 }
 
 .outline-disclosure ol:focus li.parent.expanded.selected::before,
@@ -1543,7 +1548,6 @@ iframe.panel.extension {
 }
 
 .placard .title {
-    color: black;
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
@@ -1584,8 +1588,7 @@ iframe.panel.extension {
 }
 
 .section .header {
-    color: black;
-    padding: 0 8px 0 4px;
+    padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
     -webkit-background-origin: padding;
@@ -1601,22 +1604,22 @@ iframe.panel.extension {
     text-shadow: none;
     float: left;
     width: 8px;
-    margin-right: 2px;
+    margin-right: 4px;
     margin-top: 2px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.section .header::before {
+.section > .header::before {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 }
 
-.section .header::before {
-    background-color: rgb(100, 100, 100);
+.section > .header::before {
+    background-color: rgb(110, 110, 110);
     -webkit-mask-position: -4px -96px;
 }
 
-.section.expanded .header::before {
+.section.expanded > .header::before {
     -webkit-mask-position: -20px -96px;
 }
 
@@ -1699,7 +1702,7 @@ iframe.panel.extension {
     content: "a";
     width: 8px;
     float: left;
-    margin-right: 2px;
+    margin-right: 4px;
     color: transparent;
     text-shadow: none;
 }
@@ -1711,12 +1714,11 @@ iframe.panel.extension {
 }
 
 .properties-tree li.parent::before {
-    background-color: rgb(100, 100, 100);
+    background-color: rgb(110, 110, 110);
     -webkit-mask-position: -4px -96px;
 }
 
 .properties-tree li.parent.expanded::before {
-    background-color: rgb(100, 100, 100);
     -webkit-mask-position: -20px -96px;
 }
 
@@ -1753,12 +1755,12 @@ iframe.panel.extension {
 }
 
 .editing, .editing * {
-    color: black !important;
+    color: #222 !important;
     text-decoration: none !important;
 }
 
 .child-editing {
-    color: black !important;
+    color: #222 !important;
     text-decoration: none !important;
     overflow: visible !important;
 }
@@ -1777,8 +1779,7 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 }
 
 .properties-tree.watch-expressions {
-    padding-bottom: 8px;
-    padding-left: 4px !important;
+    padding-left: 0 !important;
 }
 
 .properties-tree.watch-expressions > li {
@@ -1859,9 +1860,10 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 .swatch {
     margin-left: 1px;
     margin-right: 2px;
-    margin-bottom: -1px;
     width: 1em;
     height: 1em;
+    position: relative;
+    top: 1px;
     display: inline-block;
     background-image: url(Images/checker.png);
 }
@@ -1951,7 +1953,6 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     padding: 2px 6px;
     line-height: 12px;
     font-weight: bold;
-    color: rgb(46, 46, 46);
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
     -webkit-border-radius: 8px;
@@ -2504,7 +2505,7 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 }
 
 .soft-context-menu-item-submenu-arrow {
-    color: black;
+    color: #222;
     float: right;
     pointer-events: none;
 }
@@ -2644,13 +2645,29 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 #search-results-pane-file-based li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    position: relative;
-    left: -4px;
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    width: 8px;
+    content: "a";
+    color: transparent;
+    margin-left: -5px;
+    padding-right: 4px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+#search-results-pane-file-based li.parent::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+#search-results-pane-file-based li.parent::before {
+    background-position: -4px -96px;
 }
 
 #search-results-pane-file-based li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
+    background-position: -20px -96px;
 }
 
 #search-results-pane-file-based .search-result {
@@ -2672,12 +2689,12 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 
 #search-results-pane-file-based .search-result .search-result-matches-count {
     margin-left: 5px;
-    color: #333;
+    color: #222;
 }
 
 #search-results-pane-file-based .show-more-matches {
     padding: 4px 0;
-    color: #333;
+    color: #222;
     cursor: pointer;
     font-size: 11px;
     margin-left: 20px;

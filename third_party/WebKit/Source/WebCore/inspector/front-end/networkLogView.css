@@ -532,7 +532,7 @@
 
 #network-container:not(.brief-mode) .data-grid tr.selected {
     background-color: transparent;
-    color: black;
+    color: #222;
 }
 
 #network-container.brief-mode .data-grid .data-container {

@@ -43,7 +43,7 @@
 }
 
 .webkit-css-selector {
-    color: black;
+    color: #222;
 }
 
 .webkit-css-bang-keyword {
@@ -71,7 +71,7 @@
 }
 
 .webkit-javascript-ident {
-    color: black;
+    color: #222;
 }
 
 .webkit-whitespace-1::before {

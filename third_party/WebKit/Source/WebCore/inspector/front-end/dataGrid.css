@@ -145,24 +145,33 @@
     background-image: url(Images/glossyHeaderSelectedPressed.png);
 }
 
-.data-grid th.sort-ascending > div::after {
+.data-grid th.sort-ascending > div::after,
+.data-grid th.sort-descending > div::after {
     position: absolute;
+    top: 1px;
     right: 0;
-    height: 12px;
-    margin-bottom: auto;
-    margin-top: auto;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
     width: 8px;
-    content: url(Images/treeUpTriangleBlack.png);
+    height: 10px;
+    content: "a";
+    color: transparent;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.data-grid th.sort-ascending > div::after,
+.data-grid th.sort-descending > div::after {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.data-grid th.sort-ascending > div::after {
+    background-position: -20px -96px;
 }
 
 .data-grid th.sort-descending > div::after {
-    position: absolute;
-    right: 0;
-    height: 8px;
-    margin-bottom: auto;
-    margin-top: auto;
-    width: 8px;
-    content: url(Images/treeDownTriangleBlack.png);
+    background-position: -4px -108px;
 }
 
 .data-grid button {
@@ -190,7 +199,7 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
 }
 
 .data-grid tr.parent td.disclosure::before {
-    background-color: rgb(100, 100, 100);
+    background-color: rgb(110, 110, 110);
     -webkit-mask-position: -4px -96px;
 }
 

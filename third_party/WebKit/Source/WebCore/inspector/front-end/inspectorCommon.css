@@ -15,6 +15,7 @@ body {
     margin: 0;
     tab-size: 4;
     -webkit-user-select: none;
+    color: #222;
 }
 
 body.dock-to-right:not(.undocked) {
@@ -197,7 +198,7 @@ iframe.view {
 
 .network-timing-bar-title {
     position: absolute;
-    color: black;
+    color: #222;
     top: 1px;
 }
 
@@ -208,20 +209,19 @@ iframe.view {
     opacity: 0.8;
     -webkit-box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
     background-color: rgb(241, 234, 0);
-    color: black;
+    color: #222;
 }
 
 .sidebar-separator {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(243, 243, 243)), color-stop(0.05, rgb(243, 243, 243)), color-stop(0.05, rgb(230, 230, 230)), to(rgb(209, 209, 209)));
+    background-color: rgb(230, 230, 230);
     padding: 0 5px;
     border-top: 1px solid rgb(189, 189, 189);
     border-bottom: 1px solid rgb(189, 189, 189);
-    color: rgb(110, 110, 110);
-    text-shadow: white 0 1px 0;
+    color: rgb(50, 50, 50);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 11px;
+    line-height: 16px;
 }
 
 .sidebar-label {

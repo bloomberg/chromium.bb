@@ -77,7 +77,7 @@
 
 .crumbs .crumb.selected {
     -webkit-border-image: url(Images/segmentSelected.png) 0 12 0 2;
-    color: black;
+    color: #222;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
 }
 
@@ -91,7 +91,7 @@
 
 .crumbs .crumb:hover {
     -webkit-border-image: url(Images/segmentHover.png) 0 12 0 2;
-    color: black;
+    color: #222;
 }
 
 .crumbs .crumb.end:hover {

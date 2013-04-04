@@ -53,11 +53,11 @@
 
 .CodeMirror-matchingbracket {
   border-bottom: 1px solid black;
-  color: black !important;
+  color: #222 !important;
 }
 
 .CodeMirror-nonmatchingbracket {
-  color: black !important;
+  color: #222 !important;
 }
 
 .cm-breakpoint-conditional {

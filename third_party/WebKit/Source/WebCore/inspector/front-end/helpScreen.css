@@ -159,11 +159,9 @@ body.platform-mac .help-key-cell {
 
 .help-section-title {
     font-weight: bold;
-    color: inherit;
 }
 
 .help-key {
-    color: black;
     font-weight: bold;
 }
 
@@ -172,7 +170,6 @@ body.platform-mac .help-key {
 }
 
 .help-combine-keys, .help-key-delimiter {
-    color: black;
     font-size: 9px;
 }
 
@@ -256,7 +253,7 @@ body.platform-mac .help-content input[type=radio] {
 
 .help-content option {
     background-color: #EEEEEE;
-    color: black;
+    color: #222;
 }
 
 #settings-screen .help-window-main,
@@ -396,7 +393,7 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab .help-section-title {
-    color: black;
+    color: #222;
 }
 
 .settings-tab .help-block label {
@@ -413,7 +410,7 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab .help-block label:hover {
-    color: black;
+    color: #222;
 }
 
 .settings-tab p {

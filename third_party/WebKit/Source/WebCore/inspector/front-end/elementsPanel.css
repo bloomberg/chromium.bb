@@ -85,7 +85,6 @@
 .metrics .label {
     position: absolute;
     font-size: 10px;
-    color: black;
     margin-left: 3px;
     padding-left: 2px;
     padding-right: 2px;
@@ -248,11 +247,11 @@
 }
 
 .styles-section .selector {
-    color: #777;
+    color: #888;
 }
 
 .styles-section .selector-matches {
-    color: black;
+    color: #222;
 }
 
 .styles-section a[data-uncopyable] {
@@ -267,7 +266,7 @@
 .styles-section .properties {
     display: none;
     margin: 0;
-    padding: 2px 4px 0 6px;
+    padding: 2px 4px 0 0;
     list-style: none;
     clear: both;
 }
@@ -346,39 +345,30 @@
     display: block;
 }
 
-.styles-section .properties li.parent::before {
-    content: none;
+.styles-section.matched-styles .properties li.parent .expand-element {
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    margin-right: 2px;
+    margin-left: -6px;
+    opacity: 0.55;
+    width: 8px;
+    height: 10px;
+    display: inline-block;
 }
 
-.styles-section .properties li.parent.expanded::before {
-    content: none;
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.styles-section.matched-styles .properties li.parent .expand-element {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .styles-section.matched-styles .properties li.parent .expand-element {
-    content: url(Images/treeRightTriangleBlack.png);
-    margin-right: 1px;
-    margin-left: -5px;
-    opacity: 0.6;
+    background-position: -4px -96px;
 }
 
 .styles-section.matched-styles .properties li.parent.expanded .expand-element {
-    content: url(Images/treeDownTriangleBlack.png);
-}
-
-.styles-section.computed-style .properties li.parent::before {
-    content: url(Images/treeRightTriangleBlack.png);
-    opacity: 0.75;
-    float: left;
-    width: 8px;
-    margin-top: 0;
-    padding-right: 3px;
-    -webkit-user-select: none;
-    cursor: default;
-}
-
-.styles-section.computed-style .properties li.parent.expanded::before {
-    content: url(Images/treeDownTriangleBlack.png);
-    margin-top: 1px;
+    background-position: -20px -96px;
 }
 
 .styles-section .properties li .info {
@@ -485,7 +475,7 @@
 }
 
 .event-bars .event-bar .header {
-    padding: 0 8px 0 18px;
+    padding: 0 8px 0 6px;
     min-height: 16px;
     opacity: 1.0;
     white-space: nowrap;
@@ -495,7 +485,6 @@
 
 .event-bars .event-bar .header .title {
     font-weight: normal;
-    color: black;
     text-shadow: white 0 1px 0;
 }
 
@@ -504,17 +493,31 @@
 }
 
 .event-bars .event-bar .header::before {
-    position: absolute;
-    top: 2px;
-    left: 7px;
+    -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    content: "a";
+    color: transparent;
+    text-shadow: none;
+    float: left;
     width: 8px;
-    height: 8px;
-    opacity: 0.75;
-    content: url(Images/treeRightTriangleBlack.png) !important;
+    margin-right: 4px;
+    margin-top: 2px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.event-bars .event-bar .header::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.event-bars .event-bar .header::before {
+    -webkit-mask-position: -4px -96px;
 }
 
 .event-bars .event-bar.expanded .header::before {
-    content: url(Images/treeDownTriangleBlack.png) !important;
+    -webkit-mask-position: -20px -96px;
 }
 
 .image-preview-container {
@@ -592,8 +595,4 @@
 
 .panel.elements .sidebar-pane-toolbar > select.select-filter {
     background-image: url(Images/paneFilterButtons.png);
-}
-
-.panel.elements .sidebar-pane-toolbar > select > option, .panel.elements .sidebar-pane-toolbar > select > hr {
-    color: black;
 }

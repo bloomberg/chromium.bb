@@ -831,6 +831,8 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 {
     WebInspector.PropertiesSection.call(this, "");
     this.element.className = "styles-section matched-styles monospace" + (isFirstSection ? " first-styles-section" : "");
+    // We don't really use properties' disclosure.
+    this.propertiesElement.removeStyleClass("properties-tree");
 
     if (styleRule.media) {
         for (var i = styleRule.media.length - 1; i >= 0; --i) {

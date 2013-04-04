@@ -59,7 +59,6 @@ ol.breakpoint-list {
     text-overflow: ellipsis;
     overflow: hidden;
     padding: 2px 0;
-    color: black;
 }
 
 .breakpoint-list li:hover {
