@@ -104,6 +104,10 @@ const char kCryptohomeTpmAttestationSignEnterpriseChallenge[] =
     "TpmAttestationSignEnterpriseChallenge";
 const char kCryptohomeTpmAttestationSignSimpleChallenge[] =
     "TpmAttestationSignSimpleChallenge";
+const char kCryptohomeTpmAttestationGetKeyPayload[] =
+    "TpmAttestationGetKeyPayload";
+const char kCryptohomeTpmAttestationSetKeyPayload[] =
+    "TpmAttestationSetKeyPayload";
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
