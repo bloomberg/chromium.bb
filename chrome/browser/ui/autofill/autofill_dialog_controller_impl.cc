@@ -365,7 +365,7 @@ void AutofillDialogControllerImpl::Show() {
               arraysize(kShippingInputs),
               &requested_shipping_fields_);
 
-  GenerateSuggestionsModels();
+  SuggestionsUpdated();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -568,8 +568,7 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
     }
   }
 
-  GenerateSuggestionsModels();
-  view_->ModelChanged();
+  SuggestionsUpdated();
   view_->UpdateAccountChooser();
   view_->UpdateNotificationArea();
 
@@ -1347,8 +1346,7 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
     return;
   }
 
-  GenerateSuggestionsModels();
-  view_->ModelChanged();
+  SuggestionsUpdated();
   view_->UpdateNotificationArea();
   view_->UpdateButtonStrip();
 }
@@ -1471,9 +1469,7 @@ void AutofillDialogControllerImpl::OnNetworkError(int response_code) {
 // PersonalDataManagerObserver implementation.
 
 void AutofillDialogControllerImpl::OnPersonalDataChanged() {
-  HidePopup();
-  GenerateSuggestionsModels();
-  view_->ModelChanged();
+  SuggestionsUpdated();
 }
 
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
@@ -1494,8 +1490,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
 
-  GenerateSuggestionsModels();
-  view_->ModelChanged();
+  SuggestionsUpdated();
   view_->UpdateAccountChooser();
   view_->UpdateNotificationArea();
 }
@@ -1602,12 +1597,13 @@ bool AutofillDialogControllerImpl::IsFirstRun() const {
   return !prefs->HasPrefPath(prefs::kAutofillDialogPayWithoutWallet);
 }
 
-void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
+void AutofillDialogControllerImpl::SuggestionsUpdated() {
   suggested_email_.Reset();
   suggested_cc_.Reset();
   suggested_billing_.Reset();
   suggested_cc_billing_.Reset();
   suggested_shipping_.Reset();
+  HidePopup();
 
   if (IsPayingWithWallet()) {
     // TODO(estade): fill in the email address.
@@ -1686,6 +1682,9 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   suggested_shipping_.AddKeyedItem(
       std::string(),
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
+
+  if (view_)
+    view_->ModelChanged();
 }
 
 bool AutofillDialogControllerImpl::IsCompleteProfile(

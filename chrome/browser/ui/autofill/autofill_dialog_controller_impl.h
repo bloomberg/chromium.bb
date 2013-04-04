@@ -261,7 +261,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   bool IsFirstRun() const;
 
   // Initializes |suggested_email_| et al.
-  void GenerateSuggestionsModels();
+  void SuggestionsUpdated();
 
   // Returns whether |profile| is complete, i.e. can fill out all the relevant
   // address info. Incomplete profiles will not be displayed in the dropdown
