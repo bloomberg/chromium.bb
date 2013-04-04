@@ -501,12 +501,12 @@ void BurnManager::NetworkManagerChanged() {
     OnError(IDS_IMAGEBURN_NETWORK_ERROR);
 }
 
-void BurnManager::UpdateBurnStatus(BurnEvent evt,
+void BurnManager::UpdateBurnStatus(BurnEvent event,
                                    const ImageBurnStatus& status) {
   if (cancelled_)
     return;
 
-  if (evt == BURN_FAIL || evt == BURN_SUCCESS) {
+  if (event == BURN_FAIL || event == BURN_SUCCESS) {
     burning_ = false;
     if (block_burn_signals_) {
       block_burn_signals_ = false;
@@ -514,17 +514,39 @@ void BurnManager::UpdateBurnStatus(BurnEvent evt,
     }
   }
 
-  if (block_burn_signals_ && evt == BURN_UPDATE)
+  if (block_burn_signals_ && event == BURN_UPDATE)
     return;
 
-  if (evt == BURN_SUCCESS) {
-    // The burning task is successfully done.
-    // Update the state.
-    state_machine_->OnSuccess();
+  // Notify observers.
+  switch (event) {
+    case BURN_SUCCESS:
+      // The burning task is successfully done.
+      // Update the state.
+      ResetTargetPaths();
+      state_machine_->OnSuccess();
+      FOR_EACH_OBSERVER(Observer, observers_, OnSuccess());
+      break;
+    case BURN_FAIL:
+      OnError(IDS_IMAGEBURN_BURN_ERROR);
+      break;
+    case BURN_UPDATE:
+      FOR_EACH_OBSERVER(
+          Observer, observers_,
+          OnProgress(BURNING, status.amount_burnt, status.total_size));
+      break;
+    case(UNZIP_STARTED):
+      FOR_EACH_OBSERVER(Observer, observers_, OnProgress(UNZIPPING, 0, 0));
+      break;
+    case UNZIP_FAIL:
+      OnError(IDS_IMAGEBURN_EXTRACTING_ERROR);
+      break;
+    case UNZIP_COMPLETE:
+      // We ignore this.
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnBurnProgressUpdated(evt, status));
 }
 
 void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {

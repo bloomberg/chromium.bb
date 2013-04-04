@@ -59,6 +59,13 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
+  virtual void OnSuccess() OVERRIDE {
+    delegate_->OnSuccess();
+    // TODO(hidehiko): Remove |working_| flag.
+    working_ = false;
+  }
+
+  // BurnManager::Observer override.
   virtual void OnProgressWithRemainingTime(
       ProgressType progress_type,
       int64 received_bytes,
@@ -69,31 +76,10 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnBurnProgressUpdated(BurnEvent event,
-                                     const ImageBurnStatus& status) OVERRIDE {
-    switch (event) {
-      case(BURN_SUCCESS):
-        FinalizeBurn();
-        break;
-      case(BURN_FAIL):
-        burn_manager_->OnError(IDS_IMAGEBURN_BURN_ERROR);
-        break;
-      case(BURN_UPDATE):
-        delegate_->OnProgress(BURNING, status.amount_burnt, status.total_size);
-        break;
-      case(UNZIP_STARTED):
-        delegate_->OnProgress(UNZIPPING, 0, 0);
-        break;
-      case(UNZIP_FAIL):
-        burn_manager_->OnError(IDS_IMAGEBURN_EXTRACTING_ERROR);
-        break;
-      case(UNZIP_COMPLETE):
-        // We ignore this.
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  virtual void OnProgress(ProgressType progress_type,
+                          int64 received_bytes,
+                          int64 total_bytes) OVERRIDE {
+    delegate_->OnProgress(progress_type, received_bytes, total_bytes);
   }
 
   // StateMachine::Observer interface.
@@ -167,12 +153,6 @@ class BurnControllerImpl
   }
 
  private:
-  void FinalizeBurn() {
-    burn_manager_->ResetTargetPaths();
-    delegate_->OnSuccess();
-    working_ = false;
-  }
-
   int64 GetDeviceSize(const std::string& device_path) {
     disks::DiskMountManager* disk_mount_manager =
         disks::DiskMountManager::GetInstance();

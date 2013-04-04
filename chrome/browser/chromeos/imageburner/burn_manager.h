@@ -225,6 +225,9 @@ class BurnManager : public net::URLFetcherDelegate,
     // Triggered when a network is detected.
     virtual void OnNetworkDetected() = 0;
 
+    // Triggered when burning the image is successfully done.
+    virtual void OnSuccess() = 0;
+
     // Triggered during the image file downloading periodically.
     // |estimated_remaining_time| is the remaining duration to download the
     // remaining content estimated based on the elapsed time.
@@ -234,9 +237,12 @@ class BurnManager : public net::URLFetcherDelegate,
         int64 total_bytes,
         const base::TimeDelta& estimated_remaining_time) = 0;
 
-    // Triggered during the burning the image to the device.
-    virtual void OnBurnProgressUpdated(BurnEvent event,
-                                       const ImageBurnStatus& status) = 0;
+    // Triggered when some progress is made, but estimated_remaining_time is
+    // not available.
+    // TODO(hidehiko): We should be able to merge this method with above one.
+    virtual void OnProgress(ProgressType progress_type,
+                            int64 received_bytes,
+                            int64 total_bytes) = 0;
   };
 
   // Creates the global BurnManager instance.
