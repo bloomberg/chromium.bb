@@ -5,6 +5,23 @@
 ]>
 <chapter id="chap-Library">
   <title>Wayland Library</title>
+
+  <para>
+  The open-source reference implementation of Wayland protocol is split in two
+  C libraries, <link linkend="sect-Library-Server">libwayland-server</link> and
+  <link linkend="sect-Library-Client">libwayland-client</link>. Their main
+  responsibility is to handle the Inter-process communication
+  (<emphasis>IPC</emphasis>) with each other, therefore guaranteeing the
+  protocol objects marshaling and messages synchronization.
+  </para>
+
+  <para>
+  This Chapter describes in detail each library's methods and their helpers,
+  aiming implementors who can use for building Wayland clients and servers;
+  respectively at <xref linkend="sect-Library-Client"/> and
+  <xref linkend="sect-Library-Server"/>.
+  </para>
+
   <xi:include href="WaylandClientAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="WaylandServerAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </chapter>
