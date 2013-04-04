@@ -1016,9 +1016,9 @@ internal_arm_paladin.add_config('spring-paladin',
   important=False,
 )
 
-internal_arm_paladin.add_config('peach-paladin',
+internal_arm_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
-  paladin_builder_name='peach pit paladin',
+  paladin_builder_name='peach_pit paladin',
   important=False,
 )
 
@@ -1227,6 +1227,11 @@ _arm_release.add_config('daisy-release',
 
 _arm_release.add_config('spring-release',
   boards=['daisy_spring'],
+  hw_tests=[],
+)
+
+_arm_release.add_config('peach_pit-release',
+  boards=['peach_pit'],
   hw_tests=[],
 )
 
