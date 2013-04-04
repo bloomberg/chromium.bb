@@ -46,8 +46,7 @@ unsigned ImageSource::s_maxPixelsPerDecodedImage = 1024 * 1024;
 #endif
 
 ImageSource::ImageSource(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
-    : m_decoder(0)
-    , m_alphaOption(alphaOption)
+    : m_alphaOption(alphaOption)
     , m_gammaAndColorProfileOption(gammaAndColorProfileOption)
 {
 }
@@ -65,8 +64,7 @@ void ImageSource::clear(bool destroyAll, size_t clearBeforeFrame, SharedBuffer* 
         return;
     }
 
-    delete m_decoder;
-    m_decoder = 0;
+    m_decoder.clear();
     if (data)
         setData(data, allDataReceived);
 }
@@ -83,7 +81,7 @@ void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
     // If insufficient bytes are available to determine the image type, no decoder plugin will be
     // made.
     if (!m_decoder) {
-        m_decoder = static_cast<NativeImageDecoderPtr>(NativeImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption));
+        m_decoder = NativeImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption);
 #if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
         if (m_decoder && s_maxPixelsPerDecodedImage)
             m_decoder->setMaxNumPixels(s_maxPixelsPerDecodedImage);

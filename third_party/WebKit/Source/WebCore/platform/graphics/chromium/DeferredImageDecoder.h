@@ -30,6 +30,7 @@
 #include "ImageSource.h"
 #include "IntSize.h"
 #include "SkBitmap.h"
+#include <wtf/Forward.h>
 
 namespace WebCore {
 
@@ -39,7 +40,7 @@ class SharedBuffer;
 class DeferredImageDecoder {
 public:
     ~DeferredImageDecoder();
-    static DeferredImageDecoder* create(const SharedBuffer& data, ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
+    static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
 
     static PassOwnPtr<DeferredImageDecoder> createForTesting(PassOwnPtr<ImageDecoder>);
 
@@ -67,7 +68,7 @@ public:
     bool hotSpot(IntPoint&) const;
 
 private:
-    explicit DeferredImageDecoder(ImageDecoder* actualDecoder);
+    explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
     SkBitmap createLazyDecodingBitmap();
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 

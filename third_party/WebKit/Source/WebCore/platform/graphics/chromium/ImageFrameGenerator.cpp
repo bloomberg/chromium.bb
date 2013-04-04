@@ -222,7 +222,7 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(ImageDecoder** decod
 
     // Try to create an ImageDecoder if we are not given one.
     if (!*decoder) {
-        *decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+        *decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied).leakPtr();
 
         if (!*decoder && m_imageDecoderFactory)
             *decoder = m_imageDecoderFactory->create().leakPtr();

@@ -102,42 +102,42 @@ bool matchesCURSignature(char* contents)
 
 }
 
-ImageDecoder* ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
+PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
 {
     static const unsigned lengthOfLongestSignature = 14; // To wit: "RIFF????WEBPVP"
     char contents[lengthOfLongestSignature];
     unsigned length = copyFromSharedBuffer(contents, lengthOfLongestSignature, data, 0);
     if (length < lengthOfLongestSignature)
-        return 0;
+        return nullptr;
 
     if (matchesGIFSignature(contents))
-        return new GIFImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption));
 
 #if !PLATFORM(QT) || (PLATFORM(QT) && USE(LIBPNG))
     if (matchesPNGSignature(contents))
-        return new PNGImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return new ICOImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption));
 #endif
 
 #if !PLATFORM(QT) || (PLATFORM(QT) && USE(LIBJPEG))
     if (matchesJPEGSignature(contents))
-        return new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
 #endif
 
 #if USE(WEBP)
     if (matchesWebPSignature(contents))
-        return new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption));
 #endif
 
     if (matchesBMPSignature(contents))
-        return new BMPImageDecoder(alphaOption, gammaAndColorProfileOption);
+        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption));
 
 #if PLATFORM(QT)
-    return new ImageDecoderQt(alphaOption, gammaAndColorProfileOption);
+    return adoptPtr(new ImageDecoderQt(alphaOption, gammaAndColorProfileOption));
 #endif
-    return 0;
+    return nullptr;
 }
 
 #if !USE(SKIA)

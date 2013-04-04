@@ -57,9 +57,9 @@ bool GraphicsContext3D::ImageExtractor::extractImage(bool premultiplyAlpha, bool
     bool hasAlpha = m_skiaImage ? !m_skiaImage->bitmap().isOpaque() : true;
     if ((!m_skiaImage || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
         // Attempt to get raw unpremultiplied image data.
-        OwnPtr<ImageDecoder> decoder(adoptPtr(ImageDecoder::create(
+        OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
             *(m_image->data()), ImageSource::AlphaNotPremultiplied,
-            ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied)));
+            ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied));
         if (!decoder)
             return false;
         decoder->setData(m_image->data(), true);

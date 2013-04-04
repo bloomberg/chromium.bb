@@ -32,6 +32,7 @@
 
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 
 #if USE(CG)
@@ -168,7 +169,7 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    NativeImageDecoderPtr m_decoder;
+    OwnPtr<NativeImageDecoderPtr> m_decoder;
 
 #if !USE(CG)
     AlphaOption m_alphaOption;

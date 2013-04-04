@@ -29,6 +29,7 @@
 #include "ImageDecodingStore.h"
 #include "ImageFrameGenerator.h"
 #include "LazyDecodingPixelRef.h"
+#include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
@@ -42,9 +43,9 @@ const char labelLazyDecoded[] = "lazy";
 
 bool DeferredImageDecoder::s_enabled = false;
 
-DeferredImageDecoder::DeferredImageDecoder(ImageDecoder* actualDecoder)
+DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
-    , m_actualDecoder(adoptPtr(actualDecoder))
+    , m_actualDecoder(actualDecoder)
     , m_orientation(DefaultImageOrientation)
 {
 }
@@ -53,15 +54,15 @@ DeferredImageDecoder::~DeferredImageDecoder()
 {
 }
 
-DeferredImageDecoder* DeferredImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorOption)
+PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorOption)
 {
-    ImageDecoder* actualDecoder = ImageDecoder::create(data, alphaOption, gammaAndColorOption);
-    return actualDecoder ? new DeferredImageDecoder(actualDecoder) : 0;
+    OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, gammaAndColorOption);
+    return actualDecoder ? adoptPtr(new DeferredImageDecoder(actualDecoder.release())) : nullptr;
 }
 
 PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> decoder)
 {
-    return adoptPtr(new DeferredImageDecoder(decoder.leakPtr()));
+    return adoptPtr(new DeferredImageDecoder(decoder));
 }
 
 bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
