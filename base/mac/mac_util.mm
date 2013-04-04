@@ -70,10 +70,12 @@ void SetUIMode() {
                       NSApplicationPresentationHideMenuBar;
   }
 
-  // Bug-fix: if the window is fullscreened (Lion-style) and
+  // Mac OS X bug: if the window is fullscreened (Lion-style) and
   // NSApplicationPresentationDefault is requested, the result is that the menu
-  // bar doesn't auto-hide. In that case, explicitly set the presentation
-  // options to the ones that are set by the system as it fullscreens a window.
+  // bar doesn't auto-hide. rdar://13576498 http://www.openradar.me/13576498
+  //
+  // As a workaround, in that case, explicitly set the presentation options to
+  // the ones that are set by the system as it fullscreens a window.
   if (desired_options == NSApplicationPresentationDefault &&
       current_options & NSApplicationPresentationFullScreen) {
     desired_options |= NSApplicationPresentationFullScreen |
