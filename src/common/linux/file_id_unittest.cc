@@ -175,6 +175,41 @@ TYPED_TEST(FileIDTest, BuildID) {
   EXPECT_STREQ(expected_identifier_string, identifier_string);
 }
 
+TYPED_TEST(FileIDTest, BuildIDPH) {
+  const uint8_t kExpectedIdentifier[sizeof(MDGUID)] =
+    {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+  char expected_identifier_string[] =
+    "00000000-0000-0000-0000-000000000000";
+  FileID::ConvertIdentifierToString(kExpectedIdentifier,
+                                    expected_identifier_string,
+                                    sizeof(expected_identifier_string));
+
+  uint8_t identifier[sizeof(MDGUID)];
+  char identifier_string[sizeof(expected_identifier_string)];
+
+  ELF elf(EM_386, TypeParam::kClass, kLittleEndian);
+  Section text(kLittleEndian);
+  text.Append(4096, 0);
+  elf.AddSection(".text", text, SHT_PROGBITS);
+  Notes notes(kLittleEndian);
+  notes.AddNote(0, "Linux",
+                reinterpret_cast<const uint8_t *>("\0x42\0x02\0\0"), 4);
+  notes.AddNote(NT_GNU_BUILD_ID, "GNU", kExpectedIdentifier,
+                sizeof(kExpectedIdentifier));
+  int note_idx = elf.AddSection(".note", notes, SHT_NOTE);
+  elf.AddSegment(note_idx, note_idx, PT_NOTE);
+  elf.Finish();
+  this->GetElfContents(elf);
+
+  EXPECT_TRUE(FileID::ElfFileIdentifierFromMappedFile(this->elfdata,
+                                                      identifier));
+
+  FileID::ConvertIdentifierToString(identifier, identifier_string,
+                                    sizeof(identifier_string));
+  EXPECT_STREQ(expected_identifier_string, identifier_string);
+}
+
 // Test to make sure two files with different text sections produce
 // different hashes when not using a build id.
 TYPED_TEST(FileIDTest, UniqueHashes) {
