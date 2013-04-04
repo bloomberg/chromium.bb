@@ -338,6 +338,10 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
+// Disables the native Autofill UI, which is part of the browser process rather
+// than part of the renderer process.  http://crbug.com/51644
+const char kDisableNativeAutofillUi[]       = "disable-new-autofill-ui";
+
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
@@ -580,10 +584,6 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
-
-// Enables the native Autofill UI, which is part of the browser process rather
-// than part of the renderer process.  http://crbug.com/51644
-const char kEnableNativeAutofillUi[]        = "enable-new-autofill-ui";
 
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";

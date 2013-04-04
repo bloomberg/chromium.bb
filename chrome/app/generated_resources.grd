@@ -6490,10 +6490,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NATIVE_AUTOFILL_UI_NAME" desc="Title for the flag to enable the native Autofill UI">
-        Enable native Autofill UI
+      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_NAME" desc="Title for the flag to disable the native Autofill UI">
+        Disable native Autofill UI
       </message>
-      <message name="IDS_FLAGS_ENABLE_NATIVE_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to enable the native Autofill UI">
+      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to disable the native Autofill UI">
         The native Autofill popup UI is implemented in the browser process rather than in the renderer process.
       </message>
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME" desc="Name of the flag that enables an interactive autocomplete UI.">
