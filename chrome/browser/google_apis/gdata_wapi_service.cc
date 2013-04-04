@@ -9,8 +9,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -37,51 +35,6 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 // The resource ID for the root directory for WAPI is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/
 const char kWapiRootDirectoryResourceId[] = "folder:root";
-
-// Parses the JSON value to ResourceList.
-scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
-    scoped_ptr<base::Value> value) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(value);
-
-  return ResourceList::ExtractAndParse(*value);
-}
-
-// Runs |callback| with |error| and |value|, but replace the error code with
-// GDATA_PARSE_ERROR, if there was a parsing error.
-void DidParseResourceListOnBlockingPool(
-    const GetResourceListCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // resource_list being NULL indicates there was a parsing error.
-  if (!resource_list)
-    error = GDATA_PARSE_ERROR;
-
-  callback.Run(error, resource_list.Pass());
-}
-
-// Parses the JSON value to ResourceList on the blocking pool and runs
-// |callback| on the UI thread once parsing is done.
-void ParseResourceListAndRun(const GetResourceListCallback& callback,
-                             GDataErrorCode error,
-                             scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, scoped_ptr<ResourceList>());
-    return;
-  }
-
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
-      base::Bind(&DidParseResourceListOnBlockingPool, callback, error));
-}
 
 // Parses the JSON value to ResourceEntry runs |callback|.
 void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
@@ -233,7 +186,7 @@ void GDataWapiService::GetResourceList(
           static_cast<int>(start_changestamp),
           search_query,
           directory_resource_id,
-          base::Bind(&ParseResourceListAndRun, callback)));
+          callback));
 }
 
 void GDataWapiService::GetAllResourceList(

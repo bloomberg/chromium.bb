@@ -319,7 +319,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
 TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  scoped_ptr<ResourceList> result_data;
 
   GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
@@ -342,14 +342,18 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
             "showfolders=true&include-shared=true&max-results=500&"
             "include-installed-apps=true",
             http_request_.relative_url);
-  EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
-      result_data.get()));
+
+  // Sanity check of the result.
+  scoped_ptr<ResourceList> expected(
+      ResourceList::ExtractAndParse(
+          *test_util::LoadJSONFile("chromeos/gdata/root_feed.json")));
+  ASSERT_TRUE(result_data);
+  EXPECT_EQ(expected->title(), result_data->title());
 }
 
 TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  scoped_ptr<ResourceList> result_data;
 
   GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
@@ -372,16 +376,19 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
             "showfolders=true&include-shared=true&max-results=500"
             "&include-installed-apps=true",
             http_request_.relative_url);
-  EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
-      result_data.get()));
+
+  scoped_ptr<ResourceList> expected(
+      ResourceList::ExtractAndParse(
+          *test_util::LoadJSONFile("chromeos/gdata/root_feed.json")));
+  ASSERT_TRUE(result_data);
+  EXPECT_EQ(expected->title(), result_data->title());
 }
 
 TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  scoped_ptr<ResourceList> result_data;
 
   GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
