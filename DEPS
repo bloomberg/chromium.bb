@@ -48,6 +48,12 @@ vars = {
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
   "openssl_revision": "191822",
+
+  "ios_webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling openssl
+  # and whatever else without interference from each other.
+  "ios_webkit_revision": "147503",
 }
 
 deps = {
@@ -423,11 +429,11 @@ deps_os = {
 
     # Pull only the headers from WebKit.
     "src/third_party/WebKit/Source/WebKit/chromium/public":
-      Var("webkit_trunk") + "/Source/WebKit/chromium/public@" +
-      Var("webkit_revision"),
+      Var("ios_webkit_trunk") + "/Source/WebKit/chromium/public@" +
+      Var("ios_webkit_revision"),
     "src/third_party/WebKit/Source/Platform/chromium/public":
-      Var("webkit_trunk") + "/Source/Platform/chromium/public@" +
-      Var("webkit_revision"),
+      Var("ios_webkit_trunk") + "/Source/Platform/chromium/public@" +
+      Var("ios_webkit_revision"),
 
     # Code that's not needed due to not building everything (especially WebKit).
     "src/build/util/support": None,
