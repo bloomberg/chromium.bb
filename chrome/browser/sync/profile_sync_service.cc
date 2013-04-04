@@ -1551,7 +1551,9 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             base::Bind(&ProfileSyncService::StartSyncingWithServer,
                        base::Unretained(this))));
   }
-  ConfigurePriorityDataTypes();
+
+  // This is probably where we want to trigger configuration of priority
+  // datatypes, but we need to resolve crbug.com/226195 first.
 
 #if defined(OS_ANDROID)
   if (GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
