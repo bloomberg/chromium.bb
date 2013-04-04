@@ -1168,14 +1168,21 @@ _release.add_config('lumpy-release',
   critical_for_chrome=True,
 )
 
-_release.add_config('lumpy-pgo-release',
-  boards=['lumpy'],
+release_pgo = _release.derive(
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
                                     num=4),
   pgo_generate=True,
   pgo_use=True,
   push_image=False,
   dev_installer_prebuilts=False,
+)
+
+release_pgo.add_config('x86-alex-pgo-release',
+  boards=['x86-alex'],
+)
+
+release_pgo.add_config('lumpy-pgo-release',
+  boards=['lumpy'],
 )
 
 _release.add_config('link-release',
