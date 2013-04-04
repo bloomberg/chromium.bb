@@ -605,6 +605,90 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   ASSERT_EQ(0U, credit_cards.size());
 }
 
+TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressUSA) {
+  // United States addresses must specifiy one address line, a city, state and
+  // zip code.
+  FormData form;
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Name:", "name", "Barack Obama", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "DC", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "20500", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Country:", "country", "USA", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                              &imported_credit_card));
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles.size());
+}
+
+TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGB) {
+  // British addresses do not require a state/province as the county is usually
+  // not requested on forms.
+  FormData form;
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Name:", "name", "David Cameron", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address", "10 Downing Street", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "London", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Postcode:", "postcode", "SW1A 2AA", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Country:", "country", "United Kingdom", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                              &imported_credit_card));
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles.size());
+}
+
+TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGI) {
+  // Gibraltar has the most minimal set of requirements for a valid address.
+  // There are no cities or provinces and no postal/zip code system.
+  FormData form;
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Name:", "name", "Sir Adrian Johns", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address", "The Convent, Main Street", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Country:", "country", "Gibraltar", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                              &imported_credit_card));
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles.size());
+}
+
 TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   FormData form;
   FormFieldData field;

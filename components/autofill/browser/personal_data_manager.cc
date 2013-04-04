@@ -78,14 +78,33 @@ T* address_of(T& v) {
 }
 
 // Returns true if minimum requirements for import of a given |profile| have
-// been met.  An address submitted via a form must have at least these fields
-// filled.  No verification of validity of the contents is preformed.  This is
-// and existence check only.
+// been met.  An address submitted via a form must have at least the fields
+// required as determined by its country code.
+// No verification of validity of the contents is preformed. This is an
+// existence check only.
 bool IsMinimumAddress(const AutofillProfile& profile) {
-  return !profile.GetRawInfo(ADDRESS_HOME_LINE1).empty() &&
-         !profile.GetRawInfo(ADDRESS_HOME_CITY).empty() &&
-         !profile.GetRawInfo(ADDRESS_HOME_STATE).empty() &&
-         !profile.GetRawInfo(ADDRESS_HOME_ZIP).empty();
+  // All countries require at least one address line.
+  if (profile.GetRawInfo(ADDRESS_HOME_LINE1).empty())
+    return false;
+  std::string app_locale = AutofillCountry::ApplicationLocale();
+  std::string country_code = profile.CountryCode();
+
+  if (country_code.empty())
+    country_code = AutofillCountry::CountryCodeForLocale(app_locale);
+
+  AutofillCountry country(country_code, app_locale);
+
+  if (country.requires_city() && profile.GetRawInfo(ADDRESS_HOME_CITY).empty())
+    return false;
+
+  if (country.requires_state() &&
+      profile.GetRawInfo(ADDRESS_HOME_STATE).empty())
+    return false;
+
+  if (country.requires_zip() && profile.GetRawInfo(ADDRESS_HOME_ZIP).empty())
+    return false;
+
+  return true;
 }
 
 // Return true if the |field_type| and |value| are valid within the context
