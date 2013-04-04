@@ -436,6 +436,9 @@ void InputMethodManagerImpl::SetFilteredExtensionImes(
   for (std::map<std::string, InputMethodDescriptor>::iterator extra_iter =
        extra_input_methods_.begin(); extra_iter != extra_input_methods_.end();
        ++extra_iter) {
+    if (ComponentExtensionIMEManager::IsComponentExtensionIMEId(
+        extra_iter->first))
+      continue;  // Do not filter component extension.
     std::vector<std::string>::iterator active_iter = std::find(
         active_input_method_ids_.begin(), active_input_method_ids_.end(),
         extra_iter->first);
