@@ -1,5 +1,5 @@
 
-noinst_DATA = xml/index.xml
+noinst_DATA = xml/client/index.xml xml/server/index.xml
 dist_noinst_DATA = wayland.doxygen.in
 
 scanned_src_files_client = 				\
@@ -61,12 +61,23 @@ server_MANPAGES = \
 
 man3_MANS= $(client_MANPAGES) $(server_MANPAGES)
 
-xml/index.xml: $(scanned_src_files_client) wayland.doxygen
-	doxygen wayland.doxygen
+xml/client/index.xml: $(scanned_src_files_client) wayland.doxygen
+	$(AM_V_GEN)$(MKDIR_P) xml/client
+	(cat wayland.doxygen; \
+          echo "GENERATE_XML=YES"; \
+          echo "XML_OUTPUT=xml/client"; \
+          echo "INPUT= $(scanned_src_files_client)"; \
+          ) | doxygen -
+xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen
+	$(AM_V_GEN)$(MKDIR_P) xml/server
+	(cat wayland.doxygen; \
+          echo "GENERATE_XML=YES"; \
+          echo "XML_OUTPUT=xml/server"; \
+          echo "INPUT= $(scanned_src_files_server)"; \
+          ) | doxygen -
 
 doxygen.man: $(scanned_src_files_client) $(scanned_src_files_server)
 	(cat wayland.doxygen; \
-          echo "GENERATE_XML=NO"; \
           echo "GENERATE_MAN=YES"; \
           echo "MAN_OUTPUT=man"; \
           echo "JAVADOC_AUTOBRIEF=NO"; \

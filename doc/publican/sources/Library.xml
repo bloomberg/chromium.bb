@@ -6,4 +6,5 @@
 <chapter id="chap-Library">
   <title>Wayland Library</title>
   <xi:include href="WaylandClientAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="WaylandServerAPI.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </chapter>

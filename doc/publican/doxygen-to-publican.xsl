@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="xml" encoding="UTF-8" indent="yes" />
+<xsl:param name="which" />
 
 <xsl:template match="/">
   <!-- insert docbook's DOCTYPE blurb -->
@@ -11,12 +12,13 @@
 ]>
 ]]></xsl:text>
 
-  <section id="sect-Library-Client">
-    <title>Client API</title>
-    <para>Following is the Wayland library classes for clients
-	  (<emphasis>libwayland-client</emphasis>). Note that most of the
-	  procedures are related with IPC, which is the main responsibility of
-	  the library.
+  <section id="sect-Library-$which">
+    <xsl:attribute name="id">sect-Library-<xsl:value-of select="$which"/></xsl:attribute>
+    <title><xsl:value-of select="$which"/> API</title>
+    <para>Following is the Wayland library classes for the <xsl:value-of select="$which"/>
+      (<emphasis>libwayland-<xsl:value-of select="translate($which, 'SC', 'sc')"/></emphasis>).
+      Note that most of the procedures are related with IPC, which is the main responsibility of
+      the library.
     </para>
 
     <xsl:if test="/doxygen/compounddef[@kind='class']">
