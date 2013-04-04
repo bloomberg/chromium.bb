@@ -43,7 +43,7 @@ bool VideoDecoderVerbatim::IsReadyForData() {
 
 void VideoDecoderVerbatim::Initialize(const SkISize& screen_size) {
   updated_region_.setEmpty();
-  screen_buffer_.reset(NULL);
+  screen_buffer_.reset();
 
   screen_size_ = screen_size;
   // Allocate the screen buffer, if necessary.
