@@ -216,8 +216,9 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (dialog_controller_ &&
-      dialog_controller_->dialog_type() ==
-          autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
+      (dialog_controller_->dialog_type() ==
+          autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
+       !dialog_controller_->AutocheckoutIsRunning())) {
     HideRequestAutocompleteDialog();
   }
 
