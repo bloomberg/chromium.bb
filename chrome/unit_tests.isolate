@@ -29,6 +29,7 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '../testing/test_env.py',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
           'browser/safe_browsing/two_phase_testserver.py',
@@ -38,7 +39,7 @@
           '../extensions/test/data/',
           '../net/data/',
           '../net/tools/testserver/',
-          '../testing/test_env.py',
+          '../third_party/accessibility-developer-tools/gen/',
           '../third_party/hunspell_dictionaries/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
@@ -55,9 +56,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-        ],
-        'isolate_dependency_untracked': [
-          '../third_party/accessibility-developer-tools/gen/',
         ],
       },
     }],
