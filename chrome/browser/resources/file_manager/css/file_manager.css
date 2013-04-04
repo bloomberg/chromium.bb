@@ -163,6 +163,7 @@ body.loaded {
 .dialog-sidebar {
   -webkit-box-flex: 0;
   background-color: #e6e6e6;
+  border-right: 1px solid rgb(170, 170, 170);
   display: -webkit-box;
   max-width: 50%;
   min-width: 45px;
@@ -176,20 +177,21 @@ body.loaded {
 div.sidebar-splitter {
   -webkit-box-flex: 0;
   cursor: col-resize;
-  margin-left: -4px;  /* +1px to accomodate the roots list border */
+  margin-left: -3px;
   margin-right: -3px;
   position: relative;
-  width: 7px;
+  width: 6px;
   z-index: 2;
 }
 
 #directory-tree {
-  -webkit-box-orient: vertical;
-  border-right: 1px solid rgb(170, 170, 170);
-  display: -webkit-box;
+  bottom: 0;
+  left: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  width: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 #directory-tree .tree-row {
