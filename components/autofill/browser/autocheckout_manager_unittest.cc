@@ -63,8 +63,12 @@ scoped_ptr<FormStructure> CreateTestFormStructure(
       new FormStructure(form, std::string()));
 
   // Set mocked Autofill server field types.
-  for (size_t i = 0; i < autofill_types.size(); ++i)
+  for (size_t i = 0; i < autofill_types.size(); ++i) {
     form_structure->field(i)->set_server_type(autofill_types[i]);
+    // Set heuristic type to make sure that server_types are used and not
+    // heuritic type.
+    form_structure->field(i)->set_heuristic_type(CREDIT_CARD_NUMBER);
+  }
 
   return form_structure.Pass();
 }
@@ -74,7 +78,7 @@ scoped_ptr<FormStructure> CreateTestAddressFormStructure() {
   autofill_types.push_back(NAME_FULL);
   autofill_types.push_back(PHONE_HOME_WHOLE_NUMBER);
   autofill_types.push_back(EMAIL_ADDRESS);
-
+  autofill_types.push_back(NO_SERVER_DATA);
   return CreateTestFormStructure(autofill_types);
 }
 
@@ -429,10 +433,13 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
 
   std::vector<FormData> filled_forms = ReadFilledForms();
   ASSERT_EQ(1U, filled_forms.size());
-  ASSERT_EQ(3U, filled_forms[0].fields.size());
+  ASSERT_EQ(4U, filled_forms[0].fields.size());
   EXPECT_EQ(ASCIIToUTF16("Test User"), filled_forms[0].fields[0].value);
   EXPECT_EQ(ASCIIToUTF16("650-123-9909"), filled_forms[0].fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("blah@blah.com"), filled_forms[0].fields[2].value);
+  // Last field should not be filled, because there is no server mapping
+  // available for it.
+  EXPECT_EQ(ASCIIToUTF16("SomeField"), filled_forms[0].fields[3].value);
 
   filled_forms.clear();
   ClearIpcSink();

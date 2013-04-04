@@ -308,6 +308,10 @@ void AutocheckoutManager::ReturnAutocheckoutData(
 
 void AutocheckoutManager::SetValue(const AutofillField& field,
                                    FormFieldData* field_to_fill) {
+  // No-op if Autofill server doesn't know about the field.
+  if (field.server_type() == NO_SERVER_DATA)
+    return;
+
   AutofillFieldType type = field.type();
 
   if (type == FIELD_WITH_DEFAULT_VALUE) {
