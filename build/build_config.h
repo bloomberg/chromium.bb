@@ -19,13 +19,13 @@
 #endif
 
 // A set of macros to use for platform detection.
-#if defined(__APPLE__)
+#if defined(ANDROID)
+#define OS_ANDROID 1
+#elif defined(__APPLE__)
 #define OS_MACOSX 1
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OS_IOS 1
 #endif  // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#elif defined(ANDROID)
-#define OS_ANDROID 1
 #elif defined(__native_client__)
 #define OS_NACL 1
 #elif defined(__linux__)
