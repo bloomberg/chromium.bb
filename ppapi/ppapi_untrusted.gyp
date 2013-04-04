@@ -62,9 +62,6 @@
          'native_client/native_client.gyp:ppapi_lib',
       ],
       'variables': {
-        # This is user code (vs IRT code), so tls accesses do not
-        # need to be indirect through a function call.
-        'newlib_tls_flags=': [],
         # TODO(bradnelson): Remove this compile flag once new nacl_rev is
         # above 9362.
         'compile_flags': [
@@ -132,6 +129,18 @@
         ],
       },
       'conditions': [
+        ['target_arch!="arm"', {
+          # This is user code (vs IRT code), so tls accesses do not
+          # need to be indirect through a function call.
+          # For PNaCl, the -mtls-use-call flag is localized to the
+          # IRT's translation command, so it is unnecessary to
+          # counteract that flag here.
+          'variables': {
+            'gcc_compile_flags': [
+              '-mno-tls-use-call',
+            ],
+          },
+        }],
         ['target_arch!="arm" and disable_glibc==0', {
           'variables': {
             'build_glibc': 1,
