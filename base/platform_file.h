@@ -55,6 +55,8 @@ enum PlatformFileFlags {
 
   PLATFORM_FILE_TERMINAL_DEVICE = 1 << 16,   // Serial port flags
   PLATFORM_FILE_BACKUP_SEMANTICS = 1 << 17,  // Used on Windows only
+
+  PLATFORM_FILE_EXECUTE = 1 << 18,           // Used on Windows only
 };
 
 // PLATFORM_FILE_ERROR_ACCESS_DENIED is returned when a call fails because of

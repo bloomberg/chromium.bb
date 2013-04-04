@@ -55,6 +55,8 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
     access |= GENERIC_WRITE;
   if (flags & PLATFORM_FILE_WRITE_ATTRIBUTES)
     access |= FILE_WRITE_ATTRIBUTES;
+  if (flags & PLATFORM_FILE_EXECUTE)
+    access |= GENERIC_EXECUTE;
 
   DWORD sharing = (flags & PLATFORM_FILE_EXCLUSIVE_READ) ? 0 : FILE_SHARE_READ;
   if (!(flags & PLATFORM_FILE_EXCLUSIVE_WRITE))
