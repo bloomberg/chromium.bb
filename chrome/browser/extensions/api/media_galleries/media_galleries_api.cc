@@ -54,8 +54,11 @@ const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
 const char kInvalidInteractive[] = "Unknown value for interactive.";
 
-const char kIsRemovableKey[] = "isRemovable";
+const char kDeviceIdKey[] = "deviceId";
+const char kGalleryIdKey[] = "galleryId";
 const char kIsMediaDeviceKey[] = "isMediaDevice";
+const char kIsRemovableKey[] = "isRemovable";
+const char kNameKey[] = "name";
 
 // Checks whether the MediaGalleries API is currently accessible (it may be
 // disallowed even if an extension has the requisite permission).
@@ -146,7 +149,6 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       APIPermission::kMediaGalleries, &read_param);
 
   const int child_id = rvh->GetProcess()->GetID();
-  std::set<std::string> file_system_names;
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
     scoped_ptr<base::DictionaryValue> file_system_dict_value(
@@ -157,21 +159,14 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     file_system_dict_value->SetStringWithoutPathExpansion(
         "fsid", filesystems[i].fsid);
 
-    // The name must be unique according to the HTML5 File System API spec.
-    if (ContainsKey(file_system_names, filesystems[i].name)) {
-      NOTREACHED() << "Duplicate file system name: " << filesystems[i].name;
-      continue;
-    }
-    file_system_names.insert(filesystems[i].name);
     file_system_dict_value->SetStringWithoutPathExpansion(
-        MediaFileSystemRegistry::kNameKey, filesystems[i].name);
+        kNameKey, filesystems[i].name);
     file_system_dict_value->SetStringWithoutPathExpansion(
-        MediaFileSystemRegistry::kGalleryIdKey,
+        kGalleryIdKey,
         base::Uint64ToString(filesystems[i].pref_id));
     if (!filesystems[i].transient_device_id.empty()) {
       file_system_dict_value->SetStringWithoutPathExpansion(
-          MediaFileSystemRegistry::kDeviceIdKey,
-          filesystems[i].transient_device_id);
+          kDeviceIdKey, filesystems[i].transient_device_id);
     }
     file_system_dict_value->SetBooleanWithoutPathExpansion(
         kIsRemovableKey, filesystems[i].removable);

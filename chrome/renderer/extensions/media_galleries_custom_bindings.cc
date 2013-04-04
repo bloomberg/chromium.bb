@@ -31,15 +31,11 @@ MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
 
 v8::Handle<v8::Value> MediaGalleriesCustomBindings::GetMediaFileSystemObject(
     const v8::Arguments& args) {
-  if (args.Length() != 2) {
+  if (args.Length() != 1) {
     NOTREACHED();
     return v8::Undefined();
   }
   if (!args[0]->IsString()) {
-    NOTREACHED();
-    return v8::Undefined();
-  }
-  if (!args[1]->IsString()) {
     NOTREACHED();
     return v8::Undefined();
   }
@@ -49,20 +45,15 @@ v8::Handle<v8::Value> MediaGalleriesCustomBindings::GetMediaFileSystemObject(
     NOTREACHED();
     return v8::Undefined();
   }
-  std::string name(*v8::String::Utf8Value(args[1]));
-  if (name.empty()) {
-    NOTREACHED();
-    return v8::Undefined();
-  }
 
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
+  const std::string fs_name = fileapi::GetIsolatedFileSystemName(origin, fsid);
   const std::string root_url =
       fileapi::GetIsolatedFileSystemRootURIString(
           origin, fsid, extension_misc::kMediaFileSystemPathPart);
-  return webframe->createFileSystem(
-                                    WebKit::WebFileSystemTypeIsolated,
-                                    WebKit::WebString::fromUTF8(name),
+  return webframe->createFileSystem(WebKit::WebFileSystemTypeIsolated,
+                                    WebKit::WebString::fromUTF8(fs_name),
                                     WebKit::WebString::fromUTF8(root_url));
 }
 

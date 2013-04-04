@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -63,7 +62,7 @@ struct InvalidatedGalleriesInfo {
 
 }  // namespace
 
-MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
+MediaFileSystemInfo::MediaFileSystemInfo(const string16& fs_name,
                                          const base::FilePath& fs_path,
                                          const std::string& filesystem_id,
                                          MediaGalleryPrefId pref_id,
@@ -357,7 +356,7 @@ class ExtensionGalleriesHost
       DCHECK(!fsid.empty());
 
       MediaFileSystemInfo new_entry(
-          MakeJSONFileSystemName(gallery_info.display_name, pref_id, device_id),
+          gallery_info.display_name,
           path,
           fsid,
           pref_id,
@@ -389,46 +388,6 @@ class ExtensionGalleriesHost
       return std::string();
 
     return monitor->GetTransientIdForDeviceId(device_id);
-  }
-
-  // This code is deprecated and should be removed. See http://crbug.com/170138
-  // Make a JSON string out of |name|, |pref_id| and |device_id|. The IDs makes
-  // the combined name unique. The JSON string should not contain any slashes.
-  std::string MakeJSONFileSystemName(const string16& name,
-                                     const MediaGalleryPrefId& pref_id,
-                                     const std::string& device_id) {
-    string16 sanitized_name;
-    string16 separators =
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-        base::FilePath::kSeparators
-#else
-        ASCIIToUTF16(base::FilePath::kSeparators)
-#endif
-        ;  // NOLINT
-    ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
-
-    base::DictionaryValue dict_value;
-    dict_value.SetStringWithoutPathExpansion(
-        MediaFileSystemRegistry::kNameKey, sanitized_name);
-
-    // This should have been a StringValue, but it's a bit late to change it.
-    dict_value.SetIntegerWithoutPathExpansion(
-        MediaFileSystemRegistry::kGalleryIdKey, pref_id);
-
-    // |device_id| can be empty, in which case, just omit it.
-    std::string transient_device_id =
-        GetTransientIdForRemovableDeviceId(device_id);
-    if (!transient_device_id.empty()) {
-      dict_value.SetStringWithoutPathExpansion(
-          MediaFileSystemRegistry::kDeviceIdKey, transient_device_id);
-    }
-    dict_value.SetStringWithoutPathExpansion(
-        "DEPRECATED",
-        "This JSON string is deprecated, use getMediaFileSystemMetadata.");
-
-    std::string json_string;
-    base::JSONWriter::Write(&dict_value, &json_string);
-    return json_string;
   }
 
   void CleanUp() {
@@ -473,10 +432,6 @@ class ExtensionGalleriesHost
 /******************
  * Public methods
  ******************/
-
-const char MediaFileSystemRegistry::kDeviceIdKey[] = "deviceId";
-const char MediaFileSystemRegistry::kGalleryIdKey[] = "galleryId";
-const char MediaFileSystemRegistry::kNameKey[] = "name";
 
 void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,

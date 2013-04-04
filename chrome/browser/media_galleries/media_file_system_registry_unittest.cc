@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -188,39 +187,17 @@ void GetGalleryInfoCallback(
   }
 }
 
-void CheckGalleryJSONName(const std::string& name, bool removable) {
-  scoped_ptr<DictionaryValue> dict(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(name)));
-  ASSERT_TRUE(dict);
-
-  // Check deviceId.
-  EXPECT_EQ(removable,
-            dict->HasKey(MediaFileSystemRegistry::kDeviceIdKey)) << name;
-  if (removable) {
-    std::string device_id;
-    EXPECT_TRUE(dict->GetString(MediaFileSystemRegistry::kDeviceIdKey,
-                                &device_id)) << name;
-    EXPECT_FALSE(device_id.empty()) << name;
-  }
-
-  // Check galleryId.
-  EXPECT_TRUE(dict->HasKey(MediaFileSystemRegistry::kGalleryIdKey)) << name;
-
-  // Check name.
-  EXPECT_TRUE(dict->HasKey(MediaFileSystemRegistry::kNameKey)) << name;
-  std::string gallery_name;
-  EXPECT_TRUE(dict->GetString(MediaFileSystemRegistry::kNameKey,
-                              &gallery_name)) << name;
-  EXPECT_FALSE(gallery_name.empty()) << name;
-}
-
 void CheckGalleryInfo(const MediaFileSystemInfo& info,
                       TestMediaFileSystemContext* fs_context,
+                      const string16* name,
                       const base::FilePath& path,
                       bool removable,
                       bool media_device) {
-  // TODO(vandebo) check the name (from path.LossyDisplayName) after JSON
-  // removal.
+  if (name) {
+    EXPECT_EQ(*name, info.name);
+  } else {
+    EXPECT_EQ(path.LossyDisplayName(), info.name);
+  }
   EXPECT_EQ(path, info.path);
   EXPECT_EQ(removable, info.removable);
   EXPECT_EQ(media_device, info.media_device);
@@ -320,6 +297,10 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   base::FilePath dcim_dir() {
     return dcim_dir_;
+  }
+
+  TestMediaFileSystemContext* test_file_system_context() {
+    return test_file_system_context_;
   }
 
   // Create a user added gallery based on the information passed and add it to
@@ -711,9 +692,8 @@ void MediaFileSystemRegistryTest::CheckNewGalleryInfo(
       continue;
 
     ASSERT_FALSE(found_new);
-    CheckGalleryJSONName(it->second.name, removable);
-    CheckGalleryInfo(it->second, test_file_system_context_, location, removable,
-                     media_device);
+    CheckGalleryInfo(it->second, test_file_system_context_, NULL, location,
+                     removable, media_device);
     found_new = true;
   }
   ASSERT_TRUE(found_new);
@@ -730,7 +710,7 @@ MediaFileSystemRegistryTest::GetAutoAddedGalleries(
        ++it) {
     if (it->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       base::FilePath path = it->second.AbsolutePath();
-      MediaFileSystemInfo info(path.AsUTF8Unsafe(), path, std::string(),
+      MediaFileSystemInfo info(path.LossyDisplayName(), path, std::string(),
                                0, std::string(), false, false);
       result.push_back(info);
     }
@@ -811,7 +791,7 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
                        profile_state->regular_permission_extension(),
                        device_id,
                        true /*has access*/);
-  MediaFileSystemInfo added_info(empty_dir().AsUTF8Unsafe(), empty_dir(),
+  MediaFileSystemInfo added_info(empty_dir().LossyDisplayName(), empty_dir(),
                                  std::string(), 0, std::string(), false, false);
   added_galleries.push_back(added_info);
   profile_state->CheckGalleries("user added regular", added_galleries,
@@ -891,7 +871,8 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   for (FSInfoMap::const_iterator it = galleries_info.begin();
        it != galleries_info.end();
        ++it) {
-    CheckGalleryJSONName(it->second.name, false /*not removable*/);
+    CheckGalleryInfo(it->second, test_file_system_context(), &it->second.name,
+                     it->second.path, false, false);
   }
 }
 
