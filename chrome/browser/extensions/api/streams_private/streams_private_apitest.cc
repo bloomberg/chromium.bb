@@ -5,7 +5,6 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/api/streams_private/streams_resource_throttle.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -42,46 +41,6 @@ using google_apis::test_server::HttpServer;
 using testing::_;
 
 namespace {
-
-// Used in StreamsResourceThrottleExtensionApiTest.Basic test to mock the
-// resource controller bound to the test resource throttle.
-class MockResourceController : public ResourceController {
- public:
-  virtual ~MockResourceController() {}
-  MOCK_METHOD0(Cancel, void());
-  MOCK_METHOD0(CancelAndIgnore, void());
-  MOCK_METHOD1(CancelWithError, void(int error_code));
-  MOCK_METHOD0(Resume, void());
-};
-
-// Creates and triggers a test StreamsResourceThrottle for the listed
-// request parameters (child and routing id from which the request came,
-// request's MIME type and URL), with extension info map |info_map| and resource
-// controller |controller|.
-// The created resource throttle is started by calling |WillProcessResponse|.
-// Used in StreamsResourceThrottleExtensionApiTest.Basic test.
-//
-// Must be called on the IO thread.
-void CreateAndTriggerThrottle(int child_id,
-                              int routing_id,
-                              const std::string& mime_type,
-                              const GURL& url,
-                              bool is_incognito,
-                              scoped_refptr<ExtensionInfoMap> info_map,
-                              ResourceController* controller) {
-  typedef StreamsResourceThrottle::StreamsPrivateEventRouter
-          HandlerEventRouter;
-  scoped_ptr<StreamsResourceThrottle> throttle(
-      StreamsResourceThrottle::CreateForTest(child_id, routing_id,
-          mime_type, url, is_incognito, info_map,
-          scoped_ptr<HandlerEventRouter>()));
-
-  throttle->set_controller_for_testing(controller);
-
-  bool defer = false;
-  throttle->WillProcessResponse(&defer);
-  EXPECT_FALSE(defer);
-}
 
 // Test server's request handler.
 // Returns response that should be sent by the test server.
@@ -127,14 +86,11 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
 // The test extension expects the resources that should be handed to the
 // extension to have MIME type 'application/msword' and the resources that
 // should be downloaded by the browser to have MIME type 'plain/text'.
-class StreamsResourceThrottleExtensionApiTest : public ExtensionApiTest {
+class StreamsPrivateApiTest : public ExtensionApiTest {
  public:
-  StreamsResourceThrottleExtensionApiTest() {}
+  StreamsPrivateApiTest() {}
 
-  virtual ~StreamsResourceThrottleExtensionApiTest() {
-    // Clear the test extension from the white-list.
-    MimeTypesHandler::set_extension_whitelisted_for_test(NULL);
-  }
+  virtual ~StreamsPrivateApiTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Init test server.
@@ -195,7 +151,6 @@ class StreamsResourceThrottleExtensionApiTest : public ExtensionApiTest {
   const extensions::Extension* LoadTestExtension() {
     // The test extension id is set by the key value in the manifest.
     test_extension_id_ = "oickdpebdnfbgkcaoklfcdhjniefkcji";
-    MimeTypesHandler::set_extension_whitelisted_for_test(&test_extension_id_);
 
     const extensions::Extension* extension = LoadExtension(
         test_data_dir_.AppendASCII("streams_private/handle_mime_type"));
@@ -238,52 +193,10 @@ class StreamsResourceThrottleExtensionApiTest : public ExtensionApiTest {
   base::ScopedTempDir downloads_dir_;
 };
 
-// http://crbug.com/176082: This test flaky on Chrome OS ASAN bots.
-#if defined(OS_CHROMEOS)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-// Tests that invoking StreamsResourceThrottle with handleable MIME type
-// actually invokes the mimeTypesHandler.onExecuteMimeTypeHandler event.
-IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest,
-                       MAYBE_Basic) {
-  ASSERT_TRUE(LoadTestExtension()) << message_;
-
-  ResultCatcher catcher;
-
-  MockResourceController mock_resource_controller;
-  EXPECT_CALL(mock_resource_controller, Cancel()).Times(0);
-  EXPECT_CALL(mock_resource_controller, CancelAndIgnore()).Times(1);
-  EXPECT_CALL(mock_resource_controller, CancelWithError(_)).Times(0);
-  EXPECT_CALL(mock_resource_controller, Resume()).Times(0);
-
-  // Get child and routing id from the current web contents (the real values
-  // should be used so the StreamsPrivateEventRouter can correctly extract
-  // profile from them).
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  int child_id = web_contents->GetRenderProcessHost()->GetID();
-  int routing_id = web_contents->GetRoutingID();
-
-  scoped_refptr<ExtensionInfoMap> info_map =
-      extensions::ExtensionSystem::Get(browser()->profile())->info_map();
-
-  // The resource throttle must be created and invoked on IO thread.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateAndTriggerThrottle, child_id, routing_id,
-          "application/msword", GURL("http://foo"), false, info_map,
-           &mock_resource_controller));
-
-  // Wait for the test extension to received the onExecuteContentHandler event.
-  EXPECT_TRUE(catcher.GetNextResult());
-}
-
 // Tests that navigating to a resource with a MIME type handleable by an
 // installed, white-listed extension invokes the extension's
 // onExecuteContentHandler event (and does not start a download).
-IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest, Navigate) {
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
   ASSERT_TRUE(LoadTestExtension()) << message_;
 
   ResultCatcher catcher;
@@ -308,8 +221,7 @@ IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest, Navigate) {
 // Tests that navigation to an attachment starts a download, even if there is an
 // extension with a file browser handler that can handle the attachment's MIME
 // type.
-IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest,
-                       NavigateToAnAttachment) {
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateToAnAttachment) {
   InitializeDownloadSettings();
 
   ASSERT_TRUE(LoadTestExtension()) << message_;
@@ -347,8 +259,7 @@ IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest,
 // Tests that direct download requests don't get intercepted by
 // StreamsResourceThrottle, even if there is an extension with a file
 // browser handler that can handle the download's MIME type.
-IN_PROC_BROWSER_TEST_F(StreamsResourceThrottleExtensionApiTest,
-                       DirectDownload) {
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
   InitializeDownloadSettings();
 
   ASSERT_TRUE(LoadTestExtension()) << message_;

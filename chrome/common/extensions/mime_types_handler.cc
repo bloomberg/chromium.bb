@@ -49,8 +49,6 @@ MimeTypesHandlerInfo::~MimeTypesHandlerInfo() {
 // static
 std::vector<std::string> MimeTypesHandler::GetMIMETypeWhitelist() {
   std::vector<std::string> whitelist;
-  if (g_test_extension_id_)
-    whitelist.push_back(*g_test_extension_id_);
   for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i)
     whitelist.push_back(kMIMETypeHandlersWhitelist[i]);
   return whitelist;
@@ -79,8 +77,6 @@ MimeTypesHandler* MimeTypesHandler::GetHandler(
     return &info->handler_;
   return NULL;
 }
-
-std::string* MimeTypesHandler::g_test_extension_id_ = NULL;
 
 MimeTypesHandlerParser::MimeTypesHandlerParser() {
 }

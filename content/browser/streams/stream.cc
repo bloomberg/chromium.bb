@@ -125,6 +125,9 @@ scoped_ptr<StreamHandle> Stream::CreateHandle(const GURL& original_url,
 }
 
 void Stream::CloseHandle() {
+  // Prevent deletion until this function ends.
+  scoped_refptr<Stream> ref(this);
+
   CHECK(stream_handle_);
   stream_handle_ = NULL;
   registry_->UnregisterStream(url());

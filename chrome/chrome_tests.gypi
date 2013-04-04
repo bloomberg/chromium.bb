@@ -1252,6 +1252,7 @@
         'browser/extensions/api/session_restore/session_restore_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/storage/settings_apitest.cc',
+        'browser/extensions/api/streams_private/streams_private_apitest.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
         'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
         'browser/extensions/api/system_info_cpu/system_info_cpu_apitest.cc',
