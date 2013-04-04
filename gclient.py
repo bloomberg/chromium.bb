@@ -191,8 +191,9 @@ class DependencySettings(GClientKeywords):
     # the new blink url.
     if (self._custom_vars.get('webkit_trunk', '') ==
         'svn://svn-mirror.golo.chromium.org/webkit-readonly/trunk'):
-      self._custom_vars['webkit_trunk'] = (
-        'svn://svn-mirror.golo.chromium.org/blink/trunk')
+      new_url = 'svn://svn-mirror.golo.chromium.org/blink/trunk'
+      print 'Overwriting Var("webkit_trunk") with %s' % new_url
+      self._custom_vars['webkit_trunk'] = new_url
 
     # Post process the url to remove trailing slashes.
     if isinstance(self._url, basestring):
@@ -1439,7 +1440,7 @@ checked out tree via 'patch -p0 < patchfile'.
                          'references')
   parser.remove_option('--jobs')
   (options, args) = parser.parse_args(args)
-  # Force jobs to 1 so the stdout is not annotated with the thread ids 
+  # Force jobs to 1 so the stdout is not annotated with the thread ids
   options.jobs = 1
   client = GClient.LoadCurrentConfig(options)
   if not client:
