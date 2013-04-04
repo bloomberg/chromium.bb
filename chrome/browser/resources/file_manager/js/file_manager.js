@@ -1863,6 +1863,7 @@ DialogType.isModal = function(type) {
 
   /**
    * Return full path of the current directory or null.
+   * @return {string=} The full path of the current directory.
    */
   FileManager.prototype.getCurrentDirectory = function() {
     return this.directoryModel_ &&
@@ -2097,6 +2098,7 @@ DialogType.isModal = function(type) {
       this.closeOnUnmount_ = false;
     }
 
+    this.directoryTree_.selectPath(this.getCurrentDirectory());
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();

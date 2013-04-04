@@ -22,7 +22,7 @@ DirectoryTreeUtil.updateChangedDirectoryItem = function(
   for (var i = 0; i < currentDirectoryItem.items.length; i++) {
     var item = currentDirectoryItem.items[i];
     if (changedDirectryPath === item.entry.fullPath) {
-      item.updateSubDirectories();
+      item.updateSubDirectories(false /* recursive */);
       break;
     } else if (changedDirectryPath.indexOf(item.entry.fullPath) == 0) {
       DirectoryTreeUtil.updateChangedDirectoryItem(changedDirectryPath, item);
@@ -86,6 +86,25 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
  */
 DirectoryTreeUtil.isDummyEntry = function(dirEntry) {
   return !('createReader' in dirEntry);
+};
+
+/**
+ * Finds a parent directory of the {@code path} from the {@code items}, and
+ * invokes the DirectoryItem.selectPath() of the found directory.
+ *
+ * @param {Array.<DirectoryItem>} items Items to be searched.
+ * @param {string} path Path to be searched for.
+ * @return {boolean} True if the parent item is found.
+ */
+DirectoryTreeUtil.searchAndSelectPath = function(items, path) {
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    if (PathUtil.isParentPath(item.fullPath, path)) {
+      item.selectPath(path);
+      return true;
+    }
+  }
+  return false;
 };
 
 /**
@@ -208,6 +227,7 @@ DirectoryItem.prototype.decorate = function(
 DirectoryItem.prototype.onExpand_ = function(e) {
   this.updateSubDirectories(
       false /* recursive */,
+      function() {},
       function() {
         this.expanded = false;
       }.bind(this));
@@ -218,10 +238,11 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 /**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
+ * @param {function()=} opt_successCallback Callback called on success.
  * @param {function()=} opt_errorCallback Callback called on error.
  */
 DirectoryItem.prototype.updateSubDirectories = function(
-    recursive, opt_errorCallback) {
+    recursive, opt_successCallback, opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
   if (DirectoryTreeUtil.isDummyEntry(this.dirEntry_)) {
     // Fake Drive root.
@@ -237,7 +258,8 @@ DirectoryItem.prototype.updateSubDirectories = function(
             return;
           }
 
-          this.updateSubDirectories(recursive, opt_errorCallback);
+          this.updateSubDirectories(
+              recursive, opt_successCallback, opt_errorCallback);
         }.bind(this),
         opt_errorCallback);
     return;
@@ -251,6 +273,7 @@ DirectoryItem.prototype.updateSubDirectories = function(
       if (!results.length) {
         this.entries_ = entries.sort();
         this.redrawSubDirectoryList_(recursive);
+        opt_successCallback && opt_successCallback();
         return;
       }
 
@@ -286,6 +309,25 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
 };
 
 /**
+ * Select the item corresponding to the given {@code path}.
+ * @param {string} path Path to be selected.
+ */
+DirectoryItem.prototype.selectPath = function(path) {
+  if (path == this.fullPath) {
+    this.selected = true;
+    return;
+  }
+
+  if (DirectoryTreeUtil.searchAndSelectPath(this.items, path))
+    return;
+
+  // If the path doesn't exist, updates sub directories and tryes again.
+  this.updateSubDirectories(
+      false /* recursive */,
+      DirectoryTreeUtil.searchAndSelectPath.bind(null, this.items, path));
+};
+
+/**
  * Executes the assigned action as a drop target.
  */
 DirectoryItem.prototype.doDropTargetAction = function() {
@@ -296,7 +338,8 @@ DirectoryItem.prototype.doDropTargetAction = function() {
  * Executes the assigned action. DirectoryItem performs changeDirectory.
  */
 DirectoryItem.prototype.doAction = function() {
-  this.directoryModel_.changeDirectory(this.fullPath);
+  if (this.fullPath != this.directoryModel_.getCurrentDirPath())
+    this.directoryModel_.changeDirectory(this.fullPath);
 };
 
 /**
@@ -384,6 +427,17 @@ DirectoryTree.prototype.setContextMenu = function(menu) {
                                               this.contextMenu_);
     }
   }
+};
+
+/**
+ * Select the item corresponding to the given path.
+ * @param {string} path Path to be selected.
+ */
+DirectoryTree.prototype.selectPath = function(path) {
+  if (this.selectedItem && path == this.selectedItem.fullPath)
+    return;
+
+  DirectoryTreeUtil.searchAndSelectPath(this.items, path);
 };
 
 /**
