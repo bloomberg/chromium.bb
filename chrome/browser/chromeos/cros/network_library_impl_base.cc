@@ -1064,10 +1064,11 @@ class UserStringSubstitution : public onc::StringSubstitution {
 
 }  // namespace
 
-bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
-                                             const std::string& passphrase,
-                                             onc::ONCSource source,
-                                             bool allow_web_trust_from_policy) {
+bool NetworkLibraryImplBase::LoadOncNetworks(
+    const std::string& onc_blob,
+    const std::string& passphrase,
+    onc::ONCSource source,
+    net::CertificateList* onc_trusted_certificates) {
   VLOG(2) << __func__ << ": called on " << onc_blob;
   NetworkProfile* profile = NULL;
   bool from_policy = (source == onc::ONC_SOURCE_USER_POLICY ||
@@ -1152,13 +1153,11 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   if (has_certificates) {
     VLOG(2) << "ONC file has " << certificates->GetSize() << " certificates";
 
-    // Web trust is only granted to certificates imported for a managed user
-    // on a managed device and for user imports.
-    bool allow_web_trust =
-        (source == onc::ONC_SOURCE_USER_IMPORT) ||
-        (source == onc::ONC_SOURCE_USER_POLICY && allow_web_trust_from_policy);
-    onc::CertificateImporter cert_importer(allow_web_trust);
-    if (cert_importer.ParseAndStoreCertificates(*certificates) !=
+    // Web trust is only granted to certificates imported by the user.
+    bool allow_trust_imports = source == onc::ONC_SOURCE_USER_IMPORT;
+    onc::CertificateImporter cert_importer(allow_trust_imports);
+    if (cert_importer.ParseAndStoreCertificates(
+            *certificates, onc_trusted_certificates) !=
         onc::CertificateImporter::IMPORT_OK) {
       LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
                  << onc::GetSourceAsString(source);

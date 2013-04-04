@@ -43,6 +43,8 @@ class ResourcePrefetchPredictorObserver;
 }
 
 namespace net {
+class CertTrustAnchorProvider;
+class CertVerifier;
 class CookieStore;
 class FraudulentCertificateReporter;
 class HttpServerProperties;
@@ -268,6 +270,12 @@ class ProfileIOData {
     scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter;
 #endif
 
+#if defined(OS_CHROMEOS)
+    // This is used to build the CertVerifier on the IO thread, and is a shared
+    // provider used by all profiles for now.
+    net::CertTrustAnchorProvider* trust_anchor_provider;
+#endif
+
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
@@ -481,6 +489,9 @@ class ProfileIOData {
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
   mutable scoped_ptr<net::HttpServerProperties>
       http_server_properties_;
+#if defined(OS_CHROMEOS)
+  mutable scoped_ptr<net::CertVerifier> cert_verifier_;
+#endif
 
 #if defined(ENABLE_NOTIFICATIONS)
   mutable DesktopNotificationService* notification_service_;

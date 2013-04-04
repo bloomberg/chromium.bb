@@ -40,22 +40,21 @@ class CHROMEOS_EXPORT CertificateImporter {
 
   // During import with ParseCertificate(), Web trust is only applied to Server
   // and Authority certificates with the Trust attribute "Web" if the
-  // |allow_web_trust| permission is granted, otherwise the attribute is
+  // |allow_trust_imports| permission is granted, otherwise the attribute is
   // ignored.
-  explicit CertificateImporter(bool allow_web_trust);
+  explicit CertificateImporter(bool allow_trust_imports);
 
   // Parses and stores the certificates in |onc_certificates| into the
   // certificate store. If the "Remove" field of a certificate is enabled, then
   // removes the certificate from the store instead of importing. Returns the
   // result of the parse operation. In case of IMPORT_INCOMPLETE, some of the
   // certificates may be stored/removed successfully while others had errors.
+  // If |onc_trusted_certificates| is not NULL then it will be filled with the
+  // list of certificates that requested the Web trust flag.
   // If no error occurred, returns IMPORT_OK.
   ParseResult ParseAndStoreCertificates(
-      const base::ListValue& onc_certificates);
-
-  // Parses and stores/removes |certificate| in/from the certificate
-  // store. Returns true if the operation succeeded.
-  bool ParseAndStoreCertificate(const base::DictionaryValue& certificate);
+      const base::ListValue& onc_certificates,
+      net::CertificateList* onc_trusted_certificates);
 
   // Lists the certificates that have the string |label| as their certificate
   // nickname (exact match).
@@ -68,16 +67,24 @@ class CHROMEOS_EXPORT CertificateImporter {
   static bool DeleteCertAndKeyByNickname(const std::string& label);
 
  private:
-  bool ParseServerOrCaCertificate(const std::string& cert_type,
-                                  const std::string& guid,
-                                  const base::DictionaryValue& certificate);
+  // Parses and stores/removes |certificate| in/from the certificate
+  // store. Returns true if the operation succeeded.
+  bool ParseAndStoreCertificate(
+      const base::DictionaryValue& certificate,
+      net::CertificateList* onc_trusted_certificates);
+
+  bool ParseServerOrCaCertificate(
+      const std::string& cert_type,
+      const std::string& guid,
+      const base::DictionaryValue& certificate,
+      net::CertificateList* onc_trusted_certificates);
 
   bool ParseClientCertificate(const std::string& guid,
                               const base::DictionaryValue& certificate);
 
   // Whether certificates with Trust attribute "Web" should be stored with web
   // trust.
-  bool allow_web_trust_;
+  bool allow_trust_imports_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateImporter);
 };
