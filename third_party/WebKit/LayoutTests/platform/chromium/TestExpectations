@@ -3708,9 +3708,9 @@ crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass ImageOnlyFailure ]
 
 # These tests flakily reorder the scrollbars in debug, causing text failures
 webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
