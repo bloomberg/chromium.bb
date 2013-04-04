@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
@@ -79,13 +78,11 @@ CopyOperation::CopyOperation(
     DriveScheduler* drive_scheduler,
     DriveFileSystemInterface* drive_file_system,
     DriveResourceMetadata* metadata,
-    google_apis::DriveUploaderInterface* uploader,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
   : drive_scheduler_(drive_scheduler),
     drive_file_system_(drive_file_system),
     metadata_(metadata),
-    uploader_(uploader),
     blocking_task_runner_(blocking_task_runner),
     observer_(observer),
     move_operation_(new MoveOperation(drive_scheduler,
@@ -362,14 +359,16 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
   }
   DCHECK(entry_proto.get());
 
-  uploader_->UploadNewFile(entry_proto->resource_id(),
-                           params.remote_file_path,
-                           params.local_file_path,
-                           params.remote_file_path.BaseName().value(),
-                           content_type,
-                           base::Bind(&CopyOperation::OnTransferCompleted,
-                                      weak_ptr_factory_.GetWeakPtr(),
-                                      params.callback));
+  drive_scheduler_->UploadNewFile(
+      entry_proto->resource_id(),
+      params.remote_file_path,
+      params.local_file_path,
+      params.remote_file_path.BaseName().value(),
+      content_type,
+      DriveClientContext(USER_INITIATED),
+      base::Bind(&CopyOperation::OnTransferCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params.callback));
 }
 
 void CopyOperation::OnTransferCompleted(

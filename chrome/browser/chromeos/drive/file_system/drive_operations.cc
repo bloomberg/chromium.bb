@@ -38,7 +38,6 @@ void DriveOperations::Init(
   copy_operation_.reset(new file_system::CopyOperation(drive_scheduler,
                                                        drive_file_system,
                                                        metadata,
-                                                       uploader,
                                                        blocking_task_runner,
                                                        observer));
   create_directory_operation_.reset(

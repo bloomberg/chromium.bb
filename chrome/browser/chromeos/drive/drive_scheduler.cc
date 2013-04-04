@@ -294,6 +294,30 @@ void DriveScheduler::DownloadFile(
   StartJobLoop(GetJobQueueType(TYPE_DOWNLOAD_FILE));
 }
 
+void DriveScheduler::UploadNewFile(
+    const std::string& parent_resource_id,
+    const base::FilePath& drive_file_path,
+    const base::FilePath& local_file_path,
+    const std::string& title,
+    const std::string& content_type,
+    const DriveClientContext& context,
+    const google_apis::UploadCompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_UPLOAD_NEW_FILE));
+  new_job->resource_id = parent_resource_id;
+  new_job->drive_file_path = drive_file_path;
+  new_job->local_file_path = local_file_path;
+  new_job->title = title;
+  new_job->content_type = content_type;
+  new_job->upload_completion_callback = callback;
+  new_job->context = context;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_UPLOAD_NEW_FILE));
+}
+
 void DriveScheduler::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& drive_file_path,
@@ -477,6 +501,19 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)),
           entry->get_content_callback);
+    }
+    break;
+
+    case TYPE_UPLOAD_NEW_FILE: {
+      uploader_->UploadNewFile(
+          entry->resource_id,
+          entry->drive_file_path,
+          entry->local_file_path,
+          entry->title,
+          entry->content_type,
+          base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
     }
     break;
 
@@ -771,6 +808,7 @@ DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
       return METADATA_QUEUE;
 
     case TYPE_DOWNLOAD_FILE:
+    case TYPE_UPLOAD_NEW_FILE:
     case TYPE_UPLOAD_EXISTING_FILE:
       return FILE_QUEUE;
   }

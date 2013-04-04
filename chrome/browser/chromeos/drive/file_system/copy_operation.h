@@ -19,7 +19,6 @@ class Value;
 }
 
 namespace google_apis {
-class DriveUploaderInterface;
 class ResourceEntry;
 }
 
@@ -42,7 +41,6 @@ class CopyOperation {
   CopyOperation(DriveScheduler* drive_scheduler,
                 DriveFileSystemInterface* drive_file_system,
                 DriveResourceMetadata* metadata,
-                google_apis::DriveUploaderInterface* uploader,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -202,7 +200,6 @@ class CopyOperation {
   DriveScheduler* drive_scheduler_;
   DriveFileSystemInterface* drive_file_system_;
   DriveResourceMetadata* metadata_;
-  google_apis::DriveUploaderInterface* uploader_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

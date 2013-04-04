@@ -40,6 +40,7 @@ class DriveScheduler
     TYPE_REMOVE_RESOURCE_FROM_DIRECTORY,
     TYPE_ADD_NEW_DIRECTORY,
     TYPE_DOWNLOAD_FILE,
+    TYPE_UPLOAD_NEW_FILE,
     TYPE_UPLOAD_EXISTING_FILE,
   };
 
@@ -154,6 +155,15 @@ class DriveScheduler
       const DriveClientContext& context,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
+
+  // Adds an UploadNewFile operation to the queue.
+  void UploadNewFile(const std::string& parent_resource_id,
+                     const base::FilePath& drive_file_path,
+                     const base::FilePath& local_file_path,
+                     const std::string& title,
+                     const std::string& content_type,
+                     const DriveClientContext& context,
+                     const google_apis::UploadCompletionCallback& callback);
 
   // Adds an UploadExistingFile operation to the queue.
   void UploadExistingFile(
@@ -275,13 +285,15 @@ class DriveScheduler
     //   TYPE_DOWNLOAD_FILE
     google_apis::GetContentCallback get_content_callback;
 
-    // Parameters for UploadExistingFile
+    // Parameters for UploadNewFile and UploadExistingFile
     // Used by:
+    //   TYPE_UPLOAD_NEW_FILE
     //   TYPE_UPLOAD_EXISTING_FILE
     base::FilePath drive_file_path;
     base::FilePath local_file_path;
     std::string content_type;
     std::string etag;
+    std::string title;
     google_apis::UploadCompletionCallback upload_completion_callback;
   };
 
