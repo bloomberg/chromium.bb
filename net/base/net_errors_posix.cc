@@ -73,8 +73,8 @@ Error MapSystemError(int os_error) {
       return ERR_INVALID_ARGUMENT;
     case EFBIG:  // File too large.
       return ERR_FILE_TOO_BIG;
-    case EISDIR:  // Is a directory.
-      return ERR_FILE_NOT_FOUND;
+    case EISDIR:  // Operation not allowed for a directory.
+      return ERR_ACCESS_DENIED;
     case ENAMETOOLONG:  // Filename too long.
       return ERR_FILE_PATH_TOO_LONG;
     case ENFILE:  // Too many open files in system.
