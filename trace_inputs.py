@@ -195,6 +195,15 @@ if sys.platform == 'win32':
     return os.path.isabs(path) or len(path) == 2 and path[1] == ':'
 
 
+  def find_item_native_case(root, item):
+    """Gets the native path case of a single item based at root_path."""
+    if item == '..':
+      return item
+
+    root = get_native_path_case(root)
+    return os.path.basename(get_native_path_case(os.path.join(root, item)))
+
+
   def get_native_path_case(p):
     """Returns the native path case for an existing file.
 
@@ -261,18 +270,6 @@ elif sys.platform == 'darwin':
   isabs = os.path.isabs
 
 
-  def _find_item_native_case(root_path, item):
-    """Gets the native path case of a single item based at root_path.
-
-    There is no API to get the native path case of symlinks on OSX. So it
-    needs to be done the slow way.
-    """
-    item = item.lower()
-    for element in os.listdir(root_path):
-      if element.lower() == item:
-        return element
-
-
   def _native_case(p):
     """Gets the native path case. Warning: this function resolves symlinks."""
     try:
@@ -305,8 +302,23 @@ elif sys.platform == 'darwin':
         base_path = base
       else:
         base_path = safe_join(base_path, base)
-      symlink = _find_item_native_case(base_path, symlink)
+      symlink = find_item_native_case(base_path, symlink)
     return base, symlink, rest
+
+
+  def find_item_native_case(root_path, item):
+    """Gets the native path case of a single item based at root_path.
+
+    There is no API to get the native path case of symlinks on OSX. So it
+    needs to be done the slow way.
+    """
+    if item == '..':
+      return item
+
+    item = item.lower()
+    for element in os.listdir(root_path):
+      if element.lower() == item:
+        return element
 
 
   def get_native_path_case(path):
@@ -325,14 +337,10 @@ elif sys.platform == 'darwin':
 
     # Starts assuming there is no symlink along the path.
     resolved = _native_case(path)
-    if resolved.lower() == path.lower():
+    if path.lower() in (resolved.lower(), resolved.lower() + './'):
       # This code path is incredibly faster.
       logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
       return resolved
-
-    # TODO(maruel): Use os.path.normpath?
-    if resolved.lower() + './' == path.lower():
-      return resolved[:-2]
 
     # There was a symlink, process it.
     base, symlink, rest = _split_at_symlink_native(None, path)
@@ -359,6 +367,15 @@ else:  # OSes other than Windows and OSX.
 
   # On non-windows, keep the stdlib behavior.
   isabs = os.path.isabs
+
+
+  def find_item_native_case(root, item):
+    """Gets the native path case of a single item based at root_path."""
+    if item == '..':
+      return item
+
+    root = get_native_path_case(root)
+    return os.path.basename(get_native_path_case(os.path.join(root, item)))
 
 
   def get_native_path_case(path):

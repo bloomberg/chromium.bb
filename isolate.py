@@ -118,6 +118,24 @@ def path_starts_with(prefix, path):
   return path.startswith(prefix)
 
 
+def fix_native_path_case(root, path):
+  """Ensures that each component of |path| has the proper native case by
+     iterating slowly over the directory elements of |path|."""
+  native_case_path = root
+  for raw_part in path.split(os.sep):
+    if not raw_part or raw_part == '.':
+      break
+
+    part = trace_inputs.find_item_native_case(native_case_path, raw_part)
+    if not part:
+      raise run_isolated.MappingError(
+          'Input file %s doesn\'t exist' %
+          os.path.join(native_case_path, raw_part))
+    native_case_path = os.path.join(native_case_path, part)
+
+  return os.path.normpath(native_case_path)
+
+
 def expand_symlinks(indir, relfile):
   """Follows symlinks in |relfile|, but treating symlinks that point outside the
   build tree as if they were ordinary directories/files. Returns the final
@@ -140,14 +158,19 @@ def expand_symlinks(indir, relfile):
     pre_symlink, symlink, post_symlink = trace_inputs.split_at_symlink(
         done, todo)
     if not symlink:
+      todo = fix_native_path_case(done, todo)
       done = os.path.join(done, todo)
       break
     symlink_path = os.path.join(done, pre_symlink, symlink)
     post_symlink = post_symlink.lstrip(os.path.sep)
     # readlink doesn't exist on Windows.
     # pylint: disable=E1101
-    target = os.readlink(symlink_path)
-    target = os.path.normpath(os.path.join(done, pre_symlink, target))
+    target = os.path.normpath(os.path.join(done, pre_symlink))
+    symlink_target = os.readlink(symlink_path)
+
+    # The symlink itself could be using the wrong path case.
+    target = fix_native_path_case(target, symlink_target)
+
     if not os.path.exists(target):
       raise run_isolated.MappingError(
           'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))

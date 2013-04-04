@@ -902,18 +902,16 @@ class IsolateTest(IsolateBase):
 
   if sys.platform == 'darwin':
     def test_symlink_path_case(self):
-      # Ensures that the resuling path case is fixed on case insensitive file
+      # Ensures that the resulting path case is fixed on case insensitive file
       # system.
       os.symlink('dest', os.path.join(self.cwd, 'link'))
       os.mkdir(os.path.join(self.cwd, 'Dest'))
       open(os.path.join(self.cwd, 'Dest', 'file.txt'), 'w').close()
 
       result = isolate.expand_symlinks(unicode(self.cwd), 'link')
-      # TODO(maruel): Should be 'Dest".
-      self.assertEqual((u'dest', [u'link']), result)
+      self.assertEqual((u'Dest', [u'link']), result)
       result = isolate.expand_symlinks(unicode(self.cwd), 'link/File.txt')
-      # TODO(maruel): Should be 'Dest/file.txt".
-      self.assertEqual((u'dest/File.txt', [u'link']), result)
+      self.assertEqual((u'Dest/file.txt', [u'link']), result)
 
 
 class IsolateLoad(IsolateBase):
