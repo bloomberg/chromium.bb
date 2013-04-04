@@ -41,7 +41,8 @@ DictionaryPtr GetEditableFlags(const base::DictionaryValue& policy) {
   MarkRecommendedFieldnames(policy, result_editable.get());
 
   // Recurse into nested dictionaries.
-  for (base::DictionaryValue::Iterator it(policy); it.HasNext(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(policy); !it.IsAtEnd();
+       it.Advance()) {
     const base::DictionaryValue* child_policy = NULL;
     if (it.key() == kRecommended ||
         !it.value().GetAsDictionary(&child_policy)) {

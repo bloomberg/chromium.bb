@@ -221,7 +221,7 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
   bool notify = false;
   bool update_service_list = false;
   for (base::DictionaryValue::Iterator iter(properties);
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     // Defer updating Services until all other properties have been updated.
     if (iter.key() == flimflam::kServicesProperty)
       update_service_list = true;

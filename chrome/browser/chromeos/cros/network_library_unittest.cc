@@ -187,7 +187,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
 
     EXPECT_EQ(expected_configs->size(), configs.size());
 
-    for (base::DictionaryValue::Iterator it(*expected_configs); it.HasNext();
+    for (base::DictionaryValue::Iterator it(*expected_configs); !it.IsAtEnd();
          it.Advance()) {
       const base::DictionaryValue* expected_config;
       it.value().GetAsDictionary(&expected_config);

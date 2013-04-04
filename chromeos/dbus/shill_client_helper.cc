@@ -367,7 +367,7 @@ void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
       dbus::MessageWriter array_writer(NULL);
       variant_writer.OpenArray("{ss}", &array_writer);
       for (base::DictionaryValue::Iterator it(*dictionary);
-           it.HasNext();
+           !it.IsAtEnd();
            it.Advance()) {
         dbus::MessageWriter entry_writer(NULL);
         array_writer.OpenDictEntry(&entry_writer);

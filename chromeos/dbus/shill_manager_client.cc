@@ -37,7 +37,7 @@ void AppendServicePropertiesDictionary(
   dbus::MessageWriter array_writer(NULL);
   writer->OpenArray("{sv}", &array_writer);
   for (base::DictionaryValue::Iterator it(dictionary);
-       it.HasNext();
+       !it.IsAtEnd();
        it.Advance()) {
     dbus::MessageWriter entry_writer(NULL);
     array_writer.OpenDictEntry(&entry_writer);

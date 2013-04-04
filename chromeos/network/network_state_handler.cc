@@ -394,7 +394,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   if (type == ManagedState::MANAGED_TYPE_NETWORK)
     prev_connection_state = managed->AsNetworkState()->connection_state();
   for (base::DictionaryValue::Iterator iter(properties);
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     if (type == ManagedState::MANAGED_TYPE_NETWORK) {
       if (managed->PropertyChanged(iter.key(), iter.value()))
         network_property_updated = true;
@@ -435,8 +435,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
 
   if (network->connection_state() != prev_connection_state) {
     OnNetworkConnectionStateChanged(network);
-  }
-  else if (network->path() == default_network_path_ &&
+  } else if (network->path() == default_network_path_ &&
            key != flimflam::kSignalStrengthProperty) {
     // WiFi signal strength updates are too noisy, so don't
     // trigger default network updates for those changes.

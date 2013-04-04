@@ -132,7 +132,7 @@ void GeolocationHandler::GeolocationCallback(
 
   // Dictionary<device_type, entry_list>
   for (base::DictionaryValue::Iterator iter(properties);
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     const base::ListValue* entry_list = NULL;
     if (!iter.value().GetAsList(&entry_list)) {
       LOG(WARNING) << "Geolocation dictionary value not a List: " << iter.key();

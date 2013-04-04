@@ -192,7 +192,7 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
     TranslateOpenVPN(onc_object, ui_data);
 
   // Recurse into nested objects.
-  for (base::DictionaryValue::Iterator it(onc_object); it.HasNext();
+  for (base::DictionaryValue::Iterator it(onc_object); !it.IsAtEnd();
        it.Advance()) {
     const base::DictionaryValue* inner_object;
     if (!it.value().GetAsDictionary(&inner_object))
