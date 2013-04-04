@@ -58,6 +58,7 @@
     'command_buffer/service/gl_state_restorer_impl.cc',
     'command_buffer/service/gl_state_restorer_impl.h',
     'command_buffer/service/gl_utils.h',
+    'command_buffer/service/gpu_driver_bug_workaround_type.h',
     'command_buffer/service/gpu_scheduler.h',
     'command_buffer/service/gpu_scheduler.cc',
     'command_buffer/service/gpu_scheduler_mock.h',

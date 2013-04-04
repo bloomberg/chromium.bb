@@ -38,11 +38,31 @@
 // 16. "gpu_count" is a INT structure (defined below).
 // 17  "cpu_info" is a STRING structure (defined below).
 // 18. "exceptions" is a list of entries.
-// 19. "features" is a list of gpu switching options.
+// 19. "features" is a list of driver bug types, including
+//         "clear_alpha_in_readpixels",
+//         "clear_uniforms_before_program_use",
+//         "delete_instead_of_resize_fbo",
+//         "disable_angle_framebuffer_multisample",
+//         "disable_depth_texture",
+//         "disable_ext_occlusion_query",
+//         "enable_chromium_fast_npot_mo8_textures",
+//         "exit_on_context_lost",
+//         "flush_on_context_switch",
+//         "max_cube_map_texture_size_limit_1024",
+//         "max_cube_map_texture_size_limit_4096",
+//         "max_cube_map_texture_size_limit_512",
+//         "max_texture_size_limit_4096",
+//         "needs_glsl_built_in_function_emulation",
+//         "needs_offscreen_buffer_workaround",
+//         "restore_scissor_on_fbo_change",
+//         "reverse_point_sprite_coord_origin",
+//         "set_texture_filter_before_generating_mipmap",
+//         "use_client_side_arrays_for_stream_buffers",
+//         "use_current_program_after_successful_link".
 //     This field is mandatory.
 // 20. "description" has the description of the entry.
 // 21. "webkit_bugs" is an array of associated webkit bug numbers.
-// 22. "cr_bugs" is an array of associated webkit bug numbers.
+// 22. "cr_bugs" is an array of associated chromium bug numbers.
 // 23. "browser_version" is a VERSION structure (defined below).  If this
 //     condition is not satisfied, the entry will be ignored.  If it is not
 //     present, then the entry applies to all versions of the browser.
@@ -71,7 +91,221 @@
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "1.0",
+  "version": "1.1",
   "entries": [
+    {
+      "id": 1,
+      "description": "Imagination driver doesn't like uploading lots of buffer data constantly",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Imagination"
+      },
+      "features": [
+        "use_client_side_arrays_for_stream_buffers"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "ARM driver doesn't like uploading lots of buffer data constantly",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ARM"
+      },
+      "features": [
+        "use_client_side_arrays_for_stream_buffers"
+      ]
+    },
+    {
+      "id": 3,
+      "features": [
+        "set_texture_filter_before_generating_mipmap"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Need to set the alpha to 255",
+      "features": [
+        "clear_alpha_in_readpixels"
+      ]
+    },
+    {
+      "id": 5,
+      "vendor_id": "0x10de",
+      "features": [
+        "use_current_program_after_successful_link"
+      ]
+    },
+    {
+      "id": 6,
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "restore_scissor_on_fbo_change",
+        "flush_on_context_switch",
+        "delete_instead_of_resize_fbo"  // Only need this on the ICS driver.
+      ]
+    },
+    {
+      "id": 7,
+      "cr_bugs": [89557],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "needs_offscreen_buffer_workaround"
+      ]
+    },
+    {
+      "id": 8,
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "needs_glsl_built_in_function_emulation"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Mac AMD drivers get gl_PointCoord backward, rdar://problem/11883495",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "reverse_point_sprite_coord_origin"
+      ]
+    },
+    {
+      "id": 10,
+      "description": "Mac Intel drivers get gl_PointCoord backward, rdar://problem/11883495",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "reverse_point_sprite_coord_origin"
+      ]
+    },
+    {
+      "id": 11,
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "max_texture_size_limit_4096"
+      ]
+    },
+    {
+      "id": 12,
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "max_cube_map_texture_size_limit_1024"
+      ]
+    },
+    {
+      "id": 12,
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.7.3"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "max_cube_map_texture_size_limit_512"
+      ]
+    },
+    {
+      "id": 13,
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "max_texture_size_limit_4096",
+        "max_cube_map_texture_size_limit_4096"
+      ]
+    },
+    {
+      "id": 14,
+      "description": "Some Android Qualcomm drivers falsely report GL_ANGLE_framebuffer_multisample",
+      "cr_bugs": [165736],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_angle_framebuffer_multisample"
+      ]
+    },
+    {
+      "id": 15,
+      "description": "Intel drivers on Linux appear to be buggy",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_ext_occlusion_query"
+      ]
+    },
+    {
+      "id": 16,
+      "description": "Some drivers are unable to reset the D3D device in the GPU process sandbox",
+      "os": {
+        "type": "win"
+      },
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 17,
+      "description": "Everything except async + NPOT + multiple-of-8 textures are brutally slow for Imagination drivers",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Imagination"
+      },
+      "features": [
+        "enable_chromium_fast_npot_mo8_textures"
+      ]
+    },
+    {
+      "id": 17,
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_depth_texture"
+      ]
+    }
   ]
 }

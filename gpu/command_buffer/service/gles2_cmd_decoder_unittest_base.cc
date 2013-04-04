@@ -94,6 +94,10 @@ void GLES2DecoderTestBase::InitDecoder(
       NULL,
       memory_tracker_,
       bind_generates_resource));
+  // These two workarounds are always turned on.
+  group_->feature_info(
+      )->workarounds_.set_texture_filter_before_generating_mipmap = true;
+  group_->feature_info()->workarounds_.clear_alpha_in_readpixels = true;
 
   InSequence sequence;
 

@@ -7,9 +7,11 @@
 #include <set>
 
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gpu_driver_bug_workaround_type.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
@@ -62,6 +64,92 @@ class StringSet {
   std::set<std::string> string_set_;
 };
 
+// Process a string of wordaround type IDs (seperated by ',') and set up
+// the corresponding Workaround flags.
+void StringToWorkarounds(
+    const std::string& types, FeatureInfo::Workarounds* workarounds) {
+  DCHECK(workarounds);
+  std::vector<std::string> pieces;
+  base::SplitString(types, ',', &pieces);
+  for (size_t i = 0; i < pieces.size(); ++i) {
+    int number = 0;
+    bool succeed = base::StringToInt(pieces[i], &number);
+    DCHECK(succeed);
+    switch (number) {
+      case gpu::CLEAR_ALPHA_IN_READPIXELS:
+        workarounds->clear_alpha_in_readpixels = true;
+        break;
+      case gpu::CLEAR_UNIFORMS_BEFORE_PROGRAM_USE:
+        workarounds->clear_uniforms_before_program_use = true;
+        break;
+      case gpu::DELETE_INSTEAD_OF_RESIZE_FBO:
+        workarounds->delete_instead_of_resize_fbo = true;
+        break;
+      case gpu::DISABLE_ANGLE_FRAMEBUFFER_MULTISAMPLE:
+        workarounds->disable_angle_framebuffer_multisample = true;
+        break;
+      case gpu::DISABLE_DEPTH_TEXTURE:
+        workarounds->disable_depth_texture = true;
+        break;
+      case gpu::DISABLE_EXT_OCCLUSION_QUERY:
+        workarounds->disable_ext_occlusion_query = true;
+        break;
+      case gpu::ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES:
+        workarounds->enable_chromium_fast_npot_mo8_textures = true;
+        break;
+      case gpu::EXIT_ON_CONTEXT_LOST:
+        workarounds->exit_on_context_lost = true;
+        break;
+      case gpu::FLUSH_ON_CONTEXT_SWITCH:
+        workarounds->flush_on_context_switch = true;
+        break;
+      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
+        if (workarounds->max_cube_map_texture_size == 0 ||
+            workarounds->max_cube_map_texture_size > 1024)
+          workarounds->max_cube_map_texture_size = 1024;
+        break;
+      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
+        if (workarounds->max_cube_map_texture_size == 0 ||
+            workarounds->max_cube_map_texture_size > 4096)
+          workarounds->max_cube_map_texture_size = 4096;
+        break;
+      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
+        if (workarounds->max_cube_map_texture_size == 0 ||
+            workarounds->max_cube_map_texture_size > 512)
+          workarounds->max_cube_map_texture_size = 512;
+        break;
+      case gpu::MAX_TEXTURE_SIZE_LIMIT_4096:
+        if (workarounds->max_texture_size == 0 ||
+            workarounds->max_texture_size > 4096)
+          workarounds->max_texture_size = 4096;
+        break;
+      case gpu::NEEDS_GLSL_BUILT_IN_FUNCTION_EMULATION:
+        workarounds->needs_glsl_built_in_function_emulation = true;
+        break;
+      case gpu::NEEDS_OFFSCREEN_BUFFER_WORKAROUND:
+        workarounds->needs_offscreen_buffer_workaround = true;
+        break;
+      case gpu::RESTORE_SCISSOR_ON_FBO_CHANGE:
+        workarounds->restore_scissor_on_fbo_change = true;
+        break;
+      case REVERSE_POINT_SPRITE_COORD_ORIGIN:
+        workarounds->reverse_point_sprite_coord_origin = true;
+        break;
+      case gpu::SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP:
+        workarounds->set_texture_filter_before_generating_mipmap = true;
+        break;
+      case gpu::USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS:
+        workarounds->use_client_side_arrays_for_stream_buffers = true;
+        break;
+      case gpu::USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK:
+        workarounds->use_current_program_after_successful_link = true;
+        break;
+      default:
+        NOTIMPLEMENTED();
+    }
+  }
+}
+
 }  // anonymous namespace.
 
 FeatureInfo::FeatureFlags::FeatureFlags()
@@ -80,7 +168,6 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
-      disable_workarounds(false),
       enable_shader_name_hashing(false),
       enable_samplers(false),
       ext_draw_buffers(false) {
@@ -88,16 +175,21 @@ FeatureInfo::FeatureFlags::FeatureFlags()
 
 FeatureInfo::Workarounds::Workarounds()
     : clear_alpha_in_readpixels(false),
+      clear_uniforms_before_program_use(false),
+      delete_instead_of_resize_fbo(false),
+      disable_angle_framebuffer_multisample(false),
+      disable_depth_texture(false),
+      disable_ext_occlusion_query(false),
+      enable_chromium_fast_npot_mo8_textures(false),
+      exit_on_context_lost(false),
+      flush_on_context_switch(false),
       needs_glsl_built_in_function_emulation(false),
       needs_offscreen_buffer_workaround(false),
+      restore_scissor_on_fbo_change(false),
       reverse_point_sprite_coord_origin(false),
       set_texture_filter_before_generating_mipmap(false),
-      use_current_program_after_successful_link(false),
-      restore_scissor_on_fbo_change(false),
-      flush_on_context_switch(false),
-      delete_instead_of_resize_fbo(false),
       use_client_side_arrays_for_stream_buffers(false),
-      exit_on_context_lost(false),
+      use_current_program_after_successful_link(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -140,62 +232,30 @@ FeatureInfo::FeatureInfo() {
 
 bool FeatureInfo::Initialize(const char* allowed_features) {
   disallowed_features_ = DisallowedFeatures();
-  AddFeatures();
+  AddFeatures(*CommandLine::ForCurrentProcess());
   return true;
 }
 
 bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features,
                              const char* allowed_features) {
   disallowed_features_ = disallowed_features;
-  AddFeatures();
+  AddFeatures(*CommandLine::ForCurrentProcess());
   return true;
 }
 
-void FeatureInfo::AddFeatures() {
+void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   // Figure out what extensions to turn on.
   StringSet extensions(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
-  // NOTE: We need to check both GL_VENDOR and GL_RENDERER because for example
-  // Sandy Bridge on Linux reports:
-  //   GL_VENDOR: Tungsten Graphics, Inc
-  //   GL_RENDERER:
-  //       Mesa DRI Intel(R) Sandybridge Desktop GEM 20100330 DEVELOPMENT
-
-  static GLenum string_ids[] = {
-    GL_VENDOR,
-    GL_RENDERER,
-  };
-  bool is_intel = false;
-  bool is_nvidia = false;
-  bool is_amd = false;
-  bool is_mesa = false;
-  bool is_qualcomm = false;
-  bool is_imagination = false;
-  bool is_arm = false;
-  for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
-    const char* str = reinterpret_cast<const char*>(
-          glGetString(string_ids[ii]));
-    if (str) {
-      std::string lstr(StringToLowerASCII(std::string(str)));
-      StringSet string_set(lstr);
-      is_intel |= string_set.Contains("intel");
-      is_nvidia |= string_set.Contains("nvidia");
-      is_amd |= string_set.Contains("amd") || string_set.Contains("ati");
-      is_mesa |= string_set.Contains("mesa");
-      is_qualcomm |= string_set.Contains("qualcomm");
-      is_imagination |= string_set.Contains("imagination");
-      is_arm |= string_set.Contains("arm");
-    }
+  if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
+    std::string types = command_line.GetSwitchValueASCII(
+        switches::kGpuDriverBugWorkarounds);
+    StringToWorkarounds(types, &workarounds_);
   }
 
-  feature_flags_.disable_workarounds =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuDriverBugWorkarounds);
-
   feature_flags_.enable_shader_name_hashing =
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableShaderNameHashing);
+      !command_line.HasSwitch(switches::kDisableShaderNameHashing);
 
   bool npot_ok = false;
 
@@ -218,10 +278,7 @@ void FeatureInfo::AddFeatures() {
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
 
-  // Add extension to indicate fast-path texture uploads. This is
-  // for IMG, where everything except async + non-power-of-two +
-  // multiple-of-eight textures are brutally slow.
-  if (is_imagination)
+  if (workarounds_.enable_chromium_fast_npot_mo8_textures)
     AddExtensionString("GL_CHROMIUM_fast_NPOT_MO8_textures");
 
   feature_flags_.chromium_stream_texture = true;
@@ -306,7 +363,7 @@ void FeatureInfo::AddFeatures() {
   // get rid of it.
   //
   bool enable_depth_texture = false;
-  if (!is_qualcomm &&
+  if (!workarounds_.disable_depth_texture &&
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
        extensions.Contains("GL_ANGLE_depth_texture"))) {
@@ -341,12 +398,6 @@ void FeatureInfo::AddFeatures() {
       extensions.Contains("GL_ARB_vertex_array_object") ||
       extensions.Contains("GL_APPLE_vertex_array_object")) {
     feature_flags_.native_vertex_array_object = true;
-  }
-
-  // If the driver doesn't like uploading lots of buffer data constantly
-  // work around it by using client side arrays.
-  if (is_arm || is_imagination) {
-    workarounds_.use_client_side_arrays_for_stream_buffers = true;
   }
 
   // If we're using client_side_arrays we have to emulate
@@ -469,9 +520,7 @@ void FeatureInfo::AddFeatures() {
   // Check for multisample support
   bool ext_has_multisample =
       extensions.Contains("GL_EXT_framebuffer_multisample");
-  if (!is_qualcomm || feature_flags_.disable_workarounds) {
-    // Some Android Qualcomm drivers falsely report this ANGLE extension string.
-    // See http://crbug.com/165736
+  if (!workarounds_.disable_angle_framebuffer_multisample) {
     ext_has_multisample |=
        extensions.Contains("GL_ANGLE_framebuffer_multisample");
   }
@@ -587,16 +636,8 @@ void FeatureInfo::AddFeatures() {
       extensions.Contains("GL_ARB_occlusion_query2");
   bool have_arb_occlusion_query =
       extensions.Contains("GL_ARB_occlusion_query");
-  bool ext_occlusion_query_disallowed = false;
 
-#if defined(OS_LINUX)
-  if (!feature_flags_.disable_workarounds) {
-    // Intel drivers on Linux appear to be buggy.
-    ext_occlusion_query_disallowed = is_intel;
-  }
-#endif
-
-  if (!ext_occlusion_query_disallowed &&
+  if (!workarounds_.disable_ext_occlusion_query &&
       (have_ext_occlusion_query_boolean ||
        have_arb_occlusion_query2 ||
        have_arb_occlusion_query)) {
@@ -643,54 +684,6 @@ void FeatureInfo::AddFeatures() {
   if (!disallowed_features_.swap_buffer_complete_callback)
     AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
 
-  if (!feature_flags_.disable_workarounds) {
-    workarounds_.set_texture_filter_before_generating_mipmap = true;
-    workarounds_.clear_alpha_in_readpixels = true;
-
-    if (is_nvidia) {
-      workarounds_.use_current_program_after_successful_link = true;
-    }
-
-    if (is_qualcomm) {
-      workarounds_.restore_scissor_on_fbo_change = true;
-      workarounds_.flush_on_context_switch = true;
-      // This is only needed on the ICS driver.
-      workarounds_.delete_instead_of_resize_fbo = true;
-    }
-
-#if defined(OS_MACOSX)
-    workarounds_.needs_offscreen_buffer_workaround = is_nvidia;
-    workarounds_.needs_glsl_built_in_function_emulation = is_amd;
-
-    if ((is_amd || is_intel) &&
-        gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
-      workarounds_.reverse_point_sprite_coord_origin = true;
-    }
-
-    // Limit Intel on Mac to 4096 max tex size and 1024 max cube map tex size.
-    // Limit AMD on Mac to 4096 max tex size and max cube map tex size.
-    // TODO(gman): Update this code to check for a specific version of
-    // the drivers above which we no longer need this fix.
-    if (is_intel) {
-      workarounds_.max_texture_size = 4096;
-      workarounds_.max_cube_map_texture_size = 1024;
-      // Cubemaps > 512 in size were broken before 10.7.3.
-      int32 major = 0;
-      int32 minor = 0;
-      int32 bugfix = 0;
-      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-      if (major < 10 ||
-          (major == 10 && ((minor == 7 && bugfix < 3) || (minor < 7))))
-        workarounds_.max_cube_map_texture_size = 512;
-    }
-
-    if (is_amd) {
-      workarounds_.max_texture_size = 4096;
-      workarounds_.max_cube_map_texture_size = 4096;
-    }
-#endif
-  }
-
   bool is_es3 = false;
   const char* str = reinterpret_cast<const char*>(glGetString(GL_VERSION));
   if (str) {
@@ -703,12 +696,6 @@ void FeatureInfo::AddFeatures() {
     // TODO(dsinclair): Add AddExtensionString("GL_CHROMIUM_sampler_objects")
     // when available.
   }
-
-#if defined(OS_WIN)
-  // Some drivers are unable to reset the D3D device in the GPU process
-  // sandbox.
-  workarounds_.exit_on_context_lost = true;
-#endif
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

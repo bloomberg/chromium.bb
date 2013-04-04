@@ -22,14 +22,11 @@ class BufferManagerTestBase : public testing::Test {
   void SetUpBase(
       MemoryTracker* memory_tracker,
       FeatureInfo* feature_info,
-      const char* extensions,
-      const char* vendor,
-      const char* renderer) {
+      const char* extensions) {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     if (feature_info) {
-      TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
-          gl_.get(), extensions, vendor, renderer, "");
+      TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
       feature_info->Initialize(NULL);
     }
     decoder_.reset(new MockGLES2Decoder());
@@ -85,7 +82,7 @@ class BufferManagerTestBase : public testing::Test {
 class BufferManagerTest : public BufferManagerTestBase {
  protected:
   virtual void SetUp() {
-    SetUpBase(NULL, NULL, "", "", "");
+    SetUpBase(NULL, NULL, "");
   }
 };
 
@@ -93,7 +90,7 @@ class BufferManagerMemoryTrackerTest : public BufferManagerTestBase {
  protected:
   virtual void SetUp() {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
-    SetUpBase(mock_memory_tracker_.get(), NULL, "", "", "");
+    SetUpBase(mock_memory_tracker_.get(), NULL, "");
   }
 
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
@@ -103,7 +100,9 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
  protected:
   virtual void SetUp() {
     feature_info_ = new FeatureInfo();
-    SetUpBase(NULL, feature_info_.get(), "", "Imagination Technologies", "");
+    feature_info_->workarounds_.use_client_side_arrays_for_stream_buffers =
+      true;
+    SetUpBase(NULL, feature_info_.get(), "");
   }
 
   scoped_refptr<FeatureInfo> feature_info_;

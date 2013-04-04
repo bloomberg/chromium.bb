@@ -201,6 +201,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
                            UnblockOtherDomainFrom3DAPIs);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
                            UnblockThisDomainFrom3DAPIs);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuDriverBugListSingle);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuDriverBugListMultiple);
 
   GpuDataManagerImpl();
   virtual ~GpuDataManagerImpl();

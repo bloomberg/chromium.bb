@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time.h"
@@ -10,6 +11,7 @@
 #include "content/public/common/gpu_feature_type.h"
 #include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
@@ -573,5 +575,34 @@ TEST_F(GpuDataManagerImplTest, SetGLStringsNoEffects) {
   EXPECT_TRUE(manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL));
 }
 #endif  // OS_LINUX
+
+TEST_F(GpuDataManagerImplTest, GpuDriverBugListSingle) {
+  ScopedGpuDataManagerImpl manager;
+  ASSERT_TRUE(manager.get());
+  manager->gpu_driver_bugs_.insert(5);
+
+  CommandLine command_line(0, NULL);
+  manager->AppendGpuCommandLine(&command_line);
+
+  EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
+  std::string args = command_line.GetSwitchValueASCII(
+      switches::kGpuDriverBugWorkarounds);
+  EXPECT_STREQ("5", args.c_str());
+}
+
+TEST_F(GpuDataManagerImplTest, GpuDriverBugListMultiple) {
+  ScopedGpuDataManagerImpl manager;
+  ASSERT_TRUE(manager.get());
+  manager->gpu_driver_bugs_.insert(5);
+  manager->gpu_driver_bugs_.insert(7);
+
+  CommandLine command_line(0, NULL);
+  manager->AppendGpuCommandLine(&command_line);
+
+  EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
+  std::string args = command_line.GetSwitchValueASCII(
+      switches::kGpuDriverBugWorkarounds);
+  EXPECT_STREQ("5,7", args.c_str());
+}
 
 }  // namespace content

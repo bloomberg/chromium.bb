@@ -14,8 +14,9 @@
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/string_piece.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -58,6 +59,18 @@ std::string ProcessVersionString(const std::string& raw_string) {
   if (version_string.empty())
     return "0";
   return version_string;
+}
+
+// Combine the integers into a string, seperated by ','.
+std::string IntSetToString(const std::set<int>& list) {
+  std::string rt;
+  for (std::set<int>::const_iterator it = list.begin();
+       it != list.end(); ++it) {
+    if (!rt.empty())
+      rt += ",";
+    rt += base::IntToString(*it);
+  }
+  return rt;
 }
 
 #if defined(OS_MACOSX)
@@ -445,6 +458,11 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   if (!swiftshader_path.empty())
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
                                    swiftshader_path);
+
+  if (!gpu_driver_bugs_.empty()) {
+    command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
+                                    IntSetToString(gpu_driver_bugs_));
+  }
 
 #if defined(OS_WIN)
   // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.

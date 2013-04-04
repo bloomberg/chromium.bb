@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 
+#include <set>
 #include <string>
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -12,6 +13,8 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/gpu_export.h"
+
+class CommandLine;
 
 namespace gpu {
 namespace gles2 {
@@ -37,7 +40,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
     bool native_vertex_array_object;
-    bool disable_workarounds;
     bool enable_shader_name_hashing;
     bool enable_samplers;
     bool ext_draw_buffers;
@@ -48,16 +50,20 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
     bool clear_alpha_in_readpixels;
     bool clear_uniforms_before_program_use;
+    bool delete_instead_of_resize_fbo;
+    bool disable_angle_framebuffer_multisample;
+    bool disable_depth_texture;
+    bool disable_ext_occlusion_query;
+    bool enable_chromium_fast_npot_mo8_textures;
+    bool exit_on_context_lost;
+    bool flush_on_context_switch;
     bool needs_glsl_built_in_function_emulation;
     bool needs_offscreen_buffer_workaround;
+    bool restore_scissor_on_fbo_change;
     bool reverse_point_sprite_coord_origin;
     bool set_texture_filter_before_generating_mipmap;
-    bool use_current_program_after_successful_link;
-    bool restore_scissor_on_fbo_change;
-    bool flush_on_context_switch;
-    bool delete_instead_of_resize_fbo;
     bool use_client_side_arrays_for_stream_buffers;
-    bool exit_on_context_lost;
+    bool use_current_program_after_successful_link;
 
     // Note: 0 here means use driver limit.
     GLint max_texture_size;
@@ -73,7 +79,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
                   const char* allowed_features);
 
   // Turns on certain features if they can be turned on.
-  void AddFeatures();
+  void AddFeatures(const CommandLine& command_line);
 
   const Validators* validators() const {
     return &validators_;
@@ -97,6 +103,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
  private:
   friend class base::RefCounted<FeatureInfo>;
+  friend class BufferManagerClientSideArraysTest;
+  friend class GLES2DecoderTestBase;
 
   typedef base::hash_map<GLenum, ValueValidator<GLenum> > ValidatorMap;
   ValidatorMap texture_format_validators_;

@@ -2569,9 +2569,6 @@ bool GLES2DecoderImpl::Initialize(
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-  // AMD and Intel drivers on Mac OS apparently get gl_PointCoord
-  // backward from the spec and this setting makes them work
-  // correctly. rdar://problem/11883495
   if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }

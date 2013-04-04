@@ -51,6 +51,9 @@ const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 // Force the synchronous copy path in compositing_iosurface_mac.
 const char kForceSynchronousGLReadPixels[]  = "force-synchronous-glreadpixels";
 
+// Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
+const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
+
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
@@ -73,6 +76,7 @@ const char* kGpuSwitches[] = {
   kForceGLFinishWorkaround,
   kForceGpuMemAvailableMb,
   kForceSynchronousGLReadPixels,
+  kGpuDriverBugWorkarounds,
   kGpuProgramCacheSizeKb,
   kTraceGL,
   kDisableGpuShaderDiskCache,
