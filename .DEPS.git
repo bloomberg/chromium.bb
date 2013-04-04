@@ -7,9 +7,11 @@ vars = {
     'ffmpeg_hash':
          '@54b4fe19d390794c895226f7d014cd4deff24293',
     'webkit_url':
-         'https://chromium.googlesource.com/external/WebKit_trimmed.git',
+         'https://chromium.googlesource.com/chromium/blink.git',
     'git_url':
-         'https://chromium.googlesource.com'
+         'https://chromium.googlesource.com',
+    'webkit_rev':
+         '@4b7159b920caefd3bc8d48a35daddd9bbac862dc'
 }
 
 deps = {
@@ -35,6 +37,8 @@ deps = {
         Var('git_url') + '/external/googlemock.git@6b1759c3816d574bddde3e1725c51a811c8870e7',
     'src/testing/gtest':
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
+    'src/third_party/WebKit':
+        Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/accessibility-developer-tools':
         Var('git_url') + '/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa',
     'src/third_party/angle':
