@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.os.Build;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -25,7 +27,12 @@ class AudioManagerAndroid {
 
     @CalledByNative
     public void setMode(int mode) {
-        mAudioManager.setMode(mode);
+        try {
+            mAudioManager.setMode(mode);
+        } catch (SecurityException e) {
+            Log.e(TAG, "setMode exception: " + e.getMessage());
+            logDeviceInfo();
+        }
     }
 
     @CalledByNative
@@ -51,8 +58,13 @@ class AudioManagerAndroid {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (Intent.ACTION_HEADSET_PLUG.equals(intent.getAction())) {
-                    mAudioManager.setSpeakerphoneOn(
-                            intent.getIntExtra("state", 0) == 0);
+                    try {
+                        mAudioManager.setSpeakerphoneOn(
+                                intent.getIntExtra("state", 0) == 0);
+                    } catch (SecurityException e) {
+                        Log.e(TAG, "setMode exception: " + e.getMessage());
+                        logDeviceInfo();
+                    }
                 }
             }
         };
@@ -64,5 +76,11 @@ class AudioManagerAndroid {
         mContext.unregisterReceiver(mReceiver);
         mReceiver = null;
         mAudioManager.setSpeakerphoneOn(mOriginalSpeakerStatus);
+    }
+
+    private void logDeviceInfo() {
+        Log.i(TAG, "Manufacturer:" + Build.MANUFACTURER +
+                  " Board: " + Build.BOARD + " Device: " + Build.DEVICE +
+                  " Model: " + Build.MODEL + " PRODUCT: " + Build.PRODUCT);
     }
 }
