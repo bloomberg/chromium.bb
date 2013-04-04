@@ -37,5 +37,19 @@ chrome.test.runTests([
     chrome.debugger.detach(debuggee,
         fail("Debugger is not attached to the background page with id: " +
             debuggee.extensionId + "."));
+  },
+
+  function discoverOwnBackgroundPage() {
+    chrome.debugger.getTargets(function(targets) {
+      var target = targets.filter(
+        function(t) {
+          return t.type == 'background_page' && t.title == 'Extension Debugger';
+        })[0];
+      if (target) {
+        chrome.debugger.attach({targetId: target.id}, protocolVersion, pass());
+      } else {
+        chrome.test.fail("Cannot discover own background page");
+      }
+    });
   }
 ]);
