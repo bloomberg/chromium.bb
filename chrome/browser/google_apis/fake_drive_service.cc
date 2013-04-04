@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 
@@ -917,6 +918,79 @@ void FakeDriveService::AuthorizeApp(const std::string& resource_id,
                                     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+}
+
+void FakeDriveService::AddNewFile(const std::string& content_type,
+                                  int64 content_length,
+                                  const std::string& parent_resource_id,
+                                  const std::string& title,
+                                  const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
+
+  const base::DictionaryValue* new_entry = AddNewEntry(content_type,
+                                                       content_length,
+                                                       parent_resource_id,
+                                                       title,
+                                                       "file");
+  if (!new_entry) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+    return;
+  }
+
+  scoped_ptr<ResourceEntry> parsed_entry(
+      ResourceEntry::CreateFrom(*new_entry));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
+}
+
+void FakeDriveService::SetLastModifiedTime(
+    const std::string& resource_id,
+    const base::Time& last_modified_time,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
+
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  if (!entry) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
+    return;
+  }
+
+  entry->SetString("updated.$t", util::FormatTimeAsString(last_modified_time));
+
+  scoped_ptr<ResourceEntry> parsed_entry(
+      ResourceEntry::CreateFrom(*entry));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&parsed_entry)));
 }
 
 base::DictionaryValue* FakeDriveService::FindEntryByResourceId(

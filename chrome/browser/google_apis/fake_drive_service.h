@@ -168,6 +168,21 @@ class FakeDriveService : public DriveServiceInterface {
                             const std::string& app_id,
                             const AuthorizeAppCallback& callback) OVERRIDE;
 
+  // Adds a new file with the given parameters. On success, returns
+  // HTTP_CREATED with the parsed entry.
+  // |callback| must not be null.
+  void AddNewFile(const std::string& content_type,
+                  int64 content_length,
+                  const std::string& parent_resource_id,
+                  const std::string& title,
+                  const GetResourceEntryCallback& callback);
+
+  // Sets the last modified time for an entry specified by |resource_id|.
+  // On success, returns HTTP_SUCCESS with the parsed entry.
+  // |callback| must not be null.
+  void SetLastModifiedTime(const std::string& resource_id,
+                           const base::Time& last_modified_time,
+                           const GetResourceEntryCallback& callback);
  private:
   // Returns a pointer to the entry that matches |resource_id|, or NULL if
   // not found.
