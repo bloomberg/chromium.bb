@@ -231,6 +231,7 @@
               'message': 'Pushing libraries to device for <(_target_name)',
               'inputs': [
                 '<(DEPTH)/build/android/pylib/build_utils.py',
+                '<(DEPTH)/build/android/gyp/util/md5_check.py',
                 '<(DEPTH)/build/android/gyp/push_libraries.py',
                 '<(strip_stamp)',
               ],
@@ -378,7 +379,7 @@
       },
       'inputs': [
         '<(DEPTH)/build/android/pylib/build_utils.py',
-        '<(DEPTH)/build/android/javac.py',
+        '<(DEPTH)/build/android/gyp/javac.py',
         # If there is a separate find for additional_src_dirs, it will find the
         # wrong .java files when additional_src_dirs is empty.
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
@@ -390,7 +391,7 @@
         '<(compile_stamp)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/javac.py',
+        'python', '<(DEPTH)/build/android/gyp/javac.py',
         '--output-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
         '--src-dirs=>(all_src_dirs)',
@@ -407,14 +408,15 @@
       'message': 'Creating <(_target_name) jar',
       'inputs': [
         '<(DEPTH)/build/android/pylib/build_utils.py',
-        '<(DEPTH)/build/android/jar.py',
+        '<(DEPTH)/build/android/gyp/util/md5_check.py',
+        '<(DEPTH)/build/android/gyp/jar.py',
         '<(compile_stamp)',
       ],
       'outputs': [
         '<(jar_stamp)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/jar.py',
+        'python', '<(DEPTH)/build/android/gyp/jar.py',
         '--classes-dir=<(classes_dir)',
         '--jar-path=<(jar_path)',
         '--excluded-classes=<(jar_excluded_classes)',
@@ -486,7 +488,8 @@
       },
       'inputs': [
         '<(DEPTH)/build/android/pylib/build_utils.py',
-        '<(DEPTH)/build/android/dex.py',
+        '<(DEPTH)/build/android/gyp/util/md5_check.py',
+        '<(DEPTH)/build/android/gyp/dex.py',
         '<(compile_stamp)',
         '>@(dex_inputs)',
       ],
@@ -494,7 +497,7 @@
         '<(dex_path)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/dex.py',
+        'python', '<(DEPTH)/build/android/gyp/dex.py',
         '--dex-path=<(dex_path)',
         '--android-sdk-root=<(android_sdk_root)',
 

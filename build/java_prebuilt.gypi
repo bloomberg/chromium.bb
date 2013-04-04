@@ -37,14 +37,14 @@
       'message': 'Dexing <(_target_name) jar',
       'inputs': [
         '<(DEPTH)/build/android/pylib/build_utils.py',
-        '<(DEPTH)/build/android/dex.py',
+        '<(DEPTH)/build/android/gyp/dex.py',
         '<(jar_path)',
       ],
       'outputs': [
         '<(dex_path)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/dex.py',
+        'python', '<(DEPTH)/build/android/gyp/dex.py',
         '--dex-path=<(dex_path)',
         '--android-sdk-root=<(android_sdk_root)',
 

@@ -9,6 +9,11 @@ import optparse
 import os
 import sys
 
+from util import md5_check
+
+BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(BUILD_ANDROID_DIR)
+
 from pylib import build_utils
 
 
@@ -24,9 +29,18 @@ def DoJar(options):
   # the command. Because of this, the command should be run in
   # options.classes_dir so the .class file paths in the jar are correct.
   jar_cwd = options.classes_dir
-  class_files = [os.path.relpath(f, jar_cwd) for f in class_files]
-  jar_cmd = ['jar', 'cf0', jar_path] + class_files
-  build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd)
+  class_files_rel = [os.path.relpath(f, jar_cwd) for f in class_files]
+  jar_cmd = ['jar', 'cf0', jar_path] + class_files_rel
+
+
+  md5_stamp = '%s.md5' % options.jar_path
+  md5_checker = md5_check.Md5Checker(
+      stamp=md5_stamp, inputs=class_files, command=jar_cmd)
+  if md5_checker.IsStale():
+    build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd)
+  else:
+    build_utils.Touch(options.jar_path)
+  md5_checker.Write()
 
 
 def main(argv):
