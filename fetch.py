@@ -110,6 +110,9 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout, SvnCheckout):
         print 'Please run `svn ls %s`' % svn_spec['svn_url']
         return 1
 
+    # TODO(dpranke): Work around issues w/ delta compression on big repos.
+    self.run_git('config', '--global', 'core.deltaBaseCacheLimit', '1G')
+
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self.spec['gclient_spec'])
     self.run_gclient('sync')
