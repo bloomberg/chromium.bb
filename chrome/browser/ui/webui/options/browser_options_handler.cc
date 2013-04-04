@@ -89,6 +89,7 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(OS_CHROMEOS)

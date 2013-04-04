@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #else
@@ -321,7 +322,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   base::FilePath profile_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   profile_dir = profile_dir.Append(
-      command_line->GetSwitchValuePath(switches::kLoginProfile));
+      command_line->GetSwitchValuePath(chromeos::switches::kLoginProfile));
   const base::FilePath legacy_dir = profile_dir.Append(kDeviceManagementDir);
   const base::FilePath policy_cache_file = legacy_dir.Append(kPolicy);
   const base::FilePath token_cache_file = legacy_dir.Append(kToken);

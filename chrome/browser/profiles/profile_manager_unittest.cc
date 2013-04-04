@@ -39,6 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 using content::BrowserThread;
@@ -166,7 +167,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   CommandLine *cl = CommandLine::ForCurrentProcess();
   std::string profile_dir("my_user");
 
-  cl->AppendSwitchASCII(switches::kLoginProfile, profile_dir);
+  cl->AppendSwitchASCII(chromeos::switches::kLoginProfile, profile_dir);
 
   base::FilePath expected_default =
       base::FilePath().AppendASCII(chrome::kInitialProfile);

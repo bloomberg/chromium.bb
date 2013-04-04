@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -383,14 +384,14 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(
-        switches::kLoginScreen, chromeos::WizardController::kLoginScreenName);
+        chromeos::switches::kLoginScreen,
+        chromeos::WizardController::kLoginScreenName);
     command_line->AppendSwitchASCII(
         switches::kDeviceManagementUrl, test_server_.GetServiceURL().spec());
-    command_line->AppendSwitchASCII(
-        switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

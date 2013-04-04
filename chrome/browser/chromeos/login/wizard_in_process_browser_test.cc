@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -28,7 +29,7 @@ void WizardInProcessBrowserTest::SetUp() {
 }
 
 void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNoStartupWindow);
+  command_line->AppendSwitch(::switches::kNoStartupWindow);
   command_line->AppendSwitch(switches::kLoginManager);
 }
 

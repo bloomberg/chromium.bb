@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -50,7 +51,8 @@ bool ShouldInitiallyHideCursor() {
   if (base::chromeos::IsRunningOnChromeOS())
     return !chromeos::UserManager::Get()->IsUserLoggedIn();
   else
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager);
+    return CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kLoginManager);
 }
 #endif
 
