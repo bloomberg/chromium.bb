@@ -52,6 +52,9 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
       JNIEnv* env,
       jobject obj,
       jint section);
+  base::android::ScopedJavaLocalRef<jobjectArray> GetListForField(JNIEnv* env,
+                                                                  jobject obj,
+                                                                  jint field);
   void ContinueAutomaticSignin(JNIEnv* env, jobject obj,
                                jstring account_name, jstring sid, jstring lsid);
   base::android::ScopedJavaLocalRef<jobject> GetIconForField(

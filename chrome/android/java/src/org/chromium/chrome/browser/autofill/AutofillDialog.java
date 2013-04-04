@@ -20,6 +20,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -101,6 +102,13 @@ public class AutofillDialog extends AlertDialog
         public void dialogCancel();
 
         /**
+         * Get the list associated with this field as a string array.
+         * @param field The field for which the list should be returned.
+         * @return A string array that contains the list
+         **/
+        public String[] getListForField(int field);
+
+        /**
          * Returns the label string to be used for the given section.
          * @param section Section for which the label should be returned.
          * @return The string that should appear on the label for the given section.
@@ -135,6 +143,7 @@ public class AutofillDialog extends AlertDialog
         ScrollView scroll = new ScrollView(context);
         mContentView = (AutofillDialogContentView) getLayoutInflater().
                 inflate(R.layout.autofill_dialog_content, null);
+        mContentView.setAutofillDialog(this);
         String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             labels[i] = mDelegate.getLabelForSection(i);
@@ -182,8 +191,17 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void show() {
-        mContentView.createAdaptersForEachSection();
+        mContentView.createAdapters();
         super.show();
+    }
+
+    /**
+     * Get the list associated with this field as a string array.
+     * @param field The field for which the list should be returned.
+     * @return A string array that contains the list
+     **/
+    public String[] getListForField(int field) {
+        return mDelegate.getListForField(field);
     }
 
     @Override
@@ -317,22 +335,36 @@ public class AutofillDialog extends AlertDialog
      */
     public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
             AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
-        EditText currentField;
+        View currentField;
         String inputValue;
         for (int i = 0; i < dialogInputs.length; i++) {
-            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+            currentField = findViewById(AutofillDialogUtils.getViewIDForField(
                     section, dialogInputs[i].mFieldType));
-            if (AutofillDialogUtils.containsCreditCardInfo(section)
-                    && dialogInputs[i].mFieldType
-                            == AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE) {
-                currentField.setCompoundDrawables(
-                        null, null, mContentView.getCVCDrawable(), null);
+            if (currentField instanceof EditText) {
+                EditText currentEdit = (EditText) currentField;
+                if (AutofillDialogUtils.containsCreditCardInfo(section)
+                        && dialogInputs[i].mFieldType
+                                == AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE) {
+                    currentEdit.setCompoundDrawables(
+                            null, null, mContentView.getCVCDrawable(), null);
+                }
+                currentEdit.setHint(dialogInputs[i].mPlaceholder);
+                inputValue = dialogInputs[i].getValue();
+                if (TextUtils.isEmpty(inputValue)) {
+                    currentEdit.setText("");
+                } else {
+                    currentEdit.setText(inputValue);
+                }
+            } else if (currentField instanceof Spinner) {
+                Spinner currentSpinner = (Spinner) currentField;
+                for (int k = 0; k < currentSpinner.getCount(); k++) {
+                    if (currentSpinner.getItemAtPosition(k).equals(dialogInputs[i]
+                            .getValue())) {
+                        currentSpinner.setSelection(k);
+                    }
+                    currentSpinner.setPrompt(dialogInputs[i].mPlaceholder);
+                }
             }
-            if (currentField == null) continue;
-            currentField.setHint(dialogInputs[i].mPlaceholder);
-            inputValue = dialogInputs[i].getValue();
-            if (TextUtils.isEmpty(inputValue)) currentField.setText("");
-            else currentField.setText(inputValue);
         }
         mAutofillSectionFieldData[section] = dialogInputs;
         mContentView.setVisibilityForSection(section, visible);
@@ -364,13 +396,15 @@ public class AutofillDialog extends AlertDialog
         AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
         if (fieldData == null) return;
 
-        EditText currentField;
+        View currentField;
         for (int i = 0; i < fieldData.length; i++) {
-            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+            currentField = findViewById(AutofillDialogUtils.getViewIDForField(
                     section, fieldData[i].mFieldType));
-            if (currentField == null) continue;
-
-            currentField.setText("");
+            if (currentField instanceof EditText) {
+                ((EditText) currentField).setText("");
+            } else if (currentField instanceof Spinner) {
+                ((Spinner) currentField).setSelected(false);
+            }
         }
     }
 
@@ -383,12 +417,15 @@ public class AutofillDialog extends AlertDialog
         AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
         if (fieldData == null) return null;
 
-        EditText currentField;
-        String currentValue;
+        View currentField;
+        String currentValue = "";
         for (int i = 0; i < fieldData.length; i++) {
-            currentField = (EditText) findViewById(AutofillDialogUtils.getEditTextIDForField(
+            currentField = findViewById(AutofillDialogUtils.getViewIDForField(
                     section, fieldData[i].mFieldType));
-            currentValue = currentField.getText().toString();
+            if (currentField instanceof EditText)
+                currentValue = ((EditText) currentField).getText().toString();
+            else if (currentField instanceof Spinner)
+                currentValue = ((Spinner) currentField).getSelectedItem().toString();
             if (TextUtils.isEmpty(currentValue)) continue;
             fieldData[i].setValue(currentValue);
         }

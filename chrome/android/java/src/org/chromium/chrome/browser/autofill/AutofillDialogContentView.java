@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -35,6 +32,10 @@ import static org.chromium.chrome.browser.autofill.AutofillDialogConstants.SECTI
 
 import org.chromium.chrome.R;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This is the parent layout that contains the layouts for different states of
  * autofill dialog. In principle it shouldn't contain any logic related with the
@@ -57,6 +58,7 @@ public class AutofillDialogContentView extends LinearLayout {
             mSteadyLayout.setVisibility(GONE);
         }
     };
+    private AutofillDialog mDialog;
     private Spinner[] mSpinners = new Spinner[NUM_SECTIONS];
     private AutofillDialogMenuAdapter[] mAdapters = new AutofillDialogMenuAdapter[NUM_SECTIONS];
     private ViewGroup mSteadyLayout;
@@ -89,10 +91,18 @@ public class AutofillDialogContentView extends LinearLayout {
     }
 
     /**
+     * Sets the controller dialog for this content view.
+     * @param dialog The autofill Dialog that should be set as the controller.
+     */
+    public void setAutofillDialog(AutofillDialog dialog) {
+        mDialog = dialog;
+    }
+
+    /**
      * Prompts the content view to create the adapters for each section. This is
      * separated to be able to control the timing in a flexible manner.
      */
-    public void createAdaptersForEachSection() {
+    public void createAdapters() {
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             AutofillDialogMenuAdapter adapter;
             if (AutofillDialogUtils.containsCreditCardInfo(i)) {
@@ -106,6 +116,19 @@ public class AutofillDialogContentView extends LinearLayout {
             mAdapters[i] = adapter;
             if (mSpinners[i] != null) mSpinners[i].setAdapter(adapter);
         }
+
+        initializeSpinner(SECTION_SHIPPING, AutofillDialogConstants.ADDRESS_HOME_COUNTRY);
+        initializeSpinner(SECTION_BILLING, AutofillDialogConstants.ADDRESS_HOME_COUNTRY);
+        initializeSpinner(SECTION_CC, AutofillDialogConstants.CREDIT_CARD_EXP_MONTH);
+        initializeSpinner(SECTION_CC, AutofillDialogConstants.CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    }
+
+    private void initializeSpinner(int section, int field) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+                android.R.layout.simple_spinner_dropdown_item);
+        adapter.addAll(Arrays.asList(mDialog.getListForField(field)));
+        ((Spinner) findViewById(AutofillDialogUtils
+                .getViewIDForField(section, field))).setAdapter(adapter);
     }
 
     /**

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -13,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/AutofillDialogGlue_jni.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/window_android.h"
@@ -349,6 +349,22 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetLabelForSection(
   string16 label(controller_->LabelForSection(
       static_cast<DialogSection>(section)));
   return base::android::ConvertUTF16ToJavaString(env, label);
+}
+
+ScopedJavaLocalRef<jobjectArray> AutofillDialogViewAndroid::GetListForField(
+    JNIEnv* env,
+    jobject obj,
+    jint field) {
+  ui::ComboboxModel* model = controller_->ComboboxModelForAutofillType(
+      static_cast<AutofillFieldType>(field));
+  if (!model)
+    return ScopedJavaLocalRef<jobjectArray>();
+
+  std::vector<string16> list(model->GetItemCount());
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    list[i] = model->GetItemAt(i);
+  }
+  return base::android::ToJavaArrayOfStrings(env, list);
 }
 
 void AutofillDialogViewAndroid::ContinueAutomaticSignin(

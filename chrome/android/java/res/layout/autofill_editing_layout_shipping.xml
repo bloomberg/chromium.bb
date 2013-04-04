@@ -39,9 +39,21 @@
         android:layout_columnSpan="4"/>
     <EditText
         android:layout_height="@dimen/autofill_edit_height"
+        android:id="@+id/shipping_state"
+        android:layout_margin="@dimen/autofill_edit_margin"
+        android:textSize="@dimen/autofill_edit_text_size"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+    <EditText
+        android:layout_height="@dimen/autofill_edit_height"
         android:id="@+id/shipping_zip_code"
         android:layout_margin="@dimen/autofill_edit_margin"
         android:textSize="@dimen/autofill_edit_text_size"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+    <Spinner
+        android:layout_margin="5dp"
+        android:id="@+id/shipping_country_spinner"
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <EditText
