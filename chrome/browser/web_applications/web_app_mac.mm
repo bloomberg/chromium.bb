@@ -113,6 +113,25 @@ WebAppShortcutCreator::~WebAppShortcutCreator() {
 bool WebAppShortcutCreator::CreateShortcut() {
   base::FilePath app_name = internals::GetSanitizedFileName(info_.title);
   base::FilePath app_file_name = app_name.ReplaceExtension("app");
+  base::FilePath dst_path = GetDestinationPath();
+  if (dst_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
+    LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
+    return false;
+  }
+  if (!file_util::CreateDirectory(dst_path)) {
+    LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
+    return false;
+  }
+
+  base::FilePath app_path = dst_path.Append(app_file_name);
+  app_path = file_util::MakeUniqueDirectory(app_path);
+  if (app_path.empty()) {
+    LOG(ERROR) << "Couldn't create a unique directory for app path: "
+               << app_path.value();
+    return false;
+  }
+  app_file_name = app_path.BaseName();
+
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir())
     return false;
@@ -132,23 +151,13 @@ bool WebAppShortcutCreator::CreateShortcut() {
   if (!UpdateIcon(staging_path))
     return false;
 
-  base::FilePath dst_path = GetDestinationPath();
-  if (dst_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
-    LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
-    return false;
-  }
-  if (!file_util::CreateDirectory(dst_path)) {
-    LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
-    return false;
-  }
   if (!file_util::CopyDirectory(staging_path, dst_path, true)) {
     LOG(ERROR) << "Copying app to dst path: " << dst_path.value() << " failed";
     return false;
   }
 
-  dst_path = dst_path.Append(app_file_name);
-  base::mac::RemoveQuarantineAttribute(dst_path);
-  RevealGeneratedBundleInFinder(dst_path);
+  base::mac::RemoveQuarantineAttribute(app_path);
+  RevealGeneratedBundleInFinder(app_path);
 
   return true;
 }

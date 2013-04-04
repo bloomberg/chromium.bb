@@ -131,6 +131,29 @@ TEST(WebAppShortcutCreatorTest, CreateFailure) {
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
 }
 
+TEST(WebAppShortcutCreatorTest, CreateUnique) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  ShellIntegration::ShortcutInfo info = GetShortcutInfo();
+
+  base::FilePath dst_folder = scoped_temp_dir.path();
+  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+
+  file_util::CreateDirectory(dst_path);
+  base::FilePath expected_app_path =
+      dst_path.InsertBeforeExtensionASCII(" (1)");
+
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
+      .WillRepeatedly(Return(dst_folder));
+  EXPECT_CALL(shortcut_creator,
+      RevealGeneratedBundleInFinder(expected_app_path));
+
+  EXPECT_TRUE(shortcut_creator.CreateShortcut());
+  EXPECT_TRUE(file_util::PathExists(expected_app_path));
+}
+
 TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());

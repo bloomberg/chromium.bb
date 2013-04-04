@@ -374,6 +374,13 @@ BASE_EXPORT int GetUniquePathNumber(const base::FilePath& path,
                                     const base::FilePath::StringType& suffix);
 
 #if defined(OS_POSIX)
+// Creates a directory with a guaranteed unique name based on |path|, returning
+// the pathname if successful, or an empty path if there was an error creating
+// the directory. Does not create parent directories.
+BASE_EXPORT base::FilePath MakeUniqueDirectory(const base::FilePath& path);
+#endif
+
+#if defined(OS_POSIX)
 // Test that |path| can only be changed by a given user and members of
 // a given set of groups.
 // Specifically, test that all parts of |path| under (and including) |base|:

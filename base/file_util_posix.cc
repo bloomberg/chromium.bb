@@ -538,6 +538,23 @@ bool CreateDirectory(const FilePath& full_path) {
   return true;
 }
 
+base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
+  const int kMaxAttempts = 20;
+  for (int attempts = 0; attempts < kMaxAttempts; attempts++) {
+    int uniquifier = GetUniquePathNumber(path, FILE_PATH_LITERAL(""));
+    if (uniquifier < 0)
+      break;
+    base::FilePath test_path = (uniquifier == 0) ? path :
+        path.InsertBeforeExtensionASCII(
+            base::StringPrintf(" (%d)", uniquifier));
+    if (mkdir(test_path.value().c_str(), 0777) == 0)
+      return test_path;
+    else if (errno != EEXIST)
+      break;
+  }
+  return base::FilePath();
+}
+
 // TODO(rkc): Refactor GetFileInfo and FileEnumerator to handle symlinks
 // correctly. http://code.google.com/p/chromium-os/issues/detail?id=15948
 bool IsLink(const FilePath& file_path) {
