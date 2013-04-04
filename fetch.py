@@ -75,7 +75,15 @@ class GitCheckout(Checkout):
       return subprocess.check_call(('git',) + cmd, **kwargs)
 
 
-class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
+class SvnCheckout(Checkout):
+
+  def run_svn(self, *cmd, **kwargs):
+    print 'Running: svn %s' % ' '.join(pipes.quote(x) for x in cmd)
+    if not self.dryrun:
+      return subprocess.check_call(('svn',) + cmd, **kwargs)
+
+
+class GclientGitSvnCheckout(GclientCheckout, GitCheckout, SvnCheckout):
 
   def __init__(self, dryrun, spec, root):
     super(GclientGitSvnCheckout, self).__init__(dryrun, spec, root)
@@ -92,6 +100,16 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
     return os.path.exists(os.path.join(os.getcwd(), self.root))
 
   def init(self):
+    # Ensure we are authenticated with subversion for all submodules.
+    git_svn_dirs = json.loads(self.spec.get('submodule_git_svn_spec', '{}'))
+    git_svn_dirs.update({self.root: self.spec})
+    for _, svn_spec in git_svn_dirs.iteritems():
+      try:
+        self.run_svn('ls', '--non-interactive', svn_spec['svn_url'])
+      except subprocess.CalledProcessError:
+        print 'Please run `svn ls %s`' % svn_spec['svn_url']
+        return 1
+
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self.spec['gclient_spec'])
     self.run_gclient('sync')
@@ -99,7 +117,7 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
     # Configure git.
     wd = os.path.join(self.base, self.root)
     if self.dryrun:
-      print "cd %s" % wd
+      print 'cd %s' % wd
     self.run_git(
         'submodule', 'foreach',
         'git config -f $toplevel/.git/config submodule.$name.ignore all',
@@ -107,26 +125,20 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout):
     self.run_git('config', 'diff.ignoreSubmodules', 'all', cwd=wd)
 
     # Configure git-svn.
-    self.run_git('svn', 'init', '--prefix=origin/', '-T',
-                 self.spec['svn_branch'], self.spec['svn_url'], cwd=wd)
-    self.run_git('config', 'svn-remote.svn.fetch', self.spec['svn_branch'] +
-                 ':refs/remotes/origin/' + self.spec['svn_ref'], cwd=wd)
-    self.run_git('svn', 'fetch', cwd=wd)
-
-    # Configure git-svn submodules, if any.
-    submodules = json.loads(self.spec.get('submodule_git_svn_spec', '{}'))
-    for path, subspec in submodules.iteritems():
-      subspec = submodules[path]
-      ospath = os.path.join(*path.split('/'))
-      wd = os.path.join(self.base, self.root, ospath)
+    for path, svn_spec in git_svn_dirs.iteritems():
+      real_path = os.path.join(*path.split('/'))
+      if real_path != self.root:
+        real_path = os.path.join(self.root, real_path)
+      wd = os.path.join(self.base, real_path)
       if self.dryrun:
-        print "cd %s" % wd
+        print 'cd %s' % wd
       self.run_git('svn', 'init', '--prefix=origin/', '-T',
-                   subspec['svn_branch'], subspec['svn_url'], cwd=wd)
+                   svn_spec['svn_branch'], svn_spec['svn_url'], cwd=wd)
       self.run_git('config', '--replace', 'svn-remote.svn.fetch',
-                   subspec['svn_branch'] + ':refs/remotes/origin/' +
-                   subspec['svn_ref'], cwd=wd)
+                   svn_spec['svn_branch'] + ':refs/remotes/origin/' +
+                   svn_spec['svn_ref'], cwd=wd)
       self.run_git('svn', 'fetch', cwd=wd)
+
 
 
 CHECKOUT_TYPE_MAP = {
@@ -225,8 +237,7 @@ def run(dryrun, spec, root):
     print 'You appear to already have this checkout.'
     print 'Aborting to avoid clobbering your work.'
     return 1
-  checkout.init()
-  return 0
+  return checkout.init()
 
 
 def main():
