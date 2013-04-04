@@ -187,6 +187,13 @@ class DependencySettings(GClientKeywords):
     self._custom_vars = custom_vars or {}
     self._custom_deps = custom_deps or {}
 
+    # TODO(iannucci): Remove this when all masters are correctly substituting
+    # the new blink url.
+    if (self._custom_vars.get('webkit_trunk', '') ==
+        'svn://svn-mirror.golo.chromium.org/webkit-readonly/trunk'):
+      self._custom_vars['webkit_trunk'] = (
+        'svn://svn-mirror.golo.chromium.org/blink/trunk')
+
     # Post process the url to remove trailing slashes.
     if isinstance(self._url, basestring):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
