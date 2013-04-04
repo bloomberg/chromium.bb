@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 # Mock out android_commands.GetAttachedDevices().
 from pylib import android_commands
 android_commands.GetAttachedDevices = lambda: ['0', '1']
+from pylib.utils import watchdog_timer
 
 import base_test_result
 import shard
@@ -81,7 +82,8 @@ class TestFunctions(unittest.TestCase):
   def _RunTests(mock_runner, tests):
     results = []
     tests = shard._TestCollection([shard._Test(t) for t in tests])
-    shard._RunTestsFromQueue(mock_runner, tests, results)
+    shard._RunTestsFromQueue(mock_runner, tests, results,
+                             watchdog_timer.WatchdogTimer(None))
     run_results = base_test_result.TestRunResults()
     for r in results:
       run_results.AddTestRunResults(r)

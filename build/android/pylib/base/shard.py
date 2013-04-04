@@ -10,12 +10,17 @@ import threading
 from pylib import android_commands
 from pylib import forwarder
 from pylib.utils import reraiser_thread
+from pylib.utils import watchdog_timer
 
 import base_test_result
 
 
+DEFAULT_TIMEOUT = 7 * 60  # seven minutes
+
+
 class _ThreadSafeCounter(object):
   """A threadsafe counter."""
+
   def __init__(self):
     self._lock = threading.Lock()
     self._value = 0
@@ -34,6 +39,7 @@ class _ThreadSafeCounter(object):
 
 class _Test(object):
   """Holds a test with additional metadata."""
+
   def __init__(self, test, tries=0):
     """Initializes the _Test object.
 
@@ -51,6 +57,7 @@ class _TestCollection(object):
   Args:
     tests: list of tests to put in the collection.
   """
+
   def __init__(self, tests=[]):
     self._lock = threading.Lock()
     self._tests = []
@@ -109,7 +116,7 @@ class _TestCollection(object):
       yield r
 
 
-def _RunTestsFromQueue(runner, test_collection, out_results):
+def _RunTestsFromQueue(runner, test_collection, out_results, watcher):
   """Runs tests from the test_collection until empty using the given runner.
 
   Adds TestRunResults objects to the out_results list and may add tests to the
@@ -119,8 +126,10 @@ def _RunTestsFromQueue(runner, test_collection, out_results):
     runner: A TestRunner object used to run the tests.
     test_collection: A _TestCollection from which to get _Test objects to run.
     out_results: A list to add TestRunResults to.
+    watcher: A watchdog_timer.WatchdogTimer object, used as a shared timeout.
   """
   for test in test_collection:
+    watcher.Reset()
     try:
       if not android_commands.IsDeviceAttached(runner.device):
         # Device is unresponsive, stop handling tests on this device.
@@ -178,12 +187,13 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     logging.warning('****Failed to create shard for %s: [%s]', device, e)
 
 
-def _RunAllTests(runners, tests):
+def _RunAllTests(runners, tests, timeout=None):
   """Run all tests using the given TestRunners.
 
   Args:
     runners: a list of TestRunner objects.
     tests: a list of Tests to run using the given TestRunners.
+    timeout: watchdog timeout in seconds, defaults to the default timeout.
 
   Returns:
     A TestRunResults object.
@@ -192,17 +202,20 @@ def _RunAllTests(runners, tests):
                   (len(tests), len(runners)))
   tests_collection = _TestCollection([_Test(t) for t in tests])
   results = []
-  workers = reraiser_thread.ReraiserThreadGroup([reraiser_thread.ReraiserThread(
-      _RunTestsFromQueue, [r, tests_collection, results]) for r in runners])
+  watcher = watchdog_timer.WatchdogTimer(timeout)
+  workers = reraiser_thread.ReraiserThreadGroup(
+      [reraiser_thread.ReraiserThread(_RunTestsFromQueue,
+                                      [r, tests_collection, results, watcher])
+       for r in runners])
   workers.StartAll()
-  workers.JoinAll()
+  workers.JoinAll(watcher)
   run_results = base_test_result.TestRunResults()
   for r in results:
     run_results.AddTestRunResults(r)
   return run_results
 
 
-def _CreateRunners(runner_factory, devices):
+def _CreateRunners(runner_factory, devices, timeout=None):
   """Creates a test runner for each device and calls SetUp() in parallel.
 
   Note: if a device is unresponsive the corresponding TestRunner will not be
@@ -212,6 +225,7 @@ def _CreateRunners(runner_factory, devices):
     runner_factory: callable that takes a device and index and returns a
       TestRunner object.
     devices: list of device serial numbers as strings.
+    timeout: watchdog timeout in seconds, defaults to the default timeout.
 
   Returns:
     A list of TestRunner objects.
@@ -224,23 +238,26 @@ def _CreateRunners(runner_factory, devices):
                                                counter])
        for d in devices])
   threads.StartAll()
-  threads.JoinAll()
+  threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
   return runners
 
 
-def _TearDownRunners(runners):
+def _TearDownRunners(runners, timeout=None):
   """Calls TearDown() for each test runner in parallel.
   Args:
     runners: a list of TestRunner objects.
+    timeout: watchdog timeout in seconds, defaults to the default timeout.
   """
   threads = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(runner.TearDown)
        for runner in runners])
   threads.StartAll()
-  threads.JoinAll()
+  threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
 
 
-def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug'):
+def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
+                     test_timeout=DEFAULT_TIMEOUT,
+                     setup_timeout=DEFAULT_TIMEOUT):
   """Run all tests on attached devices, retrying tests that don't pass.
 
   Args:
@@ -249,17 +266,21 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug'):
     devices: list of attached device serial numbers as strings.
     tests: list of tests to run.
     build_type: either 'Debug' or 'Release'.
+    test_timeout: watchdog timeout in seconds for running tests, defaults to the
+      default timeout.
+    setup_timeout: watchdog timeout in seconds for creating and cleaning up
+      test runners, defaults to the default timeout.
 
   Returns:
     A base_test_result.TestRunResults object.
   """
   forwarder.Forwarder.KillHost(build_type)
-  runners = _CreateRunners(runner_factory, devices)
+  runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
-    return _RunAllTests(runners, tests)
+    return _RunAllTests(runners, tests, test_timeout)
   finally:
     try:
-      _TearDownRunners(runners)
+      _TearDownRunners(runners, setup_timeout)
     except android_commands.errors.DeviceUnresponsiveError as e:
       logging.warning('****Device unresponsive during TearDown: [%s]', e)
     finally:

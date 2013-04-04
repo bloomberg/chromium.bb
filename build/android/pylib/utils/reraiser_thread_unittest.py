@@ -4,9 +4,11 @@
 
 """Unittests for reraiser_thread.py."""
 
+import threading
 import unittest
 
 import reraiser_thread
+import watchdog_timer
 
 
 class TestException(Exception):
@@ -74,6 +76,20 @@ class TestReraiserThreadGroup(unittest.TestCase):
     group.StartAll()
     with self.assertRaises(TestException):
       group.JoinAll()
+
+  def testJoinTimeout(self):
+    def f():
+      pass
+    event = threading.Event()
+    def g():
+      event.wait()
+    group = reraiser_thread.ReraiserThreadGroup(
+        [reraiser_thread.ReraiserThread(g),
+         reraiser_thread.ReraiserThread(f)])
+    group.StartAll()
+    with self.assertRaises(reraiser_thread.TimeoutError):
+      group.JoinAll(watchdog_timer.WatchdogTimer(0.01))
+    event.set()
 
 
 if __name__ == '__main__':
