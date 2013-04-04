@@ -312,7 +312,7 @@ def CheckChangeHasNoStrayWhitespace(input_api, output_api,
   return []
 
 
-def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
+def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
@@ -903,7 +903,7 @@ def CheckSingletonInHeaders(input_api, output_api, source_file_filter=None):
 def PanProjectChecks(input_api, output_api,
                      excluded_paths=None, text_files=None,
                      license_header=None, project_name=None,
-                     owners_check=True):
+                     owners_check=True, maxlen=80):
   """Checks that ALL chromium orbit projects should use.
 
   These are checks to be run on all Chromium orbit project, including:
@@ -975,7 +975,7 @@ def PanProjectChecks(input_api, output_api,
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
-      input_api, output_api, source_file_filter=sources))
+      input_api, output_api, maxlen, source_file_filter=sources))
   snapshot( "checking tabs")
   results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
       input_api, output_api, source_file_filter=sources))
