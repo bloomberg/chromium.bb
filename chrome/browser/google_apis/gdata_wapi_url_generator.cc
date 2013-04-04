@@ -48,10 +48,6 @@ const char kInitiateUploadExistingFileURLPrefix[] =
 const int kMaxDocumentsPerFeed = 500;
 const int kMaxDocumentsPerSearchFeed = 50;
 
-// URL requesting documents list that shared to the authenticated user only
-const char kGetResourceListURLForSharedWithMe[] =
-    "/feeds/default/private/full/-/shared-with-me";
-
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] = "/feeds/default/private/changes";
 
@@ -113,7 +109,6 @@ GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
-    bool shared_with_me,
     const std::string& directory_resource_id) const {
   DCHECK_LE(0, start_changestamp);
 
@@ -126,8 +121,6 @@ GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
     // |start_changestamp| that provides the original start point.
     start_changestamp = 0;
     url = override_url;
-  } else if (shared_with_me) {
-    url = base_url_.Resolve(kGetResourceListURLForSharedWithMe);
   } else if (start_changestamp > 0) {
     // The start changestamp shouldn't be used for a search.
     DCHECK(search_string.empty());

@@ -174,7 +174,6 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
       GURL("http://example.com/gdata/root_feed.json"),
       0,
       std::string(),
-      true,
       std::string(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));

@@ -223,7 +223,6 @@ void FakeDriveService::GetResourceList(
     const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
-    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

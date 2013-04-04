@@ -119,7 +119,6 @@ GetResourceListOperation::GetResourceListOperation(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
-    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, url_request_context_getter, callback),
@@ -127,7 +126,6 @@ GetResourceListOperation::GetResourceListOperation(
       override_url_(override_url),
       start_changestamp_(start_changestamp),
       search_string_(search_string),
-      shared_with_me_(shared_with_me),
       directory_resource_id_(directory_resource_id) {
   DCHECK(!callback.is_null());
 }
@@ -138,7 +136,6 @@ GURL GetResourceListOperation::GetURL() const {
   return url_generator_.GenerateResourceListUrl(override_url_,
                                                 start_changestamp_,
                                                 search_string_,
-                                                shared_with_me_,
                                                 directory_resource_id_);
 }
 

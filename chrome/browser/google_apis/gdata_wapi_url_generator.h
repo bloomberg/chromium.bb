@@ -44,8 +44,8 @@ class GDataWapiUrlGenerator {
   //
   // The parameters other than |search_string| are mutually exclusive.
   // If |override_url| is non-empty, other parameters are ignored. Or if
-  // |override_url| is empty and |shared_with_me| is true, others are not used.
-  // Besides, |search_string| cannot be set together with |start_changestamp|.
+  // |override_url| is empty, others are not used. Besides, |search_string|
+  // cannot be set together with |start_changestamp|.
   //
   // TODO(kinaba,haruki): http://crbug.com/160932
   // This is really hard to follow. We should split to multiple functions.
@@ -63,10 +63,6 @@ class GDataWapiUrlGenerator {
   //   If |search_string| is non-empty, q=... parameter is added, and
   //   max-results=... parameter is adjusted for a search.
   //
-  // shared_with_me
-  //   If |shared_with_me| is true, the base URL is changed to fetch the
-  //   shared-with-me documents.
-  //
   // directory_resource_id:
   //   If |directory_resource_id| is non-empty, a URL for fetching documents in
   //   a particular directory is generated.
@@ -75,7 +71,6 @@ class GDataWapiUrlGenerator {
       const GURL& override_url,
       int start_changestamp,
       const std::string& search_string,
-      bool shared_with_me,
       const std::string& directory_resource_id) const;
 
   // Generates a URL for getting or editing the resource entry of

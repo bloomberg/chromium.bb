@@ -217,7 +217,6 @@ void GDataWapiService::GetResourceList(
     const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
-    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -233,7 +232,6 @@ void GDataWapiService::GetResourceList(
           url,
           static_cast<int>(start_changestamp),
           search_query,
-          shared_with_me,
           directory_resource_id,
           base::Bind(&ParseResourceListAndRun, callback)));
 }

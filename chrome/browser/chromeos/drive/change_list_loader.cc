@@ -46,7 +46,6 @@ const int kFetchUiUpdateStep = 10;
 struct ChangeListLoader::LoadFeedParams {
   LoadFeedParams()
       : start_changestamp(0),
-        shared_with_me(false),
         load_subsequent_feeds(true) {}
 
   // Changestamps are positive numbers in increasing order. The difference
@@ -55,7 +54,6 @@ struct ChangeListLoader::LoadFeedParams {
   // number of items in delta feeds.
   int64 start_changestamp;
   std::string search_query;
-  bool shared_with_me;
   std::string directory_resource_id;
   GURL feed_to_load;
   bool load_subsequent_feeds;
@@ -320,7 +318,6 @@ void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params,
       params_ptr->feed_to_load,
       params_ptr->start_changestamp,
       params_ptr->search_query,
-      params_ptr->shared_with_me,
       params_ptr->directory_resource_id,
       base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -431,14 +428,12 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
 
 void ChangeListLoader::SearchFromServer(
     const std::string& search_query,
-    bool shared_with_me,
     const GURL& next_feed,
     const LoadFeedListCallback& feed_load_callback) {
   DCHECK(!feed_load_callback.is_null());
 
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
   params->search_query = search_query;
-  params->shared_with_me = shared_with_me;
   params->feed_to_load = next_feed;
   params->load_subsequent_feeds = false;
   LoadFromServer(params.Pass(), feed_load_callback);
@@ -532,7 +527,6 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
         next_feed_url,
         params_ptr->start_changestamp,
         params_ptr->search_query,
-        params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
         base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(),

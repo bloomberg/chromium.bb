@@ -146,11 +146,11 @@ ACTION_P2(InvokeGetResourceEntryCallback2, error, result) {
 }
 
 // Invokes |arg5| as a GetResourceListCallback.
-ACTION_P2(InvokeGetResourceListCallback5, error, result) {
+ACTION_P2(InvokeGetResourceListCallback4, error, result) {
   scoped_ptr<google_apis::ResourceList> resource_list(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg5, error, base::Passed(&resource_list)));
+      base::Bind(arg4, error, base::Passed(&resource_list)));
 }
 
 ACTION(PrepareForRemoteChange_Busy) {
@@ -482,8 +482,8 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     scoped_ptr<google_apis::ResourceList> result(
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(),
-                GetResourceList(GURL(), 0, query, false, search_directory, _))
-        .WillOnce(InvokeGetResourceListCallback5(
+                GetResourceList(GURL(), 0, query, search_directory, _))
+        .WillOnce(InvokeGetResourceListCallback4(
                 google_apis::HTTP_SUCCESS,
                 base::Passed(&result)))
         .RetiresOnSaturation();
@@ -492,7 +492,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   void SetUpDriveServiceExpectCallsForIncrementalSync() {
     EXPECT_CALL(*mock_drive_service(),
                 GetResourceList(
-                    GURL(), 1, std::string(), false, std::string(), _));
+                    GURL(), 1, std::string(), std::string(), _));
   }
 
   void SetUpDriveServiceExpectCallsForGetSyncRoot() {
@@ -502,9 +502,9 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(), GetResourceList(
         GURL(), 0, FormatTitleQuery(kSyncRootDirectoryName),
-        false, std::string(), _))
+        std::string(), _))
         .Times(AtMost(1))
-        .WillOnce(InvokeGetResourceListCallback5(
+        .WillOnce(InvokeGetResourceListCallback4(
             google_apis::HTTP_SUCCESS,
             base::Passed(&result)))
         .RetiresOnSaturation();

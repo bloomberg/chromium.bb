@@ -80,7 +80,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
-                      bool shared_with_me,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
   virtual void SearchMetadata(const std::string& query,
@@ -187,8 +186,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| is that should be run with data received. It must not be null.
   // |change_lists| is the document feed for content search.
   // |error| is the error code returned by ChangeListLoader.
-  void OnSearch(bool shared_with_me,
-                const SearchCallback& callback,
+  void OnSearch(const SearchCallback& callback,
                 ScopedVector<ChangeList> change_lists,
                 DriveFileError error);
 

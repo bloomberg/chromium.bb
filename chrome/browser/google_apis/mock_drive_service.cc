@@ -25,7 +25,7 @@ namespace google_apis {
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetProgressStatusList())
       .WillByDefault(Return(OperationProgressStatusList()));
-  ON_CALL(*this, GetResourceList(_, _, _, _, _, _))
+  ON_CALL(*this, GetResourceList(_, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::GetResourceListStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this, &MockDriveService::GetAccountMetadataStub));
@@ -66,7 +66,6 @@ void MockDriveService::GetResourceListStub(
     const GURL& url,
     int64 start_changestamp,
     const std::string& search_string,
-    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   if (search_string.empty()) {

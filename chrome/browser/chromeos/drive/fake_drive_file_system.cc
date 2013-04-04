@@ -198,7 +198,6 @@ void FakeDriveFileSystem::RefreshDirectory(
 }
 
 void FakeDriveFileSystem::Search(const std::string& search_query,
-                                 bool shared_with_me,
                                  const GURL& next_feed,
                                  const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -375,7 +374,6 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
       GURL(),
       0,
       "",
-      false,
       parent_entry_proto->resource_id(),
       base::Bind(
           &FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList,

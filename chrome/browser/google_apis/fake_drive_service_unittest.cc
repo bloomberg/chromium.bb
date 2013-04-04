@@ -98,7 +98,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
       GURL(),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -120,7 +119,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
       GURL("http://dummyurl/?start-offset=2"),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -143,7 +141,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndexAndMaxResults) {
       GURL("http://localhost/?start-offset=2&max-results=5"),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -173,7 +170,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithDefaultMaxResultsChanged) {
       GURL(),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -202,7 +198,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
       GURL(),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -224,7 +219,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
       GURL(),
       0,  // start_changestamp
       "File",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -247,7 +241,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchWithAttribute) {
       GURL(),
       0,  // start_changestamp
       "title:1.txt",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -270,7 +263,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
       GURL(),
       0,  // start_changestamp
       "Directory 1",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -284,7 +276,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
       GURL(),
       0,  // start_changestamp
       "\"Directory 1\"",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -310,7 +301,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
       GURL(),
       654321 + 1,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -343,7 +333,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
       GURL(),
       654321 + 1,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -367,7 +356,6 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
       GURL(),
       0,  // start_changestamp
       "",  // search_query
-      false, // shared_with_me
       "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();

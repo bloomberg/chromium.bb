@@ -1156,8 +1156,7 @@ void DriveFileSystem::OnGetAboutResource(
                about_resource->quota_bytes_used());
 }
 
-void DriveFileSystem::OnSearch(bool shared_with_me,
-                               const SearchCallback& search_callback,
+void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
                                ScopedVector<ChangeList> change_lists,
                                DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1206,17 +1205,7 @@ void DriveFileSystem::OnSearch(bool shared_with_me,
                    should_run_callback,
                    callback);
 
-    // Some entries (e.g. shared_with_me files) are not tracked in
-    // DriveResourceMetadata, so that we skip RefreshEntry() and call the
-    // callback directly.
-    if (!shared_with_me) {
-      resource_metadata_->RefreshEntry(entry_proto, entry_info_callback);
-    } else {
-      entry_info_callback.Run(
-          DRIVE_FILE_OK,
-          base::FilePath::FromUTF8Unsafe(entry_proto.base_name()),
-          scoped_ptr<DriveEntryProto>(new DriveEntryProto(entry_proto)));
-    }
+    resource_metadata_->RefreshEntry(entry_proto, entry_info_callback);
   }
 }
 
@@ -1248,7 +1237,6 @@ void DriveFileSystem::AddToSearchResults(
 }
 
 void DriveFileSystem::Search(const std::string& search_query,
-                             bool shared_with_me,
                              const GURL& next_feed,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1256,11 +1244,9 @@ void DriveFileSystem::Search(const std::string& search_query,
 
   change_list_loader_->SearchFromServer(
       search_query,
-      shared_with_me,
       next_feed,
       base::Bind(&DriveFileSystem::OnSearch,
                  weak_ptr_factory_.GetWeakPtr(),
-                 shared_with_me,
                  callback));
 }
 

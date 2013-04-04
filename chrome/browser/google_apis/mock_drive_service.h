@@ -37,11 +37,10 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_CONST_METHOD0(GetProgressStatusList,
       OperationProgressStatusList());
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
-  MOCK_METHOD6(GetResourceList,
+  MOCK_METHOD5(GetResourceList,
       void(const GURL& url,
           int64 start_changestamp,
           const std::string& search_string,
-          bool shared_with_me,
           const std::string& directory_resource_id,
           const GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceEntry,
@@ -137,7 +136,6 @@ class MockDriveService : public DriveServiceInterface {
   void GetResourceListStub(const GURL& url,
       int64 start_changestamp,
       const std::string& search_string,
-      bool shared_with_me,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback);
 

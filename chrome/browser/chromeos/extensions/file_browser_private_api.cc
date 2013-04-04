@@ -2941,9 +2941,6 @@ bool SearchDriveFunction::RunImpl() {
   if (!search_params->GetString("query", &query_))
     return false;
 
-  if (!search_params->GetBoolean("sharedWithMe", &shared_with_me_))
-    return false;
-
   if (!search_params->GetString("nextFeed", &next_feed_))
     return false;
 
@@ -2976,7 +2973,7 @@ void SearchDriveFunction::OnFileSystemOpened(
   }
 
   system_service->file_system()->Search(
-      query_, shared_with_me_, GURL(next_feed_),
+      query_, GURL(next_feed_),
       base::Bind(&SearchDriveFunction::OnSearch, this));
 }
 

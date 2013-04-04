@@ -328,7 +328,6 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
       GURL(),  // Pass an empty URL to use the default feed
       0,  // start changestamp
       "",  // search string
-      false,  // shared with me
       "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -359,7 +358,6 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
       test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
       0,  // start changestamp
       "",  // search string
-      false,  // shared with me
       "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -392,7 +390,6 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       0,  // start changestamp
       "",  // search string
-      false,  // shared with me
       "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),

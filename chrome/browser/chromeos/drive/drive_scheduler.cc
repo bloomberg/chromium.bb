@@ -137,7 +137,6 @@ void DriveScheduler::GetResourceList(
     const GURL& feed_url,
     int64 start_changestamp,
     const std::string& search_query,
-    bool shared_with_me,
     const std::string& directory_resource_id,
     const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -147,7 +146,6 @@ void DriveScheduler::GetResourceList(
   new_job->feed_url = feed_url;
   new_job->start_changestamp = start_changestamp;
   new_job->search_query = search_query;
-  new_job->shared_with_me = shared_with_me;
   new_job->directory_resource_id = directory_resource_id;
   new_job->get_resource_list_callback = callback;
 
@@ -393,7 +391,6 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           entry->feed_url,
           entry->start_changestamp,
           entry->search_query,
-          entry->shared_with_me,
           entry->directory_resource_id,
           base::Bind(&DriveScheduler::OnGetResourceListJobDone,
                      weak_ptr_factory_.GetWeakPtr(),

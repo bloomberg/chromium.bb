@@ -41,10 +41,6 @@ class GetResourceListOperation : public GetDataOperation {
   //   If non-empty, fetches a list of resources that match the search
   //   string.
   //
-  // shared_with_me:
-  //   If true, fetches a list of resources shared to the user, otherwise
-  //   fetches a list of resources owned by the user.
-  //
   // directory_resource_id:
   //   If non-empty, fetches a list of resources in a particular directory.
   //
@@ -57,7 +53,6 @@ class GetResourceListOperation : public GetDataOperation {
       const GURL& override_url,
       int start_changestamp,
       const std::string& search_string,
-      bool shared_with_me,
       const std::string& directory_resource_id,
       const GetDataCallback& callback);
   virtual ~GetResourceListOperation();
@@ -71,7 +66,6 @@ class GetResourceListOperation : public GetDataOperation {
   const GURL override_url_;
   const int start_changestamp_;
   const std::string search_string_;
-  const bool shared_with_me_;
   const std::string directory_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetResourceListOperation);

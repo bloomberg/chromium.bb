@@ -35,8 +35,7 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD2(GetEntryInfoByResourceId,
                void(const std::string& resource_id,
                     const GetEntryInfoWithFilePathCallback& callback));
-  MOCK_METHOD4(Search, void(const std::string& search_query,
-                            bool shared_with_me,
+  MOCK_METHOD3(Search, void(const std::string& search_query,
                             const GURL& next_feed,
                             const SearchCallback& callback));
   MOCK_METHOD3(SearchMetadata, void(const std::string& query,

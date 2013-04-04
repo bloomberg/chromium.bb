@@ -105,7 +105,6 @@ class DriveScheduler
   void GetResourceList(const GURL& feed_url,
                        int64 start_changestamp,
                        const std::string& search_query,
-                       bool shared_with_me,
                        const std::string& directory_resource_id,
                        const google_apis::GetResourceListCallback& callback);
 
@@ -215,7 +214,6 @@ class DriveScheduler
     GURL feed_url;
     int64 start_changestamp;
     std::string search_query;
-    bool shared_with_me;
     std::string directory_resource_id;
 
     // Parameter for copy or rename.

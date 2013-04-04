@@ -79,7 +79,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "",  // search_string,
-                                             false, // shared_with_me,
                                              ""  // directory resource ID
                                              ).spec());
 
@@ -93,7 +92,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
           GURL("http://localhost/"),  // override_url,
           0,  // start_changestamp,
           "",  // search_string,
-          false, // shared_with_me,
           ""  // directory resource ID
           ).spec());
 
@@ -107,7 +105,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              100,  // start_changestamp,
                                              "",  // search_string,
-                                             false, // shared_with_me,
                                              ""  // directory resource ID
                                              ).spec());
 
@@ -120,20 +117,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "foo",  // search_string,
-                                             false, // shared_with_me,
-                                             ""  // directory resource ID
-                                             ).spec());
-
-  // With shared_with_me parameter set to true, the base URL is changed, but
-  // the default parameters remain.
-  EXPECT_EQ(
-      "https://docs.google.com/feeds/default/private/full/-/shared-with-me"
-      "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-      "&max-results=500&include-installed-apps=true",
-      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
-                                             0,  // start_changestamp,
-                                             "",  // search_string,
-                                             true, // shared_with_me,
                                              ""  // directory resource ID
                                              ).spec());
 
@@ -146,7 +129,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
       url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "",  // search_string,
-                                             false, // shared_with_me,
                                              "XXX"  // directory resource ID
                                              ).spec());
 
@@ -161,7 +143,6 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
           GURL("http://example.com/?start-index=123"),  // override_url,
           100,  // start_changestamp,
           "",  // search_string,
-          false, // shared_with_me,
           "XXX"  // directory resource ID
           ).spec());
 }
