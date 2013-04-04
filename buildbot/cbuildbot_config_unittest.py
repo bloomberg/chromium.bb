@@ -12,7 +12,6 @@ import os
 import re
 import subprocess
 import sys
-import traceback
 import urllib2
 
 import constants
@@ -181,8 +180,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     try:
       req = urllib2.urlopen(CHROMIUM_WATCHING_URL, timeout=30)
     except EnvironmentError:
-      logging.error('Could not fetch %r', CHROMIUM_WATCHING_URL)
-      traceback.print_exc()
+      logging.error('Could not fetch %r', CHROMIUM_WATCHING_URL, exc_info=True)
       return
 
     if req.getcode() != 200:
