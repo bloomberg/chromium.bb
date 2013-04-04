@@ -3,82 +3,6 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '../ppapi/tests/test_case.html',
-          '../ppapi/tests/test_page.css',
-          '../testing/test_env.py',
-          'common/extensions/docs/examples/apps/calculator/app/model.js',
-          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/resources.pak',
-        ],
-        'isolate_dependency_untracked': [
-          '../content/test/data/',
-          '../net/data/',
-          '../net/tools/testserver/',
-          '../third_party/pyftpdlib/',
-          '../third_party/pywebsocket/',
-          '../third_party/tlslite/',
-          '../third_party/WebKit/Tools/Scripts/',
-          '../tools/swarm_client/',
-          'common/extensions/docs/examples/apps/calculator/tests/',
-          'test/data/',
-          'third_party/mock4js/',
-          '<(PRODUCT_DIR)/pyproto/',
-          '<(PRODUCT_DIR)/nacl_test_data/',
-          '<(PRODUCT_DIR)/pnacl/',
-          '<(PRODUCT_DIR)/pseudo_locales/',
-          '<(PRODUCT_DIR)/test_data/chrome/',
-        ],
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '../tools/swarm_client/run_test_cases.py',
-          '--use-less-jobs',
-          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-        ],
-      },
-    }],
-    ['OS=="win" or OS=="linux"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/locales/fr.pak',
-          '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
-          '<(PRODUCT_DIR)/test_case.html',
-          '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
-          '<(PRODUCT_DIR)/test_page.css',
-          'browser/policy/test/asn1der.py',
-          'browser/policy/test/policy_testserver.py',
-          'browser/safe_browsing/safe_browsing_testserver.py',
-          'common/extensions/docs/examples/apps/calculator/app/controller.js',
-          'common/extensions/docs/examples/apps/calculator/app/view.js',
-        ],
-        'isolate_dependency_untracked': [
-          '../net/data/websocket/',
-          '../third_party/accessibility-developer-tools/gen/',
-          '../third_party/bidichecker/',
-          '../third_party/safe_browsing/',
-          '../third_party/simplejson/',
-          '<(PRODUCT_DIR)/lib64/',
-          '<(PRODUCT_DIR)/plugins/',
-          '<(PRODUCT_DIR)/resources/extension/',
-          '<(PRODUCT_DIR)/test_url_loader_data/',
-        ],
-      },
-    }],
     ['OS=="linux"', {
       'variables': {
         'command': [
@@ -105,6 +29,71 @@
         ],
       },
     }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '../ppapi/tests/test_case.html',
+          '../ppapi/tests/test_page.css',
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/resources.pak',
+          'common/extensions/docs/examples/apps/calculator/app/model.js',
+        ],
+        'isolate_dependency_untracked': [
+          '../content/test/data/',
+          '../net/data/',
+          '../net/tools/testserver/',
+          '../third_party/WebKit/Tools/Scripts/',
+          '../third_party/pyftpdlib/',
+          '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
+          '../tools/swarm_client/',
+          '<(PRODUCT_DIR)/nacl_test_data/',
+          '<(PRODUCT_DIR)/pnacl/',
+          '<(PRODUCT_DIR)/pseudo_locales/',
+          '<(PRODUCT_DIR)/pyproto/',
+          '<(PRODUCT_DIR)/test_data/chrome/',
+          'common/extensions/docs/examples/apps/calculator/tests/',
+          'test/data/',
+          'third_party/mock4js/',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/locales/fr.pak',
+          '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x64.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x64.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x64.nexe',
+          '<(PRODUCT_DIR)/test_case.html',
+          '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
+          '<(PRODUCT_DIR)/test_page.css',
+          'browser/policy/test/asn1der.py',
+          'browser/policy/test/policy_testserver.py',
+          'browser/safe_browsing/safe_browsing_testserver.py',
+          'common/extensions/docs/examples/apps/calculator/app/controller.js',
+          'common/extensions/docs/examples/apps/calculator/app/view.js',
+        ],
+        'isolate_dependency_untracked': [
+          '../third_party/accessibility-developer-tools/gen/',
+          '../third_party/bidichecker/',
+          '../third_party/safe_browsing/',
+          '../third_party/simplejson/',
+          '<(PRODUCT_DIR)/lib64/',
+          '<(PRODUCT_DIR)/plugins/',
+          '<(PRODUCT_DIR)/resources/extension/',
+          '<(PRODUCT_DIR)/test_url_loader_data/',
+        ],
+      },
+    }],
     ['OS=="mac"', {
       'variables': {
         'isolate_dependency_tracked': [
@@ -118,6 +107,16 @@
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
           '<(PRODUCT_DIR)/Chromium.app/',
+        ],
+      },
+    }],
+    ['OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '../tools/swarm_client/run_test_cases.py',
+          '--use-less-jobs',
+          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],

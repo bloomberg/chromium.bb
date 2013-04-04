@@ -2,18 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'isolate_dependency_tracked': [
-      '../testing/test_env.py',
-      '../tools/swarm_client/run_isolated.py',
-      '../tools/swarm_client/run_test_cases.py',
-      '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
-    ],
-    'isolate_dependency_untracked': [
-      'data/',
-      'prefs/test/',
-    ],
-  },
   'conditions': [
     ['OS=="linux"', {
       'variables': {
@@ -28,7 +16,22 @@
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
-    }, {
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '../testing/test_env.py',
+          '../tools/swarm_client/run_isolated.py',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_untracked': [
+          'data/',
+          'prefs/test/',
+        ],
+      },
+    }],
+    ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
           '../testing/test_env.py',

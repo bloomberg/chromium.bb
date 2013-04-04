@@ -2,28 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'isolate_dependency_tracked': [
-      '<(PRODUCT_DIR)/resources.pak',
-      '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-      'browser/safe_browsing/two_phase_testserver.py',
-    ],
-    'isolate_dependency_untracked': [
-      '../base/prefs/test/data/',
-      '../extensions/test/data/',
-      '../net/data/',
-      '../net/tools/testserver/',
-      '../testing/test_env.py',
-      '../third_party/hunspell_dictionaries/',
-      '../third_party/pyftpdlib/',
-      '../third_party/pywebsocket/',
-      '../third_party/tlslite/',
-      '../tools/swarm_client/',
-      'third_party/mock4js/',
-      'test/data/',
-      '<(PRODUCT_DIR)/pyproto/',
-    ],
-  },
   'conditions': [
     ['OS=="linux"', {
       'variables': {
@@ -47,16 +25,39 @@
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
         ],
       },
-    }, {
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '../tools/swarm_client/run_test_cases.py',
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
+          'browser/safe_browsing/two_phase_testserver.py',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
-          '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
+          '../base/prefs/test/data/',
+          '../extensions/test/data/',
+          '../net/data/',
+          '../net/tools/testserver/',
+          '../testing/test_env.py',
+          '../third_party/hunspell_dictionaries/',
+          '../third_party/pyftpdlib/',
+          '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
+          '../tools/swarm_client/',
+          '<(PRODUCT_DIR)/pyproto/',
+          'test/data/',
+          'third_party/mock4js/',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+        ],
+        'isolate_dependency_untracked': [
+          '../third_party/accessibility-developer-tools/gen/',
         ],
       },
     }],
@@ -69,14 +70,17 @@
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
         ],
       },
-    }, {
+    }],
+    ['OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
+        'command': [
+          '../testing/test_env.py',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
-          '../third_party/accessibility-developer-tools/gen/',
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
+          '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
         ],
       },
     }],

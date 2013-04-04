@@ -2,14 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'variables': {
-    'isolate_dependency_tracked': [
-    ],
-    'isolate_dependency_untracked': [
-      '../tools/swarm_client/',
-      '<(PRODUCT_DIR)/pyproto/',
-    ],
-  },
   'conditions': [
     ['OS=="linux"', {
       'variables': {
@@ -37,6 +29,27 @@
         ],
       },
     }],
+    ['OS=="linux" or OS=="mac"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/resources.pak',
+          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_untracked': [
+          '../third_party/pyftpdlib/',
+          '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
+        ],
+      },
+    }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '../tools/swarm_client/',
+          '<(PRODUCT_DIR)/pyproto/',
+        ],
+      },
+    }],
     ['OS=="mac"', {
       'variables': {
         'command': [
@@ -49,22 +62,6 @@
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
           '<(PRODUCT_DIR)/Chromium.app/',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-      },
-    }, {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/resources.pak',
-          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
-          '../third_party/pyftpdlib/',
-          '../third_party/pywebsocket/',
-          '../third_party/tlslite/',
         ],
       },
     }],
