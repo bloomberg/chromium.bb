@@ -13,6 +13,9 @@
     'test_runner': {
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
+    'css': {
+      'filepath': 'Source/WebCore/css',
+    },
     'platform_graphics': {
       'filepath': 'Source/WebCore/platform/graphics',
     },
@@ -25,5 +28,6 @@
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org' ],
     'SVG': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
+    'css': [ 'darktears31@gmail.com' ],
   },
 }
