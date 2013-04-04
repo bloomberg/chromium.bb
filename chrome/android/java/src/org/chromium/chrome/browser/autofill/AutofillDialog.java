@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -35,7 +36,7 @@ import java.util.List;
  * title and the content views and relays messages from the backend to them.
  */
 public class AutofillDialog extends AlertDialog
-        implements OnClickListener, OnItemSelectedListener {
+        implements OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
     private static final int ADD_MENU_ITEM_INDEX = -1;
     private static final int EDIT_MENU_ITEM_INDEX = -2;
 
@@ -78,11 +79,13 @@ public class AutofillDialog extends AlertDialog
         public void editingStart(int section);
 
         /**
-         * Informs AutofillDialog controller that the view has completed editing.
+         * Informs AutofillDialog controller that the view has completed editing and triggers
+         * field validation that will set errors on all invalid fields.
          * @param section Section that was being edited. Should match one of the values in
          *                {@link AutofillDialogConstants}.
+         * @return Whether editing is done and fields have no validation errors.
          */
-        public void editingComplete(int section);
+        public boolean editingComplete(int section);
 
         /**
          * Informs AutofillDialog controller that the view has cancelled editing.
@@ -90,6 +93,25 @@ public class AutofillDialog extends AlertDialog
          *                {@link AutofillDialogConstants}.
          */
         public void editingCancel(int section);
+
+        /**
+         * Requests AutofillDialog controller to validate the specified field. If the field is
+         * invalid the returned value contains the error string. If the field is valid then
+         * the returned value is null.
+         * @param fieldType The type of the field that is being edited. Should match one of the
+         *                  values in {@link AutofillDialogConstants}.
+         * @param value The value of the field that is being edited.
+         * @return The error if the field is not valid, otherwise return null.
+         */
+        public String validateField(int fieldType, String value);
+
+        /**
+         * Requests AutofillDialog controller to validate the specified section.
+         * If there are invalid fields then the controller will call updateSectionErrors().
+         * @param section Section that is being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
+         */
+        public void validateSection(int section);
 
         /**
          * Informs AutofillDialog controller that the user clicked on the submit button.
@@ -184,6 +206,19 @@ public class AutofillDialog extends AlertDialog
         mContentView.setCVCInfo(hint, icon);
     }
 
+    private AutofillDialogField[] getFieldsForSection(int section) {
+        if (section < 0 || section >= mAutofillSectionFieldData.length) {
+            assert(false);
+            return new AutofillDialogField[0];
+        }
+        return mAutofillSectionFieldData[section];
+    }
+
+    private void setFieldsForSection(int section, AutofillDialogField[] fields) {
+        if (section < 0 || section >= mAutofillSectionFieldData.length) return;
+        mAutofillSectionFieldData[section] = fields;
+    }
+
     @Override
     public void dismiss() {
         if (mWillDismiss) super.dismiss();
@@ -216,9 +251,12 @@ public class AutofillDialog extends AlertDialog
         int section = mContentView.getCurrentSection();
         assert(section != AutofillDialogUtils.INVALID_SECTION);
 
-        if (which == AlertDialog.BUTTON_POSITIVE) mDelegate.editingComplete(section);
-        else mDelegate.editingCancel(section);
-
+        if (which == AlertDialog.BUTTON_POSITIVE) {
+            // Switch the layout only if validation passes.
+            if (!mDelegate.editingComplete(section)) return;
+        } else {
+            mDelegate.editingCancel(section);
+        }
         mContentView.changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
         getButton(BUTTON_POSITIVE).setText(R.string.autofill_positive_button);
         mWillDismiss = false;
@@ -349,6 +387,7 @@ public class AutofillDialog extends AlertDialog
                             null, null, mContentView.getCVCDrawable(), null);
                 }
                 currentEdit.setHint(dialogInputs[i].mPlaceholder);
+                currentField.setOnFocusChangeListener(this);
                 inputValue = dialogInputs[i].getValue();
                 if (TextUtils.isEmpty(inputValue)) {
                     currentEdit.setText("");
@@ -366,7 +405,7 @@ public class AutofillDialog extends AlertDialog
                 }
             }
         }
-        mAutofillSectionFieldData[section] = dialogInputs;
+        setFieldsForSection(section, dialogInputs);
         mContentView.setVisibilityForSection(section, visible);
         List<AutofillDialogMenuItem> combinedItems;
         if (mDefaultMenuItems[section] == null) {
@@ -382,24 +421,44 @@ public class AutofillDialog extends AlertDialog
     }
 
     /**
+     * Update validation error values for the given section.
+     * @param section The section that needs to be updated.
+     * @param errors The array of errors that were found when validating the fields.
+     */
+    public void updateSectionErrors(int section, AutofillDialogFieldError[] errors) {
+        AutofillDialogField[] fields = getFieldsForSection(section);
+        // Clear old errors.
+        for (AutofillDialogField field : fields) {
+            View currentField = findViewById(
+                    AutofillDialogUtils.getViewIDForField(section, field.mFieldType));
+            if (currentField instanceof EditText)
+                ((EditText) currentField).setError(null);
+        }
+
+        // Add new errors.
+        for(AutofillDialogFieldError error : errors) {
+            View currentField = findViewById(
+                    AutofillDialogUtils.getViewIDForField(section, error.mFieldType));
+            if (currentField instanceof EditText)
+                ((EditText) currentField).setError(error.mErrorText);
+        }
+    }
+
+    /**
      * Clears the field values for the given section.
      * @param section The section to clear the field values for.
      */
     public void clearAutofillSectionFieldData(int section) {
-        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
-        if (fieldData == null) return;
-
-        for (int i = 0; i < fieldData.length; i++) fieldData[i].setValue("");
+        AutofillDialogField[] fields = getFieldsForSection(section);
+        for (AutofillDialogField field : fields) field.setValue("");
     }
 
     private void clearAutofillSectionFieldValues(int section) {
-        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
-        if (fieldData == null) return;
-
-        View currentField;
-        for (int i = 0; i < fieldData.length; i++) {
-            currentField = findViewById(AutofillDialogUtils.getViewIDForField(
-                    section, fieldData[i].mFieldType));
+        AutofillDialogField[] fields = getFieldsForSection(section);
+        for (AutofillDialogField field : fields) {
+            View currentField = findViewById(
+                    AutofillDialogUtils.getViewIDForField(section, field.mFieldType));
+            // TODO(yusufo) remove this check when all the fields have been added.
             if (currentField instanceof EditText) {
                 ((EditText) currentField).setText("");
             } else if (currentField instanceof Spinner) {
@@ -414,22 +473,19 @@ public class AutofillDialog extends AlertDialog
      * @return An array containing the data for each field in the given section.
      */
     public AutofillDialogField[] getSection(int section) {
-        AutofillDialogField[] fieldData = mAutofillSectionFieldData[section];
-        if (fieldData == null) return null;
-
-        View currentField;
-        String currentValue = "";
-        for (int i = 0; i < fieldData.length; i++) {
-            currentField = findViewById(AutofillDialogUtils.getViewIDForField(
-                    section, fieldData[i].mFieldType));
+        AutofillDialogField[] fields = getFieldsForSection(section);
+        for (AutofillDialogField field : fields) {
+            View currentField = findViewById(
+                    AutofillDialogUtils.getViewIDForField(section, field.mFieldType));
+            if (currentField == null) continue;
+            String currentValue = "";
             if (currentField instanceof EditText)
                 currentValue = ((EditText) currentField).getText().toString();
             else if (currentField instanceof Spinner)
                 currentValue = ((Spinner) currentField).getSelectedItem().toString();
-            if (TextUtils.isEmpty(currentValue)) continue;
-            fieldData[i].setValue(currentValue);
+            field.setValue(currentValue);
         }
-        return fieldData;
+        return fields;
     }
 
      /**
@@ -468,5 +524,37 @@ public class AutofillDialog extends AlertDialog
      * @param value The current progress percentage value.
      */
     public void updateProgressBar(double value) {
+    }
+
+    /**
+     * Validates EditText fields in the editing mode when they get unfocused.
+     */
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if (hasFocus || !mContentView.isInEditingMode()) return;
+
+        if (!(v instanceof EditText)) return;
+        EditText currentfield = (EditText) v;
+
+        // Validation is performed when user changes from one EditText view to another.
+        int section = mContentView.getCurrentSection();
+        AutofillDialogField[] fields = getFieldsForSection(section);
+
+        int fieldType = AutofillDialogConstants.UNKNOWN_TYPE;
+        for (AutofillDialogField field : fields) {
+            View currentView = findViewById(AutofillDialogUtils.getViewIDForField(
+                    section, field.mFieldType));
+            if (v.equals(currentView)) {
+                fieldType = field.mFieldType;
+                break;
+            }
+        }
+        assert (fieldType != AutofillDialogConstants.UNKNOWN_TYPE);
+        if (fieldType == AutofillDialogConstants.UNKNOWN_TYPE) return;
+
+        String errorText = mDelegate.validateField(fieldType, currentfield.getText().toString());
+        currentfield.setError(errorText);
+        // Entire section is validated if the field is valid.
+        if (errorText == null) mDelegate.validateSection(section);
     }
 }

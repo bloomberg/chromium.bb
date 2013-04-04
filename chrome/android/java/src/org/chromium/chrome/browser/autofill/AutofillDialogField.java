@@ -8,9 +8,9 @@ package org.chromium.chrome.browser.autofill;
  * Autofill dialog field container to store information needed for each Autofill dialog entry.
  */
 public class AutofillDialogField {
-    public final int mNativePointer;
-    public final int mFieldType;
-    public final String mPlaceholder;
+    final int mNativePointer;
+    final int mFieldType;
+    final String mPlaceholder;
     private String mValue;
 
     /**

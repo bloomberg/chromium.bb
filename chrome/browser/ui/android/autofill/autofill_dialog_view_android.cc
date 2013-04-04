@@ -322,15 +322,43 @@ void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
   controller_->EditClickedForSection(static_cast<DialogSection>(section));
 }
 
-void AutofillDialogViewAndroid::EditingComplete(JNIEnv* env, jobject obj,
-                                           jint section) {
+jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,
+                                                    jobject obj,
+                                                    jint section) {
   // Unfortunately, edits are not sent to the models, http://crbug.com/223919.
-  // TODO(aruslan): http://crbug.com/188844 We still need to validate the data.
+  return ValidateSection(static_cast<DialogSection>(section),
+                         AutofillDialogController::VALIDATE_FINAL);
 }
 
-void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env, jobject obj,
+void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env,
+                                              jobject obj,
                                               jint section) {
   controller_->EditCancelledForSection(static_cast<DialogSection>(section));
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
+    JNIEnv* env,
+    jobject obj,
+    jint type,
+    jstring value) {
+  string16 field_value = base::android::ConvertJavaStringToUTF16(env, value);
+  AutofillFieldType field_type = static_cast<AutofillFieldType>(type);
+  if (controller_->InputIsValid(field_type, field_value)) {
+    return ScopedJavaLocalRef<jstring>();
+  } else {
+    // TODO(aurimas) Start using real error strings.
+    string16 error = ASCIIToUTF16("Error");
+    ScopedJavaLocalRef<jstring> error_text =
+        base::android::ConvertUTF16ToJavaString(env, error);
+    return error_text;
+  }
+}
+
+void AutofillDialogViewAndroid::ValidateSection(JNIEnv* env,
+                                                jobject obj,
+                                                jint section) {
+  ValidateSection(static_cast<DialogSection>(section),
+                  AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViewAndroid::DialogSubmit(JNIEnv* env, jobject obj) {
@@ -383,6 +411,34 @@ void AutofillDialogViewAndroid::ContinueAutomaticSignin(
 // static
 bool AutofillDialogViewAndroid::RegisterAutofillDialogViewAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+bool AutofillDialogViewAndroid::ValidateSection(
+    DialogSection section, AutofillDialogController::ValidationType type) {
+  DetailOutputMap detail_outputs;
+  GetUserInput(section, &detail_outputs);
+  std::vector<AutofillFieldType> invalid_inputs = controller_->InputsAreValid(
+      detail_outputs, type);
+
+  const size_t item_count =  invalid_inputs.size();
+  if (item_count == 0) return true;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> error_array =
+      Java_AutofillDialogGlue_createAutofillDialogFieldError(env, item_count);
+  for (size_t i = 0; i < item_count; ++i) {
+    // TODO(aurimas) Start using real error strings.
+    string16 error = ASCIIToUTF16("Error");
+    ScopedJavaLocalRef<jstring> error_text =
+        base::android::ConvertUTF16ToJavaString(env, error);
+    Java_AutofillDialogGlue_addToAutofillDialogFieldErrorArray(
+        env, error_array.obj(), i, invalid_inputs[i], error_text.obj());
+  }
+  Java_AutofillDialogGlue_updateSectionErrors(env,
+                                              java_object_.obj(),
+                                              section,
+                                              error_array.obj());
+  return false;
 }
 
 }  // namespace autofill

@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -44,8 +45,11 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   void ItemSelected(JNIEnv* env, jobject obj, jint section, jint index);
   void AccountSelected(JNIEnv* env, jobject obj, jint index);
   void EditingStart(JNIEnv* env, jobject obj, jint section);
-  void EditingComplete(JNIEnv* env, jobject obj, jint section);
+  jboolean EditingComplete(JNIEnv* env, jobject obj, jint section);
   void EditingCancel(JNIEnv* env, jobject obj, jint section);
+  base::android::ScopedJavaLocalRef<jstring> ValidateField(
+      JNIEnv* env, jobject obj, jint type, jstring value);
+  void ValidateSection(JNIEnv* env, jobject obj, jint section);
   void DialogSubmit(JNIEnv* env, jobject obj);
   void DialogCancel(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetLabelForSection(
@@ -73,6 +77,8 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
  private:
   // Returns the list of available user accounts.
   std::vector<std::string> GetAvailableUserAccounts();
+  bool ValidateSection(DialogSection section,
+                       AutofillDialogController::ValidationType type);
 
   // Starts an automatic sign-in attempt for a given account.
   bool StartAutomaticSignIn(const std::string& username);

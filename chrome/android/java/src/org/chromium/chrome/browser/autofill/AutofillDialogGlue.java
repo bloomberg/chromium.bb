@@ -55,8 +55,15 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     /**
-     * Notifies the dialog that the underlying model is changed and all sections will be updated.
-     * @param fetchingIsActive If true, the data is being fetched and is not yet available.
+     * @see AutofillDialog#updateSectionErrors(int, AutofillDialogFieldError[])
+     */
+    @CalledByNative
+    private void updateSectionErrors(int section, AutofillDialogFieldError[] errors) {
+        mAutofillDialog.updateSectionErrors(section, errors);
+    }
+
+    /**
+     * @see AutofillDialog#modelChanged(boolean)
      */
     @CalledByNative
     private void modelChanged(boolean fetchingIsActive) {
@@ -64,9 +71,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     /**
-     * Updates the account chooser of Autofill dialog.
-     * @param accountNames List of accounts to be shown.
-     * @param selectedAccountIndex Index of the currently selected account.
+     * @see AutofillDialog#updateAccountChooserAndAddTitle(String[], int)
      */
     @CalledByNative
     private void updateAccountChooser(String[] accountNames, int selectedAccountIndex) {
@@ -167,13 +172,23 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @Override
-    public void editingComplete(int section) {
-        nativeEditingComplete(mNativeDialogPopup, section);
+    public boolean editingComplete(int section) {
+        return nativeEditingComplete(mNativeDialogPopup, section);
     }
 
     @Override
     public void editingCancel(int section) {
         nativeEditingCancel(mNativeDialogPopup, section);
+    }
+
+    @Override
+    public String validateField(int fieldType, String value) {
+        return nativeValidateField(mNativeDialogPopup, fieldType, value);
+    }
+
+    @Override
+    public void validateSection(int section) {
+        nativeValidateSection(mNativeDialogPopup, section);
     }
 
     @Override
@@ -239,6 +254,17 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @CalledByNative
+    private static AutofillDialogFieldError[] createAutofillDialogFieldError(int size) {
+        return new AutofillDialogFieldError[size];
+    }
+
+    @CalledByNative
+    private static void addToAutofillDialogFieldErrorArray(AutofillDialogFieldError[] array,
+            int index, int fieldType, String errorText) {
+        array[index] = new AutofillDialogFieldError(fieldType, errorText);
+    }
+
+    @CalledByNative
     private static AutofillDialogMenuItem[] createAutofillDialogMenuItemArray(int size) {
         return new AutofillDialogMenuItem[size];
     }
@@ -271,8 +297,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
             int nativeAutofillDialogViewAndroid,
             String accountName, String sid, String lsid);
     private native void nativeEditingStart(int nativeAutofillDialogViewAndroid, int section);
-    private native void nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
+    private native boolean nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);
+    private native String nativeValidateField(int nativeAutofillDialogViewAndroid, int fieldType,
+            String value);
+    private native void nativeValidateSection(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeDialogSubmit(int nativeAutofillDialogViewAndroid);
     private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);
     private native String nativeGetLabelForSection(int nativeAutofillDialogViewAndroid,
