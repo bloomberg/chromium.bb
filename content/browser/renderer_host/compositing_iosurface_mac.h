@@ -45,15 +45,14 @@ class CompositingIOSurfaceMac {
   // Passed to Create() to specify the ordering of the surface relative to the
   // containing window.
   enum SurfaceOrder {
-    SURFACE_ORDER_ABOVE_WINDOW = 0,
-    SURFACE_ORDER_BELOW_WINDOW = 1,
+    SURFACE_ORDER_ABOVE_WINDOW,
+    SURFACE_ORDER_BELOW_WINDOW
   };
 
   // Returns NULL if IOSurface support is missing or GL APIs fail. Specify in
   // |order| the desired ordering relationship of the surface to the containing
   // window.
-  static CompositingIOSurfaceMac* Create(int window_number,
-                                  SurfaceOrder order);
+  static CompositingIOSurfaceMac* Create(SurfaceOrder order);
   ~CompositingIOSurfaceMac();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
@@ -68,9 +67,7 @@ class CompositingIOSurfaceMac {
   // will be white. |scaleFactor| is 1 in normal views, 2 in HiDPI views.
   // |frame_subscriber| listens to this draw event and provides output buffer
   // for copying this frame into.
-  void DrawIOSurface(NSView* view,
-                     float scale_factor,
-                     int window_number,
+  void DrawIOSurface(NSView* view, float scale_factor,
                      RenderWidgetHostViewFrameSubscriber* frame_subscriber);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
@@ -211,11 +208,6 @@ class CompositingIOSurfaceMac {
       scoped_refptr<CompositingIOSurfaceContext> context,
       CVDisplayLinkRef display_link);
 
-  // If this IOSurface has moved to a different window, use that window's
-  // GL context (if multiple visible windows are using the same GL context
-  // then call to setView call can stall and prevent reaching 60fps).
-  void SwitchToContextOnNewWindow(int window_number);
-
   bool IsVendorIntel();
 
   // Returns true if IOSurface is ready to render. False otherwise.
@@ -290,8 +282,7 @@ class CompositingIOSurfaceMac {
   // Cached pointer to IOSurfaceSupport Singleton.
   IOSurfaceSupport* io_surface_support_;
 
-  // GL context, and parameters for context sharing. This may change when
-  // moving between windows, but will never be NULL.
+  // GL context
   scoped_refptr<CompositingIOSurfaceContext> context_;
 
   // IOSurface data.

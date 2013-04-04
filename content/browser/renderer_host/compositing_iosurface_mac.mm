@@ -189,9 +189,7 @@ void CompositingIOSurfaceMac::CopyContext::CleanUp() {
 }
 
 // static
-CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(
-    int window_number,
-    SurfaceOrder surface_order) {
+CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(SurfaceOrder order) {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support) {
@@ -200,7 +198,7 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(
   }
 
   scoped_refptr<CompositingIOSurfaceContext> context =
-      CompositingIOSurfaceContext::Get(window_number, surface_order);
+      CompositingIOSurfaceContext::Get(order);
 
   CVDisplayLinkRef display_link;
   CVReturn ret = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
@@ -259,25 +257,6 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
   StopDisplayLink();
 }
 
-void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(int window_number) {
-  if (window_number == context_->window_number())
-    return;
-
-  // Asynchronous copies must complete in the same context they started in,
-  // defer updating the GL context to the new window until the copy finishes.
-  if (!copy_requests_.empty())
-    return;
-
-  scoped_refptr<CompositingIOSurfaceContext> new_context =
-      CompositingIOSurfaceContext::Get(window_number,
-                                       context_->surface_order());
-  if (!new_context)
-    return;
-
-  transformer_.reset(nil);
-  context_ = new_context;
-}
-
 bool CompositingIOSurfaceMac::is_vsync_disabled() const {
   return context_->is_vsync_disabled();
 }
@@ -319,12 +298,8 @@ int CompositingIOSurfaceMac::GetRendererID() {
 }
 
 void CompositingIOSurfaceMac::DrawIOSurface(
-    NSView* view,
-    float scale_factor,
-    int window_number,
+    NSView* view, float scale_factor,
     RenderWidgetHostViewFrameSubscriber* frame_subscriber) {
-  SwitchToContextOnNewWindow(window_number);
-
   CGLSetCurrentContext(context_->cgl_context());
 
   bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);

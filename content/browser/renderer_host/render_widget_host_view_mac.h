@@ -408,8 +408,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
     return frame_subscriber_.get();
   }
 
-  int window_number() const;
-
  private:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
