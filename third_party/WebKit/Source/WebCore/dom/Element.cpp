@@ -487,14 +487,7 @@ static int adjustForLocalZoom(LayoutUnit value, RenderObject* renderer)
     float zoomFactor = localZoomForRenderer(renderer);
     if (zoomFactor == 1)
         return value;
-#if ENABLE(SUBPIXEL_LAYOUT)
     return lroundf(value / zoomFactor);
-#else
-    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
-    if (zoomFactor > 1)
-        value++;
-    return static_cast<int>(value / zoomFactor);
-#endif
 }
 
 int Element::offsetLeft()
@@ -517,11 +510,7 @@ int Element::offsetWidth()
 {
     document()->updateLayoutIgnorePendingStylesheets();
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-#if ENABLE(SUBPIXEL_LAYOUT)
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer).round();
-#else
-        return adjustForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer);
-#endif
     return 0;
 }
 
@@ -529,11 +518,7 @@ int Element::offsetHeight()
 {
     document()->updateLayoutIgnorePendingStylesheets();
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-#if ENABLE(SUBPIXEL_LAYOUT)
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer).round();
-#else
-        return adjustForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer);
-#endif
     return 0;
 }
 
@@ -587,11 +572,7 @@ int Element::clientWidth()
     }
     
     if (RenderBox* renderer = renderBox())
-#if ENABLE(SUBPIXEL_LAYOUT)
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer).round();
-#else
-        return adjustForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer);
-#endif
     return 0;
 }
 
@@ -612,11 +593,7 @@ int Element::clientHeight()
     }
     
     if (RenderBox* renderer = renderBox())
-#if ENABLE(SUBPIXEL_LAYOUT)
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer).round();
-#else
-        return adjustForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer);
-#endif
     return 0;
 }
 

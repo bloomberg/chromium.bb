@@ -493,11 +493,7 @@ template<> unsigned CSSPrimitiveValue::computeLength(RenderStyle* style, RenderS
 
 template<> Length CSSPrimitiveValue::computeLength(RenderStyle* style, RenderStyle* rootStyle, float multiplier, bool computingFontSize)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     return Length(clampTo<float>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize), minValueForCssLength, maxValueForCssLength), Fixed);
-#else
-    return Length(clampTo<float>(roundForImpreciseConversion<float>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize)), minValueForCssLength, maxValueForCssLength), Fixed);
-#endif
 }
 
 template<> short CSSPrimitiveValue::computeLength(RenderStyle* style, RenderStyle* rootStyle, float multiplier, bool computingFontSize)

@@ -5927,22 +5927,13 @@ static inline void updatePreferredWidth(LayoutUnit& preferredWidth, float& resul
     preferredWidth = max(snappedResult, preferredWidth);
 }
 
-// With sub-pixel enabled: When converting between floating point and LayoutUnits
-// we risk losing precision with each conversion. When this occurs while
-// accumulating our preferred widths, we can wind up with a line width that's
-// larger than our maxPreferredWidth due to pure float accumulation.
-//
-// With sub-pixel disabled: values from Lengths or the render tree aren't subject
-// to the same loss of precision, as they're always truncated and stored as
-// integers. We mirror that behavior here to prevent over-allocating our preferred
-// width.
+// When converting between floating point and LayoutUnits we risk losing precision
+// with each conversion. When this occurs while accumulating our preferred widths,
+// we can wind up with a line width that's larger than our maxPreferredWidth due to
+// pure float accumulation.
 static inline LayoutUnit adjustFloatForSubPixelLayout(float value)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     return ceiledLayoutUnit(value);
-#else
-    return static_cast<int>(value);
-#endif
 }
 
 

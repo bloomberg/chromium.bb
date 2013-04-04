@@ -215,13 +215,8 @@ inline bool operator!=(const LayoutRect& a, const LayoutRect& b)
 
 inline IntRect pixelSnappedIntRect(const LayoutRect& rect)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     return IntRect(roundedIntPoint(rect.location()), IntSize(snapSizeToPixel(rect.width(), rect.x()),
                                                              snapSizeToPixel(rect.height(), rect.y())));
-
-#else
-    return IntRect(rect);
-#endif
 }
 
 IntRect enclosingIntRect(const LayoutRect&);

@@ -181,11 +181,7 @@ inline IntSize roundedIntSize(const LayoutSize& s)
 
 inline LayoutSize roundedLayoutSize(const FloatSize& s)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     return LayoutSize(s);
-#else
-    return roundedIntSize(s);
-#endif
 }
 
 } // namespace WebCore

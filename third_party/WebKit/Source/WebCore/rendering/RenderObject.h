@@ -1345,12 +1345,10 @@ inline int adjustForAbsoluteZoom(int value, RenderObject* renderer)
     return adjustForAbsoluteZoom(value, renderer->style());
 }
 
-#if ENABLE(SUBPIXEL_LAYOUT)
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, RenderObject* renderer)
 {
     return adjustLayoutUnitForAbsoluteZoom(value, renderer->style());
 }
-#endif
 
 inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* renderer)
 {

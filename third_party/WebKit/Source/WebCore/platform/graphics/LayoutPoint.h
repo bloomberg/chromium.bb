@@ -199,11 +199,7 @@ inline IntSize pixelSnappedIntSize(const LayoutSize& s, const LayoutPoint& p)
 
 inline LayoutPoint roundedLayoutPoint(const FloatPoint& p)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     return LayoutPoint(p);
-#else
-    return roundedIntPoint(p);
-#endif
 }
 
 inline LayoutSize toLayoutSize(const LayoutPoint& p)

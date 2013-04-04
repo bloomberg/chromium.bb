@@ -136,14 +136,9 @@ IntRect enclosingIntRect(const LayoutRect& rect)
 
 LayoutRect enclosingLayoutRect(const FloatRect& rect)
 {
-#if ENABLE(SUBPIXEL_LAYOUT)
     LayoutPoint location = flooredLayoutPoint(rect.minXMinYCorner());
     LayoutPoint maxPoint = ceiledLayoutPoint(rect.maxXMaxYCorner());
-
     return LayoutRect(location, maxPoint - location);
-#else
-    return enclosingIntRect(rect);
-#endif
 }
 
 } // namespace WebCore

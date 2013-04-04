@@ -267,10 +267,6 @@
 #define ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH 1
 #endif
 
-#if !defined(ENABLE_SUBPIXEL_LAYOUT)
-#define ENABLE_SUBPIXEL_LAYOUT 1
-#endif
-
 #endif /* PLATFORM(EFL) */
 
 /* --------- Gtk port (Unix, Windows, Mac) --------- */
@@ -775,10 +771,6 @@
 #define ENABLE_STYLE_SCOPED 0
 #endif
 
-#if !defined(ENABLE_SUBPIXEL_LAYOUT)
-#define ENABLE_SUBPIXEL_LAYOUT 0
-#endif
-
 #if !defined(ENABLE_SVG)
 #define ENABLE_SVG 1
 #endif
@@ -884,10 +876,6 @@
 #endif
 
 /* Asserts, invariants for macro definitions */
-
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC) && !ENABLE(SUBPIXEL_LAYOUT)
-#error "ENABLE(SATURATED_LAYOUT_ARITHMETIC) requires ENABLE(SUBPIXEL_LAYOUT)"
-#endif
 
 #if ENABLE(SVG_DOM_OBJC_BINDINGS) && !ENABLE(SVG)
 #error "ENABLE(SVG_DOM_OBJC_BINDINGS) requires ENABLE(SVG)"
