@@ -34,6 +34,11 @@ namespace {
 // as something we don't need (see the comment with calloc below).
 template <typename Type>
 Type HideValueFromCompiler(volatile Type value) {
+#if defined(__GNUC__)
+  // In a GCC compatible compiler (GCC or Clang), make this compiler barrier
+  // more robust than merely using "volatile".
+  __asm__ volatile ("" : "+r" (value));
+#endif  // __GNUC__
   return value;
 }
 
@@ -169,12 +174,9 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-// TODO(jln): crbug.com/174947 This can't even compile on Win64.
-#if !(defined(OS_WIN) && defined(ARCH_CPU_X86_64))
-
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
-// Disable on Windows, we suspect some are failing because of it.
+// Crashes on Windows Dbg builds, disable there as well.
 TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
   const size_t kArraySize = 4096;
   // We want something "dynamic" here, so that the compiler doesn't
@@ -191,13 +193,16 @@ TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
         char[kDynamicArraySize2][kArraySize]);
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
+  // On windows, the compiler prevents static array sizes of more than
+  // 0x7fffffff (error C2148).
+#if !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
   {
     scoped_ptr<char[][kArraySize2]> array_pointer(new (nothrow)
         char[kDynamicArraySize][kArraySize2]);
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
+#endif  // !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
 }
-#endif
 
 // Call calloc(), eventually free the memory and return whether or not
 // calloc() did succeed.
