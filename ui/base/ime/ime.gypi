@@ -55,7 +55,7 @@
         ['include', 'text_input_client\\.(cc|h)$'],
       ],
     }],
-    ['chromeos==0', {
+    ['chromeos==0 or use_x11==0', {
       'sources!': [
         'character_composer.cc',
         'character_composer.h',
