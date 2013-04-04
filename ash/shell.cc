@@ -262,6 +262,7 @@ Shell::~Shell() {
   app_list_controller_.reset();
 
   // Destroy SystemTrayDelegate before destroying the status area(s).
+  system_tray_delegate_->Shutdown();
   system_tray_delegate_.reset();
 
   // Destroy all child windows including widgets.

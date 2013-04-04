@@ -22,6 +22,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
 
  public:
   virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
 
   // Overridden from SystemTrayDelegate:

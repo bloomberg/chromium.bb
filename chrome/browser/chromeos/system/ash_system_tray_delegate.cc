@@ -299,6 +299,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                    ui_weak_ptr_factory_->GetWeakPtr()));
   }
 
+  virtual void Shutdown() OVERRIDE {
+    data_promo_notification_.reset();
+  }
+
   void InitializeOnAdapterReady(
       scoped_refptr<device::BluetoothAdapter> adapter) {
     bluetooth_adapter_ = adapter;

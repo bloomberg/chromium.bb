@@ -67,6 +67,9 @@ TestSystemTrayDelegate::~TestSystemTrayDelegate() {
 void TestSystemTrayDelegate::Initialize() {
 }
 
+void TestSystemTrayDelegate::Shutdown() {
+}
+
 bool TestSystemTrayDelegate::GetTrayVisibilityOnStartup() {
   return true;
 }

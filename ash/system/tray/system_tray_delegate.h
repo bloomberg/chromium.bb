@@ -118,6 +118,9 @@ class SystemTrayDelegate {
   // Called after SystemTray has been instantiated.
   virtual void Initialize() = 0;
 
+  // Called before SystemTray is destroyed.
+  virtual void Shutdown() = 0;
+
   // Returns true if system tray should be visible on startup.
   virtual bool GetTrayVisibilityOnStartup() = 0;
 
