@@ -284,25 +284,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Callback for handling file downloading requests.
-  void OnFileDownloaded(const GetFileFromCacheParams& params,
-                        google_apis::GDataErrorCode status,
-                        const base::FilePath& downloaded_file_path);
-
-  // Unpins file if cache entry is pinned.
-  void UnpinIfPinned(const std::string& resource_id,
-                     const std::string& md5,
-                     bool success,
-                     const DriveCacheEntry& cache_entry);
-
-  // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
-  // an error in case we don't have enough disk space.
-  void OnFileDownloadedAndSpaceChecked(
-      const GetFileFromCacheParams& params,
-      google_apis::GDataErrorCode status,
-      const base::FilePath& downloaded_file_path,
-      bool has_enough_space);
-
   // Adds the uploaded file to the cache.
   void AddUploadedFileToCache(const AddUploadedFileParams& params,
                               DriveFileError error,
@@ -311,39 +292,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().
   void OnUpdateChecked(DriveFileError error);
-
-  // Helper function for internally handling responses from
-  // GetFileFromCacheByResourceIdAndMd5() calls during processing of
-  // GetFileByPath() request.
-  void OnGetFileFromCache(const GetFileFromCacheParams& params,
-                          DriveFileError error,
-                          const base::FilePath& cache_file_path);
-
-  // Callback for |drive_service_->GetResourceEntry|.
-  // It is called before file download. If GetResourceEntry was successful,
-  // file download procedure is started for the file. The file is downloaded
-  // from the content url extracted from the fetched metadata.
-  void OnGetResourceEntry(const GetFileFromCacheParams& params,
-                          google_apis::GDataErrorCode status,
-                          scoped_ptr<google_apis::ResourceEntry> entry);
-
-  // Check available space using file size from the fetched metadata. Called
-  // from OnGetResourceEntry after RefreshEntry is complete.
-  void CheckForSpaceBeforeDownload(
-      const GetFileFromCacheParams& params,
-      int64 file_size,
-      const GURL& download_url,
-      DriveFileError error,
-      const base::FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Starts downloading a file if we have enough disk space indicated by
-  // |has_enough_space|.
-  void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
-                                      const GURL& download_url,
-                                      const DriveClientContext& context,
-                                      const base::FilePath& cache_file_path,
-                                      bool has_enough_space);
 
   // Changes state of hosted documents visibility, triggers directory refresh.
   void SetHideHostedDocuments(bool hide);
@@ -389,12 +337,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       scoped_ptr<DriveEntryProtoVector> entries);
 
-  // Loads the file system from the cache or the server via change lists if
-  // the file system is not yet loaded. Runs |callback| upon the completion
-  // with the error code.  |callback| must not be null.
-  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                    const FileOperationCallback& callback);
-
   // Gets the file at |file_path| from the cache (if found in the cache),
   // or the server (if not found in the cache) after the file info is
   // already resolved with GetEntryInfoByPath() or GetEntryInfoByResourceId().
@@ -406,6 +348,47 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
+  void GetResolvedFileByPathAfterGetFileFromCache(
+      const GetFileFromCacheParams& params,
+      DriveFileError error,
+      const base::FilePath& cache_file_path);
+  void GetResolvedFileByPathAfterGetResourceEntry(
+      const GetFileFromCacheParams& params,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceEntry> entry);
+  void GetResolvedFileByPathAfterRefreshEntry(
+      const GetFileFromCacheParams& params,
+      int64 file_size,
+      const GURL& download_url,
+      DriveFileError error,
+      const base::FilePath& drive_file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
+  void GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
+      const GetFileFromCacheParams& params,
+      const GURL& download_url,
+      const DriveClientContext& context,
+      const base::FilePath& cache_file_path,
+      bool has_enough_space);
+  void GetResolvedFileByPathAfterDownloadFile(
+      const GetFileFromCacheParams& params,
+      google_apis::GDataErrorCode status,
+      const base::FilePath& downloaded_file_path);
+  void GetResolvedFileByPathAfterGetCacheEntryForCancel(
+      const std::string& resource_id,
+      const std::string& md5,
+      bool success,
+      const DriveCacheEntry& cache_entry);
+  void GetResolvedFileByPathAfterFreeDiskSpace(
+      const GetFileFromCacheParams& params,
+      google_apis::GDataErrorCode status,
+      const base::FilePath& downloaded_file_path,
+      bool has_enough_space);
+
+  // Loads the file system from the cache or the server via change lists if
+  // the file system is not yet loaded. Runs |callback| upon the completion
+  // with the error code.  |callback| must not be null.
+  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
+                    const FileOperationCallback& callback);
 
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
