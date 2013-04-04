@@ -6,12 +6,14 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
+import logging
 import json
 import os
 import re
 import subprocess
 import sys
-import urllib
+import traceback
+import urllib2
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -176,7 +178,18 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testImportantMattersToChrome(self):
     # TODO(ferringb): Decorate this as a network test.
     namefinder = re.compile(r" *params='([^' ]*)[ ']")
-    req = urllib.urlopen(CHROMIUM_WATCHING_URL)
+    try:
+      req = urllib2.urlopen(CHROMIUM_WATCHING_URL, timeout=30)
+    except EnvironmentError:
+      logging.error('Could not fetch %r', CHROMIUM_WATCHING_URL)
+      traceback.print_exc()
+      return
+
+    if req.getcode() != 200:
+      msg = 'Received error code %r for %r'
+      logging.error(msg, req.getcode(), CHROMIUM_WATCHING_URL)
+      return
+
     watched_configs = []
     for m in [namefinder.match(line) for line in req.read().splitlines()]:
       if m:
