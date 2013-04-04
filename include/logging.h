@@ -7,6 +7,28 @@
 
 #include "gestures.h"
 
+#define Assert(condition) \
+  do { \
+    if (!(condition)) \
+      Err("Assertion '" #condition "' failed"); \
+  } while(false)
+
+#define AssertWithReturn(condition) \
+  do { \
+    if (!(condition)) { \
+      Err("Assertion '" #condition "' failed"); \
+      return; \
+    } \
+  } while(false)
+
+#define AssertWithReturnValue(condition, returnValue) \
+  do { \
+    if (!(condition)) { \
+      Err("Assertion '" #condition "' failed"); \
+      return (returnValue); \
+    } \
+  } while(false)
+
 #define Log(format, ...) \
   gestures_log(GESTURES_LOG_INFO, "INFO:%s:%d:" format "\n", \
                __FILE__, __LINE__, ## __VA_ARGS__)
