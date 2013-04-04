@@ -200,7 +200,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   node.appendChild(entryBox);
   if (this.model_.isManagedProfile && this.model_.getGroupByDomain()) {
-    entryBox.appendChild(
+    node.appendChild(
         getManagedStatusDOM(this.urlManualBehavior, this.urlInContentPack));
   }
 
