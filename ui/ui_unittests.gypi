@@ -94,6 +94,7 @@
         'gfx/color_utils_unittest.cc',
         'gfx/display_unittest.cc',
         'gfx/font_unittest.cc',
+        'gfx/image/image_family_unittest.cc',
         'gfx/image/image_skia_unittest.cc',
         'gfx/image/image_unittest.cc',
         'gfx/image/image_unittest_util.cc',

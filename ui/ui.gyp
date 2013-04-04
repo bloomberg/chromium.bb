@@ -397,6 +397,8 @@
         'gfx/image/canvas_image_source.h',
         'gfx/image/image.cc',
         'gfx/image/image.h',
+        'gfx/image/image_family.cc',
+        'gfx/image/image_family.h',
         'gfx/image/image_ios.mm',
         'gfx/image/image_mac.mm',
         'gfx/image/image_png_rep.cc',
