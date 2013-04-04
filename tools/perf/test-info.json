@@ -1,0 +1,216 @@
+{
+  "_description": "This file contains info about our performance test suites, used by the perf dashboard (http://chromeperf.appspot.com).",
+  "bloat": {
+    "description": "Load an image many times and ensure memory usage stays low.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/page_cycler/bloat.json",
+      "chrome/src/tools/perf/perf_tools/page_cycler.py"
+    ]
+  },
+  "dhtml": {
+    "description": "Benchmarks for various DHTML operations like simple animations.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/page_cycler/dhtml.json",
+      "chrome/src/tools/perf/perf_tools/page_cycler.py"
+    ]
+  },
+  "dom_perf": {
+    "description": "Performance of DOM operations.",
+    "code": [
+      "chrome/tools/build/scripts/slave/chromium/dom_perf.py"
+    ]
+  },
+  "dromaeo_domcoreattr": {
+    "description": "Setting and getting DOM node attributes.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/domcoreattr.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_domcoremodify": {
+    "description": "Creating and injecting DOM nodes.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/domcoremodify.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_domcorequery": {
+    "description": "Querying DOM elements in a document.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/domcorequery.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_domcoretraverse": {
+    "description": "Traversing a DOM structure.",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/domcoretraverse.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibattrjquery": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrjquery.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibattrprototype": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibeventjquery": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibeventprototype": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibeventprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibmodifyjquery": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyjquery.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibmodifyprototype": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibstylejquery": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibstylejquery.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibstyleprototype": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibstyleprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibtraversejquery": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibtraversejquery.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "dromaeo_jslibtraverseprototype": {
+    "description": "",
+    "code": [
+      "chrome/src/tools/perf/page_sets/dromaeo/jslibtraverseprototype.json",
+      "chrome/src/tools/perf/perf_tools/dromaeo.py"
+    ]
+  },
+  "idb_perf": {
+    "description": "Benchmarks for a variety of IndexedDB operations.",
+    "code": [
+      "chrome/src/chrome/test/perf/indexeddb_uitest.cc",
+      "chrome/src/chrome/test/data/indexeddb/perf_test.html"
+    ]
+  },
+  "image_decoding_benchmark": {
+    "description": "Milliseconds to decode a large image of various formats (gif, jpg, png, webp).",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/image_decoding_benchmark.py",
+      "chrome/src/chrome/test/data/image_decoding/"
+    ]
+  },
+  "indexeddb": {
+    "description": "Benchmark for a basic insert operation in Indexed DB.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/page_cycler/indexed_db/basic_insert.json"
+    ]
+  },
+  "intl1": {
+    "description": "Page loading benchmark for a variety of pages in a variety of international languages.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/page_cycler/intl1.json"
+    ]
+  },
+  "intl2": {
+    "description": "Page loading benchmark for a variety of pages in a variety of international languages.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/page_cycler/intl2.json"
+    ]
+  },
+  "jsgamebench": {
+    "description": "Score on Facebook's JSGameBench <https://github.com/facebook/jsgamebench> benchmark.\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance.",
+    "code": ["chrome/src/tools/perf/perf_tools/jsgamebench.py"]
+  },
+  "kraken": {
+    "description": "Score on mozilla's Kraken JavaScript benchmark <http://krakenbenchmark.mozilla.org/>",
+    "code": ["chrome/src/tools/perf/perf_tools/kraken.py"]
+  },
+  "mach_ports": {
+    "description": "This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of <http://crbug.com/105513>.",
+    "code": [
+      "chrome/src/chrome/test/perf/mach_ports_test.cc"
+    ]
+  },
+  "memory_benchmark": {
+    "description": "Use (recorded versions of) real world web sites and measure memory consumption.",
+    "code": ["chrome/src/tools/perf/perf_tools/memory_benchmark.py"]
+  },
+  "memory_test": {
+    "description": "Loads a number of URLs across tabs and windows and measures the memory usage.",
+    "code": ["chrome/src/chrome/test/perf/memory_test.cc"]
+  },
+  "morejs": {
+    "description": "Page loading benchmark for a variety of pages that were JavaScript heavy in 2009.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/page_cycler/morejs.json"
+    ]
+  },
+  "moz": {
+    "description": "Page loading benchmark for mozilla's original page set. Recorded in December 2000.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/page_cycler.py",
+      "chrome/src/tools/perf/page_sets/page_cycler/moz.json"
+    ]
+  },
+  "octane": {
+    "description": "Score on the V8 team's Octane benchmark <http://octane-benchmark.googlecode.com/svn/latest/index.html>",
+    "code": ["chrome/src/tools/perf/perf_tools/octane.py"]
+  },
+  "robohornetpro": {
+    "description": "Milliseconds to complete the RoboHornetPro demo by Microsoft <http://ie.microsoft.com/testdrive/performance/robohornetpro/>",
+    "code": ["chrome/src/tools/perf/perf_tools/robohornetpro.py"]
+  },
+  "scrolling_benchmark": {
+    "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. See <http://www.chromium.org/developers/design-documents/rendering-benchmarks>.",
+    "code": ["chrome/src/tools/perf/perf_tools/scrolling_benchmark.py"]
+  },
+  "spaceport": {
+    "description": "Performance on spaceport.io's perfmarks benchmark. This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS. See <http://spaceport.io/community/perfmarks>.",
+    "code": ["chrome/src/tools/perf/perf_tools/spaceport.py"]
+  },
+  "startup_test": {
+    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles.",
+    "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
+  },
+  "sunspider": {
+    "description": "Performance on the SunSpider JavaScript benchmark <http://www.webkit.org/perf/sunspider/sunspider.html>",
+    "code": ["chrome/src/tools/perf/perf_tools/sunspider.py"]
+  }
+}
