@@ -39,75 +39,13 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 
-#if USE(CG)
-typedef struct CGContext PlatformGraphicsContext;
-#elif USE(CAIRO)
-namespace WebCore {
-class PlatformContextCairo;
-}
-typedef WebCore::PlatformContextCairo PlatformGraphicsContext;
-#elif PLATFORM(OPENVG)
-namespace WebCore {
-class SurfaceOpenVG;
-}
-typedef class WebCore::SurfaceOpenVG PlatformGraphicsContext;
-#elif PLATFORM(QT)
-#include <QPainter>
-namespace WebCore {
-class ShadowBlur;
-}
-typedef QPainter PlatformGraphicsContext;
-#elif PLATFORM(WX)
-class wxGCDC;
-class wxWindowDC;
-
-// wxGraphicsContext allows us to support Path, etc.
-// but on some platforms, e.g. Linux, it requires fairly
-// new software.
-#if USE(WXGC)
-// On OS X, wxGCDC is just a typedef for wxDC, so use wxDC explicitly to make
-// the linker happy.
-#ifdef __APPLE__
-    class wxDC;
-    typedef wxDC PlatformGraphicsContext;
-#else
-    typedef wxGCDC PlatformGraphicsContext;
-#endif
-#else
-    typedef wxWindowDC PlatformGraphicsContext;
-#endif
-#elif USE(SKIA)
 namespace WebCore {
 class PlatformContextSkia;
 typedef PlatformContextSkia GraphicsContextPlatformPrivate;
 }
 typedef WebCore::PlatformContextSkia PlatformGraphicsContext;
-#elif OS(WINCE)
-typedef struct HDC__ PlatformGraphicsContext;
-#else
-typedef void PlatformGraphicsContext;
-#endif
-
-#if PLATFORM(WIN)
-#include "DIBPixelData.h"
-typedef struct HDC__* HDC;
-#if !USE(CG)
-// UInt8 is defined in CoreFoundation/CFBase.h
-typedef unsigned char UInt8;
-#endif
-#endif
-
-#if PLATFORM(QT) && OS(WINDOWS)
-#include <windows.h>
-#endif
 
 namespace WebCore {
-
-#if OS(WINCE) && !PLATFORM(QT)
-    class SharedBitmap;
-    class SimpleFontData;
-    class GlyphBuffer;
-#endif
 
     const int cMisspellingLineThickness = 3;
     const int cMisspellingLinePatternWidth = 4;
@@ -116,9 +54,6 @@ namespace WebCore {
     class AffineTransform;
     class DrawingBuffer;
     class Generator;
-#if !USE(SKIA)
-    class GraphicsContextPlatformPrivate;
-#endif
     class ImageBuffer;
     class IntRect;
     class RoundedRect;
@@ -171,11 +106,6 @@ namespace WebCore {
             , shouldSubpixelQuantizeFonts(true)
             , paintingDisabled(false)
             , shadowsIgnoreTransforms(false)
-#if USE(CG)
-            // Core Graphics incorrectly renders shadows with radius > 8px (<rdar://problem/8103442>),
-            // but we need to preserve this buggy behavior for canvas and -webkit-box-shadow.
-            , shadowsUseLegacyRadius(false)
-#endif
         {
         }
 
@@ -211,9 +141,6 @@ namespace WebCore {
         bool shouldSubpixelQuantizeFonts : 1;
         bool paintingDisabled : 1;
         bool shadowsIgnoreTransforms : 1;
-#if USE(CG)
-        bool shadowsUseLegacyRadius : 1;
-#endif
     };
 
     class GraphicsContext {
@@ -222,9 +149,7 @@ namespace WebCore {
         GraphicsContext(PlatformGraphicsContext*);
         ~GraphicsContext();
 
-#if !OS(WINCE) || PLATFORM(QT)
         PlatformGraphicsContext* platformContext() const;
-#endif
 
         float strokeThickness() const;
         void setStrokeThickness(float);
@@ -268,21 +193,6 @@ namespace WebCore {
 
         const GraphicsContextState& state() const;
 
-#if USE(CG)
-        void applyStrokePattern();
-        void applyFillPattern();
-        void drawPath(const Path&);
-
-        void drawNativeImage(NativeImagePtr, const FloatSize& selfSize, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, ImageOrientation = DefaultImageOrientation);
-
-        // Allow font smoothing (LCD antialiasing). Not part of the graphics state.
-        void setAllowsFontSmoothing(bool);
-        
-        void setIsCALayerContext(bool);
-        bool isCALayerContext() const;
-
-        void setIsAcceleratedContext(bool);
-#endif
         bool isAcceleratedContext() const;
 
         void save();
@@ -445,101 +355,13 @@ namespace WebCore {
         void applyDeviceScaleFactor(float);
         void platformApplyDeviceScaleFactor(float);
 
-#if OS(WINDOWS)
-        HDC getWindowsContext(const IntRect&, bool supportAlphaBlend, bool mayCreateBitmap); // The passed in rect is used to create a bitmap for compositing inside transparency layers.
-        void releaseWindowsContext(HDC, const IntRect&, bool supportAlphaBlend, bool mayCreateBitmap); // The passed in HDC should be the one handed back by getWindowsContext.
-#if PLATFORM(WIN)
-#if OS(WINCE)
-        void setBitmap(PassRefPtr<SharedBitmap>);
-        const AffineTransform& affineTransform() const;
-        AffineTransform& affineTransform();
-        void resetAffineTransform();
-        void fillRect(const FloatRect&, const Gradient*);
-        void drawText(const SimpleFontData* fontData, const GlyphBuffer& glyphBuffer, int from, int numGlyphs, const FloatPoint& point);
-        void drawFrameControl(const IntRect& rect, unsigned type, unsigned state);
-        void drawFocusRect(const IntRect& rect);
-        void paintTextField(const IntRect& rect, unsigned state);
-        void drawBitmap(SharedBitmap*, const IntRect& dstRect, const IntRect& srcRect, ColorSpace styleColorSpace, CompositeOperator compositeOp, BlendMode blendMode);
-        void drawBitmapPattern(SharedBitmap*, const FloatRect& tileRectIn, const AffineTransform& patternTransform, const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator op, const FloatRect& destRect, const IntSize& origSourceSize);
-        void drawIcon(HICON icon, const IntRect& dstRect, UINT flags);
-        void drawRoundCorner(bool newClip, RECT clipRect, RECT rectWin, HDC dc, int width, int height);
-#else
-        GraphicsContext(HDC, bool hasAlpha = false); // FIXME: To be removed.
-
-        // When set to true, child windows should be rendered into this context
-        // rather than allowing them just to render to the screen. Defaults to
-        // false.
-        // FIXME: This is a layering violation. GraphicsContext shouldn't know
-        // what a "window" is. It would be much more appropriate for this flag
-        // to be passed as a parameter alongside the GraphicsContext, but doing
-        // that would require lots of changes in cross-platform code that we
-        // aren't sure we want to make.
-        void setShouldIncludeChildWindows(bool);
-        bool shouldIncludeChildWindows() const;
-
-        class WindowsBitmap {
-            WTF_MAKE_NONCOPYABLE(WindowsBitmap);
-        public:
-            WindowsBitmap(HDC, const IntSize&);
-            ~WindowsBitmap();
-
-            HDC hdc() const { return m_hdc; }
-            UInt8* buffer() const { return m_pixelData.buffer(); }
-            unsigned bufferLength() const { return m_pixelData.bufferLength(); }
-            const IntSize& size() const { return m_pixelData.size(); }
-            unsigned bytesPerRow() const { return m_pixelData.bytesPerRow(); }
-            unsigned short bitsPerPixel() const { return m_pixelData.bitsPerPixel(); }
-            const DIBPixelData& windowsDIB() const { return m_pixelData; }
-
-        private:
-            HDC m_hdc;
-            HBITMAP m_bitmap;
-            DIBPixelData m_pixelData;
-        };
-
-        PassOwnPtr<WindowsBitmap> createWindowsBitmap(const IntSize&);
-        // The bitmap should be non-premultiplied.
-        void drawWindowsBitmap(WindowsBitmap*, const IntPoint&);
-#endif
-#else // PLATFORM(WIN)
         bool shouldIncludeChildWindows() const { return false; }
-#endif // PLATFORM(WIN)
-#endif // OS(WINDOWS)
-
-#if PLATFORM(WX)
-        // This is needed because of a bug whereby getting an HDC from a GDI+ context
-        // loses the scale operations applied to the context.
-        FloatSize currentScale(); 
-#endif
-
-#if PLATFORM(QT)
-        void pushTransparencyLayerInternal(const QRect&, qreal, QPixmap&);
-        void takeOwnershipOfPlatformContext();
-#endif
-
-#if PLATFORM(QT)
-        ShadowBlur* shadowBlur();
-#endif
-
-#if USE(CAIRO)
-        GraphicsContext(cairo_t*);
-#endif
-
-#if PLATFORM(GTK)
-        void setGdkExposeEvent(GdkEventExpose*);
-        GdkWindow* gdkWindow() const;
-        GdkEventExpose* gdkExposeEvent() const;
-#endif
 
         static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
     private:
         void platformInit(PlatformGraphicsContext*);
         void platformDestroy();
-
-#if PLATFORM(WIN) && !OS(WINCE)
-        void platformInit(HDC, bool hasAlpha = false);
-#endif
 
         void savePlatformState();
         void restorePlatformState();

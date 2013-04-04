@@ -31,25 +31,10 @@
 #include "IntPoint.h"
 #include <wtf/MathExtras.h>
 
-#if PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QSizeF;
-QT_END_NAMESPACE
-#endif
 
-#if PLATFORM(BLACKBERRY)
-namespace BlackBerry {
-namespace Platform {
-class FloatSize;
-}
-}
-#endif
-
-#if USE(CG) || (PLATFORM(WX) && OS(DARWIN)) || USE(SKIA_ON_MAC_CHROMIUM)
+#if OS(DARWIN)
 typedef struct CGSize CGSize;
-#endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN)) || (PLATFORM(QT) && USE(QTKIT))
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGSize NSSize;
 #else
@@ -120,26 +105,13 @@ public:
         return FloatSize(m_height, m_width);
     }
 
-#if PLATFORM(QT)
-    explicit FloatSize(const QSizeF&);
-    operator QSizeF() const;
-#endif
-
-#if PLATFORM(BLACKBERRY)
-    FloatSize(const BlackBerry::Platform::FloatSize&);
-    operator BlackBerry::Platform::FloatSize() const;
-#endif
-
-#if USE(CG) || (PLATFORM(WX) && OS(DARWIN)) || USE(SKIA_ON_MAC_CHROMIUM)
+#if OS(DARWIN)
     explicit FloatSize(const CGSize&); // don't do this implicitly since it's lossy
     operator CGSize() const;
-#endif
-
-#if (PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))) \
-        && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES) \
-        || (PLATFORM(QT) && USE(QTKIT))
+#if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     explicit FloatSize(const NSSize &); // don't do this implicitly since it's lossy
     operator NSSize() const;
+#endif
 #endif
 
 private:

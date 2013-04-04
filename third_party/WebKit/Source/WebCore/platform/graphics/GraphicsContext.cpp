@@ -153,9 +153,6 @@ void GraphicsContext::setLegacyShadow(const FloatSize& offset, float blur, const
     m_state.shadowBlur = blur;
     m_state.shadowColor = color;
     m_state.shadowColorSpace = colorSpace;
-#if USE(CG)
-    m_state.shadowsUseLegacyRadius = true;
-#endif
     setPlatformShadow(offset, blur, color, colorSpace);
 }
 
@@ -357,12 +354,10 @@ void GraphicsContext::endTransparencyLayer()
     --m_transparencyCount;
 }
 
-#if !PLATFORM(QT)
 bool GraphicsContext::isInTransparencyLayer() const
 {
     return (m_transparencyCount > 0) && supportsTransparencyLayers();
 }
-#endif
 
 bool GraphicsContext::updatingControlTints() const
 {
@@ -385,7 +380,6 @@ bool GraphicsContext::paintingDisabled() const
     return m_state.paintingDisabled;
 }
 
-#if !OS(WINCE) || PLATFORM(QT)
 void GraphicsContext::drawText(const Font& font, const TextRun& run, const FloatPoint& point, int from, int to)
 {
     if (paintingDisabled())
@@ -393,7 +387,6 @@ void GraphicsContext::drawText(const Font& font, const TextRun& run, const Float
 
     font.drawText(this, run, point, from, to);
 }
-#endif
 
 void GraphicsContext::drawEmphasisMarks(const Font& font, const TextRun& run, const AtomicString& mark, const FloatPoint& point, int from, int to)
 {
@@ -485,12 +478,7 @@ void GraphicsContext::drawImage(Image* image, ColorSpace styleColorSpace, const 
 
     if (useLowQualityScale) {
         previousInterpolationQuality = imageInterpolationQuality();
-#if PLATFORM(CHROMIUM)
         setImageInterpolationQuality(InterpolationLow);
-#else
-        // FIXME (49002): Should be InterpolationLow
-        setImageInterpolationQuality(InterpolationNone);
-#endif
     }
 
     image->draw(this, dest, src, styleColorSpace, op, blendMode, shouldRespectImageOrientation);
@@ -572,41 +560,17 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, ColorSpace styleColorS
 
     if (useLowQualityScale) {
         InterpolationQuality previousInterpolationQuality = imageInterpolationQuality();
-#if PLATFORM(CHROMIUM)
         setImageInterpolationQuality(InterpolationLow);
-#else
-        // FIXME (49002): Should be InterpolationLow
-        setImageInterpolationQuality(InterpolationNone);
-#endif
         image->draw(this, styleColorSpace, dest, src, op, blendMode, useLowQualityScale);
         setImageInterpolationQuality(previousInterpolationQuality);
     } else
         image->draw(this, styleColorSpace, dest, src, op, blendMode, useLowQualityScale);
 }
 
-#if !PLATFORM(QT)
 void GraphicsContext::clip(const IntRect& rect)
 {
     clip(FloatRect(rect));
 }
-#endif
-
-#if !USE(SKIA)
-void GraphicsContext::clipRoundedRect(const RoundedRect& rect)
-{
-    if (paintingDisabled())
-        return;
-
-    if (!rect.isRounded()) {
-        clip(rect.rect());
-        return;
-    }
-
-    Path path;
-    path.addRoundedRect(rect);
-    clip(path);
-}
-#endif
 
 void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)
 {
@@ -630,13 +594,11 @@ void GraphicsContext::clipToImageBuffer(ImageBuffer* buffer, const FloatRect& re
     buffer->clip(this, rect);
 }
 
-#if !USE(CG) && !PLATFORM(QT) && !USE(CAIRO)
 IntRect GraphicsContext::clipBounds() const
 {
     ASSERT_NOT_REACHED();
     return IntRect();
 }
-#endif
 
 TextDrawingModeFlags GraphicsContext::textDrawingMode() const
 {
@@ -677,7 +639,6 @@ void GraphicsContext::fillRoundedRect(const RoundedRect& rect, const Color& colo
         fillRect(rect.rect(), color, colorSpace);
 }
 
-#if !USE(CG) && !PLATFORM(QT)
 void GraphicsContext::fillRectWithRoundedHole(const IntRect& rect, const RoundedRect& roundedHoleRect, const Color& color, ColorSpace colorSpace)
 {
     if (paintingDisabled())
@@ -703,7 +664,6 @@ void GraphicsContext::fillRectWithRoundedHole(const IntRect& rect, const Rounded
     setFillRule(oldFillRule);
     setFillColor(oldFillColor, oldFillColorSpace);
 }
-#endif
 
 void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, BlendMode blendMode)
 {
@@ -722,32 +682,9 @@ BlendMode GraphicsContext::blendModeOperation() const
     return m_state.blendMode;
 }
 
-#if !USE(CG) && !USE(SKIA)
-// Implement this if you want to go ahead and push the drawing mode into your native context
-// immediately.
-void GraphicsContext::setPlatformTextDrawingMode(TextDrawingModeFlags)
-{
-}
-#endif
-
-#if !PLATFORM(QT) && !USE(CAIRO) && !USE(SKIA) && !PLATFORM(OPENVG)
-void GraphicsContext::setPlatformStrokeStyle(StrokeStyle)
-{
-}
-#endif
-
-#if !USE(CG)
 void GraphicsContext::setPlatformShouldSmoothFonts(bool)
 {
 }
-#endif
-
-#if !USE(SKIA) && !USE(CG)
-bool GraphicsContext::isAcceleratedContext() const
-{
-    return false;
-}
-#endif
 
 void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle penStyle)
 {
@@ -809,11 +746,9 @@ bool GraphicsContext::isCompatibleWithBuffer(ImageBuffer* buffer) const
     return scalesMatch(getCTM(), bufferContext->getCTM()) && isAcceleratedContext() == bufferContext->isAcceleratedContext();
 }
 
-#if !USE(CG)
 void GraphicsContext::platformApplyDeviceScaleFactor(float)
 {
 }
-#endif
 
 void GraphicsContext::applyDeviceScaleFactor(float deviceScaleFactor)
 {
@@ -844,23 +779,5 @@ void GraphicsContext::strokeEllipseAsPath(const FloatRect& ellipse)
     path.addEllipse(ellipse);
     strokePath(path);
 }
-
-#if !USE(CG) && !USE(SKIA) // append && !USE(MYPLATFORM) here to optimize ellipses on your platform.
-void GraphicsContext::platformFillEllipse(const FloatRect& ellipse)
-{
-    if (paintingDisabled())
-        return;
-
-    fillEllipseAsPath(ellipse);
-}
-
-void GraphicsContext::platformStrokeEllipse(const FloatRect& ellipse)
-{
-    if (paintingDisabled())
-        return;
-
-    strokeEllipseAsPath(ellipse);
-}
-#endif
 
 }
