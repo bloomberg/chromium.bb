@@ -111,7 +111,7 @@ std::string TestURLRequest::TestCreateAndIsURLRequestInfo() {
 
   // IsURLRequestInfo: Released URLRequestInfo resource -> false.
   ppb_core_interface_->ReleaseResource(url_request);
-  ASSERT_NE(PP_TRUE, ppb_url_request_interface_->IsURLRequestInfo(url_request))
+  ASSERT_NE(PP_TRUE, ppb_url_request_interface_->IsURLRequestInfo(url_request));
 
   return error;  // == PASS() if empty.
 }

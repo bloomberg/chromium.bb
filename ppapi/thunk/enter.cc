@@ -155,8 +155,8 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
       // the plugin won't expect any return code other than
       // PP_OK_COMPLETIONPENDING. So we crash to make the problem more obvious.
       if (callback_->is_required()) {
-        std::string message("Attempted to use a required callback, but there"
-                            "is no attached message loop on which to run the"
+        std::string message("Attempted to use a required callback, but there "
+                            "is no attached message loop on which to run the "
                             "callback.");
         PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
                                                     std::string(), message);

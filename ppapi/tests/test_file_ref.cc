@@ -62,11 +62,11 @@ std::string TestFileRef::MakeExternalFileRef(pp::FileRef* file_ref_ext) {
   ASSERT_EQ(PP_OK, callback.result());
 
   pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null())
+  ASSERT_FALSE(response_info.is_null());
   ASSERT_EQ(200, response_info.GetStatusCode());
 
   *file_ref_ext = pp::FileRef(response_info.GetBodyAsFileRef());
-  ASSERT_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_ref_ext->GetFileSystemType())
+  ASSERT_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_ref_ext->GetFileSystemType());
   PASS();
 }
 

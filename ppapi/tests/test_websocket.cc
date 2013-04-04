@@ -1360,7 +1360,7 @@ std::string TestWebSocket::TestUtilityValidClose() {
     ASSERT_EQ(PP_ERROR_INPROGRESS, result);
     websocket.WaitForClosed();
     const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
-    ASSERT_TRUE(events.size() == 2 || events.size() == 3)
+    ASSERT_TRUE(events.size() == 2 || events.size() == 3);
     int index = 0;
     if (events.size() == 3)
       ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[index++].event_type);
