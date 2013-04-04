@@ -36,9 +36,13 @@ def _CheckForVersionControlConflicts(input_api, output_api):
 
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
+  # We should figure out what license checks we actually want to use.
+  license_header = r'.*'
+
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api, excluded_paths=_EXCLUDED_PATHS, maxlen=250))
+      input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
+      maxlen=250, license_header=license_header))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
   return results
