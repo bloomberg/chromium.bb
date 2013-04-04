@@ -345,7 +345,6 @@ class DriveFileSystemTest : public testing::Test {
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
     file1.set_parent_resource_id(root_resource_id);
-    file1.set_upload_url("http://resumable-edit-media/1");
     file1.mutable_file_specific_info()->set_file_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
@@ -362,7 +361,6 @@ class DriveFileSystemTest : public testing::Test {
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
     dir1.set_parent_resource_id(root_resource_id);
-    dir1.set_upload_url("http://resumable-create-media/2");
     dir1.mutable_file_info()->set_is_directory(true);
     resource_metadata->AddEntry(
         dir1,
@@ -376,7 +374,6 @@ class DriveFileSystemTest : public testing::Test {
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
     file2.set_parent_resource_id(dir1.resource_id());
-    file2.set_upload_url("http://resumable-edit-media/2");
     file2.mutable_file_specific_info()->set_file_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
@@ -392,7 +389,6 @@ class DriveFileSystemTest : public testing::Test {
     dir2.set_title("SubDir2");
     dir2.set_resource_id("resource_id:SubDir2");
     dir2.set_parent_resource_id(dir1.resource_id());
-    dir2.set_upload_url("http://resumable-create-media/3");
     dir2.mutable_file_info()->set_is_directory(true);
     resource_metadata->AddEntry(
         dir2,
@@ -406,7 +402,6 @@ class DriveFileSystemTest : public testing::Test {
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
     file3.set_parent_resource_id(dir2.resource_id());
-    file3.set_upload_url("http://resumable-edit-media/3");
     file3.mutable_file_specific_info()->set_file_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);

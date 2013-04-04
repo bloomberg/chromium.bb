@@ -35,10 +35,6 @@ void RunOnCompleteCallback(const base::Closure& on_complete_callback,
 
 ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
     : largest_changestamp_(resource_list.largest_changestamp()) {
-  const google_apis::Link* root_feed_upload_link = resource_list.GetLinkByType(
-      google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
-  if (root_feed_upload_link)
-    root_upload_url_ = root_feed_upload_link->href();
   resource_list.GetNextFeedURL(&next_url_);
 
   entries_.resize(resource_list.entries().size());
@@ -365,9 +361,6 @@ void ChangeListProcessor::FeedToEntryProtoMap(
     // Get upload url from the root feed. Links for all other collections will
     // be handled in ConvertResourceEntryToDriveEntryProto.
     if (i == 0) {
-      // The root upload link appears in the first page of the full resource
-      // list. The link does not appear in the change list.
-      root_upload_url_ = change_list->root_upload_url();
       // The changestamp appears in the first page of the change list.
       // The changestamp does not appear in the full resource list.
       if (feed_changestamp)
@@ -436,10 +429,6 @@ void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
   }
   DCHECK(root_proto.get());
 
-  // See the comment in FeedToEntryProtoMap() about why the root upload URL
-  // is optional.
-  if (root_upload_url_.is_valid())
-    root_proto->set_upload_url(root_upload_url_.spec());
   // The changestamp should always be updated.
   root_proto->mutable_directory_specific_info()->set_changestamp(
       largest_changestamp_);
@@ -476,7 +465,6 @@ void ChangeListProcessor::Clear() {
 
   entry_proto_map_.clear();
   changed_dirs_.clear();
-  root_upload_url_ = GURL();
   largest_changestamp_ = 0;
   on_complete_callback_.Reset();
 }

@@ -82,10 +82,6 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
 
       // The resumable-edit-media link should only be present for regular
       // files as hosted documents are not uploadable.
-      const google_apis::Link* upload_link = entry.GetLinkByType(
-          google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA);
-      if (upload_link && upload_link->href().is_valid())
-        entry_proto.set_upload_url(upload_link->href().spec());
     } else if (entry.is_hosted_document()) {
       // Attach .g<something> extension to hosted documents so we can special
       // case their handling in UI.
@@ -120,10 +116,6 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
       file_specific_info->set_share_url(share_link->href().spec());
   } else if (entry.is_folder()) {
     file_info->set_is_directory(true);
-    const google_apis::Link* upload_link = entry.GetLinkByType(
-        google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
-    if (upload_link)
-      entry_proto.set_upload_url(upload_link->href().spec());
   } else {
     // Some resource entries don't map into files (i.e. sites).
     return DriveEntryProto();

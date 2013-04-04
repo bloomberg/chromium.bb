@@ -89,8 +89,6 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_EQ(892721,  entry_proto.file_info().size());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce",
             entry_proto.file_specific_info().file_md5());
-  EXPECT_EQ("https://file_link_resumable_edit_media/",
-            entry_proto.upload_url());
   EXPECT_FALSE(entry_proto.file_info().is_directory());
 }
 
@@ -249,10 +247,6 @@ TEST(ResourceEntryConversionTest,
             entry_proto.file_info().last_accessed());
   EXPECT_EQ(expected_creation_time.ToInternalValue(),
             entry_proto.file_info().creation_time());
-
-  // Directory should have this.
-  EXPECT_EQ("https://2_folder_resumable_create_media_link/",
-            entry_proto.upload_url());
 
   EXPECT_TRUE(entry_proto.file_info().is_directory());
 }

@@ -126,7 +126,6 @@ std::string FormatEntry(const base::FilePath& path,
   StringAppendF(&out, "  download_url: %s\n", entry.download_url().c_str());
   StringAppendF(&out, "  parent_resource_id: %s\n",
                 entry.parent_resource_id().c_str());
-  StringAppendF(&out, "  upload_url: %s\n", entry.upload_url().c_str());
   StringAppendF(&out, "  shared_with_me: %s\n",
                 entry.shared_with_me() ? "true" : "false");
 

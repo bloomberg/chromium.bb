@@ -28,7 +28,6 @@ namespace {
 
 // See drive.proto for the difference between the two URLs.
 const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
-const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 
 const char kTestRootResourceId[] = "test_root";
 
@@ -258,7 +257,6 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
       proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_resource_id(kTestRootResourceId);
-  mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
@@ -817,11 +815,9 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   EXPECT_EQ("drive", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
   EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
-  EXPECT_TRUE(entry_proto->upload_url().empty());
 
   // Set upload url and call RefreshEntry on root.
   DriveEntryProto dir_entry_proto(*entry_proto);
-  dir_entry_proto.set_upload_url("http://root.upload.url/");
   entry_proto.reset();
   resource_metadata_->RefreshEntry(
       dir_entry_proto,
@@ -834,7 +830,6 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   EXPECT_EQ("drive", entry_proto->base_name());
   EXPECT_TRUE(entry_proto->file_info().is_directory());
   EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
-  EXPECT_EQ("http://root.upload.url/", entry_proto->upload_url());
 
   // Make sure the children have moved over. Test file9.
   entry_proto.reset();
@@ -949,10 +944,6 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   ASSERT_TRUE(dir3_proto.get());
   EXPECT_EQ(kTestChangestamp,
             dir3_proto->directory_specific_info().changestamp());
-  EXPECT_TRUE(dir3_proto->upload_url().empty());
-  // Change the upload URL so we can test that the directory entry is updated
-  // properly at a later time
-  dir3_proto->set_upload_url("http://new_update_url/");
 
   // Create a map.
   DriveEntryProtoMap entry_map;
@@ -1020,8 +1011,6 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   // The changestamp should not be changed.
   EXPECT_EQ(kTestChangestamp,
             dir3_proto->directory_specific_info().changestamp());
-  // The new upload URL should be returned.
-  EXPECT_EQ("http://new_update_url/", dir3_proto->upload_url());
 
   // Read the directory dir3. The contents should remain.
   // See the comment at Init() for the contents of the dir3.

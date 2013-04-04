@@ -35,13 +35,11 @@ class ChangeList {
 
   const std::vector<DriveEntryProto>& entries() const { return entries_; }
   std::vector<DriveEntryProto>* mutable_entries() { return &entries_; }
-  const GURL& root_upload_url() const { return root_upload_url_; }
   const GURL& next_url() const { return next_url_; }
   int64 largest_changestamp() const { return largest_changestamp_; }
 
  private:
   std::vector<DriveEntryProto> entries_;
-  GURL root_upload_url_;
   GURL next_url_;
   int64 largest_changestamp_;
 
@@ -80,7 +78,7 @@ class ChangeListProcessor {
 
   // Converts list of document feeds from collected feeds into a
   // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
-  // entry_proto_map_ and root_upload_url_ are updated as side effects.
+  // entry_proto_map_ is updated as side effects.
   void FeedToEntryProtoMap(ScopedVector<ChangeList> change_lists,
                            int64* feed_changestamp,
                            ChangeListToEntryProtoMapUMAStats* uma_stats);
@@ -156,9 +154,9 @@ class ChangeListProcessor {
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Updates the root directory entry. upload_url and changestamp will be
-  // updated. Calls |closure| upon completion regardless of whether the
-  // update was successful or not.  |closure| must not be null.
+  // Updates the root directory entry. changestamp will be updated. Calls
+  // |closure| upon completion regardless of whether the update was successful
+  // or not.  |closure| must not be null.
   void UpdateRootEntry(const base::Closure& closure);
 
   // Part of UpdateRootEntry(). Called after
@@ -186,7 +184,6 @@ class ChangeListProcessor {
 
   DriveEntryProtoMap entry_proto_map_;
   std::set<base::FilePath> changed_dirs_;
-  GURL root_upload_url_;
   int64 largest_changestamp_;
   base::Closure on_complete_callback_;
 
