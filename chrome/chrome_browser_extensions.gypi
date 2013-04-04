@@ -897,16 +897,6 @@
                 ['exclude', '^browser/extensions/external_registry_loader_win.h'],
               ],
             }],
-            # Exclude these toolkit_views specific files again.
-            # (Required because of the '^browser/extensions/' include above)
-            ['toolkit_views==0', {
-              'sources/': [
-                ['exclude', '^browser/extensions/api/input/input.cc'],
-                ['exclude', '^browser/extensions/api/input/input.h'],
-                ['exclude', '^browser/extensions/key_identifier_conversion_views.cc'],
-                ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
-              ],
-            }],
             ['chromeos==1',{
               'dependencies': [
                 '../dbus/dbus.gyp:dbus',

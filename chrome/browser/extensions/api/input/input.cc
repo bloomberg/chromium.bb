@@ -15,8 +15,11 @@
 #include "chrome/browser/ui/top_level_widget.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "ui/base/events/event.h"
-#include "ui/views/ime/input_method.h"
-#include "ui/views/widget/widget.h"
+
+#if defined(USE_ASH) && defined(USE_AURA)
+#include "ash/shell.h"
+#include "ui/aura/root_window.h"
+#endif
 
 namespace extensions {
 
@@ -105,13 +108,6 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::Widget* widget =
-      chrome::GetTopLevelWidgetForBrowser(GetCurrentBrowser());
-  if (!widget) {
-    error_ = kNoValidRecipientError;
-    return false;
-  }
-
   ui::KeyEvent event(type,
                      prototype_event.key_code(),
                      flags,
@@ -121,18 +117,13 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     event.set_unmodified_character(character);
   }
 
-  views::InputMethod* ime = widget->GetInputMethod();
-  if (ime) {
-    ime->DispatchKeyEvent(event);
-  } else {
-    widget->OnKeyEvent(&event);
-    if (event.handled()) {
-      error_ = kKeyEventUnprocessedError;
-      return false;
-    }
-  }
-
+#if defined(USE_ASH) && defined(USE_AURA)
+  ash::Shell::GetActiveRootWindow()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &event);
   return true;
+#else
+  return false;
+#endif
 }
 
 InputAPI::InputAPI(Profile* profile) {

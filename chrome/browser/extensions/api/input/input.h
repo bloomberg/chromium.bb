@@ -13,11 +13,6 @@ class Profile;
 
 namespace extensions {
 
-// Note that this experimental API is currently only available for
-// TOOLKIT_VIEWS (see chrome/chrome_browser.gypi).
-//
-// We may eventually support other platforms by adding the necessary
-// synthetic event distribution code to this Function.
 class SendKeyboardEventInputFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
