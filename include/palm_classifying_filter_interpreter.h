@@ -44,6 +44,7 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
  private:
   void FillOriginInfo(const HardwareState& hwstate);
   void FillPrevInfo(const HardwareState& hwstate);
+  void FillMaxPressureWidthInfo(const HardwareState& hwstate);
 
   // Part of palm detection. Returns true if the finger indicated by
   // |finger_idx| is near another finger, which must not be a palm, in the
@@ -80,6 +81,12 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
 
   // FingerStates from the previous HardwareState.
   map<short, FingerState, kMaxFingers> prev_fingerstates_;
+
+  // Max reported pressure for present fingers.
+  map<short, float, kMaxFingers> max_pressure_;
+
+  // Max reported width for present fingers.
+  map<short, float, kMaxFingers> max_width_;
 
   // Accumulated distance travelled by each finger.
   // _positive[0]  -->  positive direction along x axis
@@ -122,6 +129,14 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   DoubleProperty palm_pressure_;
   // Maximum width_major above which a finger is considered a palm
   DoubleProperty palm_width_;
+  // If a finger was previously classified as palm, but its lifetime max
+  // pressure is less than palm_pressure_ * fat_finger_pressure_ratio_,
+  // lifetime max width is less than palm_width_ * fat_finger_width_ratio_,
+  // and has moved more than fat_finger_min_dist_, we consider it as a fat
+  // finger.
+  DoubleProperty fat_finger_pressure_ratio_;
+  DoubleProperty fat_finger_width_ratio_;
+  DoubleProperty fat_finger_min_dist_;
   // The smaller of two widths around the edge for palm detection. Any contact
   // in this edge zone may be a palm, regardless of pressure
   DoubleProperty palm_edge_min_width_;

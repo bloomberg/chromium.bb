@@ -20,6 +20,9 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
       finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),
+      fat_finger_pressure_ratio_(prop_reg, "Fat Finger Pressure Ratio", 1.4),
+      fat_finger_width_ratio_(prop_reg, "Fat Finger Width Ratio", 1.3),
+      fat_finger_min_dist_(prop_reg, "Fat Finger Min Move Distance", 15.0),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
@@ -44,6 +47,7 @@ Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   FillOriginInfo(*hwstate);
+  FillMaxPressureWidthInfo(*hwstate);
   UpdateDistanceInfo(*hwstate);
   UpdatePalmState(*hwstate);
   UpdatePalmFlags(hwstate);
@@ -80,6 +84,25 @@ void PalmClassifyingFilterInterpreter::FillPrevInfo(
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     prev_fingerstates_[fs.tracking_id] = fs;
+  }
+}
+
+void PalmClassifyingFilterInterpreter::FillMaxPressureWidthInfo(
+    const HardwareState& hwstate) {
+  RemoveMissingIdsFromMap(&max_pressure_, hwstate);
+  RemoveMissingIdsFromMap(&max_width_, hwstate);
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    int id = fs.tracking_id;
+    if (MapContainsKey(max_pressure_, id)) {
+      if (fs.pressure > max_pressure_[id])
+        max_pressure_[id] = fs.pressure;
+      if (fs.touch_major > max_width_[id])
+        max_width_[id] = fs.touch_major;
+    } else {
+      max_pressure_[id] = fs.pressure;
+      max_width_[id] = fs.touch_major;
+    }
   }
 }
 
@@ -161,22 +184,39 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
         fs.touch_major >= palm_width_.val_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
-
       continue;
     }
   }
 
   const float kPalmStationaryDistSq =
       palm_stationary_distance_.val_ * palm_stationary_distance_.val_;
+  const float kFatFingerMinDistSq =
+      fat_finger_min_dist_.val_ * fat_finger_min_dist_.val_;
+  const float kFatFingerMaxPressure =
+      palm_pressure_.val_ * fat_finger_pressure_ratio_.val_;
+  const float kFatFingerMaxWidth =
+      palm_width_.val_ * fat_finger_width_ratio_.val_;
 
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     bool prev_palm = SetContainsValue(palm_, fs.tracking_id);
     bool prev_pointing = MapContainsKey(pointing_, fs.tracking_id);
 
-    // Lock onto palm
-    if (prev_palm)
-      continue;
+    if (prev_palm) {
+      // If the finger's pressure & width are more like a fat finger
+      // and it has moved a lot, it might be a fat finger and remove
+      // it from palm.
+      float dist_sq = DistSq(origin_fingerstates_[fs.tracking_id], fs);
+      if (max_pressure_[fs.tracking_id] <= kFatFingerMaxPressure &&
+          max_width_[fs.tracking_id] <= kFatFingerMaxWidth &&
+          dist_sq > kFatFingerMinDistSq) {
+        palm_.erase(fs.tracking_id);
+      } else {
+        // Lock onto palm
+        continue;
+      }
+    }
+
     // If the finger is recently placed, remove it from pointing/fingers.
     // If it's still looking like pointing, it'll get readded.
     if (FingerAge(fs.tracking_id, hwstate.timestamp) <
