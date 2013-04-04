@@ -2975,16 +2975,28 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Invoked when the sarch box is changed.
+   * Invoked when the search box is changed.
    *
    * @param {Event} event The 'changed' event.
    * @private
    */
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
-    if (this.isOnDrive())
-      return;
-
     var searchString = this.searchBox_.value;
+
+    if (this.isOnDrive()) {
+      // When the search text is changed, finishes the search and showes back
+      // the last directory by passing an empty string to
+      // {@code DirectoryModel.search()}.
+      if (this.directoryModel_.isSearching() &&
+          this.lastQuery_ != searchString) {
+        this.directoryModel_.search('', function() {}, function() {});
+      }
+
+      // On drive, incremental search is not invoked since we have an auto-
+      // complete suggestion instead.
+      return;
+    }
+
     this.search_(searchString);
   };
 
