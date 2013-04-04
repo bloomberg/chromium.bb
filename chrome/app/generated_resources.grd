@@ -14172,10 +14172,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Restore All Tabs
         </message>
 
-        <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_CURRENT_PAGE_LINUX" desc="The Linux menu item for bookmarking the current page in the bookmark menu.">
-          Bookmark This Page...
-        </message>
       </if>
 
     <!-- Color chooser dialog default titles (only used on Linux) -->
