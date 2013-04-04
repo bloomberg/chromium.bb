@@ -136,10 +136,14 @@ class DriveFileSyncService::TaskToken {
     // Destroying a token with valid |sync_service_| indicates the token was
     // dropped by a task without returning.
     if (sync_service_) {
-      LOG(ERROR) << "Unexpected TaskToken deletion from: "
-                 << location_.ToString() << " while: " << description_;
+      NOTREACHED() << "Unexpected TaskToken deletion from: "
+                   << location_.ToString() << " while: " << description_;
+
+      // Reinitializes the token.
+      sync_service_->NotifyTaskDone(
+          SYNC_STATUS_OK,
+          make_scoped_ptr(new TaskToken(sync_service_->AsWeakPtr())));
     }
-    DCHECK(!sync_service_);
   }
 
  private:
