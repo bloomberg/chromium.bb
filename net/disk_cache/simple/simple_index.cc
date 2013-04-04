@@ -50,12 +50,8 @@ SimpleIndex::SimpleIndex(
 
 bool SimpleIndex::Initialize() {
   if (!OpenIndexFile())
-    return false;
-  // TODO(felipeg): If loading the index file fails, we should list all the
-  // files in the directory.
-
+    return RestoreFromDisk();
   uLong incremental_crc = crc32(0L, Z_NULL, 0);
-
   int64 index_file_offset = 0;
   SimpleIndexFile::Header metadata;
   if (base::ReadPlatformFile(index_file_,
@@ -63,7 +59,7 @@ bool SimpleIndex::Initialize() {
                              reinterpret_cast<char*>(&metadata),
                              sizeof(metadata)) != sizeof(metadata)) {
     CloseIndexFile();
-    return false;
+    return RestoreFromDisk();
   }
   index_file_offset += sizeof(metadata);
   incremental_crc = crc32(incremental_crc,
@@ -73,7 +69,7 @@ bool SimpleIndex::Initialize() {
   if (!CheckMetadata(metadata)) {
     LOG(ERROR) << "Invalid metadata on Simple Cache Index.";
     CloseIndexFile();
-    return false;
+    return RestoreFromDisk();
   }
 
   char hash_key[kEntryHashKeySize];
@@ -84,7 +80,7 @@ bool SimpleIndex::Initialize() {
                                hash_key,
                                kEntryHashKeySize) != kEntryHashKeySize) {
       CloseIndexFile();
-      return false;
+      return RestoreFromDisk();
     }
     index_file_offset += kEntryHashKeySize;
     incremental_crc = crc32(incremental_crc,
@@ -99,14 +95,14 @@ bool SimpleIndex::Initialize() {
                              reinterpret_cast<char*>(&footer),
                              sizeof(footer)) != sizeof(footer)) {
     CloseIndexFile();
-    return false;
+    return RestoreFromDisk();
   }
   const uint32 crc_read = footer.crc;
   const uint32 crc_calculated = incremental_crc;
   if (crc_read != crc_calculated) {
     DCHECK_EQ(crc_read, crc_calculated);
     CloseIndexFile();
-    return false;
+    return RestoreFromDisk();
   }
 
   CloseIndexFile();
@@ -124,6 +120,28 @@ void SimpleIndex::Remove(const std::string& key) {
 
 bool SimpleIndex::Has(const std::string& key) const {
   return entries_set_.count(GetEntryHashForKey(key)) != 0;
+}
+
+bool SimpleIndex::RestoreFromDisk() {
+  using file_util::FileEnumerator;
+  LOG(WARNING) << "Simple Cache Index is being restored from disk.";
+  entries_set_.clear();
+  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_0");
+  FileEnumerator enumerator(path_,
+                            false /* recursive */,
+                            FileEnumerator::FILES,
+                            file_pattern);
+  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
+       file_path = enumerator.Next()) {
+    const base::FilePath::StringType base_name = file_path.BaseName().value();
+    // Converting to std::string is OK since we never use UTF8 wide chars in our
+    // file names.
+    const std::string hash_name(base_name.begin(), base_name.end());
+    const std::string hash_key = hash_name.substr(0, kEntryHashKeySize);
+    entries_set_.insert(hash_key);
+  }
+  // TODO(felipeg): Detect unrecoverable problems and return false here.
+  return true;
 }
 
 void SimpleIndex::Serialize(std::string* out_buffer) {

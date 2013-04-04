@@ -41,6 +41,9 @@ class SimpleIndex
  private:
   typedef std::set<std::string> EntrySet;
 
+  // Enumerates all entries' files on disk and regenerates the index.
+  bool RestoreFromDisk();
+
   // |out_buffer| needs to be pre-allocated. The serialized index is stored in
   // |out_buffer|.
   void Serialize(std::string* out_buffer);
