@@ -41,6 +41,7 @@ ContextState::ContextState(FeatureInfo* feature_info)
       hint_generate_mipmap(GL_DONT_CARE),
       hint_fragment_shader_derivative(GL_DONT_CARE),
       pack_reverse_row_order(false),
+      fbo_binding_for_scissor_workaround_dirty_(false),
       feature_info_(feature_info) {
   Initialize();
 }

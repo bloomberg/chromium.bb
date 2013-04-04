@@ -160,6 +160,8 @@ struct GPU_EXPORT ContextState {
 
   bool pack_reverse_row_order;
 
+  mutable bool fbo_binding_for_scissor_workaround_dirty_;
+
   FeatureInfo* feature_info_;
 };
 

@@ -708,6 +708,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Workarounds
   void OnFboChanged() const;
+  void OnUseFramebuffer() const;
 
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
@@ -3013,8 +3014,13 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
 
 bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
   if (!features().chromium_framebuffer_multisample) {
-    return CheckFramebufferValid(
+    bool valid = CheckFramebufferValid(
         state_.bound_draw_framebuffer, GL_FRAMEBUFFER_EXT, func_name);
+
+    if (valid)
+      OnUseFramebuffer();
+
+    return valid;
   }
   return CheckFramebufferValid(
              state_.bound_draw_framebuffer,
@@ -3804,9 +3810,23 @@ void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
 
 void GLES2DecoderImpl::OnFboChanged() const {
   if (workarounds().restore_scissor_on_fbo_change)
+    state_.fbo_binding_for_scissor_workaround_dirty_ = true;
+}
+
+// Called after the FBO is checked for completeness.
+void GLES2DecoderImpl::OnUseFramebuffer() const {
+  if (state_.fbo_binding_for_scissor_workaround_dirty_) {
+    state_.fbo_binding_for_scissor_workaround_dirty_ = false;
     // The driver forgets the correct scissor when modifying the FBO binding.
-    glScissor(state_.scissor_x, state_.scissor_y,
-              state_.scissor_width, state_.scissor_height);
+    glScissor(state_.scissor_x,
+              state_.scissor_y,
+              state_.scissor_width,
+              state_.scissor_height);
+
+    // crbug.com/222018 - Also on QualComm, the flush here avoids flicker,
+    // it's unclear how this bug works.
+    glFlush();
+  }
 }
 
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
