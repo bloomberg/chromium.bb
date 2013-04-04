@@ -226,6 +226,8 @@ DirectoryContents.prototype.readNextChunk = function() {
  * Cancel the running scan.
  */
 DirectoryContents.prototype.cancelScan = function() {
+  if (this.scanCancelled_)
+    return;
   this.scanCancelled_ = true;
   cr.dispatchSimpleEvent(this, 'scan-cancelled');
 };

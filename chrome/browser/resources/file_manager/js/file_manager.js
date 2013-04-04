@@ -433,11 +433,9 @@ DialogType.isModal = function(type) {
       self.currentList_.endBatchUpdates();
     });
     dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
-    dm.addEventListener('scan-completed', this.hideSpinnerLater_.bind(this));
-    dm.addEventListener('scan-cancelled', this.hideSpinnerLater_.bind(this));
-    dm.addEventListener('scan-updated', this.hideSpinnerLater_.bind(this));
-    dm.addEventListener('scan-completed',
-                        this.refreshCurrentDirectoryMetadata_.bind(this));
+    dm.addEventListener('scan-completed', this.onScanCompleted_.bind(this));
+    dm.addEventListener('scan-cancelled', this.onScanCancelled_.bind(this));
+    dm.addEventListener('scan-updated', this.onScanUpdated_.bind(this));
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
 
@@ -2320,14 +2318,83 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onScanStarted_ = function() {
+    this.table_.list.startBatchUpdates();
+    this.grid_.startBatchUpdates();
+
     this.breadcrumbs_.update(
         this.directoryModel_.getCurrentRootPath(),
         this.directoryModel_.getCurrentDirPath());
+
+    this.scanUpdatedAtLeastOnce_ = false;
+    this.scanCompletedTimer_ = null;
+    this.scanUpdatedTimer_ = null;
 
     this.cancelSpinnerTimeout_();
     this.showSpinner_(false);
     this.showSpinnerTimeout_ =
         setTimeout(this.showSpinner_.bind(this, true), 500);
+  };
+
+  /**
+   * @private
+   */
+  FileManager.prototype.onScanCompleted_ = function() {
+    this.hideSpinnerLater_();
+    this.refreshCurrentDirectoryMetadata_();
+
+    // To avoid flickering postpone updating the ui by a small amount of time.
+    // There is a high chance, that metadata will be received within 50 ms.
+    this.scanCompletedTimer_ = setTimeout(function() {
+      // Check if batch updates are already finished by onScanUpdated_().
+      if (this.scanUpdatedAtLeastOnce_)
+        return;
+      // Cancel scheduled ending of batch updates initiated by onScanUpdated_(),
+      // to avoid calling it twice.
+      if (this.scanUpdatedTimer_) {
+        clearTimeout(this.scanUpdatedTimer_);
+        this.scanUpdatedTimer_ = null;
+      }
+      this.table_.list.endBatchUpdates();
+      this.grid_.endBatchUpdates();
+    }.bind(this), 50);
+  };
+
+  /**
+   * @private
+   */
+  FileManager.prototype.onScanUpdated_ = function() {
+    // We need to hide the spinner only once.
+    if (this.scanUpdatedAtLeastOnce_ || this.scanUpdatedTimer_)
+      return;
+
+    // Show contents incrementally by finishing batch updated, but only after
+    // 200ms elapsed, to avoid flickering when it is not necessary.
+    this.scanUpdatedTimer_ = setTimeout(function() {
+      this.scanUpdatedAtLeastOnce_ = true;
+      this.hideSpinnerLater_();
+      this.table_.list.endBatchUpdates();
+      this.grid_.endBatchUpdates();
+    }.bind(this), 200);
+  };
+
+  /**
+   * @private
+   */
+  FileManager.prototype.onScanCancelled_ = function() {
+    this.hideSpinnerLater_();
+    if (this.scanCompletedTimer_) {
+      clearTimeout(this.scanCompletedTimer_);
+      this.scanCompletedTimer_ = null;
+    }
+    if (this.scanUpdatedTimer_) {
+      clearTimeout(this.scanUpdatedTimer_);
+      this.scanUpdatedTimer_ = null;
+    }
+    // Finish unfinished batch updates.
+    if (!this.scanUpdatedAtLeastOnce_) {
+      this.table_.list.endBatchUpdates();
+      this.grid_.endBatchUpdates();
+    }
   };
 
   /**

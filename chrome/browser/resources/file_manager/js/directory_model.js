@@ -443,10 +443,10 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
     cr.dispatchSimpleEvent(this, 'scan-updated');
   }.bind(this);
 
-  // Clear the table first.
+  // Clear the table, and start scanning.
+  cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);
-  cr.dispatchSimpleEvent(this, 'scan-started');
   this.scan_(this.currentDirContents_, onDone, onUpdated);
 };
 
