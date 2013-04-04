@@ -208,6 +208,9 @@ bool InputMethodManagerImpl::EnableInputMethods(
   }
   active_input_method_ids_.swap(new_active_input_method_ids_filtered);
 
+  if (component_extension_ime_manager_->IsInitialized())
+    LoadNecessaryComponentExtensions();
+
   if (ContainOnlyKeyboardLayout(active_input_method_ids_)) {
     // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
     // at crosbug.com/27051.
@@ -333,11 +336,25 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
   util_.SetComponentExtensions(
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
 
+  LoadNecessaryComponentExtensions();
+
   if (!pending_input_method_.empty()) {
     ChangeInputMethod(pending_input_method_);
     pending_input_method_.clear();
   }
 
+}
+
+void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
+  if (!component_extension_ime_manager_->IsInitialized())
+    return;
+  for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
+    if (component_extension_ime_manager_->IsWhitelisted(
+        active_input_method_ids_[i])) {
+      component_extension_ime_manager_->LoadComponentExtensionIME(
+          active_input_method_ids_[i]);
+    }
+  }
 }
 
 void InputMethodManagerImpl::ActivateInputMethodProperty(
@@ -355,7 +372,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   if (state_ == STATE_TERMINATING)
     return;
 
-  if (!extension_ime_util::IsExtensionIME(id)) {
+  if (!extension_ime_util::IsExtensionIME(id) &&
+      !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     DVLOG(1) << id << " is not a valid extension input method ID.";
     return;
   }
@@ -363,7 +381,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   const std::string layout = layouts.empty() ? "" : layouts[0];
   extra_input_methods_[id] =
       InputMethodDescriptor(id, name, layout, language, true);
-  if (!Contains(filtered_extension_imes_, id)) {
+  if (!Contains(filtered_extension_imes_, id) &&
+      !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {
       active_input_method_ids_.push_back(id);
     } else {
@@ -420,7 +439,8 @@ void InputMethodManagerImpl::GetInputMethodExtensions(
   std::map<std::string, InputMethodDescriptor>::iterator iter;
   for (iter = extra_input_methods_.begin(); iter != extra_input_methods_.end();
        ++iter) {
-    result->push_back(iter->second);
+    if (extension_ime_util::IsExtensionIME(iter->first))
+      result->push_back(iter->second);
   }
 }
 

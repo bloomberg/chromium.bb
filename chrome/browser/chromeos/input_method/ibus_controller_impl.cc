@@ -29,6 +29,7 @@
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_property.h"
@@ -201,7 +202,8 @@ bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
   // Sanity checks.
   DCHECK(!InputMethodUtil::IsKeyboardLayout(id));
   if (!whitelist_.InputMethodIdIsWhitelisted(id) &&
-      !extension_ime_util::IsExtensionIME(id))
+      !extension_ime_util::IsExtensionIME(id) &&
+      !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id))
     return false;
 
   // Clear input method properties unconditionally if |id| is not equal to

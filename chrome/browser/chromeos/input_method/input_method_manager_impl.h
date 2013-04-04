@@ -152,6 +152,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   void InitializeComponentExtension(
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
 
+  // Loads necessary component extensions.
+  // TODO(nona): Support dynamical unloading.
+  void LoadNecessaryComponentExtensions();
+
   scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current browser status.
