@@ -171,7 +171,11 @@ config.kPlatforms = {
     },
 };
 
-config.kTracURL = 'http://trac.webkit.org';
+config.kBlinkSvnURL = 'svn://svn.chromium.org/blink/trunk';
+config.kBlinkRevisionURL = 'http://src.chromium.org/viewvc/blink';
+config.kSvnLogURL = 'http://build.chromium.org/cgi-bin/svn-log';
+config.kNumberOfRecentCommits = 50;
+
 config.kBugzillaURL = 'https://bugs.webkit.org';
 
 config.kRevisionAttr = 'data-revision';
