@@ -1379,10 +1379,10 @@ TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
 
   // Create a file before trying to fetch.
   static const char kFileToFetch[] = "simple.html";
-  static const char kData[] = "abcdefghijklmnopqrstuvwxyz";
+  std::string data(10000, '?');  // Meant to be larger than simple.html.
   file_path_ = temp_dir.path().AppendASCII(kFileToFetch);
-  const int data_size = arraysize(kData);
-  ASSERT_EQ(file_util::WriteFile(file_path_, kData, data_size), data_size);
+  ASSERT_EQ(static_cast<int>(data.size()),
+            file_util::WriteFile(file_path_, data.data(), data.size()));
   ASSERT_TRUE(file_util::PathExists(file_path_));
   expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
   ASSERT_FALSE(file_util::ContentsEqual(file_path_, expected_file_));

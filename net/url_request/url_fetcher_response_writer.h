@@ -6,19 +6,20 @@
 #define NET_URL_REQUEST_URL_FETCHER_RESPONSE_WRITER_H_
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "net/base/completion_callback.h"
 
 namespace base {
-class FilePath;
 class TaskRunner;
 }  // namespace base
 
 namespace net {
 
 class DrainableIOBuffer;
+class FileStream;
 class IOBuffer;
 
 // This class encapsulates all state involved in writing URLFetcher response
@@ -87,8 +88,7 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   // bytes to write.  Otherwise, runs |callback|.
   void ContinueWrite(scoped_refptr<DrainableIOBuffer> buffer,
                      const CompletionCallback& callback,
-                     base::PlatformFileError error_code,
-                     int bytes_written);
+                     int result);
 
   // Drops ownership of the file at |file_path_|.
   // This class will not delete it or write to it again.
@@ -106,34 +106,14 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   int error_code() const { return error_code_; }
 
  private:
-  // Callback which gets the result of a permanent file creation.
-  void DidCreateFile(const CompletionCallback& callback,
-                     const base::FilePath& file_path,
-                     base::PlatformFileError error_code,
-                     base::PassPlatformFile file_handle,
-                     bool created);
-
   // Callback which gets the result of a temporary file creation.
   void DidCreateTempFile(const CompletionCallback& callback,
-                         base::PlatformFileError error_code,
-                         base::PassPlatformFile file_handle,
-                         const base::FilePath& file_path);
+                         base::FilePath* temp_file_path,
+                         bool success);
 
-  // This method is used to implement DidCreateFile and DidCreateTempFile.
-  // |callback| is run with the result.
-  void DidCreateFileInternal(const CompletionCallback& callback,
-                             const base::FilePath& file_path,
-                             base::PlatformFileError error_code,
-                             base::PassPlatformFile file_handle);
-
-  // Callback which gets the result of closing the file.
-  // |callback| is run with the result.
-  void DidCloseFile(const CompletionCallback& callback,
-                    base::PlatformFileError error);
-
-  // Callback which gets the result of closing the file. Deletes the file if
-  // it has been created.
-  void DeleteFile(base::PlatformFileError error_code);
+  // Callback which gets the result of FileStream::Open.
+  void DidOpenFile(const CompletionCallback& callback,
+                   int result);
 
   // The last error encountered on a file operation.  OK if no error occurred.
   int error_code_;
@@ -151,8 +131,7 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
   // True when this instance is responsible to delete the file at |file_path_|.
   bool owns_file_;
 
-  // Handle to the file.
-  base::PlatformFile file_handle_;
+  scoped_ptr<FileStream> file_stream_;
 
   // We always append to the file.  Track the total number of bytes
   // written, so that writes know the offset to give.
