@@ -8,7 +8,6 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 
@@ -344,12 +343,9 @@ void DriveResourceMetadataStorageDB::GetChildren(
   // Iterate over all entries with keys starting with |parent_resource_id|.
   scoped_ptr<leveldb::Iterator> it(
       child_map_->NewIterator(leveldb::ReadOptions()));
-  for (it->Seek(parent_resource_id); it->Valid(); it->Next()) {
-    if (!StartsWithASCII(it->key().ToString(),
-                         parent_resource_id,
-                         true /* case_sensitive */))
-      break;
-
+  for (it->Seek(parent_resource_id);
+       it->Valid() && it->key().starts_with(leveldb::Slice(parent_resource_id));
+       it->Next()) {
     children->push_back(it->value().ToString());
   }
   DCHECK(it->status().ok());
