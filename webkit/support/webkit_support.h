@@ -88,6 +88,9 @@ WebKit::Platform* GetWebKitPlatformSupport();
 WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
                                    const WebKit::WebPluginParams& params);
 
+// TODO(wjia): remove CreateMediaPlayer once
+// https://bugs.webkit.org/show_bug.cgi?id=113633 is fixed, since it has been
+// moved into webkit/mocks.
 // This is used by WebFrameClient::createMediaPlayer().
 WebKit::WebMediaPlayer* CreateMediaPlayer(
     WebKit::WebFrame* frame,

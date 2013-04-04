@@ -6,22 +6,32 @@
 // and used with WebKit::WebUserMediaClientMock to provide corresponding video
 // decoder to media pipeline.
 
-// TODO(wjia): remove this class once
-// https://bugs.webkit.org/show_bug.cgi?id=113633 is fixed, since it has been
-// moved into webkit/mocks.
-
-#ifndef WEBKIT_SUPPORT_TEST_MEDIA_STREAM_CLIENT_H_
-#define WEBKIT_SUPPORT_TEST_MEDIA_STREAM_CLIENT_H_
+#ifndef WEBKIT_MOCKS_TEST_MEDIA_STREAM_CLIENT_H_
+#define WEBKIT_MOCKS_TEST_MEDIA_STREAM_CLIENT_H_
 
 #include "base/callback_forward.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/media/media_stream_client.h"
 
-namespace webkit_media {
-class MediaStreamAudioRenderer;
+namespace WebKit {
+class WebFrame;
+class WebMediaPlayer;
+class WebMediaPlayerClient;
 }
 
-namespace webkit_support {
+namespace webkit_media {
+class MediaStreamAudioRenderer;
+class MediaStreamClient;
+}
+
+namespace webkit_glue {
+
+// This is used by WebFrameClient::createMediaPlayer().
+WebKit::WebMediaPlayer* CreateMediaPlayer(
+    WebKit::WebFrame* frame,
+    const WebKit::WebURL& url,
+    WebKit::WebMediaPlayerClient* client,
+    webkit_media::MediaStreamClient* media_stream_client);
 
 class TestMediaStreamClient : public webkit_media::MediaStreamClient {
  public:
@@ -38,6 +48,6 @@ class TestMediaStreamClient : public webkit_media::MediaStreamClient {
       GetAudioRenderer(const GURL& url) OVERRIDE;
 };
 
-}  // namespace webkit_support
+}  // namespace webkit_glue
 
-#endif  // WEBKIT_SUPPORT_TEST_MEDIA_STREAM_CLIENT_H_
+#endif  // WEBKIT_MOCKS_TEST_MEDIA_STREAM_CLIENT_H_

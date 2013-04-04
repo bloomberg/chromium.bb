@@ -146,6 +146,8 @@
         '<(DEPTH)/webkit/fileapi/mock_file_system_options.h',
         '<(DEPTH)/webkit/mocks/mock_webhyphenator.cc',
         '<(DEPTH)/webkit/mocks/mock_webhyphenator.h',
+        '<(DEPTH)/webkit/mocks/test_media_stream_client.cc',
+        '<(DEPTH)/webkit/mocks/test_media_stream_client.h',
         'simple_database_system.cc',
         'simple_database_system.h',
       ],

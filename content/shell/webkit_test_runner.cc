@@ -58,6 +58,7 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/mocks/test_media_stream_client.h"
 
 using WebKit::Platform;
 using WebKit::WebArrayBufferView;
@@ -68,6 +69,8 @@ using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebHistoryItem;
+using WebKit::WebMediaPlayer;
+using WebKit::WebMediaPlayerClient;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
@@ -487,6 +490,17 @@ void WebKitTestRunner::captureHistoryForWindow(
         webkit_glue::HistoryItemFromString(session_histories_[pos][entry]);
   }
   history->swap(result);
+}
+
+WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
+    WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
+{
+  if (!test_media_stream_client_.get()) {
+    test_media_stream_client_.reset(
+        new webkit_glue::TestMediaStreamClient());
+  }
+  return webkit_glue::CreateMediaPlayer(
+      frame, url, client, test_media_stream_client_.get());
 }
 
 // RenderViewObserver  --------------------------------------------------------

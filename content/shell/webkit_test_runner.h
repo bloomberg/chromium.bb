@@ -19,11 +19,17 @@
 class SkCanvas;
 
 namespace WebKit {
+class WebMediaPlayer;
+class WebMediaPlayerClient;
 struct WebRect;
 }
 
 namespace WebTestRunner {
 class WebTestProxyBase;
+}
+
+namespace webkit_glue {
+class TestMediaStreamClient;
 }
 
 namespace content {
@@ -90,6 +96,10 @@ class WebKitTestRunner : public RenderViewObserver,
       WebTestRunner::WebTestProxyBase* proxy,
       WebKit::WebVector<WebKit::WebHistoryItem>* history,
       size_t* currentEntryIndex);
+  virtual WebKit::WebMediaPlayer* createWebMediaPlayer(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURL& url,
+      WebKit::WebMediaPlayerClient* client);
 
   void Reset();
 
@@ -124,6 +134,8 @@ class WebKitTestRunner : public RenderViewObserver,
   bool is_main_window_;
 
   bool focus_on_next_commit_;
+
+  scoped_ptr<webkit_glue::TestMediaStreamClient> test_media_stream_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
