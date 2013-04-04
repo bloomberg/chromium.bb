@@ -22,6 +22,6 @@ def RunJavaTest(fname, suite, test, ports_to_forward):
   device = android_commands.GetAttachedDevices()[0]
   package_name = _GetPackageName(fname)
   test = package_name + '.' + suite + '#' + test
-  java_test_runner = test_runner.TestRunner(False, device, [test], False, False,
+  java_test_runner = test_runner.TestRunner(False, device, [test], False,
                                             False, False, 0, ports_to_forward)
   return java_test_runner.Run()

@@ -67,7 +67,6 @@ def Dispatch(options):
   else:
     available_tests = [m for m in test_pkg.GetTestMethods()
                        if not test_pkg.IsPythonDrivenTest(m)]
-  coverage = os.environ.get('EMMA_INSTRUMENT') == 'true'
 
   tests = []
   if options.test_filter:
@@ -93,14 +92,13 @@ def Dispatch(options):
 
   logging.info('Will run: %s', str(tests))
 
-  if len(attached_devices) > 1 and (coverage or options.wait_for_debugger):
-    logging.warning('Coverage / debugger can not be sharded, '
-                    'using first available device')
+  if len(attached_devices) > 1 and options.wait_for_debugger:
+    logging.warning('Debugger can not be sharded, using first available device')
     attached_devices = attached_devices[:1]
 
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
-        options, device, shard_index, False, test_pkg, [], is_uiautomator_test)
+        options, device, shard_index, test_pkg, [], is_uiautomator_test)
 
   return shard.ShardAndRunTests(TestRunnerFactory, attached_devices, tests,
                                 options.build_type)

@@ -79,8 +79,7 @@ class PythonTestBase(object):
     test_pkg = test_package.TestPackage(
         self.options.test_apk_path, self.options.test_apk_jar_path)
     java_test_runner = test_runner.TestRunner(self.options, self.device_id,
-                                              self.shard_index, False,
-                                              test_pkg,
+                                              self.shard_index, test_pkg,
                                               self.ports_to_forward)
     try:
       java_test_runner.SetUp()
