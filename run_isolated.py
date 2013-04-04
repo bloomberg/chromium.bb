@@ -8,6 +8,7 @@
 Keeps a local cache.
 """
 
+import cookielib
 import ctypes
 import hashlib
 import httplib
@@ -34,6 +35,17 @@ import urllib
 import urllib2
 import urlparse
 import zlib
+
+# Try to import 'upload' module used by AppEngineService for authentication.
+# If it is not there, app engine authentication support will be disabled.
+try:
+  from third_party import upload
+  # Hack out upload logging.info()
+  upload.logging = logging.getLogger('upload')
+  # Mac pylint choke on this line.
+  upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
+except ImportError:
+  upload = None
 
 
 # Types of action accepted by link_file().
@@ -67,6 +79,11 @@ COUNT_KEY = 'UrlOpenAttempt'
 
 # The maximum number of attempts to trying opening a url before aborting.
 MAX_URL_OPEN_ATTEMPTS = 30
+
+# Global (for now) map: server URL (http://example.com) -> HttpService instance.
+# Used by get_http_service to cache HttpService instances.
+_http_services = {}
+_http_services_lock = threading.Lock()
 
 
 class ConfigError(ValueError):
@@ -384,93 +401,283 @@ def url_open(url, data=None, retry_404=False, content_type=None):
     -list for data to be encoded
     -dict for data to be encoded (COUNT_KEY will be added in this case)
 
-  If no wait_duration is given, the default wait time will exponentially
-  increase between each retry.
-
   Returns a file-like object, where the response may be read from, or None
   if it was unable to connect.
   """
-  method = 'GET' if data is None else 'POST'
+  url_parts = list(urlparse.urlparse(url))
+  server_url = '%s://%s' % (url_parts[0], url_parts[1])
+  request_url = urlparse.urlunparse(['', ''] + url_parts[2:])
+  service = get_http_service(server_url)
+  return service.request(request_url, data, retry_404, content_type)
 
-  if isinstance(data, dict) and COUNT_KEY in data:
-    logging.error('%s already existed in the data passed into UlrOpen. It '
-                  'would be overwritten. Aborting UrlOpen', COUNT_KEY)
+
+def get_http_service(url):
+  """Returns existing or creates new instance of HttpService that can send
+  requests to given base url.
+  """
+  with _http_services_lock:
+    service = _http_services.get(url)
+    if not service:
+      service = AppEngineService(url)
+      _http_services[url] = service
+    return service
+
+
+class HttpService(object):
+  """Base class for a class that provides an API to HTTP based service:
+    - Provides 'request' method.
+    - Supports automatic request retries.
+    - Supports persistent cookies.
+    - Thread safe.
+  """
+
+  # File to use to store all auth cookies.
+  COOKIE_FILE = '~/.isolated_cookies'
+
+  # CookieJar reused by all services + lock that protects its instantiation.
+  _cookie_jar = None
+  _cookie_jar_lock = threading.Lock()
+
+  def __init__(self, url):
+    self.url = str(url.rstrip('/'))
+    self.opener = self.create_url_opener(self.load_cookie_jar())
+
+  def authenticate(self): # pylint: disable=R0201
+    """Called when HTTP server asks client to authenticate.
+    Can be implemented in subclasses.
+    """
+    return False
+
+  @staticmethod
+  def load_cookie_jar():
+    """Returns global CoookieJar object that stores cookies in the file."""
+    with HttpService._cookie_jar_lock:
+      if HttpService._cookie_jar is not None:
+        return HttpService._cookie_jar
+      jar = ThreadSafeCookieJar(os.path.expanduser(HttpService.COOKIE_FILE))
+      jar.load()
+      HttpService._cookie_jar = jar
+      return jar
+
+  @staticmethod
+  def save_cookie_jar():
+    """Called when cookie jar needs to be flushed to disk."""
+    with HttpService._cookie_jar_lock:
+      if HttpService._cookie_jar is not None:
+        HttpService._cookie_jar.save()
+
+  def create_url_opener(self, cookie_jar): # pylint: disable=R0201
+    """Returns OpenerDirector that will be used when sending requests.
+    Can be reimplemented in subclasses."""
+    opener = urllib2.OpenerDirector()
+    opener.add_handler(urllib2.ProxyHandler())
+    opener.add_handler(urllib2.UnknownHandler())
+    opener.add_handler(urllib2.HTTPHandler())
+    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+    opener.add_handler(urllib2.HTTPSHandler())
+    opener.add_handler(urllib2.HTTPErrorProcessor())
+    opener.add_handler(urllib2.HTTPCookieProcessor(cookie_jar))
+    return opener
+
+  def request(self, url, data=None, retry_404=False, content_type=None):
+    """Attempts to open the given url multiple times.
+
+    |url| is relative to the server root, i.e. '/some/request?param=1'.
+
+    |data| can be either:
+      -None for a GET request
+      -str for pre-encoded data
+      -list for data to be encoded
+      -dict for data to be encoded (COUNT_KEY will be added in this case)
+
+    Returns a file-like object, where the response may be read from, or None
+    if it was unable to connect.
+    """
+    assert url and url[0] == '/'
+
+    if isinstance(data, dict) and COUNT_KEY in data:
+      logging.error('%s already existed in the data passed into UlrOpen. It '
+                    'would be overwritten. Aborting UrlOpen', COUNT_KEY)
+      return None
+
+    method = 'GET' if data is None else 'POST'
+    assert not ((method != 'POST') and content_type), (
+        'Can\'t use content_type on GET')
+
+    def make_request(extra):
+      """Returns a urllib2.Request instance for this specific retry."""
+      if isinstance(data, str) or data is None:
+        payload = data
+      else:
+        if isinstance(data, dict):
+          payload = data.items()
+        else:
+          payload = data[:]
+        payload.extend(extra.iteritems())
+        payload = urllib.urlencode(payload)
+      new_url = urlparse.urljoin(self.url, url.lstrip('/'))
+      if isinstance(data, str) or data is None:
+        # In these cases, add the extra parameter to the query part of the url.
+        url_parts = list(urlparse.urlparse(new_url))
+        # Append the query parameter.
+        if url_parts[4] and extra:
+          url_parts[4] += '&'
+        url_parts[4] += urllib.urlencode(extra)
+        new_url = urlparse.urlunparse(url_parts)
+      request = urllib2.Request(new_url, data=payload)
+      if payload is not None:
+        if content_type:
+          request.add_header('Content-Type', content_type)
+        request.add_header('Content-Length', len(payload))
+      return request
+
+    return self._retry_loop(make_request, retry_404)
+
+  def _retry_loop(self, make_request, retry_404=False):
+    """Runs internal request-retry loop."""
+    authenticated = False
+    last_error = None
+    for attempt in range(MAX_URL_OPEN_ATTEMPTS):
+      extra = {COUNT_KEY: attempt} if attempt else {}
+      request = make_request(extra)
+      try:
+        url_response = self._url_open(request)
+        logging.debug('url_open(%s) succeeded', request.get_full_url())
+        return url_response
+      except urllib2.HTTPError as e:
+        # Unauthorized. Ask to authenticate and then try again.
+        if e.code in (302, 401, 403):
+          # Try to authenticate only once. If it doesn't help, then server does
+          # not support app engine authentication.
+          if not authenticated and self.authenticate():
+            authenticated = True
+            continue
+          logging.error(
+              'Unable to authenticate to %s.\n%s\n%s',
+              request.get_full_url(), e, e.read())
+          return None
+
+        if e.code < 500 and not (retry_404 and e.code == 404):
+          # This HTTPError means we reached the server and there was a problem
+          # with the request, so don't retry.
+          logging.error(
+              'Able to connect to %s but an exception was thrown.\n%s\n%s',
+              request.get_full_url(), e, e.read())
+          return None
+
+        # The HTTPError was due to a server error, so retry the attempt.
+        logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
+                        request.get_full_url(), attempt, e)
+        last_error = e
+
+      except (urllib2.URLError, httplib.HTTPException) as e:
+        logging.warning('Unable to open url %s on attempt %d.\nException: %s',
+                        request.get_full_url(), attempt, e)
+        last_error = e
+
+      # Only sleep if we are going to try again.
+      if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
+        self._sleep_before_retry(attempt)
+
+    logging.error('Unable to open given url, %s, after %d attempts.\n%s',
+                  request.get_full_url(), MAX_URL_OPEN_ATTEMPTS, last_error)
     return None
 
-  assert not ((method != 'POST') and content_type), (
-      'Can\'t use content_type on GET')
+  def _url_open(self, request):
+    """Low level method to execute urllib2.Request's.
+    To be mocked in tests.
+    """
+    return self.opener.open(request)
 
-  def make_request(extra):
-    """Returns a urllib2.Request instance for this specific retry."""
-    if isinstance(data, str) or data is None:
-      payload = data
-    else:
-      if isinstance(data, dict):
-        payload = data.items()
-      else:
-        payload = data[:]
-      payload.extend(extra.iteritems())
-      payload = urllib.urlencode(payload)
-
-    new_url = url
-    if isinstance(data, str) or data is None:
-      # In these cases, add the extra parameter to the query part of the url.
-      url_parts = list(urlparse.urlparse(new_url))
-      # Append the query parameter.
-      if url_parts[4] and extra:
-        url_parts[4] += '&'
-      url_parts[4] += urllib.urlencode(extra)
-      new_url = urlparse.urlunparse(url_parts)
-
-    request = urllib2.Request(new_url, data=payload)
-    if payload is not None:
-      if content_type:
-        request.add_header('Content-Type', content_type)
-      request.add_header('Content-Length', len(payload))
-    return request
-
-  return url_open_request(make_request, retry_404)
+  def _sleep_before_retry(self, attempt): # pylint: disable=R0201
+    """Sleeps for some amount of time when retrying the request.
+    To be mocked in tests."""
+    duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
+    duration = min(20, max(0.1, duration))
+    time.sleep(duration)
 
 
-def url_open_request(make_request, retry_404=False):
-  """Internal version of url_open() for users that need special handling.
+class AppEngineService(HttpService):
+  """This class implements authentication support for
+  an app engine based services.
   """
-  last_error = None
-  for attempt in range(MAX_URL_OPEN_ATTEMPTS):
-    extra = {COUNT_KEY: attempt} if attempt else {}
-    request = make_request(extra)
-    try:
-      url_response = urllib2.urlopen(request)
-      logging.debug('url_open(%s) succeeded', request.get_full_url())
-      return url_response
-    except urllib2.HTTPError as e:
-      if e.code < 500 and not (retry_404 and e.code == 404):
-        # This HTTPError means we reached the server and there was a problem
-        # with the request, so don't retry.
-        logging.error(
-            'Able to connect to %s but an exception was thrown.\n%s\n%s',
-            request.get_full_url(), e, e.read())
-        return None
 
-      # The HTTPError was due to a server error, so retry the attempt.
-      logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
-                      request.get_full_url(), attempt, e)
-      last_error = e
+  # This lock ensures that user won't be confused with multiple concurrent
+  # login prompts.
+  _auth_lock = threading.Lock()
 
-    except (urllib2.URLError, httplib.HTTPException) as e:
-      logging.warning('Unable to open url %s on attempt %d.\nException: %s',
-                      request.get_full_url(), attempt, e)
-      last_error = e
+  def __init__(self, url, email=None, password=None):
+    super(AppEngineService, self).__init__(url)
+    self.email = email
+    self.password = password
+    self._keyring = None
 
-    # Only sleep if we are going to try again.
-    if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
-      duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
-      duration = min(20, max(0.1, duration))
-      time.sleep(duration)
+  def authenticate(self):
+    """Authenticates in the app engine application.
+    Returns True on success.
+    """
+    if not upload:
+      logging.warning('\'upload\' module is missing, '
+                      'app engine authentication is disabled.')
+      return False
+    opener = self.opener
+    save_cookie_jar = self.save_cookie_jar
+    # RPC server that uses AuthenticationSupport's cookie jar and url opener.
+    class AuthServer(upload.AbstractRpcServer):
+      def _GetOpener(self):
+        return opener
+      def PerformAuthentication(self):
+        self._Authenticate()
+        save_cookie_jar()
+        return self.authenticated
+    with AppEngineService._auth_lock:
+      rpc_server = AuthServer(self.url, self.get_credentials)
+      return rpc_server.PerformAuthentication()
 
-  logging.error('Unable to open given url, %s, after %d attempts.\n%s',
-                request.get_full_url(), MAX_URL_OPEN_ATTEMPTS, last_error)
-  return None
+  def get_credentials(self):
+    """Called during authentication process to get the credentials.
+    May be called mutliple times if authentication fails.
+    Returns tuple (email, password).
+    """
+    # 'authenticate' calls this only if 'upload' is present.
+    # Ensure other callers (if any) fail non-cryptically if 'upload' is missing.
+    assert upload, '\'upload\' module is required for this to work'
+    if self.email and self.password:
+      return (self.email, self.password)
+    if not self._keyring:
+      self._keyring = upload.KeyringCreds(self.url,
+                                          self.url.lower(),
+                                          self.email)
+    return self._keyring.GetUserCredentials()
+
+
+class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
+  """MozillaCookieJar with thread safe load and save."""
+
+  def load(self, filename=None, ignore_discard=False, ignore_expires=False):
+    """Loads cookies from the file if it exists."""
+    filename = filename or self.filename
+    with self._cookies_lock:
+      if os.path.exists(filename):
+        try:
+          cookielib.MozillaCookieJar.load(self, filename,
+                                          ignore_discard,
+                                          ignore_expires)
+          logging.debug('Loaded cookies from %s', filename)
+        except (cookielib.LoadError, IOError):
+          pass
+      else:
+        fd = os.open(filename, os.O_CREAT, 0600)
+        os.close(fd)
+      os.chmod(filename, 0600)
+
+  def save(self, filename=None, ignore_discard=False, ignore_expires=False):
+    """Saves cookies to the file, completely overwriting it."""
+    logging.debug('Saving cookies to %s', filename or self.filename)
+    with self._cookies_lock:
+      cookielib.MozillaCookieJar.save(self, filename,
+                                      ignore_discard,
+                                      ignore_expires)
 
 
 class ThreadPool(object):

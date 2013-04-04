@@ -125,9 +125,9 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertEqual([], remote.join())
 
   def test_zip_header_error(self):
-    old_urlopen = run_isolated.urllib2.urlopen
+    old_urlopen = run_isolated.url_open
     try:
-      run_isolated.urllib2.urlopen = lambda x : StringIO.StringIO('111')
+      run_isolated.url_open = lambda *_args, **_kwargs: StringIO.StringIO('111')
       remote = run_isolated.Remote('https://fake-CAD.com/')
 
       # Both files will fail to be unzipped due to incorrect headers,
@@ -140,49 +140,59 @@ class RunIsolatedTest(unittest.TestCase):
       # Need to use join here, since get_one_result will hang.
       self.assertEqual([], remote.join())
     finally:
-      run_isolated.urllib2.urlopen = old_urlopen
+      run_isolated.url_open = old_urlopen
 
 
-class UrlHelperTest(unittest.TestCase):
-  def replaceUrlOpenAndCall(self, url_open_lambda, open_url_args,
-                            expected_response):
-    try:
-      old_url_open = run_isolated.urllib2.urlopen
-      old_sleep = run_isolated.time.sleep
+class HttpServiceTest(unittest.TestCase):
 
-      run_isolated.urllib2.urlopen = url_open_lambda
-      run_isolated.time.sleep = lambda x: None
+  # HttpService that doesn't sleep in retries and doesn't write cookie files.
+  class HttpServiceNoSideEffects(run_isolated.HttpService):
+    def _sleep_before_retry(self, _attempt):
+      pass
+    def load_cookie_jar(self): # pylint: disable=W0221
+      pass
+    def save_cookie_jar(self): # pylint: disable=W0221
+      pass
 
-      response = run_isolated.url_open(**open_url_args)
+  @staticmethod
+  def mocked_http_service(url='http://example.com',
+                          url_open=None,
+                          authenticate=None):
+    service = HttpServiceTest.HttpServiceNoSideEffects(url)
+    if url_open:
+      service._url_open = url_open
+    if authenticate:
+      service.authenticate = authenticate
+    return service
 
-      self.assertEqual(None if response is None else response.read(),
-                       expected_response)
-    finally:
-      run_isolated.urllib2.urlopen = old_url_open
-      run_isolated.time.sleep = old_sleep
-
-  def testUrlOpenGETSuccess(self):
-    url = 'http://my.url.com'
+  def test_request_GET_success(self):
+    service_url = 'http://example.com'
+    request_url = '/some_request'
     response = 'True'
 
     def mock_url_open(request):
-      self.assertTrue(request.get_full_url().startswith(url))
+      self.assertTrue(request.get_full_url().startswith(service_url +
+                                                        request_url))
       return StringIO.StringIO(response)
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url':url}, response)
+    service = self.mocked_http_service(url=service_url, url_open=mock_url_open)
+    self.assertEqual(service.request(request_url).read(), response)
 
-  def testUrlOpenPOSTSuccess(self):
-    url = 'http://my.url.com'
+  def test_request_POST_success(self):
+    service_url = 'http://example.com'
+    request_url = '/some_request'
     response = 'True'
 
     def mock_url_open(request):
-      self.assertTrue(request.get_full_url().startswith(url))
+      self.assertTrue(request.get_full_url().startswith(service_url +
+                                                        request_url))
       self.assertEqual('', request.get_data())
       return StringIO.StringIO(response)
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url':url, 'data':{}}, response)
+    service = self.mocked_http_service(url=service_url, url_open=mock_url_open)
+    self.assertEqual(service.request(request_url, data={}).read(), response)
 
-  def testUrlOpenSuccessAfterFailure(self):
+  def test_request_success_after_failure(self):
     response = 'True'
 
     def mock_url_open(request):
@@ -190,26 +200,27 @@ class UrlHelperTest(unittest.TestCase):
         raise urllib2.URLError('url')
       return StringIO.StringIO(response)
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}},
-                               response)
+    service = self.mocked_http_service(url_open=mock_url_open)
+    self.assertEqual(service.request('/', data={}).read(), response)
 
-  def testUrlOpenFailure(self):
+  def test_request_failure(self):
     def mock_url_open(_request):
       raise urllib2.URLError('url')
+    service = self.mocked_http_service(url_open=mock_url_open)
+    self.assertEqual(service.request('/'), None)
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url'}, None)
-
-  def testUrlOpenHTTPErrorNoRetry(self):
+  def test_request_HTTP_error_no_retry(self):
     count = []
     def mock_url_open(request):
       count.append(request)
       raise urllib2.HTTPError(
           'url', 400, 'error message', None, StringIO.StringIO())
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}}, None)
+    service = self.mocked_http_service(url_open=mock_url_open)
+    self.assertEqual(service.request('/', data={}), None)
     self.assertEqual(1, len(count))
 
-  def testUrlOpenHTTPErrorRetry404(self):
+  def test_request_HTTP_error_retry_404(self):
     response = 'data'
     def mock_url_open(request):
       if run_isolated.COUNT_KEY + '=1' in request.get_data():
@@ -217,27 +228,70 @@ class UrlHelperTest(unittest.TestCase):
       raise urllib2.HTTPError(
           'url', 404, 'error message', None, StringIO.StringIO())
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {},
-                                               'retry_404': True},
-                               response)
+    service = self.mocked_http_service(url_open=mock_url_open)
+    result = service.request('/', data={}, retry_404=True)
+    self.assertEqual(result.read(), response)
 
-  def testUrlOpenHTTPErrorWithRetry(self):
+  def test_request_HTTP_error_with_retry(self):
     response = 'response'
 
     def mock_url_open(request):
       if run_isolated.COUNT_KEY + '=1' not in request.get_data():
         raise urllib2.HTTPError(
             'url', 500, 'error message', None, StringIO.StringIO())
-
       return StringIO.StringIO(response)
 
-    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}},
-                               response)
+    service = self.mocked_http_service(url_open=mock_url_open)
+    self.assertTrue(service.request('/', data={}).read(), response)
 
-  def testCountKeyInData(self):
+  def test_count_key_in_data_failure(self):
     data = {run_isolated.COUNT_KEY: 1}
+    service = self.mocked_http_service()
+    self.assertEqual(service.request('/', data=data), None)
 
-    self.assertEqual(run_isolated.url_open('url', data=data), None)
+  def test_auth_success(self):
+    count = []
+    response = 'response'
+    def mock_url_open(_request):
+      if not count:
+        raise urllib2.HTTPError(
+          'url', 403, 'error message', None, StringIO.StringIO())
+      return StringIO.StringIO(response)
+    def mock_authenticate():
+      self.assertEqual(len(count), 0)
+      count.append(1)
+      return True
+    service = self.mocked_http_service(url_open=mock_url_open,
+                                       authenticate=mock_authenticate)
+    self.assertEqual(service.request('/').read(), response)
+    self.assertEqual(len(count), 1)
+
+  def test_auth_failure(self):
+    count = []
+    def mock_url_open(_request):
+      raise urllib2.HTTPError(
+          'url', 403, 'error message', None, StringIO.StringIO())
+    def mock_authenticate():
+      count.append(1)
+      return False
+    service = self.mocked_http_service(url_open=mock_url_open,
+                                       authenticate=mock_authenticate)
+    self.assertEqual(service.request('/'), None)
+    self.assertEqual(len(count), 1) # single attempt only
+
+  def test_request_attempted_before_auth(self):
+    calls = []
+    def mock_url_open(_request):
+      calls.append('url_open')
+      raise urllib2.HTTPError(
+          'url', 403, 'error message', None, StringIO.StringIO())
+    def mock_authenticate():
+      calls.append('authenticate')
+      return False
+    service = self.mocked_http_service(url_open=mock_url_open,
+                                       authenticate=mock_authenticate)
+    self.assertEqual(service.request('/'), None)
+    self.assertEqual(calls, ['url_open', 'authenticate'])
 
 
 if __name__ == '__main__':

@@ -411,7 +411,7 @@ class Progress(object):
   def print_update(self):
     """Prints the current status."""
     # Flush all the logging output so it doesn't appear within this output.
-    for handler in logging.Logger.manager.loggerDict:
+    for handler in logging.root.handlers:
       handler.flush()
 
     while True:
