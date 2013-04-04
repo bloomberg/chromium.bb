@@ -1635,8 +1635,6 @@
         'spdy/spdy_proxy_client_socket_spdy2_unittest.cc',
         'spdy/spdy_session_spdy3_unittest.cc',
         'spdy/spdy_session_spdy2_unittest.cc',
-        'spdy/spdy_session_test_util.cc',
-        'spdy/spdy_session_test_util.h',
         'spdy/spdy_stream_spdy3_unittest.cc',
         'spdy/spdy_stream_spdy2_unittest.cc',
         'spdy/spdy_stream_test_util.cc',
