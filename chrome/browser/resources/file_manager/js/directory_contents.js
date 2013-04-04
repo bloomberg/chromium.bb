@@ -446,14 +446,19 @@ DirectoryContentsDriveSearch.SearchType = {
  * Delay to be used for drive search scan.
  * The goal is to reduce the number of server requests when user is typing the
  * query.
+ *
+ * @type {number}
+ * @const
  */
 DirectoryContentsDriveSearch.SCAN_DELAY = 200;
 
 /**
- * Number of results at which we stop the search.
- * Note that max number of shown results is MAX_RESULTS + search feed size.
+ * Maximum number of results which is shown on the search.
+ *
+ * @type {number}
+ * @const
  */
-DirectoryContentsDriveSearch.MAX_RESULTS = 999;
+DirectoryContentsDriveSearch.MAX_RESULTS = 100;
 
 /**
  * @param {FileListContext} context File list context.
@@ -556,9 +561,13 @@ DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
       return;
     }
     this.nextFeed_ = nextFeed;
-    this.fetchedResultsNum_ += results.length;
-    if (this.fetchedResultsNum_ >= DirectoryContentsDriveSearch.MAX_RESULTS)
+    var remaining =
+        DirectoryContentsDriveSearch.MAX_RESULTS - this.fetchedResultsNum_;
+    if (results.length >= remaining) {
+      results = results.slice(0, remaining);
       this.nextFeed_ = '';
+    }
+    this.fetchedResultsNum_ += results.length;
 
     this.done_ = (this.nextFeed_ == '');
 
