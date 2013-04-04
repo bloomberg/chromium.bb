@@ -38,7 +38,9 @@ void GetFontListAsync(
   DCHECK(well_known_thread)
       << "Can only call GetFontList from a well-known thread.";
 
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+  BrowserThread::PostBlockingPoolSequencedTask(
+      kFontListSequenceToken,
+      FROM_HERE,
       base::Bind(&GetFontListInBlockingPool, id, callback));
 }
 

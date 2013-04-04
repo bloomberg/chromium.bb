@@ -9,6 +9,7 @@
 #include "base/safe_numerics.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
+#include "content/common/font_list.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -49,9 +50,12 @@ FontMessageFilter::~FontMessageFilter() {
 
 scoped_refptr<base::TaskRunner> FontMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
-  // Use the blocking pool to get the font list (currently the only message
-  // so we can always just return it).
-  return scoped_refptr<base::TaskRunner>(BrowserThread::GetBlockingPool());
+  // Use the blocking pool to get the font list (currently the only message)
+  // Since getting the font list is non-threadsafe on Linux (for versions of
+  // Pango predating 2013), use a sequenced task runner.
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  return pool->GetSequencedTaskRunner(
+      pool->GetNamedSequenceToken(kFontListSequenceToken));
 }
 
 int32_t FontMessageFilter::OnResourceMessageReceived(

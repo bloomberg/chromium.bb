@@ -192,6 +192,7 @@
     'common/font_cache_dispatcher_win.h',
     'common/font_config_ipc_linux.cc',
     'common/font_config_ipc_linux.h',
+    'common/font_list.cc',
     'common/font_list.h',
     'common/font_list_android.cc',
     'common/font_list_linux.cc',
