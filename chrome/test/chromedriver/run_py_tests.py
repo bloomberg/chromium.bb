@@ -486,6 +486,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     new_window_handle = self._WaitForNewWindow(old_handles)
     self.assertNotEqual(None, new_window_handle)
 
+  def testNoSuchFrame(self):
+    self.assertRaises(chromedriver.NoSuchFrame,
+                      self._driver.SwitchToFrame, 'nosuchframe')
+    self.assertRaises(chromedriver.NoSuchFrame,
+                      self._driver.SwitchToFrame,
+                      self._driver.FindElement('tagName', 'body'))
+
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

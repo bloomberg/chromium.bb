@@ -22,7 +22,7 @@ DomTracker::~DomTracker() {}
 Status DomTracker::GetFrameIdForNode(
     int node_id, std::string* frame_id) {
   if (node_to_frame_map_.count(node_id) == 0)
-    return Status(kUnknownError, "element is not a frame");
+    return Status(kNoSuchFrame, "element is not a frame");
   *frame_id = node_to_frame_map_[node_id];
   return Status(kOk);
 }

@@ -15,6 +15,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "ok";
     case kNoSuchElement:
       return "no such element";
+    case kNoSuchFrame:
+      return "no such frame";
     case kUnknownCommand:
       return "unknown command";
     case kStaleElementReference:
@@ -45,8 +47,6 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "session not created exception";
     case kNoSuchSession:
       return "no such session";
-    case kNoSuchFrame:
-      return "no such frame";
     case kChromeNotReachable:
       return "chrome not reachable";
     case kDisconnected:

@@ -98,6 +98,7 @@ Status EvaluateScript(DevToolsClient* client,
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
+                                  bool* got_object,
                                   std::string* object_id);
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
@@ -109,6 +110,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
                              int context_id,
                              const std::string& function,
                              const base::ListValue& args,
+                             bool* found_node,
                              int* node_id);
 
 }  // namespace internal

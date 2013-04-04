@@ -229,11 +229,14 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
                                        &context_id);
   if (status.IsError())
     return status;
+  bool found_node;
   int node_id;
   status = internal::GetNodeIdFromFunction(
-      client_.get(), context_id, function, args, &node_id);
+      client_.get(), context_id, function, args, &found_node, &node_id);
   if (status.IsError())
     return status;
+  if (!found_node)
+    return Status(kNoSuchFrame);
   return dom_tracker_->GetFrameIdForNode(node_id, out_frame);
 }
 
@@ -364,12 +367,15 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
     return status;
   base::ListValue args;
   args.Append(element.DeepCopy());
+  bool found_node;
   int node_id;
   status = internal::GetNodeIdFromFunction(
       client_.get(), context_id, "function(element) { return element; }",
-      args, &node_id);
+      args, &found_node, &node_id);
   if (status.IsError())
     return status;
+  if (!found_node)
+    return Status(kUnknownError, "no node ID for file input");
   base::DictionaryValue params;
   params.SetInteger("nodeId", node_id);
   params.Set("files", files.DeepCopy());
@@ -415,14 +421,20 @@ Status EvaluateScript(DevToolsClient* client,
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
+                                  bool* got_object,
                                   std::string* object_id) {
   scoped_ptr<base::DictionaryValue> result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByObject,
                                  &result);
   if (status.IsError())
     return status;
+  if (!result->HasKey("objectId")) {
+    *got_object = false;
+    return Status(kOk);
+  }
   if (!result->GetString("objectId", object_id))
-    return Status(kUnknownError, "evaluate missing string 'objectId'");
+    return Status(kUnknownError, "evaluate has invalid 'objectId'");
+  *got_object = true;
   return Status(kOk);
 }
 
@@ -479,6 +491,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
                              int context_id,
                              const std::string& function,
                              const base::ListValue& args,
+                             bool* found_node,
                              int* node_id) {
   std::string json;
   base::JSONWriter::Write(&args, &json);
@@ -488,11 +501,16 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
       function.c_str(),
       json.c_str());
 
+  bool got_object;
   std::string element_id;
   Status status = internal::EvaluateScriptAndGetObject(
-      client, context_id, expression, &element_id);
+      client, context_id, expression, &got_object, &element_id);
   if (status.IsError())
     return status;
+  if (!got_object) {
+    *found_node = false;
+    return Status(kOk);
+  }
 
   scoped_ptr<base::DictionaryValue> cmd_result;
   {
@@ -517,6 +535,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
 
   if (!cmd_result->GetInteger("nodeId", node_id))
     return Status(kUnknownError, "DOM.requestNode missing int 'nodeId'");
+  *found_node = true;
   return Status(kOk);
 }
 

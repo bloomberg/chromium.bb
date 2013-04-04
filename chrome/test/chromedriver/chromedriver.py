@@ -11,6 +11,8 @@ class ChromeDriverException(Exception):
   pass
 class NoSuchElement(ChromeDriverException):
   pass
+class NoSuchFrame(ChromeDriverException):
+  pass
 class UnknownCommand(ChromeDriverException):
   pass
 class StaleElementReference(ChromeDriverException):
@@ -37,6 +39,7 @@ class NoSuchSession(ChromeDriverException):
 def _ExceptionForResponse(response):
   exception_class_map = {
     7: NoSuchElement,
+    8: NoSuchFrame,
     9: UnknownCommand,
     10: StaleElementReference,
     13: UnknownError,

@@ -155,9 +155,11 @@ TEST(EvaluateScriptAndGetObject, NoObject) {
   dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "integer");
   client.set_result(dict);
+  bool got_object;
   std::string object_id;
   ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
-      &client, 0, "", &object_id).IsError());
+      &client, 0, "", &got_object, &object_id).IsOk());
+  ASSERT_FALSE(got_object);
   ASSERT_TRUE(object_id.empty());
 }
 
@@ -167,9 +169,11 @@ TEST(EvaluateScriptAndGetObject, Ok) {
   dict.SetBoolean("wasThrown", false);
   dict.SetString("result.objectId", "id");
   client.set_result(dict);
+  bool got_object;
   std::string object_id;
   ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
-      &client, 0, "", &object_id).IsOk());
+      &client, 0, "", &got_object, &object_id).IsOk());
+  ASSERT_TRUE(got_object);
   ASSERT_STREQ("id", object_id.c_str());
 }
 
