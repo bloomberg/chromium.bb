@@ -1517,8 +1517,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
 
   model_->AddAt(index, item);
 
-  if (controller->type() != LauncherItemController::TYPE_EXTENSION_PANEL)
-    app_icon_loader_->FetchImage(app_id);
+  app_icon_loader_->FetchImage(app_id);
 
   return id;
 }

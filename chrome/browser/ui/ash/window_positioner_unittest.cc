@@ -55,7 +55,7 @@ TestBrowserWindowAura::~TestBrowserWindowAura() {}
 } // namespace
 
 // A test class for preparing window positioner tests - it creates a testing
-// base by adding a window, a popup and a panel which can be independently
+// base by adding a window and a popup which can be independently
 // positioned to see where the positioner will place the window.
 class WindowPositionerTest : public AshTestBase {
  public:
@@ -68,11 +68,9 @@ class WindowPositionerTest : public AshTestBase {
  protected:
   aura::Window* window() { return window_.get(); }
   aura::Window* popup() { return popup_.get(); }
-  aura::Window* panel() { return panel_.get(); }
 
   Browser* window_browser() { return window_owning_browser_.get(); }
   Browser* popup_browser() { return popup_owning_browser_.get(); }
-  Browser* panel_browser() { return panel_owning_browser_.get(); }
 
   WindowPositioner* window_positioner() { return window_positioner_; }
 
@@ -89,15 +87,12 @@ class WindowPositionerTest : public AshTestBase {
   // These get created for each session.
   scoped_ptr<aura::Window> window_;
   scoped_ptr<aura::Window> popup_;
-  scoped_ptr<aura::Window> panel_;
 
   scoped_ptr<BrowserWindow> browser_window_;
   scoped_ptr<BrowserWindow> browser_popup_;
-  scoped_ptr<BrowserWindow> browser_panel_;
 
   scoped_ptr<Browser> window_owning_browser_;
   scoped_ptr<Browser> popup_owning_browser_;
-  scoped_ptr<Browser> panel_owning_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPositionerTest);
 };
@@ -126,8 +121,6 @@ void WindowPositionerTest::SetUp() {
   window_->SetBounds(gfx::Rect(16, 32, 640, 320));
   popup_.reset(CreateTestWindowInShellWithId(1));
   popup_->SetBounds(gfx::Rect(16, 32, 128, 256));
-  panel_.reset(CreateTestWindowInShellWithId(2));
-  panel_->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser for the window.
   browser_window_.reset(new TestBrowserWindowAura(window_.get()));
@@ -143,17 +136,10 @@ void WindowPositionerTest::SetUp() {
   popup_params.window = browser_popup_.get();
   popup_owning_browser_.reset(new Browser(popup_params));
 
-  // Creating a browser for the panel.
-  browser_panel_.reset(new TestBrowserWindowAura(panel_.get()));
-  Browser::CreateParams panel_params(Browser::TYPE_PANEL, profile_.get(),
-                                     chrome::HOST_DESKTOP_TYPE_ASH);
-  panel_params.window = browser_panel_.get();
-  panel_owning_browser_.reset(new Browser(panel_params));
   // We hide all windows upon start - each user is required to set it up
   // as he needs it.
   window()->Hide();
   popup()->Hide();
-  panel()->Hide();
   window_positioner_ = new WindowPositioner();
 }
 
@@ -162,15 +148,12 @@ void WindowPositionerTest::TearDown() {
   // also delete them before we tear it down.
   window_owning_browser_.reset(NULL);
   popup_owning_browser_.reset(NULL);
-  panel_owning_browser_.reset(NULL);
 
   browser_window_.reset(NULL);
   browser_popup_.reset(NULL);
-  browser_panel_.reset(NULL);
 
   window_.reset(NULL);
   popup_.reset(NULL);
-  panel_.reset(NULL);
 
   AshTestBase::TearDown();
   delete window_positioner_;
@@ -296,22 +279,6 @@ TEST_F(WindowPositionerTest, filling) {
                                            popup_position.width(), grid_size_),
                       work_area.y(),
                       popup_position.width(), popup_position.height()),
-                      top_right);
-}
-
-TEST_F(WindowPositionerTest, blockedByPanel) {
-  const gfx::Rect work_area =
-      Shell::GetScreen()->GetPrimaryDisplay().work_area();
-
-  gfx::Rect pop_position(0, 0, 200, 200);
-  // Let the panel cover everything.
-  panel()->SetBounds(work_area);
-  panel()->Show();
-
-  // Check that the popup does cascade due to the panel's existence.
-  gfx::Rect top_right = window_positioner()->GetPopupPosition(pop_position);
-  EXPECT_EQ(gfx::Rect(work_area.x() + grid_size_, work_area.y() + grid_size_,
-                      pop_position.width(), pop_position.height()),
                       top_right);
 }
 

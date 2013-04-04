@@ -449,10 +449,6 @@ gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
   return gfx::Rect(NSRectToCGRect(tabRect));
 }
 
-bool BrowserWindowCocoa::IsPanel() const {
-  return false;
-}
-
 // This is called from Browser, which in turn is called directly from
 // a menu option.  All we do here is set a preference.  The act of
 // setting the preference sends notifications to all windows who then

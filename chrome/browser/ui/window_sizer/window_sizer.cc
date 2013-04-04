@@ -110,7 +110,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     // specially positioned.
     BrowserWindow* window = NULL;
     // Window may be null if browser is just starting up.
-    if (browser_ && browser_->window() && !browser_->window()->IsPanel()) {
+    if (browser_ && browser_->window()) {
       window = browser_->window();
     } else {
       // This code is only ran on the native desktop (on the ash desktop,

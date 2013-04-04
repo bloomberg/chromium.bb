@@ -306,7 +306,7 @@ void BrowserWindowGtk::Init() {
   // popups need the widgets inited before they can set the window size
   // properly. For other windows, we set the geometry first to prevent resize
   // flicker.
-  if (browser_->is_type_popup() || browser_->is_type_panel()) {
+  if (browser_->is_type_popup()) {
     gtk_window_set_role(window_, "pop-up");
     InitWidgets();
     SetGeometryHints();
@@ -946,10 +946,6 @@ gfx::Rect BrowserWindowGtk::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-bool BrowserWindowGtk::IsPanel() const {
-  return false;
-}
-
 void BrowserWindowGtk::ConfirmAddSearchProvider(TemplateURL* template_url,
                                                 Profile* profile) {
   new EditSearchEngineDialog(window_, template_url, NULL, profile);
@@ -1532,12 +1528,11 @@ void BrowserWindowGtk::SetGeometryHints() {
   //
   // For popup windows, we assume that if x == y == 0, the opening page
   // did not specify a position.  Let the WM position the popup instead.
-  bool is_popup_or_panel = browser_->is_type_popup() ||
-                           browser_->is_type_panel();
-  bool popup_without_position = is_popup_or_panel &&
+  bool is_popup = browser_->is_type_popup();
+  bool popup_without_position = is_popup &&
       bounds.x() == 0 && bounds.y() == 0;
   bool move = browser_->bounds_overridden() && !popup_without_position;
-  SetBoundsImpl(bounds, !is_popup_or_panel, move);
+  SetBoundsImpl(bounds, !is_popup, move);
 }
 
 void BrowserWindowGtk::ConnectHandlersToSignals() {

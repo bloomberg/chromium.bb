@@ -136,7 +136,7 @@ class DevToolsWindow : private content::NotificationObserver,
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
-  bool IsInspectedBrowserPopupOrPanel();
+  bool IsInspectedBrowserPopup();
   void UpdateFrontendDockSide();
   void Hide();
 

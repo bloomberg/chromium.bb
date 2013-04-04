@@ -11,10 +11,6 @@ namespace chrome {
 
 bool ShouldUseNativeFrame(const BrowserView* browser_view,
                           const ui::ThemeProvider* theme_provider) {
-  // App panel windows draw their own frame.
-  if (browser_view->IsPanel())
-    return false;
-
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
@@ -27,4 +23,3 @@ bool ShouldUseNativeFrame(const BrowserView* browser_view,
 }
 
 }  // namespace browser
-

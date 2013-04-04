@@ -29,7 +29,7 @@ const int kForceMaximizeWidthLimit = 640;
 // window, which intersects with the |bounds_in_screen| area of a given screen.
 bool IsValidBrowser(Browser* browser, const gfx::Rect& bounds_in_screen) {
   return (browser && browser->window() &&
-          !(browser->is_type_popup() || browser->is_type_panel()) &&
+          !browser->is_type_popup() &&
           !browser->window()->IsMinimized() &&
           browser->window()->GetNativeWindow() &&
           bounds_in_screen.Intersects(

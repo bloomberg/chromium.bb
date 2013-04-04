@@ -309,8 +309,8 @@ enum {
 
     // When we are given x/y coordinates of 0 on a created popup window, assume
     // none were given by the window.open() command.
-    if ((browser_->is_type_popup() || browser_->is_type_panel()) &&
-         windowRect.x() == 0 && windowRect.y() == 0) {
+    if (browser_->is_type_popup() &&
+        windowRect.x() == 0 && windowRect.y() == 0) {
       gfx::Size size = windowRect.size();
       windowRect.set_origin(
           WindowSizer::GetDefaultPopupOrigin(size,
@@ -404,7 +404,7 @@ enum {
     // out, measure the current content area size and grow if needed.  The
     // window has not been placed onscreen yet, so this extra resize will not
     // cause visible jank.
-    if (browser_->is_type_popup() || browser_->is_type_panel()) {
+    if (browser_->is_type_popup()) {
       CGFloat deltaH = desiredContentRect.height() -
                        NSHeight([[self tabContentArea] frame]);
       // Do not shrink the window, as that may break minimum size invariants.

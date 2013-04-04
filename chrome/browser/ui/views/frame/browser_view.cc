@@ -1191,10 +1191,6 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
                    resize_corner_size.width(), resize_corner_size.height());
 }
 
-bool BrowserView::IsPanel() const {
-  return false;
-}
-
 void BrowserView::DisableInactiveFrame() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   frame_->DisableInactiveRendering();
@@ -1630,7 +1626,7 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 bool BrowserView::ShouldShowWindowTitle() const {
 #if defined(USE_ASH)
   // For Ash only, app host windows do not show an icon, crbug.com/119411.
-  // Child windows (e.g. extension panels, popups) do show an icon.
+  // Child windows (i.e. popups) do show an icon.
   if (browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
     return false;
 #endif
@@ -1659,7 +1655,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
 bool BrowserView::ShouldShowWindowIcon() const {
 #if defined(USE_ASH)
   // For Ash only, app host windows do not show an icon, crbug.com/119411.
-  // Child windows (e.g. extension panels, popups) do show an icon.
+  // Child windows (i.e. popups) do show an icon.
   if (browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
     return false;
 #endif
@@ -1720,19 +1716,19 @@ bool BrowserView::GetSavedWindowPlacement(
 #if defined(USE_ASH)
   if (chrome::IsNativeWindowInAsh(
           const_cast<BrowserView*>(this)->GetNativeWindow())) {
-  if (browser_->is_type_popup() || browser_->is_type_panel()) {
-      // In case of a popup or panel with an 'unspecified' location we are
+    if (browser_->is_type_popup()) {
+      // In case of a popup with an 'unspecified' location we are
       // looking for a good screen location. We are interpreting (0,0) as an
       // unspecified location.
-    if (bounds->x() == 0 && bounds->y() == 0) {
-      *bounds = ChromeShellDelegate::instance()->window_positioner()->
-          GetPopupPosition(*bounds);
+      if (bounds->x() == 0 && bounds->y() == 0) {
+        *bounds = ChromeShellDelegate::instance()->window_positioner()->
+            GetPopupPosition(*bounds);
+      }
     }
-  }
   }
 #endif
 
-  if ((browser_->is_type_popup() || browser_->is_type_panel()) &&
+  if (browser_->is_type_popup() &&
       !browser_->is_app() &&
       !browser_->is_devtools()) {
     // This is non-app popup window. The value passed in |bounds| represents

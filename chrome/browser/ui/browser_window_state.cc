@@ -59,9 +59,6 @@ bool ShouldSaveWindowPlacement(const Browser* browser) {
     // or the window belongs to DevTools or an App.
     return browser_defaults::kRestorePopups || browser->is_devtools() ||
         browser->is_app();
-  case Browser::TYPE_PANEL:
-    // Do not save the window placement of panels.
-    return false;
   default:
     return false;
   }

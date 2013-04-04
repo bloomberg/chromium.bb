@@ -16,7 +16,6 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
   Browser::Type type = browser_view->browser()->type();
   switch (type) {
-    case Browser::TYPE_PANEL:
     case Browser::TYPE_POPUP:
       return new PopupNonClientFrameView(frame);
     default:

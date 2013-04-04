@@ -183,11 +183,6 @@ class BrowserWindow : public BaseWindow {
   // where we take care of it ourselves at the browser level).
   virtual gfx::Rect GetRootWindowResizerRect() const = 0;
 
-  // Returns whether the window is a panel. This is not always synonomous
-  // with the associated browser having type panel since some environments
-  // may draw popups in panel windows.
-  virtual bool IsPanel() const = 0;
-
   // Tells the frame not to render as inactive until the next activation change.
   // This is required on Windows when dropdown selects are shown to prevent the
   // select from deactivating the browser frame. A stub implementation is

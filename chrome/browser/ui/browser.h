@@ -111,8 +111,7 @@ class Browser : public TabStripModelObserver,
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
     TYPE_TABBED = 1,
-    TYPE_POPUP = 2,
-    TYPE_PANEL = 3
+    TYPE_POPUP = 2
   };
 
   // Distinguishes between browsers that host an app (opened from
@@ -438,7 +437,6 @@ class Browser : public TabStripModelObserver,
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
-  bool is_type_panel() const { return type_ == TYPE_PANEL; }
 
   bool is_app() const;
   bool is_devtools() const;

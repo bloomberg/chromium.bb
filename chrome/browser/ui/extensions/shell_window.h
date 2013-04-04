@@ -179,6 +179,10 @@ class ShellWindow : public content::NotificationObserver,
   // callback. Also called externally for v1 apps using Ash Panels.
   void UpdateAppIcon(const gfx::Image& image);
 
+  ShellWindowContents* shell_window_contents_for_test() {
+    return shell_window_contents_.get();
+  }
+
  protected:
   virtual ~ShellWindow();
 

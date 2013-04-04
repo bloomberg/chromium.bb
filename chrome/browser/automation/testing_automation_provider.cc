@@ -2309,9 +2309,6 @@ void TestingAutomationProvider::GetBrowserInfo(
       case Browser::TYPE_POPUP:
         type = "popup";
         break;
-      case Browser::TYPE_PANEL:
-        type = "panel";
-        break;
       default:
         type = "unknown";
         break;

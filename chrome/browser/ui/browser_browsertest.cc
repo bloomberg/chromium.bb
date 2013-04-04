@@ -1169,8 +1169,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 // Makes sure the browser doesn't crash when
 // set_show_state(ui::SHOW_STATE_MAXIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
-  // Can't test TYPE_PANEL as they are currently created differently (and can't
-  // end up maximized).
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser::CreateParams params(types[i], browser()->profile(),
@@ -1189,8 +1187,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
 // Makes sure the browser doesn't crash when
 // set_show_state(ui::SHOW_STATE_MINIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
-  // Can't test TYPE_PANEL as they are currently created differently (and can't
-  // end up minimized).
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser::CreateParams params(types[i], browser()->profile(),

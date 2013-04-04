@@ -92,13 +92,7 @@ bool WaitForTabsAndPopups(Browser* browser,
     if (*iter == browser)
       continue;
 
-    // Check for TYPE_POPUP.
-#if defined(USE_ASH_PANELS)
-    // On Ash, panel windows may open as popup windows.
-    EXPECT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
-#else
     EXPECT_TRUE((*iter)->is_type_popup());
-#endif
     ++num_popups_seen;
   }
   EXPECT_EQ(num_popups, num_popups_seen);

@@ -588,8 +588,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   } else {
     Browser* new_browser = NULL;
     if (browser->is_app() &&
-        !browser->is_type_popup() &&
-        !browser->is_type_panel()) {
+        !browser->is_type_popup()) {
       new_browser = new Browser(
           Browser::CreateParams::CreateForApp(browser->type(),
                                               browser->app_name(),

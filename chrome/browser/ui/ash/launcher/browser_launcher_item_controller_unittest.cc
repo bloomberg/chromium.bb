@@ -291,51 +291,6 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
   }
 }
 
-// Verifies Panels items work.
-TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
-  size_t initial_size = launcher_model_->items().size();
-
-  // Add an App panel.
-  {
-    aura::Window window(NULL);
-    TabHelperTabStripModelDelegate tab_strip_delegate;
-    TabStripModel tab_strip(&tab_strip_delegate, profile());
-    scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
-    app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
-    tab_strip.InsertWebContentsAt(0,
-                                  panel_tab.get(),
-                                  TabStripModel::ADD_ACTIVE);
-    BrowserLauncherItemController updater(
-        LauncherItemController::TYPE_APP_PANEL,
-        &window, &tab_strip, launcher_delegate_.get(),
-        std::string());
-    updater.Init();
-    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
-    EXPECT_EQ(static_cast<void*>(NULL), updater.favicon_loader_.get());
-  }
-
-  // Add an Extension panel.
-  {
-    aura::Window window(NULL);
-    TabHelperTabStripModelDelegate tab_strip_delegate;
-    TabStripModel tab_strip(&tab_strip_delegate, profile());
-    scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
-    app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
-    tab_strip.InsertWebContentsAt(0,
-                                  panel_tab.get(),
-                                  TabStripModel::ADD_ACTIVE);
-    BrowserLauncherItemController updater(
-        LauncherItemController::TYPE_EXTENSION_PANEL,
-        &window, &tab_strip, launcher_delegate_.get(),
-        std::string());
-    updater.Init();
-    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_PLATFORM_APP, GetItem(&updater).type);
-    EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
-  }
-}
-
 // Verifies pinned apps are persisted and restored.
 TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();

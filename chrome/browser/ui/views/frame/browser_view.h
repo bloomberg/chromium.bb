@@ -304,7 +304,6 @@ class BrowserView : public BrowserWindow,
   virtual bool IsBookmarkBarAnimating() const OVERRIDE;
   virtual bool IsTabStripEditable() const OVERRIDE;
   virtual bool IsToolbarVisible() const OVERRIDE;
-  virtual bool IsPanel() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,

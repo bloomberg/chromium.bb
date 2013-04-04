@@ -67,13 +67,6 @@ void BrowserFrame::InitBrowserFrame() {
                                              &params.bounds,
                                              &params.show_state);
   }
-  if (browser_view_->IsPanel()) {
-    // We need to set the top-most bit when the panel window is created.
-    // There is a Windows bug/feature that would very likely prevent the window
-    // from being changed to top-most after the window is created without
-    // activation.
-    params.type = views::Widget::InitParams::TYPE_PANEL;
-  }
 #if defined(USE_ASH)
   if (browser_view_->browser()->host_desktop_type() ==
       chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {

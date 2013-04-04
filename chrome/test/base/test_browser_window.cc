@@ -98,10 +98,6 @@ gfx::Rect TestBrowserWindow::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-bool TestBrowserWindow::IsPanel() const {
-  return false;
-}
-
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;
 }

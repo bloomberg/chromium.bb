@@ -107,20 +107,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
           browser())));
   EXPECT_EQ("popup", utils::GetString(result.get(), "type"));
 
-  // Panel.
-  Browser* panel_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_PANEL, browser()->profile(),
-                            browser()->host_desktop_type()));
-  function = new WindowsGetFunction();
-  function->set_extension(extension.get());
-  result.reset(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          function.get(),
-          base::StringPrintf(
-              "[%u]", ExtensionTabUtil::GetWindowId(panel_browser)),
-          browser())));
-  EXPECT_EQ("panel", utils::GetString(result.get(), "type"));
-
   // Incognito.
   Browser* incognito_browser = CreateIncognitoBrowser();
   int incognito_window_id = ExtensionTabUtil::GetWindowId(incognito_browser);

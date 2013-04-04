@@ -19,7 +19,6 @@
 #include "ui/aura/window_observer.h"
 
 class Browser;
-class LauncherFaviconLoader;
 
 namespace ash {
 class LauncherModel;
@@ -29,7 +28,6 @@ class LauncherModel;
 // representation of a window up to date as the active tab changes.
 class BrowserLauncherItemController : public LauncherItemController,
                                       public TabStripModelObserver,
-                                      public LauncherFaviconLoader::Delegate,
                                       public aura::WindowObserver {
  public:
   // This API is to be used as part of testing only.
@@ -63,10 +61,6 @@ class BrowserLauncherItemController : public LauncherItemController,
   // returns NULL if a BrowserLauncherItemController is not needed for the
   // specified browser.
   static BrowserLauncherItemController* Create(Browser* browser);
-
-  LauncherFaviconLoader* favicon_loader() const {
-    return favicon_loader_.get();
-  }
 
   // Call to indicate that the window the tabcontents are in has changed its
   // activation state.
@@ -105,9 +99,6 @@ class BrowserLauncherItemController : public LauncherItemController,
                              content::WebContents* new_contents,
                              int index) OVERRIDE;
 
-  // LauncherFaviconLoader::Delegate overrides:
-  virtual void FaviconUpdated() OVERRIDE;
-
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -145,9 +136,6 @@ class BrowserLauncherItemController : public LauncherItemController,
 
   // Whether this is associated with an incognito profile.
   const bool is_incognito_;
-
-  // Loads launcher sized favicons for panels.
-  scoped_ptr<LauncherFaviconLoader> favicon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemController);
 };

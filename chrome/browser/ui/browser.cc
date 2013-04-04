@@ -422,16 +422,11 @@ Browser::Browser(const CreateParams& params)
   // Set the app user model id for this application to that of the application
   // name.  See http://crbug.com/7028.
   ui::win::SetAppIdForWindow(
-      is_app() && !is_type_panel() ?
+      is_app() ?
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
                                                 profile_->GetPath()) :
       ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
       window()->GetNativeWindow());
-
-  if (is_type_panel()) {
-    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconLocation(),
-                                 window()->GetNativeWindow());
-  }
 #endif
 
   // Create the extension window controller before sending notifications.
@@ -1342,8 +1337,7 @@ void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
 }
 
 bool Browser::IsPopupOrPanel(const WebContents* source) const {
-  // A non-tabbed BROWSER is an unconstrained popup.
-  return is_type_popup() || is_type_panel();
+  return is_type_popup();
 }
 
 void Browser::UpdateTargetURL(WebContents* source, int32 page_id,

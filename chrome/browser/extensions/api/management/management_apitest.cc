@@ -275,6 +275,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
                                         browser()->host_desktop_type()));
   Browser* app_browser = FindOtherBrowser(browser());
   ASSERT_TRUE(app_browser->is_app());
-  ASSERT_FALSE(app_browser->is_type_panel());
 #endif
 }

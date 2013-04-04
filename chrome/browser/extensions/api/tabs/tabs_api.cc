@@ -482,8 +482,9 @@ bool WindowsCreateFunction::RunImpl() {
 
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_TABBED;
+  bool create_panel = false;
 
-  // panel_create_mode only applies if window is TYPE_PANEL.
+  // panel_create_mode only applies if create_panel = true
   PanelManager::CreateMode panel_create_mode = PanelManager::CREATE_AS_DOCKED;
 
   gfx::Rect window_bounds;
@@ -521,7 +522,7 @@ bool WindowsCreateFunction::RunImpl() {
         use_panels = PanelManager::ShouldUsePanels(extension_id);
 #endif
         if (use_panels) {
-          window_type = Browser::TYPE_PANEL;
+          create_panel = true;
 #if !defined(OS_CHROMEOS)
           // Non-ChromeOS has both docked and detached panel types.
           if (type_str == keys::kWindowTypeValueDetachedPanel)
@@ -537,9 +538,9 @@ bool WindowsCreateFunction::RunImpl() {
     }
 
     // Initialize default window bounds according to window type.
-    if (Browser::TYPE_TABBED == window_type ||
-        Browser::TYPE_POPUP == window_type ||
-        Browser::TYPE_PANEL == window_type) {
+    if (window_type == Browser::TYPE_TABBED ||
+        window_type == Browser::TYPE_POPUP ||
+        create_panel) {
       // Try to position the new browser relative to its originating
       // browser window. The call offsets the bounds by kWindowTilePixels
       // (defined in WindowSizer to be 10).
@@ -555,8 +556,7 @@ bool WindowsCreateFunction::RunImpl() {
                                                       &show_state);
     }
 
-    if (Browser::TYPE_PANEL == window_type &&
-        PanelManager::CREATE_AS_DETACHED == panel_create_mode) {
+    if (create_panel && PanelManager::CREATE_AS_DETACHED == panel_create_mode) {
       window_bounds.set_origin(
           PanelManager::GetInstance()->GetDefaultDetachedPanelOrigin());
     }
@@ -594,7 +594,7 @@ bool WindowsCreateFunction::RunImpl() {
     }
   }
 
-  if (window_type == Browser::TYPE_PANEL) {
+  if (create_panel) {
     if (urls.empty())
       urls.push_back(GURL(chrome::kChromeUINewTabURL));
 
@@ -640,6 +640,8 @@ bool WindowsCreateFunction::RunImpl() {
 
   // Create a new BrowserWindow.
   chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();
+  if (create_panel)
+    window_type = Browser::TYPE_POPUP;
   Browser::CreateParams create_params(window_type, window_profile,
                                       host_desktop_type);
   if (extension_id.empty()) {
@@ -661,7 +663,7 @@ bool WindowsCreateFunction::RunImpl() {
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     WebContents* tab = chrome::AddSelectedTabWithURL(
         new_window, *i, content::PAGE_TRANSITION_LINK);
-    if (window_type == Browser::TYPE_PANEL) {
+    if (create_panel) {
       extensions::TabHelper::FromWebContents(tab)->
           SetExtensionAppIconById(extension_id);
     }
@@ -676,7 +678,7 @@ bool WindowsCreateFunction::RunImpl() {
   chrome::SelectNumberedTab(new_window, 0);
 
   // Unlike other window types, Panels do not take focus by default.
-  if (!saw_focus_key && window_type == Browser::TYPE_PANEL)
+  if (!saw_focus_key && create_panel)
     focused = false;
 
   if (focused)

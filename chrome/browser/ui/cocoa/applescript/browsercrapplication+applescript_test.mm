@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
                                         browser()->host_desktop_type()));
   Browser* b2 = new Browser(
       Browser::CreateParams::CreateForApp(
-          Browser::TYPE_PANEL, "Test", gfx::Rect(), profile,
+          Browser::TYPE_POPUP, "Test", gfx::Rect(), profile,
           browser()->host_desktop_type()));
 
   EXPECT_EQ(3U, [[NSApp appleScriptWindows] count]);

@@ -208,10 +208,6 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
 }
 
 bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
-  // App panel windows draw their own frame.
-  if (browser_view_->IsPanel())
-    return true;
-
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.

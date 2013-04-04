@@ -613,10 +613,6 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         NOTREACHED() << "We should never have a tabbed app window.";
         break;
       }
-      case Browser::TYPE_PANEL: {
-        NOTREACHED();
-        break;
-      }
     }
   }
 }

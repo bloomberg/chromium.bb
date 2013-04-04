@@ -85,15 +85,8 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 void BrowserNonClientFrameViewAsh::Init() {
   // Panels only minimize.
   ash::FramePainter::SizeButtonBehavior size_button_behavior;
-  if (browser_view()->browser()->is_type_panel() &&
-      browser_view()->browser()->app_type() == Browser::APP_TYPE_CHILD) {
-    size_button_minimizes_ = true;
-    size_button_ = new views::ImageButton(this);
-    size_button_behavior = ash::FramePainter::SIZE_BUTTON_MINIMIZES;
-  } else {
-    size_button_ = new ash::FrameMaximizeButton(this, this);
-    size_button_behavior = ash::FramePainter::SIZE_BUTTON_MAXIMIZES;
-  }
+  size_button_ = new ash::FrameMaximizeButton(this, this);
+  size_button_behavior = ash::FramePainter::SIZE_BUTTON_MAXIMIZES;
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(size_button_);
@@ -368,8 +361,6 @@ bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
       return frame()->IsMaximized() || frame()->IsFullscreen();
     case Browser::TYPE_POPUP:
       return false;
-    case Browser::TYPE_PANEL:
-      return true;
     default:
       NOTREACHED();
       return false;

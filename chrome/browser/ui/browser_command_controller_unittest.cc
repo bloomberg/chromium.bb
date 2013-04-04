@@ -138,21 +138,6 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
   ASSERT_TRUE(browser()->is_app());
   browser()->command_controller()->FullscreenStateChanged();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
-
-  // Enabled for panels.
-  Browser::CreateParams panel_params(Browser::TYPE_PANEL, profile(),
-                                     browser()->host_desktop_type());
-  TestBrowserWindow panel_window;
-  panel_params.window = &panel_window;
-  Browser panel_browser(panel_params);
-  ASSERT_TRUE(panel_browser.is_type_panel());
-  EXPECT_TRUE(chrome::IsCommandEnabled(&panel_browser, IDC_FULLSCREEN));
-
-  // Disabled for app-panels.
-  panel_browser.app_name_ = "app";
-  ASSERT_TRUE(panel_browser.is_app());
-  panel_browser.command_controller()->FullscreenStateChanged();
-  EXPECT_FALSE(chrome::IsCommandEnabled(&panel_browser, IDC_FULLSCREEN));
 }
 
 TEST_F(BrowserCommandControllerTest, AvatarMenuDisabledWhenOnlyOneProfile) {

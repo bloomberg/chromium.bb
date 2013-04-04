@@ -53,6 +53,10 @@ class AshPanelContents : public ShellWindowContents,
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
+  LauncherFaviconLoader* launcher_favicon_loader_for_test() {
+    return launcher_favicon_loader_.get();
+  }
+
  private:
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

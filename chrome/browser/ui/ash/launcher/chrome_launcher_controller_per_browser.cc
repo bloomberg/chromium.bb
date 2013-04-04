@@ -629,13 +629,6 @@ void ChromeLauncherControllerPerBrowser::SetAppImage(
     if (i->second->app_id() != id)
       continue;
 
-    // Panel items may share the same app_id as the app that created them,
-    // but they set their icon image in
-    // BrowserLauncherItemController::UpdateLauncher(), so do not set panel
-    // images here.
-    if (i->second->type() == LauncherItemController::TYPE_EXTENSION_PANEL)
-      continue;
-
     int index = model_->ItemIndexByID(i->first);
     ash::LauncherItem item = model_->items()[index];
     item.image = image;
@@ -1343,8 +1336,7 @@ ash::LauncherID ChromeLauncherControllerPerBrowser::InsertAppLauncherItem(
 
   model_->AddAt(index, item);
 
-  if (controller->type() != LauncherItemController::TYPE_EXTENSION_PANEL)
-    app_icon_loader_->FetchImage(app_id);
+  app_icon_loader_->FetchImage(app_id);
 
   return id;
 }

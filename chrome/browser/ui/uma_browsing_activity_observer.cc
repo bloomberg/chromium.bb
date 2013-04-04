@@ -71,7 +71,6 @@ void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
 void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int tab_count = 0;
   int app_window_count = 0;
-  int panel_window_count = 0;
   int popup_window_count = 0;
   int tabbed_window_count = 0;
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
@@ -91,8 +90,6 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
 
     if (browser->is_app())
       app_window_count++;
-    else if (browser->is_type_panel())
-      panel_window_count++;
     else if (browser->is_type_popup())
       popup_window_count++;
     else if (browser->is_type_tabbed())
@@ -104,8 +101,6 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   // Record how many windows are open, by type.
   UMA_HISTOGRAM_COUNTS_100("WindowManager.AppWindowCountPerLoad",
                            app_window_count);
-  UMA_HISTOGRAM_COUNTS_100("WindowManager.PanelWindowCountPerLoad",
-                           panel_window_count);
   UMA_HISTOGRAM_COUNTS_100("WindowManager.PopUpWindowCountPerLoad",
                            popup_window_count);
   UMA_HISTOGRAM_COUNTS_100("WindowManager.TabbedWindowCountPerLoad",
