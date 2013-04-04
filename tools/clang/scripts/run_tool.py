@@ -144,6 +144,10 @@ class _CompilerDispatcher(object):
   def edits(self):
     return self.__edits
 
+  @property
+  def failed_count(self):
+    return self.__failed_count
+
   def Run(self):
     """Does the grunt work."""
     pool = multiprocessing.Pool()
@@ -260,7 +264,7 @@ def main(argv):
     print '  <clang tool> is the clang tool that should be run.'
     print '  <compile db> is the directory that contains the compile database'
     print '  <path 1> <path2> ... can be used to filter what files are edited'
-    sys.exit(1)
+    return 1
 
   filenames = frozenset(_GetFilesFromGit(argv[2:]))
   # Filter out files that aren't C/C++/Obj-C/Obj-C++.
@@ -276,6 +280,9 @@ def main(argv):
                     if k in filenames})
   # TODO(dcheng): Consider clang-formatting the result to avoid egregious style
   # violations.
+  if dispatcher.failed_count != 0:
+    return 2
+  return 0
 
 
 if __name__ == '__main__':
