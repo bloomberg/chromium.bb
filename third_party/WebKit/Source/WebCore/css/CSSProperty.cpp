@@ -694,9 +694,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyBufferedRendering:
     case CSSPropertyWebkitSvgShadow:
 #endif
-#if ENABLE(DASHBOARD_SUPPORT)
-    case CSSPropertyWebkitDashboardRegion:
-#endif
 #if ENABLE(DRAGGABLE_REGION)
     case CSSPropertyWebkitAppRegion:
 #endif

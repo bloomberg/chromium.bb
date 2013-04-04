@@ -171,12 +171,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (m_context && !m_context->is2d())
             return 0;
         if (!m_context) {
-            bool usesDashbardCompatibilityMode = false;
-#if ENABLE(DASHBOARD_SUPPORT)
-            if (Settings* settings = document()->settings())
-                usesDashbardCompatibilityMode = settings->usesDashboardBackwardCompatibilityMode();
-#endif
-            m_context = CanvasRenderingContext2D::create(this, document()->inQuirksMode(), usesDashbardCompatibilityMode);
+            m_context = CanvasRenderingContext2D::create(this, document()->inQuirksMode());
 #if USE(IOSURFACE_CANVAS_BACKING_STORE) || (ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING))
             if (m_context) {
                 // Need to make sure a RenderLayer and compositing layer get created for the Canvas

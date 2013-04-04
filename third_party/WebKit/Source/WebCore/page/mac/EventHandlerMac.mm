@@ -712,11 +712,6 @@ bool EventHandler::needsKeyboardEventDisambiguationQuirks() const
     if (!settings)
         return false;
 
-#if ENABLE(DASHBOARD_SUPPORT)
-    if (settings->usesDashboardBackwardCompatibilityMode())
-        return true;
-#endif
-        
     if (settings->needsKeyboardEventDisambiguationQuirks())
         return true;
 

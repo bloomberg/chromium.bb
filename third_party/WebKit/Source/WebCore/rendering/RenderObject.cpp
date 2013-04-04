@@ -1866,7 +1866,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             bool visibilityChanged = m_style->visibility() != newStyle->visibility() 
                 || m_style->zIndex() != newStyle->zIndex() 
                 || m_style->hasAutoZIndex() != newStyle->hasAutoZIndex();
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
             if (visibilityChanged)
                 document()->setAnnotatedRegionsDirty(true);
 #endif
@@ -2867,7 +2867,7 @@ void RenderObject::getTextDecorationColors(int decorations, Color& underline, Co
     }
 }
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
 void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 {
     // Convert the style regions to absolute coordinates.
@@ -2877,43 +2877,12 @@ void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     RenderBox* box = toRenderBox(this);
     FloatPoint absPos = localToAbsolute();
 
-#if ENABLE(DASHBOARD_SUPPORT)
-    const Vector<StyleDashboardRegion>& styleRegions = style()->dashboardRegions();
-    unsigned i, count = styleRegions.size();
-    for (i = 0; i < count; i++) {
-        StyleDashboardRegion styleRegion = styleRegions[i];
-
-        LayoutUnit w = box->width();
-        LayoutUnit h = box->height();
-
-        AnnotatedRegionValue region;
-        region.label = styleRegion.label;
-        region.bounds = LayoutRect(styleRegion.offset.left().value(),
-                                   styleRegion.offset.top().value(),
-                                   w - styleRegion.offset.left().value() - styleRegion.offset.right().value(),
-                                   h - styleRegion.offset.top().value() - styleRegion.offset.bottom().value());
-        region.type = styleRegion.type;
-
-        region.clip = region.bounds;
-        computeAbsoluteRepaintRect(region.clip);
-        if (region.clip.height() < 0) {
-            region.clip.setHeight(0);
-            region.clip.setWidth(0);
-        }
-
-        region.bounds.setX(absPos.x() + styleRegion.offset.left().value());
-        region.bounds.setY(absPos.y() + styleRegion.offset.top().value());
-
-        regions.append(region);
-    }
-#else // ENABLE(DRAGGABLE_REGION)
     if (style()->getDraggableRegionMode() == DraggableRegionNone)
         return;
     AnnotatedRegionValue region;
     region.draggable = style()->getDraggableRegionMode() == DraggableRegionDrag;
     region.bounds = LayoutRect(absPos.x(), absPos.y(), box->width(), box->height());
     regions.append(region);
-#endif
 }
 
 void RenderObject::collectAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)

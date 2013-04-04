@@ -470,12 +470,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         }
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT)
-        // If regions change, trigger a relayout to re-calc regions.
-        if (rareNonInheritedData->m_dashboardRegions != other->rareNonInheritedData->m_dashboardRegions)
-            return StyleDifferenceLayout;
-#endif
-
 #if ENABLE(CSS_EXCLUSIONS)
         if (rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside)
             return StyleDifferenceLayout;
@@ -1138,33 +1132,6 @@ const AtomicString& RenderStyle::textEmphasisMarkString() const
     ASSERT_NOT_REACHED();
     return nullAtom;
 }
-
-#if ENABLE(DASHBOARD_SUPPORT)
-const Vector<StyleDashboardRegion>& RenderStyle::initialDashboardRegions()
-{
-    DEFINE_STATIC_LOCAL(Vector<StyleDashboardRegion>, emptyList, ());
-    return emptyList;
-}
-
-const Vector<StyleDashboardRegion>& RenderStyle::noneDashboardRegions()
-{
-    DEFINE_STATIC_LOCAL(Vector<StyleDashboardRegion>, noneList, ());
-    static bool noneListInitialized = false;
-
-    if (!noneListInitialized) {
-        StyleDashboardRegion region;
-        region.label = "";
-        region.offset.m_top  = Length();
-        region.offset.m_right = Length();
-        region.offset.m_bottom = Length();
-        region.offset.m_left = Length();
-        region.type = StyleDashboardRegion::None;
-        noneList.append(region);
-        noneListInitialized = true;
-    }
-    return noneList;
-}
-#endif
 
 void RenderStyle::adjustAnimations()
 {

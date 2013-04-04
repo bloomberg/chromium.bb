@@ -116,15 +116,11 @@ typedef unsigned MapCoordinatesFlags;
 
 const int caretWidth = 1;
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
 struct AnnotatedRegionValue {
     bool operator==(const AnnotatedRegionValue& o) const
     {
-#if ENABLE(DASHBOARD_SUPPORT)
-        return type == o.type && bounds == o.bounds && clip == o.clip && label == o.label;
-#else // ENABLE(DRAGGABLE_REGION)
         return draggable == o.draggable && bounds == o.bounds;
-#endif
     }
     bool operator!=(const AnnotatedRegionValue& o) const
     {
@@ -132,13 +128,7 @@ struct AnnotatedRegionValue {
     }
 
     LayoutRect bounds;
-#if ENABLE(DASHBOARD_SUPPORT)
-    String label;
-    LayoutRect clip;
-    int type;
-#else // ENABLE(DRAGGABLE_REGION)
     bool draggable;
-#endif
 };
 #endif
 
@@ -722,7 +712,7 @@ public:
     // repaint and do not need a relayout
     virtual void updateFromElement() { }
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&);
     void collectAnnotatedRegions(Vector<AnnotatedRegionValue>&);
 #endif

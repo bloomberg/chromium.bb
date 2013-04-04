@@ -53,7 +53,6 @@ javaScriptCanOpenWindowsAutomatically initial=false
 supportsMultipleWindows initial=true
 javaScriptCanAccessClipboard initial=false
 shouldPrintBackgrounds initial=false
-usesDashboardBackwardCompatibilityMode initial=false, conditional=DASHBOARD_SUPPORT
 
 screenFontSubstitutionEnabled initial=true, setNeedsStyleRecalcInAllFrames=1
 textAreasAreResizable initial=false, setNeedsStyleRecalcInAllFrames=1

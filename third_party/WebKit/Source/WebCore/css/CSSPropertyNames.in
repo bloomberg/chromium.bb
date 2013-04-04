@@ -430,9 +430,6 @@ user-zoom
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
 -webkit-tap-highlight-color
 #endif
-#if defined(ENABLE_DASHBOARD_SUPPORT) && ENABLE_DASHBOARD_SUPPORT
--webkit-dashboard-region
-#endif
 #if defined(ENABLE_DRAGGABLE_REGION) && ENABLE_DRAGGABLE_REGION
 -webkit-app-region
 #endif

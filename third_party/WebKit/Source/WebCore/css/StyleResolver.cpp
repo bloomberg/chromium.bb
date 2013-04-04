@@ -144,10 +144,6 @@
 #include "WebKitCSSFilterValue.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT)
-#include "DashboardRegion.h"
-#endif
-
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"
 #include "CachedSVGDocumentReference.h"
@@ -2574,50 +2570,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         setFontDescription(fontDescription);
         return;
     }
-#if ENABLE(DASHBOARD_SUPPORT)
-    case CSSPropertyWebkitDashboardRegion:
-    {
-        HANDLE_INHERIT_AND_INITIAL(dashboardRegions, DashboardRegions)
-        if (!primitiveValue)
-            return;
-
-        if (primitiveValue->getIdent() == CSSValueNone) {
-            state.style()->setDashboardRegions(RenderStyle::noneDashboardRegions());
-            return;
-        }
-
-        DashboardRegion* region = primitiveValue->getDashboardRegionValue();
-        if (!region)
-            return;
-
-        DashboardRegion* first = region;
-        while (region) {
-            Length top = convertToIntLength(region->top(), state.style(), state.rootElementStyle());
-            Length right = convertToIntLength(region->right(), state.style(), state.rootElementStyle());
-            Length bottom = convertToIntLength(region->bottom(), state.style(), state.rootElementStyle());
-            Length left = convertToIntLength(region->left(), state.style(), state.rootElementStyle());
-
-            if (top.isUndefined())
-                top = Length();
-            if (right.isUndefined())
-                right = Length();
-            if (bottom.isUndefined())
-                bottom = Length();
-            if (left.isUndefined())
-                left = Length();
-
-            if (region->m_isCircle)
-                state.style()->setDashboardRegion(StyleDashboardRegion::Circle, region->m_label, top, right, bottom, left, region == first ? false : true);
-            else if (region->m_isRectangle)
-                state.style()->setDashboardRegion(StyleDashboardRegion::Rectangle, region->m_label, top, right, bottom, left, region == first ? false : true);
-            region = region->m_next.get();
-        }
-
-        state.document()->setHasAnnotatedRegions(true);
-
-        return;
-    }
-#endif
 #if ENABLE(DRAGGABLE_REGION)
     case CSSPropertyWebkitAppRegion: {
         if (!primitiveValue || !primitiveValue->getIdent())

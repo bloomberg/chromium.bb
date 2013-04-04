@@ -85,10 +85,6 @@
 #include "WebKitCSSFilterValue.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT)
-#include "DashboardRegion.h"
-#endif
-
 namespace WebCore {
 
 // List of all properties we know how to compute, omitting shorthands.
@@ -267,9 +263,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitColumnWidth,
 #if ENABLE(CURSOR_VISIBILITY)
     CSSPropertyWebkitCursorVisibility,
-#endif
-#if ENABLE(DASHBOARD_SUPPORT)
-    CSSPropertyWebkitDashboardRegion,
 #endif
 #if ENABLE(CSS_FILTERS)
     CSSPropertyWebkitFilter,
@@ -2309,38 +2302,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (style->boxSizing() == CONTENT_BOX)
                 return cssValuePool().createIdentifierValue(CSSValueContentBox);
             return cssValuePool().createIdentifierValue(CSSValueBorderBox);
-#if ENABLE(DASHBOARD_SUPPORT)
-        case CSSPropertyWebkitDashboardRegion:
-        {
-            const Vector<StyleDashboardRegion>& regions = style->dashboardRegions();
-            unsigned count = regions.size();
-            if (count == 1 && regions[0].type == StyleDashboardRegion::None)
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-
-            RefPtr<DashboardRegion> firstRegion;
-            DashboardRegion* previousRegion = 0;
-            for (unsigned i = 0; i < count; i++) {
-                RefPtr<DashboardRegion> region = DashboardRegion::create();
-                StyleDashboardRegion styleRegion = regions[i];
-
-                region->m_label = styleRegion.label;
-                LengthBox offset = styleRegion.offset;
-                region->setTop(zoomAdjustedPixelValue(offset.top().value(), style.get()));
-                region->setRight(zoomAdjustedPixelValue(offset.right().value(), style.get()));
-                region->setBottom(zoomAdjustedPixelValue(offset.bottom().value(), style.get()));
-                region->setLeft(zoomAdjustedPixelValue(offset.left().value(), style.get()));
-                region->m_isRectangle = (styleRegion.type == StyleDashboardRegion::Rectangle);
-                region->m_isCircle = (styleRegion.type == StyleDashboardRegion::Circle);
-
-                if (previousRegion)
-                    previousRegion->m_next = region;
-                else
-                    firstRegion = region;
-                previousRegion = region.get();
-            }
-            return cssValuePool().createValue(firstRegion.release());
-        }
-#endif
 #if ENABLE(DRAGGABLE_REGION)
         case CSSPropertyWebkitAppRegion:
             return cssValuePool().createIdentifierValue(style->getDraggableRegionMode() == DraggableRegionDrag ? CSSValueDrag : CSSValueNoDrag);

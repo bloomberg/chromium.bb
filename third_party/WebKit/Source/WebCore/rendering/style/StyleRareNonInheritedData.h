@@ -58,10 +58,6 @@ class StyleTransformData;
 class ContentData;
 struct LengthSize;
 
-#if ENABLE(DASHBOARD_SUPPORT)
-struct StyleDashboardRegion;
-#endif
-
 // Page size type.
 // StyleRareNonInheritedData::m_pageSize is meaningful only when 
 // StyleRareNonInheritedData::m_pageSizeType is PAGE_SIZE_RESOLVED.
@@ -103,9 +99,6 @@ public:
     Length m_perspectiveOriginY;
 
     LineClampValue lineClamp; // An Apple extension.
-#if ENABLE(DASHBOARD_SUPPORT)
-    Vector<StyleDashboardRegion> m_dashboardRegions;
-#endif
 #if ENABLE(DRAGGABLE_REGION)
     DraggableRegionMode m_draggableRegionMode;
 #endif

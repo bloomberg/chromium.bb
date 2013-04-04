@@ -110,10 +110,6 @@
 #include "WebKitCSSShaderValue.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT)
-#include "DashboardRegion.h"
-#endif
-
 #define YYDEBUG 0
 
 #if YYDEBUG > 0
@@ -2763,12 +2759,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-#if ENABLE(DASHBOARD_SUPPORT)
-    case CSSPropertyWebkitDashboardRegion: // <dashboard-region> | <dashboard-region>
-        if (value->unit == CSSParserValue::Function || id == CSSValueNone)
-            return parseDashboardRegions(propId, important);
-        break;
-#endif
     // End Apple-specific properties
 
 #if ENABLE(DRAGGABLE_REGION)
@@ -4813,147 +4803,6 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* curren
 
     return createPrimitiveNumericValue(currentValue);
 }
-
-#if ENABLE(DASHBOARD_SUPPORT)
-
-#define DASHBOARD_REGION_NUM_PARAMETERS  6
-#define DASHBOARD_REGION_SHORT_NUM_PARAMETERS  2
-
-static CSSParserValue* skipCommaInDashboardRegion(CSSParserValueList *args)
-{
-    if (args->size() == (DASHBOARD_REGION_NUM_PARAMETERS*2-1) ||
-         args->size() == (DASHBOARD_REGION_SHORT_NUM_PARAMETERS*2-1)) {
-        CSSParserValue* current = args->current();
-        if (current->unit == CSSParserValue::Operator && current->iValue == ',')
-            return args->next();
-    }
-    return args->current();
-}
-
-bool CSSParser::parseDashboardRegions(CSSPropertyID propId, bool important)
-{
-    bool valid = true;
-
-    CSSParserValue* value = m_valueList->current();
-
-    if (value->id == CSSValueNone) {
-        if (m_valueList->next())
-            return false;
-        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
-        return valid;
-    }
-
-    RefPtr<DashboardRegion> firstRegion = DashboardRegion::create();
-    DashboardRegion* region = 0;
-
-    while (value) {
-        if (region == 0) {
-            region = firstRegion.get();
-        } else {
-            RefPtr<DashboardRegion> nextRegion = DashboardRegion::create();
-            region->m_next = nextRegion;
-            region = nextRegion.get();
-        }
-
-        if (value->unit != CSSParserValue::Function) {
-            valid = false;
-            break;
-        }
-
-        // Commas count as values, so allow (function name is dashboard-region for DASHBOARD_SUPPORT feature):
-        // dashboard-region(label, type, t, r, b, l) or dashboard-region(label type t r b l)
-        // dashboard-region(label, type, t, r, b, l) or dashboard-region(label type t r b l)
-        // also allow
-        // dashboard-region(label, type) or dashboard-region(label type)
-        // dashboard-region(label, type) or dashboard-region(label type)
-        CSSParserValueList* args = value->function->args.get();
-        if (!equalIgnoringCase(value->function->name, "dashboard-region(") || !args) {
-            valid = false;
-            break;
-        }
-
-        int numArgs = args->size();
-        if ((numArgs != DASHBOARD_REGION_NUM_PARAMETERS && numArgs != (DASHBOARD_REGION_NUM_PARAMETERS*2-1)) &&
-            (numArgs != DASHBOARD_REGION_SHORT_NUM_PARAMETERS && numArgs != (DASHBOARD_REGION_SHORT_NUM_PARAMETERS*2-1))) {
-            valid = false;
-            break;
-        }
-
-        // First arg is a label.
-        CSSParserValue* arg = args->current();
-        if (arg->unit != CSSPrimitiveValue::CSS_IDENT) {
-            valid = false;
-            break;
-        }
-
-        region->m_label = arg->string;
-
-        // Second arg is a type.
-        arg = args->next();
-        arg = skipCommaInDashboardRegion(args);
-        if (arg->unit != CSSPrimitiveValue::CSS_IDENT) {
-            valid = false;
-            break;
-        }
-
-        if (equalIgnoringCase(arg, "circle"))
-            region->m_isCircle = true;
-        else if (equalIgnoringCase(arg, "rectangle"))
-            region->m_isRectangle = true;
-        else {
-            valid = false;
-            break;
-        }
-
-        region->m_geometryType = arg->string;
-
-        if (numArgs == DASHBOARD_REGION_SHORT_NUM_PARAMETERS || numArgs == (DASHBOARD_REGION_SHORT_NUM_PARAMETERS*2-1)) {
-            // This originally used CSSValueInvalid by accident. It might be more logical to use something else.
-            RefPtr<CSSPrimitiveValue> amount = cssValuePool().createIdentifierValue(CSSValueInvalid);
-
-            region->setTop(amount);
-            region->setRight(amount);
-            region->setBottom(amount);
-            region->setLeft(amount);
-        } else {
-            // Next four arguments must be offset numbers
-            int i;
-            for (i = 0; i < 4; i++) {
-                arg = args->next();
-                arg = skipCommaInDashboardRegion(args);
-
-                valid = arg->id == CSSValueAuto || validUnit(arg, FLength);
-                if (!valid)
-                    break;
-
-                RefPtr<CSSPrimitiveValue> amount = arg->id == CSSValueAuto ?
-                    cssValuePool().createIdentifierValue(CSSValueAuto) :
-                    createPrimitiveNumericValue(arg);
-
-                if (i == 0)
-                    region->setTop(amount);
-                else if (i == 1)
-                    region->setRight(amount);
-                else if (i == 2)
-                    region->setBottom(amount);
-                else
-                    region->setLeft(amount);
-            }
-        }
-
-        if (args->next())
-            return false;
-
-        value = m_valueList->next();
-    }
-
-    if (valid)
-        addProperty(propId, cssValuePool().createValue(firstRegion.release()), important);
-
-    return valid;
-}
-
-#endif /* ENABLE(DASHBOARD_SUPPORT) */
 
 PassRefPtr<CSSValue> CSSParser::parseCounterContent(CSSParserValueList* args, bool counters)
 {

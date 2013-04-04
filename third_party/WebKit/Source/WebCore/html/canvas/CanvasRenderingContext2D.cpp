@@ -124,18 +124,12 @@ private:
     CanvasRenderingContext2D* m_canvasContext;
 };
 
-CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode, bool usesDashboardCompatibilityMode)
+CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
     , m_stateStack(1)
     , m_unrealizedSaveCount(0)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
-#if ENABLE(DASHBOARD_SUPPORT)
-    , m_usesDashboardCompatibilityMode(usesDashboardCompatibilityMode)
-#endif
 {
-#if !ENABLE(DASHBOARD_SUPPORT)
-    ASSERT_UNUSED(usesDashboardCompatibilityMode, !usesDashboardCompatibilityMode);
-#endif
 }
 
 void CanvasRenderingContext2D::unwindStateStack()
@@ -895,14 +889,6 @@ static bool validateRectForCanvas(float& x, float& y, float& width, float& heigh
     return true;
 }
 
-#if ENABLE(DASHBOARD_SUPPORT)
-void CanvasRenderingContext2D::clearPathForDashboardBackwardCompatibilityMode()
-{
-    if (m_usesDashboardCompatibilityMode)
-        m_path.clear();
-}
-#endif
-
 static bool isFullCanvasCompositeMode(CompositeOperator op)
 {
     // See 4.8.11.1.3 Compositing
@@ -957,10 +943,6 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
         
         c->setFillRule(windRule);
     }
-
-#if ENABLE(DASHBOARD_SUPPORT)
-    clearPathForDashboardBackwardCompatibilityMode();
-#endif
 }
 
 void CanvasRenderingContext2D::stroke()
@@ -983,10 +965,6 @@ void CanvasRenderingContext2D::stroke()
         c->strokePath(m_path);
         didDraw(dirtyRect);
     }
-
-#if ENABLE(DASHBOARD_SUPPORT)
-    clearPathForDashboardBackwardCompatibilityMode();
-#endif
 }
 
 void CanvasRenderingContext2D::clip(const String& windingRuleString)
@@ -1003,10 +981,6 @@ void CanvasRenderingContext2D::clip(const String& windingRuleString)
 
     realizeSaves();
     c->canvasClip(m_path, newWindRule);
-    
-#if ENABLE(DASHBOARD_SUPPORT)
-    clearPathForDashboardBackwardCompatibilityMode();
-#endif
 }
 
 bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const String& windingRuleString)
@@ -1668,16 +1642,6 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const 
     compositeBuffer(buffer.get(), bufferRect, state().m_globalComposite);
 }
 
-void CanvasRenderingContext2D::prepareGradientForDashboard(CanvasGradient* gradient) const
-{
-#if ENABLE(DASHBOARD_SUPPORT)
-    if (m_usesDashboardCompatibilityMode)
-        gradient->setDashboardCompatibilityMode();
-#else
-    UNUSED_PARAM(gradient);
-#endif
-}
-
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionCode& ec)
 {
     if (!std::isfinite(x0) || !std::isfinite(y0) || !std::isfinite(x1) || !std::isfinite(y1)) {
@@ -1686,7 +1650,6 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float 
     }
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
-    prepareGradientForDashboard(gradient.get());
     return gradient.release();
 }
 
@@ -1703,7 +1666,6 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float 
     }
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
-    prepareGradientForDashboard(gradient.get());
     return gradient.release();
 }
 

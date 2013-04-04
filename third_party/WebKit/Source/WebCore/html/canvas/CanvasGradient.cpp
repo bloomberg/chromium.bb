@@ -36,17 +36,11 @@ namespace WebCore {
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0, const FloatPoint& p1)
     : m_gradient(Gradient::create(p0, p1))
-#if ENABLE(DASHBOARD_SUPPORT)
-    , m_dashbardCompatibilityMode(false)
-#endif
 {
 }
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1)
     : m_gradient(Gradient::create(p0, r0, p1, r1))
-#if ENABLE(DASHBOARD_SUPPORT)
-    , m_dashbardCompatibilityMode(false)
-#endif
 {
 }
 
@@ -59,12 +53,7 @@ void CanvasGradient::addColorStop(float value, const String& color, ExceptionCod
 
     RGBA32 rgba = 0;
     if (!parseColorOrCurrentColor(rgba, color, 0 /*canvas*/)) {
-#if ENABLE(DASHBOARD_SUPPORT)
-        if (!m_dashbardCompatibilityMode)
-            ec = SYNTAX_ERR;
-#else
         ec = SYNTAX_ERR;
-#endif
         return;
     }
 

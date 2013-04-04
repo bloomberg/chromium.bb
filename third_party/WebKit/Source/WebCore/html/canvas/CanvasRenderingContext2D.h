@@ -64,9 +64,9 @@ typedef int ExceptionCode;
 
 class CanvasRenderingContext2D : public CanvasRenderingContext, public CanvasPathMethods {
 public:
-    static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode, bool usesDashboardCompatibilityMode)
+    static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode)
     {
-        return adoptPtr(new CanvasRenderingContext2D(canvas, usesCSSCompatibilityParseMode, usesDashboardCompatibilityMode));
+        return adoptPtr(new CanvasRenderingContext2D(canvas, usesCSSCompatibilityParseMode));
     }
     virtual ~CanvasRenderingContext2D();
 
@@ -275,7 +275,7 @@ private:
         CanvasDidDrawApplyAll = 0xffffffff
     };
 
-    CanvasRenderingContext2D(HTMLCanvasElement*, bool usesCSSCompatibilityParseMode, bool usesDashboardCompatibilityMode);
+    CanvasRenderingContext2D(HTMLCanvasElement*, bool usesCSSCompatibilityParseMode);
 
     State& modifiableState() { ASSERT(!m_unrealizedSaveCount); return m_stateStack.last(); }
     const State& state() const { return m_stateStack.last(); }
@@ -305,10 +305,6 @@ private:
 
     const Font& accessFont();
 
-#if ENABLE(DASHBOARD_SUPPORT)
-    void clearPathForDashboardBackwardCompatibilityMode();
-#endif
-
     void clearCanvas();
     Path transformAreaToDevice(const Path&) const;
     Path transformAreaToDevice(const FloatRect&) const;
@@ -322,8 +318,6 @@ private:
 
     template<class T> void fullCanvasCompositedFill(const T&);
     template<class T> void fullCanvasCompositedDrawImage(T*, ColorSpace, const FloatRect&, const FloatRect&, CompositeOperator);
-
-    void prepareGradientForDashboard(CanvasGradient* gradient) const;
 
     PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionCode&) const;
     void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);
@@ -340,9 +334,6 @@ private:
     Vector<State, 1> m_stateStack;
     unsigned m_unrealizedSaveCount;
     bool m_usesCSSCompatibilityParseMode;
-#if ENABLE(DASHBOARD_SUPPORT)
-    bool m_usesDashboardCompatibilityMode;
-#endif
 };
 
 } // namespace WebCore

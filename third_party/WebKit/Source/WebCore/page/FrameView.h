@@ -240,7 +240,7 @@ public:
     void endDisableRepaints();
     bool repaintsDisabled() { return m_disableRepaints > 0; }
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
     void updateAnnotatedRegions();
 #endif
     void updateControlTints();

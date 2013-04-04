@@ -861,7 +861,7 @@ print F <<END
 #include "CustomElementRegistry.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(VIDEO)
+#if ENABLE(VIDEO)
 #include "Document.h"
 #include "Settings.h"
 #endif
@@ -920,18 +920,6 @@ print F <<END
 
 END
 ;
-
-if ($parameters{namespace} ne "HTML" and $parameters{namespace} ne "SVG") {
-print F <<END
-#if ENABLE(DASHBOARD_SUPPORT)
-    Settings* settings = document->settings();
-    if (settings && settings->usesDashboardBackwardCompatibilityMode())
-        return 0;
-#endif
-END
-;
-
-}
 
 print F <<END
 #if ENABLE(CUSTOM_ELEMENTS)

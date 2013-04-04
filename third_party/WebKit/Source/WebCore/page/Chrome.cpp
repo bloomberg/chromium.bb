@@ -521,7 +521,7 @@ void Chrome::scheduleAnimation()
 
 // --------
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
 void ChromeClient::annotatedRegionsChanged()
 {
 }

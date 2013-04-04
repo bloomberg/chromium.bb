@@ -167,8 +167,6 @@ public:
     PassRefPtr<CSSPrimitiveValue> parseGridTrackSize();
     PassRefPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
 
-    bool parseDashboardRegions(CSSPropertyID, bool important);
-
     bool parseClipShape(CSSPropertyID, bool important);
 
     bool parseBasicShape(CSSPropertyID, bool important);

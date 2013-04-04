@@ -114,15 +114,6 @@ bool HTMLElement::ieForbidsInsertHTML() const
         || hasLocalName(sourceTag)
         || hasLocalName(wbrTag))
         return true;
-    // FIXME: I'm not sure why dashboard mode would want to change the
-    // serialization of <canvas>, that seems like a bad idea.
-#if ENABLE(DASHBOARD_SUPPORT)
-    if (hasLocalName(canvasTag)) {
-        Settings* settings = document()->settings();
-        if (settings && settings->usesDashboardBackwardCompatibilityMode())
-            return true;
-    }
-#endif
     return false;
 }
 

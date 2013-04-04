@@ -881,7 +881,7 @@ void RenderListBox::setHasVerticalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
+#if ENABLE(DRAGGABLE_REGION)
     if (document()->hasAnnotatedRegions())
         document()->setAnnotatedRegionsDirty(true);
 #endif

@@ -1650,7 +1650,6 @@
             'css/Counter.h',
             'css/DOMWindowCSS.cpp',
             'css/DOMWindowCSS.h',
-            'css/DashboardRegion.h',
             'css/DocumentRuleSets.cpp',
             'css/DocumentRuleSets.h',
             'css/ElementRuleCollector.cpp',
