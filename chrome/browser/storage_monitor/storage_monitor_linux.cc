@@ -198,7 +198,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
   if (is_removable) {
-    if (MediaStorageUtil::HasDcim(mount_point.value()))
+    if (MediaStorageUtil::HasDcim(mount_point))
       type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
     else
       type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;

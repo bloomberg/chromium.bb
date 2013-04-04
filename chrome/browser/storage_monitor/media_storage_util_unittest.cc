@@ -38,7 +38,7 @@ class MediaStorageUtilTest : public testing::Test {
   virtual ~MediaStorageUtilTest() { }
 
   // Verify mounted device type.
-  void CheckDeviceType(const base::FilePath::StringType& mount_point,
+  void CheckDeviceType(const base::FilePath& mount_point,
                        bool expected_val) {
     if (expected_val)
       EXPECT_TRUE(MediaStorageUtil::HasDcim(mount_point));
@@ -102,7 +102,7 @@ TEST_F(MediaStorageUtilTest, MediaDeviceAttached) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaStorageUtilTest::CheckDeviceType,
-                 base::Unretained(this), mount_point.value(), true));
+                 base::Unretained(this), mount_point, true));
   message_loop_.RunUntilIdle();
 }
 
@@ -114,7 +114,7 @@ TEST_F(MediaStorageUtilTest, NonMediaDeviceAttached) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaStorageUtilTest::CheckDeviceType,
-                 base::Unretained(this), mount_point.value(), false));
+                 base::Unretained(this), mount_point, false));
   message_loop_.RunUntilIdle();
 }
 

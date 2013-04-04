@@ -272,7 +272,8 @@ void StorageMonitorCros::CheckMountedPathOnFileThread(
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  bool has_dcim = chrome::MediaStorageUtil::HasDcim(mount_info.mount_path);
+  bool has_dcim =
+      chrome::MediaStorageUtil::HasDcim(base::FilePath(mount_info.mount_path));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

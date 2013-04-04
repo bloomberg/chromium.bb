@@ -43,7 +43,7 @@ class MediaStorageUtil {
   // Mac OS X behaves similarly, but this is not the only heuristic it uses.
   // TODO(vandebo) Try to figure out how Mac OS X decides this, and rename
   // if additional OS X heuristic is implemented.
-  static bool HasDcim(const base::FilePath::StringType& mount_point);
+  static bool HasDcim(const base::FilePath& mount_point);
 
   // Constructs the device product name from |vendor_name| and |model_name|.
   static string16 GetFullProductName(const std::string& vendor_name,

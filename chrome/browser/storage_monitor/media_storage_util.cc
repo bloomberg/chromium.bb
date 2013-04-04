@@ -128,15 +128,14 @@ string16 GetDisplayNameForSubFolder(const string16& device_name,
 }  // namespace
 
 // static
-bool MediaStorageUtil::HasDcim(const base::FilePath::StringType& mount_point) {
+bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  base::FilePath dcim_path(mount_point);
   base::FilePath::StringType dcim_dir(kDCIMDirectoryName);
-  if (!file_util::DirectoryExists(dcim_path.Append(dcim_dir))) {
+  if (!file_util::DirectoryExists(mount_point.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.
     base::FilePath dcim_path_lower(
-        dcim_path.Append(StringToLowerASCII(dcim_dir)));
+        mount_point.Append(StringToLowerASCII(dcim_dir)));
     if (!file_util::DirectoryExists(dcim_path_lower))
       return false;
   }

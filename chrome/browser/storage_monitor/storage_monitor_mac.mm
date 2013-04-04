@@ -103,7 +103,7 @@ StorageInfo BuildStorageInfo(
   bool is_removable = is_removable_ref && CFBooleanGetValue(is_removable_ref);
   // Checking for DCIM only matters on removable devices.
   bool has_dcim = is_removable &&
-                  MediaStorageUtil::HasDcim(info.location);
+                  MediaStorageUtil::HasDcim(base::FilePath(info.location));
   MediaStorageUtil::Type device_type = GetDeviceType(is_removable, has_dcim);
   if (!unique_id.empty())
     info.device_id = MediaStorageUtil::MakeDeviceId(device_type,

@@ -254,7 +254,7 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
 
   chrome::MediaStorageUtil::Type type =
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-  if (MediaStorageUtil::HasDcim(device_path.value()))
+  if (MediaStorageUtil::HasDcim(device_path))
     type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   std::string device_id =
       chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
