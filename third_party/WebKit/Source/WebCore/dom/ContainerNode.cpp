@@ -28,9 +28,6 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "ContainerNodeAlgorithms.h"
-#if ENABLE(DELETION_UI)
-#include "DeleteButtonController.h"
-#endif
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "FloatRect.h"
@@ -843,19 +840,9 @@ void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int chil
 
 void ContainerNode::cloneChildNodes(ContainerNode *clone)
 {
-#if ENABLE(DELETION_UI)
-    HTMLElement* deleteButtonContainerElement = 0;
-    if (Frame* frame = document()->frame())
-        deleteButtonContainerElement = frame->editor()->deleteButtonController()->containerElement();
-#endif
     ExceptionCode ec = 0;
-    for (Node* n = firstChild(); n && !ec; n = n->nextSibling()) {
-#if ENABLE(DELETION_UI)
-        if (n == deleteButtonContainerElement)
-            continue;
-#endif
+    for (Node* n = firstChild(); n && !ec; n = n->nextSibling())
         clone->appendChild(n->cloneNode(true), ec);
-    }
 }
 
 bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const

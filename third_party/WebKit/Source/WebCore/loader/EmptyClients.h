@@ -498,10 +498,6 @@ public:
     virtual void toggleAutomaticSpellingCorrection() { }
 #endif
 
-#if ENABLE(DELETION_UI)
-    virtual bool shouldShowDeleteInterface(HTMLElement*) { return false; }
-#endif
-
 #if PLATFORM(GTK)
     virtual bool shouldShowUnicodeMenu() { return false; }
 #endif

@@ -111,22 +111,19 @@ MarkupAccumulator::~MarkupAccumulator()
 {
 }
 
-String MarkupAccumulator::serializeNodes(Node* targetNode, Node* nodeToSkip, EChildrenOnly childrenOnly)
+String MarkupAccumulator::serializeNodes(Node* targetNode, EChildrenOnly childrenOnly)
 {
-    return serializeNodes(targetNode, nodeToSkip, childrenOnly, 0);
+    return serializeNodes(targetNode, childrenOnly, 0);
 }
 
-String MarkupAccumulator::serializeNodes(Node* targetNode, Node* nodeToSkip, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
+String MarkupAccumulator::serializeNodes(Node* targetNode, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
 {
-    serializeNodesWithNamespaces(targetNode, nodeToSkip, childrenOnly, 0, tagNamesToSkip);
+    serializeNodesWithNamespaces(targetNode, childrenOnly, 0, tagNamesToSkip);
     return m_markup.toString();
 }
 
-void MarkupAccumulator::serializeNodesWithNamespaces(Node* targetNode, Node* nodeToSkip, EChildrenOnly childrenOnly, const Namespaces* namespaces, Vector<QualifiedName>* tagNamesToSkip)
+void MarkupAccumulator::serializeNodesWithNamespaces(Node* targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces, Vector<QualifiedName>* tagNamesToSkip)
 {
-    if (targetNode == nodeToSkip)
-        return;
-    
     if (tagNamesToSkip) {
         for (size_t i = 0; i < tagNamesToSkip->size(); ++i) {
             if (targetNode->hasTagName(tagNamesToSkip->at(i)))
@@ -148,7 +145,7 @@ void MarkupAccumulator::serializeNodesWithNamespaces(Node* targetNode, Node* nod
         Node* current = targetNode->firstChild();
 #endif
         for ( ; current; current = current->nextSibling())
-            serializeNodesWithNamespaces(current, nodeToSkip, IncludeNode, &namespaceHash, tagNamesToSkip);
+            serializeNodesWithNamespaces(current, IncludeNode, &namespaceHash, tagNamesToSkip);
     }
 
     if (!childrenOnly)

@@ -39,9 +39,6 @@
 #include "CSSValueKeywords.h"
 #include "ChildListMutationScope.h"
 #include "ContextFeatures.h"
-#if ENABLE(DELETION_UI)
-#include "DeleteButtonController.h"
-#endif
 #include "DocumentFragment.h"
 #include "DocumentType.h"
 #include "Editor.h"
@@ -650,21 +647,6 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
 
     const Range* updatedRange = range;
 
-#if ENABLE(DELETION_UI)
-    // Disable the delete button so it's elements are not serialized into the markup,
-    // but make sure neither endpoint is inside the delete user interface.
-    Frame* frame = document->frame();
-    DeleteButtonControllerDisableScope deleteButtonControllerDisableScope(frame);
-
-    RefPtr<Range> updatedRangeRef;
-    if (frame) {
-        updatedRangeRef = frame->editor()->avoidIntersectionWithDeleteButtonController(range);
-        updatedRange = updatedRangeRef.get();
-        if (!updatedRange)
-            return emptyString();
-    }
-#endif
-
     return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs);
 }
 
@@ -769,16 +751,8 @@ String createMarkup(const Node* node, EChildrenOnly childrenOnly, Vector<Node*>*
     if (!node)
         return "";
 
-    HTMLElement* deleteButtonContainerElement = 0;
-#if ENABLE(DELETION_UI)
-    if (Frame* frame = node->document()->frame()) {
-        deleteButtonContainerElement = frame->editor()->deleteButtonController()->containerElement();
-        if (node->isDescendantOf(deleteButtonContainerElement))
-            return "";
-    }
-#endif
     MarkupAccumulator accumulator(nodes, shouldResolveURLs);
-    return accumulator.serializeNodes(const_cast<Node*>(node), deleteButtonContainerElement, childrenOnly, tagNamesToSkip);
+    return accumulator.serializeNodes(const_cast<Node*>(node), childrenOnly, tagNamesToSkip);
 }
 
 static void fillContainerFromString(ContainerNode* paragraph, const String& string)
@@ -911,11 +885,6 @@ PassRefPtr<DocumentFragment> createFragmentFromNodes(Document *document, const V
 {
     if (!document)
         return 0;
-
-#if ENABLE(DELETION_UI)
-    // disable the delete button so it's elements are not serialized into the markup
-    DeleteButtonControllerDisableScope(document->frame());
-#endif
 
     RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
 

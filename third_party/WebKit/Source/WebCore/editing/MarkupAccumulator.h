@@ -69,8 +69,8 @@ public:
     MarkupAccumulator(Vector<Node*>*, EAbsoluteURLs, const Range* = 0);
     virtual ~MarkupAccumulator();
 
-    String serializeNodes(Node* targetNode, Node* nodeToSkip, EChildrenOnly);
-    String serializeNodes(Node* targetNode, Node* nodeToSkip, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip);
+    String serializeNodes(Node* targetNode, EChildrenOnly);
+    String serializeNodes(Node* targetNode, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip);
 
     static void appendComment(StringBuilder&, const String&);
 
@@ -110,7 +110,7 @@ protected:
 private:
     String resolveURLIfNeeded(const Element*, const String&) const;
     void appendQuotedURLAttributeValue(StringBuilder&, const Element*, const Attribute&);
-    void serializeNodesWithNamespaces(Node* targetNode, Node* nodeToSkip, EChildrenOnly, const Namespaces*, Vector<QualifiedName>* tagNamesToSkip);
+    void serializeNodesWithNamespaces(Node* targetNode, EChildrenOnly, const Namespaces*, Vector<QualifiedName>* tagNamesToSkip);
 
     StringBuilder m_markup;
     const EAbsoluteURLs m_resolveURLsMethod;

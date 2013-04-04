@@ -28,9 +28,6 @@
 
 #include "AppendNodeCommand.h"
 #include "ApplyStyleCommand.h"
-#if ENABLE(DELETION_UI)
-#include "DeleteButtonController.h"
-#endif
 #include "DeleteFromTextNodeCommand.h"
 #include "DeleteSelectionCommand.h"
 #include "Document.h"
@@ -104,10 +101,6 @@ void EditCommandComposition::unapply()
     m_document->updateLayoutIgnorePendingStylesheets();
 
     {
-#if ENABLE(DELETION_UI)
-        DeleteButtonControllerDisableScope deleteButtonControllerDisableScope(frame.get());
-#endif
-
         size_t size = m_commands.size();
         for (size_t i = size; i; --i)
             m_commands[i - 1]->doUnapply();
@@ -128,9 +121,6 @@ void EditCommandComposition::reapply()
     m_document->updateLayoutIgnorePendingStylesheets();
 
     {
-#if ENABLE(DELETION_UI)
-        DeleteButtonControllerDisableScope deleteButtonControllerDisableScope(frame.get());
-#endif
         size_t size = m_commands.size();
         for (size_t i = 0; i != size; ++i)
             m_commands[i]->doReapply();
@@ -208,9 +198,6 @@ void CompositeEditCommand::apply()
     ASSERT(frame);
     {
         EventQueueScope scope;
-#if ENABLE(DELETION_UI)
-        DeleteButtonControllerDisableScope deleteButtonControllerDisableScope(frame);
-#endif
         doApply();
     }
 

@@ -38,9 +38,6 @@
 #include "ClipboardEvent.h"
 #include "CompositionEvent.h"
 #include "CreateLinkCommand.h"
-#if ENABLE(DELETION_UI)
-#include "DeleteButtonController.h"
-#endif
 #include "DeleteSelectionCommand.h"
 #include "DictationAlternative.h"
 #include "DictationCommand.h"
@@ -104,65 +101,6 @@ using namespace std;
 using namespace HTMLNames;
 using namespace WTF;
 using namespace Unicode;
-
-#if ENABLE(DELETION_UI)
-PassRefPtr<Range> Editor::avoidIntersectionWithDeleteButtonController(const Range* range) const
-{
-    DeleteButtonController* controller = deleteButtonController();
-    if (!range || !controller)
-        return 0;
-
-    Document* document = range->ownerDocument();
-
-    Node* startContainer = range->startContainer();
-    int startOffset = range->startOffset();
-    Node* endContainer = range->endContainer();
-    int endOffset = range->endOffset();
-
-    if (!startContainer)
-        return 0;
-
-    ASSERT(endContainer);
-
-    Element* element = controller->containerElement();
-    if (startContainer == element || startContainer->isDescendantOf(element)) {
-        ASSERT(element->parentNode());
-        startContainer = element->parentNode();
-        startOffset = element->nodeIndex();
-    }
-    if (endContainer == element || endContainer->isDescendantOf(element)) {
-        ASSERT(element->parentNode());
-        endContainer = element->parentNode();
-        endOffset = element->nodeIndex();
-    }
-
-    return Range::create(document, startContainer, startOffset, endContainer, endOffset);
-}
-
-VisibleSelection Editor::avoidIntersectionWithDeleteButtonController(const VisibleSelection& selection) const
-{
-    DeleteButtonController* controller = deleteButtonController();
-    if (selection.isNone() || !controller)
-        return selection;
-
-    Element* element = controller->containerElement();
-    if (!element)
-        return selection;
-    VisibleSelection updatedSelection = selection;
-
-    Position updatedBase = selection.base();
-    updatePositionForNodeRemoval(updatedBase, element);
-    if (updatedBase != selection.base())
-        updatedSelection.setBase(updatedBase);
-
-    Position updatedExtent = selection.extent();
-    updatePositionForNodeRemoval(updatedExtent, element);
-    if (updatedExtent != selection.extent())
-        updatedSelection.setExtent(updatedExtent);
-
-    return updatedSelection;
-}
-#endif
 
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
@@ -539,9 +477,6 @@ void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelec
     if (client())
         client()->respondToChangedSelection(m_frame);
     setStartNewKillRingSequence(true);
-#if ENABLE(DELETION_UI)
-    m_deleteButtonController->respondToChangedSelection(oldSelection);
-#endif
     m_alternativeTextController->respondToChangedSelection(oldSelection, options);
 }
 
@@ -907,9 +842,6 @@ Editor::Editor(Frame* frame)
     , m_defaultParagraphSeparator(EditorParagraphSeparatorIsDiv)
     , m_overwriteModeEnabled(false)
 {
-#if ENABLE(DELETION_UI)
-    m_deleteButtonController = adoptPtr(new DeleteButtonController(frame));
-#endif
 }
 
 Editor::~Editor()
@@ -2449,7 +2381,7 @@ PassRefPtr<Range> Editor::rangeForPoint(const IntPoint& windowPoint)
     IntPoint framePoint = frameView->windowToContents(windowPoint);
     VisibleSelection selection(frame->visiblePositionForPoint(framePoint));
 
-    return avoidIntersectionWithDeleteButtonController(selection.toNormalizedRange().get());
+    return selection.toNormalizedRange().get();
 }
 
 void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
@@ -3074,13 +3006,6 @@ TextCheckingTypeMask Editor::resolveTextCheckingTypeMask(TextCheckingTypeMask te
 #endif
 
     return checkingTypes;
-}
-
-void Editor::deviceScaleFactorChanged()
-{
-#if ENABLE(DELETION_UI)
-    m_deleteButtonController->deviceScaleFactorChanged();
-#endif
 }
 
 bool Editor::unifiedTextCheckerEnabled() const
