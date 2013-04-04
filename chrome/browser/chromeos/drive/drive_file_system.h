@@ -166,9 +166,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // OnGetFileCompleteForOpen, during execution of OpenFile() method.
   struct GetFileCompleteForOpenParams;
 
-  // Defines set of parameters passed to intermediate callbacks during
-  // execution of GetFileByPath() method.
-  struct GetFileFromCacheParams;
+  // Defines set of parameters for GetResolvedFileByPath().
+  struct GetResolvedFileParams;
 
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
@@ -338,37 +337,31 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Gets the file at |file_path| from the cache (if found in the cache),
   // or the server (if not found in the cache) after the file info is
   // already resolved with GetEntryInfoByPath() or GetEntryInfoByResourceId().
-  // |get_file_callback| must not be null.
-  // |get_content_callback| may be null.
-  void GetResolvedFileByPath(
-      const base::FilePath& file_path,
-      const DriveClientContext& context,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback,
-      scoped_ptr<DriveEntryProto> entry_proto);
+  void GetResolvedFileByPath(scoped_ptr<GetResolvedFileParams> params);
+  void GetResolvedFileByPathAfterCreateDocumentJsonFile(
+      scoped_ptr<GetResolvedFileParams> params,
+      const base::FilePath* file_path,
+      DriveFileError error);
   void GetResolvedFileByPathAfterGetFileFromCache(
-      const GetFileFromCacheParams& params,
+      scoped_ptr<GetResolvedFileParams> params,
       DriveFileError error,
       const base::FilePath& cache_file_path);
   void GetResolvedFileByPathAfterGetResourceEntry(
-      const GetFileFromCacheParams& params,
+      scoped_ptr<GetResolvedFileParams> params,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> entry);
   void GetResolvedFileByPathAfterRefreshEntry(
-      const GetFileFromCacheParams& params,
-      int64 file_size,
+      scoped_ptr<GetResolvedFileParams> params,
       const GURL& download_url,
       DriveFileError error,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
   void GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
-      const GetFileFromCacheParams& params,
+      scoped_ptr<GetResolvedFileParams> params,
       const GURL& download_url,
-      const DriveClientContext& context,
-      const base::FilePath& cache_file_path,
       bool has_enough_space);
   void GetResolvedFileByPathAfterDownloadFile(
-      const GetFileFromCacheParams& params,
+      scoped_ptr<GetResolvedFileParams> params,
       google_apis::GDataErrorCode status,
       const base::FilePath& downloaded_file_path);
   void GetResolvedFileByPathAfterGetCacheEntryForCancel(
@@ -377,8 +370,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       bool success,
       const DriveCacheEntry& cache_entry);
   void GetResolvedFileByPathAfterFreeDiskSpace(
-      const GetFileFromCacheParams& params,
-      google_apis::GDataErrorCode status,
+      scoped_ptr<GetResolvedFileParams> params,
       const base::FilePath& downloaded_file_path,
       bool has_enough_space);
 

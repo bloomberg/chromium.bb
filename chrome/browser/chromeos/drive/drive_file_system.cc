@@ -52,18 +52,6 @@ const int kSlowPollingIntervalInSec = 300;
 
 //================================ Helper functions ============================
 
-// Runs GetFileCallback with pointers dereferenced.
-// Used for PostTaskAndReply().
-void RunGetFileCallbackHelper(const GetFileCallback& callback,
-                              base::FilePath* file_path,
-                              const std::string& mime_type,
-                              DriveFileType file_type,
-                              DriveFileError error) {
-  DCHECK(!callback.is_null());
-  DCHECK(file_path);
-  callback.Run(error, *file_path, mime_type, file_type);
-}
-
 // The class to wait for the drive service to be ready to start operation.
 class OperationReadinessObserver : public google_apis::DriveServiceObserver {
  public:
@@ -161,36 +149,50 @@ DriveFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
       md5(md5) {
 }
 
-// DriveFileSystem::GetFileFromCacheParams struct implementation.
-struct DriveFileSystem::GetFileFromCacheParams {
-  GetFileFromCacheParams(
-      const base::FilePath& virtual_file_path,
-      const base::FilePath& local_tmp_path,
-      const std::string& resource_id,
-      const std::string& md5,
-      const std::string& mime_type,
+// DriveFileSystem::GetResolvedFileParams struct implementation.
+struct DriveFileSystem::GetResolvedFileParams {
+  GetResolvedFileParams(
+      const base::FilePath& drive_file_path,
       const DriveClientContext& context,
+      scoped_ptr<DriveEntryProto> entry_proto,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback)
-      : virtual_file_path(virtual_file_path),
-        local_tmp_path(local_tmp_path),
-        resource_id(resource_id),
-        md5(md5),
-        mime_type(mime_type),
+      : drive_file_path(drive_file_path),
         context(context),
+        entry_proto(entry_proto.Pass()),
         get_file_callback(get_file_callback),
         get_content_callback(get_content_callback) {
+    DCHECK(!get_file_callback.is_null());
+    DCHECK(this->entry_proto);
   }
 
-  base::FilePath virtual_file_path;
-  base::FilePath local_tmp_path;
-  base::FilePath cache_file_path;
-  std::string resource_id;
-  std::string md5;
-  std::string mime_type;
-  DriveClientContext context;
-  GetFileCallback get_file_callback;
-  google_apis::GetContentCallback get_content_callback;
+  void OnError(DriveFileError error) {
+    get_file_callback.Run(
+        error, base::FilePath(), std::string(), REGULAR_FILE);
+  }
+
+  void OnCacheFound(const base::FilePath& local_file_path) {
+    if (entry_proto->file_specific_info().is_hosted_document()) {
+      get_file_callback.Run(
+          DRIVE_FILE_OK, local_file_path, kMimeTypeJson, HOSTED_DOCUMENT);
+    } else {
+      get_file_callback.Run(
+          DRIVE_FILE_OK, local_file_path,
+          entry_proto->file_specific_info().content_mime_type(), REGULAR_FILE);
+    }
+  }
+
+  void OnDownloadFileCompleted(const base::FilePath& downloaded_file_path) {
+    get_file_callback.Run(
+        DRIVE_FILE_OK, downloaded_file_path,
+        entry_proto->file_specific_info().content_mime_type(), REGULAR_FILE);
+  }
+
+  const base::FilePath drive_file_path;
+  const DriveClientContext context;
+  scoped_ptr<DriveEntryProto> entry_proto;
+  const GetFileCallback get_file_callback;
+  const google_apis::GetContentCallback get_content_callback;
 };
 
 // DriveFileSystem::AddUploadedFileParams implementation.
@@ -551,15 +553,16 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     callback.Run(error, base::FilePath(), std::string(), REGULAR_FILE);
     return;
   }
-  DCHECK(entry_proto.get());
+  DCHECK(entry_proto);
 
-  GetResolvedFileByPath(file_path,
-                        DriveClientContext(USER_INITIATED),
-                        callback,
-                        google_apis::GetContentCallback(),
-                        entry_proto.Pass());
+  GetResolvedFileByPath(
+      make_scoped_ptr(new GetResolvedFileParams(
+          file_path,
+          DriveClientContext(USER_INITIATED),
+          entry_proto.Pass(),
+          callback,
+          google_apis::GetContentCallback())));
 }
-
 
 void DriveFileSystem::GetFileByResourceId(
     const std::string& resource_id,
@@ -597,11 +600,13 @@ void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
     return;
   }
 
-  GetResolvedFileByPath(file_path,
-                        context,
-                        get_file_callback,
-                        get_content_callback,
-                        entry_proto.Pass());
+  GetResolvedFileByPath(
+      make_scoped_ptr(new GetResolvedFileParams(
+          file_path,
+          context,
+          entry_proto.Pass(),
+          get_file_callback,
+          get_content_callback)));
 }
 
 void DriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
@@ -782,20 +787,12 @@ void DriveFileSystem::ReadDirectoryByPathAfterRead(
 }
 
 void DriveFileSystem::GetResolvedFileByPath(
-    const base::FilePath& file_path,
-    const DriveClientContext& context,
-    const GetFileCallback& get_file_callback,
-    const google_apis::GetContentCallback& get_content_callback,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<GetResolvedFileParams> params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
-  DCHECK(entry_proto.get());
+  DCHECK(params);
 
-  if (!entry_proto->has_file_specific_info()) {
-    get_file_callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
-                          base::FilePath(),
-                          std::string(),
-                          REGULAR_FILE);
+  if (!params->entry_proto->has_file_specific_info()) {
+    params->OnError(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -803,63 +800,62 @@ void DriveFileSystem::GetResolvedFileByPath(
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  if (entry_proto->file_specific_info().is_hosted_document()) {
+  if (params->entry_proto->file_specific_info().is_hosted_document()) {
     base::FilePath* temp_file_path = new base::FilePath;
-    const std::string mime_type = kMimeTypeJson;
-    const DriveFileType file_type = HOSTED_DOCUMENT;
+    DriveEntryProto* entry_proto_ptr = params->entry_proto.get();
     base::PostTaskAndReplyWithResult(
         blocking_task_runner_,
         FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
                        DriveCache::CACHE_TYPE_TMP_DOCUMENTS),
-                   GURL(entry_proto->file_specific_info().alternate_url()),
-                   entry_proto->resource_id(),
+                   GURL(entry_proto_ptr->file_specific_info().alternate_url()),
+                   entry_proto_ptr->resource_id(),
                    temp_file_path),
-        base::Bind(&RunGetFileCallbackHelper,
-                   get_file_callback,
-                   base::Owned(temp_file_path),
-                   mime_type,
-                   file_type));
+        base::Bind(
+            &DriveFileSystem::GetResolvedFileByPathAfterCreateDocumentJsonFile,
+            weak_ptr_factory_.GetWeakPtr(),
+            base::Passed(&params),
+            base::Owned(temp_file_path)));
     return;
   }
 
   // Returns absolute path of the file if it were cached or to be cached.
-  base::FilePath local_tmp_path = cache_->GetCacheFilePath(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
-      DriveCache::CACHE_TYPE_TMP,
-      DriveCache::CACHED_FILE_FROM_SERVER);
+  DriveEntryProto* entry_proto_ptr = params->entry_proto.get();
   cache_->GetFile(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
+      entry_proto_ptr->resource_id(),
+      entry_proto_ptr->file_specific_info().file_md5(),
       base::Bind(
           &DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache,
           weak_ptr_factory_.GetWeakPtr(),
-          GetFileFromCacheParams(
-              file_path,
-              local_tmp_path,
-              entry_proto->resource_id(),
-              entry_proto->file_specific_info().file_md5(),
-              entry_proto->file_specific_info().content_mime_type(),
-              context,
-              get_file_callback,
-              get_content_callback)));
+          base::Passed(&params)));
+}
+
+void DriveFileSystem::GetResolvedFileByPathAfterCreateDocumentJsonFile(
+    scoped_ptr<GetResolvedFileParams> params,
+    const base::FilePath* file_path,
+    DriveFileError error) {
+  DCHECK(params);
+  DCHECK(file_path);
+
+  if (error != DRIVE_FILE_OK) {
+    params->OnError(error);
+    return;
+  }
+
+  params->OnCacheFound(*file_path);
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache(
-    const GetFileFromCacheParams& in_params,
+    scoped_ptr<GetResolvedFileParams> params,
     DriveFileError error,
     const base::FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!in_params.get_file_callback.is_null());
+  DCHECK(params);
 
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == DRIVE_FILE_OK) {
-    in_params.get_file_callback.Run(error,
-                                    cache_file_path,
-                                    in_params.mime_type,
-                                    REGULAR_FILE);
+    params->OnCacheFound(cache_file_path);
     return;
   }
 
@@ -874,29 +870,25 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetFileFromCache(
   // - if we don't have enough space, try to free up the disk space
   // - if we still don't have enough space, return "no space" error
   // - if we have enough space, start downloading the file from the server
-  GetFileFromCacheParams params(in_params);
-  params.cache_file_path = cache_file_path;
+  GetResolvedFileParams* params_ptr = params.get();
   scheduler_->GetResourceEntry(
-      params.resource_id,
-      params.context,
+      params_ptr->entry_proto->resource_id(),
+      params_ptr->context,
       base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 params));
+                 base::Passed(&params)));
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterGetResourceEntry(
-    const GetFileFromCacheParams& params,
+    scoped_ptr<GetResolvedFileParams> params,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
+  DCHECK(params);
 
   const DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    params.get_file_callback.Run(error,
-                                 params.cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    params->OnError(error);
     return;
   }
 
@@ -904,107 +896,105 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetResourceEntry(
   // 1) src attribute of content element, on GData WAPI.
   // 2) the value of the key 'downloadUrl', on Drive API v2.
   // In both cases, we can use ResourceEntry::download_url().
-  GURL download_url = entry->download_url();
-  int64 file_size = entry->file_size();
+  const GURL& download_url = entry->download_url();
 
   // The content URL can be empty for non-downloadable files (such as files
   // shared from others with "prevent downloading by viewers" flag set.)
   if (download_url.is_empty()) {
-    params.get_file_callback.Run(DRIVE_FILE_ERROR_ACCESS_DENIED,
-                                 params.cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    params->OnError(DRIVE_FILE_ERROR_ACCESS_DENIED);
     return;
   }
 
-  DCHECK_EQ(params.resource_id, entry->resource_id());
+  DCHECK_EQ(params->entry_proto->resource_id(), entry->resource_id());
   resource_metadata_->RefreshEntry(
       ConvertResourceEntryToDriveEntryProto(*entry),
       base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 params,
-                 file_size,
+                 base::Passed(&params),
                  download_url));
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterRefreshEntry(
-    const GetFileFromCacheParams& params,
-    int64 file_size,
+    scoped_ptr<GetResolvedFileParams> params,
     const GURL& download_url,
     DriveFileError error,
-    const base::FilePath& /* drive_file_path */,
-    scoped_ptr<DriveEntryProto> /* entry_proto */) {
+    const base::FilePath& drive_file_path,
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
+  DCHECK(params);
 
   if (error != DRIVE_FILE_OK) {
-    params.get_file_callback.Run(error,
-                                 params.cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    params->OnError(error);
     return;
   }
 
+  int64 file_size = entry_proto->file_info().size();
+  params->entry_proto = entry_proto.Pass();  // Update the entry in |params|.
   cache_->FreeDiskSpaceIfNeededFor(
       file_size,
       base::Bind(
           &DriveFileSystem
               ::GetResolvedFileByPathAfterFreeDiskSpacePreliminarily,
           weak_ptr_factory_.GetWeakPtr(),
-          params,
-          download_url,
-          params.context,
-          params.cache_file_path));
+          base::Passed(&params),
+          download_url));
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
-    const GetFileFromCacheParams& params,
+    scoped_ptr<GetResolvedFileParams> params,
     const GURL& download_url,
-    const DriveClientContext& context,
-    const base::FilePath& cache_file_path,
     bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
+  DCHECK(params);
 
   if (!has_enough_space) {
-    // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
-    params.get_file_callback.Run(DRIVE_FILE_ERROR_NO_SPACE,
-                                 cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    // If no enough space, return DRIVE_FILE_ERROR_NO_SPACE.
+    params->OnError(DRIVE_FILE_ERROR_NO_SPACE);
     return;
   }
 
   // We have enough disk space. Start downloading the file.
+  base::FilePath local_tmp_path = cache_->GetCacheFilePath(
+      params->entry_proto->resource_id(),
+      params->entry_proto->file_specific_info().file_md5(),
+      DriveCache::CACHE_TYPE_TMP,
+      DriveCache::CACHED_FILE_FROM_SERVER);
+  GetResolvedFileParams* params_ptr = params.get();
   scheduler_->DownloadFile(
-      params.virtual_file_path,
-      params.local_tmp_path,
+      params_ptr->drive_file_path,
+      local_tmp_path,
       download_url,
-      context,
+      params_ptr->context,
       base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 params),
-      params.get_content_callback);
+                 base::Passed(&params)),
+      params_ptr->get_content_callback);
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterDownloadFile(
-    const GetFileFromCacheParams& params,
+    scoped_ptr<GetResolvedFileParams> params,
     google_apis::GDataErrorCode status,
     const base::FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
+  DCHECK(params);
 
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
   if (status == google_apis::GDATA_CANCELLED) {
     cache_->GetCacheEntry(
-        params.resource_id,
-        params.md5,
+        params->entry_proto->resource_id(),
+        params->entry_proto->file_specific_info().file_md5(),
         base::Bind(
             &DriveFileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel,
             weak_ptr_factory_.GetWeakPtr(),
-            params.resource_id,
-            params.md5));
+            params->entry_proto->resource_id(),
+            params->entry_proto->file_specific_info().file_md5()));
+  }
+
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
+    params->OnError(error);
+    return;
   }
 
   // At this point, the disk can be full or nearly full for several reasons:
@@ -1019,8 +1009,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterDownloadFile(
       0,
       base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace,
                  weak_ptr_factory_.GetWeakPtr(),
-                 params,
-                 status,
+                 base::Passed(&params),
                  downloaded_file_path));
 }
 
@@ -1040,43 +1029,36 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
-    const GetFileFromCacheParams& params,
-    google_apis::GDataErrorCode status,
+    scoped_ptr<GetResolvedFileParams> params,
     const base::FilePath& downloaded_file_path,
     bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
+  DCHECK(params);
 
-  DriveFileError error = util::GDataToDriveFileError(status);
+  // If we don't have enough space, remove the downloaded file, and
+  // report "no space" error.
+  if (!has_enough_space) {
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&file_util::Delete),
+                   downloaded_file_path,
+                   false /* recursive*/));
+    params->OnError(DRIVE_FILE_ERROR_NO_SPACE);
+    return;
+  }
 
   // Make sure that downloaded file is properly stored in cache. We don't have
   // to wait for this operation to finish since the user can already use the
   // downloaded file.
-  if (error == DRIVE_FILE_OK) {
-    if (has_enough_space) {
-      cache_->Store(params.resource_id,
-                    params.md5,
-                    downloaded_file_path,
-                    DriveCache::FILE_OPERATION_MOVE,
-                    base::Bind(&util::EmptyFileOperationCallback));
-      // Storing to cache changes the "offline available" status, hence notify.
-      OnDirectoryChanged(params.virtual_file_path.DirName());
-    } else {
-      // If we don't have enough space, remove the downloaded file, and
-      // report "no space" error.
-      blocking_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&file_util::Delete),
-                     downloaded_file_path,
-                     false /* recursive*/));
-      error = DRIVE_FILE_ERROR_NO_SPACE;
-    }
-  }
+  cache_->Store(params->entry_proto->resource_id(),
+                params->entry_proto->file_specific_info().file_md5(),
+                downloaded_file_path,
+                DriveCache::FILE_OPERATION_MOVE,
+                base::Bind(&util::EmptyFileOperationCallback));
+  // Storing to cache changes the "offline available" status, hence notify.
+  OnDirectoryChanged(params->drive_file_path.DirName());
 
-  params.get_file_callback.Run(error,
-                               downloaded_file_path,
-                               params.mime_type,
-                               REGULAR_FILE);
+  params->OnDownloadFileCompleted(downloaded_file_path);
 }
 
 void DriveFileSystem::RefreshDirectory(
@@ -1472,16 +1454,17 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
   // Extract a pointer before we call Pass() so we can use it below.
   DriveEntryProto* entry_proto_ptr = entry_proto.get();
   GetResolvedFileByPath(
-      file_path,
-      DriveClientContext(USER_INITIATED),
-      base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 GetFileCompleteForOpenParams(
-                     callback,
-                     entry_proto_ptr->resource_id(),
-                     entry_proto_ptr->file_specific_info().file_md5())),
-      google_apis::GetContentCallback(),
-      entry_proto.Pass());
+      make_scoped_ptr(new GetResolvedFileParams(
+          file_path,
+          DriveClientContext(USER_INITIATED),
+          entry_proto.Pass(),
+          base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     GetFileCompleteForOpenParams(
+                         callback,
+                         entry_proto_ptr->resource_id(),
+                         entry_proto_ptr->file_specific_info().file_md5())),
+          google_apis::GetContentCallback())));
 }
 
 void DriveFileSystem::OnGetFileCompleteForOpenFile(
