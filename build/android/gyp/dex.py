@@ -9,12 +9,8 @@ import optparse
 import os
 import sys
 
+from util import build_utils
 from util import md5_check
-
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
-
-from pylib import build_utils
 
 
 def DoDex(options, paths):
@@ -25,7 +21,7 @@ def DoDex(options, paths):
   md5_checker = md5_check.Md5Checker(
       stamp=md5_stamp, inputs=paths, command=dex_cmd)
   if md5_checker.IsStale():
-    build_utils.CheckCallDie(dex_cmd)
+    build_utils.CheckCallDie(dex_cmd, suppress_output=True)
   else:
     build_utils.Touch(options.dex_path)
   md5_checker.Write()

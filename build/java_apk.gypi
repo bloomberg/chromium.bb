@@ -142,7 +142,7 @@
           'action_name': 'ordered_libraries_<(_target_name)',
           'message': 'Writing dependency ordered libraries for <(_target_name).',
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
             '<@(native_libs_paths)',
           ],
@@ -160,15 +160,15 @@
           'action_name': 'native_libraries_template_data_<(_target_name)',
           'message': 'Creating native_libraries_list.h for <(_target_name).',
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
-            '<(DEPTH)/build/android/create_native_libraries_header.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/create_native_libraries_header.py',
             '<(ordered_libraries_file)',
           ],
           'outputs': [
             '<(native_libraries_template_data_stamp)',
           ],
           'action': [
-            'python', '<(DEPTH)/build/android/create_native_libraries_header.py',
+            'python', '<(DEPTH)/build/android/gyp/create_native_libraries_header.py',
             '--ordered-libraries=<(ordered_libraries_file)',
             '--output=<(native_libraries_template_data_file)',
             '--stamp=<(native_libraries_template_data_stamp)',
@@ -178,8 +178,8 @@
           'action_name': 'native_libraries_<(_target_name)',
           'message': 'Creating NativeLibraries.java for <(_target_name).',
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
-            '<(DEPTH)/build/android/gcc_preprocess.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
             '<(native_libraries_template_data_stamp)',
             '<(native_libraries_template)',
           ],
@@ -187,7 +187,7 @@
             '<(native_libraries_java_stamp)',
           ],
           'action': [
-            'python', '<(DEPTH)/build/android/gcc_preprocess.py',
+            'python', '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
             '--include-path=<(native_libraries_template_data_dir)',
             '--output=<(native_libraries_java_file)',
             '--template=<(native_libraries_template)',
@@ -198,15 +198,15 @@
           'action_name': 'strip_native_libraries',
           'message': 'Stripping libraries for <(_target_name)',
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
-            '<(DEPTH)/build/android/strip_library_for_apk.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/strip_library_for_apk.py',
             '<(ordered_libraries_file)'
           ],
           'outputs': [
             '<(strip_stamp)',
           ],
           'action': [
-            'python', '<(DEPTH)/build/android/strip_library_for_apk.py',
+            'python', '<(DEPTH)/build/android/gyp/strip_library_for_apk.py',
             '--android-strip=<(android_strip)',
             '--android-strip-arg=--strip-unneeded',
             '--stripped-libraries-dir=<(apk_libraries_dir)',
@@ -230,7 +230,7 @@
               'action_name': 'push_libraries_<(_target_name)',
               'message': 'Pushing libraries to device for <(_target_name)',
               'inputs': [
-                '<(DEPTH)/build/android/pylib/build_utils.py',
+                '<(DEPTH)/build/android/gyp/util/build_utils.py',
                 '<(DEPTH)/build/android/gyp/util/md5_check.py',
                 '<(DEPTH)/build/android/gyp/push_libraries.py',
                 '<(strip_stamp)',
@@ -303,7 +303,7 @@
           'action_name': 'apk_install_<(_target_name)',
           'message': 'Installing <(apk_name).apk',
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/apk_install.py',
             '<(final_apk_path)',
           ],
@@ -378,7 +378,7 @@
         ],
       },
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
         # If there is a separate find for additional_src_dirs, it will find the
         # wrong .java files when additional_src_dirs is empty.
@@ -407,7 +407,7 @@
       'action_name': 'jar_<(_target_name)',
       'message': 'Creating <(_target_name) jar',
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/util/md5_check.py',
         '<(DEPTH)/build/android/gyp/jar.py',
         '<(compile_stamp)',
@@ -487,7 +487,7 @@
         ],
       },
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/util/md5_check.py',
         '<(DEPTH)/build/android/gyp/dex.py',
         '<(compile_stamp)',

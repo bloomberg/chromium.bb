@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-from pylib import build_utils
+from util import build_utils
 
 def DoGcc(options):
   build_utils.MakeDirectory(os.path.dirname(options.output))

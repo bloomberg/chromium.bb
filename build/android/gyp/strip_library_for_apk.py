@@ -9,7 +9,7 @@ import optparse
 import os
 import sys
 
-from pylib import build_utils
+from util import build_utils
 
 
 def StripLibrary(android_strip, android_strip_args, library_path, output_path):

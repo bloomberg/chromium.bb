@@ -54,15 +54,15 @@
         'output_path': '<(output_dir)/<(RULE_INPUT_ROOT).java',
       },
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
-        '<(DEPTH)/build/android/gcc_preprocess.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
         '<@(template_deps)'
       ],
       'outputs': [
         '<(output_path)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/gcc_preprocess.py',
+        'python', '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
         '--include-path=<(include_path)',
         '--output=<(output_path)',
         '--template=<(RULE_INPUT_PATH)',

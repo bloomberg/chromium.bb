@@ -144,8 +144,8 @@
             'all_res_dirs': ['<@(res_input_dirs)', '>@(additional_res_dirs)'],
           },
           'inputs': [
-            '<(DEPTH)/build/android/pylib/build_utils.py',
-            '<(DEPTH)/build/android/process_resources.py',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/process_resources.py',
             '>@(resource_input_paths)',
             '>@(dependencies_res_files)',
           ],
@@ -153,7 +153,7 @@
             '<(R_stamp)',
           ],
           'action': [
-            '<(DEPTH)/build/android/process_resources.py',
+            'python', '<(DEPTH)/build/android/gyp/process_resources.py',
             '--android-sdk', '<(android_sdk)',
             '--android-sdk-tools', '<(android_sdk_tools)',
             '--R-dir', '<(R_dir)',
@@ -186,7 +186,7 @@
         ],
       },
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
@@ -212,7 +212,7 @@
       'action_name': 'jar_<(_target_name)',
       'message': 'Creating <(_target_name) jar',
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/util/md5_check.py',
         '<(DEPTH)/build/android/gyp/jar.py',
         '<(compile_stamp)',
@@ -234,7 +234,7 @@
       'action_name': 'dex_<(_target_name)',
       'message': 'Dexing <(_target_name) jar',
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/util/md5_check.py',
         '<(DEPTH)/build/android/gyp/dex.py',
         '<(jar_path)',

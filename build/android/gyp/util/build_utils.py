@@ -71,7 +71,7 @@ def ReadJson(path):
 # particularly when the command fails, better highlights the command's failure.
 # This call will directly exit on a failure in the subprocess so that no python
 # stacktrace is printed after the output of the failed command.
-def CheckCallDie(args, cwd=None):
+def CheckCallDie(args, suppress_output=False, cwd=None):
   if not cwd:
     cwd = os.getcwd()
 
@@ -97,7 +97,7 @@ def CheckCallDie(args, cwd=None):
     sys.exit(child.returncode)
 
   else:
-    if stdout:
+    if stdout and not suppress_output:
       print stdout,
     return stdout
 

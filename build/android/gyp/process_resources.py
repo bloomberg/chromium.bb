@@ -10,7 +10,7 @@ import optparse
 import os
 import shlex
 
-from pylib import build_utils
+from util import build_utils
 
 def ParseArgs():
   """Parses command line options.
@@ -87,7 +87,7 @@ def main():
               'crunch',
               '-S', options.crunch_input_dir,
               '-C', options.crunch_output_dir]
-  build_utils.CheckCallDie(aapt_cmd)
+  build_utils.CheckCallDie(aapt_cmd, suppress_output=True)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

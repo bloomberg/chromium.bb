@@ -9,12 +9,8 @@ import optparse
 import os
 import sys
 
+from util import build_utils
 from util import md5_check
-
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
-
-from pylib import build_utils
 
 
 def DoJar(options):

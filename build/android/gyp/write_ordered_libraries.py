@@ -26,10 +26,7 @@ import os
 import re
 import sys
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
-
-from pylib import build_utils
+from util import build_utils
 
 
 _options = None
@@ -52,7 +49,7 @@ def CallReadElf(library_name):
   readelf_cmd = [_options.readelf,
                  '-d',
                  FullLibraryPath(library_name)]
-  return build_utils.CheckCallDie(readelf_cmd)
+  return build_utils.CheckCallDie(readelf_cmd, suppress_output=True)
 
 
 def GetDependencies(library_name):

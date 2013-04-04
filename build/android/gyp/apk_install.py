@@ -13,10 +13,7 @@ import os
 import subprocess
 import sys
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
-
-from pylib import build_utils
+from util import build_utils
 
 
 def main(argv):
@@ -35,7 +32,7 @@ def main(argv):
       'install', '-r',
       options.apk_path]
 
-  subprocess.check_call(install_cmd)
+  build_utils.CheckCallDie(install_cmd)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

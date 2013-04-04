@@ -15,7 +15,7 @@ import optparse
 import os
 import sys
 
-from pylib import build_utils
+from util import build_utils
 
 
 def main(argv):

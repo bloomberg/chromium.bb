@@ -9,10 +9,8 @@ import optparse
 import os
 import sys
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
-sys.path.append(BUILD_ANDROID_DIR)
+from util import build_utils
 
-from pylib import build_utils
 
 def DoJavac(options):
   output_dir = options.output_dir
