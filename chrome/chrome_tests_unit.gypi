@@ -768,6 +768,7 @@
         'browser/extensions/image_loader_unittest.cc',
         'browser/extensions/key_identifier_conversion_views_unittest.cc',
         'browser/extensions/management_policy_unittest.cc',
+        'browser/extensions/pack_extension_unittest.cc',
         'browser/extensions/process_map_unittest.cc',
         'browser/extensions/sandboxed_unpacker_unittest.cc',
         'browser/extensions/script_badge_controller_unittest.cc',
@@ -1829,6 +1830,7 @@
           'sources!': [
             'browser/extensions/extension_context_menu_model_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
+            'browser/extensions/pack_extension_unittest.cc',
             'browser/extensions/permissions_updater_unittest.cc',
           ],
         }],
