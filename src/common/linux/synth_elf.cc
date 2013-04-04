@@ -20,6 +20,7 @@ ELF::ELF(uint16_t machine,
   : Section(endianness),
     addr_size_(file_class == ELFCLASS64 ? 8 : 4),
     program_count_(0),
+    program_header_table_(endianness),
     section_count_(0),
     section_header_table_(endianness),
     section_header_strings_(endianness) {
@@ -115,7 +116,8 @@ int ELF::AddSection(const string& name, const Section& section,
     // sh_entsize
     .Append(endianness(), addr_size_, entsize);
 
-  sections_.push_back(ElfSection(section, type, offset, offset_label));
+  sections_.push_back(ElfSection(section, type, addr, offset, offset_label,
+                                 size));
   return index;
 }
 
@@ -133,6 +135,58 @@ void ELF::AppendSection(ElfSection &section) {
   }
 }
 
+void ELF::AddSegment(int start, int end, uint32_t type, uint32_t flags) {
+  assert(start > 0);
+  assert(size_t(start) < sections_.size());
+  assert(end > 0);
+  assert(size_t(end) < sections_.size());
+  ++program_count_;
+
+  // p_type
+  program_header_table_.D32(type);
+
+  if (addr_size_ == 8) {
+    // p_flags
+    program_header_table_.D32(flags);
+  }
+
+  size_t filesz = 0;
+  size_t memsz = 0;
+  bool prev_was_nobits = false;
+  for (int i = start; i <= end; ++i) {
+    size_t size = sections_[i].size_;
+    if (sections_[i].type_ != SHT_NOBITS) {
+      assert(!prev_was_nobits);
+      // non SHT_NOBITS sections are 4-byte aligned (see AddSection)
+      size = (size + 3) & ~3;
+      filesz += size;
+    } else {
+      prev_was_nobits = true;
+    }
+    memsz += size;
+  }
+
+  program_header_table_
+    // p_offset
+    .Append(endianness(), addr_size_, sections_[start].offset_label_)
+    // p_vaddr
+    .Append(endianness(), addr_size_, sections_[start].addr_)
+    // p_paddr
+    .Append(endianness(), addr_size_, sections_[start].addr_)
+    // p_filesz
+    .Append(endianness(), addr_size_, filesz)
+    // p_memsz
+    .Append(endianness(), addr_size_, memsz);
+
+  if (addr_size_ == 4) {
+    // p_flags
+    program_header_table_.D32(flags);
+  }
+
+  // p_align
+  program_header_table_.Append(endianness(), addr_size_, 0);
+}
+
 void ELF::Finish() {
   // Add the section header string table at the end.
   section_header_string_index_ = section_count_;
@@ -140,14 +194,19 @@ void ELF::Finish() {
   AddSection(".shstrtab", section_header_strings_, SHT_STRTAB);
   //printf("section_count_: %ld, sections_.size(): %ld\n",
   //     section_count_, sections_.size());
+  if (program_count_) {
+    Mark(&program_header_label_);
+    Append(program_header_table_);
+  } else {
+    program_header_label_ = 0;
+  }
+
   for (vector<ElfSection>::iterator it = sections_.begin();
        it < sections_.end(); ++it) {
     AppendSection(*it);
   }
   section_count_label_ = section_count_;
   program_count_label_ = program_count_;
-  // TODO:  allow adding entries to program header table
-  program_header_label_ = 0;
 
   // Section header table starts here.
   Mark(&section_header_label_);

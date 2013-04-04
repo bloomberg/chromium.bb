@@ -42,6 +42,7 @@
 using google_breakpad::ElfClass32;
 using google_breakpad::ElfClass64;
 using google_breakpad::synth_elf::ELF;
+using google_breakpad::synth_elf::Section;
 using google_breakpad::synth_elf::StringTable;
 using google_breakpad::synth_elf::SymbolTable;
 using google_breakpad::test_assembler::Endianness;
@@ -258,6 +259,114 @@ TYPED_TEST(BasicElf, EmptyLE) {
   EXPECT_EQ(0U, shdr[1].sh_info);
   EXPECT_EQ(0U, shdr[1].sh_addralign);
   EXPECT_EQ(0U, shdr[1].sh_entsize);
+}
+
+TYPED_TEST(BasicElf, BasicLE) {
+  typedef typename TypeParam::Ehdr Ehdr;
+  typedef typename TypeParam::Phdr Phdr;
+  typedef typename TypeParam::Shdr Shdr;
+  const size_t kStringTableSize = sizeof("\0.text\0.bss\0.shstrtab");
+  const size_t kStringTableAlign = 4 - kStringTableSize % 4;
+  const size_t kExpectedSize = sizeof(Ehdr) +
+    // Four sections, SHT_NULL + the section header string table +
+    // 4096 bytes of the size-aligned .text section + one program header.
+    sizeof(Phdr) + 4 * sizeof(Shdr) + 4096 +
+    kStringTableSize + kStringTableAlign;
+
+  // It doesn't really matter that the machine type is right for the class.
+  ELF elf(EM_386, TypeParam::kClass, kLittleEndian);
+  Section text(kLittleEndian);
+  text.Append(4094, 0);
+  int text_idx = elf.AddSection(".text", text, SHT_PROGBITS);
+  Section bss(kLittleEndian);
+  bss.Append(16, 0);
+  int bss_idx = elf.AddSection(".bss", bss, SHT_NOBITS);
+  elf.AddSegment(text_idx, bss_idx, PT_LOAD);
+  elf.Finish();
+  EXPECT_EQ(kExpectedSize, elf.Size());
+
+  string contents;
+  ASSERT_TRUE(elf.GetContents(&contents));
+  ASSERT_EQ(kExpectedSize, contents.size());
+  const Ehdr* header =
+    reinterpret_cast<const Ehdr*>(contents.data());
+  const uint8_t kIdent[] = {
+    ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3,
+    TypeParam::kClass, ELFDATA2LSB, EV_CURRENT, ELFOSABI_SYSV,
+    0, 0, 0, 0, 0, 0, 0, 0
+  };
+  EXPECT_EQ(0, memcmp(kIdent, header->e_ident, sizeof(kIdent)));
+  EXPECT_EQ(ET_EXEC, header->e_type);
+  EXPECT_EQ(EM_386, header->e_machine);
+  EXPECT_EQ(static_cast<unsigned int>(EV_CURRENT), header->e_version);
+  EXPECT_EQ(0U, header->e_entry);
+  EXPECT_EQ(sizeof(Ehdr), header->e_phoff);
+  EXPECT_EQ(sizeof(Ehdr) + sizeof(Phdr) + 4096 + kStringTableSize +
+            kStringTableAlign, header->e_shoff);
+  EXPECT_EQ(0U, header->e_flags);
+  EXPECT_EQ(sizeof(Ehdr), header->e_ehsize);
+  EXPECT_EQ(sizeof(Phdr), header->e_phentsize);
+  EXPECT_EQ(1, header->e_phnum);
+  EXPECT_EQ(sizeof(Shdr), header->e_shentsize);
+  EXPECT_EQ(4, header->e_shnum);
+  EXPECT_EQ(3, header->e_shstrndx);
+
+  const Shdr* shdr =
+    reinterpret_cast<const Shdr*>(contents.data() + header->e_shoff);
+  EXPECT_EQ(0U, shdr[0].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_NULL), shdr[0].sh_type);
+  EXPECT_EQ(0U, shdr[0].sh_flags);
+  EXPECT_EQ(0U, shdr[0].sh_addr);
+  EXPECT_EQ(0U, shdr[0].sh_offset);
+  EXPECT_EQ(0U, shdr[0].sh_size);
+  EXPECT_EQ(0U, shdr[0].sh_link);
+  EXPECT_EQ(0U, shdr[0].sh_info);
+  EXPECT_EQ(0U, shdr[0].sh_addralign);
+  EXPECT_EQ(0U, shdr[0].sh_entsize);
+
+  EXPECT_EQ(1U, shdr[1].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_PROGBITS), shdr[1].sh_type);
+  EXPECT_EQ(0U, shdr[1].sh_flags);
+  EXPECT_EQ(0U, shdr[1].sh_addr);
+  EXPECT_EQ(sizeof(Ehdr) + sizeof(Phdr), shdr[1].sh_offset);
+  EXPECT_EQ(4094U, shdr[1].sh_size);
+  EXPECT_EQ(0U, shdr[1].sh_link);
+  EXPECT_EQ(0U, shdr[1].sh_info);
+  EXPECT_EQ(0U, shdr[1].sh_addralign);
+  EXPECT_EQ(0U, shdr[1].sh_entsize);
+
+  EXPECT_EQ(sizeof("\0.text"), shdr[2].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_NOBITS), shdr[2].sh_type);
+  EXPECT_EQ(0U, shdr[2].sh_flags);
+  EXPECT_EQ(0U, shdr[2].sh_addr);
+  EXPECT_EQ(0U, shdr[2].sh_offset);
+  EXPECT_EQ(16U, shdr[2].sh_size);
+  EXPECT_EQ(0U, shdr[2].sh_link);
+  EXPECT_EQ(0U, shdr[2].sh_info);
+  EXPECT_EQ(0U, shdr[2].sh_addralign);
+  EXPECT_EQ(0U, shdr[2].sh_entsize);
+
+  EXPECT_EQ(sizeof("\0.text\0.bss"), shdr[3].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_STRTAB), shdr[3].sh_type);
+  EXPECT_EQ(0U, shdr[3].sh_flags);
+  EXPECT_EQ(0U, shdr[3].sh_addr);
+  EXPECT_EQ(sizeof(Ehdr) + sizeof(Phdr) + 4096, shdr[3].sh_offset);
+  EXPECT_EQ(kStringTableSize, shdr[3].sh_size);
+  EXPECT_EQ(0U, shdr[3].sh_link);
+  EXPECT_EQ(0U, shdr[3].sh_info);
+  EXPECT_EQ(0U, shdr[3].sh_addralign);
+  EXPECT_EQ(0U, shdr[3].sh_entsize);
+
+  const Phdr* phdr =
+    reinterpret_cast<const Phdr*>(contents.data() + header->e_phoff);
+  EXPECT_EQ(static_cast<unsigned int>(PT_LOAD), phdr->p_type);
+  EXPECT_EQ(sizeof(Ehdr) + sizeof(Phdr), phdr->p_offset);
+  EXPECT_EQ(0U, phdr->p_vaddr);
+  EXPECT_EQ(0U, phdr->p_paddr);
+  EXPECT_EQ(4096U, phdr->p_filesz);
+  EXPECT_EQ(4096U + 16U, phdr->p_memsz);
+  EXPECT_EQ(0U, phdr->p_flags);
+  EXPECT_EQ(0U, phdr->p_align);
 }
 
 #endif  // defined(__i386__) || defined(__x86_64__)

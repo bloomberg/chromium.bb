@@ -104,6 +104,10 @@ class ELF : public Section {
                  uint32_t type, uint32_t flags = 0, uint64_t addr = 0,
                  uint32_t link = 0, uint64_t entsize = 0, uint64_t offset = 0);
                   
+  // Add a segment containing from section index start to section index end.
+  // The indexes must have been gotten from AddSection.
+  void AddSegment(int start, int end, uint32_t type, uint32_t flags = 0);
+
   // Write out all data. GetContents may be used after this.
   void Finish();
 
@@ -116,6 +120,8 @@ class ELF : public Section {
   // Number of entries in the program header table.
   int program_count_;
   Label program_count_label_;
+  // The program header table itself.
+  Section program_header_table_;
 
   // Offset to the section header table.
   Label section_header_label_;
@@ -133,15 +139,17 @@ class ELF : public Section {
 
   // Record of an added section
   struct ElfSection : public Section {
-    ElfSection(const Section& section, uint32_t type, uint32_t offset,
-               Label offset_label)
-    : Section(section), type_(type), offset_(offset)
-    , offset_label_(offset_label) {
+    ElfSection(const Section& section, uint32_t type, uint32_t addr,
+               uint32_t offset, Label offset_label, uint32_t size)
+    : Section(section), type_(type), addr_(addr), offset_(offset)
+    , offset_label_(offset_label), size_(size) {
     }
 
     uint32_t type_;
+    uint32_t addr_;
     uint32_t offset_;
     Label offset_label_;
+    uint32_t size_;
   };
 
   vector<ElfSection> sections_;
