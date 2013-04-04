@@ -490,7 +490,8 @@ def drover(options, args):
   # Initialize some variables used below. They can be overwritten by
   # the drover.properties file.
   BASE_URL = "svn://svn.chromium.org/chrome"
-  REVERT_ALT_URLS = ['svn://svn.chromium.org/chrome-internal',
+  REVERT_ALT_URLS = ['svn://svn.chromium.org/blink',
+                     'svn://svn.chromium.org/chrome-internal',
                      'svn://svn.chromium.org/native_client']
   TRUNK_URL = BASE_URL + "/trunk/src"
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
