@@ -22,6 +22,14 @@
     'SVG': {
       'filepath': 'Source/WebCore/svg|Source/WebCore/rendering/svg',
     },
+    'indexed_db': {
+      'filepath': 'Source/WebCore/Modules/indexeddb/' \
+                  '|Source/WebCore/bindings/.*IDB' \
+                  '|Source/WebCore/bindings/.*SerializedScriptValue' \
+                  '|Source/WebKit/chromium/.*IDB' \
+                  '|Source/WebCore/platform/leveldb' \
+                  '|LayoutTests/storage/indexeddb'
+    },
   },
 
   'WATCHLISTS': {
@@ -29,5 +37,7 @@
     'platform_graphics': [ 'schenney@chromium.org' ],
     'SVG': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
     'css': [ 'darktears31@gmail.com' ],
+    'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
+                   'jsbell@chromium.org'],
   },
 }
