@@ -446,6 +446,9 @@ html[dir='rtl'] #chrome-web-store-title {
   display: -webkit-flex;
   height: 100%;
   margin: 0;
+  /* TODO(dubroy): Remove this if possible. According to the flexbox spec,
+     min-content is the default min-width for flex items. */
+  min-width: -webkit-min-content;
 }
 
 #recently-closed-menu-button {
