@@ -306,8 +306,10 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
   // Record the location of the touch points.
   const int kBucketCountForLocation = 100;
   const gfx::Rect bounds = target->GetRootWindow()->bounds();
-  const int bucket_size_x = bounds.width() / kBucketCountForLocation;
-  const int bucket_size_y = bounds.height() / kBucketCountForLocation;
+  const int bucket_size_x = std::max(1,
+                                     bounds.width() / kBucketCountForLocation);
+  const int bucket_size_y = std::max(1,
+                                     bounds.height() / kBucketCountForLocation);
 
   gfx::Point position = event.root_location();
 
