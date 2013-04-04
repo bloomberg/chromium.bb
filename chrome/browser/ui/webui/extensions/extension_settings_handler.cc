@@ -645,7 +645,6 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
   web_ui()->CallJavascriptFunction("ExtensionSettings.returnExtensionsData",
                                    results);
-  content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   MaybeRegisterForNotifications();
 }
@@ -950,6 +949,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<extensions::ExtensionPrefs>(
           profile->GetExtensionService()->extension_prefs()));
+
+  content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   warning_service_observer_.Add(
       extensions::ExtensionSystem::Get(profile)->warning_service());
