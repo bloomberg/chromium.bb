@@ -27,6 +27,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -747,9 +748,6 @@ prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
 }
 
 ComponentUpdateService* BrowserProcessImpl::component_updater() {
-#if defined(OS_CHROMEOS)
-  return NULL;
-#else
   if (!component_updater_.get()) {
     ComponentUpdateService::Configurator* configurator =
         MakeChromeComponentUpdaterConfigurator(
@@ -760,19 +758,18 @@ ComponentUpdateService* BrowserProcessImpl::component_updater() {
     component_updater_.reset(ComponentUpdateServiceFactory(configurator));
   }
   return component_updater_.get();
-#endif
 }
 
 CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
-#if defined(OS_CHROMEOS)
-  // There's no component updater on ChromeOS so there can't be a CRLSetFetcher
-  // either.
-  return NULL;
-#else
   if (!crl_set_fetcher_.get())
     crl_set_fetcher_ = new CRLSetFetcher();
   return crl_set_fetcher_.get();
-#endif
+}
+
+PnaclComponentInstaller* BrowserProcessImpl::pnacl_component_installer() {
+  if (!pnacl_component_installer_.get())
+    pnacl_component_installer_.reset(new PnaclComponentInstaller());
+  return pnacl_component_installer_.get();
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {

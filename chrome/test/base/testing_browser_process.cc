@@ -305,6 +305,10 @@ CRLSetFetcher* TestingBrowserProcess::crl_set_fetcher() {
   return NULL;
 }
 
+PnaclComponentInstaller* TestingBrowserProcess::pnacl_component_installer() {
+  return NULL;
+}
+
 BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 #if defined(OS_IOS)
   NOTIMPLEMENTED();
