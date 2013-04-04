@@ -868,6 +868,8 @@
         'browser/ui/extensions/app_metro_infobar_delegate_win.h',
         'browser/ui/extensions/application_launch.cc',
         'browser/ui/extensions/application_launch.h',
+        'browser/ui/extensions/apps_metro_handler_win.cc',
+        'browser/ui/extensions/apps_metro_handler_win.h',
         'browser/ui/extensions/extension_install_ui_default.cc',
         'browser/ui/extensions/extension_install_ui_default.h',
         'browser/ui/extensions/extension_enable_flow.cc',

@@ -67,9 +67,10 @@ class ShellWindow : public content::NotificationObserver,
                     public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   enum WindowType {
-    WINDOW_TYPE_DEFAULT,  // Default shell window
-    WINDOW_TYPE_PANEL,  // OS controlled panel window (Ash only)
-    WINDOW_TYPE_V1_PANEL,  // For apps v1 support in Ash; deprecate with v1 apps
+    WINDOW_TYPE_DEFAULT  = 1 << 0,  // Default shell window.
+    WINDOW_TYPE_PANEL    = 1 << 1,  // OS controlled panel window (Ash only).
+    WINDOW_TYPE_V1_PANEL = 1 << 2,  // For apps v1 support in Ash; deprecate
+                                    // with v1 apps.
   };
 
   enum Frame {

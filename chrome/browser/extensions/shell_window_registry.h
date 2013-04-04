@@ -94,6 +94,11 @@ class ShellWindowRegistry : public ProfileKeyedService,
   static ShellWindow* GetShellWindowForNativeWindowAnyProfile(
       gfx::NativeWindow window);
 
+  // Returns true if the number of shell windows registered across all profiles
+  // is non-zero. |window_type_mask| is a bitwise OR filter of
+  // ShellWindow::WindowType, or 0 for any window type.
+  static bool IsShellWindowRegisteredInAnyProfile(int window_type_mask);
+
  protected:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -103,7 +108,7 @@ class ShellWindowRegistry : public ProfileKeyedService,
  private:
   class Factory : public ProfileKeyedServiceFactory {
    public:
-    static ShellWindowRegistry* GetForProfile(Profile* profile);
+    static ShellWindowRegistry* GetForProfile(Profile* profile, bool create);
 
     static Factory* GetInstance();
    private:

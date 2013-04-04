@@ -20,11 +20,18 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
     parent = ui::GetWindowToParentTo(true);
 
   UINT flags = MB_SETFOREGROUND;
-  flags |= ((type == MESSAGE_BOX_TYPE_QUESTION) ? MB_YESNO : MB_OK);
+  if (type == MESSAGE_BOX_TYPE_QUESTION) {
+    flags |= MB_YESNO;
+  } else if (type == MESSAGE_BOX_TYPE_OK_CANCEL) {
+    flags |= MB_OKCANCEL;
+  } else {
+    flags |= MB_OK;
+  }
   flags |= ((type == MESSAGE_BOX_TYPE_INFORMATION) ?
       MB_ICONINFORMATION : MB_ICONWARNING);
-  return (ui::MessageBox(parent, message, title, flags) == IDNO) ?
-      MESSAGE_BOX_RESULT_NO : MESSAGE_BOX_RESULT_YES;
+  int result = ui::MessageBox(parent, message, title, flags);
+  return (result == IDYES || result == IDOK) ?
+      MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
 }
 
 }  // namespace chrome

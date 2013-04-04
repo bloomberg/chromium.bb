@@ -47,6 +47,9 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type) {
+  if (type == MESSAGE_BOX_TYPE_OK_CANCEL)
+    NOTIMPLEMENTED();
+
   GtkMessageType gtk_message_type = GTK_MESSAGE_OTHER;
   GtkButtonsType gtk_buttons_type = GTK_BUTTONS_OK;
   if (type == MESSAGE_BOX_TYPE_QUESTION) {

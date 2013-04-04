@@ -46,6 +46,7 @@
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/ui/extensions/apps_metro_handler_win.h"
 #endif
 
 #if defined(USE_ASH)
@@ -87,17 +88,17 @@ bool HasInternalURL(const NavigationEntry* entry) {
 // 6- If we are not the default exit.
 //
 // Note: this class deletes itself.
-class SwichToMetroUIHandler
+class SwitchToMetroUIHandler
     : public ShellIntegration::DefaultWebClientObserver {
  public:
-  SwichToMetroUIHandler()
+  SwitchToMetroUIHandler()
       : ALLOW_THIS_IN_INITIALIZER_LIST(default_browser_worker_(
             new ShellIntegration::DefaultBrowserWorker(this))),
         first_check_(true) {
     default_browser_worker_->StartCheckIsDefault();
   }
 
-  virtual ~SwichToMetroUIHandler() {
+  virtual ~SwitchToMetroUIHandler() {
     default_browser_worker_->ObserverDestroyed();
   }
 
@@ -140,7 +141,7 @@ class SwichToMetroUIHandler
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
   bool first_check_;
 
-  DISALLOW_COPY_AND_ASSIGN(SwichToMetroUIHandler);
+  DISALLOW_COPY_AND_ASSIGN(SwitchToMetroUIHandler);
 };
 #endif  // defined(OS_WIN)
 
@@ -447,7 +448,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
-      new SwichToMetroUIHandler;
+      if (!chrome::VerifySwitchToMetroForApps(window()->GetNativeWindow()))
+        break;
+
+      // SwitchToMetroUIHandler deletes itself.
+      new SwitchToMetroUIHandler;
       content::RecordAction(content::UserMetricsAction("Win8MetroRestart"));
       break;
 #endif

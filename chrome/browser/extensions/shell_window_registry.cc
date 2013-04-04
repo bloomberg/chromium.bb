@@ -52,7 +52,7 @@ ShellWindowRegistry::~ShellWindowRegistry() {}
 
 // static
 ShellWindowRegistry* ShellWindowRegistry::Get(Profile* profile) {
-  return Factory::GetForProfile(profile);
+  return Factory::GetForProfile(profile, true /* create */);
 }
 
 void ShellWindowRegistry::AddShellWindow(ShellWindow* shell_window) {
@@ -153,17 +153,48 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
     gfx::NativeWindow window) {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::const_iterator i(profiles.begin());
-       i < profiles.end(); ++i) {
-    extensions::ShellWindowRegistry* registry =
-        extensions::ShellWindowRegistry::Get(*i);
-    DCHECK(registry);
+  for (std::vector<Profile*>::const_iterator i = profiles.begin();
+       i != profiles.end(); ++i) {
+    ShellWindowRegistry* registry = Factory::GetForProfile(*i,
+                                                           false /* create */);
+    if (!registry)
+      continue;
+
     ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(window);
     if (shell_window)
       return shell_window;
   }
 
   return NULL;
+}
+
+// static
+bool ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
+    int window_type_mask) {
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (std::vector<Profile*>::const_iterator i = profiles.begin();
+       i != profiles.end(); ++i) {
+    ShellWindowRegistry* registry = Factory::GetForProfile(*i,
+                                                           false /* create */);
+    if (!registry)
+      continue;
+
+    const ShellWindowSet& shell_windows = registry->shell_windows();
+    if (shell_windows.empty())
+      continue;
+
+    if (window_type_mask == 0)
+      return true;
+
+    for (const_iterator j = shell_windows.begin(); j != shell_windows.end();
+         ++j) {
+      if ((*j)->window_type() & window_type_mask)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 void ShellWindowRegistry::Observe(int type,
@@ -192,9 +223,9 @@ void ShellWindowRegistry::Observe(int type,
 
 // static
 ShellWindowRegistry* ShellWindowRegistry::Factory::GetForProfile(
-    Profile* profile) {
+    Profile* profile, bool create) {
   return static_cast<ShellWindowRegistry*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+      GetInstance()->GetServiceForProfile(profile, create));
 }
 
 ShellWindowRegistry::Factory* ShellWindowRegistry::Factory::GetInstance() {

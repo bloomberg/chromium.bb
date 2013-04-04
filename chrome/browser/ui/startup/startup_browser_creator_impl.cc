@@ -647,17 +647,14 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
   else if (pref.type == SessionStartupPref::DEFAULT)
     VLOG(1) << "Pref: default";
 
-  apps::AppRestoreService* service =
+  apps::AppRestoreService* restore_service =
       apps::AppRestoreServiceFactory::GetForProfile(profile_);
   // NULL in incognito mode.
-  if (service) {
-    bool should_restore_apps = StartupBrowserCreator::WasRestarted();
-#if defined(OS_CHROMEOS)
-    // Chromeos always restarts apps, even if it was a regular shutdown.
-    should_restore_apps = true;
-#endif
-    service->HandleStartup(should_restore_apps);
+  if (restore_service) {
+    restore_service->HandleStartup(apps::AppRestoreService::ShouldRestoreApps(
+        StartupBrowserCreator::WasRestarted()));
   }
+
   if (pref.type == SessionStartupPref::LAST) {
     if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
         !command_line_.HasSwitch(switches::kRestoreLastSession)) {

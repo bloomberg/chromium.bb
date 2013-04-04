@@ -18,6 +18,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+#if defined(OS_WIN)
+#include "win8/util/win8_util.h"
+#endif
+
 using extensions::AppEventRouter;
 using extensions::Extension;
 using extensions::ExtensionHost;
@@ -25,6 +29,20 @@ using extensions::ExtensionPrefs;
 using extensions::ExtensionSystem;
 
 namespace apps {
+
+// static
+bool AppRestoreService::ShouldRestoreApps(bool is_browser_restart) {
+  bool should_restore_apps = is_browser_restart;
+#if defined(OS_CHROMEOS)
+  // Chromeos always restarts apps, even if it was a regular shutdown.
+  should_restore_apps = true;
+#elif defined(OS_WIN)
+  // Packaged apps are not supported in Metro mode, so don't try to start them.
+  if (win8::IsSingleWindowMetroMode())
+    should_restore_apps = false;
+#endif
+  return should_restore_apps;
+}
 
 AppRestoreService::AppRestoreService(Profile* profile)
     : profile_(profile) {

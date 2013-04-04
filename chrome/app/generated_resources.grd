@@ -14920,6 +14920,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
              desc="Infobar button 'no' text to cancel prompt to relaunch in deskop mode to use Chrome Apps">
       No, stay in Windows 8 mode
     </message>
+    <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
+             desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
+      Relaunching in Windows 8 mode will close your Chrome apps.
+    </message>
 
     <!-- Media Galleries. -->
     <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">

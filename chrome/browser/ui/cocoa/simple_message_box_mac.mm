@@ -17,6 +17,9 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type) {
+  if (type == MESSAGE_BOX_TYPE_OK_CANCEL)
+    NOTIMPLEMENTED();
+
   startup_metric_utils::SetNonBrowserUIDisplayed();
 
   // Ignore the title; it's the window title on other platforms and ignorable.

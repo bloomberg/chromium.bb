@@ -91,8 +91,11 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const string16& title,
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (type_ == MESSAGE_BOX_TYPE_QUESTION)
+  if (type_ == MESSAGE_BOX_TYPE_QUESTION ||
+      type_ == MESSAGE_BOX_TYPE_OK_CANCEL) {
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  }
+
   return ui::DIALOG_BUTTON_OK;
 }
 
@@ -103,6 +106,12 @@ string16 SimpleMessageBoxViews::GetDialogButtonLabel(
         IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
         IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
   }
+
+  if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL) {
+    return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+        IDS_OK : IDS_CANCEL);
+  }
+
   return l10n_util::GetStringUTF16(IDS_OK);
 }
 

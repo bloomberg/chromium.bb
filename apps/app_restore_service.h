@@ -31,6 +31,10 @@ namespace apps {
 class AppRestoreService : public ProfileKeyedService,
                           public content::NotificationObserver {
  public:
+  // Returns true if apps should be restored on the current platform, given
+  // whether this new browser process launched due to a restart.
+  static bool ShouldRestoreApps(bool is_browser_restart);
+
   explicit AppRestoreService(Profile* profile);
 
   // Restart apps that need to be restarted and clear the "running" preference
