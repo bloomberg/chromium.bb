@@ -114,54 +114,24 @@
               '-lgio',
               '-Wl,--end-group',
               '-lm',
+              '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+              '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
             ],
-            # See http://code.google.com/p/nativeclient/issues/detail?id=2691.
-            # The PNaCl linker (gold) does not implement the "-Ttext-segment"
-            # option.  However, with the linker for x86, the "-Ttext" option
-            # does not affect the executable's base address.
-            # TODO(olonho): simplify flags handling and avoid duplication
-            # with NaCl logic.
             'conditions': [
-              ['target_arch!="arm"',
-               {
-                 'link_flags': [
-                   '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-                   '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
-                 ]
-               }, { # target_arch == "arm"
-                 # TODO(mcgrathr): This knowledge really belongs in
-                 # native_client/src/untrusted/irt/irt.gyp instead of here.
-                 # But that builds libirt_browser.a as bitcode, so a native
-                 # object does not fit happily there.
-                 'sources': [
-                   '../../native_client/src/untrusted/irt/aeabi_read_tp.S',
-                 ],
-                 'link_flags': [
-                   '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-                   '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
-                   '--pnacl-allow-native',
-                   '-arch', 'arm',
-                   '-Wt,-mtls-use-call',
-                   '-Wl,--pnacl-irt-link',
-                 ],
-               },
-             ],
-             # untrusted.gypi and build_nexe.py currently build
-             # both x86-32 and x86-64 whenever target_arch is some
-             # flavor of x86.  However, on non-windows platforms
-             # we only need one architecture.
-             ['OS!="win" and target_arch=="ia32"',
-               {
-                 'enable_x86_64': 0
-               }
-             ],
-             ['OS!="win" and target_arch=="x64"',
-               {
-                 'enable_x86_32': 0
-               }
-             ]
-            ],
-            'sources': [
+              # untrusted.gypi and build_nexe.py currently build
+              # both x86-32 and x86-64 whenever target_arch is some
+              # flavor of x86.  However, on non-windows platforms
+              # we only need one architecture.
+              ['OS!="win" and target_arch=="ia32"',
+                {
+                  'enable_x86_64': 0
+                }
+              ],
+              ['OS!="win" and target_arch=="x64"',
+                {
+                  'enable_x86_32': 0
+                }
+              ]
             ],
             'extra_args': [
               '--strip-debug',
