@@ -12,17 +12,17 @@ void TestDeclarations() { std::string a, b("abc"), c; }
 // Tests for std::string allocated with new.
 void TestNew() {
   std::string* a = new std::string,
-              *b = new std::string("abc"),
-              *c = new std::string,
-              *d = new std::string();
+               *b = new std::string("abc"),
+                *c = new std::string,
+                 *d = new std::string();
 }
 
 // Tests for std::string construction in initializer lists.
 class TestInitializers {
  public:
-  TestInitializers()  {}
-  TestInitializers(bool)  {}
-  TestInitializers(double) :  b("cat"), c() {}
+  TestInitializers() {}
+  TestInitializers(bool) {}
+  TestInitializers(double) : b("cat"), c() {}
 
  private:
   std::string a;
@@ -43,4 +43,3 @@ void TestWideTemporaries(const std::wstring& reference_argument,
   TestWideTemporaries(std::wstring(), std::wstring());
   TestWideTemporaries(std::wstring(), std::wstring());
 }
-

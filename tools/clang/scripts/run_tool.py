@@ -183,11 +183,14 @@ class _CompilerDispatcher(object):
     sys.stdout.flush()
 
 
-def _ApplyEdits(edits):
+def _ApplyEdits(edits, clang_format_diff_path):
   """Apply the generated edits.
 
   Args:
     edits: A dict mapping filenames to Edit instances that apply to that file.
+    clang_format_diff_path: Path to the clang-format-diff.py helper to help
+      automatically reformat diffs to avoid style violations. Pass None if the
+      clang-format step should be skipped.
   """
   edit_count = 0
   for k, v in edits.iteritems():
@@ -210,6 +213,10 @@ def _ApplyEdits(edits):
       f.seek(0)
       f.truncate()
       f.write(contents)
+    if clang_format_diff_path:
+      if subprocess.call('git diff -U0 %s | python %s -style=Chromium' % (
+          k, clang_format_diff_path), shell=True) != 0:
+        print 'clang-format failed for %s' % k
   print 'Applied %d edits to %d files' % (edit_count, len(edits))
 
 
@@ -266,6 +273,14 @@ def main(argv):
     print '  <path 1> <path2> ... can be used to filter what files are edited'
     return 1
 
+  clang_format_diff_path = os.path.join(
+      os.path.dirname(os.path.realpath(__file__)),
+      '../../../third_party/llvm/tools/clang/tools/clang-format',
+      'clang-format-diff.py')
+  # TODO(dcheng): Allow this to be controlled with a flag as well.
+  if not os.path.isfile(clang_format_diff_path):
+    clang_format_diff_path = None
+
   filenames = frozenset(_GetFilesFromGit(argv[2:]))
   # Filter out files that aren't C/C++/Obj-C/Obj-C++.
   extensions = frozenset(('.c', '.cc', '.m', '.mm'))
@@ -277,9 +292,8 @@ def main(argv):
   # useful to modify files that aren't under source control--typically, these
   # are generated files or files in a git submodule that's not part of Chromium.
   _ApplyEdits({k : v for k, v in dispatcher.edits.iteritems()
-                    if k in filenames})
-  # TODO(dcheng): Consider clang-formatting the result to avoid egregious style
-  # violations.
+                    if k in filenames},
+              clang_format_diff_path)
   if dispatcher.failed_count != 0:
     return 2
   return 0
