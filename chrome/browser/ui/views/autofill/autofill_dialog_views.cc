@@ -69,6 +69,15 @@ const size_t kAutocheckoutProgressBarHeight = 11;
 const size_t kArrowHeight = 7;
 const size_t kArrowWidth = 2 * kArrowHeight;
 
+// The padding around the edges of the legal documents text, in pixels.
+const size_t kLegalDocPadding = 20;
+
+// Slight shading for mouse hover and legal document background.
+SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
+
+// A border color for the legal document view.
+SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
+
 // The top padding, in pixels, for the suggestions menu dropdown arrows.
 const size_t kMenuButtonTopOffset = 5;
 
@@ -372,7 +381,7 @@ void AutofillDialogViews::SectionContainer::SetActive(bool active) {
     return;
 
   set_background(is_active ?
-      views::Background::CreateSolidBackground(SkColorSetARGB(9, 0, 0, 0)):
+      views::Background::CreateSolidBackground(kShadingColor) :
       NULL);
   SchedulePaint();
 }
@@ -555,6 +564,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       autocheckout_progress_bar_view_(NULL),
       autocheckout_progress_bar_(NULL),
       footnote_view_(NULL),
+      legal_document_view_(NULL),
       focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
@@ -603,13 +613,20 @@ void AutofillDialogViews::UpdateAccountChooser() {
 
   // Update legal documents for the account.
   if (footnote_view_) {
-    footnote_view_->SetText(controller_->LegalDocumentsText());
+    string16 text = controller_->LegalDocumentsText();
+    if (text.empty()) {
+      footnote_view_->SetVisible(false);
+    } else {
+      footnote_view_->SetVisible(true);
+      legal_document_view_->SetText(text);
 
-    std::vector<ui::Range> link_ranges = controller_->LegalDocumentLinks();
-    for (size_t i = 0; i < link_ranges.size(); ++i) {
-      footnote_view_->AddStyleRange(
-          link_ranges[i],
-          views::StyledLabel::RangeStyleInfo::CreateForLink());
+      const std::vector<ui::Range>& link_ranges =
+          controller_->LegalDocumentLinks();
+      for (size_t i = 0; i < link_ranges.size(); ++i) {
+        legal_document_view_->AddStyleRange(
+            link_ranges[i],
+            views::StyledLabel::RangeStyleInfo::CreateForLink());
+      }
     }
 
     ContentsPreferredSizeChanged();
@@ -792,7 +809,20 @@ views::View* AutofillDialogViews::CreateTitlebarExtraView() {
 }
 
 views::View* AutofillDialogViews::CreateFootnoteView() {
-  footnote_view_ = new views::StyledLabel(string16(), this);
+  footnote_view_ = new views::View();
+  footnote_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           kLegalDocPadding,
+                           kLegalDocPadding,
+                           0));
+  footnote_view_->set_border(
+      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
+  footnote_view_->set_background(
+      views::Background::CreateSolidBackground(kShadingColor));
+
+  legal_document_view_ = new views::StyledLabel(string16(), this);
+  footnote_view_->AddChildView(legal_document_view_);
+
   return footnote_view_;
 }
 

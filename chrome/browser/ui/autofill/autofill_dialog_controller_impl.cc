@@ -437,6 +437,9 @@ string16 AutofillDialogControllerImpl::ProgressBarText() const {
 }
 
 string16 AutofillDialogControllerImpl::LegalDocumentsText() {
+  if (!IsPayingWithWallet())
+    return string16();
+
   EnsureLegalDocumentsText();
   return legal_documents_text_;
 }

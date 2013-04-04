@@ -483,7 +483,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The view that is appended to the bottom of the dialog, below the button
   // strip. Used to display legal document links.
-  views::StyledLabel* footnote_view_;
+  views::View* footnote_view_;
+
+  // The legal document text and links.
+  views::StyledLabel* legal_document_view_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;
