@@ -64,6 +64,8 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
   /** @private */
   this.resizeToClient_ = false;
   /** @private */
+  this.remapKeys_ = '';
+  /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
   /** @type {?function(remoting.ClientSession.State,
@@ -200,6 +202,7 @@ remoting.ClientSession.STATS_KEY_RENDER_LATENCY = 'renderLatency';
 remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtripLatency';
 
 // Keys for per-host settings.
+remoting.ClientSession.KEY_REMAP_KEYS = 'remapKeys';
 remoting.ClientSession.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
 remoting.ClientSession.KEY_SHRINK_TO_FIT = 'shrinkToFit';
 
@@ -284,6 +287,12 @@ remoting.ClientSession.prototype.createPluginAndConnect =
  * @private
  */
 remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
+  if (remoting.ClientSession.KEY_REMAP_KEYS in options &&
+      typeof(options[remoting.ClientSession.KEY_REMAP_KEYS]) ==
+          'string') {
+    this.remapKeys_ = /** @type {string} */
+        options[remoting.ClientSession.KEY_REMAP_KEYS];
+  }
   if (remoting.ClientSession.KEY_RESIZE_TO_CLIENT in options &&
       typeof(options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT]) ==
           'boolean') {
@@ -342,11 +351,9 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     sendCadElement.hidden = true;
   }
 
-  // Remap the right Control key to the right Win / Cmd key on ChromeOS
-  // platforms, if the plugin has the remapKey feature.
-  if (this.plugin.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY) &&
-      remoting.runningOnChromeOS()) {
-    this.plugin.remapKey(0x0700e4, 0x0700e7);
+  // Apply customized key remappings if the plugin supports remapKeys.
+  if (this.plugin.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
+    this.applyRemapKeys_(true);
   }
 
   /** @param {string} msg The IQ stanza to send. */
@@ -480,6 +487,60 @@ remoting.ClientSession.prototype.sendPrintScreen = function() {
 }
 
 /**
+ * Sets and stores the key remapping setting for the current host.
+ *
+ * @param {string} remappings Comma separated list of key remappings.
+ */
+remoting.ClientSession.prototype.setRemapKeys = function(remappings) {
+  // Cancel any existing remappings and apply the new ones.
+  this.applyRemapKeys_(false);
+  this.remapKeys_ = remappings;
+  this.applyRemapKeys_(true);
+
+  // Save the new remapping setting.
+  var options = {};
+  options[remoting.ClientSession.KEY_REMAP_KEYS] = this.remapKeys_;
+  remoting.HostSettings.save(this.hostId, options);
+}
+
+/**
+ * Applies the configured key remappings to the session, or resets them.
+ *
+ * @param {boolean} apply True to apply remappings, false to cancel them.
+ */
+remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
+  // By default, under ChromeOS, remap the right Control key to the right
+  // Win / Cmd key.
+  var remapKeys = this.remapKeys_;
+  if (remapKeys == '' && remoting.runningOnChromeOS()) {
+    remapKeys = '0x0700e4>0x0700e7';
+  }
+
+  var remappings = remapKeys.split(',');
+  for (var i = 0; i < remappings.length; ++i) {
+    var keyCodes = remappings[i].split('>');
+    if (keyCodes.length != 2) {
+      console.log('bad remapKey: ' + remappings[i]);
+      continue;
+    }
+    var fromKey = parseInt(keyCodes[0], 0);
+    var toKey = parseInt(keyCodes[1], 0);
+    if (!fromKey || !toKey) {
+      console.log('bad remapKey code: ' + remappings[i]);
+      continue;
+    }
+    if (apply) {
+      console.log('remapKey 0x' + fromKey.toString(16) +
+                  '>0x' + toKey.toString(16));
+      this.plugin.remapKey(fromKey, toKey);
+    } else {
+      console.log('cancel remapKey 0x' + fromKey.toString(16));
+      this.plugin.remapKey(fromKey, fromKey);
+    }
+  }
+}
+
+/**
  * Callback for the two "screen mode" related menu items: Resize desktop to
  * fit and Shrink to fit.
  *
@@ -515,7 +576,6 @@ remoting.ClientSession.prototype.onSetScreenMode_ = function(event) {
  */
 remoting.ClientSession.prototype.setScreenMode_ =
     function(shrinkToFit, resizeToClient) {
-
   if (resizeToClient && !this.resizeToClient_) {
     this.plugin.notifyClientResolution(window.innerWidth,
                                        window.innerHeight,
