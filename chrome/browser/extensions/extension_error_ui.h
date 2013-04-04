@@ -46,6 +46,10 @@ class ExtensionErrorUI {
   // It should use the same browser as where the bubble was shown.
   virtual void ShowExtensions() = 0;
 
+  // Closes the error UI. This will end up calling BubbleViewDidClose, possibly
+  // synchronously.
+  virtual void Close() = 0;
+
  protected:
   explicit ExtensionErrorUI(ExtensionService* extension_service);
 
@@ -59,7 +63,7 @@ class ExtensionErrorUI {
 
   // Sub-classes should call this methods based on the actions taken by the user
   // in the error bubble.
-  void BubbleViewDidClose();
+  void BubbleViewDidClose();  // destroys |this|
   void BubbleViewAcceptButtonPressed();
   void BubbleViewCancelButtonPressed();
 

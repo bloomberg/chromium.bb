@@ -1838,7 +1838,7 @@ void ExtensionService::HandleExtensionAlertClosed() {
 }
 
 void ExtensionService::HandleExtensionAlertAccept() {
-  HandleExtensionAlertClosed();
+  extension_error_ui_->Close();
 }
 
 void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
@@ -1859,7 +1859,10 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
 
 void ExtensionService::HandleExtensionAlertDetails() {
   extension_error_ui_->ShowExtensions();
-  HandleExtensionAlertClosed();
+  // ShowExtensions may cause the error UI to close synchronously, e.g. if it
+  // causes a navigation.
+  if (extension_error_ui_)
+    extension_error_ui_->Close();
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {

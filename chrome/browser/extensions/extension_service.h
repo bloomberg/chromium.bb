@@ -627,7 +627,8 @@ class ExtensionService
   // about the alerts.
   void HandleExtensionAlertDetails();
 
-  // Called when the extension alert is closed.
+  // Called when the extension alert is closed. Updates prefs and deletes
+  // the active |extension_error_ui_|.
   void HandleExtensionAlertClosed();
 
   // Marks alertable extensions as acknowledged, after the user presses the

@@ -22,9 +22,12 @@ void ExtensionErrorUIAndroid::ShowExtensions() {
   NOTIMPLEMENTED();
 }
 
+void ExtensionErrorUIAndroid::Close() {
+  NOTIMPLEMENTED();
+}
+
 // static
 ExtensionErrorUI* ExtensionErrorUI::Create(
     ExtensionService* extension_service) {
   return new ExtensionErrorUIAndroid(extension_service);
 }
-

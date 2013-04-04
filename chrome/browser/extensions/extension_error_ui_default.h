@@ -22,6 +22,7 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
   // ExtensionErrorUI implementation:
   virtual bool ShowErrorInBubbleView() OVERRIDE;
   virtual void ShowExtensions() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
  private:
   class ExtensionGlobalError : public GlobalError {

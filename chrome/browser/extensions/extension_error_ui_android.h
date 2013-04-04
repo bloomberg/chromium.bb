@@ -19,6 +19,7 @@ class ExtensionErrorUIAndroid : public ExtensionErrorUI {
   // ExtensionErrorUI implementation:
   virtual bool ShowErrorInBubbleView() OVERRIDE;
   virtual void ShowExtensions() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUIAndroid);

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 
 ExtensionErrorUIDefault::ExtensionErrorUIDefault(
     ExtensionService* extension_service)
@@ -36,6 +37,14 @@ bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
 void ExtensionErrorUIDefault::ShowExtensions() {
   DCHECK(browser_);
   chrome::ShowExtensions(browser_, std::string());
+}
+
+void ExtensionErrorUIDefault::Close() {
+  if (global_error_->HasShownBubbleView()) {
+    // Will end up calling into |global_error_|->OnBubbleViewDidClose,
+    // possibly synchronously.
+    global_error_->GetBubbleView()->CloseBubbleView();
+  }
 }
 
 ExtensionErrorUIDefault::ExtensionGlobalError::ExtensionGlobalError(
@@ -86,8 +95,8 @@ string16 ExtensionErrorUIDefault::ExtensionGlobalError::
 
 void ExtensionErrorUIDefault::ExtensionGlobalError::
     OnBubbleViewDidClose(Browser* browser) {
-  // This call deletes error_ui_ (and as a result of error_ui_ destruction,
-  // object pointed by this also gets deleted).
+  // Calling BubbleViewDidClose on |error_ui_| will delete it. It owns us, so
+  // |this| will be deleted too.
   error_ui_->BubbleViewDidClose();
 }
 
