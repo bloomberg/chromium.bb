@@ -590,9 +590,23 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD2(LogWalletApiCallDuration,
                      void(WalletApiCallMetric metric,
                           const base::TimeDelta& duration));
-
+  MOCK_CONST_METHOD2(LogWalletErrorMetric,
+                     void(DialogType dialog_type, WalletErrorMetric metric));
+  MOCK_CONST_METHOD2(LogWalletRequiredActionMetric,
+                     void(DialogType dialog_type,
+                          WalletRequiredActionMetric action));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
+};
+
+enum EscrowRequestPresence {
+  HAS_ESCROW_REQUEST,
+  NO_ESCROW_REQUEST,
+};
+
+enum WalletRequestPresence {
+  HAS_WALLET_REQUEST,
+  NO_WALLET_REQUEST,
 };
 
 class MockWalletClientDelegate : public WalletClientDelegate {
@@ -618,6 +632,48 @@ class MockWalletClientDelegate : public WalletClientDelegate {
       size_t times) {
     EXPECT_CALL(metric_logger_,
                 LogWalletApiCallDuration(metric, testing::_)).Times(times);
+  }
+
+  void ExpectWalletErrorMetric(AutofillMetrics::WalletErrorMetric metric) {
+    EXPECT_CALL(
+        metric_logger_,
+        LogWalletErrorMetric(
+            DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric)).Times(1);
+  }
+
+  void ExpectWalletRequiredActionMetric(
+      AutofillMetrics::WalletRequiredActionMetric metric) {
+    EXPECT_CALL(
+        metric_logger_,
+        LogWalletRequiredActionMetric(
+            DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric)).Times(1);
+  }
+
+  void ExpectBaselineMetrics(EscrowRequestPresence escrow_request_presence,
+                             WalletRequestPresence wallet_request_presence) {
+    int num_requests = 0;
+    if (escrow_request_presence == HAS_ESCROW_REQUEST)
+      ++num_requests;
+    if (wallet_request_presence == HAS_WALLET_REQUEST)
+      ++num_requests;
+
+    EXPECT_GT(num_requests, 0);
+
+    EXPECT_CALL(
+        metric_logger_,
+        LogWalletErrorMetric(
+            DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+            AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST))
+                .Times(num_requests);
+
+    if (wallet_request_presence == HAS_WALLET_REQUEST) {
+      ExpectWalletRequiredActionMetric(
+          AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST);
+    }
+  }
+
+  MockAutofillMetrics* metric_logger() {
+    return &metric_logger_;
   }
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
@@ -658,7 +714,7 @@ class MockWalletClientDelegate : public WalletClientDelegate {
   size_t full_wallets_received_;
   size_t wallet_items_received_;
 
-  MockAutofillMetrics metric_logger_;
+  testing::StrictMock<MockAutofillMetrics> metric_logger_;
 };
 
 }  // namespace
@@ -721,6 +777,9 @@ TEST_F(WalletClientTest, WalletError) {
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::SERVICE_UNAVAILABLE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(
+      AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
@@ -734,6 +793,8 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::UNKNOWN_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_UNKNOWN_ERROR);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
@@ -746,6 +807,8 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
 TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
@@ -760,6 +823,8 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   wallet_client_->GetWalletItems(GURL(kMerchantUrl),
                                  std::vector<WalletClient::RiskCapability>());
@@ -772,6 +837,8 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
 TEST_F(WalletClientTest, RequestError) {
   EXPECT_CALL(delegate_, OnWalletError(WalletClient::BAD_REQUEST)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
@@ -784,6 +851,7 @@ TEST_F(WalletClientTest, RequestError) {
 
 TEST_F(WalletClientTest, GetFullWalletSuccess) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
@@ -810,6 +878,7 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
 
 TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::VERIFY_CVC);
@@ -840,6 +909,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
   EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
@@ -863,6 +934,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
 TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
@@ -887,6 +960,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
 TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
@@ -916,6 +991,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::ACCEPT_LEGAL_DOCUMENTS,
       1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   ScopedVector<WalletItems::LegalDocument> docs;
   base::DictionaryValue document;
@@ -945,6 +1021,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->AuthenticateInstrument("instrument_id",
                                          "cvv",
@@ -966,6 +1043,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->AuthenticateInstrument("instrument_id",
                                          "cvv",
@@ -988,6 +1066,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   wallet_client_->AuthenticateInstrument("instrument_id",
                                          "cvv",
@@ -1004,6 +1084,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   wallet_client_->AuthenticateInstrument("instrument_id",
                                          "cvv",
@@ -1020,6 +1102,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   wallet_client_->AuthenticateInstrument("instrument_id",
                                          "cvv",
@@ -1041,6 +1125,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
 TEST_F(WalletClientTest, GetWalletItems) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->GetWalletItems(GURL(kMerchantUrl),
                                  std::vector<WalletClient::RiskCapability>());
@@ -1054,6 +1139,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
 TEST_F(WalletClientTest, GetWalletItemsWithRiskCapabilites) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::RELOGIN);
@@ -1072,6 +1158,7 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
               OnDidSaveAddress("saved_address_id",
                                std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
@@ -1082,6 +1169,11 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
 
 TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::REQUIRE_PHONE_NUMBER);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::INVALID_FORM_FIELD);
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1101,6 +1193,8 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
 TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
@@ -1112,6 +1206,8 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
 TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
@@ -1125,6 +1221,7 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
               OnDidSaveInstrument("instrument_id",
                                   std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1144,6 +1241,11 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
 
 TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::REQUIRE_PHONE_NUMBER);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::INVALID_FORM_FIELD);
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1171,6 +1273,8 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
 
 TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   EXPECT_CALL(delegate_, OnMalformedResponse());
 
@@ -1194,6 +1298,8 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
   EXPECT_CALL(delegate_,
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1210,6 +1316,8 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
 TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1226,6 +1334,8 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
 TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1252,6 +1362,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1274,6 +1385,11 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::REQUIRE_PHONE_NUMBER);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::INVALID_FORM_FIELD);
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1308,6 +1424,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1333,6 +1451,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1353,6 +1473,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1373,6 +1495,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1397,6 +1521,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1421,6 +1547,7 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
               OnDidUpdateAddress("shipping_address_id",
                                  std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1433,6 +1560,11 @@ TEST_F(WalletClientTest, UpdateAddressSucceeded) {
 
 TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::REQUIRE_PHONE_NUMBER);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::INVALID_FORM_FIELD);
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1453,6 +1585,8 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
 TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1466,6 +1600,8 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
 TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1482,6 +1618,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
                                     std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1500,6 +1637,7 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
                                     std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1529,6 +1667,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
                                     std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1556,6 +1695,7 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressAndExpirationDateSucceeded) {
                                     std::vector<RequiredAction>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1581,6 +1721,11 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressAndExpirationDateSucceeded) {
 TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::REQUIRE_PHONE_NUMBER);
+  delegate_.ExpectWalletRequiredActionMetric(
+      AutofillMetrics::INVALID_FORM_FIELD);
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
@@ -1605,6 +1750,8 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1622,6 +1769,8 @@ TEST_F(WalletClientTest, UpdateInstrumentEscrowFailed) {
               OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            0);
+  delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1643,6 +1792,8 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
+  delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",
@@ -1657,6 +1808,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
@@ -1668,6 +1820,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
 
 TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
                                          GURL(kMerchantUrl),
@@ -1681,6 +1834,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   wallet_client_->GetWalletItems(GURL(kMerchantUrl),
                                  std::vector<WalletClient::RiskCapability>());
@@ -1693,26 +1847,36 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
 }
 
 TEST_F(WalletClientTest, PendingRequest) {
-  ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           2);
+  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
 
   // Shouldn't queue the first request.
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
+  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(1U, wallet_client_->pending_requests_.size());
 
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
+                                           1);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
+  testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(
       WalletClient::SERVICE_UNAVAILABLE)).Times(1);
+  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
+                                           1);
+  delegate_.ExpectWalletErrorMetric(
+      AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
+
+  // Finish the second request.
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorResponse);
@@ -1722,6 +1886,7 @@ TEST_F(WalletClientTest, CancelRequests) {
   ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            0);
+  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
 
