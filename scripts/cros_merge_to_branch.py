@@ -98,31 +98,31 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
   new_sha1 = git.GetGitRepoRevision(work_dir)
   reviewers = set()
 
-  # If the sha1 has changed, then rewrite the commit message.
-  if patch.sha1 != new_sha1:
-    msg = []
-    for line in patch.commit_message.splitlines():
-      if line.startswith('Reviewed-on: '):
-        line = 'Previous-' + line
-      elif line.startswith('Commit-Ready: ') or \
-           line.startswith('Commit-Queue: ') or \
-           line.startswith('Reviewed-by: ') or \
-           line.startswith('Tested-by: '):
-        # If the tag is malformed, or the person lacks a name,
-        # then that's just too bad -- throw it away.
-        ele = re.split(r'[<>@]+', line)
-        if len(ele) == 4:
-          reviewers.add('@'.join(ele[-3:-1]))
-        continue
-      msg.append(line)
-    msg += [
-        '(cherry picked from commit %s)' % patch.sha1,
-    ]
-    git.RunGit(work_dir, ['commit', '--amend', '-F', '-'],
-               input='\n'.join(msg).encode('utf8'))
+  # Rewrite the commit message all the time.  Latest gerrit doesn't seem
+  # to like it when you use the same ChangeId on different branches.
+  msg = []
+  for line in patch.commit_message.splitlines():
+    if line.startswith('Reviewed-on: '):
+      line = 'Previous-' + line
+    elif line.startswith('Commit-Ready: ') or \
+         line.startswith('Commit-Queue: ') or \
+         line.startswith('Reviewed-by: ') or \
+         line.startswith('Tested-by: '):
+      # If the tag is malformed, or the person lacks a name,
+      # then that's just too bad -- throw it away.
+      ele = re.split(r'[<>@]+', line)
+      if len(ele) == 4:
+        reviewers.add('@'.join(ele[-3:-1]))
+      continue
+    msg.append(line)
+  msg += [
+    '(cherry picked from commit %s)' % patch.sha1,
+  ]
+  git.RunGit(work_dir, ['commit', '--amend', '-F', '-'],
+             input='\n'.join(msg).encode('utf8'))
 
-    # Get the new sha1 after rewriting the commit message.
-    new_sha1 = git.GetGitRepoRevision(work_dir)
+  # Get the new sha1 after rewriting the commit message.
+  new_sha1 = git.GetGitRepoRevision(work_dir)
 
   # Create and use a LocalPatch to Upload the change to Gerrit.
   local_patch = cros_patch.LocalPatch(
