@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -22,6 +23,7 @@ class FileStreamReader;
 namespace fileapi {
 
 class AsyncFileUtil;
+class CopyOrMoveFileValidatorFactory;
 class FileSystemURL;
 class FileStreamWriter;
 class FileSystemContext;
@@ -67,6 +69,18 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
 
   // Returns the specialized AsyncFileUtil for this mount point.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
+
+  // Returns the specialized CopyOrMoveFileValidatorFactory for this mount
+  // point and |type|.  If |error_code| is PLATFORM_FILE_OK and the result
+  // is NULL, then no validator is required.
+  virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+      FileSystemType type, base::PlatformFileError* error_code) = 0;
+
+  // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
+  // once.
+  virtual void InitializeCopyOrMoveFileValidatorFactory(
+      FileSystemType type,
+      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) = 0;
 
   // Returns file permission policy we should apply for the given |url|.
   virtual FilePermissionPolicy GetPermissionPolicy(

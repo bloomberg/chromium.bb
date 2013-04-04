@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
@@ -120,6 +121,46 @@ AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
       NOTREACHED();
   }
   return NULL;
+}
+
+CopyOrMoveFileValidatorFactory*
+IsolatedMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+    FileSystemType type, base::PlatformFileError* error_code) {
+  DCHECK(error_code);
+  *error_code = base::PLATFORM_FILE_OK;
+  switch (type) {
+    case kFileSystemTypeNativeLocal:
+    case kFileSystemTypeDragged:
+      return NULL;
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypeDeviceMedia:
+      if (!media_copy_or_move_file_validator_factory_) {
+        *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+        return NULL;
+      }
+      return media_copy_or_move_file_validator_factory_.get();
+    default:
+      NOTREACHED();
+  }
+  return NULL;
+}
+
+void IsolatedMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
+    FileSystemType type,
+    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+  switch (type) {
+    case kFileSystemTypeNativeLocal:
+    case kFileSystemTypeDragged:
+      DCHECK(factory == NULL);
+      break;
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypeDeviceMedia:
+      if (!media_copy_or_move_file_validator_factory_)
+        media_copy_or_move_file_validator_factory_.reset(factory.release());
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 FilePermissionPolicy IsolatedMountPointProvider::GetPermissionPolicy(

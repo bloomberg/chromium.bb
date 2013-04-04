@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -153,6 +154,35 @@ void CrossOperationDelegate::DidCreateSnapshot(
   // For now we assume CreateSnapshotFile always return a valid local file path.
   // TODO(kinuko): Otherwise create a FileStreamReader to perform a copy/move.
   DCHECK(!platform_path.empty());
+
+  CopyOrMoveFileValidatorFactory* factory =
+      file_system_context()->GetCopyOrMoveFileValidatorFactory(
+          dest_root_.type(), &error);
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+  if (!factory) {
+    DidValidateFile(dest, callback, file_info, platform_path, error);
+    return;
+  }
+
+  validator_.reset(factory->CreateCopyOrMoveFileValidator(platform_path));
+  validator_->StartValidation(
+      base::Bind(&CrossOperationDelegate::DidValidateFile, AsWeakPtr(),
+                 dest, callback, file_info, platform_path));
+}
+
+void CrossOperationDelegate::DidValidateFile(
+    const FileSystemURL& dest,
+    const StatusCallback& callback,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
 
   NewDestOperation()->CopyInForeignFile(platform_path, dest, callback);
 }

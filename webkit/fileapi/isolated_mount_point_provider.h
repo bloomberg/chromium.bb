@@ -35,6 +35,12 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       bool create) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
+  virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+      FileSystemType type,
+      base::PlatformFileError* error_code) OVERRIDE;
+  virtual void InitializeCopyOrMoveFileValidatorFactory(
+      FileSystemType type,
+      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;
@@ -63,6 +69,8 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   const base::FilePath profile_path_;
 
   scoped_ptr<MediaPathFilter> media_path_filter_;
+  scoped_ptr<CopyOrMoveFileValidatorFactory>
+      media_copy_or_move_file_validator_factory_;
 
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;
   scoped_ptr<AsyncFileUtilAdapter> dragged_file_util_;

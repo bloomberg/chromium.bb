@@ -17,6 +17,8 @@ class ShareableFileReference;
 
 namespace fileapi {
 
+class CopyOrMoveFileValidator;
+
 // A delegate class for recursive copy or move operations.
 class CrossOperationDelegate
     : public RecursiveOperationDelegate,
@@ -61,6 +63,12 @@ class CrossOperationDelegate
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+  void DidValidateFile(
+      const FileSystemURL& dest,
+      const StatusCallback& callback,
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path,
+      base::PlatformFileError error);
   void DidFinishCopy(
       const FileSystemURL& src,
       const StatusCallback& callback,
@@ -96,6 +104,8 @@ class CrossOperationDelegate
   scoped_ptr<LocalFileSystemOperation> src_root_operation_;
 
   scoped_refptr<webkit_blob::ShareableFileReference> current_file_ref_;
+
+  scoped_ptr<CopyOrMoveFileValidator> validator_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossOperationDelegate);
 };

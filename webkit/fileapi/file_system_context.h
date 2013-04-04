@@ -41,6 +41,7 @@ class FileStreamReader;
 namespace fileapi {
 
 class AsyncFileUtil;
+class CopyOrMoveFileValidatorFactory;
 class ExternalFileSystemMountPointProvider;
 class ExternalMountPoints;
 class FileSystemFileUtil;
@@ -96,6 +97,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
 
   // Returns the appropriate AsyncFileUtil instance for the given |type|.
   AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) const;
+
+  // Returns the appropriate CopyOrMoveFileValidatorFactory for the given
+  // |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
+  // then no validator is required.
+  CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+      FileSystemType type, base::PlatformFileError* error_code) const;
 
   // Returns the mount point provider instance for the given |type|.
   // This may return NULL if it is given an invalid or unsupported filesystem

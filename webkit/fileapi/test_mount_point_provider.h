@@ -44,6 +44,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
       bool create) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
+  virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+      FileSystemType type,
+      base::PlatformFileError* error_code) OVERRIDE;
+  virtual void InitializeCopyOrMoveFileValidatorFactory(
+      FileSystemType type,
+      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;

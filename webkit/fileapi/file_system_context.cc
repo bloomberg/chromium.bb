@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -131,6 +132,19 @@ AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
   if (!mount_point_provider)
     return NULL;
   return mount_point_provider->GetAsyncFileUtil(type);
+}
+
+CopyOrMoveFileValidatorFactory*
+FileSystemContext::GetCopyOrMoveFileValidatorFactory(
+    FileSystemType type, base::PlatformFileError* error_code) const {
+  DCHECK(error_code);
+  *error_code = base::PLATFORM_FILE_OK;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->GetCopyOrMoveFileValidatorFactory(
+      type, error_code);
 }
 
 FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(

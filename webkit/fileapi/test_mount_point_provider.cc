@@ -10,6 +10,7 @@
 
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -109,6 +110,19 @@ FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
 
 AsyncFileUtil* TestMountPointProvider::GetAsyncFileUtil(FileSystemType type) {
   return local_file_util_.get();
+}
+
+CopyOrMoveFileValidatorFactory*
+TestMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+    FileSystemType type, base::PlatformFileError* error_code) {
+  DCHECK(error_code);
+  *error_code = base::PLATFORM_FILE_OK;
+  return NULL;
+}
+
+void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
+    FileSystemType type, scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+  DCHECK(!factory);
 }
 
 FilePermissionPolicy TestMountPointProvider::GetPermissionPolicy(

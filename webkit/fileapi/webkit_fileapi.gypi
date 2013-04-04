@@ -8,6 +8,7 @@
       '../fileapi/async_file_util.h',
       '../fileapi/async_file_util_adapter.cc',
       '../fileapi/async_file_util_adapter.h',
+      '../fileapi/copy_or_move_file_validator.h',
       '../fileapi/cross_operation_delegate.cc',
       '../fileapi/cross_operation_delegate.h',
       '../fileapi/external_mount_points.cc',

@@ -20,6 +20,7 @@
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -212,6 +213,20 @@ fileapi::AsyncFileUtil* CrosMountPointProvider::GetAsyncFileUtil(
   DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
          type == fileapi::kFileSystemTypeRestrictedNativeLocal);
   return local_file_util_.get();
+}
+
+fileapi::CopyOrMoveFileValidatorFactory*
+CrosMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+    fileapi::FileSystemType type, base::PlatformFileError* error_code) {
+  DCHECK(error_code);
+  *error_code = base::PLATFORM_FILE_OK;
+  return NULL;
+}
+
+void CrosMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
+    fileapi::FileSystemType type,
+    scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
+  DCHECK(!factory);
 }
 
 fileapi::FilePermissionPolicy CrosMountPointProvider::GetPermissionPolicy(

@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
+#include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -260,6 +261,21 @@ FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
 AsyncFileUtil* SandboxMountPointProvider::GetAsyncFileUtil(
     FileSystemType type) {
   return sandbox_file_util_.get();
+}
+
+CopyOrMoveFileValidatorFactory*
+SandboxMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+    FileSystemType type,
+    base::PlatformFileError* error_code) {
+  DCHECK(error_code);
+  *error_code = base::PLATFORM_FILE_OK;
+  return NULL;
+}
+
+void SandboxMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
+    FileSystemType type,
+    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+  DCHECK(!factory);
 }
 
 FilePermissionPolicy SandboxMountPointProvider::GetPermissionPolicy(
