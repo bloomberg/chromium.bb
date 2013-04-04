@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
+#include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
@@ -487,16 +488,29 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
   ASSERT_LE(3u, verify_result.public_key_hashes.size());
 
   HashValueVector sha1_hashes;
-  for (unsigned i = 0; i < verify_result.public_key_hashes.size(); ++i) {
+  for (size_t i = 0; i < verify_result.public_key_hashes.size(); ++i) {
     if (verify_result.public_key_hashes[i].tag != HASH_VALUE_SHA1)
       continue;
     sha1_hashes.push_back(verify_result.public_key_hashes[i]);
   }
   ASSERT_LE(3u, sha1_hashes.size());
 
-  for (unsigned i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     EXPECT_EQ(HexEncode(kCertSESPKIs[i], base::kSHA1Length),
               HexEncode(sha1_hashes[i].data(), base::kSHA1Length));
+  }
+
+  HashValueVector sha256_hashes;
+  for (size_t i = 0; i < verify_result.public_key_hashes.size(); ++i) {
+    if (verify_result.public_key_hashes[i].tag != HASH_VALUE_SHA256)
+      continue;
+    sha256_hashes.push_back(verify_result.public_key_hashes[i]);
+  }
+  ASSERT_LE(3u, sha256_hashes.size());
+
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(HexEncode(kCertSESPKIsSHA256[i], crypto::kSHA256Length),
+              HexEncode(sha256_hashes[i].data(), crypto::kSHA256Length));
   }
 }
 

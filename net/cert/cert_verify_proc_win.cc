@@ -465,7 +465,7 @@ void AppendPublicKeyHashes(PCCERT_CHAIN_CONTEXT chain,
     hashes->push_back(sha1);
 
     HashValue sha256(HASH_VALUE_SHA256);
-    crypto::SHA256HashString(spki_bytes, sha1.data(), crypto::kSHA256Length);
+    crypto::SHA256HashString(spki_bytes, sha256.data(), crypto::kSHA256Length);
     hashes->push_back(sha256);
   }
 }
