@@ -166,6 +166,14 @@ std::string FormatEntry(const base::FilePath& path,
                   file_specific_info.is_hosted_document());
   }
 
+  if (entry.has_directory_specific_info()) {
+    StringAppendF(&out, "  directory_info\n");
+    const drive::DriveDirectorySpecificInfo& directory_specific_info =
+        entry.directory_specific_info();
+    StringAppendF(&out, "    changestamp: %"PRId64"\n",
+                  directory_specific_info.changestamp());
+  }
+
   return out;
 }
 
