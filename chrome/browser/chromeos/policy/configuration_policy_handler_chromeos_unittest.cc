@@ -16,11 +16,10 @@ namespace policy {
 
 TEST(NetworkConfigurationPolicyHandlerTest, Empty) {
   PolicyMap policy_map;
-  NetworkConfigurationPolicyHandler handler(
-      key::kOpenNetworkConfiguration,
-      chromeos::onc::ONC_SOURCE_USER_POLICY);
+  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
-  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(key::kOpenNetworkConfiguration).empty());
 }
 
@@ -44,11 +43,10 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(
-      key::kOpenNetworkConfiguration,
-      chromeos::onc::ONC_SOURCE_USER_POLICY);
+  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
-  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.GetErrors(key::kOpenNetworkConfiguration).empty());
 }
 
@@ -58,11 +56,10 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
                  Value::CreateBooleanValue(false));
-  NetworkConfigurationPolicyHandler handler(
-      key::kOpenNetworkConfiguration,
-      chromeos::onc::ONC_SOURCE_USER_POLICY);
+  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
-  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.GetErrors(key::kOpenNetworkConfiguration).empty());
 }
 
@@ -73,11 +70,10 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(
-      key::kOpenNetworkConfiguration,
-      chromeos::onc::ONC_SOURCE_USER_POLICY);
+  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
-  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.GetErrors(key::kOpenNetworkConfiguration).empty());
 }
 
@@ -101,11 +97,10 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
                  Value::CreateStringValue(kTestONC));
-  NetworkConfigurationPolicyHandler handler(
-      key::kOpenNetworkConfiguration,
-      chromeos::onc::ONC_SOURCE_USER_POLICY);
+  scoped_ptr<NetworkConfigurationPolicyHandler> handler(
+      NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
-  handler.PrepareForDisplaying(&policy_map);
+  handler->PrepareForDisplaying(&policy_map);
   const Value* sanitized = policy_map.GetValue(key::kOpenNetworkConfiguration);
   ASSERT_TRUE(sanitized);
   std::string sanitized_onc;

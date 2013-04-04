@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/onc/onc_mapper.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
@@ -213,6 +214,51 @@ void ExpandStringsInOncObject(
     ExpandStringsInOncObject(*field_signature->value_signature,
                              substitution, inner_object);
   }
+}
+
+namespace {
+
+class OncMaskValues : public onc::Mapper {
+ public:
+  static scoped_ptr<base::DictionaryValue> Mask(
+      const onc::OncValueSignature& signature,
+      const base::DictionaryValue& onc_object,
+      const std::string& mask) {
+    OncMaskValues masker(mask);
+    bool unused_error;
+    return masker.MapObject(signature, onc_object, &unused_error);
+  }
+
+ protected:
+  explicit OncMaskValues(const std::string& mask)
+      : mask_(mask) {
+  }
+
+  virtual scoped_ptr<base::Value> MapField(
+      const std::string& field_name,
+      const onc::OncValueSignature& object_signature,
+      const base::Value& onc_value,
+      bool* found_unknown_field,
+      bool* error) OVERRIDE {
+    if (onc::FieldIsCredential(object_signature, field_name)) {
+      return scoped_ptr<base::Value>(new base::StringValue(mask_));
+    } else {
+      return onc::Mapper::MapField(field_name, object_signature, onc_value,
+                                   found_unknown_field, error);
+    }
+  }
+
+  // Mask to insert in place of the sensitive values.
+  std::string mask_;
+};
+
+}  // namespace
+
+CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
+    const onc::OncValueSignature& signature,
+    const base::DictionaryValue& onc_object,
+    const std::string& mask) {
+  return OncMaskValues::Mask(signature, onc_object, mask);
 }
 
 }  // namespace onc

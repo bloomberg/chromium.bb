@@ -367,5 +367,36 @@ const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,
   return NULL;
 }
 
+namespace {
+
+struct CredentialEntry {
+  const OncValueSignature* value_signature;
+  const char* field_name;
+};
+
+const CredentialEntry credentials[] = {
+  { &kEAPSignature, onc::eap::kPassword },
+  { &kIPsecSignature, onc::vpn::kPSK },
+  { &kL2TPSignature, onc::vpn::kPassword },
+  { &kOpenVPNSignature, onc::vpn::kPassword },
+  { &kOpenVPNSignature, onc::vpn::kTLSAuthContents },
+  { &kWiFiSignature, onc::wifi::kPassphrase },
+  { NULL }
+};
+
+}  // namespace
+
+bool FieldIsCredential(const OncValueSignature& signature,
+                       const std::string& onc_field_name) {
+  for (const CredentialEntry* entry = credentials;
+       entry->value_signature != NULL; ++entry) {
+    if (&signature == entry->value_signature &&
+        onc_field_name == entry->field_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace onc
 }  // namespace chromeos

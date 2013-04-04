@@ -21,9 +21,9 @@ namespace policy {
 // generates error messages.
 class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  NetworkConfigurationPolicyHandler(
-      const char* policy_name,
-      chromeos::onc::ONCSource onc_source);
+  static NetworkConfigurationPolicyHandler* CreateForUserPolicy();
+  static NetworkConfigurationPolicyHandler* CreateForDevicePolicy();
+
   virtual ~NetworkConfigurationPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -34,17 +34,19 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   virtual void PrepareForDisplaying(PolicyMap* policies) const OVERRIDE;
 
  private:
+  explicit NetworkConfigurationPolicyHandler(
+      const char* policy_name,
+      chromeos::onc::ONCSource onc_source);
+
   // Takes network policy in Value representation and produces an output Value
   // that contains a pretty-printed and sanitized version. In particular, we
   // remove any Passphrases that may be contained in the JSON. Ownership of the
   // return value is transferred to the caller.
   static base::Value* SanitizeNetworkConfig(const base::Value* config);
 
-  // Filters a network dictionary to remove all sensitive fields and replace
-  // their values with placeholders.
-  static void MaskSensitiveValues(base::DictionaryValue* network_dict);
-
-  chromeos::onc::ONCSource onc_source_;
+  // The kind of ONC source that this handler represents. ONCSource
+  // distinguishes between user and device policy.
+  const chromeos::onc::ONCSource onc_source_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationPolicyHandler);
 };

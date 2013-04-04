@@ -64,6 +64,14 @@ CHROMEOS_EXPORT void ExpandStringsInOncObject(
     const StringSubstitution& substitution,
     base::DictionaryValue* onc_object);
 
+// Creates a copy of |onc_object| with all values of sensitive fields replaced
+// by |mask|. To find sensitive fields, signature and field name are checked
+// with the function FieldIsCredential().
+CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
+    const onc::OncValueSignature& signature,
+    const base::DictionaryValue& onc_object,
+    const std::string& mask);
+
 }  // namespace onc
 }  // namespace chromeos
 

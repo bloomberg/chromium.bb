@@ -34,7 +34,7 @@ struct OncValueSignature;
 //
 // The ONC validator and normalizer derive from this class and adapt the default
 // copy behavior.
-class Mapper {
+class CHROMEOS_EXPORT Mapper {
  public:
   Mapper();
   virtual ~Mapper();

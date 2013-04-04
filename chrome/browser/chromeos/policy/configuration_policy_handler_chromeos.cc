@@ -25,17 +25,21 @@
 
 namespace onc = chromeos::onc;
 
-namespace {
-
-}  // namespace
-
 namespace policy {
 
-NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
-    const char* policy_name,
-    chromeos::onc::ONCSource onc_source)
-    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
-      onc_source_(onc_source) {}
+// static
+NetworkConfigurationPolicyHandler*
+NetworkConfigurationPolicyHandler::CreateForUserPolicy() {
+  return new NetworkConfigurationPolicyHandler(
+      key::kOpenNetworkConfiguration, onc::ONC_SOURCE_USER_POLICY);
+}
+
+// static
+NetworkConfigurationPolicyHandler*
+NetworkConfigurationPolicyHandler::CreateForDevicePolicy() {
+  return new NetworkConfigurationPolicyHandler(
+      key::kDeviceOpenNetworkConfiguration, onc::ONC_SOURCE_DEVICE_POLICY);
+}
 
 NetworkConfigurationPolicyHandler::~NetworkConfigurationPolicyHandler() {}
 
@@ -101,6 +105,13 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   policies->Set(policy_name(), entry->level, entry->scope, sanitized_config);
 }
 
+NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
+    const char* policy_name,
+    chromeos::onc::ONCSource onc_source)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
+      onc_source_(onc_source) {
+}
+
 // static
 base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     const base::Value* config) {
@@ -108,72 +119,24 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   if (!config->GetAsString(&json_string))
     return NULL;
 
-  scoped_ptr<base::Value> json_value(
-      base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (!json_value.get() || !json_value->IsType(base::Value::TYPE_DICTIONARY))
+  scoped_ptr<base::DictionaryValue> toplevel_dict =
+      onc::ReadDictionaryFromJson(json_string);
+  if (!toplevel_dict)
     return NULL;
 
-  base::DictionaryValue* config_dict =
-      static_cast<base::DictionaryValue*>(json_value.get());
+  // Placeholder to insert in place of the filtered setting.
+  const char kPlaceholder[] = "********";
 
-  // Strip any sensitive information from the JSON dictionary.
-  base::ListValue* config_list = NULL;
-  if (config_dict->GetList("NetworkConfigurations", &config_list)) {
-    for (base::ListValue::const_iterator network_entry = config_list->begin();
-         network_entry != config_list->end();
-         ++network_entry) {
-      if ((*network_entry) &&
-          (*network_entry)->IsType(base::Value::TYPE_DICTIONARY)) {
-        MaskSensitiveValues(
-            static_cast<base::DictionaryValue*>(*network_entry));
-      }
-    }
-  }
+  toplevel_dict = onc::MaskCredentialsInOncObject(
+      onc::kToplevelConfigurationSignature,
+      *toplevel_dict,
+      kPlaceholder);
 
-  // Convert back to a string, pretty printing the contents.
-  base::JSONWriter::WriteWithOptions(config_dict,
+  base::JSONWriter::WriteWithOptions(toplevel_dict.get(),
                                      base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
                                          base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
   return base::Value::CreateStringValue(json_string);
-}
-
-// static
-void NetworkConfigurationPolicyHandler::MaskSensitiveValues(
-    base::DictionaryValue* network_dict) {
-  // Paths of the properties to be replaced by the placeholder. Each entry
-  // specifies dictionary key paths.
-  static const int kMaxComponents = 3;
-  static const char* kFilteredSettings[][kMaxComponents] = {
-    { onc::network_config::kEthernet, onc::ethernet::kEAP,
-      onc::eap::kPassword },
-    { onc::network_config::kVPN, onc::vpn::kIPsec, onc::vpn::kPSK },
-    { onc::network_config::kVPN, onc::vpn::kL2TP, onc::vpn::kPassword },
-    { onc::network_config::kVPN, onc::vpn::kOpenVPN, onc::vpn::kPassword },
-    { onc::network_config::kVPN, onc::vpn::kOpenVPN,
-      onc::vpn::kTLSAuthContents },
-    { onc::network_config::kWiFi, onc::wifi::kEAP, onc::eap::kPassword },
-    { onc::network_config::kWiFi, onc::wifi::kPassphrase },
-  };
-
-  // Placeholder to insert in place of the filtered setting.
-  static const char kPlaceholder[] = "********";
-
-  for (size_t i = 0; i < arraysize(kFilteredSettings); ++i) {
-    const char** path = kFilteredSettings[i];
-    base::DictionaryValue* dict = network_dict;
-    int j = 0;
-    for (j = 0; path[j + 1] != NULL && j + 1 < kMaxComponents; ++j) {
-      if (!dict->GetDictionaryWithoutPathExpansion(path[j], &dict)) {
-        dict = NULL;
-        break;
-      }
-    }
-    if (dict && dict->RemoveWithoutPathExpansion(path[j], NULL)) {
-      dict->SetWithoutPathExpansion(
-          path[j], base::Value::CreateStringValue(kPlaceholder));
-    }
-  }
 }
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()
