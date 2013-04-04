@@ -1,0 +1,21 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Watchlist Rules
+# Refer: http://dev.chromium.org/developers/contributing-code/watchlists
+
+# IMPORTANT: The regular expression filepath is tested against each path using
+# re.search, so it is not usually necessary to add .*.
+
+{
+  'WATCHLIST_DEFINITIONS': {
+    'test_runner': {
+      'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
+    },
+  },
+
+  'WATCHLISTS': {
+    'test_runner': [ 'jochen+watch@chromium.org' ],
+  },
+}
