@@ -55,34 +55,29 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
 
-# WaylandClientAPI.xml:
-# * we don't want wayland-client_8h.xml to avoid duplicating output methods,
+combine_xml: server client
+
+# * we don't want wayland-{server|client}_8h.xml to avoid duplicating output methods,
 #   move it out of the way first.
 # * use doxygen's combine.xslt to merge the xml files into one single file
-# * move wayland-client_8h.xml back to its original location
-# * transform the combined XML file into docbook format
-en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/client/index.xml $(srcdir)/doxygen-to-publican.xsl
-	$(AM_V_GEN)$(MKDIR_P) en-US/images
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/client/wayland-client_8h.xml \
+# * move wayland-<foo>_8h.xml back to its original location
+server client:
+	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/$@/wayland-$@_8h.xml \
 		$(top_builddir)/doc/doxygen/xml/
-	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/client/combine.xslt \
-		$(top_builddir)/doc/doxygen/xml/client/index.xml > \
-		$(top_builddir)/doc/doxygen/xml/client/clientAPI.xml
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml \
-		$(top_builddir)/doc/doxygen/xml/client
+	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/$@/combine.xslt \
+		$(top_builddir)/doc/doxygen/xml/$@/index.xml > \
+		$(top_builddir)/doc/doxygen/xml/$@/$@API.xml
+	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-$@_8h.xml \
+		$(top_builddir)/doc/doxygen/xml/$@
+
+# WaylandClientAPI.xml:
+# merge doxygen xml files into one single file (see combine_xml), then transform the combined XML file into docbook format
+en-US/WaylandClientAPI.xml: combine_xml $(top_builddir)/doc/doxygen/xml/client/index.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(XSLTPROC)  --stringparam which Client $(srcdir)/doxygen-to-publican.xsl \
 		$(top_builddir)/doc/doxygen/xml/client/clientAPI.xml > en-US/WaylandClientAPI.xml
 
 # WaylandServerAPI.xml: see WaylandClientAPI.xml
-en-US/WaylandServerAPI.xml: $(top_builddir)/doc/doxygen/xml/server/index.xml $(srcdir)/doxygen-to-publican.xsl
-	$(AM_V_GEN)$(MKDIR_P) en-US/images
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/server/wayland-server_8h.xml \
-		$(top_builddir)/doc/doxygen/xml
-	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/server/combine.xslt \
-		$(top_builddir)/doc/doxygen/xml/server/index.xml > \
-		$(top_builddir)/doc/doxygen/xml/server/serverAPI.xml
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-server_8h.xml \
-		$(top_builddir)/doc/doxygen/xml/server
+en-US/WaylandServerAPI.xml: combine_xml $(top_builddir)/doc/doxygen/xml/client/index.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(XSLTPROC) --stringparam which Server $(srcdir)/doxygen-to-publican.xsl \
 		$(top_builddir)/doc/doxygen/xml/server/serverAPI.xml > en-US/WaylandServerAPI.xml
 
