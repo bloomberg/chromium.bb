@@ -71,6 +71,24 @@ class GDataWapiService : public DriveServiceInterface,
       const std::string& search_query,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback) OVERRIDE;
+  virtual void GetAllResourceList(
+      const GetResourceListCallback& callback) OVERRIDE;
+  virtual void GetResourceListInDirectory(
+      const std::string& directory_resource_id,
+      const GetResourceListCallback& callback) OVERRIDE;
+  virtual void Search(
+      const std::string& search_query,
+      const GetResourceListCallback& callback) OVERRIDE;
+  virtual void SearchInDirectory(
+      const std::string& search_query,
+      const std::string& directory_resource_id,
+      const GetResourceListCallback& callback) OVERRIDE;
+  virtual void GetChangeList(
+      int64 start_changestamp,
+      const GetResourceListCallback& callback) OVERRIDE;
+  virtual void ContinueGetResourceList(
+      const GURL& override_url,
+      const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceEntry(
       const std::string& resource_id,
       const GetResourceEntryCallback& callback) OVERRIDE;

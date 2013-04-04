@@ -236,6 +236,68 @@ void GDataWapiService::GetResourceList(
           base::Bind(&ParseResourceListAndRun, callback)));
 }
 
+void GDataWapiService::GetAllResourceList(
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void GDataWapiService::GetResourceListInDirectory(
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void GDataWapiService::Search(const std::string& search_query,
+                              const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void GDataWapiService::SearchInDirectory(
+    const std::string& search_query,
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void GDataWapiService::GetChangeList(int64 start_changestamp,
+                                     const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void GDataWapiService::ContinueGetResourceList(
+    const GURL& override_url,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void GDataWapiService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {

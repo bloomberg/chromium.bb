@@ -283,6 +283,68 @@ void DriveAPIService::GetResourceList(
   NOTREACHED();
 }
 
+void DriveAPIService::GetAllResourceList(
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DriveAPIService::GetResourceListInDirectory(
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DriveAPIService::Search(const std::string& search_query,
+                             const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DriveAPIService::SearchInDirectory(
+    const std::string& search_query,
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DriveAPIService::GetChangeList(int64 start_changestamp,
+                                    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DriveAPIService::ContinueGetResourceList(
+    const GURL& override_url,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void DriveAPIService::GetFilelist(
     const GURL& url,
     const std::string& search_query,

@@ -47,6 +47,30 @@ void DummyDriveService::GetResourceList(
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {}
 
+void DummyDriveService::GetAllResourceList(
+    const GetResourceListCallback& callback) {}
+
+void DummyDriveService::GetResourceListInDirectory(
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {}
+
+void DummyDriveService::Search(
+    const std::string& search_query,
+    const GetResourceListCallback& callback) {}
+
+void DummyDriveService::SearchInDirectory(
+    const std::string& search_query,
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {}
+
+void DummyDriveService::GetChangeList(
+    int64 start_changestamp,
+    const GetResourceListCallback& callback) {}
+
+void DummyDriveService::ContinueGetResourceList(
+    const GURL& override_url,
+    const GetResourceListCallback& callback) {}
+
 void DummyDriveService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {}

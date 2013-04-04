@@ -335,6 +335,68 @@ void FakeDriveService::GetResourceList(
                  base::Passed(&resource_list)));
 }
 
+void FakeDriveService::GetAllResourceList(
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void FakeDriveService::GetResourceListInDirectory(
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void FakeDriveService::Search(const std::string& search_query,
+                              const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void FakeDriveService::SearchInDirectory(
+    const std::string& search_query,
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!search_query.empty());
+  DCHECK(!directory_resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void FakeDriveService::GetChangeList(int64 start_changestamp,
+                                     const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void FakeDriveService::ContinueGetResourceList(
+    const GURL& override_url,
+    const GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void FakeDriveService::GetResourceEntry(
     const std::string& resource_id,
     const GetResourceEntryCallback& callback) {

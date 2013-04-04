@@ -43,6 +43,24 @@ class MockDriveService : public DriveServiceInterface {
           const std::string& search_string,
           const std::string& directory_resource_id,
           const GetResourceListCallback& callback));
+  MOCK_METHOD1(GetAllResourceList,
+      void(const GetResourceListCallback& callback));
+  MOCK_METHOD2(GetResourceListInDirectory,
+      void(const std::string& directory_resource_id,
+          const GetResourceListCallback& callback));
+  MOCK_METHOD2(Search,
+      void(const std::string& search_query,
+          const GetResourceListCallback& callback));
+  MOCK_METHOD3(SearchInDirectory,
+      void(const std::string& search_query,
+          const std::string& directory_resource_id,
+          const GetResourceListCallback& callback));
+  MOCK_METHOD2(GetChangeList,
+      void(int64 start_changestamp,
+          const GetResourceListCallback& callback));
+  MOCK_METHOD2(ContinueGetResourceList,
+      void(const GURL& override_url,
+          const GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceEntry,
       void(const std::string& resource_id,
           const GetResourceEntryCallback& callback));

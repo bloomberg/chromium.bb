@@ -131,6 +131,10 @@ class DriveServiceInterface {
   // Returns the resource id for the root directory.
   virtual std::string GetRootResourceId() const = 0;
 
+  // This method is being deprecated. One of GetAllResourceList,
+  // GetResourceListInDirectory, Search, SearchInDirectory, GetChangeList
+  // should be used after they are implemented.
+  //
   // Fetches a resource list or a change list from |url|. If this URL is
   // empty, the call will fetch from the default URL. When
   // |start_changestamp| is 0, the default behavior is to fetch the resource
@@ -154,6 +158,74 @@ class DriveServiceInterface {
                                const std::string& search_query,
                                const std::string& directory_resource_id,
                                const GetResourceListCallback& callback) = 0;
+
+  // Fetches a resource list of the account. |callback| will be called upon
+  // completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // ContinueGetResourceList.
+  //
+  // |callback| must not be null.
+  virtual void GetAllResourceList(
+      const GetResourceListCallback& callback) = 0;
+
+  // Fetches a resource list in the directory with |directory_resource_id|.
+  // |callback| will be called upon completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // ContinueGetResourceList.
+  //
+  // |directory_resource_id| must not be empty.
+  // |callback| must not be null.
+  virtual void GetResourceListInDirectory(
+      const std::string& directory_resource_id,
+      const GetResourceListCallback& callback) = 0;
+
+  // Searches the resources for the |search_query| from all the user's
+  // resources. |callback| will be called upon completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // ContinueGetResourceList.
+  //
+  // |search_query| must not be empty.
+  // |callback| must not be null.
+  virtual void Search(
+      const std::string& search_query,
+      const GetResourceListCallback& callback) = 0;
+
+  // Searches the resources for the |search_query| from the directory with
+  // |directory_resource_id|. |callback| will be called upon completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // ContinueGetResourceList.
+  //
+  // Neither |search_query| nor |directory_resource_id| must be empty.
+  // |callback| must not be null.
+  virtual void SearchInDirectory(
+      const std::string& search_query,
+      const std::string& directory_resource_id,
+      const GetResourceListCallback& callback) = 0;
+
+  // Fetches change list since |start_changestamp|. |callback| will be
+  // called upon completion.
+  // If the list is too long, it may be paged. In such a case, a URL to fetch
+  // remaining results will be included in the returned result. See also
+  // ContinueGetResourceList.
+  //
+  // |callback| must not be null.
+  virtual void GetChangeList(
+      int64 start_changestamp,
+      const GetResourceListCallback& callback) = 0;
+
+  // Operations returning GetResourceList may be paged. In such a case,
+  // a URL to fetch remaining result is returned. The URL can be used for this
+  // method. |callback| will be called upon completion.
+  //
+  // |override_url| must not be empty.
+  // |callback| must not be null.
+  virtual void ContinueGetResourceList(
+      const GURL& override_url,
+      const GetResourceListCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
