@@ -3042,7 +3042,12 @@ DialogType.isModal = function(type) {
     if (!this.isOnDrive())
       return;
 
+    // Remember the most recent query. If there is an other request in progress,
+    // then it's result will be discarded and it will call a new request for
+    // this query.
     this.lastQuery_ = query;
+    if (this.autocompleteSuggestionsBusy_)
+      return;
 
     // The autocomplete list should be resized and repositioned here as the
     // search box is resized when it's focused.
@@ -3061,15 +3066,20 @@ DialogType.isModal = function(type) {
       // Updates only the head item to prevent a flickering on typing.
       this.autocompleteList_.dataModel.splice(0, 1, headerItem);
 
+    this.autocompleteSuggestionsBusy_ = true;
     chrome.fileBrowserPrivate.searchDriveMetadata(
       query,
       function(suggestions) {
-        // searchDriveMetadata() is asynchronous hence the result of an old
-        // query could be delivered at a later time.
-        if (query != this.lastQuery_)
-          return;
+        this.autocompleteSuggestionsBusy_ = false;
 
-        // Keeps the items in the initial list.
+        // Discard results for previous requests and fire a new search
+        // for the most recent query.
+        if (query != this.lastQuery_) {
+          this.requestAutocompleteSuggestions_(this.lastQuery_);
+          return;
+        }
+
+        // Keeps the items in the suggestion list.
         this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
       }.bind(this));
   };
