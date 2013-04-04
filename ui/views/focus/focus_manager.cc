@@ -276,22 +276,9 @@ void FocusManager::ClearFocus() {
 }
 
 void FocusManager::StoreFocusedView(bool clear_native_focus) {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-
-  // TODO(jcivelli): when a TabContents containing a popup is closed, the focus
-  // is stored twice causing an assert. We should find a better alternative than
-  // removing the view from the storage explicitly.
-  view_storage->RemoveView(stored_focused_view_storage_id_);
-
+  SetStoredFocusView(focused_view_);
   if (!focused_view_)
     return;
-
-  view_storage->StoreView(stored_focused_view_storage_id_, focused_view_);
 
   View* v = focused_view_;
 
@@ -341,14 +328,27 @@ bool FocusManager::RestoreFocusedView() {
   return false;
 }
 
-void FocusManager::ClearStoredFocusedView() {
+void FocusManager::SetStoredFocusView(View* focus_view) {
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
     NOTREACHED();
     return;
   }
+
+  // TODO(jcivelli): when a TabContents containing a popup is closed, the focus
+  // is stored twice causing an assert. We should find a better alternative than
+  // removing the view from the storage explicitly.
   view_storage->RemoveView(stored_focused_view_storage_id_);
+
+  if (!focus_view)
+    return;
+
+  view_storage->StoreView(stored_focused_view_storage_id_, focus_view);
+}
+
+void FocusManager::ClearStoredFocusedView() {
+  SetStoredFocusView(NULL);
 }
 
 // Find the next (previous if reverse is true) focusable view for the specified

@@ -1618,8 +1618,6 @@ string16 BrowserView::GetAccessibleWindowTitle() const {
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
-  // We set the frame not focus on creation so this should never be called.
-  NOTREACHED();
   return NULL;
 }
 

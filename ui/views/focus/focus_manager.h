@@ -186,6 +186,11 @@ class VIEWS_EXPORT FocusManager {
   // successfully refocused - otherwise false.
   bool RestoreFocusedView();
 
+  // Sets the |view| to be restored when calling RestoreFocusView. This is used
+  // to set where the focus should go on restoring a Window created without
+  // focus being set.
+  void SetStoredFocusView(View* view);
+
   // Clears the stored focused view.
   void ClearStoredFocusedView();
 

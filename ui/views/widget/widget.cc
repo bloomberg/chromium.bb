@@ -943,9 +943,13 @@ void Widget::TooltipTextChanged(View* view) {
 }
 
 bool Widget::SetInitialFocus() {
-  if (!focus_on_creation_)
-    return true;
   View* v = widget_delegate_->GetInitiallyFocusedView();
+  if (!focus_on_creation_) {
+    // If not focusing the window now, tell the focus manager which view to
+    // focus when the window is restored.
+    focus_manager_->SetStoredFocusView(v);
+    return true;
+  }
   if (v)
     v->RequestFocus();
   return !!v;
