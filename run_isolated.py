@@ -1647,9 +1647,6 @@ def main():
       '-s', '--isolated',
       metavar='FILE',
       help='File/url describing what to map or run')
-  # TODO(maruel): Remove once not used anymore.
-  group.add_option(
-      '-m', '--manifest', dest='isolated', help=optparse.SUPPRESS_HELP)
   group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
