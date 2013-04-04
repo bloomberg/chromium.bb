@@ -9,6 +9,8 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
@@ -56,7 +58,7 @@ namespace internal {
 BezelGestureHandler::BezelGestureHandler()
     : overlap_percent_(0),
       start_location_(BEZEL_START_UNSET),
-      orientation_(SCROLL_ORIENTATION_UNSET),
+      orientation_(BEZEL_SCROLL_ORIENTATION_UNSET),
       is_scrubbing_(false),
       initiation_delay_events_(0) {
   enable_bezel_device_control_ =
@@ -67,16 +69,27 @@ BezelGestureHandler::BezelGestureHandler()
 BezelGestureHandler::~BezelGestureHandler() {
 }
 
-void BezelGestureHandler::ProcessGestureEvent(aura::Window* target,
+bool BezelGestureHandler::ProcessGestureEvent(aura::Window* target,
                                               const ui::GestureEvent& event) {
+  if (target && target != target->GetRootWindow())
+    return false;
+
+  // TODO(crbug.com/222746): Rewrite this code to determine at runtime what
+  //                         bezels are present and process events along those
+  //                         edges.
+  ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  if (shelf->GetAlignment() != SHELF_ALIGNMENT_BOTTOM)
+    return false;
+
   switch (event.type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       HandleBezelGestureStart(target, event);
 
-      // TODO(sad|skuhne): Fix the bezel gestures for when the shelf is on the
-      //                   left/right of the screen. Also fix the
-      //                   overlay_percent_ at that time (currently just set to
-      //                   0 because left/right bezel gestures dont work).
+      // TODO(rharrison): Fix the bezel gestures for when the shelf is on the
+      //                  left/right of the screen. Also fix the
+      //                  overlay_percent_ at that time (currently just set to
+      //                  0 because left/right bezel gestures dont work).
       if (start_location_ == BEZEL_START_BOTTOM)
         shelf_handler_.ProcessGestureEvent(event);
       break;
@@ -97,6 +110,8 @@ void BezelGestureHandler::ProcessGestureEvent(aura::Window* target,
     default:
       break;
   }
+
+  return true;
 }
 
 bool BezelGestureHandler::HandleDeviceControl(
@@ -158,7 +173,7 @@ void BezelGestureHandler::HandleBezelGestureStart(
   gfx::Rect screen =
       Shell::GetScreen()->GetDisplayNearestWindow(target).bounds();
   int overlap_area = screen.width() * overlap_percent_ / 100;
-  orientation_ = SCROLL_ORIENTATION_UNSET;
+  orientation_ = BEZEL_SCROLL_ORIENTATION_UNSET;
 
   if (event.x() <= screen.x() + overlap_area) {
     start_location_ = BEZEL_START_LEFT;
@@ -171,7 +186,7 @@ void BezelGestureHandler::HandleBezelGestureStart(
 
 bool BezelGestureHandler::DetermineGestureOrientation(
     const ui::GestureEvent& event) {
-  if (orientation_ == SCROLL_ORIENTATION_UNSET) {
+  if (orientation_ == BEZEL_SCROLL_ORIENTATION_UNSET) {
     if (!event.details().scroll_x() && !event.details().scroll_y())
       return false;
 
@@ -181,11 +196,13 @@ bool BezelGestureHandler::DetermineGestureOrientation(
         start_location_ == BEZEL_START_RIGHT) {
       orientation_ = abs(event.details().scroll_y()) >
                      abs(event.details().scroll_x()) * 3 ?
-          SCROLL_ORIENTATION_VERTICAL : SCROLL_ORIENTATION_HORIZONTAL;
+          BEZEL_SCROLL_ORIENTATION_VERTICAL :
+          BEZEL_SCROLL_ORIENTATION_HORIZONTAL;
     } else {
       orientation_ = abs(event.details().scroll_y()) >
                      abs(event.details().scroll_x()) ?
-          SCROLL_ORIENTATION_VERTICAL : SCROLL_ORIENTATION_HORIZONTAL;
+          BEZEL_SCROLL_ORIENTATION_VERTICAL :
+          BEZEL_SCROLL_ORIENTATION_HORIZONTAL;
     }
 
     // Reset the delay counter for noise event filtering.
@@ -197,7 +214,7 @@ bool BezelGestureHandler::DetermineGestureOrientation(
 void BezelGestureHandler::HandleBezelGestureUpdate(
     aura::Window* target,
     const ui::GestureEvent& event) {
-  if (orientation_ == SCROLL_ORIENTATION_HORIZONTAL) {
+  if (orientation_ == BEZEL_SCROLL_ORIENTATION_HORIZONTAL) {
     if (HandleApplicationControl(event))
       start_location_ = BEZEL_START_UNSET;
   } else {

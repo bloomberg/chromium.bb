@@ -25,6 +25,8 @@ class GestureEvent;
 namespace ash {
 namespace internal {
 
+// TODO(rharrison): Unify the enums here and in the edge handler into common
+// area.
 enum BezelStart {
   BEZEL_START_UNSET = 0,
   BEZEL_START_TOP,
@@ -33,10 +35,10 @@ enum BezelStart {
   BEZEL_START_BOTTOM
 };
 
-enum ScrollOrientation {
-  SCROLL_ORIENTATION_UNSET = 0,
-  SCROLL_ORIENTATION_HORIZONTAL,
-  SCROLL_ORIENTATION_VERTICAL
+enum BezelScrollOrientation {
+  BEZEL_SCROLL_ORIENTATION_UNSET = 0,
+  BEZEL_SCROLL_ORIENTATION_HORIZONTAL,
+  BEZEL_SCROLL_ORIENTATION_VERTICAL
 };
 
 class BezelGestureHandler {
@@ -44,7 +46,9 @@ class BezelGestureHandler {
   BezelGestureHandler();
   virtual ~BezelGestureHandler();
 
-  void ProcessGestureEvent(aura::Window* target, const ui::GestureEvent& event);
+  // Returns true of the gesture has been handled and it should not be processed
+  // any farther, false otherwise.
+  bool ProcessGestureEvent(aura::Window* target, const ui::GestureEvent& event);
 
  private:
   // Handle events meant for volume / brightness. Returns true when no further
@@ -103,7 +107,7 @@ class BezelGestureHandler {
   BezelStart start_location_;
 
   // Which orientation are we moving.
-  ScrollOrientation orientation_;
+  BezelScrollOrientation orientation_;
 
   // A device swipe gesture is in progress.
   bool is_scrubbing_;
