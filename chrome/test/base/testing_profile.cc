@@ -398,23 +398,19 @@ static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
 
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
-
   if (delete_file) {
-    base::FilePath path = GetPath();
-    path = path.Append(chrome::kBookmarksFileName);
+    base::FilePath path = GetPath().Append(chrome::kBookmarksFileName);
     file_util::Delete(path, false);
   }
   // This will create a bookmark model.
-  BookmarkModel* bookmark_service =
-      static_cast<BookmarkModel*>(
-          BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-              this, BuildBookmarkModel));
+  BookmarkModel* bookmark_service = static_cast<BookmarkModel*>(
+      BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+          this, BuildBookmarkModel));
 
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   if (history_service) {
-    history_service->history_backend_->bookmark_service_ =
-        bookmark_service;
+    history_service->history_backend_->bookmark_service_ = bookmark_service;
     history_service->history_backend_->expirer_.bookmark_service_ =
         bookmark_service;
   }
@@ -694,10 +690,6 @@ bool TestingProfile::IsSameProfile(Profile *p) {
 
 base::Time TestingProfile::GetStartTime() const {
   return start_time_;
-}
-
-ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
-  return NULL;
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

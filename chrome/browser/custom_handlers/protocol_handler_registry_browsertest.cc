@@ -8,6 +8,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -72,7 +73,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(
           protocol, url, title);
     ProtocolHandlerRegistry* registry =
-        browser()->profile()->GetProtocolHandlerRegistry();
+        ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
     // Fake that this registration is happening on profile startup. Otherwise
     // it'll try to register with the OS, which causes DCHECKs on Windows when
     // running as admin on Windows 7.
@@ -81,7 +82,6 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     registry->is_loading_ = false;
     ASSERT_TRUE(registry->IsHandledProtocol(protocol));
   }
-
 };
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
@@ -94,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
                      GURL("http://www.google.com/%s"),
                      UTF8ToUTF16(std::string("Test handler")));
   GURL url("web+search:testing");
-  ASSERT_EQ(1u,
-            browser()->profile()->GetProtocolHandlerRegistry()->GetHandlersFor(
-                url.scheme()).size());
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+  ASSERT_EQ(1u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 }

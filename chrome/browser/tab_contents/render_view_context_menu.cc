@@ -23,6 +23,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -268,7 +269,8 @@ RenderViewContextMenu::RenderViewContextMenu(
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
-      protocol_handler_registry_(profile_->GetProtocolHandlerRegistry()) {
+      protocol_handler_registry_(
+          ProtocolHandlerRegistryFactory::GetForProfile(profile_)) {
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {

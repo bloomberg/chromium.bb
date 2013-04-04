@@ -41,6 +41,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -868,13 +869,13 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
 
-  ProtocolHandlerRegistry* registry = profile->GetProtocolHandlerRegistry();
-  TabSpecificContentSettings* tab_content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(profile);
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))
     return;
 
+  TabSpecificContentSettings* tab_content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
   if (!user_gesture && window) {
     tab_content_settings->set_pending_protocol_handler(handler);
     tab_content_settings->set_previous_protocol_handler(
@@ -1731,13 +1732,13 @@ void Browser::Observe(int type,
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
 
+      const extensions::UnloadedExtensionInfo* extension_info =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+
       // Close any tabs from the unloaded extension, unless it's terminated,
       // in which case let the sad tabs remain.
-      if (content::Details<extensions::UnloadedExtensionInfo>(
-            details)->reason != extension_misc::UNLOAD_REASON_TERMINATE) {
-        const Extension* extension =
-            content::Details<extensions::UnloadedExtensionInfo>(
-                details)->extension;
+      if (extension_info->reason != extension_misc::UNLOAD_REASON_TERMINATE) {
+        const Extension* extension = extension_info->extension;
         // Iterate backwards as we may remove items while iterating.
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
           WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
@@ -1770,7 +1771,7 @@ void Browser::Observe(int type,
       // During window creation on Windows we may end up calling into
       // SHAppBarMessage, which internally spawns a nested message loop. This
       // makes it possible for us to end up here before window creation has
-      // completed,at which point window_ is NULL. See 94752 for details.
+      // completed, at which point window_ is NULL. See 94752 for details.
       if (window() && window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
       break;

@@ -29,8 +29,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -569,7 +567,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
     model->AddObserver(new BookmarkModelLoadedObserver(this));
   }
 #endif
-
 }
 
 void ProfileImpl::InitHostZoomMap() {
@@ -922,14 +919,6 @@ DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
 
 quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
-}
-
-ProtocolHandlerRegistry* ProfileImpl::GetProtocolHandlerRegistry() {
-  // TODO(smckay): Update all existing callers to use
-  // ProtocolHandlerRegistryFactory. Once that's done, this method
-  // can be nuked from Profile and ProfileImpl.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return ProtocolHandlerRegistryFactory::GetForProfile(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

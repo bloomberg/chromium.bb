@@ -337,10 +337,6 @@ quota::SpecialStoragePolicy*
   return GetExtensionSpecialStoragePolicy();
 }
 
-ProtocolHandlerRegistry* OffTheRecordProfileImpl::GetProtocolHandlerRegistry() {
-  return profile_->GetProtocolHandlerRegistry();
-}
-
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }
