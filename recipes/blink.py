@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
+# TOOD(dpranke): reenable import json
 # pylint: disable=F0401
 import recipe_util
 import sys
@@ -13,17 +13,19 @@ class Blink(recipe_util.Recipe):
 
   @staticmethod
   def fetch_spec(props):
-    submodule_spec = {
-      'third_party/WebKit': {
-        'svn_url': 'svn://svn.chromium.org/blink/trunk',
-        'svn_branch': 'trunk',
-        'svn_ref': 'master',
-      }
-    }
+    # TODO(dpranke): reenable
+    #submodule_spec = {
+    #  'third_party/WebKit': {
+    #    'svn_url': 'svn://svn.chromium.org/blink/trunk',
+    #    'svn_branch': 'trunk',
+    #    'svn_ref': 'master',
+    #  }
+    #}
     return {'alias': {
         'recipe': 'chromium',
         'props': ['--webkit_rev=ToT',
-                  '--submodule_git_svn_spec=' + json.dumps(submodule_spec)]
+                 # '--submodule_git_svn_spec=' + json.dumps(submodule_spec)
+                 ]
       }
     }
 
