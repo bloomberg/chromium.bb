@@ -82,6 +82,18 @@ message DeviceUnregisterRequest {
 message DeviceUnregisterResponse {
 }
 
+// Request from device to server to upload device EMCert
+// (enteprise machine cert used for remote attestation).
+// GoogleDMToken MUST be in HTTP Authorization header.
+message DeviceCertUploadRequest {
+  // EMCert in X.509 format.
+  optional bytes device_certificate = 1;
+}
+
+// Response from server to device for cert upload request.
+message DeviceCertUploadResponse {
+}
+
 // Request for a setting or with optional watermark on client side.
 // TODO(gfeher): remove this after Chrome OS TT is over.
 message DevicePolicySettingRequest {
@@ -427,6 +439,7 @@ message DeviceAutoEnrollmentResponse {
 // * Data mime type is application/x-protobuffer
 // * HTTP parameters are (all required, all case sensitive):
 //   * request: MUST BE one of
+//     * cert_upload
 //     * enterprise_check
 //     * ping
 //     * policy
@@ -442,21 +455,23 @@ message DeviceAutoEnrollmentResponse {
 //   * For register and ping requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-//   * For unregister, policy and status requests:
+//   * For unregister, policy, status, and cert_upload requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
-//   * The Authorization header isn't used for enterprise_check requests, nor
-//     for register requests using OAuth. In the latter case, the OAuth token is
-//     passed in the "oauth" parameter.
+//   * The Authorization header isn't used for enterprise_check
+//     request, nor for register requests using OAuth. In the latter case,
+//     the OAuth token is passed in the "oauth" parameter.
 //
 // DeviceManagementRequest should only contain one request which matches the
 // HTTP query parameter - request, as listed below. Other requests within the
 // container will be ignored.
+//   cert_upload: cert_upload_request
+//   enterprise_check: auto_enrollment_request
 //   ping: policy_request
-//   register: register_request
-//   unregister: unregister_request
 //   policy: policy_request
-//   status: status_report_request
+//   register: register_request
+//   status: device_status_report_request or session_status_report_request
+//   unregister: unregister_request
 //
 //
 message DeviceManagementRequest {
@@ -475,6 +490,9 @@ message DeviceManagementRequest {
 
   // Auto-enrollment detection.
   optional DeviceAutoEnrollmentRequest auto_enrollment_request = 6;
+
+  // EMCert upload (for remote attestation)
+  optional DeviceCertUploadRequest cert_upload_request = 7;
 }
 
 // Response from server to device.
@@ -514,4 +532,7 @@ message DeviceManagementResponse {
 
   // Auto-enrollment detection response.
   optional DeviceAutoEnrollmentResponse auto_enrollment_response = 8;
+
+  // EMCert upload response.
+  optional DeviceCertUploadResponse cert_upload_response = 9;
 }

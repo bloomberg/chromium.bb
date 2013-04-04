@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
@@ -32,6 +33,7 @@ const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
+const char kDeviceCertificate[] = "fake-device-certificate";
 
 class MockStatusProvider : public CloudPolicyClient::StatusProvider {
  public:
@@ -49,6 +51,15 @@ class MockStatusProvider : public CloudPolicyClient::StatusProvider {
 MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
 }
+
+// A mock class to allow us to set expectations on upload certificate callbacks.
+class MockUploadCertificateObserver {
+ public:
+  MockUploadCertificateObserver() {}
+  virtual ~MockUploadCertificateObserver() {}
+
+  MOCK_METHOD1(OnUploadComplete, void(bool));
+};
 
 }  // namespace
 
@@ -78,6 +89,9 @@ class CloudPolicyClientTest : public testing::Test {
 
     unregistration_request_.mutable_unregister_request();
     unregistration_response_.mutable_unregister_response();
+    upload_certificate_request_.mutable_cert_upload_request()->
+        set_device_certificate(kDeviceCertificate);
+    upload_certificate_response_.mutable_cert_upload_response();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -138,6 +152,15 @@ class CloudPolicyClientTest : public testing::Test {
                                    MatchProto(unregistration_request_)));
   }
 
+  void ExpectUploadCertificate() {
+    EXPECT_CALL(service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE))
+        .WillOnce(service_.SucceedJob(upload_certificate_response_));
+    EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestUploadCertificate,
+                                   "", "", kDMToken, "", client_id_,
+                                   MatchProto(upload_certificate_request_)));
+  }
+
   void CheckPolicyResponse() {
     ASSERT_TRUE(client_->GetPolicyFor(policy_ns_key_));
     EXPECT_THAT(*client_->GetPolicyFor(policy_ns_key_),
@@ -155,17 +178,20 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementRequest registration_request_;
   em::DeviceManagementRequest policy_request_;
   em::DeviceManagementRequest unregistration_request_;
+  em::DeviceManagementRequest upload_certificate_request_;
 
   // Protobufs used in successful responses.
   em::DeviceManagementResponse registration_response_;
   em::DeviceManagementResponse policy_response_;
   em::DeviceManagementResponse unregistration_response_;
+  em::DeviceManagementResponse upload_certificate_response_;
 
   std::string client_id_;
   PolicyNamespaceKey policy_ns_key_;
   MockDeviceManagementService service_;
   StrictMock<MockStatusProvider> status_provider_;
   StrictMock<MockCloudPolicyClientObserver> observer_;
+  StrictMock<MockUploadCertificateObserver> upload_certificate_observer_;
   scoped_ptr<CloudPolicyClient> client_;
 };
 
@@ -459,6 +485,47 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
     ASSERT_TRUE(response);
     EXPECT_EQ(it->second.SerializeAsString(), response->SerializeAsString());
   }
+}
+
+TEST_F(CloudPolicyClientTest, UploadCertificate) {
+  Register();
+
+  ExpectUploadCertificate();
+  EXPECT_CALL(upload_certificate_observer_, OnUploadComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadCertificateObserver::OnUploadComplete,
+      base::Unretained(&upload_certificate_observer_));
+  client_->UploadCertificate(kDeviceCertificate, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadCertificateEmpty) {
+  Register();
+
+  upload_certificate_response_.clear_cert_upload_response();
+  ExpectUploadCertificate();
+  EXPECT_CALL(upload_certificate_observer_, OnUploadComplete(false)).Times(1);
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadCertificateObserver::OnUploadComplete,
+      base::Unretained(&upload_certificate_observer_));
+  client_->UploadCertificate(kDeviceCertificate, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadCertificateFailure) {
+  Register();
+
+  EXPECT_CALL(upload_certificate_observer_, OnUploadComplete(false)).Times(1);
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE))
+      .WillOnce(service_.FailJob(DM_STATUS_REQUEST_FAILED));
+  EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(observer_, OnClientError(_));
+  CloudPolicyClient::StatusCallback callback = base::Bind(
+      &MockUploadCertificateObserver::OnUploadComplete,
+      base::Unretained(&upload_certificate_observer_));
+  client_->UploadCertificate(kDeviceCertificate, callback);
+  EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
 }
 
 }  // namespace policy

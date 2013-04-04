@@ -39,6 +39,7 @@ class DeviceManagementRequestJob {
     TYPE_REGISTRATION,
     TYPE_POLICY_FETCH,
     TYPE_UNREGISTRATION,
+    TYPE_UPLOAD_CERTIFICATE,
   };
 
   typedef base::Callback<

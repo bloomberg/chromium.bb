@@ -188,6 +188,26 @@ void CloudPolicyClient::Unregister() {
                                  base::Unretained(this)));
 }
 
+void CloudPolicyClient::UploadCertificate(
+    const std::string& certificate_data,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  request_job_.reset(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE));
+  request_job_->SetDMToken(dm_token_);
+  request_job_->SetClientID(client_id_);
+
+  em::DeviceManagementRequest* request = request_job_->GetRequest();
+  request->mutable_cert_upload_request()->set_device_certificate(
+      certificate_data);
+
+  DeviceManagementRequestJob::Callback job_callback = base::Bind(
+      &CloudPolicyClient::OnCertificateUploadCompleted,
+      base::Unretained(this),
+      callback);
+  request_job_->Start(job_callback);
+}
+
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -309,6 +329,25 @@ void CloudPolicyClient::OnUnregisterCompleted(
   } else {
     NotifyClientError();
   }
+}
+
+void CloudPolicyClient::OnCertificateUploadCompleted(
+    const CloudPolicyClient::StatusCallback& callback,
+    DeviceManagementStatus status,
+    const enterprise_management::DeviceManagementResponse& response) {
+  if (status == DM_STATUS_SUCCESS && !response.has_cert_upload_response()) {
+    LOG(WARNING) << "Empty upload certificate response.";
+    callback.Run(false);
+    return;
+  }
+
+  status_ = status;
+  if (status != DM_STATUS_SUCCESS) {
+    NotifyClientError();
+    callback.Run(false);
+    return;
+  }
+  callback.Run(true);
 }
 
 void CloudPolicyClient::NotifyPolicyFetched() {

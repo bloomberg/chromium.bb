@@ -146,6 +146,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestPolicy;
     case DeviceManagementRequestJob::TYPE_UNREGISTRATION:
       return dm_protocol::kValueRequestUnregister;
+    case DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE:
+      return dm_protocol::kValueRequestUploadCertificate;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

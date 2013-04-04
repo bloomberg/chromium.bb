@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
@@ -34,6 +35,10 @@ class CloudPolicyClient {
   // Maps a PolicyNamespaceKey to its corresponding PolicyFetchResponse.
   typedef std::map<PolicyNamespaceKey,
                    enterprise_management::PolicyFetchResponse*> ResponseMap;
+
+  // A callback which receives boolean status of an operation.  If the operation
+  // succeeded, |status| is true.
+  typedef base::Callback<void(bool status)> StatusCallback;
 
   // Observer interface for state and policy changes.
   class Observer {
@@ -104,6 +109,13 @@ class CloudPolicyClient {
 
   // Sends an unregistration request to the server.
   virtual void Unregister();
+
+  // Upload a device certificate to the server.  Like FetchPolicy, this method
+  // requires that the client is in a registered state.  |certificate_data| must
+  // hold the X.509 certificate data to be sent to the server.  The |callback|
+  // will be called when the operation completes.
+  virtual void UploadCertificate(const std::string& certificate_data,
+                                 const StatusCallback& callback);
 
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
@@ -178,6 +190,12 @@ class CloudPolicyClient {
 
   // Callback for unregistration requests.
   void OnUnregisterCompleted(
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for certificate upload requests.
+  void OnCertificateUploadCompleted(
+      const StatusCallback& callback,
       DeviceManagementStatus status,
       const enterprise_management::DeviceManagementResponse& response);
 
