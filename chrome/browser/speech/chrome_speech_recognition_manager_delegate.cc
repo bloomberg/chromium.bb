@@ -164,16 +164,19 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
       return;
 
     // Avoid multiple registrations on |registrar_| for the same |web_contents|.
-    if (registered_web_contents_.find(web_contents) !=
-        registered_web_contents_.end()) {
+    if (FindWebContents(web_contents) !=  registered_web_contents_.end()) {
       return;
     }
-    registered_web_contents_.insert(web_contents);
+    registered_web_contents_.push_back(
+        WebContentsInfo(web_contents, render_process_id, render_view_id));
 
     // Lazy initialize the registrar.
     if (!registrar_.get())
       registrar_.reset(new content::NotificationRegistrar());
 
+    registrar_->Add(this,
+                    content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                    content::Source<WebContents>(web_contents));
     registrar_->Add(this,
                     content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                     content::Source<WebContents>(web_contents));
@@ -184,22 +187,43 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED, type);
+    DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
+           type == content::NOTIFICATION_WEB_CONTENTS_SWAPPED);
 
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
-    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-    int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+    std::vector<WebContentsInfo>::iterator iter = FindWebContents(web_contents);
+    DCHECK(iter != registered_web_contents_.end());
+    int render_process_id = iter->render_process_id;
+    int render_view_id = iter->render_view_id;
+    registered_web_contents_.erase(iter);
 
+    registrar_->Remove(this,
+                       content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                       content::Source<WebContents>(web_contents));
     registrar_->Remove(this,
                        content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                        content::Source<WebContents>(web_contents));
-    registered_web_contents_.erase(web_contents);
 
     BrowserThread::PostTask(callback_thread_, FROM_HERE, base::Bind(
         tab_closed_callback_, render_process_id, render_view_id));
   }
 
  private:
+  struct WebContentsInfo {
+    WebContentsInfo(content::WebContents* web_contents,
+                    int render_process_id,
+                    int render_view_id)
+        : web_contents(web_contents),
+          render_process_id(render_process_id),
+          render_view_id(render_view_id) {}
+
+    ~WebContentsInfo() {}
+
+    content::WebContents* web_contents;
+    int render_process_id;
+    int render_view_id;
+  };
+
   friend class base::RefCountedThreadSafe<TabWatcher>;
 
   virtual ~TabWatcher() {
@@ -207,13 +231,29 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
+  // Helper function to find the iterator in |registered_web_contents_| which
+  // contains |web_contents|.
+  std::vector<WebContentsInfo>::iterator FindWebContents(
+      content::WebContents* web_contents) {
+    for (std::vector<WebContentsInfo>::iterator i(
+         registered_web_contents_.begin());
+         i != registered_web_contents_.end(); ++i) {
+      if (i->web_contents == web_contents)
+        return i;
+    }
+
+    return registered_web_contents_.end();
+  }
+
   // Lazy-initialized and used on the UI thread to handle web contents
   // notifications (tab closing).
   scoped_ptr<content::NotificationRegistrar> registrar_;
 
   // Keeps track of which WebContent(s) have been registered, in order to avoid
-  // double registrations on |registrar_|
-  std::set<content::WebContents*> registered_web_contents_;
+  // double registrations on |registrar_| and to pass the correct render
+  // process id and render view id to |tab_closed_callback_| after the process
+  // has gone away.
+  std::vector<WebContentsInfo> registered_web_contents_;
 
   // Callback used to notify, on the thread specified by |callback_thread_| the
   // closure of a registered tab.
