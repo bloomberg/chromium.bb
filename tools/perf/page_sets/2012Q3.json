@@ -3,7 +3,8 @@
   "archive_data_file": "../data/2012Q3.json",
   "credentials_path": "../data/credentials.json",
   "smoothness": { "action": "scroll" },
-  "stress_memory": { "action": "reload", "wait_seconds": 1, "repeat": 3 },
+  "reload_and_gc": [{"action": "reload", "wait_seconds": 1}, {"action": "js_collect_garbage"}],
+  "stress_memory": { "action": "reload_and_gc", "repeat": 3 },
   "pages": [
     { "url": "http://www.facebook.com/barackobama" },
     { "url": "https://www.google.com/search?q=barack%20obama" },
