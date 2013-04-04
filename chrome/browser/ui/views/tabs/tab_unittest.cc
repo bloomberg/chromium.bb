@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -104,6 +105,25 @@ TEST_F(TabTest, HitTestTopPixel) {
   // But clicks in the area above the slanted sides should still miss.
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, 0)));
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(tab.width() - 1, 0)));
+}
+
+// Regression test for http://crbug.com/226253. Calling Layout() more than once
+// shouldn't change the insets of the close button.
+TEST_F(TabTest, CloseButtonLayout) {
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller);
+  tab.SetBounds(0, 0, 100, 50);
+  tab.Layout();
+  gfx::Insets close_button_insets = tab.close_button_->GetInsets();
+  tab.Layout();
+  gfx::Insets close_button_insets_2 = tab.close_button_->GetInsets();
+  EXPECT_EQ(close_button_insets.top(), close_button_insets_2.top());
+  EXPECT_EQ(close_button_insets.left(), close_button_insets_2.left());
+  EXPECT_EQ(close_button_insets.bottom(), close_button_insets_2.bottom());
+  EXPECT_EQ(close_button_insets.right(), close_button_insets_2.right());
+
+  // Also make sure the close button is sized as large as the tab.
+  EXPECT_EQ(50, tab.close_button_->bounds().height());
 }
 
 TEST_F(TabTest, ActivityIndicators) {

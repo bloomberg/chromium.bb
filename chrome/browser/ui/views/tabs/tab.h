@@ -125,6 +125,7 @@ class Tab : public TabAudioIndicator::Delegate,
 
  private:
   friend class TabTest;
+  FRIEND_TEST_ALL_PREFIXES(TabTest, CloseButtonLayout);
   // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
   class TabCloseButton;
