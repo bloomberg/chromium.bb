@@ -1400,13 +1400,13 @@
 
       Touch interactions can consist of one or more contacts.
       For each contact, a series of events is generated, starting
-      with a down event, followed by one or more motion events,
-      and ended with an up event. Events relating to the same
+      with a down event, followed by zero or more motion events,
+      and ending with an up event. Events relating to the same
       contact point can be identified by the ID of the sequence.
     </description>
 
     <event name="down">
-      <description summary="touch down event">
+      <description summary="touch down event and beginning of a touch sequence">
 	A new touch point has appeared on the surface. This touch point is
 	assigned a unique @id. Future events from this touchpoint reference
 	this ID. The ID ceases to be valid after a touch up event and may be
@@ -1432,7 +1432,7 @@
     </event>
 
     <event name="motion">
-      <description summary="end of a touch event sequence">
+      <description summary="update of touch point coordinates">
 	A touchpoint has changed coordinates.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
