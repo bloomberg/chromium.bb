@@ -123,7 +123,9 @@ Gesture* NonLinearityFilterInterpreter::SyncInterpretImpl(
     }
   }
 
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 NonLinearityFilterInterpreter::Error

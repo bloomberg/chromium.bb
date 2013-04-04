@@ -28,8 +28,7 @@ class IntegralGestureFilterInterpreter : public FilterInterpreter {
  private:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout);
-
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void ConsumeGesture(const Gesture& gesture);
 
  private:
   Gesture* HandleGesture(Gesture* gs);

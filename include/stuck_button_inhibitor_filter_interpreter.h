@@ -27,6 +27,7 @@ class StuckButtonInhibitorFilterInterpreter : public FilterInterpreter {
   explicit StuckButtonInhibitorFilterInterpreter(Interpreter* next,
                                                  Tracer* tracer);
   virtual ~StuckButtonInhibitorFilterInterpreter() {}
+  virtual void ConsumeGesture(const Gesture& gesture);
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
@@ -36,8 +37,7 @@ class StuckButtonInhibitorFilterInterpreter : public FilterInterpreter {
 
  private:
   void HandleHardwareState(const HardwareState& hwstate);
-  Gesture* HandleGesture(Gesture* gesture, stime_t next_timeout,
-                         stime_t* timeout);
+  void HandleTimeouts(stime_t next_timeout, stime_t* timeout);
 
   bool incoming_button_must_be_up_;
 

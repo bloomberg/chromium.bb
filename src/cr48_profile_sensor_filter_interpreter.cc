@@ -56,7 +56,9 @@ Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
       ClearHistory();
     }
   }
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void Cr48ProfileSensorFilterInterpreter::SetHardwarePropertiesImpl(

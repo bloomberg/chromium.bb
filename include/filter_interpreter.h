@@ -31,6 +31,10 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
   virtual void SetGestureConsumer(GestureConsumer* consumer);
   virtual void ConsumeGesture(const Gesture& gesture);
 
+  // Temporary method for transitioning the old gesture list to
+  // multiple calls of ConsumeGesture.
+  void ConsumeGestureList(Gesture* gesture);
+
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout);

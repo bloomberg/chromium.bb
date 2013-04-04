@@ -34,8 +34,12 @@ SensorJumpFilterInterpreter::SensorJumpFilterInterpreter(PropRegistry* prop_reg,
 
 Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                         stime_t* timeout) {
-  if (!enabled_.val_)
-    return next_->SyncInterpret(hwstate, timeout);
+  if (!enabled_.val_) {
+    Gesture* result = next_->SyncInterpret(hwstate, timeout);
+    ConsumeGestureList(result);
+    return NULL;
+  }
+
   RemoveMissingIdsFromMap(&previous_input_[0], *hwstate);
   RemoveMissingIdsFromMap(&previous_input_[1], *hwstate);
   RemoveMissingIdsFromSet(&first_flag_[0], *hwstate);
@@ -129,7 +133,9 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   previous_input_[1] = previous_input_[0];
   previous_input_[0] = current_input;
 
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 }  // namespace gestures

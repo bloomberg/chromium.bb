@@ -31,6 +31,15 @@ void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {
   ProduceGesture(gesture);
 }
 
+void FilterInterpreter::ConsumeGestureList(Gesture* gesture) {
+  if (gesture) {
+    Gesture* next = gesture->next;
+    gesture->next = NULL;
+    ConsumeGesture(*gesture);
+    ConsumeGestureList(next);
+  }
+}
+
 DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
   DictionaryValue *root = Interpreter::EncodeCommonInfo();
 #ifdef DEEP_LOGS

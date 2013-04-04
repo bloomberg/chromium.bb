@@ -27,7 +27,9 @@ Gesture* T5R2CorrectingFilterInterpreter::SyncInterpretImpl(
   }
   last_touch_cnt_ = hwstate->touch_cnt;
   last_finger_cnt_ = hwstate->finger_cnt;
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 };  // namespace gestures

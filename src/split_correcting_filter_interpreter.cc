@@ -36,7 +36,9 @@ Gesture* SplitCorrectingFilterInterpreter::SyncInterpretImpl(
     // Use internal state to update hwstate
     UpdateHwState(hwstate);
   }
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void SplitCorrectingFilterInterpreter::SetHardwarePropertiesImpl(

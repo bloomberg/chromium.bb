@@ -46,7 +46,9 @@ Gesture* FingerMergeFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (finger_merge_filter_enable_.val_)
     UpdateFingerMergeState(*hwstate);
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void FingerMergeFilterInterpreter::SetHardwarePropertiesImpl(

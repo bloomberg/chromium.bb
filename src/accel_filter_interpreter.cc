@@ -104,18 +104,16 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
 
 Gesture* AccelFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                    stime_t* timeout) {
-  Gesture* fg = next_->SyncInterpret(hwstate, timeout);
-  for (Gesture* it = fg; it; it = it->next)
-    ScaleGesture(it);
-  return fg;
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 Gesture* AccelFilterInterpreter::HandleTimerImpl(stime_t now,
                                                  stime_t* timeout) {
-  Gesture* gs = next_->HandleTimer(now, timeout);
-  for (Gesture* it = gs; it; it=it->next)
-    ScaleGesture(it);
-  return gs;
+  Gesture* result = next_->HandleTimer(now, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void AccelFilterInterpreter::ParseCurveString(const char* input,
@@ -156,11 +154,12 @@ void AccelFilterInterpreter::ParseCurveString(const char* input,
     out_segs[i - 1].x_ = INFINITY;  // Extend final segment
 }
 
-void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
+void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
+  Gesture copy = gs;
   CurveSegment* segs = NULL;
   float* dx = NULL;
   float* dy = NULL;
-  float dt = gs->end_time - gs->start_time;
+  float dt = copy.end_time - copy.start_time;
   size_t max_segs = kMaxCurveSegs;
   float x_scale = 1.0;
   float y_scale = 1.0;
@@ -169,15 +168,15 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
   float* scale_out_x = NULL;
   float* scale_out_y = NULL;
 
-  switch (gs->type) {
+  switch (copy.type) {
     case kGestureTypeMove:
     case kGestureTypeSwipe:
-      if (gs->type == kGestureTypeMove) {
-        scale_out_x = dx = &gs->details.move.dx;
-        scale_out_y = dy = &gs->details.move.dy;
+      if (copy.type == kGestureTypeMove) {
+        scale_out_x = dx = &copy.details.move.dx;
+        scale_out_y = dy = &copy.details.move.dy;
       } else {
-        scale_out_x = dx = &gs->details.swipe.dx;
-        scale_out_y = dy = &gs->details.swipe.dy;
+        scale_out_x = dx = &copy.details.swipe.dx;
+        scale_out_y = dy = &copy.details.swipe.dy;
       }
       if (pointer_sensitivity_.val_ >= 1 && pointer_sensitivity_.val_ <= 5) {
         if (use_mouse_point_curves_.val_)
@@ -196,15 +195,15 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       break;
     case kGestureTypeFling:  // fall through
     case kGestureTypeScroll:
-      if (gs->type == kGestureTypeFling) {
-        float vx = gs->details.fling.vx;
-        float vy = gs->details.fling.vy;
+      if (copy.type == kGestureTypeFling) {
+        float vx = copy.details.fling.vx;
+        float vy = copy.details.fling.vy;
         mag = sqrtf(vx * vx + vy * vy);
-        scale_out_x = &gs->details.fling.vx;
-        scale_out_y = &gs->details.fling.vy;
+        scale_out_x = &copy.details.fling.vx;
+        scale_out_y = &copy.details.fling.vy;
       } else {
-        scale_out_x = dx = &gs->details.scroll.dx;
-        scale_out_y = dy = &gs->details.scroll.dy;
+        scale_out_x = dx = &copy.details.scroll.dx;
+        scale_out_y = dy = &copy.details.scroll.dy;
       }
       if (scroll_sensitivity_.val_ >= 1 && scroll_sensitivity_.val_ <= 5) {
         segs = scroll_curves_[scroll_sensitivity_.val_ - 1];
@@ -219,23 +218,28 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       y_scale = scroll_y_out_scale_.val_;
       break;
     default:  // Nothing to accelerate
+      ProduceGesture(gs);
       return;
   }
 
   if (dx != NULL && dy != NULL) {
-    if (dt < 0.00001)
+    if (dt < 0.00001) {
+      ProduceGesture(gs);
       return;  // Avoid division by 0
+    }
     mag = sqrtf(*dx * *dx + *dy * *dy) / dt;
   }
-  if (mag < 0.00001)
+  if (mag < 0.00001) {
+    ProduceGesture(gs);
     return;  // Avoid division by 0
+  }
   for (size_t i = 0; i < max_segs; ++i) {
     if (mag > segs[i].x_)
       continue;
     float ratio = segs[i].sqr_ * mag + segs[i].mul_ + segs[i].int_ / mag;
     *scale_out_x *= ratio * x_scale;
     *scale_out_y *= ratio * y_scale;
-
+    ProduceGesture(copy);
     return;
   }
   Err("Overflowed acceleration curve!");

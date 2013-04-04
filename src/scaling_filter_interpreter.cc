@@ -40,18 +40,16 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
 Gesture* ScalingFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {
   ScaleHardwareState(hwstate);
-  Gesture* fg = next_->SyncInterpret(hwstate, timeout);
-  for (Gesture* it = fg; it; it = it->next)
-    ScaleGesture(it);
-  return fg;
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 Gesture* ScalingFilterInterpreter::HandleTimerImpl(stime_t now,
                                                    stime_t* timeout) {
-  Gesture* gs = next_->HandleTimer(now, timeout);
-  for (Gesture* it = gs; it; it = it->next)
-    ScaleGesture(it);
-  return gs;
+  Gesture* result = next_->HandleTimer(now, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 // Ignore the finger events with low pressure values especially for the SEMI_MT
@@ -172,29 +170,31 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
   }
 }
 
-void ScalingFilterInterpreter::ScaleGesture(Gesture* gs) {
-  switch (gs->type) {
+void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
+  Gesture copy = gs;
+  switch (copy.type) {
     case kGestureTypeMove:
-      gs->details.move.dx *= screen_x_scale_;
-      gs->details.move.dy *= screen_y_scale_;
-      gs->details.move.ordinal_dx *= screen_x_scale_;
-      gs->details.move.ordinal_dy *= screen_y_scale_;
+      copy.details.move.dx *= screen_x_scale_;
+      copy.details.move.dy *= screen_y_scale_;
+      copy.details.move.ordinal_dx *= screen_x_scale_;
+      copy.details.move.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeScroll:
-      gs->details.scroll.dx *= screen_x_scale_;
-      gs->details.scroll.dy *= screen_y_scale_;
-      gs->details.scroll.ordinal_dx *= screen_x_scale_;
-      gs->details.scroll.ordinal_dy *= screen_y_scale_;
+      copy.details.scroll.dx *= screen_x_scale_;
+      copy.details.scroll.dy *= screen_y_scale_;
+      copy.details.scroll.ordinal_dx *= screen_x_scale_;
+      copy.details.scroll.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeFling:
-      gs->details.fling.vx *= screen_x_scale_;
-      gs->details.fling.vy *= screen_y_scale_;
-      gs->details.fling.ordinal_vx *= screen_x_scale_;
-      gs->details.fling.ordinal_vy *= screen_y_scale_;
+      copy.details.fling.vx *= screen_x_scale_;
+      copy.details.fling.vy *= screen_y_scale_;
+      copy.details.fling.ordinal_vx *= screen_x_scale_;
+      copy.details.fling.ordinal_vy *= screen_y_scale_;
       break;
     default:
       break;
   }
+  ProduceGesture(copy);
 }
 
 void ScalingFilterInterpreter::SetHardwarePropertiesImpl(

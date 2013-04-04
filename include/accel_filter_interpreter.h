@@ -52,7 +52,7 @@ class AccelFilterInterpreter : public FilterInterpreter {
 
   void ParseCurveString(const char* input, char* cache, CurveSegment* out_segs);
 
-  void ScaleGesture(Gesture* gs);
+  void ConsumeGesture(const Gesture& gs);
 
   static const size_t kMaxCurveSegs = 3;
   static const size_t kMaxCustomCurveSegs = 20;
