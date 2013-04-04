@@ -342,6 +342,31 @@ void GestureInterpreterInitialize(GestureInterpreter* obj,
 }
 
 // C++ API:
+namespace gestures {
+class GestureInterpreterConsumer : public GestureConsumer {
+ public:
+  GestureInterpreterConsumer(GestureReadyFunction callback,
+                             void* callback_data)
+      : callback_(callback),
+        callback_data_(callback_data) {
+    AssertWithReturn(callback_);
+  }
+
+  void ConsumeGesture(const Gesture& gesture) {
+    AssertWithReturn(gesture.type != kGestureTypeNull);
+    callback_(callback_data_, &gesture);
+    // Until the new API is fully adopted, gesture might still contain
+    // multiple list entries.
+    if (gesture.next) {
+      ConsumeGesture(*gesture.next);
+    }
+  }
+
+ private:
+  GestureReadyFunction callback_;
+  void* callback_data_;
+};
+}
 
 GestureInterpreter::GestureInterpreter(int version)
     : callback_(NULL),
@@ -349,7 +374,8 @@ GestureInterpreter::GestureInterpreter(int version)
       timer_provider_(NULL),
       timer_provider_data_(NULL),
       interpret_timer_(NULL),
-      loggingFilter_(NULL) {
+      loggingFilter_(NULL),
+      consumer_(NULL) {
   prop_reg_.reset(new PropRegistry);
   tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
   finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
@@ -440,6 +466,18 @@ void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
   prop_reg_->SetPropProvider(pp, data);
 }
 
+void GestureInterpreter::set_callback(GestureReadyFunction callback,
+                  void* client_data) {
+  callback_ = callback;
+  callback_data_ = client_data;
+
+  if (interpreter_) {
+    consumer_.reset(new GestureInterpreterConsumer(callback_,
+                                                   callback_data_));
+    interpreter_->SetGestureConsumer(consumer_.get());
+  }
+}
+
 void GestureInterpreter::InitializeTouchpad(void) {
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
                                                finger_metrics_.get(),
@@ -516,6 +554,10 @@ void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
     InitializeMultitouchMouse();
   else
     Err("Couldn't recognize device class: %d", cls);
+
+  // 'set' again so the consumer can get initialized.
+  if (callback_)
+    set_callback(callback_, callback_data_);
 }
 
 std::string GestureInterpreter::EncodeActivityLog() {

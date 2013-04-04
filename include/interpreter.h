@@ -22,10 +22,15 @@ struct HardwareState;
 
 namespace gestures {
 
+class GestureConsumer {
+ public:
+  virtual ~GestureConsumer() {}
+  virtual void ConsumeGesture(const Gesture& gesture) = 0;
+};
+
 // Interface for all interpreters. Interpreters currently are synchronous.
 // A synchronous interpreter will return  0 or 1 Gestures for each passed in
 // HardwareState.
-
 class Interpreter {
   FRIEND_TEST(InterpreterTest, ResetLogTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
@@ -61,10 +66,13 @@ class Interpreter {
       log_->Clear();
   }
 
+  virtual void SetGestureConsumer(GestureConsumer* consumer);
+  virtual void ProduceGesture(const Gesture& gesture);
   const char* name() const { return name_; }
 
  protected:
   scoped_ptr<ActivityLog> log_;
+  GestureConsumer* consumer_;
   void InitName();
   void Trace(const char* message, const char* name);
 
@@ -80,7 +88,7 @@ class Interpreter {
  private:
   const char* name_;
   Tracer* tracer_;
-  void LogOutputs(Gesture* result, stime_t* timeout, const char* action);
+  void LogOutputs(const Gesture* result, stime_t* timeout, const char* action);
 };
 }  // namespace gestures
 

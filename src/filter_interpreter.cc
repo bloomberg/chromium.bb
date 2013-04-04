@@ -22,6 +22,15 @@ void FilterInterpreter::SetHardwarePropertiesImpl(
   next_->SetHardwareProperties(hwprops);
 }
 
+void FilterInterpreter::SetGestureConsumer(GestureConsumer* consumer) {
+  Interpreter::SetGestureConsumer(consumer);
+  next_->SetGestureConsumer(this);
+}
+
+void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {
+  ProduceGesture(gesture);
+}
+
 DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
   DictionaryValue *root = Interpreter::EncodeCommonInfo();
 #ifdef DEEP_LOGS

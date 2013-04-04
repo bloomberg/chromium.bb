@@ -69,6 +69,11 @@ Gesture* Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
   return result;
 }
 
+void Interpreter::ProduceGesture(const Gesture& gesture) {
+  LogOutputs(&gesture, NULL, "ProduceGesture");
+  consumer_->ConsumeGesture(gesture);
+}
+
 void Interpreter::SetHardwareProperties(const HardwareProperties& hwprops) {
   if (log_.get()) {
     Trace("log: start: ", "SetHardwareProperties");
@@ -100,6 +105,10 @@ std::string Interpreter::Encode() {
   return out;
 }
 
+void Interpreter::SetGestureConsumer(GestureConsumer* consumer) {
+  consumer_ = consumer;
+}
+
 void Interpreter::InitName() {
   if (!name_) {
     int status;
@@ -125,7 +134,7 @@ void Interpreter::InitName() {
   }
 }
 
-void Interpreter::LogOutputs(Gesture* result,
+void Interpreter::LogOutputs(const Gesture* result,
                              stime_t* timeout,
                              const char* action) {
   if (!log_.get())

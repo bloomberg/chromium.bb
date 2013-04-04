@@ -407,6 +407,7 @@ class Interpreter;
 class PropRegistry;
 class LoggingFilterInterpreter;
 class Tracer;
+class GestureInterpreterConsumer;
 
 struct GestureInterpreter {
  public:
@@ -419,10 +420,7 @@ struct GestureInterpreter {
   void TimerCallback(stime_t now, stime_t* timeout);
 
   void set_callback(GestureReadyFunction callback,
-                    void* client_data) {
-    callback_ = callback;
-    callback_data_ = client_data;
-  }
+                    void* client_data);
   void SetTimerProvider(GesturesTimerProvider* tp, void* data);
   void SetPropProvider(GesturesPropProvider* pp, void* data);
 
@@ -453,6 +451,7 @@ struct GestureInterpreter {
   GesturesTimer* interpret_timer_;
 
   LoggingFilterInterpreter* loggingFilter_;
+  scoped_ptr<GestureInterpreterConsumer> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };

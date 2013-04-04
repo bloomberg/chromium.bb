@@ -33,7 +33,6 @@ class T5R2CorrectingFilterInterpreter : public FilterInterpreter {
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout);
-
  private:
   unsigned short last_finger_cnt_;
   unsigned short last_touch_cnt_;

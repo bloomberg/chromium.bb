@@ -16,7 +16,7 @@ namespace gestures {
 
 // Interface for all filter interpreters.
 
-class FilterInterpreter : public Interpreter {
+class FilterInterpreter : public Interpreter, public GestureConsumer {
  public:
   FilterInterpreter(PropRegistry* prop_reg,
                     Interpreter* next,
@@ -27,6 +27,9 @@ class FilterInterpreter : public Interpreter {
 
   DictionaryValue* EncodeCommonInfo();
   void Clear();
+
+  virtual void SetGestureConsumer(GestureConsumer* consumer);
+  virtual void ConsumeGesture(const Gesture& gesture);
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
