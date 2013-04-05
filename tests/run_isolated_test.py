@@ -149,9 +149,9 @@ class HttpServiceTest(unittest.TestCase):
   class HttpServiceNoSideEffects(run_isolated.HttpService):
     def _sleep_before_retry(self, _attempt):
       pass
-    def load_cookie_jar(self): # pylint: disable=W0221
+    def load_cookie_jar(self):  # pylint: disable=W0221
       pass
-    def save_cookie_jar(self): # pylint: disable=W0221
+    def save_cookie_jar(self):  # pylint: disable=W0221
       pass
 
   @staticmethod

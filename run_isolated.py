@@ -442,9 +442,10 @@ class HttpService(object):
 
   def __init__(self, url):
     self.url = str(url.rstrip('/'))
-    self.opener = self.create_url_opener(self.load_cookie_jar())
+    self.cookie_jar = self.load_cookie_jar()
+    self.opener = self.create_url_opener()
 
-  def authenticate(self): # pylint: disable=R0201
+  def authenticate(self):  # pylint: disable=R0201
     """Called when HTTP server asks client to authenticate.
     Can be implemented in subclasses.
     """
@@ -468,18 +469,10 @@ class HttpService(object):
       if HttpService._cookie_jar is not None:
         HttpService._cookie_jar.save()
 
-  def create_url_opener(self, cookie_jar): # pylint: disable=R0201
+  def create_url_opener(self):  # pylint: disable=R0201
     """Returns OpenerDirector that will be used when sending requests.
     Can be reimplemented in subclasses."""
-    opener = urllib2.OpenerDirector()
-    opener.add_handler(urllib2.ProxyHandler())
-    opener.add_handler(urllib2.UnknownHandler())
-    opener.add_handler(urllib2.HTTPHandler())
-    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-    opener.add_handler(urllib2.HTTPSHandler())
-    opener.add_handler(urllib2.HTTPErrorProcessor())
-    opener.add_handler(urllib2.HTTPCookieProcessor(cookie_jar))
-    return opener
+    return urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie_jar))
 
   def request(self, url, data=None, retry_404=False, content_type=None):
     """Attempts to open the given url multiple times.
@@ -548,7 +541,7 @@ class HttpService(object):
         return url_response
       except urllib2.HTTPError as e:
         # Unauthorized. Ask to authenticate and then try again.
-        if e.code in (302, 401, 403):
+        if e.code in (401, 403):
           # Try to authenticate only once. If it doesn't help, then server does
           # not support app engine authentication.
           logging.debug('Got %s', e.code)
@@ -556,26 +549,28 @@ class HttpService(object):
             authenticated = True
             continue
           logging.error(
-              'Unable to authenticate to %s.\n%s\n%s',
-              request.get_full_url(), e, e.read())
+              'Unable to authenticate to %s.\n%s',
+              request.get_full_url(), self._format_exception(e, verbose=True))
           return None
 
         if e.code < 500 and not (retry_404 and e.code == 404):
           # This HTTPError means we reached the server and there was a problem
           # with the request, so don't retry.
           logging.error(
-              'Able to connect to %s but an exception was thrown.\n%s\n%s',
-              request.get_full_url(), e, e.read())
+              'Able to connect to %s but an exception was thrown.\n%s',
+              request.get_full_url(), self._format_exception(e, verbose=True))
           return None
 
         # The HTTPError was due to a server error, so retry the attempt.
-        logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
-                        request.get_full_url(), attempt, e)
+        logging.warning('Able to connect to %s on attempt %d.\n%s',
+                        request.get_full_url(), attempt,
+                        self._format_exception(e))
         last_error = e
 
       except (urllib2.URLError, httplib.HTTPException) as e:
-        logging.warning('Unable to open url %s on attempt %d.\nException: %s',
-                        request.get_full_url(), attempt, e)
+        logging.warning('Unable to open url %s on attempt %d.\n%s',
+                        request.get_full_url(), attempt,
+                        self._format_exception(e))
         last_error = e
 
       # Only sleep if we are going to try again.
@@ -583,7 +578,8 @@ class HttpService(object):
         self._sleep_before_retry(attempt)
 
     logging.error('Unable to open given url, %s, after %d attempts.\n%s',
-                  request.get_full_url(), MAX_URL_OPEN_ATTEMPTS, last_error)
+                  request.get_full_url(), MAX_URL_OPEN_ATTEMPTS,
+                  self._format_exception(last_error, verbose=True))
     return None
 
   def _url_open(self, request):
@@ -592,12 +588,30 @@ class HttpService(object):
     """
     return self.opener.open(request)
 
-  def _sleep_before_retry(self, attempt): # pylint: disable=R0201
+  def _sleep_before_retry(self, attempt):  # pylint: disable=R0201
     """Sleeps for some amount of time when retrying the request.
     To be mocked in tests."""
     duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
     duration = min(20, max(0.1, duration))
     time.sleep(duration)
+
+  @staticmethod
+  def _format_exception(exc, verbose=False):
+    """Given an instance of some exception raised by urlopen returns human
+    readable piece of text with detailed information about the error.
+    """
+    out = ['Exception: %s' % (exc,)]
+    if verbose:
+      if isinstance(exc, urllib2.HTTPError):
+        out.append('-' * 10)
+        if exc.hdrs:
+          for header, value in exc.hdrs.items():
+            if not header.startswith('x-'):
+              out.append('%s: %s' % (header.capitalize(), value))
+          out.append('')
+        out.append(exc.read() or '<empty body>')
+        out.append('-' * 10)
+    return '\n'.join(out)
 
 
 class AppEngineService(HttpService):
@@ -623,11 +637,21 @@ class AppEngineService(HttpService):
       logging.warning('\'upload\' module is missing, '
                       'app engine authentication is disabled.')
       return False
-    opener = self.opener
+    cookie_jar = self.cookie_jar
     save_cookie_jar = self.save_cookie_jar
-    # RPC server that uses AuthenticationSupport's cookie jar and url opener.
+    # RPC server that uses AuthenticationSupport's cookie jar.
     class AuthServer(upload.AbstractRpcServer):
       def _GetOpener(self):
+        # Authentication code needs to know about 302 response.
+        # So make OpenerDirector without HTTPRedirectHandler.
+        opener = urllib2.OpenerDirector()
+        opener.add_handler(urllib2.ProxyHandler())
+        opener.add_handler(urllib2.UnknownHandler())
+        opener.add_handler(urllib2.HTTPHandler())
+        opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+        opener.add_handler(urllib2.HTTPSHandler())
+        opener.add_handler(urllib2.HTTPErrorProcessor())
+        opener.add_handler(urllib2.HTTPCookieProcessor(cookie_jar))
         return opener
       def PerformAuthentication(self):
         self._Authenticate()
