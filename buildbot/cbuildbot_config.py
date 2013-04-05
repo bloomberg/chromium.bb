@@ -1014,13 +1014,11 @@ internal_arm_paladin.add_config('daisy-paladin',
 internal_arm_paladin.add_config('spring-paladin',
   boards=['daisy_spring'],
   paladin_builder_name='daisy spring paladin',
-  important=False,
 )
 
 internal_arm_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
-  important=False,
 )
 
 internal_paladin.add_config('zgb-paladin',
