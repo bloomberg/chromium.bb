@@ -978,6 +978,16 @@ internal_incremental = internal.derive(
   description='Incremental Builds (internal)',
 )
 
+sonic = _config(
+  manifest='sonic.xml',
+  boards=['sonic'],
+  # Until these are configured and ready, disable them.
+  unittests=False,
+  vm_tests=None,
+  signer_tests=False,
+  hw_tests=[],
+)
+
 internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
@@ -1067,6 +1077,12 @@ internal_paladin.add_config('stout-paladin',
 internal_paladin.add_config('stout32-paladin',
   boards=['stout32'],
   paladin_builder_name='stout32 paladin',
+  important=False,
+)
+
+internal_paladin.add_config('sonic-paladin',
+  sonic,
+  paladin_builder_name='sonic paladin',
   important=False,
 )
 
@@ -1193,6 +1209,10 @@ _release.add_config('stout-release',
 
 _release.add_config('stout32-release',
   boards=['stout32'],
+)
+
+_release.add_config('sonic-release',
+  sonic,
 )
 
 _release.add_config('butterfly-release',
