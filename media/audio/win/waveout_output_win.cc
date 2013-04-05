@@ -168,7 +168,7 @@ void PCMWaveOutAudioOutputStream::FreeBuffers() {
   for (int ix = 0; ix != num_buffers_; ++ix) {
     ::waveOutUnprepareHeader(waveout_, GetBuffer(ix), sizeof(WAVEHDR));
   }
-  buffers_.reset(NULL);
+  buffers_.reset();
 }
 
 // Initially we ask the source to fill up all audio buffers. If we don't do
