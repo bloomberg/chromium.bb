@@ -80,5 +80,3 @@
 // JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,
 // this define is required.
 #define WTF_CHANGES 1
-
-#define WTF_USE_GOOGLEURL 1

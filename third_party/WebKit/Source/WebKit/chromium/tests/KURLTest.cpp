@@ -263,7 +263,6 @@ TEST(KURLTest, Setters)
 }
 
 // Tests that KURL::decodeURLEscapeSequences works as expected
-#if USE(GOOGLEURL)
 TEST(KURLTest, Decode)
 {
     struct DecodeCase {
@@ -302,7 +301,6 @@ TEST(KURLTest, Decode)
         3);
     EXPECT_EQ(invalidExpected, invalid);
 }
-#endif
 
 TEST(KURLTest, Encode)
 {
@@ -382,20 +380,12 @@ TEST(KURLTest, ReplaceInvalid)
 
     kurl.setProtocol("http");
     // GKURL will say that a URL with just a scheme is invalid, KURL will not.
-#if USE(GOOGLEURL)
     EXPECT_FALSE(kurl.isValid());
-#else
-    EXPECT_TRUE(kurl.isValid());
-#endif
     EXPECT_FALSE(kurl.isEmpty());
     // At this point, we do things slightly differently if there is only a scheme.
     // We check the results here to make it more obvious what is going on, but it
     // shouldn't be a big deal if these change.
-#if USE(GOOGLEURL)
     EXPECT_STREQ("http:", kurl.string().utf8().data());
-#else
-    EXPECT_STREQ("http:/", kurl.string().utf8().data());
-#endif
 
     kurl.setHost("www.google.com");
     EXPECT_TRUE(kurl.isValid());
@@ -414,10 +404,8 @@ TEST(KURLTest, ReplaceInvalid)
 
     // Now let's test that giving an invalid replacement fails. Invalid
     // protocols fail without modifying the URL, which should remain valid.
-#if USE(GOOGLEURL)
     EXPECT_FALSE(kurl.setProtocol("f/sj#@"));
     EXPECT_TRUE(kurl.isValid());
-#endif
 }
 
 TEST(KURLTest, Path)
@@ -528,12 +516,10 @@ TEST(KURLTest, Empty)
     // Test non-hierarchical schemes resolving. The actual URLs will be different.
     // WebKit's one will set the string to "something.gif" and we'll set it to an
     // empty string. I think either is OK, so we just check our behavior.
-#if USE(GOOGLEURL)
     WebCore::KURL kurl3(WebCore::KURL(WebCore::ParsedURLString, "data:foo"),
                         "something.gif");
     EXPECT_TRUE(kurl3.isEmpty());
     EXPECT_FALSE(kurl3.isValid());
-#endif
 
     // Test for weird isNull string input,
     // see: http://bugs.webkit.org/show_bug.cgi?id=16487

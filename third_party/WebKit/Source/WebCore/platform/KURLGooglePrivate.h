@@ -34,6 +34,7 @@
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 
 #include <googleurl/src/url_parse.h>
 #include <googleurl/src/url_canon.h>

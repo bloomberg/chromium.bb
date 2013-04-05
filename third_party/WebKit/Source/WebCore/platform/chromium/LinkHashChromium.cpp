@@ -32,10 +32,7 @@
 #include "KURL.h"
 #include "LinkHash.h"
 
-#if USE(GOOGLEURL)
 #include <googleurl/src/url_util.h>
-#endif
-
 #include <public/Platform.h>
 
 namespace WebCore {
@@ -65,22 +62,10 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL)
     url_canon::RawCanonOutput<2048> buffer;
     url_parse::Parsed parsed;
 
-#if USE(GOOGLEURL)
     const CString& cstr = base.utf8String();
     const char* data = cstr.data();
     int length = cstr.length();
     const url_parse::Parsed& srcParsed = base.parsed();
-#else
-    // When we're not using GoogleURL, first canonicalize it so we can resolve it
-    // below.
-    url_canon::RawCanonOutput<2048> srcCanon;
-    url_parse::Parsed srcParsed;
-    String str = base.string();
-    if (!url_util::Canonicalize(str.characters(), str.length(), 0, &srcCanon, &srcParsed))
-        return 0;
-    const char* data = srcCanon.data();
-    int length = srcCanon.length();
-#endif
 
     if (!url_util::ResolveRelative(data, length, srcParsed, attributeURL.characters(),
                                    attributeURL.length(), 0, &buffer, &parsed))

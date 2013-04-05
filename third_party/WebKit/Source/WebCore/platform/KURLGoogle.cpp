@@ -30,8 +30,6 @@
  */
 
 #include "config.h"
-
-#if USE(GOOGLEURL)
 #include "KURL.h"
 
 #ifndef NDEBUG
@@ -981,5 +979,3 @@ bool protocolHostAndPortAreEqual(const KURL& a, const KURL& b)
 }
 
 } // namespace WebCore
-
-#endif // USE(GOOGLEURL)
