@@ -17,7 +17,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event_utils.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/linux_ui/linux_ui.h"

@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #endif
 
 namespace content {

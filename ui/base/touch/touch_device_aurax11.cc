@@ -4,7 +4,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/base/touch/touch_device.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 
 namespace ui {
 

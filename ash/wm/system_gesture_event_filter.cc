@@ -24,7 +24,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #endif
 
 namespace {

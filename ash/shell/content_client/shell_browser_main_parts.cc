@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #endif
 
 #if defined(OS_CHROMEOS)

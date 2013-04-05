@@ -17,10 +17,10 @@
 #include <utility>
 #include <vector>
 
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
 #include <X11/extensions/randr.h>
 #include <X11/extensions/shape.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xrandr.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -35,7 +35,7 @@
 #include "base/threading/thread.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/point_conversions.h"

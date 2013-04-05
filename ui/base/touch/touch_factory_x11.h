@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TOUCH_TOUCH_FACTORY_H_
-#define UI_BASE_TOUCH_TOUCH_FACTORY_H_
+#ifndef UI_BASE_TOUCH_TOUCH_FACTORY_X11_H_
+#define UI_BASE_TOUCH_TOUCH_FACTORY_X11_H_
 
 #include <bitset>
 #include <map>
@@ -130,4 +130,4 @@ class UI_EXPORT TouchFactory {
 
 }  // namespace ui
 
-#endif  // UI_BASE_TOUCH_TOUCH_FACTORY_H_
+#endif  // UI_BASE_TOUCH_TOUCH_FACTORY_X11_H_

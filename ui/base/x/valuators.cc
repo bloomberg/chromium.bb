@@ -7,7 +7,7 @@
 #include <X11/extensions/XInput2.h>
 
 #include "base/memory/singleton.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 

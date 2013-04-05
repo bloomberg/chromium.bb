@@ -14,7 +14,7 @@
 #include "base/message_pump_aurax11.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_atom_cache.h"

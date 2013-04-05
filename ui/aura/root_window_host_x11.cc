@@ -37,7 +37,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/touch/touch_factory.h"
+#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/device_list_cache_x.h"
