@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -102,6 +103,19 @@ void ClearAllDataOnIOThread(
         quota::kStorageTypePersistent, base::Time(),
         base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
   }
+}
+
+void ClearedShaderCacheOnIOThread(base::Closure callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+}
+
+void ClearShaderCacheOnIOThread(base::FilePath path,
+    base::Time begin, base::Time end, base::Closure callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ShaderCacheFactory::GetInstance()->ClearByPath(
+      path, begin, end,
+      base::Bind(&ClearedShaderCacheOnIOThread, callback));
 }
 
 void OnLocalStorageUsageInfo(
@@ -290,6 +304,20 @@ void StoragePartitionImpl::AsyncClearData(uint32 storage_mask) {
   if (storage_mask & kSessionDomStorage) {
     dom_storage_context_->GetSessionStorageUsage(
         base::Bind(&OnSessionStorageUsageInfo, dom_storage_context_));
+  }
+}
+
+void StoragePartitionImpl::AsyncClearDataBetween(uint32 storage_mask,
+      const base::Time& begin, const base::Time& end,
+      const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(storage_mask == kShaderStorage);
+
+  if (storage_mask & kShaderStorage) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearShaderCacheOnIOThread, GetPath(), begin, end,
+            callback));
   }
 }
 

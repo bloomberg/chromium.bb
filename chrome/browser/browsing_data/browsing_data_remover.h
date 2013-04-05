@@ -82,17 +82,20 @@ class BrowsingDataRemover : public content::NotificationObserver
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_SERVER_BOUND_CERTS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
+    REMOVE_SHADER_CACHE = 1 << 14,
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
     REMOVE_HOSTED_APP_DATA_TESTONLY = 1 << 31,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, and plugin data.
+    // storage, webSQL, shader, and plugin data.
     REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
                        REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA | REMOVE_WEBSQL |
-                       REMOVE_SERVER_BOUND_CERTS
+                       REMOVE_SERVER_BOUND_CERTS,
+    // "cached data" includes the http cache and the shader cache.
+    REMOVE_CACHED_DATA = REMOVE_CACHE | REMOVE_SHADER_CACHE
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type
@@ -338,6 +341,13 @@ class BrowsingDataRemover : public content::NotificationObserver
   // Callback from the above method.
   void OnClearedFormData();
 
+  // Callback when the shader cache has been deleted.
+  // Invokes NotifyAndDeleteIfDone.
+  void ClearedShaderCache();
+
+  // Invoked on the IO thread to delete from the shader cache.
+  void ClearShaderCacheOnUIThread();
+
   // Returns true if we're all done.
   bool AllDone();
 
@@ -399,6 +409,7 @@ class BrowsingDataRemover : public content::NotificationObserver
   bool waiting_for_clear_quota_managed_data_;
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_session_storage_;
+  bool waiting_for_clear_shader_cache_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.

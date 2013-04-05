@@ -69,6 +69,9 @@ class StoragePartition {
     kLocalDomStorage = 1 << 3,
     kSessionDomStorage = 1 << 4,
 
+    // Local shader storage.
+    kShaderStorage = 1 << 5,
+
     kAllStorage = -1,
   };
 
@@ -91,6 +94,15 @@ class StoragePartition {
   // StoragePartition rather than just the data related to this origin.
   virtual void AsyncClearData(uint32 storage_mask) = 0;
 
+  // Similar to AsyncClearDataForOrigin(), but deletes all the data out of the
+  // StoragePartion from between the given |begin| and |end| dates rather
+  // then just the data related to this origin.
+  //
+  // Note: This currently only supports the shader cache.
+  virtual void AsyncClearDataBetween(uint32 storage_mask,
+                                     const base::Time& begin,
+                                     const base::Time& end,
+                                     const base::Closure& callback) = 0;
  protected:
   virtual ~StoragePartition() {}
 };

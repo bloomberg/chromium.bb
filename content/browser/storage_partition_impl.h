@@ -11,13 +11,14 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace content {
 
 class StoragePartitionImpl : public StoragePartition {
  public:
-  virtual ~StoragePartitionImpl();
+  CONTENT_EXPORT virtual ~StoragePartitionImpl();
 
   // StoragePartition interface.
   virtual base::FilePath GetPath() OVERRIDE;
@@ -34,9 +35,15 @@ class StoragePartitionImpl : public StoragePartition {
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void AsyncClearData(uint32 storage_mask) OVERRIDE;
+  virtual void AsyncClearDataBetween(
+      uint32 storage_mask,
+      const base::Time& begin,
+      const base::Time& end,
+      const base::Closure& callback) OVERRIDE;
 
  private:
   friend class StoragePartitionImplMap;
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
 
   // The |partition_path| is the absolute path to the root of this
   // StoragePartition's on-disk storage.
@@ -48,7 +55,7 @@ class StoragePartitionImpl : public StoragePartition {
                                       bool in_memory,
                                       const base::FilePath& profile_path);
 
-  StoragePartitionImpl(
+  CONTENT_EXPORT StoragePartitionImpl(
       const base::FilePath& partition_path,
       quota::QuotaManager* quota_manager,
       ChromeAppCacheService* appcache_service,

@@ -147,6 +147,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_session_storage_(false),
+      waiting_for_clear_shader_cache_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -505,6 +506,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 #endif
 
+  if (remove_mask & REMOVE_SHADER_CACHE) {
+    waiting_for_clear_shader_cache_ = true;
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
+
+    ClearShaderCacheOnUIThread();
+  }
+
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
   waiting_for_clear_networking_history_ = true;
@@ -574,7 +582,8 @@ bool BrowsingDataRemover::AllDone() {
       !waiting_for_clear_content_licenses_ &&
       !waiting_for_clear_form_ &&
       !waiting_for_clear_hostname_resolution_cache_ &&
-      !waiting_for_clear_network_predictor_;
+      !waiting_for_clear_network_predictor_ &&
+      !waiting_for_clear_shader_cache_;
 }
 
 void BrowsingDataRemover::Observe(int type,
@@ -743,6 +752,22 @@ void BrowsingDataRemover::DoClearCache(int rv) {
       }
     }
   }
+}
+
+void BrowsingDataRemover::ClearedShaderCache() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  waiting_for_clear_shader_cache_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearShaderCacheOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserContext::GetDefaultStoragePartition(profile_)->AsyncClearDataBetween(
+      content::StoragePartition::kShaderStorage, delete_begin_, delete_end_,
+      base::Bind(&BrowsingDataRemover::ClearedShaderCache,
+                 base::Unretained(this)));
 }
 
 #if !defined(DISABLE_NACL)
