@@ -138,7 +138,8 @@ struct vdiff_stats {
   int64_t valid;
   int64_t invalid;
   int64_t errors;
-} gVDiffStats = {0, 0, 0, 0};
+  int64_t ignored;
+} gVDiffStats = {0, 0, 0, 0, 0};
 
 static void IncrTried(void) {
   gVDiffStats.tried += 1;
@@ -156,6 +157,10 @@ static void IncrErrors(void) {
   gVDiffStats.errors += 1;
 }
 
+static void IncrIgnored(void) {
+  gVDiffStats.ignored += 1;
+}
+
 static void PrintStats(void) {
   printf("Stats:\n");
   if (!gEasyDiffMode) {
@@ -164,8 +169,10 @@ static void PrintStats(void) {
   }
   printf("errors: %" NACL_PRIu64 "\n", gVDiffStats.errors);
   printf("tried: %" NACL_PRIu64 "\n", gVDiffStats.tried);
-  printf("    =? %" NACL_PRIu64 " valid + invalid + errors\n",
-         gVDiffStats.valid + gVDiffStats.invalid + gVDiffStats.errors);
+  printf("ignored: %" NACL_PRIu64 "\n", gVDiffStats.ignored);
+  printf("    =? %" NACL_PRIu64 " valid + invalid + errors + ignored\n",
+         gVDiffStats.valid + gVDiffStats.invalid + gVDiffStats.errors +
+         gVDiffStats.ignored);
 }
 
 static void InitInst(NaClEnumerator *nacle,
@@ -209,12 +216,25 @@ static void TryOneInstruction(uint8_t *itext, size_t nbytes) {
         IncrErrors();
       }
     } else if (prod_okay && !rdfa_okay) {
-      /* Validators disagree on instruction legality */
-      DecoderError("VALIDATORS DISAGREE (prod accepts, RDFA rejects)",
-                   &pinst,
-                   &dinst,
-                   "");
-      IncrErrors();
+      /*
+       * 32bit production validator by design is unable to distingush a lot of
+       * instructions (the ones which work only with memory or only with
+       * registers).  To avoid commiting multimegabyte golden file don't count
+       * these differences as substantial.  It's not a security problem if we
+       * reject some valid x86 instructions and if we'll lose something
+       * important hopefully developers will remind us.
+       */
+      if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+          NACL_TARGET_SUBARCH == 32) {
+        IncrIgnored();
+      } else {
+        /* Validators disagree on instruction legality */
+        DecoderError("VALIDATORS DISAGREE (prod accepts, RDFA rejects)",
+                     &pinst,
+                     &dinst,
+                     "");
+        IncrErrors();
+      }
     } else if (!prod_okay && rdfa_okay) {
       /* Validators disagree on instruction legality */
       DecoderError("VALIDATORS DISAGREE (prod rejects, RDFA accepts)",

@@ -297,8 +297,10 @@ def BuildScript(status, context):
           context, 'x86-64',
           'scons-out/opt-linux-x86-64/staging/ncval_new')
 
-    with Step('validator_diff_tests', status, halt_on_fail=False):
-      SCons(context, args=['validator_diff_tests'])
+    with Step('validator_diff32_tests', status, halt_on_fail=False):
+      SCons(context, platform='x86-32', args=['validator_diff_tests'])
+    with Step('validator_diff64_tests', status, halt_on_fail=False):
+      SCons(context, platform='x86-64', args=['validator_diff_tests'])
     return
 
   # Run checkdeps script to vet #includes.
