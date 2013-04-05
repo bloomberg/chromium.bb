@@ -69,6 +69,8 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
+#include "ppapi/c/ppb_video_reader.h"
+#include "ppapi/c/ppb_video_writer.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -164,6 +166,8 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoReader_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Graphics3D_1_0;
@@ -1197,6 +1201,74 @@ void Pnacl_M18_PPB_VarArrayBuffer_Unmap(struct PP_Var array) {
 }
 
 /* End wrapper methods for PPB_VarArrayBuffer_1_0 */
+
+/* Begin wrapper methods for PPB_VideoReader_0_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M28_PPB_VideoReader_Create(PP_Instance instance) {
+  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M28_PPB_VideoReader_IsVideoReader(PP_Resource resource) {
+  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
+  return iface->IsVideoReader(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoReader_Open(PP_Resource reader, struct PP_Var stream_id, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
+  return iface->Open(reader, stream_id, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoReader_GetFrame(PP_Resource reader, struct PP_VideoFrame* frame, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
+  return iface->GetFrame(reader, frame, callback);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M28_PPB_VideoReader_Close(PP_Resource reader) {
+  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
+  iface->Close(reader);
+}
+
+/* End wrapper methods for PPB_VideoReader_0_1 */
+
+/* Begin wrapper methods for PPB_VideoWriter_0_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M28_PPB_VideoWriter_Create(PP_Instance instance) {
+  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M28_PPB_VideoWriter_IsVideoWriter(PP_Resource resource) {
+  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
+  return iface->IsVideoWriter(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoWriter_Open(PP_Resource writer, struct PP_Var stream_id, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
+  return iface->Open(writer, stream_id, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoWriter_PutFrame(PP_Resource writer, const struct PP_VideoFrame* frame) {
+  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
+  return iface->PutFrame(writer, frame);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M28_PPB_VideoWriter_Close(PP_Resource writer) {
+  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
+  iface->Close(writer);
+}
+
+/* End wrapper methods for PPB_VideoWriter_0_1 */
 
 /* Not generating wrapper methods for PPB_View_1_0 */
 
@@ -4096,6 +4168,22 @@ struct PPB_VarArrayBuffer_1_0 Pnacl_Wrappers_PPB_VarArrayBuffer_1_0 = {
     .Unmap = (void (*)(struct PP_Var array))&Pnacl_M18_PPB_VarArrayBuffer_Unmap
 };
 
+struct PPB_VideoReader_0_1 Pnacl_Wrappers_PPB_VideoReader_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoReader_Create,
+    .IsVideoReader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoReader_IsVideoReader,
+    .Open = (int32_t (*)(PP_Resource reader, struct PP_Var stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoReader_Open,
+    .GetFrame = (int32_t (*)(PP_Resource reader, struct PP_VideoFrame* frame, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoReader_GetFrame,
+    .Close = (void (*)(PP_Resource reader))&Pnacl_M28_PPB_VideoReader_Close
+};
+
+struct PPB_VideoWriter_0_1 Pnacl_Wrappers_PPB_VideoWriter_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoWriter_Create,
+    .IsVideoWriter = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoWriter_IsVideoWriter,
+    .Open = (int32_t (*)(PP_Resource writer, struct PP_Var stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoWriter_Open,
+    .PutFrame = (int32_t (*)(PP_Resource writer, const struct PP_VideoFrame* frame))&Pnacl_M28_PPB_VideoWriter_PutFrame,
+    .Close = (void (*)(PP_Resource writer))&Pnacl_M28_PPB_VideoWriter_Close
+};
+
 /* Not generating wrapper interface for PPB_View_1_0 */
 
 struct PPB_WebSocket_1_0 Pnacl_Wrappers_PPB_WebSocket_1_0 = {
@@ -4962,6 +5050,18 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoReader_0_1 = {
+  .iface_macro = PPB_VIDEOREADER_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoReader_0_1,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1 = {
+  .iface_macro = PPB_VIDEOWRITER_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoWriter_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0 = {
   .iface_macro = PPB_VIEW_INTERFACE_1_0,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5667,6 +5767,8 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Var_1_0,
   &Pnacl_WrapperInfo_PPB_Var_1_1,
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
+  &Pnacl_WrapperInfo_PPB_VideoReader_0_1,
+  &Pnacl_WrapperInfo_PPB_VideoWriter_0_1,
   &Pnacl_WrapperInfo_PPB_View_1_0,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioTrusted_0_6,
