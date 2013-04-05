@@ -61,8 +61,8 @@ class TestTouchEvent : public ui::TouchEvent {
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
                  int flags)
-      : TouchEvent(type, root_location, 0, ui::EventTimeForNow()) {
-    set_flags(flags);
+      : TouchEvent(type, root_location, flags, 0, ui::EventTimeForNow(),
+                   1.0f, 1.0f, 1.0f, 1.0f) {
   }
 
  private:

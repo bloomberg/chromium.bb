@@ -25,6 +25,8 @@ namespace ash {
 namespace test {
 namespace {
 
+const char kDesktopBackgroundView[] = "DesktopBackgroundView";
+
 class TestObserver : public DisplayController::Observer {
  public:
   TestObserver() : changing_count_(0), changed_count_(0) {
@@ -98,17 +100,50 @@ class DisplayControllerShutdownTest : public test::AshTestBase {
 
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : target_root_(NULL) {}
+  TestEventHandler() : target_root_(NULL),
+                       touch_radius_x_(0.0),
+                       touch_radius_y_(0.0),
+                       scroll_x_offset_(0.0),
+                       scroll_y_offset_(0.0),
+                       scroll_x_offset_ordinal_(0.0),
+                       scroll_y_offset_ordinal_(0.0) {}
   virtual ~TestEventHandler() {}
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Only record when the target is the background which covers
     // entire root window.
-    if (target->name() != "DesktopBackgroundView")
+    if (target->name() != kDesktopBackgroundView)
       return;
     mouse_location_ = event->location();
     target_root_ = target->GetRootWindow();
+    event->StopPropagation();
+  }
+
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    // Only record when the target is the background which covers
+    // entire root window.
+    if (target->name() != kDesktopBackgroundView)
+      return;
+    touch_radius_x_ = event->radius_x();
+    touch_radius_y_ = event->radius_y();
+    event->StopPropagation();
+  }
+
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    // Only record when the target is the background which covers
+    // entire root window.
+    if (target->name() != kDesktopBackgroundView)
+      return;
+
+    if (event->type() == ui::ET_SCROLL) {
+      scroll_x_offset_ = event->x_offset();
+      scroll_y_offset_ = event->y_offset();
+      scroll_x_offset_ordinal_ = event->x_offset_ordinal();
+      scroll_y_offset_ordinal_ = event->y_offset_ordinal();
+    }
     event->StopPropagation();
   }
 
@@ -119,9 +154,23 @@ class TestEventHandler : public ui::EventHandler {
     return result;
   }
 
+  float touch_radius_x() { return touch_radius_x_; }
+  float touch_radius_y() { return touch_radius_y_; }
+  float scroll_x_offset() { return scroll_x_offset_; }
+  float scroll_y_offset() { return scroll_y_offset_; }
+  float scroll_x_offset_ordinal() { return scroll_x_offset_ordinal_; }
+  float scroll_y_offset_ordinal() { return scroll_y_offset_ordinal_; }
+
  private:
   gfx::Point mouse_location_;
   aura::RootWindow* target_root_;
+
+  float touch_radius_x_;
+  float touch_radius_y_;
+  float scroll_x_offset_;
+  float scroll_y_offset_;
+  float scroll_x_offset_ordinal_;
+  float scroll_y_offset_ordinal_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
@@ -787,6 +836,45 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
   EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
   EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
+
+  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+}
+
+
+#if defined(OS_WIN)
+// On Win8 bots, the host window can't be resized and
+// SetTransform updates the window using the orignal host window
+// size.
+#define MAYBE_TouchScale DISABLED_TouchScale
+#else
+#define MAYBE_TouchScale TouchScale
+#endif
+
+TEST_F(DisplayControllerTest, MAYBE_TouchScale) {
+  TestEventHandler event_handler;
+  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+
+  UpdateDisplay("200x200*2");
+  gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::RootWindow* root_window = root_windows[0];
+  aura::test::EventGenerator generator(root_window);
+
+  generator.PressMoveAndReleaseTouchTo(50, 50);
+  // Default test touches have radius_x/y = 1.0, with device scale
+  // factor = 2, the scaled radius_x/y should be 0.5.
+  EXPECT_EQ(0.5, event_handler.touch_radius_x());
+  EXPECT_EQ(0.5, event_handler.touch_radius_y());
+
+  generator.ScrollSequence(gfx::Point(0,0),
+                           base::TimeDelta::FromMilliseconds(100),
+                           10.0, 1.0, 5, 1);
+
+  // With device scale factor = 2, ordinal_offset * 2 = offset.
+  EXPECT_EQ(event_handler.scroll_x_offset(),
+            event_handler.scroll_x_offset_ordinal() * 2);
+  EXPECT_EQ(event_handler.scroll_y_offset(),
+            event_handler.scroll_y_offset_ordinal() * 2);
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }

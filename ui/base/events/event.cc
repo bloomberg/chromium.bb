@@ -462,15 +462,16 @@ void TouchEvent::Relocate(const gfx::Point& origin) {
   root_location_ -= origin.OffsetFromOrigin();
 }
 
-void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
-  LocatedEvent::UpdateForRootTransform(root_transform);
+void TouchEvent::UpdateForRootTransform(
+    const gfx::Transform& inverted_root_transform) {
+  LocatedEvent::UpdateForRootTransform(inverted_root_transform);
   gfx::DecomposedTransform decomp;
-  bool success = gfx::DecomposeTransform(&decomp, root_transform);
+  bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
   DCHECK(success);
   if (decomp.scale[0])
-    radius_x_ /= decomp.scale[0];
+    radius_x_ *= decomp.scale[0];
   if (decomp.scale[1])
-    radius_y_ /= decomp.scale[1];
+    radius_y_ *= decomp.scale[1];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -690,15 +691,16 @@ void ScrollEvent::Scale(const float factor) {
   y_offset_ordinal_ *= factor;
 }
 
-void ScrollEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
-  LocatedEvent::UpdateForRootTransform(root_transform);
+void ScrollEvent::UpdateForRootTransform(
+    const gfx::Transform& inverted_root_transform) {
+  LocatedEvent::UpdateForRootTransform(inverted_root_transform);
   gfx::DecomposedTransform decomp;
-  bool success = gfx::DecomposeTransform(&decomp, root_transform);
+  bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
   DCHECK(success);
   if (decomp.scale[0])
-    x_offset_ordinal_ /= decomp.scale[0];
+    x_offset_ordinal_ *= decomp.scale[0];
   if (decomp.scale[1])
-    y_offset_ordinal_ /= decomp.scale[1];
+    y_offset_ordinal_ *= decomp.scale[1];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

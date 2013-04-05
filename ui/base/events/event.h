@@ -495,7 +495,7 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
 
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(
-      const gfx::Transform& root_transform) OVERRIDE;
+      const gfx::Transform& inverted_root_transform) OVERRIDE;
 
  protected:
   void set_radius(float radius_x, float radius_y) {
@@ -661,7 +661,7 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
 
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(
-      const gfx::Transform& root_transform) OVERRIDE;
+      const gfx::Transform& inverted_root_transform) OVERRIDE;
 
  private:
   // Potential accelerated offsets.
