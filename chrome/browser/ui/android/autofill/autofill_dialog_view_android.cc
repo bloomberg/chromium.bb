@@ -318,8 +318,16 @@ void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
 }
 
 void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
-                                             jint section) {
-  controller_->EditClickedForSection(static_cast<DialogSection>(section));
+                                             jint jsection) {
+  const DialogSection section = static_cast<DialogSection>(jsection);
+  const SuggestionState& suggestion_state =
+      controller_->SuggestionStateForSection(section);
+  if (suggestion_state.text.empty()) {
+    // The section is already in the editing mode, or it's the "Add...".
+    return;
+  }
+
+  controller_->EditClickedForSection(section);
 }
 
 jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,

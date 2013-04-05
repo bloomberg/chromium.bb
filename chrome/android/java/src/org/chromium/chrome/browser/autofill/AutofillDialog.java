@@ -182,20 +182,36 @@ public class AutofillDialog extends AlertDialog
 
         mContentView.setOnItemSelectedListener(this);
 
-        AutofillDialogMenuItem[] billingItems = {
+        // TODO(aruslan): remove as part of the native model wrapper http://crbug.com/224162.
+        final AutofillDialogMenuItem[] ccItems = {
+                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_new_credit_card)),
+                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_edit_credit_card))
+        };
+        final AutofillDialogMenuItem[] billingDetailsItems = {
+                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_new_cc_billing)),
+                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
+                        resources.getString(R.string.autofill_edit_cc_billing))
+        };
+        final AutofillDialogMenuItem[] billingAddressItems = {
                 new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
                         resources.getString(R.string.autofill_new_billing)),
                 new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
                         resources.getString(R.string.autofill_edit_billing))
         };
-        AutofillDialogMenuItem[] shippingItems = {
+        final AutofillDialogMenuItem[] shippingItems = {
                 new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
                         resources.getString(R.string.autofill_new_shipping)),
                 new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
                         resources.getString(R.string.autofill_edit_shipping))
         };
 
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingItems;
+        // TODO(yusufo): http://crbug.com/226497 Need an email add/edit layout/something.
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC] = ccItems;
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_BILLING] = billingAddressItems;
+        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingDetailsItems;
         mDefaultMenuItems[AutofillDialogConstants.SECTION_SHIPPING] = shippingItems;
 
         String hint = mDelegate.getPlaceholderForField(
@@ -408,14 +424,21 @@ public class AutofillDialog extends AlertDialog
         setFieldsForSection(section, dialogInputs);
         mContentView.setVisibilityForSection(section, visible);
         List<AutofillDialogMenuItem> combinedItems;
-        if (mDefaultMenuItems[section] == null) {
+
+        // This is a temporary hack in absence of an Android-specific model wrapper,
+        // which would handle Edit/Add/EditingDone operations.
+        // TODO(aruslan): remove as part of the native model wrapper http://crbug.com/224162.
+        if (mDefaultMenuItems[section] == null || menuItems.length == 0) {
             combinedItems = Arrays.asList(menuItems);
         } else {
             combinedItems = new ArrayList<AutofillDialogMenuItem>(
-                    menuItems.length + mDefaultMenuItems[section].length);
+                    menuItems.length - 1 + mDefaultMenuItems[section].length);
             combinedItems.addAll(Arrays.asList(menuItems));
+            // Replace the provided "Add... item with ours and add "Edit".
+            combinedItems.remove(menuItems.length - 1);
             combinedItems.addAll(Arrays.asList(mDefaultMenuItems[section]));
         }
+
         mContentView.updateMenuItemsForSection(section, combinedItems);
         mAutofillSectionMenuData[section] = menuItems;
     }
