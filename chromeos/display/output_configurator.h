@@ -272,7 +272,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
       const OutputConfigurator::OutputSnapshot* output);
 
   StateController* state_controller_;
-  Delegate* delegate_;
+  scoped_ptr<Delegate> delegate_;
 
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the
