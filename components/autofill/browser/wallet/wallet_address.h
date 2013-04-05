@@ -88,7 +88,8 @@ class Address {
   string16 DisplayNameDetail() const;
 
   // Returns data appropriate for |type|.
-  string16 GetInfo(AutofillFieldType type) const;
+  string16 GetInfo(AutofillFieldType type,
+                   const std::string& app_locale) const;
 
   const std::string& country_name_code() const { return country_name_code_; }
   const string16& recipient_name() const { return recipient_name_; }

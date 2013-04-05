@@ -313,9 +313,11 @@ const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
   return ResourceBundle::GetSharedInstance().GetImageNamed(idr);
 }
 
-string16 WalletItems::MaskedInstrument::GetInfo(AutofillFieldType type) const {
+string16 WalletItems::MaskedInstrument::GetInfo(
+    AutofillFieldType type,
+    const std::string& app_locale) const {
   if (AutofillType(type).group() != AutofillType::CREDIT_CARD)
-    return address().GetInfo(type);
+    return address().GetInfo(type, app_locale);
 
   switch (type) {
     case CREDIT_CARD_NAME:

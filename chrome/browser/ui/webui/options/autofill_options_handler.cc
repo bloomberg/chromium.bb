@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/url_constants.h"
@@ -33,9 +34,8 @@ namespace {
 
 // Sets data related to the country <select>.
 void SetCountryData(DictionaryValue* localized_strings) {
-  std::string app_locale = AutofillCountry::ApplicationLocale();
-  std::string default_country_code =
-      AutofillCountry::CountryCodeForLocale(app_locale);
+  std::string default_country_code = AutofillCountry::CountryCodeForLocale(
+      g_browser_process->GetApplicationLocale());
   localized_strings->SetString("defaultCountryCode", default_country_code);
 
   autofill::CountryComboboxModel model;
@@ -199,6 +199,7 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
   }
 
   bool is_duplicate = false;
+  std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < list->GetSize() && !is_duplicate; ++i) {
     if (i == index)
       continue;
@@ -208,9 +209,8 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
       NOTREACHED() << "List should have a value at index " << i;
       continue;
     }
-    is_duplicate = autofill_i18n::PhoneNumbersMatch(new_value,
-                                                    existing_value,
-                                                    country_code);
+    is_duplicate = autofill_i18n::PhoneNumbersMatch(
+        new_value, existing_value, country_code, app_locale);
   }
 
   if (is_duplicate)

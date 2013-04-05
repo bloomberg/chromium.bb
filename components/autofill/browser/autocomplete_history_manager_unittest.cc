@@ -250,7 +250,7 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
       web_contents());
 
   AutofillManager::CreateForWebContentsAndDelegate(
-      web_contents(), &manager_delegate);
+      web_contents(), &manager_delegate, "en-US");
 
   MockAutofillExternalDelegate external_delegate(web_contents());
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);

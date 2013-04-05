@@ -71,7 +71,7 @@ typedef Tuple5<int,
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
-  TestPersonalDataManager() {
+  TestPersonalDataManager() : PersonalDataManager("en-US") {
     CreateTestAutofillProfiles(&web_profiles_);
     CreateTestCreditCards(&credit_cards_);
   }

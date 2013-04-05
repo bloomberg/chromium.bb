@@ -115,7 +115,7 @@ class Time;
 //
 class AutofillTable : public WebDatabaseTable {
  public:
-  AutofillTable();
+  explicit AutofillTable(const std::string& app_locale);
   virtual ~AutofillTable();
 
   // Retrieves the AutofillTable* owned by |database|.

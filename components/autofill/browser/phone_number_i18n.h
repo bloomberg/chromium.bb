@@ -59,12 +59,14 @@ bool ConstructPhoneNumber(const string16& country_code,
 // the given |region|.
 bool PhoneNumbersMatch(const string16& number_a,
                        const string16& number_b,
-                       const std::string& region);
+                       const std::string& region,
+                       const std::string& app_locale);
 
 // The cached phone number, does parsing only once, improves performance.
 class PhoneObject {
  public:
-  PhoneObject(const string16& number, const std::string& region);
+  PhoneObject(const string16& number,
+              const std::string& region);
   PhoneObject(const PhoneObject&);
   PhoneObject();
   ~PhoneObject();

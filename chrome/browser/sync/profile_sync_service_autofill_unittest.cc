@@ -102,7 +102,7 @@ void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
 
 class AutofillTableMock : public AutofillTable {
  public:
-  AutofillTableMock() : AutofillTable() {}
+  AutofillTableMock() : AutofillTable("en-US") {}
   MOCK_METHOD2(RemoveFormElement,
                bool(const string16& name, const string16& value));  // NOLINT
   MOCK_METHOD1(GetAllAutofillEntries,
@@ -386,6 +386,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
 
 class MockPersonalDataManager : public PersonalDataManager {
  public:
+  MockPersonalDataManager() : PersonalDataManager("en-US") {}
   MOCK_CONST_METHOD0(IsDataLoaded, bool());
   MOCK_METHOD0(LoadProfiles, void());
   MOCK_METHOD0(LoadCreditCards, void());
@@ -1089,7 +1090,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
       "91601", "US", "19482937549");
 
   AutofillProfile expected_profile(sync_profile);
-  expected_profile.OverwriteWithOrAddTo(*native_profile);
+  expected_profile.OverwriteWithOrAddTo(*native_profile, "en-US");
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1114,7 +1115,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
       &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
   // Check that key fields are the same.
-  EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile));
+  EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
   // Check that multivalued fields of the synced back data include original
   // data.
   EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile, NAME_FULL));

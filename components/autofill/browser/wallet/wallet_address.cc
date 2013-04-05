@@ -233,7 +233,8 @@ string16 Address::DisplayNameDetail() const {
 #endif
 }
 
-string16 Address::GetInfo(AutofillFieldType type) const {
+string16 Address::GetInfo(AutofillFieldType type,
+                          const std::string& app_locale) const {
   switch (type) {
     case NAME_FULL:
       return recipient_name();
@@ -254,8 +255,7 @@ string16 Address::GetInfo(AutofillFieldType type) const {
       return postal_code_number();
 
     case ADDRESS_HOME_COUNTRY: {
-      AutofillCountry country(country_name_code(),
-                              AutofillCountry::ApplicationLocale());
+      AutofillCountry country(country_name_code(), app_locale);
       return country.name();
     }
 

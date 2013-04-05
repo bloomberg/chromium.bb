@@ -23,7 +23,6 @@
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
-#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
@@ -172,12 +171,13 @@ void DeterminePossibleFieldTypesForUpload(
 // static
 void AutofillManager::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
-    autofill::AutofillManagerDelegate* delegate) {
+    autofill::AutofillManagerDelegate* delegate,
+    const std::string& app_locale) {
   if (FromWebContents(contents))
     return;
 
   contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
-                        new AutofillManager(contents, delegate));
+                        new AutofillManager(contents, delegate, app_locale));
 
   // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
   // schedule a fetch of the Autocheckout whitelist file if it's not already
@@ -194,9 +194,11 @@ AutofillManager* AutofillManager::FromWebContents(
 }
 
 AutofillManager::AutofillManager(content::WebContents* web_contents,
-                                 autofill::AutofillManagerDelegate* delegate)
+                                 autofill::AutofillManagerDelegate* delegate,
+                                 const std::string& app_locale)
     : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
+      app_locale_(app_locale),
       personal_data_(delegate->GetPersonalDataManager()),
       download_manager_(web_contents->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
@@ -433,7 +435,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
         base::Bind(&DeterminePossibleFieldTypesForUpload,
                    copied_profiles,
                    copied_credit_cards,
-                   AutofillCountry::ApplicationLocale(),
+                   app_locale_,
                    raw_submitted_form),
         base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -629,7 +631,8 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
-        form_group->FillFormField(*autofill_field, variant, &(*iter));
+        form_group->FillFormField(
+            *autofill_field, variant, app_locale_, &(*iter));
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
         autofill_field->is_autofilled = true;
@@ -668,6 +671,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       }
       form_group->FillFormField(*cached_field,
                                 use_variant,
+                                app_locale_,
                                 &result.fields[i]);
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
@@ -1006,6 +1010,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
                                  PersonalDataManager* personal_data)
     : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
+      app_locale_("en-US"),
       personal_data_(personal_data),
       download_manager_(web_contents->GetBrowserContext(), this),
       disable_download_manager_requests_(true),

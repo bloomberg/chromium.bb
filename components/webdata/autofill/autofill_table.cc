@@ -333,8 +333,8 @@ WebDatabaseTable::TypeKey GetKey() {
 // The maximum length allowed for form data.
 const size_t AutofillTable::kMaxDataLength = 1024;
 
-AutofillTable::AutofillTable()
-    : app_locale_(AutofillCountry::ApplicationLocale()) {
+AutofillTable::AutofillTable(const std::string& app_locale)
+    : app_locale_(app_locale) {
 }
 
 AutofillTable::~AutofillTable() {
@@ -1991,10 +1991,10 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
 
     scoped_ptr<AutofillProfile> p(profile);
 
-    if (PersonalDataManager::IsValidLearnableProfile(*p)) {
+    if (PersonalDataManager::IsValidLearnableProfile(*p, app_locale_)) {
       std::vector<AutofillProfile> merged_profiles;
       bool merged = PersonalDataManager::MergeProfile(
-          *p, accumulated_profiles_p, &merged_profiles);
+          *p, accumulated_profiles_p, app_locale_, &merged_profiles);
 
       std::swap(accumulated_profiles, merged_profiles);
 

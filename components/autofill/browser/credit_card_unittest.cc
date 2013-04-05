@@ -223,7 +223,7 @@ TEST(CreditCardTest, CreditCardMonthExact) {
 
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
-  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("01"), field.value);
 }
 
@@ -244,7 +244,7 @@ TEST(CreditCardTest, CreditCardMonthAbbreviated) {
 
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
-  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Jan"), field.value);
 }
 
@@ -265,7 +265,7 @@ TEST(CreditCardTest, CreditCardMonthFull) {
 
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
-  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("January"), field.value);
 }
 
@@ -285,7 +285,7 @@ TEST(CreditCardTest, CreditCardMonthNumeric) {
 
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
-  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("1"), field.value);
 }
 
@@ -305,7 +305,7 @@ TEST(CreditCardTest, CreditCardTwoDigitYear) {
 
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2017"));
-  credit_card.FillSelectControl(CREDIT_CARD_EXP_4_DIGIT_YEAR, &field);
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_4_DIGIT_YEAR, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
   EXPECT_EQ(2017, credit_card.expiration_year());
 }
@@ -333,7 +333,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
     CreditCard credit_card;
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("4111111111111111"));
-    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
   }
 
@@ -342,7 +342,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
     CreditCard credit_card;
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("5105105105105100"));
-    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("Master Card"), field.value);
   }
 
@@ -350,7 +350,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
     // American Express is sometimes abbreviated as AmEx:
     CreditCard credit_card;
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("371449635398431"));
-    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
   }
 
@@ -359,7 +359,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
     CreditCard credit_card;
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("6011111111111117"));
-    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
   }
 }

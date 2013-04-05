@@ -13,9 +13,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "components/autofill/browser/autofill-inl.h"
 #include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/autofill-inl.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/form_group.h"
@@ -28,7 +27,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata/autofill/autofill_webdata_service.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_source.h"
 
 using content::BrowserContext;
 
@@ -82,11 +80,11 @@ T* address_of(T& v) {
 // required as determined by its country code.
 // No verification of validity of the contents is preformed. This is an
 // existence check only.
-bool IsMinimumAddress(const AutofillProfile& profile) {
+bool IsMinimumAddress(const AutofillProfile& profile,
+                      const std::string& app_locale) {
   // All countries require at least one address line.
   if (profile.GetRawInfo(ADDRESS_HOME_LINE1).empty())
     return false;
-  std::string app_locale = AutofillCountry::ApplicationLocale();
   std::string country_code =
       UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -130,11 +128,12 @@ bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
 
 }  // namespace
 
-PersonalDataManager::PersonalDataManager()
+PersonalDataManager::PersonalDataManager(const std::string& app_locale)
     : browser_context_(NULL),
       is_data_loaded_(false),
       pending_profiles_query_(0),
       pending_creditcards_query_(0),
+      app_locale_(app_locale),
       metric_logger_(new AutofillMetrics),
       has_logged_profile_count_(false) {}
 
@@ -238,7 +237,6 @@ bool PersonalDataManager::ImportFormData(
   // complete at the end.
   PhoneNumber::PhoneCombineHelper home;
 
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
     string16 value = CollapseWhitespace(field->value, false);
@@ -266,7 +264,7 @@ bool PersonalDataManager::ImportFormData(
         DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
         local_imported_credit_card->SetInfoForMonthInputType(value);
       } else {
-        local_imported_credit_card->SetInfo(field_type, value, app_locale);
+        local_imported_credit_card->SetInfo(field_type, value, app_locale_);
       }
       ++importable_credit_card_fields;
     } else {
@@ -275,7 +273,7 @@ bool PersonalDataManager::ImportFormData(
       // If the fields are not the phone fields in question home.SetInfo() is
       // going to return false.
       if (!home.SetInfo(field_type, value))
-        imported_profile->SetInfo(field_type, value, app_locale);
+        imported_profile->SetInfo(field_type, value, app_locale_);
 
       // Reject profiles with invalid country information.
       if (field_type == ADDRESS_HOME_COUNTRY &&
@@ -290,16 +288,18 @@ bool PersonalDataManager::ImportFormData(
   // Construct the phone number. Reject the profile if the number is invalid.
   if (imported_profile.get() && !home.IsEmpty()) {
     string16 constructed_number;
-    if (!home.ParseNumber(*imported_profile, app_locale, &constructed_number) ||
+    if (!home.ParseNumber(*imported_profile, app_locale_,
+                          &constructed_number) ||
         !imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number,
-                                   app_locale)) {
+                                   app_locale_)) {
       imported_profile.reset();
     }
   }
 
   // Reject the profile if minimum address and validation requirements are not
   // met.
-  if (imported_profile.get() && !IsValidLearnableProfile(*imported_profile))
+  if (imported_profile.get() &&
+      !IsValidLearnableProfile(*imported_profile, app_locale_))
     imported_profile.reset();
 
   // Reject the credit card if we did not detect enough filled credit card
@@ -317,7 +317,7 @@ bool PersonalDataManager::ImportFormData(
          iter != credit_cards_.end();
          ++iter) {
       if ((*iter)->UpdateFromImportedCard(*local_imported_credit_card.get(),
-                                          app_locale)) {
+                                          app_locale_)) {
         merged_credit_card = true;
         UpdateCreditCard(**iter);
         local_imported_credit_card.reset();
@@ -345,7 +345,7 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (browser_context_->IsOffTheRecord())
     return;
 
-  if (profile.IsEmpty())
+  if (profile.IsEmpty(app_locale_))
     return;
 
   // Don't add an existing profile.
@@ -375,7 +375,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   if (!FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
     return;
 
-  if (profile.IsEmpty()) {
+  if (profile.IsEmpty(app_locale_)) {
     RemoveByGUID(profile.guid());
     return;
   }
@@ -407,7 +407,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (browser_context_->IsOffTheRecord())
     return;
 
-  if (credit_card.IsEmpty())
+  if (credit_card.IsEmpty(app_locale_))
     return;
 
   if (FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
@@ -436,7 +436,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   if (!FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
     return;
 
-  if (credit_card.IsEmpty()) {
+  if (credit_card.IsEmpty(app_locale_)) {
     RemoveByGUID(credit_card.guid());
     return;
   }
@@ -488,16 +488,15 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
 
 void PersonalDataManager::GetNonEmptyTypes(
     FieldTypeSet* non_empty_types) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    (*iter)->GetNonEmptyTypes(app_locale, non_empty_types);
+    (*iter)->GetNonEmptyTypes(app_locale_, non_empty_types);
   }
 
   for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
-    (*iter)->GetNonEmptyTypes(app_locale, non_empty_types);
+    (*iter)->GetNonEmptyTypes(app_locale_, non_empty_types);
   }
 }
 
@@ -550,7 +549,6 @@ void PersonalDataManager::GetProfileSuggestions(
   guid_pairs->clear();
 
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   std::vector<AutofillProfile*> matched_profiles;
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
@@ -558,7 +556,7 @@ void PersonalDataManager::GetProfileSuggestions(
 
     // The value of the stored data for this field type in the |profile|.
     std::vector<string16> multi_values;
-    profile->GetMultiInfo(type, app_locale, &multi_values);
+    profile->GetMultiInfo(type, app_locale_, &multi_values);
 
     for (size_t i = 0; i < multi_values.size(); ++i) {
       if (!field_is_autofilled) {
@@ -623,13 +621,12 @@ void PersonalDataManager::GetCreditCardSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards().begin();
        iter != credit_cards().end(); ++iter) {
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale);
+    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale_);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field_contents, false)) {
       if (type == CREDIT_CARD_NUMBER)
@@ -638,7 +635,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
       string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
+        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale_);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());
@@ -659,8 +656,9 @@ bool PersonalDataManager::IsAutofillEnabled() const {
 
 // static
 bool PersonalDataManager::IsValidLearnableProfile(
-    const AutofillProfile& profile) {
-  if (!IsMinimumAddress(profile))
+    const AutofillProfile& profile,
+    const std::string& app_locale) {
+  if (!IsMinimumAddress(profile, app_locale))
     return false;
 
   string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
@@ -687,6 +685,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
 bool PersonalDataManager::MergeProfile(
     const AutofillProfile& profile,
     const std::vector<AutofillProfile*>& existing_profiles,
+    const std::string& app_locale,
     std::vector<AutofillProfile>* merged_profiles) {
   merged_profiles->clear();
 
@@ -703,7 +702,7 @@ bool PersonalDataManager::MergeProfile(
           StringToLowerASCII((*iter)->PrimaryValue()) ==
               StringToLowerASCII(profile.PrimaryValue())) {
         merged = true;
-        (*iter)->OverwriteWithOrAddTo(profile);
+        (*iter)->OverwriteWithOrAddTo(profile, app_locale);
       }
     }
     merged_profiles->push_back(**iter);
@@ -721,10 +720,13 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
     return;
 
   // Remove empty profiles from input.
-  profiles->erase(
-      std::remove_if(profiles->begin(), profiles->end(),
-                     std::mem_fun_ref(&AutofillProfile::IsEmpty)),
-      profiles->end());
+  for (std::vector<AutofillProfile>::iterator it = profiles->begin();
+       it != profiles->end();) {
+    if (it->IsEmpty(app_locale_))
+      profiles->erase(it);
+    else
+      it++;
+  }
 
   // Ensure that profile labels are up to date.  Currently, sync relies on
   // labels to identify a profile.
@@ -781,11 +783,13 @@ void PersonalDataManager::SetCreditCards(
     return;
 
   // Remove empty credit cards from input.
-  credit_cards->erase(
-      std::remove_if(
-          credit_cards->begin(), credit_cards->end(),
-          std::mem_fun_ref(&CreditCard::IsEmpty)),
-      credit_cards->end());
+  for (std::vector<CreditCard>::iterator it = credit_cards->begin();
+       it != credit_cards->end();) {
+    if (it->IsEmpty(app_locale_))
+      credit_cards->erase(it);
+    else
+      it++;
+  }
 
   scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
@@ -923,12 +927,12 @@ void PersonalDataManager::SaveImportedProfile(
   for (std::vector<AutofillProfile*>::const_iterator iter =
            auxiliary_profiles_.begin();
        iter != auxiliary_profiles_.end(); ++iter) {
-    if (imported_profile.IsSubsetOf(**iter))
+    if (imported_profile.IsSubsetOf(**iter, app_locale_))
       return;
   }
 
   std::vector<AutofillProfile> profiles;
-  MergeProfile(imported_profile, web_profiles_.get(), &profiles);
+  MergeProfile(imported_profile, web_profiles_.get(), app_locale_, &profiles);
   SetProfiles(&profiles);
 }
 
@@ -946,14 +950,13 @@ void PersonalDataManager::SaveImportedCreditCard(
   // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
 
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   std::vector<CreditCard> credit_cards;
   for (std::vector<CreditCard*>::const_iterator card = credit_cards_.begin();
        card != credit_cards_.end();
        ++card) {
     // If |imported_card| has not yet been merged, check whether it should be
     // with the current |card|.
-    if (!merged && (*card)->UpdateFromImportedCard(imported_card, app_locale))
+    if (!merged && (*card)->UpdateFromImportedCard(imported_card, app_locale_))
       merged = true;
 
     credit_cards.push_back(**card);

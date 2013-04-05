@@ -46,6 +46,7 @@ class CreditCard : public FormGroup {
                        const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
+                             const std::string& app_locale,
                              FormFieldData* field_data) const OVERRIDE;
 
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
@@ -97,7 +98,7 @@ class CreditCard : public FormGroup {
   bool operator!=(const CreditCard& credit_card) const;
 
   // Returns true if there are no values (field types) set.
-  bool IsEmpty() const;
+  bool IsEmpty(const std::string& app_locale) const;
 
   // Returns true if all field types have valid values set.
   bool IsComplete() const;

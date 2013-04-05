@@ -92,7 +92,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void ResetPersonalDataManager() {
-    personal_data_.reset(new PersonalDataManager);
+    personal_data_.reset(new PersonalDataManager("en-US"));
     personal_data_->Init(profile_.get());
     personal_data_->AddObserver(&personal_data_observer_);
 

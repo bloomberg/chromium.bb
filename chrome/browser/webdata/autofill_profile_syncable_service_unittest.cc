@@ -352,7 +352,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   profile2.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
 
   EXPECT_FALSE(AutofillProfileSyncableService::MergeProfile(profile2,
-                                                            &profile1));
+                                                            &profile1,
+                                                            "en-US"));
 
   profile1.GetRawMultiInfo(NAME_FIRST, &values);
   ASSERT_EQ(values.size(), 2U);
@@ -386,7 +387,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   profile3.SetRawMultiInfo(NAME_LAST, values);
 
   EXPECT_TRUE(AutofillProfileSyncableService::MergeProfile(profile3,
-                                                           &profile1));
+                                                           &profile1,
+                                                            "en-US"));
 
   profile1.GetRawMultiInfo(NAME_FIRST, &values);
   ASSERT_EQ(values.size(), 3U);

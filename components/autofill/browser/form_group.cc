@@ -258,17 +258,18 @@ bool FormGroup::SetInfo(AutofillFieldType type,
 
 void FormGroup::FillFormField(const AutofillField& field,
                               size_t variant,
+                              const std::string& app_locale,
                               FormFieldData* field_data) const {
   NOTREACHED();
 }
 
 void FormGroup::FillSelectControl(AutofillFieldType type,
+                                  const std::string& app_locale,
                                   FormFieldData* field) const {
   DCHECK(field);
   DCHECK_EQ("select-one", field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
   string16 field_text = GetInfo(type, app_locale);
   string16 field_text_lower = StringToLowerASCII(field_text);
   if (field_text.empty())
@@ -299,20 +300,21 @@ void FormGroup::FillSelectControl(AutofillFieldType type,
   if (type == ADDRESS_HOME_STATE || type == ADDRESS_BILLING_STATE) {
     FillStateSelectControl(field_text, field);
   } else if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
-    FillCountrySelectControl(field);
+    FillCountrySelectControl(app_locale, field);
   } else if (type == CREDIT_CARD_EXP_MONTH) {
     FillExpirationMonthSelectControl(field_text, field);
   } else if (type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     // Attempt to fill the year as a 2-digit year.  This compensates for the
     // fact that our heuristics do not always correctly detect when a website
     // requests a 2-digit rather than a 4-digit year.
-    FillSelectControl(CREDIT_CARD_EXP_2_DIGIT_YEAR, field);
+    FillSelectControl(CREDIT_CARD_EXP_2_DIGIT_YEAR, app_locale, field);
   } else if (type == CREDIT_CARD_TYPE) {
     FillCreditCardTypeSelectControl(field_text, field);
   }
 }
 
-bool FormGroup::FillCountrySelectControl(FormFieldData* field_data) const {
+bool FormGroup::FillCountrySelectControl(const std::string& app_locale,
+                                         FormFieldData* field_data) const {
   return false;
 }
 

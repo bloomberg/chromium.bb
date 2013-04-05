@@ -66,7 +66,7 @@ class TestAutofillDialogView : public AutofillDialogView {
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
-  TestPersonalDataManager() {}
+  TestPersonalDataManager() : PersonalDataManager("en-US") {}
   virtual ~TestPersonalDataManager() {}
 
   void AddTestingProfile(AutofillProfile* profile) {

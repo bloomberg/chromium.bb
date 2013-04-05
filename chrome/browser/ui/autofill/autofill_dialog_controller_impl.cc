@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/personal_data_manager.h"
@@ -141,10 +140,9 @@ void BuildInputs(const DetailInput* input_template,
 // Uses |group| to fill in the |initial_value| for all inputs in |all_inputs|
 // (an out-param).
 void FillInputFromFormGroup(FormGroup* group, DetailInputs* inputs) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].initial_value =
-        group->GetInfo((*inputs)[j].type, app_locale);
+    (*inputs)[j].initial_value = group->GetInfo((*inputs)[j].type, app_locale);
   }
 }
 
@@ -1659,7 +1657,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     }
 
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
-    const std::string app_locale = AutofillCountry::ApplicationLocale();
+    const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
       if (!IsCompleteProfile(*profiles[i]))
         continue;
@@ -1702,7 +1700,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
 bool AutofillDialogControllerImpl::IsCompleteProfile(
     const AutofillProfile& profile) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < requested_shipping_fields_.size(); ++i) {
     AutofillFieldType type = requested_shipping_fields_[i].type;
     if (type != ADDRESS_HOME_LINE2 &&
@@ -1773,13 +1771,14 @@ void AutofillDialogControllerImpl::FillFormStructureForSection(
     size_t variant,
     DialogSection section,
     const InputFieldComparator& compare) {
+  std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillField* field = form_structure_.field(i);
     // Only fill in data that is associated with this section.
     const DetailInputs& inputs = RequestedFieldsForSection(section);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
-        form_group.FillFormField(*field, variant, field);
+        form_group.FillFormField(*field, variant, app_locale, field);
         break;
       }
     }

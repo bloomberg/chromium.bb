@@ -82,7 +82,8 @@ class PersonalDataManagerMock : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerMock);
 };
 
-PersonalDataManagerMock::PersonalDataManagerMock() : PersonalDataManager() {
+PersonalDataManagerMock::PersonalDataManagerMock()
+    : PersonalDataManager("en-US") {
 }
 
 PersonalDataManagerMock::~PersonalDataManagerMock() {
@@ -95,7 +96,7 @@ void PersonalDataManagerMock::Reset() {
 void PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
   std::vector<AutofillProfile> profiles;
-  if (!MergeProfile(profile, profiles_.get(), &profiles))
+  if (!MergeProfile(profile, profiles_.get(), "en-US", &profiles))
     profiles_.push_back(new AutofillProfile(profile));
 }
 

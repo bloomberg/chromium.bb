@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/tab_android.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -64,7 +65,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   autofill::TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       contents,
-      autofill::TabAutofillManagerDelegate::FromWebContents(contents));
+      autofill::TabAutofillManagerDelegate::FromWebContents(contents),
+      g_browser_process->GetApplicationLocale());
   AutofillExternalDelegate::CreateForWebContentsAndManager(
       contents, AutofillManager::FromWebContents(contents));
   AutofillManager::FromWebContents(contents)->SetExternalDelegate(

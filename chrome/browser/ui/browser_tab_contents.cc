@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_tab_contents.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -106,7 +107,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       web_contents,
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents));
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents),
+      g_browser_process->GetApplicationLocale());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNativeAutofillUi)) {
     AutofillExternalDelegate::CreateForWebContentsAndManager(

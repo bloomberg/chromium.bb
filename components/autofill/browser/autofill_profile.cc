@@ -186,22 +186,28 @@ void CollapseCompoundFieldTypes(FieldTypeSet* type_set) {
 
 class FindByPhone {
  public:
-  FindByPhone(const string16& phone, const std::string& country_code)
+  FindByPhone(const string16& phone,
+              const std::string& country_code,
+              const std::string& app_locale)
       : phone_(phone),
-        country_code_(country_code) {
+        country_code_(country_code),
+        app_locale_(app_locale) {
   }
 
   bool operator()(const string16& phone) {
-    return autofill_i18n::PhoneNumbersMatch(phone, phone_, country_code_);
+    return autofill_i18n::PhoneNumbersMatch(
+        phone, phone_, country_code_, app_locale_);
   }
 
   bool operator()(const string16* phone) {
-    return autofill_i18n::PhoneNumbersMatch(*phone, phone_, country_code_);
+    return autofill_i18n::PhoneNumbersMatch(
+        *phone, phone_, country_code_, app_locale_);
   }
 
  private:
   string16 phone_;
   std::string country_code_;
+  std::string app_locale_;
 };
 
 // Functor used to check for case-insensitive equality of two strings.
@@ -348,18 +354,19 @@ void AutofillProfile::GetMultiInfo(AutofillFieldType type,
 
 void AutofillProfile::FillFormField(const AutofillField& field,
                                     size_t variant,
+                                    const std::string& app_locale,
                                     FormFieldData* field_data) const {
   AutofillFieldType type = field.type();
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field_data);
 
   if (type == PHONE_HOME_NUMBER) {
-    FillPhoneNumberField(field, variant, field_data);
+    FillPhoneNumberField(field, variant, app_locale, field_data);
   } else if (field_data->form_control_type == "select-one") {
-    FillSelectControl(type, field_data);
+    FillSelectControl(type, app_locale, field_data);
   } else {
     std::vector<string16> values;
-    GetMultiInfo(type, AutofillCountry::ApplicationLocale(), &values);
+    GetMultiInfo(type, app_locale, &values);
     if (variant >= values.size()) {
       // If the variant is unavailable, bail.  This case is reachable, for
       // example if Sync updates a profile during the filling process.
@@ -372,9 +379,10 @@ void AutofillProfile::FillFormField(const AutofillField& field,
 
 void AutofillProfile::FillPhoneNumberField(const AutofillField& field,
                                            size_t variant,
+                                           const std::string& app_locale,
                                            FormFieldData* field_data) const {
   std::vector<string16> values;
-  GetMultiInfo(field.type(), AutofillCountry::ApplicationLocale(), &values);
+  GetMultiInfo(field.type(), app_locale, &values);
   DCHECK(variant < values.size());
 
   // If we are filling a phone number, check to see if the size field
@@ -400,9 +408,9 @@ const string16 AutofillProfile::Label() const {
   return label_;
 }
 
-bool AutofillProfile::IsEmpty() const {
+bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
   FieldTypeSet types;
-  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
+  GetNonEmptyTypes(app_locale, &types);
   return types.empty();
 }
 
@@ -459,9 +467,10 @@ const string16 AutofillProfile::PrimaryValue() const {
   return GetRawInfo(ADDRESS_HOME_LINE1) + GetRawInfo(ADDRESS_HOME_CITY);
 }
 
-bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
+bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
+                                 const std::string& app_locale) const {
   FieldTypeSet types;
-  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
+  GetNonEmptyTypes(app_locale, &types);
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
@@ -478,7 +487,8 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
       } else if (!autofill_i18n::PhoneNumbersMatch(
             GetRawInfo(*iter),
             profile.GetRawInfo(*iter),
-            UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
+            UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
+            app_locale)) {
         return false;
       }
     } else if (StringToLowerASCII(GetRawInfo(*iter)) !=
@@ -490,9 +500,10 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
   return true;
 }
 
-void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
+void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
+                                           const std::string& app_locale) {
   FieldTypeSet field_types;
-  profile.GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &field_types);
+  profile.GetNonEmptyTypes(app_locale, &field_types);
 
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).
@@ -516,7 +527,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
            value_iter != new_values.end(); ++value_iter) {
         // Don't add duplicates.
         if (group == AutofillType::PHONE) {
-          AddPhoneIfUnique(*value_iter, &existing_values);
+          AddPhoneIfUnique(*value_iter, app_locale, &existing_values);
         } else {
           std::vector<string16>::const_iterator existing_iter = std::find_if(
               existing_values.begin(), existing_values.end(),
@@ -613,10 +624,10 @@ void AutofillProfile::GetSupportedTypes(FieldTypeSet* supported_types) const {
     (*it)->GetSupportedTypes(supported_types);
 }
 
-bool AutofillProfile::FillCountrySelectControl(FormFieldData* field_data)
-    const {
+bool AutofillProfile::FillCountrySelectControl(
+    const std::string& app_locale,
+    FormFieldData* field_data) const {
   std::string country_code = UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
-  std::string app_locale = AutofillCountry::ApplicationLocale();
 
   DCHECK_EQ(field_data->option_values.size(),
             field_data->option_contents.size());
@@ -655,13 +666,14 @@ void AutofillProfile::GetMultiInfoImpl(AutofillFieldType type,
 }
 
 void AutofillProfile::AddPhoneIfUnique(const string16& phone,
+                                       const std::string& app_locale,
                                        std::vector<string16>* existing_phones) {
   DCHECK(existing_phones);
   // Phones allow "fuzzy" matching, so "1-800-FLOWERS", "18003569377",
   // "(800)356-9377" and "356-9377" are considered the same.
-  if (std::find_if(
-          existing_phones->begin(), existing_phones->end(),
-          FindByPhone(phone, UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)))) ==
+  std::string country_code = UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
+  if (std::find_if(existing_phones->begin(), existing_phones->end(),
+                   FindByPhone(phone, country_code, app_locale)) ==
       existing_phones->end()) {
     existing_phones->push_back(phone);
   }

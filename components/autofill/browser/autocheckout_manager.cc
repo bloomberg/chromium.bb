@@ -354,10 +354,13 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
 
   // TODO(ramankk): Handle variants in a better fashion, need to distinguish
   // between shipping and billing address.
-  if (AutofillType(type).group() == AutofillType::CREDIT_CARD)
-    credit_card_->FillFormField(field, 0, field_to_fill);
-  else
-    profile_->FillFormField(field, 0, field_to_fill);
+  if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
+    credit_card_->FillFormField(
+        field, 0, autofill_manager_->app_locale(), field_to_fill);
+  } else {
+    profile_->FillFormField(
+        field, 0, autofill_manager_->app_locale(), field_to_fill);
+  }
 }
 
 void AutocheckoutManager::SendAutocheckoutStatus(AutocheckoutStatus status) {

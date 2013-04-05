@@ -98,7 +98,7 @@ class AutofillTableTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 
-    table_.reset(new AutofillTable);
+    table_.reset(new AutofillTable("en-US"));
     db_.reset(new WebDatabase);
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));

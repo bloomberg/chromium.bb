@@ -63,11 +63,13 @@ class FormGroup {
   // data variant |variant|). It is an error to call the default implementation.
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
+                             const std::string& app_locale,
                              FormFieldData* field_data) const;
 
   // Fills in select control with data matching |type| from |this|.
   // Public for testing purposes.
   void FillSelectControl(AutofillFieldType type,
+                         const std::string& app_locale,
                          FormFieldData* field_data) const;
 
   // Returns true if |value| is a valid US state name or abbreviation.  It is
@@ -86,7 +88,8 @@ class FormGroup {
 
   // Fills in a select control for a country from data in |this|. Returns true
   // for success.
-  virtual bool FillCountrySelectControl(FormFieldData* field_data) const;
+  virtual bool FillCountrySelectControl(const std::string& app_locale,
+                                        FormFieldData* field_data) const;
 };
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_FORM_GROUP_H_

@@ -73,9 +73,8 @@ class AutofillProfileSyncableService
       const AutofillProfileChange& change) OVERRIDE;
 
  protected:
-  explicit AutofillProfileSyncableService(
-      AutofillWebDataService* web_data_service,
-      const std::string& app_locale);
+  AutofillProfileSyncableService(AutofillWebDataService* web_data_service,
+                                 const std::string& app_locale);
 
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
@@ -162,7 +161,8 @@ class AutofillProfileSyncableService
   // |merge_into| has extra data. Returns |true| if |merge_into| posseses some
   // multi-valued field values that are not in |merge_from|, false otherwise.
   static bool MergeProfile(const AutofillProfile& merge_from,
-                           AutofillProfile* merge_into);
+                           AutofillProfile* merge_into,
+                           const std::string& app_locale);
 
   // For unit-tests.
   AutofillProfileSyncableService();

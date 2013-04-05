@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -58,7 +59,9 @@ class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(content::WebContents* web_contents,
                       autofill::AutofillManagerDelegate* delegate)
-      : AutofillManager(web_contents, delegate) {}
+      : AutofillManager(web_contents,
+                        delegate,
+                        g_browser_process->GetApplicationLocale()) {}
   virtual ~TestAutofillManager() {}
 
  private:

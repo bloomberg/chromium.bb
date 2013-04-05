@@ -102,7 +102,7 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
   base::FilePath profile_path(
       root_path.Append(L"Default").Append(kWebDataFilename));
 
-  AutofillTable autofill_table;
+  AutofillTable autofill_table("en-US");
   WebDatabase web_database;
   web_database.AddTable(&autofill_table);
   sql::InitStatus init_status = web_database.Init(profile_path);

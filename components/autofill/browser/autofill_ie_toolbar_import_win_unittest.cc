@@ -16,7 +16,8 @@
 using base::win::RegKey;
 
 // Defined in autofill_ie_toolbar_import_win.cc. Not exposed in the header file.
-bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
+bool ImportCurrentUserProfiles(const std::string& app_locale,
+                               std::vector<AutofillProfile>* profiles,
                                std::vector<CreditCard>* credit_cards);
 
 namespace {
@@ -157,7 +158,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
 
   std::vector<AutofillProfile> profiles;
   std::vector<CreditCard> credit_cards;
-  EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
+  EXPECT_TRUE(ImportCurrentUserProfiles("en-US", &profiles, &credit_cards));
   ASSERT_EQ(2U, profiles.size());
   // The profiles are read in reverse order.
   EXPECT_EQ(profile1[0].value, profiles[1].GetRawInfo(NAME_FIRST));
@@ -195,7 +196,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
 
   profiles.clear();
   credit_cards.clear();
-  EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
+  EXPECT_TRUE(ImportCurrentUserProfiles("en-US", &profiles, &credit_cards));
   // Profiles are not protected.
   EXPECT_EQ(2U, profiles.size());
   // Credit cards are.

@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -28,7 +29,8 @@ class PersonalDataManagerServiceImpl : public PersonalDataManagerService {
 
 PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
     Profile* profile) {
-  personal_data_manager_.reset(new PersonalDataManager());
+  personal_data_manager_.reset(new PersonalDataManager(
+      g_browser_process->GetApplicationLocale()));
   personal_data_manager_->Init(profile);
 }
 

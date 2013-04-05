@@ -52,6 +52,7 @@ class AutofillProfile : public FormGroup {
                        const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
+                             const std::string& app_locale,
                              FormFieldData* field_data) const OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
@@ -69,6 +70,7 @@ class AutofillProfile : public FormGroup {
   // multi-valued profile.
   void FillPhoneNumberField(const AutofillField& field,
                             size_t variant,
+                            const std::string& app_locale,
                             FormFieldData* field_data) const;
 
   // The user-visible label of the profile, generated in relation to other
@@ -83,7 +85,7 @@ class AutofillProfile : public FormGroup {
   void set_guid(const std::string& guid) { guid_ = guid; }
 
   // Returns true if there are no values (field types) set.
-  bool IsEmpty() const;
+  bool IsEmpty(const std::string& app_locale) const;
 
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
@@ -104,11 +106,13 @@ class AutofillProfile : public FormGroup {
 
   // Returns true if the data in this AutofillProfile is a subset of the data in
   // |profile|.
-  bool IsSubsetOf(const AutofillProfile& profile) const;
+  bool IsSubsetOf(const AutofillProfile& profile,
+                  const std::string& app_locale) const;
 
   // Overwrites the single-valued field data in |profile| with this
   // Profile.  Or, for multi-valued fields append the new values.
-  void OverwriteWithOrAddTo(const AutofillProfile& profile);
+  void OverwriteWithOrAddTo(const AutofillProfile& profile,
+                            const std::string& app_locale);
 
   // Returns |true| if |type| accepts multi-values.
   static bool SupportsMultiValue(AutofillFieldType type);
@@ -145,7 +149,8 @@ class AutofillProfile : public FormGroup {
   typedef std::vector<const FormGroup*> FormGroupList;
 
   // FormGroup:
-  virtual bool FillCountrySelectControl(FormFieldData* field) const OVERRIDE;
+  virtual bool FillCountrySelectControl(const std::string& app_locale,
+                                        FormFieldData* field) const OVERRIDE;
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
   // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
@@ -160,6 +165,7 @@ class AutofillProfile : public FormGroup {
   // are considered the same.
   // Adds the |phone| to the |existing_phones| if not already there.
   void AddPhoneIfUnique(const string16& phone,
+                        const std::string& app_locale,
                         std::vector<string16>* existing_phones);
 
   // Builds inferred label from the first |num_fields_to_include| non-empty

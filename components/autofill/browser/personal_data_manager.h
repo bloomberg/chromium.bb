@@ -42,7 +42,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // specific data variant.
   typedef std::pair<std::string, size_t> GUIDPair;
 
-  PersonalDataManager();
+  explicit PersonalDataManager(const std::string& app_locale);
   virtual ~PersonalDataManager();
 
   // Kicks off asynchronous loading of profiles and credit cards.
@@ -152,8 +152,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Also see SetProfile for more details.
   virtual void Refresh();
 
+  const std::string& app_locale() const { return app_locale_; }
+
   // Checks suitability of |profile| for adding to the user's set of profiles.
-  static bool IsValidLearnableProfile(const AutofillProfile& profile);
+  static bool IsValidLearnableProfile(const AutofillProfile& profile,
+                                      const std::string& app_locale);
 
   // Merges |profile| into one of the |existing_profiles| if possible; otherwise
   // appends |profile| to the end of that list. Fills |merged_profiles| with the
@@ -161,6 +164,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   static bool MergeProfile(
       const AutofillProfile& profile,
       const std::vector<AutofillProfile*>& existing_profiles,
+      const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
  protected:
@@ -261,6 +265,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
+  std::string app_locale_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

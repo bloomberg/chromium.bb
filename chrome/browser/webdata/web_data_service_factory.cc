@@ -61,7 +61,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   // All tables objects that participate in managing the database must
   // be added here.
   web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new AutofillTable()));
+      scoped_ptr<WebDatabaseTable>(new AutofillTable(
+          g_browser_process->GetApplicationLocale())));
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new KeywordTable()));
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password

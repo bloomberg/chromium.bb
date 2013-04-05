@@ -16,8 +16,6 @@
 #include "base/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "grit/generated_resources.h"
 #include "third_party/icu/public/common/unicode/locid.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
@@ -27,8 +25,6 @@
 #include "third_party/icu/public/i18n/unicode/coll.h"
 #include "third_party/icu/public/i18n/unicode/ucol.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -845,9 +841,6 @@ class CountryNames {
  public:
   static CountryNames* GetInstance();
 
-  // Returns the application locale.
-  const std::string ApplicationLocale();
-
   // Returns the country code corresponding to |country|, which should be a
   // country code or country name localized to |locale|.
   const std::string GetCountryCode(const string16& country,
@@ -899,31 +892,12 @@ class CountryNames {
   // Verifies thread-safety of accesses to the application locale.
   base::ThreadChecker thread_checker_;
 
-  // Caches the application locale, for thread-safe access.
-  std::string application_locale_;
-
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
 
 // static
 CountryNames* CountryNames::GetInstance() {
   return Singleton<CountryNames>::get();
-}
-
-const std::string CountryNames::ApplicationLocale() {
-  if (application_locale_.empty()) {
-    // In production code, this class is always constructed on the UI thread, so
-    // the two conditions in the below DCHECK are identical.  In test code,
-    // sometimes there is a UI thread, and sometimes there is just the unnamed
-    // main thread.  Since this class is a singleton, it needs to support both
-    // cases.  Hence, the somewhat strange looking DCHECK below.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-           thread_checker_.CalledOnValidThread());
-    application_locale_ =
-        content::GetContentClient()->browser()->GetApplicationLocale();
-  }
-
-  return application_locale_;
 }
 
 CountryNames::CountryNames() {
@@ -1124,11 +1098,6 @@ const std::string AutofillCountry::CountryCodeForLocale(
 const std::string AutofillCountry::GetCountryCode(const string16& country,
                                                   const std::string& locale) {
   return CountryNames::GetInstance()->GetCountryCode(country, locale);
-}
-
-// static
-const std::string AutofillCountry::ApplicationLocale() {
-  return CountryNames::GetInstance()->ApplicationLocale();
 }
 
 AutofillCountry::AutofillCountry(const std::string& country_code,

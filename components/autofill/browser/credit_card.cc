@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_regexes.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -512,14 +511,13 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
 
 void CreditCard::FillFormField(const AutofillField& field,
                                size_t /*variant*/,
+                               const std::string& app_locale,
                                FormFieldData* field_data) const {
   DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(field.type()).group());
   DCHECK(field_data);
 
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-
   if (field_data->form_control_type == "select-one") {
-    FillSelectControl(field.type(), field_data);
+    FillSelectControl(field.type(), app_locale, field_data);
   } else if (field_data->form_control_type == "month") {
     // HTML5 input="month" consists of year-month.
     string16 year = GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, app_locale);
@@ -563,9 +561,9 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
 }
 
-bool CreditCard::IsEmpty() const {
+bool CreditCard::IsEmpty(const std::string& app_locale) const {
   FieldTypeSet types;
-  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
+  GetNonEmptyTypes(app_locale, &types);
   return types.empty();
 }
 

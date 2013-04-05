@@ -143,7 +143,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         remaining_profiles.find(it->first);
     if (profile_to_merge != remaining_profiles.end()) {
       bundle.profiles_to_delete.push_back(profile_to_merge->second->guid());
-      if (MergeProfile(*(profile_to_merge->second), it->second))
+      if (MergeProfile(*(profile_to_merge->second), it->second, app_locale_))
         bundle.profiles_to_sync_back.push_back(it->second);
       DVLOG(2) << "[AUTOFILL SYNC]"
                << "Found similar profile in sync db but with a different guid: "
@@ -563,8 +563,9 @@ bool AutofillProfileSyncableService::UpdateMultivaluedField(
 
 bool AutofillProfileSyncableService::MergeProfile(
     const AutofillProfile& merge_from,
-    AutofillProfile* merge_into) {
-  merge_into->OverwriteWithOrAddTo(merge_from);
+    AutofillProfile* merge_into,
+    const std::string& app_locale) {
+  merge_into->OverwriteWithOrAddTo(merge_from, app_locale);
   return (merge_into->Compare(merge_from) != 0);
 }
 

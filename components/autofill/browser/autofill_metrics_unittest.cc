@@ -82,7 +82,9 @@ class MockAutofillMetrics : public AutofillMetrics {
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
-  TestPersonalDataManager() : autofill_enabled_(true) {
+  TestPersonalDataManager()
+      : PersonalDataManager("en-US"),
+        autofill_enabled_(true) {
     set_metric_logger(new testing::NiceMock<MockAutofillMetrics>());
     CreateTestAutofillProfiles(&web_profiles_);
   }

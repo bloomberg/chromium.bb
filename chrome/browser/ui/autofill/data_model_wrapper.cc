@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
-#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
@@ -77,11 +77,12 @@ AutofillFormGroupWrapper::AutofillFormGroupWrapper(const FormGroup* form_group,
 AutofillFormGroupWrapper::~AutofillFormGroupWrapper() {}
 
 string16 AutofillFormGroupWrapper::GetInfo(AutofillFieldType type) {
-  return form_group_->GetInfo(type, AutofillCountry::ApplicationLocale());
+  return form_group_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
 void AutofillFormGroupWrapper::FillFormField(AutofillField* field) {
-  form_group_->FillFormField(*field, variant_, field);
+  form_group_->FillFormField(
+      *field, variant_, g_browser_process->GetApplicationLocale(), field);
 }
 
 // AutofillProfileWrapper
@@ -94,7 +95,7 @@ AutofillProfileWrapper::AutofillProfileWrapper(
 AutofillProfileWrapper::~AutofillProfileWrapper() {}
 
 void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t j = 0; j < inputs->size(); ++j) {
     std::vector<string16> values;
     profile_->GetMultiInfo((*inputs)[j].type, app_locale, &values);
@@ -149,7 +150,7 @@ WalletAddressWrapper::WalletAddressWrapper(
 WalletAddressWrapper::~WalletAddressWrapper() {}
 
 string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) {
-  return address_->GetInfo(type);
+  return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
 // WalletInstrumentWrapper
@@ -164,7 +165,7 @@ string16 WalletInstrumentWrapper::GetInfo(AutofillFieldType type) {
   if (type == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 
-  return instrument_->GetInfo(type);
+  return instrument_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
 gfx::Image WalletInstrumentWrapper::GetIcon() {
@@ -192,7 +193,8 @@ string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) {
   if (AutofillType(type).group() == AutofillType::CREDIT_CARD)
     return full_wallet_->GetInfo(type);
 
-  return full_wallet_->billing_address()->GetInfo(type);
+  return full_wallet_->billing_address()->GetInfo(
+      type, g_browser_process->GetApplicationLocale());
 }
 
 // FullWalletShippingWrapper
@@ -206,7 +208,8 @@ FullWalletShippingWrapper::FullWalletShippingWrapper(
 FullWalletShippingWrapper::~FullWalletShippingWrapper() {}
 
 string16 FullWalletShippingWrapper::GetInfo(AutofillFieldType type) {
-  return full_wallet_->shipping_address()->GetInfo(type);
+  return full_wallet_->shipping_address()->GetInfo(
+      type, g_browser_process->GetApplicationLocale());
 }
 
 }  // namespace autofill

@@ -332,41 +332,51 @@ TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
   // Same numbers, defined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("4158889999"),
-                                "US"));
+                                "US",
+                                "en-US"));
   // Same numbers, undefined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("4158889999"),
-                                ""));
+                                "",
+                                "en-US"));
 
   // Numbers differ by country code only.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
                                 ASCIIToUTF16("4158889999"),
-                                "US"));
+                                "US",
+                                "en-US"));
 
   // Same numbers, different formats.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("415-888-9999"),
-                                "US"));
+                                "US",
+                                "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("(415)888-9999"),
-                                "US"));
+                                "US",
+                                "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("415 888 9999"),
-                                "US"));
+                                "US",
+                                "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("415 TUV WXYZ"),
-                                "US"));
+                                "US",
+                                "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("1(415)888-99-99"),
                                 ASCIIToUTF16("+14158889999"),
-                                "US"));
+                                "US",
+                                "en-US"));
 
   // Partial matches don't count.
   EXPECT_FALSE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
                                  ASCIIToUTF16("8889999"),
-                                 "US"));
+                                 "US",
+                                 "en-US"));
 
   // Different numbers don't match.
   EXPECT_FALSE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
                                  ASCIIToUTF16("1415888"),
-                                 "US"));
+                                 "US",
+                                 "en-US"));
 }

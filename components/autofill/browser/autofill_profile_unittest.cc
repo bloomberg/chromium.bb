@@ -512,13 +512,13 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   autofill_test::SetProfileInfo(b.get(), "Thomas", NULL, "Jefferson",
       "declaration_guy@gmail.com", "United States Government", "Monticello",
       NULL, "Charlottesville", "Virginia", "22902", NULL, NULL);
-  EXPECT_TRUE(a->IsSubsetOf(*b));
+  EXPECT_TRUE(a->IsSubsetOf(*b, "en-US"));
 
   // |b| is not a subset of |a|.
-  EXPECT_FALSE(b->IsSubsetOf(*a));
+  EXPECT_FALSE(b->IsSubsetOf(*a, "en-US"));
 
   // |a| is a subset of |a|.
-  EXPECT_TRUE(a->IsSubsetOf(*a));
+  EXPECT_TRUE(a->IsSubsetOf(*a, "en-US"));
 
   // One field in |b| is different.
   a.reset(new AutofillProfile);
@@ -529,7 +529,7 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   autofill_test::SetProfileInfo(a.get(), "Thomas", NULL, "Adams",
       "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL);
-  EXPECT_FALSE(a->IsSubsetOf(*b));
+  EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
 TEST(AutofillProfileTest, AssignmentOperator) {
@@ -731,7 +731,7 @@ TEST(AutofillProfileTest, AddressCountryFull) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, &field);
+  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
 }
 
@@ -751,7 +751,7 @@ TEST(AutofillProfileTest, AddressCountryAbbrev) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, &field);
+  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -771,7 +771,7 @@ TEST(AutofillProfileTest, AddressStateFull) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, &field);
+  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -791,7 +791,7 @@ TEST(AutofillProfileTest, AddressStateAbbrev) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, &field);
+  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -813,7 +813,7 @@ TEST(AutofillProfileTest, FillByValue) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, &field);
+  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -835,6 +835,6 @@ TEST(AutofillProfileTest, FillByContents) {
 
   AutofillProfile profile;
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, &field);
+  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 
+#include "chrome/browser/browser_process.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
@@ -11,7 +12,7 @@ namespace autofill {
 
 CountryComboboxModel::CountryComboboxModel() {
   // Insert the default country at the top as well as in the ordered list.
-  std::string app_locale = AutofillCountry::ApplicationLocale();
+  std::string app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
       AutofillCountry::CountryCodeForLocale(app_locale);
   countries_.push_back(new AutofillCountry(default_country_code, app_locale));

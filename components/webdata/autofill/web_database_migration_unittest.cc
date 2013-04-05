@@ -175,7 +175,7 @@ class WebDatabaseMigrationTest : public testing::Test {
     // for now, as it needs to know about all the different table
     // types. Once all webdata datatypes have been componentized, this
     // could move to components_unittests.
-    AutofillTable autofill_table;
+    AutofillTable autofill_table("en-US");
     KeywordTable keyword_table;
     LoginsTable logins_table;
     TokenServiceTable token_service_table;

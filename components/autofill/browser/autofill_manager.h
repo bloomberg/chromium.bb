@@ -79,7 +79,8 @@ class AutofillManager : public content::WebContentsObserver,
  public:
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
-      autofill::AutofillManagerDelegate* delegate);
+      autofill::AutofillManagerDelegate* delegate,
+      const std::string& app_locale);
   static AutofillManager* FromWebContents(content::WebContents* contents);
 
   // Registers our Enable/Disable Autofill pref.
@@ -132,13 +133,16 @@ class AutofillManager : public content::WebContentsObserver,
     return manager_delegate_;
   }
 
+  const std::string& app_locale() const { return app_locale_; }
+
   // Only for testing.
   void SetTestDelegate(autofill::AutofillManagerTestDelegate* delegate);
 
  protected:
   // Only test code should subclass AutofillManager.
   AutofillManager(content::WebContents* web_contents,
-                  autofill::AutofillManagerDelegate* delegate);
+                  autofill::AutofillManagerDelegate* delegate,
+                  const std::string& app_locale);
   virtual ~AutofillManager();
 
   // Test code should prefer to use this constructor.
@@ -357,6 +361,8 @@ class AutofillManager : public content::WebContentsObserver,
       const std::vector<FormStructure*>& forms) const;
 
   autofill::AutofillManagerDelegate* const manager_delegate_;
+
+  std::string app_locale_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.

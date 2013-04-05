@@ -18,12 +18,12 @@ using i18n::phonenumbers::PhoneNumberUtil;
 
 namespace {
 
-std::string SanitizeRegion(const std::string& region) {
+std::string SanitizeRegion(const std::string& region,
+                           const std::string& app_locale) {
   if (region.length() == 2)
     return region;
 
-  return AutofillCountry::CountryCodeForLocale(
-      AutofillCountry::ApplicationLocale());
+  return AutofillCountry::CountryCodeForLocale(app_locale);
 }
 
 // Returns true if |phone_number| is valid.
@@ -149,13 +149,14 @@ bool ParsePhoneNumber(const string16& value,
 }
 
 string16 NormalizePhoneNumber(const string16& value,
-                              std::string const& region) {
+                              const std::string& region) {
+  DCHECK_EQ(2u, region.size());
   string16 country_code;
   string16 unused_city_code;
   string16 unused_number;
   PhoneNumber phone_number;
-  if (!ParsePhoneNumber(value, SanitizeRegion(region), &country_code,
-                        &unused_city_code, &unused_number, &phone_number)) {
+  if (!ParsePhoneNumber(value, region, &country_code, &unused_city_code,
+                        &unused_number, &phone_number)) {
     return string16();  // Parsing failed - do not store phone.
   }
 
@@ -169,14 +170,14 @@ bool ConstructPhoneNumber(const string16& country_code,
                           const string16& number,
                           const std::string& region,
                           string16* whole_number) {
+  DCHECK_EQ(2u, region.size());
   whole_number->clear();
 
   string16 unused_country_code;
   string16 unused_city_code;
   string16 unused_number;
   PhoneNumber phone_number;
-  if (!ParsePhoneNumber(country_code + city_code + number,
-                        SanitizeRegion(region),
+  if (!ParsePhoneNumber(country_code + city_code + number, region,
                         &unused_country_code, &unused_city_code, &unused_number,
                         &phone_number)) {
     return false;
@@ -188,9 +189,10 @@ bool ConstructPhoneNumber(const string16& country_code,
 
 bool PhoneNumbersMatch(const string16& number_a,
                        const string16& number_b,
-                       const std::string& raw_region) {
+                       const std::string& raw_region,
+                       const std::string& app_locale) {
   // Sanitize the provided |raw_region| before trying to use it for parsing.
-  const std::string region = SanitizeRegion(raw_region);
+  const std::string region = SanitizeRegion(raw_region, app_locale);
 
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
 
@@ -222,9 +224,11 @@ bool PhoneNumbersMatch(const string16& number_a,
   return false;
 }
 
-PhoneObject::PhoneObject(const string16& number, const std::string& region)
-    : region_(SanitizeRegion(region)),
+PhoneObject::PhoneObject(const string16& number,
+                         const std::string& region)
+    : region_(region),
       i18n_number_(NULL) {
+  DCHECK_EQ(2u, region.size());
   // TODO(isherman): Autofill profiles should always have a |region| set, but in
   // some cases it should be marked as implicit.  Otherwise, phone numbers
   // might behave differently when they are synced across computers:

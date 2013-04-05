@@ -86,7 +86,8 @@ class WalletItems {
     string16 DisplayNameDetail() const;
 
     // Gets info that corresponds with |type|.
-    string16 GetInfo(AutofillFieldType type) const;
+    string16 GetInfo(AutofillFieldType type,
+                     const std::string& app_locale) const;
 
     // Returns the display type of the and last four digits (e.g. Visa - 4444).
     string16 TypeAndLastFourDigits() const;

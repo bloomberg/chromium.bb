@@ -71,7 +71,7 @@ class WebDataServiceTest : public testing::Test {
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
     wdbs_ = new WebDatabaseService(path);
-    wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable()));
+    wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
 
     wds_ = new AutofillWebDataService(
