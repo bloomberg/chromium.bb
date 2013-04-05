@@ -29,14 +29,8 @@
 #include "config.h"
 #include "ArchiveFactory.h"
 
-#include "MIMETypeRegistry.h"
-
-#if USE(CF) && !PLATFORM(QT) && ENABLE(WEB_ARCHIVE)
-#include "LegacyWebArchive.h"
-#endif
-#if ENABLE(MHTML)
 #include "MHTMLArchive.h"
-#endif
+#include "MIMETypeRegistry.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -63,17 +57,7 @@ static ArchiveMIMETypesMap& archiveMIMETypes()
     if (initialized)
         return mimeTypes;
 
-#if ENABLE(WEB_ARCHIVE) && USE(CF)
-    mimeTypes.set("application/x-webarchive", archiveFactoryCreate<LegacyWebArchive>);
-#endif
-#if ENABLE(MHTML)
     mimeTypes.set("multipart/related", archiveFactoryCreate<MHTMLArchive>);
-#if PLATFORM(GTK)
-    mimeTypes.set("message/rfc822", archiveFactoryCreate<MHTMLArchive>);
-#elif PLATFORM(QT)
-    mimeTypes.set("application/x-mimearchive", archiveFactoryCreate<MHTMLArchive>);
-#endif
-#endif
 
     initialized = true;
     return mimeTypes;

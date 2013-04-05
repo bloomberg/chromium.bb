@@ -37,6 +37,7 @@
 
 #include "AXObjectCache.h"
 #include "ApplicationCacheHost.h"
+#include "Archive.h"
 #include "BackForwardController.h"
 #include "BeforeUnloadEvent.h"
 #include "MemoryCache.h"
@@ -121,10 +122,6 @@
 #include "SVGSVGElement.h"
 #include "SVGViewElement.h"
 #include "SVGViewSpec.h"
-#endif
-
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
-#include "Archive.h"
 #endif
 
 
@@ -832,13 +829,11 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
 {
     ASSERT(childFrame);
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     RefPtr<Archive> subframeArchive = activeDocumentLoader()->popArchiveForSubframe(childFrame->tree()->uniqueName(), url);    
     if (subframeArchive) {
         childFrame->loader()->loadArchive(subframeArchive.release());
         return;
     }
-#endif // ENABLE(WEB_ARCHIVE)
 
     HistoryItem* parentItem = history()->currentItem();
     // If we're moving in the back/forward list, we might want to replace the content
@@ -855,7 +850,6 @@ void FrameLoader::loadURLIntoChildFrame(const KURL& url, const String& referer, 
     childFrame->loader()->loadURL(url, referer, "_self", false, FrameLoadTypeRedirectWithLockedBackForwardList, 0, 0);
 }
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 void FrameLoader::loadArchive(PassRefPtr<Archive> archive)
 {
     ArchiveResource* mainResource = archive->mainResource();
@@ -866,15 +860,11 @@ void FrameLoader::loadArchive(PassRefPtr<Archive> archive)
     SubstituteData substituteData(mainResource->data(), mainResource->mimeType(), mainResource->textEncoding(), KURL());
     
     ResourceRequest request(mainResource->url());
-#if PLATFORM(MAC)
-    request.applyWebArchiveHackForMail();
-#endif
 
     RefPtr<DocumentLoader> documentLoader = m_client->createDocumentLoader(request, substituteData);
     documentLoader->setArchive(archive.get());
     load(documentLoader.get());
 }
-#endif // ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 
 ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn, bool shouldPreferPlugInsForImages)
 {

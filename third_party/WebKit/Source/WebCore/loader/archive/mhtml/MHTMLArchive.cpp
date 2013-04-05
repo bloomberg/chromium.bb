@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MHTML)
 #include "MHTMLArchive.h"
 
 #include "Document.h"
@@ -242,4 +241,3 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
 }
 
 }
-#endif

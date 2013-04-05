@@ -31,7 +31,6 @@
 #ifndef MHTMLArchive_h
 #define MHTMLArchive_h
 
-#if ENABLE(MHTML)
 
 #include "Archive.h"
 
@@ -63,5 +62,4 @@ private:
 
 }
 
-#endif
 #endif

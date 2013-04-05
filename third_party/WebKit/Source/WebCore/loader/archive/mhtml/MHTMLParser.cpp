@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(MHTML)
 #include "MHTMLParser.h"
 
 #include "MHTMLArchive.h"
@@ -243,4 +241,3 @@ ArchiveResource* MHTMLParser::subResourceAt(size_t index) const
 }
 
 }
-#endif

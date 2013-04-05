@@ -57,9 +57,7 @@ class SchedulePair;
 
 namespace WebCore {
     class ApplicationCacheHost;
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     class Archive;
-#endif
     class ArchiveResource;
     class ArchiveResourceCollection;
     class CachedResourceLoader;
@@ -137,7 +135,6 @@ namespace WebCore {
         void unschedule(WTF::SchedulePair*);
 #endif
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
         void setArchive(PassRefPtr<Archive>);
         void addAllArchiveResources(Archive*);
         void addArchiveResource(PassRefPtr<ArchiveResource>);
@@ -145,7 +142,6 @@ namespace WebCore {
         SharedBuffer* parsedArchiveData() const;
 
         bool scheduleArchiveLoad(ResourceLoader*, const ResourceRequest&);
-#endif // ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 
         // Return the ArchiveResource for the URL only when loading an Archive
         ArchiveResource* archiveResourceForURL(const KURL&) const;
@@ -271,9 +267,7 @@ namespace WebCore {
         void maybeFinishLoadingMultipartContent();
         
         bool maybeCreateArchive();
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
         void clearArchiveResources();
-#endif
 
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);
@@ -374,10 +368,8 @@ namespace WebCore {
         Timer<DocumentLoader> m_substituteResourceDeliveryTimer;
 
         OwnPtr<ArchiveResourceCollection> m_archiveResourceCollection;
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
         RefPtr<Archive> m_archive;
         RefPtr<SharedBuffer> m_parsedArchiveData;
-#endif
 
         HashSet<String> m_resourcesClientKnowsAbout;
         Vector<ResourceRequest> m_resourcesLoadedFromMemoryCacheForClientNotification;

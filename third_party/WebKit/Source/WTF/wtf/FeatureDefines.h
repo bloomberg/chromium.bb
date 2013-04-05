@@ -98,10 +98,6 @@
 #endif
 #endif
 
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 1
-#endif
-
 #if !defined(ENABLE_VIEW_MODE_CSS_MEDIA)
 #define ENABLE_VIEW_MODE_CSS_MEDIA 0
 #endif
@@ -174,10 +170,6 @@
 #define ENABLE_VIEW_MODE_CSS_MEDIA 0
 #endif
 
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 1
-#endif
-
 #if !defined(ENABLE_WEB_AUDIO)
 #define ENABLE_WEB_AUDIO 1
 #endif
@@ -190,10 +182,6 @@
 
 /* --------- Apple Windows port --------- */
 #if PLATFORM(WIN) && !OS(WINCE)
-
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 1
-#endif
 
 #endif /* PLATFORM(WIN) && !OS(WINCE) */
 
@@ -214,12 +202,6 @@
 
 /* --------- WX port (Mac OS and Windows) --------- */
 #if PLATFORM(WX)
-
-#if OS(DARWIN)
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 1
-#endif
-#endif
 
 #if OS(UNIX)
 #if !defined(ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH)
@@ -564,11 +546,6 @@
 #if !defined(ENABLE_METER_ELEMENT)
 #define ENABLE_METER_ELEMENT 1
 #endif
-
-#if !defined(ENABLE_MHTML)
-#define ENABLE_MHTML 0
-#endif
-
 #if !defined(ENABLE_MICRODATA)
 #define ENABLE_MICRODATA 0
 #endif
@@ -777,10 +754,6 @@
 
 #if !defined(ENABLE_WEBGL)
 #define ENABLE_WEBGL 0
-#endif
-
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 0
 #endif
 
 #if !defined(ENABLE_WEB_AUDIO)

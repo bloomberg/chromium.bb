@@ -31,6 +31,7 @@
 #include "DocumentLoader.h"
 
 #include "ApplicationCacheHost.h"
+#include "ArchiveFactory.h"
 #include "ArchiveResourceCollection.h"
 #include "CachedPage.h"
 #include "CachedResourceLoader.h"
@@ -66,10 +67,6 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/Unicode.h>
-
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
-#include "ArchiveFactory.h"
-#endif
 
 #if USE(CONTENT_FILTERING)
 #include "ContentFilter.h"
@@ -277,9 +274,7 @@ void DocumentLoader::stopLoading()
     // Appcache uses ResourceHandle directly, DocumentLoader doesn't count these loads.
     m_applicationCacheHost->stopLoadingInFrame(m_frame);
     
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     clearArchiveResources();
-#endif
 
     if (!loading) {
         // If something above restarted loading we might run into mysterious crashes like 
@@ -737,10 +732,8 @@ void DocumentLoader::commitLoad(const char* data, int length)
     FrameLoader* frameLoader = DocumentLoader::frameLoader();
     if (!frameLoader)
         return;
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     if (ArchiveFactory::isArchiveMimeType(response().mimeType()))
         return;
-#endif
     frameLoader->client()->committedLoad(this, data, length);
 }
 
@@ -774,12 +767,10 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
             return;
         
-#if ENABLE(MHTML)
         // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
         // relative URLs are resolved properly.
         if (m_archive && m_archive->type() == Archive::MHTML)
             m_frame->document()->setBaseURLOverride(m_archive->mainResource()->url());
-#endif
 
         // Call receivedFirstData() exactly once per load. We should only reach this point multiple times
         // for multipart loads, and FrameLoader::isReplacing() will be true after the first time.
@@ -791,10 +782,6 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         if (encoding.isNull()) {
             userChosen = false;
             encoding = response().textEncodingName();
-#if ENABLE(WEB_ARCHIVE)
-            if (m_archive && m_archive->type() == Archive::WebArchive)
-                encoding = m_archive->mainResource()->textEncoding();
-#endif
         }
         m_writer.setEncoding(encoding, userChosen);
     }
@@ -824,10 +811,8 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_pendingSubstituteResources, "pendingSubstituteResources");
     info.addMember(m_substituteResourceDeliveryTimer, "substituteResourceDeliveryTimer");
     info.addMember(m_archiveResourceCollection, "archiveResourceCollection");
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     info.addMember(m_archive, "archive");
     info.addMember(m_parsedArchiveData, "parsedArchiveData");
-#endif
     info.addMember(m_resourcesClientKnowsAbout, "resourcesClientKnowsAbout");
     info.addMember(m_resourcesLoadedFromMemoryCacheForClientNotification, "resourcesLoadedFromMemoryCacheForClientNotification");
     info.addMember(m_clientRedirectSourceForHistory, "clientRedirectSourceForHistory");
@@ -901,9 +886,7 @@ void DocumentLoader::setupForReplace()
     
     stopLoadingSubresources();
     stopLoadingPlugIns();
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     clearArchiveResources();
-#endif
 }
 
 void DocumentLoader::checkLoadComplete()
@@ -975,10 +958,6 @@ bool DocumentLoader::isLoadingInAPISense() const
 
 bool DocumentLoader::maybeCreateArchive()
 {
-#if !ENABLE(WEB_ARCHIVE) && !ENABLE(MHTML)
-    return false;
-#else
-    
     // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
     RefPtr<ResourceBuffer> mainResourceBuffer = mainResourceData();
     m_archive = ArchiveFactory::create(m_response.url(), mainResourceBuffer ? mainResourceBuffer->sharedBuffer() : 0, m_response.mimeType());
@@ -993,10 +972,8 @@ bool DocumentLoader::maybeCreateArchive()
     ASSERT(m_frame->document());
     commitData(mainResource->data()->data(), mainResource->data()->size());
     return true;
-#endif // !ENABLE(WEB_ARCHIVE) && !ENABLE(MHTML)
 }
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 void DocumentLoader::setArchive(PassRefPtr<Archive> archive)
 {
     m_archive = archive;
@@ -1044,7 +1021,6 @@ SharedBuffer* DocumentLoader::parsedArchiveData() const
 {
     return m_parsedArchiveData.get();
 }
-#endif // ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 
 ArchiveResource* DocumentLoader::archiveResourceForURL(const KURL& url) const
 {
@@ -1177,7 +1153,6 @@ void DocumentLoader::cancelPendingSubstituteLoad(ResourceLoader* loader)
         m_substituteResourceDeliveryTimer.stop();
 }
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
 bool DocumentLoader::scheduleArchiveLoad(ResourceLoader* loader, const ResourceRequest& request)
 {
     if (ArchiveResource* resource = archiveResourceForURL(request.url())) {
@@ -1190,20 +1165,12 @@ bool DocumentLoader::scheduleArchiveLoad(ResourceLoader* loader, const ResourceR
         return false;
 
     switch (m_archive->type()) {
-#if ENABLE(WEB_ARCHIVE)
-    case Archive::WebArchive:
-        // WebArchiveDebugMode means we fail loads instead of trying to fetch them from the network if they're not in the archive.
-        return m_frame->settings() && m_frame->settings()->webArchiveDebugModeEnabled() && ArchiveFactory::isArchiveMimeType(responseMIMEType());
-#endif
-#if ENABLE(MHTML)
     case Archive::MHTML:
         return true; // Always fail the load for resources not included in the MHTML.
-#endif
     default:
         return false;
     }
 }
-#endif // ENABLE(WEB_ARCHIVE)
 
 void DocumentLoader::addResponse(const ResourceResponse& r)
 {
@@ -1261,10 +1228,6 @@ const KURL& DocumentLoader::responseURL() const
 KURL DocumentLoader::documentURL() const
 {
     KURL url = substituteData().responseURL();
-#if ENABLE(WEB_ARCHIVE)
-    if (url.isEmpty() && m_archive && m_archive->type() == Archive::WebArchive)
-        url = m_archive->mainResource()->url();
-#endif
     if (url.isEmpty())
         url = requestURL();
     if (url.isEmpty())

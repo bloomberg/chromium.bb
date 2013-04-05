@@ -31,7 +31,6 @@
 #ifndef MHTMLParser_h
 #define MHTMLParser_h
 
-#if ENABLE(MHTML)
 #include "SharedBufferChunkReader.h"
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>
@@ -69,6 +68,5 @@ private:
 
 }
 
-#endif
 #endif
 

@@ -106,9 +106,7 @@ public:
 
     void load(const FrameLoadRequest&);
 
-#if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     void loadArchive(PassRefPtr<Archive>);
-#endif
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     void changeLocation(SecurityOrigin*, const KURL&, const String& referrer, bool lockHistory = true, bool lockBackForwardList = true, bool refresh = false);
