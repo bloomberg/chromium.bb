@@ -750,11 +750,11 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         if (this.stackTrace)
             this.setHasWarning();
         presentationModel._layoutInvalidateStack[this.frameId] = null;
-        this.highlightQuad = record.data.root;
+        this.highlightQuad = record.data.root || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
         break;
 
     case recordTypes.Paint:
-        this.highlightQuad = record.data.clip;
+        this.highlightQuad = record.data.clip || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
         break;
 
     case recordTypes.WebSocketCreate:
@@ -1037,10 +1037,19 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     contentHelper.appendElementRow(WebInspector.UIString("Script"), this._linkifyLocation(this.url, this.data["lineNumber"]));
                 break;
             case recordTypes.Paint:
-                contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", this.data.clip[0], this.data.clip[1]));
-                var clipWidth = WebInspector.TimelinePresentationModel.quadWidth(this.data.clip);
-                var clipHeight = WebInspector.TimelinePresentationModel.quadHeight(this.data.clip);
-                contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
+                var clip = this.data["clip"];
+                if (clip) {
+                    contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
+                    var clipWidth = WebInspector.TimelinePresentationModel.quadWidth(clip);
+                    var clipHeight = WebInspector.TimelinePresentationModel.quadHeight(clip);
+                    contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
+                } else {
+                    // Backward compatibility: older version used x, y, width, height fields directly in data.
+                    if (typeof this.data["x"] !== "undefined" && typeof this.data["y"] !== "undefined")
+                        contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", this.data["x"], this.data["y"]));
+                    if (typeof this.data["width"] !== "undefined" && typeof this.data["height"] !== "undefined")
+                        contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d\u2009\u00d7\u2009%d", this.data["width"], this.data["height"]));
+                }
                 break;
             case recordTypes.RecalculateStyles: // We don't want to see default details.
                 callSiteStackTraceLabel = WebInspector.UIString("Styles invalidated");
@@ -1159,7 +1168,10 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             details = this.data ? this.data["type"] : null;
             break;
         case WebInspector.TimelineModel.RecordType.Paint:
-            details = WebInspector.TimelinePresentationModel.quadWidth(this.data.clip)  + "\u2009\u00d7\u2009" + WebInspector.TimelinePresentationModel.quadHeight(this.data.clip);
+            var width = this.data.clip ? WebInspector.TimelinePresentationModel.quadWidth(this.data.clip) : this.data.width;
+            var height = this.data.clip ? WebInspector.TimelinePresentationModel.quadHeight(this.data.clip) : this.data.height;
+            if (width && height)
+                details = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
             break;
         case WebInspector.TimelineModel.RecordType.DecodeImage:
             details = this.data["imageType"];
@@ -1397,6 +1409,21 @@ WebInspector.TimelinePresentationModel.quadWidth = function(quad)
 WebInspector.TimelinePresentationModel.quadHeight = function(quad)
 {
     return Math.round(Math.sqrt(Math.pow(quad[0] - quad[6], 2) + Math.pow(quad[1] - quad[7], 2)));
+}
+
+/**
+ * @param {Object} data
+ * @return {Array.<number>?}
+ */
+WebInspector.TimelinePresentationModel.quadFromRectData = function(data)
+{
+    if (typeof data["x"] === "undefined" || typeof data["y"] === "undefined")
+        return null;
+    var x0 = data["x"];
+    var x1 = data["x"] + data["width"];
+    var y0 = data["y"];
+    var y1 = data["y"] + data["height"];
+    return [x0, y0, x1, y0, x1, y1, x0, y1];
 }
 
 /**

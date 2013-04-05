@@ -88,7 +88,12 @@ InspectorTest.evaluateWithTimeline = function(actions, doneCallback)
     {
         InspectorTest.stopTimeline(doneCallback);
     }
+}
 
+InspectorTest.loadTimelineRecords = function(records)
+{
+    var model = WebInspector.showPanel("timeline")._model;
+    records.forEach(model._addRecord, model);
 }
 
 InspectorTest.performActionsAndPrint = function(actions, typeName, includeTimeStamps)
