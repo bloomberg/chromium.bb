@@ -60,10 +60,10 @@ my ($prettydiffFileHandle, $prettydiffPath) = tempfile(
 );
 close($prettydiffFileHandle);
 
-my $prettyPatchDir = sourceDir() . "/Websites/bugs.webkit.org/PrettyPatch/";
-my $prettyPatchTool = sourceDir() . "/Websites/bugs.webkit.org/PrettyPatch/prettify.rb";
+my $prettyPatchDir = sourceDir() . "/Tools/Scripts/webkitruby/PrettyPatch/";
+my $prettyPatchTool = sourceDir() . "/Tools/Scripts/webkitruby/PrettyPatch/prettify.rb";
 
-my $pathToPrettify = "ruby -I " . sourceDir() . "/Websites/bugs.webkit.org/PrettyPatch/ " . sourceDir() . "/Websites/bugs.webkit.org/PrettyPatch/prettify.rb";
+my $pathToPrettify = "ruby -I " . sourceDir() . "/Tools/Scripts/webkitruby/PrettyPatch/ " . sourceDir() . "/Tools/Scripts/webkitruby/PrettyPatch/prettify.rb";
 system "$pathToPrettify " . quotemeta($inputPath) . " > $prettydiffPath";
 
 if (isAppleMacWebKit()) {

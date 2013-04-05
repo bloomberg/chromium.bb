@@ -141,7 +141,7 @@ class Port(object):
         self._wdiff_available = None
 
         # FIXME: prettypatch.py knows this path, why is it copied here?
-        self._pretty_patch_path = self.path_from_webkit_base("Websites", "bugs.webkit.org", "PrettyPatch", "prettify.rb")
+        self._pretty_patch_path = self.path_from_webkit_base("Tools", "Scripts", "webkitruby", "PrettyPatch", "prettify.rb")
         self._pretty_patch_available = None
 
         if not hasattr(options, 'configuration') or not options.configuration:
