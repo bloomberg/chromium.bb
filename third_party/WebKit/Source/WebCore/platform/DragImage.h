@@ -26,23 +26,12 @@
 #ifndef DragImage_h
 #define DragImage_h
 
+#include "DragImageRef.h"
 #include "ImageOrientation.h"
 #include "IntSize.h"
 #include "FloatSize.h"
 #include <wtf/Forward.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS NSImage;
-#elif PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QPixmap;
-QT_END_NAMESPACE
-#elif PLATFORM(WIN)
-typedef struct HBITMAP__* HBITMAP;
-#elif PLATFORM(CHROMIUM)
-#include "DragImageRef.h"
-#endif
 
 //We need to #define YOffset as it needs to be shared with WebKit
 #define DragLabelBorderYOffset 2
@@ -55,16 +44,6 @@ namespace WebCore {
     class KURL;
     class Range;
 
-#if PLATFORM(MAC)
-    typedef RetainPtr<NSImage> DragImageRef;
-#elif PLATFORM(QT)
-    typedef QPixmap* DragImageRef;
-#elif PLATFORM(WIN)
-    typedef HBITMAP DragImageRef;
-#elif PLATFORM(EFL) || PLATFORM(BLACKBERRY)
-    typedef void* DragImageRef;
-#endif
-    
     IntSize dragImageSize(DragImageRef);
     
     //These functions should be memory neutral, eg. if they return a newly allocated image, 
@@ -80,6 +59,5 @@ namespace WebCore {
     DragImageRef createDragImageForLink(KURL&, const String& label, Frame*);
     void deleteDragImage(DragImageRef);
 }
-
 
 #endif //!DragImage_h

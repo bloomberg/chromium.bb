@@ -28,43 +28,12 @@
 
 #include "Color.h"
 #include "DragActions.h"
+#include "DragDataRef.h"
 #include "IntPoint.h"
 
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
-
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#include <wtf/text/WTFString.h>
-
-#ifdef __OBJC__ 
-#import <Foundation/Foundation.h>
-#import <AppKit/NSDragging.h>
-typedef id <NSDraggingInfo> DragDataRef;
-#else
-typedef void* DragDataRef;
-#endif
-
-#elif PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QMimeData;
-QT_END_NAMESPACE
-typedef const QMimeData* DragDataRef;
-#elif PLATFORM(WIN)
-typedef struct IDataObject* DragDataRef;
-#include <wtf/text/WTFString.h>
-#elif PLATFORM(GTK)
-namespace WebCore {
-class DataObjectGtk;
-}
-typedef WebCore::DataObjectGtk* DragDataRef;
-#elif PLATFORM(CHROMIUM)
-#include "DragDataRef.h"
-#elif PLATFORM(EFL) || PLATFORM(BLACKBERRY)
-typedef void* DragDataRef;
-#endif
-
 
 namespace WebCore {
 
@@ -81,10 +50,6 @@ enum DragApplicationFlags {
     DragApplicationIsCopyKeyDown = 8
 };
 
-#if PLATFORM(WIN)
-typedef HashMap<UINT, Vector<String> > DragDataMap;
-#endif
-
 class DragData {
 public:
     enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
@@ -92,12 +57,6 @@ public:
     // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
     DragData(DragDataRef, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
     DragData(const String& dragStorageName, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
-#if PLATFORM(WIN)
-    DragData(const DragDataMap&, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation sourceOperationMask, DragApplicationFlags = DragApplicationNone);
-    const DragDataMap& dragDataMap();
-    void getDragFileDescriptorData(int& size, String& pathname);
-    void getDragFileContentData(int size, void* dataBlob);
-#endif
     const IntPoint& clientPosition() const { return m_clientPosition; }
     const IntPoint& globalPosition() const { return m_globalPosition; }
     DragApplicationFlags flags() const { return m_applicationFlags; }
@@ -117,28 +76,9 @@ public:
     bool containsFiles() const;
     unsigned numberOfFiles() const;
     int modifierKeyState() const;
-#if PLATFORM(MAC)
-    const String& pasteboardName() { return m_pasteboardName; }
-#endif
 
 #if ENABLE(FILE_SYSTEM)
     String droppedFileSystemId() const;
-#endif
-
-#if PLATFORM(QT) || PLATFORM(GTK)
-    // This constructor should used only by WebKit2 IPC because DragData
-    // is initialized by the decoder and not in the constructor.
-    DragData() { }
-
-    DragData& operator =(const DragData& data)
-    {
-        m_clientPosition = data.m_clientPosition;
-        m_globalPosition = data.m_globalPosition;
-        m_platformDragData = data.m_platformDragData;
-        m_draggingSourceOperationMask = data.m_draggingSourceOperationMask;
-        m_applicationFlags = data.m_applicationFlags;
-        return *this;
-    }
 #endif
 
 private:
@@ -147,14 +87,8 @@ private:
     DragDataRef m_platformDragData;
     DragOperation m_draggingSourceOperationMask;
     DragApplicationFlags m_applicationFlags;
-#if PLATFORM(MAC)
-    String m_pasteboardName;
-#endif
-#if PLATFORM(WIN)
-    DragDataMap m_dragDataMap;
-#endif
 };
-    
+
 }
 
 #endif // !DragData_h

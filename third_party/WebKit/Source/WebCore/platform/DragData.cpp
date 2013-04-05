@@ -31,15 +31,14 @@
 
 namespace WebCore {
 
-#if !PLATFORM(MAC)
-DragData::DragData(DragDataRef data, const IntPoint& clientPosition, const IntPoint& globalPosition, 
+DragData::DragData(DragDataRef data, const IntPoint& clientPosition, const IntPoint& globalPosition,
     DragOperation sourceOperationMask, DragApplicationFlags flags)
     : m_clientPosition(clientPosition)
     , m_globalPosition(globalPosition)
     , m_platformDragData(data)
     , m_draggingSourceOperationMask(sourceOperationMask)
     , m_applicationFlags(flags)
-{  
+{
 }
 
 DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint& globalPosition,
@@ -51,33 +50,6 @@ DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint
     , m_applicationFlags(flags)
 {
 }
-#endif
-
-#if !PLATFORM(CHROMIUM)
-int DragData::modifierKeyState() const
-{
-    bool shiftKey, ctrlKey, altKey, metaKey;
-    shiftKey = ctrlKey = altKey = metaKey = false;
-    PlatformKeyboardEvent::getCurrentModifierState(shiftKey, ctrlKey, altKey, metaKey);
-    int keyState = 0;
-    if (shiftKey)
-        keyState = keyState | PlatformEvent::ShiftKey;
-    if (ctrlKey)
-        keyState = keyState | PlatformEvent::CtrlKey;
-    if (altKey)
-        keyState = keyState | PlatformEvent::AltKey;
-    if (metaKey)
-        keyState = keyState | PlatformEvent::MetaKey;
-    return keyState;
-}
-
-#if ENABLE(FILE_SYSTEM)
-String DragData::droppedFileSystemId() const
-{
-    return String();
-}
-#endif
-#endif
 
 } // namespace WebCore
 

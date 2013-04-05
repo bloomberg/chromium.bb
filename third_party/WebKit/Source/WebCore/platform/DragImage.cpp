@@ -71,12 +71,11 @@ DragImageRef createDragImageForSelection(Frame* frame)
     return image;
 }
 
-#if !PLATFORM(MAC) && (!PLATFORM(WIN) || OS(WINCE))
 DragImageRef createDragImageForLink(KURL&, const String&, Frame*)
 {
+    // FIXME: Implement or remove call from DragController.
     return 0;
 }
-#endif
 
 } // namespace WebCore
 
