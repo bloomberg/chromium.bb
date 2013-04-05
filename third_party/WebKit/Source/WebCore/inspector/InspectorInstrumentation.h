@@ -2077,10 +2077,8 @@ inline InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForDocu
 {
     if (document) {
         Page* page = document->page();
-#if ENABLE(TEMPLATE_ELEMENT)
         if (!page && document->templateDocumentHost())
             page = document->templateDocumentHost()->page();
-#endif
         return instrumentingAgentsForPage(page);
     }
     return 0;

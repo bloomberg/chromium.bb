@@ -954,11 +954,7 @@ String urlToMarkup(const KURL& url, const String& title)
 
 PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, ExceptionCode& ec)
 {
-    Document* document = contextElement->document();
-#if ENABLE(TEMPLATE_ELEMENT)
-    if (contextElement->hasTagName(templateTag))
-        document = document->ensureTemplateDocument();
-#endif
+    Document* document = contextElement->hasTagName(templateTag) ? contextElement->document()->ensureTemplateDocument() : contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     if (document->isHTMLDocument()) {

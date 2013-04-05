@@ -1202,12 +1202,10 @@ public:
     Element* activeModalDialog() const { return !m_topLayerElements.isEmpty() ? m_topLayerElements.last().get() : 0; }
 #endif
 
-#if ENABLE(TEMPLATE_ELEMENT)
     const Document* templateDocument() const;
     Document* ensureTemplateDocument();
     void setTemplateDocumentHost(Document* templateDocumentHost) { m_templateDocumentHost = templateDocumentHost; }
     Document* templateDocumentHost() { return m_templateDocumentHost; }
-#endif
 
     void didAssociateFormControl(Element*);
 
@@ -1588,10 +1586,8 @@ private:
     typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
     LocaleIdentifierToLocaleMap m_localeCache;
 
-#if ENABLE(TEMPLATE_ELEMENT)
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
-#endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
     RefPtr<FontLoader> m_fontloader;
@@ -1608,7 +1604,6 @@ inline void Document::notifyRemovePendingSheetIfNeeded()
         didRemoveAllPendingStylesheet();
 }
 
-#if ENABLE(TEMPLATE_ELEMENT)
 inline const Document* Document::templateDocument() const
 {
     // If DOCUMENT does not have a browsing context, Let TEMPLATE CONTENTS OWNER be DOCUMENT and abort these steps.
@@ -1617,7 +1612,6 @@ inline const Document* Document::templateDocument() const
 
     return m_templateDocument.get();
 }
-#endif
 
 inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)
 {

@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(TEMPLATE_ELEMENT)
-
 #include "HTMLTemplateElement.h"
 
 #include "DOMImplementation.h"
@@ -94,5 +92,3 @@ const HTMLTemplateElement* toHTMLTemplateElement(const Node* node)
 #endif
 
 } // namespace WebCore
-
-#endif // ENABLE(TEMPLATE_ELEMENT)

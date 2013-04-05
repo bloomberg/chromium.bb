@@ -1422,11 +1422,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             value->setShadowRoots(shadowRoots);
         }
 
-#if ENABLE(TEMPLATE_ELEMENT)
-        if (element->hasTagName(HTMLNames::templateTag))
+        if (element->hasTagName(templateTag))
             value->setTemplateContent(buildObjectForNode(static_cast<HTMLTemplateElement*>(element)->content(), 0, nodesMap));
-#endif
-
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));

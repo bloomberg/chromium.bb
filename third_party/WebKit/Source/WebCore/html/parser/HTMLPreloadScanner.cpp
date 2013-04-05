@@ -268,9 +268,7 @@ private:
 TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL)
     : m_documentURL(documentURL)
     , m_inStyle(false)
-#if ENABLE(TEMPLATE_ELEMENT)
     , m_templateCount(0)
-#endif
 {
 }
 
@@ -281,11 +279,7 @@ TokenPreloadScanner::~TokenPreloadScanner()
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint()
 {
     TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle
-#if ENABLE(TEMPLATE_ELEMENT)
-                                    , m_templateCount
-#endif
-                                    ));
+    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_templateCount));
     return checkpoint;
 }
 
@@ -295,9 +289,7 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     const Checkpoint& checkpoint = m_checkpoints[checkpointIndex];
     m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
     m_inStyle = checkpoint.inStyle;
-#if ENABLE(TEMPLATE_ELEMENT)
     m_templateCount = checkpoint.templateCount;
-#endif
     m_cssScanner.reset();
     m_checkpoints.clear();
 }
@@ -326,13 +318,11 @@ void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRe
     }
     case HTMLToken::EndTag: {
         TagId tagId = tagIdFor(token.data());
-#if ENABLE(TEMPLATE_ELEMENT)
         if (tagId == TemplateTagId) {
             if (m_templateCount)
                 --m_templateCount;
             return;
         }
-#endif
         if (tagId == StyleTagId) {
             if (m_inStyle)
                 m_cssScanner.reset();
@@ -341,17 +331,13 @@ void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRe
         return;
     }
     case HTMLToken::StartTag: {
-#if ENABLE(TEMPLATE_ELEMENT)
         if (m_templateCount)
             return;
-#endif
         TagId tagId = tagIdFor(token.data());
-#if ENABLE(TEMPLATE_ELEMENT)
         if (tagId == TemplateTagId) {
             ++m_templateCount;
             return;
         }
-#endif
         if (tagId == StyleTagId) {
             m_inStyle = true;
             return;

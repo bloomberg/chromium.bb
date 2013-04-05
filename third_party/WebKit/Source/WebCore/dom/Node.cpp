@@ -1049,7 +1049,6 @@ bool Node::containsIncludingShadowDOM(const Node* node) const
 
 bool Node::containsIncludingHostElements(const Node* node) const
 {
-#if ENABLE(TEMPLATE_ELEMENT)
     while (node) {
         if (node == this)
             return true;
@@ -1059,9 +1058,6 @@ bool Node::containsIncludingHostElements(const Node* node) const
             node = node->parentOrShadowHostNode();
     }
     return false;
-#else
-    return containsIncludingShadowDOM(node);
-#endif
 }
 
 void Node::attach()

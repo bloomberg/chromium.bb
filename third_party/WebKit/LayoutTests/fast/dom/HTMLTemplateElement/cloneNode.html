@@ -5,9 +5,6 @@
 
 description('Test that template contents are not cloned when the template element is cloned');
 
-if (!window.HTMLTemplateElement)
-    testFailed('This test requires ENABLE(TEMPLATE_ELEMENT)');
-
 var template = document.getElementById('template');
 var div = template.appendChild(document.createElement('div'));
 

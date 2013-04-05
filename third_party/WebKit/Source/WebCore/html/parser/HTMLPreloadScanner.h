@@ -94,34 +94,23 @@ private:
     void updatePredictedBaseURL(const Token&);
 
     struct Checkpoint {
-        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle
-#if ENABLE(TEMPLATE_ELEMENT)
-            , size_t templateCount
-#endif
-            )
+        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, size_t templateCount)
             : predictedBaseElementURL(predictedBaseElementURL)
             , inStyle(inStyle)
-#if ENABLE(TEMPLATE_ELEMENT)
             , templateCount(templateCount)
-#endif
         {
         }
 
         KURL predictedBaseElementURL;
         bool inStyle;
-#if ENABLE(TEMPLATE_ELEMENT)
         size_t templateCount;
-#endif
     };
 
     CSSPreloadScanner m_cssScanner;
     const KURL m_documentURL;
     KURL m_predictedBaseElementURL;
     bool m_inStyle;
-
-#if ENABLE(TEMPLATE_ELEMENT)
     size_t m_templateCount;
-#endif
 
     Vector<Checkpoint> m_checkpoints;
 };

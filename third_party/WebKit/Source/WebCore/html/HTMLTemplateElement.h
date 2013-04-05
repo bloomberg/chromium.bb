@@ -31,8 +31,6 @@
 #ifndef HTMLTemplateElement_h
 #define HTMLTemplateElement_h
 
-#if ENABLE(TEMPLATE_ELEMENT)
-
 #include "DocumentFragment.h"
 #include "HTMLElement.h"
 
@@ -71,7 +69,5 @@ inline const HTMLTemplateElement* toHTMLTemplateElement(const Node* node)
 #endif // NDEBUG
 
 } // namespace WebCore
-
-#endif // ENABLE(TEMPLATE_ELEMENT)
 
 #endif // HTMLTemplateElement_h

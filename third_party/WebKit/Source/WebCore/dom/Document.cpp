@@ -488,9 +488,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
-#if ENABLE(TEMPLATE_ELEMENT)
     , m_templateDocumentHost(0)
-#endif
 #if ENABLE(FONT_LOAD_EVENTS)
     , m_fontloader(0)
 #endif
@@ -597,10 +595,8 @@ Document::~Document()
     ASSERT(!m_parentTreeScope);
     ASSERT(!hasGuardRefCount());
 
-#if ENABLE(TEMPLATE_ELEMENT)
     if (m_templateDocument)
         m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
-#endif
 
 #if ENABLE(TOUCH_EVENT_TRACKING)
     if (Document* ownerDocument = this->ownerDocument())
@@ -6108,10 +6104,8 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_sharedObjectPoolClearTimer, "sharedObjectPoolClearTimer");
     info.addMember(m_sharedObjectPool, "sharedObjectPool");
     info.addMember(m_localeCache, "localeCache");
-#if ENABLE(TEMPLATE_ELEMENT)
     info.addMember(m_templateDocument, "templateDocument");
     info.addMember(m_templateDocumentHost, "templateDocumentHost");
-#endif
     info.addMember(m_activeElement, "activeElement");
 }
 
@@ -6131,7 +6125,6 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
     return *(result.iterator->value);
 }
 
-#if ENABLE(TEMPLATE_ELEMENT)
 Document* Document::ensureTemplateDocument()
 {
     if (const Document* document = templateDocument())
@@ -6146,7 +6139,6 @@ Document* Document::ensureTemplateDocument()
 
     return m_templateDocument.get();
 }
-#endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
 PassRefPtr<FontLoader> Document::fontloader()

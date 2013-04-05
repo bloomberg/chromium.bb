@@ -7,9 +7,6 @@
 
 description('Test HTMLTemplateElement content ownerDocument');
 
-if (!window.HTMLTemplateElement)
-    testFailed('This test requires ENABLE(TEMPLATE_ELEMENT)');
-
 var template = document.getElementById('template');
 shouldBe('template.ownerDocument', 'document');
 

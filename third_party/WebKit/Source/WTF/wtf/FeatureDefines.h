@@ -779,10 +779,6 @@
 #endif
 #endif
 
-#if !defined(ENABLE_TEMPLATE_ELEMENT)
-#define ENABLE_TEMPLATE_ELEMENT 0
-#endif
-
 #if !defined(ENABLE_TEXT_AUTOSIZING)
 #define ENABLE_TEXT_AUTOSIZING 0
 #endif

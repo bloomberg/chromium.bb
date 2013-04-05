@@ -83,10 +83,8 @@ static inline bool isAllWhitespace(const String& string)
 
 static inline void executeTask(HTMLConstructionSiteTask& task)
 {
-#if ENABLE(TEMPLATE_ELEMENT)
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
-#endif
 
     if (task.nextChild)
         task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
@@ -480,10 +478,8 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
     if (shouldFosterParent())
         findFosterSite(task);
 
-#if ENABLE(TEMPLATE_ELEMENT)
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
-#endif
 
     // Strings composed entirely of whitespace are likely to be repeated.
     // Turn them into AtomicString so we share a single string for each.
@@ -529,10 +525,8 @@ PassRefPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, 
 
 inline Document* HTMLConstructionSite::ownerDocumentForCurrentNode()
 {
-#if ENABLE(TEMPLATE_ELEMENT)
     if (currentNode()->hasTagName(templateTag))
         return toHTMLTemplateElement(currentElement())->content()->document();
-#endif
     return currentNode()->document();
 }
 
@@ -613,7 +607,6 @@ bool HTMLConstructionSite::inQuirksMode()
 
 void HTMLConstructionSite::findFosterSite(HTMLConstructionSiteTask& task)
 {
-#if ENABLE(TEMPLATE_ELEMENT)
     // When a node is to be foster parented, the last template element with no table element is below it in the stack of open elements is the foster parent element (NOT the template's parent!)
     HTMLElementStack::ElementRecord* lastTemplateElement = m_openElements.topmost(templateTag.localName());
     if (lastTemplateElement && !m_openElements.inTableScope(tableTag)) {
@@ -621,19 +614,16 @@ void HTMLConstructionSite::findFosterSite(HTMLConstructionSiteTask& task)
         return;
     }
 
-#endif
-
     HTMLElementStack::ElementRecord* lastTableElementRecord = m_openElements.topmost(tableTag.localName());
     if (lastTableElementRecord) {
         Element* lastTableElement = lastTableElementRecord->element();
         ContainerNode* parent = lastTableElement->parentNode();
         // When parsing HTML fragments, we skip step 4.2 ("Let root be a new html element with no attributes") for efficiency,
         // and instead use the DocumentFragment as a root node. So we must treat the root node (DocumentFragment) as if it is a html element here.
-        bool parentCanBeFosterParent = parent && (parent->isElementNode() || (m_isParsingFragment && parent == m_openElements.rootNode()));
-#if ENABLE(TEMPLATE_ELEMENT)
-        parentCanBeFosterParent = parentCanBeFosterParent || (parent && parent->isDocumentFragment() && static_cast<DocumentFragment*>(parent)->isTemplateContent());
-#endif
-        if (parentCanBeFosterParent) {
+        if (parent
+            && (parent->isElementNode()
+                || (m_isParsingFragment && parent == m_openElements.rootNode())
+                || (parent->isDocumentFragment() && static_cast<DocumentFragment*>(parent)->isTemplateContent()))) {
             task.parent = parent;
             task.nextChild = lastTableElement;
             return;

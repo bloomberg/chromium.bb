@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=TEMPLATE_ELEMENT
-] interface HTMLTemplateElement : HTMLElement {
+interface HTMLTemplateElement : HTMLElement {
     [JSCustom, V8CacheAttributeForGC] readonly attribute DocumentFragment content;
 };
 

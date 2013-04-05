@@ -154,13 +154,8 @@ static inline bool isChildTypeAllowed(ContainerNode* newParent, Node* child)
 
 static inline bool isInTemplateContent(const Node* node)
 {
-#if ENABLE(TEMPLATE_ELEMENT)
     Document* document = node->document();
     return document && document == document->templateDocument();
-#else
-    UNUSED_PARAM(node);
-    return false;
-#endif
 }
 
 static inline bool containsConsideringHostElements(const Node* newChild, const Node* newParent)
@@ -336,9 +331,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
     ASSERT(nextChild);
     ASSERT(nextChild->parentNode() == this);
     ASSERT(!newChild->isDocumentFragment());
-#if ENABLE(TEMPLATE_ELEMENT)
     ASSERT(!hasTagName(HTMLNames::templateTag));
-#endif
 
     if (nextChild->previousSibling() == newChild || nextChild == newChild) // nothing to do
         return;
@@ -712,9 +705,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
     ASSERT(!newChild->isDocumentFragment());
-#if ENABLE(TEMPLATE_ELEMENT)
     ASSERT(!hasTagName(HTMLNames::templateTag));
-#endif
 
     if (document() != newChild->document())
         document()->adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);

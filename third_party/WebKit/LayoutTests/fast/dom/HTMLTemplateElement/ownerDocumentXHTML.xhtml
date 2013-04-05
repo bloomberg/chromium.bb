@@ -5,9 +5,6 @@
 
 description('Test HTMLTemplateElement content ownerDocument in XHTML Document');
 
-if (!window.HTMLTemplateElement)
-    testFailed('This test requires ENABLE(TEMPLATE_ELEMENT)');
-
 shouldBeFalse('document instanceof HTMLDocument');
 var template4 = document.createElement('template');
 var templateContentOwnerDocument = template4.content.ownerDocument;
