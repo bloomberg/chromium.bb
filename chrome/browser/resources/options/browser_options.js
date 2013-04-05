@@ -869,7 +869,7 @@ cr.define('options', function() {
         // /home/chronos/user/Downloads with Downloads for local files.
         // Also replace '/' with ' \u203a ' (angled quote sign) everywhere.
         var path = $('downloadLocationPath').value;
-        path = path.replace(/^\/special\/drive/, 'Google Drive');
+        path = path.replace(/^\/special\/drive\/root/, 'Google Drive');
         path = path.replace(/^\/home\/chronos\/user\//, '');
         path = path.replace(/\//g, ' \u203a ');
         $('downloadLocationPath').value = path;
