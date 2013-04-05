@@ -142,6 +142,21 @@ protected:
   // counts to |buckets| and the total sample count to |count|.
   virtual void GetCountAndBucketData(Count* count,
                                      ListValue* buckets) const = 0;
+
+  //// Produce actual graph (set of blank vs non blank char's) for a bucket.
+  void WriteAsciiBucketGraph(double current_size,
+                             double max_size,
+                             std::string* output) const;
+
+  // Return a string description of what goes in a given bucket.
+  const std::string GetSimpleAsciiBucketRange(Sample sample) const;
+
+  // Write textual description of the bucket contents (relative to histogram).
+  // Output is the count in the buckets, as well as the percentage.
+  void WriteAsciiBucketValue(Count current,
+                             double scaled_sum,
+                             std::string* output) const;
+
  private:
   const std::string histogram_name_;
   int32 flags_;

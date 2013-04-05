@@ -7,6 +7,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 
 using std::map;
@@ -69,11 +70,13 @@ bool SparseHistogram::AddSamplesFromPickle(PickleIterator* iter) {
 }
 
 void SparseHistogram::WriteHTMLGraph(string* output) const {
-  // TODO(kaiwang): Implement.
+  output->append("<PRE>");
+  WriteAsciiImpl(true, "<br>", output);
+  output->append("</PRE>");
 }
 
 void SparseHistogram::WriteAscii(string* output) const {
-  // TODO(kaiwang): Implement.
+  WriteAsciiImpl(true, "\n", output);
 }
 
 bool SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
@@ -104,6 +107,71 @@ void SparseHistogram::GetParameters(DictionaryValue* params) const {
 void SparseHistogram::GetCountAndBucketData(Count* count,
                                             ListValue* buckets) const {
   // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
+}
+
+void SparseHistogram::WriteAsciiImpl(bool graph_it,
+                                     const std::string& newline,
+                                     std::string* output) const {
+  // Get a local copy of the data so we are consistent.
+  scoped_ptr<HistogramSamples> snapshot = SnapshotSamples();
+  Count total_count = snapshot->TotalCount();
+  double scaled_total_count = total_count / 100.0;
+
+  WriteAsciiHeader(total_count, output);
+  output->append(newline);
+
+  // Determine how wide the largest bucket range is (how many digits to print),
+  // so that we'll be able to right-align starts for the graphical bars.
+  // Determine which bucket has the largest sample count so that we can
+  // normalize the graphical bar-width relative to that sample count.
+  Count largest_count = 0;
+  Sample largest_sample = 0;
+  scoped_ptr<SampleCountIterator> it = snapshot->Iterator();
+  while (!it->Done())
+  {
+    Sample min;
+    Sample max;
+    Count count;
+    it->Get(&min, &max, &count);
+    if (min > largest_sample)
+      largest_sample = min;
+    if (count > largest_count)
+      largest_count = count;
+    it->Next();
+  }
+  size_t print_width = GetSimpleAsciiBucketRange(largest_sample).size() + 1;
+
+  // iterate over each item and display them
+  it = snapshot->Iterator();
+  while (!it->Done())
+  {
+    Sample min;
+    Sample max;
+    Count count;
+    it->Get(&min, &max, &count);
+
+    // value is min, so display it
+    string range = GetSimpleAsciiBucketRange(min);
+    output->append(range);
+    for (size_t j = 0; range.size() + j < print_width + 1; ++j)
+      output->push_back(' ');
+
+    if (graph_it)
+      WriteAsciiBucketGraph(count, largest_count, output);
+    WriteAsciiBucketValue(count, scaled_total_count, output);
+    output->append(newline);
+    it->Next();
+  }
+}
+
+void SparseHistogram::WriteAsciiHeader(const Count total_count,
+                                       std::string* output) const {
+  StringAppendF(output,
+                "Histogram: %s recorded %d samples",
+                histogram_name().c_str(),
+                total_count);
+  if (flags() & ~kHexRangePrintingFlag)
+    StringAppendF(output, " (flags = 0x%x)", flags() & ~kHexRangePrintingFlag);
 }
 
 }  // namespace base

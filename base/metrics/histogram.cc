@@ -340,12 +340,7 @@ double Histogram::GetBucketSize(Count current, size_t i) const {
 }
 
 const string Histogram::GetAsciiBucketRange(size_t i) const {
-  string result;
-  if (kHexRangePrintingFlag & flags())
-    StringAppendF(&result, "%#x", ranges(i));
-  else
-    StringAppendF(&result, "%d", ranges(i));
-  return result;
+  return GetSimpleAsciiBucketRange(ranges(i));
 }
 
 //------------------------------------------------------------------------------
@@ -488,27 +483,6 @@ void Histogram::WriteAsciiBucketContext(const int64 past,
     double percentage = past / scaled_sum;
     StringAppendF(output, " {%3.1f%%}", percentage);
   }
-}
-
-void Histogram::WriteAsciiBucketValue(Count current,
-                                      double scaled_sum,
-                                      string* output) const {
-  StringAppendF(output, " (%d = %3.1f%%)", current, current/scaled_sum);
-}
-
-void Histogram::WriteAsciiBucketGraph(double current_size,
-                                      double max_size,
-                                      string* output) const {
-  const int k_line_length = 72;  // Maximal horizontal width of graph.
-  int x_count = static_cast<int>(k_line_length * (current_size / max_size)
-                                 + 0.5);
-  int x_remainder = k_line_length - x_count;
-
-  while (0 < x_count--)
-    output->append("-");
-  output->append("O");
-  while (0 < x_remainder--)
-    output->append(" ");
 }
 
 void Histogram::GetParameters(DictionaryValue* params) const {

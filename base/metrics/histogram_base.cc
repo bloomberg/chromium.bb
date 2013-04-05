@@ -14,6 +14,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 
 namespace base {
@@ -122,6 +123,37 @@ void HistogramBase::WriteJSON(std::string* output) const {
   root.Set("buckets", buckets.release());
   root.SetInteger("pid", GetCurrentProcId());
   serializer.Serialize(root);
+}
+
+void HistogramBase::WriteAsciiBucketGraph(double current_size,
+                                          double max_size,
+                                          std::string* output) const {
+  const int k_line_length = 72;  // Maximal horizontal width of graph.
+  int x_count = static_cast<int>(k_line_length * (current_size / max_size)
+                                 + 0.5);
+  int x_remainder = k_line_length - x_count;
+
+  while (0 < x_count--)
+    output->append("-");
+  output->append("O");
+  while (0 < x_remainder--)
+    output->append(" ");
+}
+
+const std::string HistogramBase::GetSimpleAsciiBucketRange(
+    Sample sample) const {
+  std::string result;
+  if (kHexRangePrintingFlag & flags())
+    StringAppendF(&result, "%#x", sample);
+  else
+    StringAppendF(&result, "%d", sample);
+  return result;
+}
+
+void HistogramBase::WriteAsciiBucketValue(Count current,
+                                          double scaled_sum,
+                                          std::string* output) const {
+  StringAppendF(output, " (%d = %3.1f%%)", current, current/scaled_sum);
 }
 
 }  // namespace base
