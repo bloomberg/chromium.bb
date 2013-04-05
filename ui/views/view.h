@@ -725,9 +725,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual FocusManager* GetFocusManager();
   virtual const FocusManager* GetFocusManager() const;
 
-  // Request the keyboard focus. The receiving view will become the
-  // focused view.
-  virtual void RequestFocus();
+  // Request keyboard focus. The receiving view will become the focused view.
+  void RequestFocus();
 
   // Invoked when a view is about to be requested for focus due to the focus
   // traversal. Reverse is this request was generated going backward

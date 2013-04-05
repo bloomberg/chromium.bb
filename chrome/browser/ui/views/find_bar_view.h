@@ -110,25 +110,12 @@ class FindBarView : public DropdownBarView,
     DISALLOW_COPY_AND_ASSIGN(FocusForwarderView);
   };
 
-  // A wrapper of views::TextField that allows us to select all text when we
-  // get focus. Represents the text field where the user enters a search term.
-  class SearchTextfieldView : public views::Textfield {
-   public:
-    SearchTextfieldView();
-    virtual ~SearchTextfieldView();
-
-    virtual void RequestFocus() OVERRIDE;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);
-  };
-
   // Returns the OS-specific view for the find bar that acts as an intermediary
   // between us and the WebContentsView.
   FindBarHost* find_bar_host() const;
 
   // The controls in the window.
-  SearchTextfieldView* find_text_;
+  views::Textfield* find_text_;
   views::Label* match_count_text_;
   FocusForwarderView* focus_forwarder_view_;
   views::ImageButton* find_previous_button_;

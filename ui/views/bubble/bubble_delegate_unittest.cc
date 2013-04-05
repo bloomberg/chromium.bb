@@ -176,14 +176,8 @@ TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
 
-  View* expected_view = bubble_delegate->GetInitiallyFocusedView();
-  // TODO(ben|msw): The NativeWidgetWin::RestoreFocusOnActivate() workaround for
-  // http://crbug.com/125976 breaks this simple test by clearing proper focus.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  expected_view = NULL;
-#endif
-
-  EXPECT_EQ(expected_view, bubble_widget->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(bubble_delegate->GetInitiallyFocusedView(),
+            bubble_widget->GetFocusManager()->GetFocusedView());
   bubble_widget->CloseNow();
 }
 
