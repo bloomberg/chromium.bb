@@ -1238,7 +1238,7 @@ def CMDupload(parser, args):
                     help='reviewer email addresses')
   parser.add_option('--cc',
                     help='cc email addresses')
-  parser.add_option('--send-mail', action='store_true',
+  parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer immediately')
   parser.add_option("--emulate_svn_auto_props", action="store_true",
                     dest="emulate_svn_auto_props",
