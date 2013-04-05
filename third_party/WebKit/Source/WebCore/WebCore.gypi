@@ -2320,8 +2320,6 @@
             'plugins/IFrameShimSupport.cpp',
             'plugins/IFrameShimSupport.h',
             'plugins/PluginData.cpp',
-            'plugins/PluginDebug.cpp',
-            'plugins/PluginDebug.h',
             'plugins/PluginQuirkSet.h',
             'plugins/chromium/PluginDataChromium.cpp',
             'plugins/chromium/PluginDataChromium.h',
