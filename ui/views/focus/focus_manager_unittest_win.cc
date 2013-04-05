@@ -85,7 +85,6 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
 
   view->RequestFocus();
   RunPendingMessages();
-  //  MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
   // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   views::View* null_view = NULL;

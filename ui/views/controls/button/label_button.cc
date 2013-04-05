@@ -126,8 +126,10 @@ void LabelButton::SetStyle(ButtonStyle style) {
   // Inset the button focus rect from the actual border; roughly match Windows.
   if (style == STYLE_TEXTBUTTON || style == STYLE_NATIVE_TEXTBUTTON)
     set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
-  if (style == STYLE_BUTTON || style_ == STYLE_NATIVE_TEXTBUTTON)
+  if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON)
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  if (style == STYLE_NATIVE_TEXTBUTTON)
+    set_focusable(true);
   if (style == STYLE_BUTTON) {
     set_min_size(gfx::Size(70, 31));
     const SkColor color = GetNativeTheme()->GetSystemColor(
