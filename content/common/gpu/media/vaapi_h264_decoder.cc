@@ -2070,6 +2070,12 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
   const H264SPS* sps = parser_.GetSPS(sps_id);
   DCHECK(sps);
 
+  if (sps->frame_mbs_only_flag == 0) {
+    // Fields/interlaced video not supported.
+    DVLOG(1) << "frame_mbs_only_flag != 1 not supported";
+    return false;
+  }
+
   if (sps->gaps_in_frame_num_value_allowed_flag) {
     DVLOG(1) << "Gaps in frame numbers not supported";
     return false;
