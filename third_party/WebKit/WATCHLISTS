@@ -10,6 +10,11 @@
 
 {
   'WATCHLIST_DEFINITIONS': {
+    'animations': {
+      'filepath': 'Source/WebCore/page/animation' \
+                  '|LayoutTests/fast/animation' \
+                  '|LayoutTests/animation',
+    },
     'test_runner': {
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
@@ -33,6 +38,9 @@
   },
 
   'WATCHLISTS': {
+    'animations': ['dstockwell@chromium.org',
+                   'steveblock@chromium.org',
+                   'shans@chromium.org'],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org' ],
     'SVG': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
