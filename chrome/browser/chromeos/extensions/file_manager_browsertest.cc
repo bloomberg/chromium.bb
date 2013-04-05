@@ -39,7 +39,7 @@ namespace {
 const char kFileManagerExtensionId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
 
 const char kKeyboardTestFileName[] = "world.mpeg";
-const int kKeyboardTestFileSize = 1000;
+const int64 kKeyboardTestFileSize = 1000;
 const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
 
 // The base test class. Used by FileManagerBrowserLocalTest and
@@ -198,102 +198,97 @@ class TestFilePathWatcher {
   TestFilePathWatcher(const base::FilePath& path,
                       const ConditionCallback& condition);
 
-  // Starts the FilePathWatcher and returns once it's watching for changes.
-  void StartAndWaitUntilReady();
-
   // Waits (running a message pump) until the callback returns true or
   // FilePathWatcher reports an error. Return true on success.
   bool RunMessageLoopUntilConditionSatisfied();
 
  private:
-  // FILE thread callback to start the FilePathWatcher.
+  // Starts the FilePathWatcher to watch the target file. Also check if the
+  // condition is already met.
   void StartWatching();
 
   // FilePathWatcher callback (on the FILE thread). Posts Done() to the UI
   // thread when the condition is satisfied or there is an error.
   void FilePathWatcherCallback(const base::FilePath& path, bool error);
 
-  // Sets done_ and stops the message pump if running.
-  void Done();
-
   const base::FilePath path_;
   ConditionCallback condition_;
   scoped_ptr<base::FilePathWatcher> watcher_;
+  base::RunLoop run_loop_;
   base::Closure quit_closure_;
-  bool done_;
-  bool error_;
+  bool failed_;
 };
 
 TestFilePathWatcher::TestFilePathWatcher(const base::FilePath& path,
                                          const ConditionCallback& condition)
     : path_(path),
       condition_(condition),
-      done_(false),
-      error_(false) {
-}
-
-void TestFilePathWatcher::StartAndWaitUntilReady() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&TestFilePathWatcher::StartWatching,
-                 base::Unretained(this)),
-      run_loop.QuitClosure());
-  run_loop.Run();
+      quit_closure_(run_loop_.QuitClosure()),
+      failed_(false) {
 }
 
 void TestFilePathWatcher::StartWatching() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
   watcher_.reset(new base::FilePathWatcher);
   bool ok = watcher_->Watch(
       path_, false /*recursive*/,
       base::Bind(&TestFilePathWatcher::FilePathWatcherCallback,
                  base::Unretained(this)));
-  ASSERT_TRUE(ok);
-}
+  DCHECK(ok);
 
-void TestFilePathWatcher::FilePathWatcherCallback(const base::FilePath& path,
-                                                  bool error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  ASSERT_EQ(path_, path);
-  if (error || condition_.Run(path)) {
-    error_ = error;
+  // If the condition was already met before FilePathWatcher was launched,
+  // FilePathWatcher won't be able to detect a change, so check the condition
+  // here.
+  if (condition_.Run(path_)) {
     watcher_.reset();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&TestFilePathWatcher::Done, base::Unretained(this)));
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     quit_closure_);
+    return;
   }
 }
 
-void TestFilePathWatcher::Done() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  done_ = true;
-  if (!quit_closure_.is_null())
-    quit_closure_.Run();
+void TestFilePathWatcher::FilePathWatcherCallback(const base::FilePath& path,
+                                                  bool failed) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_EQ(path_.value(), path.value());
+
+  if (failed || condition_.Run(path)) {
+    failed_ = failed;
+    watcher_.reset();
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     quit_closure_);
+  }
 }
 
 bool TestFilePathWatcher::RunMessageLoopUntilConditionSatisfied() {
-  if (done_)
-    return !error_;
-  base::RunLoop message_loop_runner;
-  quit_closure_ = message_loop_runner.QuitClosure();
-  message_loop_runner.Run();
-  quit_closure_ = base::Closure();
-  return !error_;
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&TestFilePathWatcher::StartWatching,
+                 base::Unretained(this)));
+
+  // Wait until the condition is met.
+  run_loop_.Run();
+  return !failed_;
 }
 
-bool CopiedFilePresent(const base::FilePath& path) {
+// Returns true if a file with the given size is present at |path|.
+bool FilePresentWithSize(const int64 file_size,
+                         const base::FilePath& path) {
   int64 copy_size = 0;
   // If the file doesn't exist yet this will fail and we'll keep waiting.
   if (!file_util::GetFileSize(path, &copy_size))
     return false;
-  return (copy_size == kKeyboardTestFileSize);
+  return (copy_size == file_size);
 }
 
-bool DeletedFileGone(const base::FilePath& path) {
+// Returns true if a file is not present at |path|.
+bool FileNotPresent(const base::FilePath& path) {
   return !file_util::PathExists(path);
 };
 
@@ -320,13 +315,15 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
   base::FilePath copy_path =
       downloads_path_.AppendASCII(kKeyboardTestFileCopyName);
   ASSERT_FALSE(file_util::PathExists(copy_path));
-  TestFilePathWatcher watcher(copy_path, base::Bind(CopiedFilePresent));
-  watcher.StartAndWaitUntilReady();
 
   ResultCatcher catcher;
   StartTest("keyboard copy");
+
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
+  TestFilePathWatcher watcher(
+      copy_path,
+      base::Bind(FilePresentWithSize, kKeyboardTestFileSize));
   ASSERT_TRUE(watcher.RunMessageLoopUntilConditionSatisfied());
 
   // Check that it was a copy, not a move.
@@ -342,13 +339,13 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
   base::FilePath delete_path =
       downloads_path_.AppendASCII(kKeyboardTestFileName);
   ASSERT_TRUE(file_util::PathExists(delete_path));
-  TestFilePathWatcher watcher(delete_path, base::Bind(DeletedFileGone));
-  watcher.StartAndWaitUntilReady();
 
   ResultCatcher catcher;
   StartTest("keyboard delete");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
+  TestFilePathWatcher watcher(delete_path,
+                              base::Bind(FileNotPresent));
   ASSERT_TRUE(watcher.RunMessageLoopUntilConditionSatisfied());
 }
 
