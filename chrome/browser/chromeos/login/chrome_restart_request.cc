@@ -97,7 +97,6 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kGpuStartupDialog,
       ::switches::kHasChromeOSDiamondKey,
       ::switches::kHasChromeOSKeyboard,
-      ::switches::kLoginProfile,
       ::switches::kNaturalScrollDefault,
       ::switches::kNoSandbox,
       ::switches::kPpapiFlashArgs,
@@ -161,6 +160,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       cc::switches::kUIEnablePartialSwap,
       cc::switches::kUIEnablePerTilePainting,
       chromeos::switches::kDbusStub,
+      chromeos::switches::kLoginProfile,
       gfx::switches::kEnableBrowserTextSubpixelPositioning,
       gfx::switches::kEnableWebkitTextSubpixelPositioning,
       views::corewm::switches::kNoDropShadows,
@@ -300,10 +300,10 @@ std::string GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   base::DictionaryValue otr_switches;
-  otr_switches.SetString(::switches::kGuestSession, std::string());
+  otr_switches.SetString(switches::kGuestSession, std::string());
   otr_switches.SetString(::switches::kIncognito, std::string());
   otr_switches.SetString(::switches::kLoggingLevel, kGuestModeLoggingLevel);
-  otr_switches.SetString(::switches::kLoginUser, kGuestUserName);
+  otr_switches.SetString(switches::kLoginUser, kGuestUserName);
 
   // Override the home page.
   otr_switches.SetString(::switches::kHomePage,

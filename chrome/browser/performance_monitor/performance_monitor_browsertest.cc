@@ -42,6 +42,10 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -285,9 +289,9 @@ class PerformanceMonitorUncleanExitBrowserTest
     // typically be logged in with 'user'.)
 #if defined(OS_CHROMEOS)
     const CommandLine command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kLoginProfile)) {
+    if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
       first_profile_name_ =
-          command_line.GetSwitchValueASCII(switches::kLoginProfile);
+          command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
     } else {
       first_profile_name_ = chrome::kInitialProfile;
     }

@@ -51,6 +51,10 @@
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #if defined(OS_WIN)
 #include <initguid.h>
 #include "base/logging_win.h"
@@ -205,7 +209,7 @@ base::FilePath GetSessionLogFile(const CommandLine& command_line) {
   } else {
     PathService::Get(chrome::DIR_USER_DATA, &log_dir);
     base::FilePath login_profile =
-        command_line.GetSwitchValuePath(switches::kLoginProfile);
+        command_line.GetSwitchValuePath(chromeos::switches::kLoginProfile);
     log_dir = log_dir.Append(login_profile);
   }
   return log_dir.Append(GetLogFileName().BaseName());
@@ -268,7 +272,7 @@ void InitChromeLogging(const CommandLine& command_line,
     // For BWSI (Incognito) logins, we want to put the logs in the user
     // profile directory that is created for the temporary session instead
     // of in the system log directory, for privacy reasons.
-    if (command_line.HasSwitch(switches::kGuestSession))
+    if (command_line.HasSwitch(chromeos::switches::kGuestSession))
       log_path = GetSessionLogFile(command_line);
 
     // On ChromeOS we log to the symlink.  We force creation of a new

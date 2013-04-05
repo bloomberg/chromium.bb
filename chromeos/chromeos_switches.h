@@ -26,10 +26,21 @@ CHROMEOS_EXPORT extern const char kDisableStubEthernet[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalBluetooth[];
 CHROMEOS_EXPORT extern const char kEnableNewNetworkChangeNotifier[];
 CHROMEOS_EXPORT extern const char kEnableOOBEBlockingUpdate[];
-CHROMEOS_EXPORT extern const char kUseNewNetworkConfigurationHandlers[];
 CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
+CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
+CHROMEOS_EXPORT extern const char kFirstBoot[];
+CHROMEOS_EXPORT extern const char kGuestSession[];
+CHROMEOS_EXPORT extern const char kLoginManager[];
+CHROMEOS_EXPORT extern const char kLoginPassword[];
+CHROMEOS_EXPORT extern const char kLoginProfile[];
+// TODO(avayvod): Remove this flag when it's unnecessary for testing
+// purposes.
+CHROMEOS_EXPORT extern const char kLoginScreen[];
+CHROMEOS_EXPORT extern const char kLoginScreenSize[];
+CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
+CHROMEOS_EXPORT extern const char kUseNewNetworkConfigurationHandlers[];
 
 }  // namespace switches
 }  // namespace chromeos
