@@ -790,10 +790,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // as it is always equal to the current View.
   virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
 
-  // On some platforms, we show context menu on mouse press instead of release.
-  // This method returns true for those platforms.
-  static bool ShouldShowContextMenuOnMousePress();
-
   // Drag and drop -------------------------------------------------------------
 
   DragController* drag_controller() { return drag_controller_; }

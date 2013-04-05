@@ -126,49 +126,6 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
 };
 
-class Widget::PostMousePressedProcessor : public WidgetObserver {
- public:
-  explicit PostMousePressedProcessor(views::Widget* owner) : owner_(owner) {
-    owner_->AddObserver(this);
-  }
-
-  virtual ~PostMousePressedProcessor() {
-    CleanupOwner();
-  }
-
-  void DoPostMousePressedProcessing() {
-    // Make sure we're still visible before we attempt capture as the mouse
-    // press processing may have made the window hide (as happens with menus).
-    if (!owner_ || !owner_->IsVisible())
-      return;
-
-    owner_->is_mouse_button_pressed_ = true;
-
-    // OnNativeWidgetDestroying also notifies all
-    // WidgetObservers::OnWidgetDestroying. So we can be sure that if |owner_|
-    // is non-NULL, |owner_->native_widget_| will also be non-NULL.
-    if (!owner_->native_widget_private()->HasCapture())
-      owner_->native_widget_private()->SetCapture();
-  }
-
-  // Overridden from WidgetObserver.
-  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
-    CleanupOwner();
-  }
-
- private:
-  void CleanupOwner() {
-    if (owner_) {
-      owner_->RemoveObserver(this);
-      owner_ = NULL;
-    }
-  }
-
-  views::Widget* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PostMousePressedProcessor);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, InitParams:
 
@@ -1194,18 +1151,17 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
   ScopedEvent scoped(this, *event);
   View* root_view = GetRootView();
   switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED: {
+    case ui::ET_MOUSE_PRESSED:
       last_mouse_event_was_move_ = false;
-
-      // We may get deleted by the time we return from OnMousePressed. So we
-      // use an observer to do capture after OnMousePressed in a safe way.
-      PostMousePressedProcessor post_mouse_pressed_processor(this);
-      if (root_view && root_view->OnMousePressed(*event)) {
-        post_mouse_pressed_processor.DoPostMousePressedProcessing();
+      // Make sure we're still visible before we attempt capture as the mouse
+      // press processing may have made the window hide (as happens with menus).
+      if (root_view && root_view->OnMousePressed(*event) && IsVisible()) {
+        is_mouse_button_pressed_ = true;
+        if (!native_widget_->HasCapture())
+          native_widget_->SetCapture();
         event->SetHandled();
       }
       return;
-    }
     case ui::ET_MOUSE_RELEASED:
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;

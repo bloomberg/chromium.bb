@@ -567,9 +567,6 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher,
   // The timestamp of the event which closed the menu - or 0 otherwise.
   base::TimeDelta closing_event_time_;
 
-  // Time when the menu is first shown.
-  base::TimeTicks menu_start_time_;
-
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
 
