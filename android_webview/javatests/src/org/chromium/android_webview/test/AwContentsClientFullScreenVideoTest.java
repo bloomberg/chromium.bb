@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.TouchUtils;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.util.TouchCommon;
 
 /**
  * Test WebChromeClient::onShow/HideCustomView.
@@ -17,7 +17,7 @@ import org.chromium.base.test.util.Feature;
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
-    @LargeTest
+    @SmallTest
     public void testOnShowAndHideCustomView() throws Throwable {
         FullScreenVideoTestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity());
@@ -30,10 +30,9 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
             loadUrlSync(testContainerView.getAwContents(),
                     contentsClient.getOnPageFinishedHelper(),
                     webServer.getFullScreenVideoTestURL());
-            // Temporary code to figure out minimal wait time for page show up.
-            // see crbug/224923.
-            Thread.sleep(10 * 1000);
-            TouchUtils.clickView(AwContentsClientFullScreenVideoTest.this, testContainerView);
+            Thread.sleep(5 * 1000);
+            TouchCommon touchCommon = new TouchCommon(this);
+            touchCommon.singleClickView(testContainerView);
             contentsClient.waitForCustomViewShown();
             getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
             contentsClient.waitForCustomViewHidden();

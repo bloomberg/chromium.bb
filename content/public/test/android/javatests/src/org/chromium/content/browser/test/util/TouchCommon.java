@@ -118,6 +118,13 @@ public class TouchCommon {
     }
 
     /**
+     * Sends (synchronously) a single click to the center of the View.
+     */
+    public void singleClickView(View v) {
+        singleClickView(v, v.getWidth() / 2, v.getHeight() / 2);
+    }
+
+    /**
      * Sends (synchronously) a single click on the specified relative coordinates inside
      * a given view.
      *
