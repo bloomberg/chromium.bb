@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "googleurl/src/gurl.h"
@@ -32,7 +33,8 @@ TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   EXPECT_EQ("https://file_content_url/",  entry_proto.download_url());
   EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
             entry_proto.edit_url());
-  EXPECT_EQ("",  entry_proto.parent_resource_id());
+  EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
+            entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_FALSE(entry_proto.shared_with_me());
@@ -113,7 +115,8 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("https://3_document_content/",  entry_proto.download_url());
   EXPECT_EQ("https://3_document_self_link/document:5_document_resource_id",
             entry_proto.edit_url());
-  EXPECT_EQ("",  entry_proto.parent_resource_id());
+  EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
+            entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
   EXPECT_FALSE(entry_proto.shared_with_me());
@@ -271,7 +274,8 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("https://content_url/",  entry_proto.download_url());
   EXPECT_EQ("https://edit_url/document%3Adeleted_in_root_id",
             entry_proto.edit_url());
-  EXPECT_EQ("",  entry_proto.parent_resource_id());
+  EXPECT_EQ(util::kDriveOtherDirSpecialResourceId,
+            entry_proto.parent_resource_id());
 
   EXPECT_TRUE(entry_proto.deleted());  // The document was deleted.
   EXPECT_FALSE(entry_proto.shared_with_me());

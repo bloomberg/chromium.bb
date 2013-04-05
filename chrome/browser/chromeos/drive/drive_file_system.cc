@@ -1090,6 +1090,11 @@ void DriveFileSystem::RefreshDirectoryAfterGetEntryInfo(
     callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
+  if (util::IsSpecialResourceId(entry_proto->resource_id())) {
+    // Do not load special directories. Just return.
+    callback.Run(DRIVE_FILE_OK);
+    return;
+  }
 
   change_list_loader_->LoadDirectoryFromServer(
       entry_proto->resource_id(),

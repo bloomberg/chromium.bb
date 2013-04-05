@@ -52,15 +52,20 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
   if (edit_link)
     entry_proto.set_edit_url(edit_link->href().spec());
 
+  // Sets parent Resource ID. On drive.google.com, a file can have multiple
+  // parents or no parent, but we are forcing a tree-shaped structure (i.e. no
+  // multi-parent or zero-parent entries). Therefore the first found "parent" is
+  // used for the entry and if the entry has no parent, we assign a special ID
+  // which represents no-parent entries. Tracked in http://crbug.com/158904.
   const google_apis::Link* parent_link =
       entry.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
-    // TODO(haruki): Apply mapping from an empty parent to special dummy
-    // directory. See http://crbug.com/174233. Until we implement it,
-    // ChangeListProcessor ignores such "no parent" entries.
     entry_proto.set_parent_resource_id(
         util::ExtractResourceIdFromUrl(parent_link->href()));
   }
+  // Apply mapping from an empty parent to the special dummy directory.
+  if (entry_proto.parent_resource_id().empty())
+    entry_proto.set_parent_resource_id(util::kDriveOtherDirSpecialResourceId);
 
   entry_proto.set_deleted(entry.deleted());
   entry_proto.set_shared_with_me(HasSharedWithMeLabel(entry));

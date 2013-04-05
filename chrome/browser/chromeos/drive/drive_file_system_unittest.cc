@@ -713,6 +713,16 @@ TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
 
+TEST_F(DriveFileSystemTest, SearchOrphanFile) {
+  ASSERT_TRUE(LoadRootFeedDocument());
+
+  const base::FilePath kFilePath = base::FilePath(
+      FILE_PATH_LITERAL("drive/other/Orphan File 1.txt"));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:1_orphanfile_resource_id", entry->resource_id());
+}
+
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
