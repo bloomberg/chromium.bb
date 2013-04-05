@@ -323,7 +323,7 @@ void InspectorProfilerAgent::removeProfile(ErrorString*, const String& type, int
     }
 }
 
-void InspectorProfilerAgent::resetState()
+void InspectorProfilerAgent::clearProfiles(ErrorString*)
 {
     stop();
     m_profiles.clear();

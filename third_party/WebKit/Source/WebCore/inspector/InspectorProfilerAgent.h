@@ -69,8 +69,7 @@ public:
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
     virtual void collectGarbage(ErrorString*);
-    virtual void clearProfiles(ErrorString*) { resetState(); }
-    void resetState();
+    virtual void clearProfiles(ErrorString*);
 
     virtual void causesRecompilation(ErrorString*, bool*);
     virtual void recompileScript() = 0;

@@ -908,12 +908,6 @@ void InspectorInstrumentation::didCommitLoadImpl(InstrumentingAgents* instrument
 
         if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
             resourceAgent->mainFrameNavigated(loader);
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
-        if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
-            profilerAgent->resetState();
-        if (InspectorHeapProfilerAgent* heapProfilerAgent = instrumentingAgents->inspectorHeapProfilerAgent())
-            heapProfilerAgent->resetState();
-#endif
         if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
             cssAgent->reset();
 #if ENABLE(SQL_DATABASE)

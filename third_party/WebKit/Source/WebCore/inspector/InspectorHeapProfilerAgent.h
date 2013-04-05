@@ -56,8 +56,7 @@ public:
     virtual ~InspectorHeapProfilerAgent();
 
     virtual void collectGarbage(ErrorString*);
-    virtual void clearProfiles(ErrorString*) { resetState(); }
-    void resetState();
+    virtual void clearProfiles(ErrorString*);
 
     virtual void hasHeapProfiler(ErrorString*, bool*);
 

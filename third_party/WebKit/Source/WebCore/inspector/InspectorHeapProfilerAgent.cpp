@@ -68,7 +68,7 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
     m_instrumentingAgents->setInspectorHeapProfilerAgent(0);
 }
 
-void InspectorHeapProfilerAgent::resetState()
+void InspectorHeapProfilerAgent::clearProfiles(ErrorString*)
 {
     m_snapshots.clear();
     m_nextUserInitiatedHeapSnapshotNumber = 1;
