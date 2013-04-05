@@ -432,7 +432,7 @@ class HttpService(object):
   """
 
   # File to use to store all auth cookies.
-  COOKIE_FILE = '~/.isolated_cookies'
+  COOKIE_FILE = os.path.join('~', '.isolated_cookies')
 
   # CookieJar reused by all services + lock that protects its instantiation.
   _cookie_jar = None
@@ -667,17 +667,26 @@ class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
         except (cookielib.LoadError, IOError):
           pass
       else:
-        fd = os.open(filename, os.O_CREAT, 0600)
-        os.close(fd)
-      os.chmod(filename, 0600)
+        try:
+          fd = os.open(filename, os.O_CREAT, 0600)
+          os.close(fd)
+        except OSError:
+          logging.error('Failed to create %s', filename)
+      try:
+        os.chmod(filename, 0600)
+      except OSError:
+        logging.error('Failed to fix mode for %s', filename)
 
   def save(self, filename=None, ignore_discard=False, ignore_expires=False):
     """Saves cookies to the file, completely overwriting it."""
     logging.debug('Saving cookies to %s', filename or self.filename)
     with self._cookies_lock:
-      cookielib.MozillaCookieJar.save(self, filename,
-                                      ignore_discard,
-                                      ignore_expires)
+      try:
+        cookielib.MozillaCookieJar.save(self, filename,
+                                        ignore_discard,
+                                        ignore_expires)
+      except OSError:
+        logging.error('Failed to save %s', filename)
 
 
 class ThreadPool(object):
