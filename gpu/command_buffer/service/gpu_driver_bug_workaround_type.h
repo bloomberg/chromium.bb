@@ -18,6 +18,8 @@
          disable_angle_framebuffer_multisample)       \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                       \
          disable_depth_texture)                       \
+  GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                    \
+         disable_ext_draw_buffers)                    \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                 \
          disable_ext_occlusion_query)                 \
   GPU_OP(ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES,      \

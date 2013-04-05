@@ -91,7 +91,7 @@
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "1.1",
+  "version": "1.2",
   "entries": [
     {
       "id": 1,
@@ -305,6 +305,18 @@
       },
       "features": [
         "disable_depth_texture"
+      ]
+    },
+    {
+      "id": 18,
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0fd5"],
+      "multi_gpu_category": "any",
+      "features": [
+        "disable_ext_draw_buffers"
       ]
     }
   ]

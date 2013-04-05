@@ -590,7 +590,9 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
   }
 
-  if (extensions.Contains("GL_ARB_draw_buffers")) {
+  if (!workarounds_.disable_ext_draw_buffers &&
+      (extensions.Contains("GL_ARB_draw_buffers") ||
+       extensions.Contains("GL_EXT_draw_buffers"))) {
     AddExtensionString("GL_EXT_draw_buffers");
     feature_flags_.ext_draw_buffers = true;
 
