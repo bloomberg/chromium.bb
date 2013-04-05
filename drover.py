@@ -515,6 +515,8 @@ def drover(options, args):
   # Override the default properties if there is a drover.properties file.
   global file_pattern_
   if os.path.exists("drover.properties"):
+    print 'Using options from %s' % os.path.join(
+        os.getcwd(), 'drover.properties')
     FILE_PATTERN = file_pattern_
     f = open("drover.properties")
     exec(f)
@@ -544,13 +546,13 @@ def drover(options, args):
         prompt("Working copy contains uncommitted files. Continue?")):
       return 1
 
-  if options.revert and not options.no_alt_urls:
+  if options.revert and not options.no_alt_urls and not options.url:
     for cur_url in [url] + REVERT_ALT_URLS:
       try:
         commit_date_str = getSVNInfo(
             cur_url, options.revert).get('Last Changed Date', 'x').split()[0]
         commit_date = datetime.datetime.strptime(commit_date_str, '%Y-%m-%d')
-        if (datetime.datetime.now() - commit_date).days < 120:
+        if (datetime.datetime.now() - commit_date).days < 180:
           if cur_url != url:
             print 'Guessing svn repo: %s.' % cur_url,
             print 'Use --no-alt-urls to disable heuristic.'
