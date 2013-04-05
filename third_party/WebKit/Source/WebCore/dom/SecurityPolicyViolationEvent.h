@@ -25,8 +25,6 @@
 #ifndef SecurityPolicyViolationEvent_h
 #define SecurityPolicyViolationEvent_h
 
-#if ENABLE(CSP_NEXT)
-
 #include "Event.h"
 #include "EventNames.h"
 
@@ -99,7 +97,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(CSP_NEXT)
 
 #endif // SecurityPolicyViolationEvent_h

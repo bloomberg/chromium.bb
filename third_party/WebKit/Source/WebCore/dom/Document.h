@@ -76,6 +76,7 @@ class CustomElementConstructor;
 class CustomElementRegistry;
 class DOMImplementation;
 class DOMNamedFlowCollection;
+class DOMSecurityPolicy;
 class DOMSelection;
 class DOMWindow;
 class Database;
@@ -185,10 +186,6 @@ class Prerenderer;
 
 #if ENABLE(TEXT_AUTOSIZING)
 class TextAutosizer;
-#endif
-
-#if ENABLE(CSP_NEXT)
-class DOMSecurityPolicy;
 #endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
@@ -306,9 +303,7 @@ public:
 #if ENABLE(PAGE_VISIBILITY_API)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
 #endif
-#if ENABLE(CSP_NEXT)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
-#endif
 
     void setViewportArguments(const ViewportArguments& viewportArguments) { m_viewportArguments = viewportArguments; }
     ViewportArguments viewportArguments() const { return m_viewportArguments; }
@@ -416,9 +411,7 @@ public:
     void dispatchVisibilityStateChangeEvent();
 #endif
 
-#if ENABLE(CSP_NEXT)
     DOMSecurityPolicy* securityPolicy();
-#endif
 
     PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionCode&);
 
@@ -1562,9 +1555,7 @@ private:
 
     RefPtr<NamedFlowCollection> m_namedFlows;
 
-#if ENABLE(CSP_NEXT)
     RefPtr<DOMSecurityPolicy> m_domSecurityPolicy;
-#endif
 
     void sharedObjectPoolClearTimerFired(Timer<Document>*);
     Timer<Document> m_sharedObjectPoolClearTimer;

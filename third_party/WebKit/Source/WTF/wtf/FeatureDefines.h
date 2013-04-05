@@ -293,10 +293,6 @@
 #define ENABLE_CONTEXT_MENUS 1
 #endif
 
-#if !defined(ENABLE_CSP_NEXT)
-#define ENABLE_CSP_NEXT 0
-#endif
-
 #if !defined(ENABLE_CSS3_CONDITIONAL_RULES)
 #define ENABLE_CSS3_CONDITIONAL_RULES 0
 #endif

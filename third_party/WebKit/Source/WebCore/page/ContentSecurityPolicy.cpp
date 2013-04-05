@@ -139,13 +139,11 @@ bool isDirectiveName(const String& name)
         || equalIgnoringCase(name, sandbox)
         || equalIgnoringCase(name, scriptSrc)
         || equalIgnoringCase(name, styleSrc)
-#if ENABLE(CSP_NEXT)
         || equalIgnoringCase(name, baseURI)
         || equalIgnoringCase(name, formAction)
         || equalIgnoringCase(name, pluginTypes)
         || equalIgnoringCase(name, scriptNonce)
         || equalIgnoringCase(name, reflectedXSS)
-#endif
     );
 }
 
@@ -253,10 +251,8 @@ private:
     {
         if (m_scheme.isEmpty()) {
             String protectedResourceScheme(m_policy->securityOrigin()->protocol());
-#if ENABLE(CSP_NEXT)
             if (equalIgnoringCase("http", protectedResourceScheme))
                 return url.protocolIs("http") || url.protocolIs("https");
-#endif
             return equalIgnoringCase(url.protocol(), protectedResourceScheme);
         }
         return equalIgnoringCase(url.protocol(), m_scheme);
@@ -1422,7 +1418,6 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         applySandboxPolicy(name, value);
     else if (equalIgnoringCase(name, reportURI))
         parseReportURI(name, value);
-#if ENABLE(CSP_NEXT)
     else if (m_policy->experimentalFeaturesEnabled()) {
         if (equalIgnoringCase(name, baseURI))
             setCSPDirective<SourceListDirective>(name, value, m_baseURI);
@@ -1437,7 +1432,6 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         else
             m_policy->reportUnsupportedDirective(name);
     }
-#endif
     else
         m_policy->reportUnsupportedDirective(name);
 }
@@ -1709,7 +1703,6 @@ static String stripURLForUseInReport(Document* document, const KURL& url)
     return document->securityOrigin()->canRequest(url) ? url.strippedForUseAsReferrer() : SecurityOrigin::create(url)->toString();
 }
 
-#if ENABLE(CSP_NEXT)
 static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header)
 {
     init.documentURI = document->url().string();
@@ -1733,7 +1726,6 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
         init.lineNumber = callFrame.lineNumber();
     }
 }
-#endif
 
 void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state) const
 {
@@ -1748,14 +1740,12 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!frame)
         return;
 
-#if ENABLE(CSP_NEXT)
     if (experimentalFeaturesEnabled()) {
-        // FIXME: This code means that we're gathering information like line numbers twice. Once we can bring this out from behind the flag, we should reuse the data gathered here when generating the JSON report below.
+        // FIXME: This code means that we're gathering information like line numbers twice. We should reuse the data gathered here when generating the JSON report below.
         SecurityPolicyViolationEventInit init;
         gatherSecurityPolicyViolationEventData(init, document, directiveText, effectiveDirective, blockedURL, header);
         document->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(eventNames().securitypolicyviolationEvent, init));
     }
-#endif
 
     if (reportURIs.isEmpty())
         return;
@@ -1774,12 +1764,8 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("document-uri", document->url().strippedForUseAsReferrer());
     cspReport->setString("referrer", document->referrer());
     cspReport->setString("violated-directive", directiveText);
-#if ENABLE(CSP_NEXT)
     if (experimentalFeaturesEnabled())
         cspReport->setString("effective-directive", effectiveDirective);
-#else
-    UNUSED_PARAM(effectiveDirective);
-#endif
     cspReport->setString("original-policy", header);
     cspReport->setString("blocked-uri", stripURLForUseInReport(document, blockedURL));
 
@@ -1903,11 +1889,7 @@ void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String
 
 bool ContentSecurityPolicy::experimentalFeaturesEnabled() const
 {
-#if ENABLE(CSP_NEXT)
     return RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled();
-#else
-    return false;
-#endif
 }
 
 }

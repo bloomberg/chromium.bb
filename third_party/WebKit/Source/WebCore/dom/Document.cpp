@@ -49,6 +49,7 @@
 #include "CustomElementRegistry.h"
 #include "DOMImplementation.h"
 #include "DOMNamedFlowCollection.h"
+#include "DOMSecurityPolicy.h"
 #include "DOMSelection.h"
 #include "DOMWindow.h"
 #include "DateComponents.h"
@@ -236,10 +237,6 @@
 
 #if ENABLE(TEXT_AUTOSIZING)
 #include "TextAutosizer.h"
-#endif
-
-#if ENABLE(CSP_NEXT)
-#include "DOMSecurityPolicy.h"
 #endif
 
 #if PLATFORM(CHROMIUM)
@@ -1657,14 +1654,12 @@ void Document::dispatchVisibilityStateChangeEvent()
 }
 #endif
 
-#if ENABLE(CSP_NEXT)
 DOMSecurityPolicy* Document::securityPolicy()
 {
     if (!m_domSecurityPolicy)
         m_domSecurityPolicy = DOMSecurityPolicy::create(this);
     return m_domSecurityPolicy.get();
 }
-#endif
 
 String Document::nodeName() const
 {
@@ -6084,9 +6079,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 #endif
     info.addMember(m_visualUpdatesSuppressionTimer, "visualUpdatesSuppressionTimer");
     info.addMember(m_namedFlows, "namedFlows");
-#if ENABLE(CSP_NEXT)
     info.addMember(m_domSecurityPolicy, "domSecurityPolicy");
-#endif
     info.addMember(m_sharedObjectPoolClearTimer, "sharedObjectPoolClearTimer");
     info.addMember(m_sharedObjectPool, "sharedObjectPool");
     info.addMember(m_localeCache, "localeCache");
