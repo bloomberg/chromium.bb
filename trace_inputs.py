@@ -24,15 +24,16 @@ import getpass
 import glob
 import json
 import logging
-import unicodedata
 import optparse
 import os
 import re
+import stat
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+import unicodedata
 import weakref
 
 ## OS-specific imports
@@ -2247,11 +2248,18 @@ class Dtrace(ApiBase):
       self._dummy_file_id, self._dummy_file_name = tempfile.mkstemp(
           prefix='trace_signal_file')
 
+      dtrace_path = '/usr/sbin/dtrace'
+      if not os.path.isfile(dtrace_path):
+        dtrace_path = 'dtrace'
+      elif use_sudo is None and (os.stat(dtrace_path).st_mode & stat.S_ISUID):
+        # No need to sudo. For those following at home, don't do that.
+        use_sudo = False
+
       # Note: do not use the -p flag. It's useless if the initial process quits
       # too fast, resulting in missing traces from the grand-children. The D
       # code manages the dtrace lifetime itself.
       trace_cmd = [
-        'dtrace',
+        dtrace_path,
         # Use a larger buffer if getting 'out of scratch space' errors.
         # Ref: https://wikis.oracle.com/display/DTrace/Options+and+Tunables
         '-b', '10m',
