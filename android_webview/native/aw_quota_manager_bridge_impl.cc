@@ -146,14 +146,8 @@ void GetOriginsTask::DoneOnUIThread() {
 
 // static
 jint GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
-  content::ContentBrowserClient* browser_client =
-      content::GetContentClient()->browser();
-  DCHECK(browser_client);
-
-  AwContentBrowserClient* aw_browser_client =
-      AwContentBrowserClient::FromContentBrowserClient(browser_client);
-  AwBrowserContext* browser_context = aw_browser_client->GetAwBrowserContext();
-  DCHECK(browser_context);
+  AwBrowserContext* browser_context =
+      AwContentBrowserClient::GetAwBrowserContext();
 
   AwQuotaManagerBridgeImpl* bridge = static_cast<AwQuotaManagerBridgeImpl*>(
       browser_context->GetQuotaManagerBridge());

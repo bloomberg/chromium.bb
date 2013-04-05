@@ -128,8 +128,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
 class MediaStreamDispatcherHostTest : public testing::Test {
  public:
-  MediaStreamDispatcherHostTest() : old_client_(NULL),
-                                    old_browser_client_(NULL) {}
+  MediaStreamDispatcherHostTest() : old_browser_client_(NULL) {}
   virtual ~MediaStreamDispatcherHostTest() {}
 
   void WaitForResult() {
@@ -156,19 +155,16 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                               media_stream_manager_.get());
 
     // Use the fake content client and browser.
-    old_client_ = GetContentClient();
-    old_browser_client_ = GetContentClient()->browser();
     content_client_.reset(new TestContentClient);
     SetContentClient(content_client_.get());
-    content_client_->set_browser_for_testing(host_);
+    old_browser_client_ = SetBrowserClientForTesting(host_);
   }
 
   virtual void TearDown() OVERRIDE {
     message_loop_->RunUntilIdle();
 
     // Recover the old browser client and content client.
-    GetContentClient()->set_browser_for_testing(old_browser_client_);
-    SetContentClient(old_client_);
+    SetBrowserClientForTesting(old_browser_client_);
     content_client_.reset();
 
     // Delete the IO message loop to delete the device thread,
@@ -181,7 +177,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
-  ContentClient* old_client_;
   ContentBrowserClient* old_browser_client_;
   scoped_ptr<ContentClient> content_client_;
   scoped_ptr<MockMediaObserver> media_observer_;

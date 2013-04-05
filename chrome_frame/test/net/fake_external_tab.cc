@@ -153,8 +153,7 @@ class FakeMainDelegate : public content::ContentMainDelegate {
         testing::UnitTest::GetInstance());
 
     content::SetContentClient(&g_chrome_content_client.Get());
-    content::GetContentClient()->set_renderer_for_testing(
-        &g_renderer_client.Get());
+    content::SetRendererClientForTesting(&g_renderer_client.Get());
     return false;
   }
 

@@ -449,11 +449,8 @@ void PluginPlaceholder::PluginListChanged() {
       mime_type, &output));
   if (output.status.value == status_->value)
     return;
-  chrome::ChromeContentRendererClient* client =
-      static_cast<chrome::ChromeContentRendererClient*>(
-          content::GetContentClient()->renderer());
-  WebPlugin* new_plugin =
-      client->CreatePlugin(render_view(), frame_, plugin_params_, output);
+  WebPlugin* new_plugin = chrome::ChromeContentRendererClient::CreatePlugin(
+      render_view(), frame_, plugin_params_, output);
   ReplacePlugin(new_plugin);
 }
 

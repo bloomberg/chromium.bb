@@ -32,8 +32,7 @@ void AwBrowserDependencyFactoryImpl::InstallInstance() {
 }
 
 content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext() {
-  return static_cast<AwContentBrowserClient*>(
-      content::GetContentClient()->browser())->GetAwBrowserContext();
+  return AwContentBrowserClient::GetAwBrowserContext();
 }
 
 WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents() {

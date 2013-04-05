@@ -96,10 +96,7 @@ void ShellRenderProcessObserver::OnSetWebKitSourceDir(
 
 void ShellRenderProcessObserver::OnLoadHyphenDictionary(
     const IPC::PlatformFileForTransit& dict_file) {
-  ShellContentRendererClient* renderer_client =
-      static_cast<content::ShellContentRendererClient*>(
-          content::GetContentClient()->renderer());
-  renderer_client->LoadHyphenDictionary(
+  ShellContentRendererClient::Get()->LoadHyphenDictionary(
       IPC::PlatformFileForTransitToPlatformFile(dict_file));
 }
 

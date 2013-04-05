@@ -60,8 +60,7 @@ void ContentBrowserTest::SetUp() {
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
     single_process_renderer_client_.reset(new ShellContentRendererClient);
-    GetContentClient()->set_renderer_for_testing(
-        single_process_renderer_client_.get());
+    SetRendererClientForTesting(single_process_renderer_client_.get());
   }
 
 #if defined(OS_MACOSX)
@@ -131,10 +130,8 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
 }
 
 Shell* ContentBrowserTest::CreateBrowser() {
-  ShellContentBrowserClient* browser_client =
-      static_cast<ShellContentBrowserClient*>(GetContentClient()->browser());
   return Shell::CreateNewWindow(
-      browser_client->browser_context(),
+      ShellContentBrowserClient::Get()->browser_context(),
       GURL(chrome::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,
@@ -142,10 +139,8 @@ Shell* ContentBrowserTest::CreateBrowser() {
 }
 
 Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
-  ShellContentBrowserClient* browser_client =
-      static_cast<ShellContentBrowserClient*>(GetContentClient()->browser());
   return Shell::CreateNewWindow(
-      browser_client->off_the_record_browser_context(),
+      ShellContentBrowserClient::Get()->off_the_record_browser_context(),
       GURL(chrome::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,

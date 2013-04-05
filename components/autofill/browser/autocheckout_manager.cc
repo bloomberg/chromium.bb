@@ -20,9 +20,6 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
-// TODO(jam) remove once https://codereview.chromium.org/13488009/ lands, since
-// that brings localle to AutofillManager.
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
@@ -294,11 +291,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
                result->field(i)->type() == ADDRESS_BILLING_COUNTRY) {
       profile_->SetInfo(result->field(i)->type(),
                         result->field(i)->value,
-                        // TODO(jam) remove once
-                        // https://codereview.chromium.org/13488009/
-                        // lands, since that brings localle to AutofillManager.
-                        content::GetContentClient()->browser()->
-                            GetApplicationLocale());
+                        autofill_manager_->app_locale());
     } else {
       profile_->SetRawInfo(result->field(i)->type(), result->field(i)->value);
     }

@@ -27,8 +27,7 @@
 
 - (IBAction)newDocument:(id)sender {
   content::ShellBrowserContext* browserContext =
-      static_cast<content::ShellContentBrowserClient*>(
-        content::GetContentClient()->browser())->browser_context();
+      content::ShellContentBrowserClient::Get()->browser_context();
   content::Shell::CreateNewWindow(browserContext,
                                   GURL("about:blank"),
                                   NULL,

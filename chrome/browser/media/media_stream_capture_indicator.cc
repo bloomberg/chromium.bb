@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/invalidate_type.h"
@@ -94,9 +96,10 @@ string16 GetTitle(WebContents* web_contents) {
     tab_title = GetSecurityOrigin(web_contents);
   } else {
     // If the page's title matches its URL, use its security originator.
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
     std::string languages =
-        content::GetContentClient()->browser()->GetAcceptLangs(
-            web_contents->GetBrowserContext());
+        profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     if (tab_title == net::FormatUrl(web_contents->GetURL(), languages))
       tab_title = GetSecurityOrigin(web_contents);
   }

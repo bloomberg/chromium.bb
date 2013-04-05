@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_request_interceptor.h"
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
@@ -55,8 +56,7 @@ void AwURLRequestContextGetter::Init() {
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
   builder.set_proxy_config_service(proxy_config_service_.release());
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
-      content::GetContentClient()->browser()->GetAcceptLangs(
-          browser_context_)));
+      AwContentBrowserClient::GetAcceptLangsImpl()));
 
   url_request_context_.reset(builder.Build());
 

@@ -157,14 +157,12 @@ class LoginSigninTest : public CrosInProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     content_browser_client_.reset(new TestContentBrowserClient());
-    original_content_browser_client_ = content::GetContentClient()->browser();
-    content::GetContentClient()->set_browser_for_testing(
+    original_content_browser_client_ = content::SetBrowserClientForTesting(
         content_browser_client_.get());
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    content::GetContentClient()->set_browser_for_testing(
-        original_content_browser_client_);
+    content::SetBrowserClientForTesting(original_content_browser_client_);
   }
 
   scoped_ptr<TestContentBrowserClient> content_browser_client_;

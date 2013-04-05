@@ -205,8 +205,7 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
       break;
     case ShellContextMenuItemOpenLinkId: {
       ShellBrowserContext* browser_context =
-          static_cast<ShellContentBrowserClient*>(
-            GetContentClient()->browser())->browser_context();
+          ShellContentBrowserClient::Get()->browser_context();
       Shell::CreateNewWindow(browser_context,
                              params_.link_url,
                              NULL,

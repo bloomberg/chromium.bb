@@ -230,9 +230,8 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   cert_request_info->cert_authorities = dummy_authority;
 
   // Plug in test content browser client.
-  ContentBrowserClient* old_client = GetContentClient()->browser();
   SelectCertificateBrowserClient test_client;
-  GetContentClient()->set_browser_for_testing(&test_client);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
 
   // Everything is set up. Trigger the resource loader certificate request event
   // and run the message loop.
@@ -240,7 +239,7 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   message_loop_->RunUntilIdle();
 
   // Restore the original content browser client.
-  GetContentClient()->set_browser_for_testing(old_client);
+  SetBrowserClientForTesting(old_client);
 
   // Check if the test store was queried against correct |cert_authorities|.
   EXPECT_EQ(1, raw_ptr_to_store->request_count());

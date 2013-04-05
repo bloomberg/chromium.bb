@@ -205,9 +205,8 @@ bool WebKitTestController::PrepareForLayoutTest(
   expected_pixel_hash_ = expected_pixel_hash;
   test_url_ = test_url;
   printer_->reset();
-  content::ShellBrowserContext* browser_context =
-      static_cast<content::ShellContentBrowserClient*>(
-          content::GetContentClient()->browser())->browser_context();
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
     is_compositing_test_ = true;
   gfx::Size initial_size(kTestWindowWidthDip, kTestWindowHeightDip);

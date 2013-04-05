@@ -26,7 +26,10 @@
 #include "net/ssl/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace android_webview {
 namespace {
+
+AwBrowserContext* g_browser_context;
 
 class AwAccessTokenStore : public content::AccessTokenStore {
  public:
@@ -51,12 +54,20 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
 }
 
-namespace android_webview {
+std::string AwContentBrowserClient::GetAcceptLangsImpl() {
+  // Start with the currnet locale.
+  std::string langs = base::android::GetDefaultLocale();
 
-// static
-AwContentBrowserClient* AwContentBrowserClient::FromContentBrowserClient(
-    content::ContentBrowserClient* client) {
-  return static_cast<AwContentBrowserClient*>(client);
+  // If we're not en-US, add in en-US which will be
+  // used with a lower q-value.
+  if (StringToLowerASCII(langs) != "en-us") {
+    langs += ",en-US";
+  }
+  return langs;
+}
+
+AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
+  return g_browser_context;
 }
 
 AwContentBrowserClient::AwContentBrowserClient(
@@ -68,9 +79,11 @@ AwContentBrowserClient::AwContentBrowserClient(
   }
   browser_context_.reset(
       new AwBrowserContext(user_data_dir, native_factory_));
+  g_browser_context = browser_context_.get();
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
+  g_browser_context = NULL;
 }
 
 void AwContentBrowserClient::AddCertificate(net::URLRequest* request,
@@ -81,10 +94,6 @@ void AwContentBrowserClient::AddCertificate(net::URLRequest* request,
                                             int render_view_id) {
   if (cert_size > 0)
     net::android::StoreCertificate(cert_type, cert_data, cert_size);
-}
-
-AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
-  return browser_context_.get();
 }
 
 content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
@@ -151,15 +160,7 @@ std::string AwContentBrowserClient::GetApplicationLocale() {
 
 std::string AwContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
-  // Start with the currnet locale.
-  std::string langs = GetApplicationLocale();
-
-  // If we're not en-US, add in en-US which will be
-  // used with a lower q-value.
-  if (StringToLowerASCII(langs) != "en-us") {
-    langs += ",en-US";
-  }
-  return langs;
+  return GetAcceptLangsImpl();
 }
 
 gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {
@@ -336,12 +337,6 @@ void AwContentBrowserClient::UpdateInspectorSetting(
     content::RenderViewHost* rvh,
     const std::string& key,
     const std::string& value) {
-  // TODO(boliu): Implement persisting inspector settings.
-  NOTIMPLEMENTED();
-}
-
-void AwContentBrowserClient::ClearInspectorSettings(
-    content::RenderViewHost* rvh) {
   // TODO(boliu): Implement persisting inspector settings.
   NOTIMPLEMENTED();
 }

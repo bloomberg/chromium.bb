@@ -439,11 +439,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // TODO(mpcomplete): remove the extension-related histograms after we collect
   // enough data. http://crbug.com/100411
-  chrome::ChromeContentRendererClient* client =
-      static_cast<chrome::ChromeContentRendererClient*>(
-          content::GetContentClient()->renderer());
-
-  const bool use_adblock_histogram = client->IsAdblockInstalled();
+  const bool use_adblock_histogram =
+      chrome::ChromeContentRendererClient::IsAdblockInstalled();
   if (use_adblock_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionAdblock",
@@ -474,7 +471,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  const bool use_adblockplus_histogram = client->IsAdblockPlusInstalled();
+  const bool use_adblockplus_histogram =
+      chrome::ChromeContentRendererClient::IsAdblockPlusInstalled();
   if (use_adblockplus_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionAdblockPlus",
@@ -506,7 +504,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_adblock_histogram =
-      client->IsAdblockWithWebRequestInstalled();
+      chrome::ChromeContentRendererClient::IsAdblockWithWebRequestInstalled();
   if (use_webrequest_adblock_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionWebRequestAdblock",
@@ -538,7 +536,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_adblockplus_histogram =
-      client->IsAdblockPlusWithWebRequestInstalled();
+      chrome::ChromeContentRendererClient::
+          IsAdblockPlusWithWebRequestInstalled();
   if (use_webrequest_adblockplus_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionWebRequestAdblockPlus",
@@ -570,7 +569,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_other_histogram =
-      client->IsOtherExtensionWithWebRequestInstalled();
+      chrome::ChromeContentRendererClient::
+          IsOtherExtensionWithWebRequestInstalled();
   if (use_webrequest_other_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionWebRequestOther",

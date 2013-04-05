@@ -17,6 +17,21 @@ namespace content {
 
 static ContentClient* g_client;
 
+class InternalTestInitializer {
+ public:
+  static ContentBrowserClient* SetBrowser(ContentBrowserClient* b) {
+    ContentBrowserClient* rv = g_client->browser_;
+    g_client->browser_ = b;
+    return rv;
+  }
+
+  static ContentRendererClient* SetRenderer(ContentRendererClient* r) {
+    ContentRendererClient* rv = g_client->renderer_;
+    g_client->renderer_ = r;
+    return rv;
+  }
+};
+
 void SetContentClient(ContentClient* client) {
   g_client = client;
 
@@ -30,6 +45,14 @@ void SetContentClient(ContentClient* client) {
 
 ContentClient* GetContentClient() {
   return g_client;
+}
+
+ContentBrowserClient* SetBrowserClientForTesting(ContentBrowserClient* b) {
+  return InternalTestInitializer::SetBrowser(b);
+}
+
+ContentRendererClient* SetRendererClientForTesting(ContentRendererClient* r) {
+  return InternalTestInitializer::SetRenderer(r);
 }
 
 const std::string& GetUserAgent(const GURL& url) {

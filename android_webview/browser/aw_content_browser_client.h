@@ -18,13 +18,14 @@ class JniDependencyFactory;
 
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
-  static AwContentBrowserClient* FromContentBrowserClient(
-      content::ContentBrowserClient* client);
+  // This is what AwContentBrowserClient::GetAcceptLangs uses.
+  static std::string GetAcceptLangsImpl();
+
+  // Returns the one AwBrowserContext for this process.
+  static AwBrowserContext* GetAwBrowserContext();
 
   AwContentBrowserClient(JniDependencyFactory* native_factory);
   virtual ~AwContentBrowserClient();
-
-  AwBrowserContext* GetAwBrowserContext();
 
   // Overriden methods from ContentBrowserClient.
   virtual void AddCertificate(net::URLRequest* request,
@@ -130,7 +131,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;
-  virtual void ClearInspectorSettings(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
   virtual base::FilePath GetDefaultDownloadDirectory() OVERRIDE;

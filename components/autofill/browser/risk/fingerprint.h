@@ -53,6 +53,7 @@ void GetFingerprint(
     const std::string& accept_languages,
     const base::Time& install_time,
     DialogType dialog_type,
+    const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 // Exposed for testing:
@@ -68,6 +69,7 @@ void GetFingerprintInternal(
     const std::string& accept_languages,
     const base::Time& install_time,
     DialogType dialog_type,
+    const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 }  // namespace internal

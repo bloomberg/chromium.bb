@@ -448,9 +448,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                       const std::string& key,
                                       const std::string& value) {}
 
-  // Clear the Inspector settings.
-  virtual void ClearInspectorSettings(RenderViewHost* rvh) {}
-
   // Notifies that BrowserURLHandler has been created, so that the embedder can
   // optionally add their own handlers.
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) {}

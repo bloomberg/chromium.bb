@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_tokenizer.h"
@@ -179,6 +180,10 @@ using extensions::Manifest;
 using webkit_glue::WebPreferences;
 
 namespace {
+
+// Cached version of the locale so we can return the locale on the I/O
+// thread.
+base::LazyInstance<std::string> g_io_thread_application_locale;
 
 const char* kPredefinedAllowedSocketOrigins[] = {
   "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
@@ -461,6 +466,11 @@ GURL GetEffectiveURLForSignin(const GURL& url) {
   return effective_url;
 }
 
+void SetApplicationLocaleOnIOThread(const std::string& locale) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  g_io_thread_application_locale.Get() = locale;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -485,6 +495,25 @@ void ChromeContentBrowserClient::RegisterUserPrefs(
   registry->RegisterBooleanPref(prefs::kEnableMemoryInfo,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// static
+void ChromeContentBrowserClient::SetApplicationLocale(
+    const std::string& locale) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // This object is guaranteed to outlive all threads so we don't have to
+  // worry about the lack of refcounting and can just post as Unretained.
+  //
+  // The common case is that this function is called early in Chrome startup
+  // before any threads are created (it will also be called later if the user
+  // changes the pref). In this case, there will be no threads created and
+  // posting will fail. When there are no threads, we can just set the string
+  // without worrying about threadsafety.
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          base::Bind(&SetApplicationLocaleOnIOThread, locale))) {
+    g_io_thread_application_locale.Get() = locale;
+  }
 }
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
@@ -1263,7 +1292,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    return io_thread_application_locale_;
+    return g_io_thread_application_locale.Get();
   return g_browser_process->GetApplicationLocale();
 }
 
@@ -1901,13 +1930,6 @@ void ChromeContentBrowserClient::UpdateInspectorSetting(
                                               Value::CreateStringValue(value));
 }
 
-void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
-  content::BrowserContext* browser_context =
-      rvh->GetProcess()->GetBrowserContext();
-  Profile::FromBrowserContext(browser_context)->GetPrefs()->
-      ClearPref(prefs::kWebKitInspectorSettings);
-}
-
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
     BrowserURLHandler* handler) {
   // Add the default URL handlers.
@@ -2166,30 +2188,5 @@ crypto::CryptoModuleBlockingPasswordDelegate*
       chrome::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
-
-void ChromeContentBrowserClient::SetApplicationLocale(
-    const std::string& locale) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // This object is guaranteed to outlive all threads so we don't have to
-  // worry about the lack of refcounting and can just post as Unretained.
-  //
-  // The common case is that this function is called early in Chrome startup
-  // before any threads are created (it will also be called later if the user
-  // changes the pref). In this case, there will be no threads created and
-  // posting will fail. When there are no threads, we can just set the string
-  // without worrying about threadsafety.
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ChromeContentBrowserClient::SetApplicationLocaleOnIOThread,
-              base::Unretained(this), locale)))
-    io_thread_application_locale_ = locale;
-}
-
-void ChromeContentBrowserClient::SetApplicationLocaleOnIOThread(
-    const std::string& locale) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_thread_application_locale_ = locale;
-}
 
 }  // namespace chrome

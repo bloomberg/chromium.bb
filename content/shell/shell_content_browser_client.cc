@@ -37,6 +37,8 @@ namespace content {
 
 namespace {
 
+ShellContentBrowserClient* g_browser_client;
+
 base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath base_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
@@ -72,9 +74,15 @@ base::FilePath GetChromiumRootDirFilePath() {
 
 }  // namespace
 
+ShellContentBrowserClient* ShellContentBrowserClient::Get() {
+  return g_browser_client;
+}
+
 ShellContentBrowserClient::ShellContentBrowserClient()
     : hyphen_dictionary_file_(base::kInvalidPlatformFileValue),
       shell_browser_main_parts_(NULL) {
+  DCHECK(!g_browser_client);
+  g_browser_client = this;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   webkit_source_dir_ = GetWebKitRootDirFilePath();
@@ -89,6 +97,7 @@ ShellContentBrowserClient::ShellContentBrowserClient()
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
+  g_browser_client = NULL;
 }
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(

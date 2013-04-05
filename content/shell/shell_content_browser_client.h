@@ -21,6 +21,9 @@ class ShellResourceDispatcherHostDelegate;
 
 class ShellContentBrowserClient : public ContentBrowserClient {
  public:
+  // Gets the current instance.
+  static ShellContentBrowserClient* Get();
+
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
 

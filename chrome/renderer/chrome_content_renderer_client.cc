@@ -140,6 +140,8 @@ namespace {
 const char kWebViewTagName[] = "WEBVIEW";
 const char kAdViewTagName[] = "ADVIEW";
 
+chrome::ChromeContentRendererClient* g_current_client;
+
 // Explicitly register all extension ManifestHandlers needed to parse
 // fields used in the renderer.
 void RegisterExtensionManifestHandlers() {
@@ -235,9 +237,11 @@ content::RenderView* GetRenderViewFromWebFrame(WebKit::WebFrame* webframe) {
 namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
+  g_current_client = this;
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
+  g_current_client = NULL;
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
@@ -598,8 +602,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           GURL manifest_url = is_nacl_mime_type ?
               url : GetNaClContentHandlerURL(actual_mime_type, plugin);
           const Extension* extension =
-              extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-                  ExtensionURLInfo(manifest_url));
+              g_current_client->extension_dispatcher_->extensions()->
+                  GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
           GURL top_url = frame->top()->document().url();
           if (!IsNaClAllowed(manifest_url,
                              top_url,
@@ -1150,25 +1154,28 @@ void ChromeContentRendererClient::OnPurgeMemory() {
 }
 
 bool ChromeContentRendererClient::IsAdblockInstalled() {
-  return extension_dispatcher_->extensions()->Contains(
+  return g_current_client->extension_dispatcher_->extensions()->Contains(
       "gighmmpiobklfepjocnamgkkbiglidom");
 }
 
 bool ChromeContentRendererClient::IsAdblockPlusInstalled() {
-  return extension_dispatcher_->extensions()->Contains(
+  return g_current_client->extension_dispatcher_->extensions()->Contains(
       "cfhdojbkjhnklbpkdaibdccddilifddb");
 }
 
 bool ChromeContentRendererClient::IsAdblockWithWebRequestInstalled() {
-  return extension_dispatcher_->IsAdblockWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_->
+      IsAdblockWithWebRequestInstalled();
 }
 
 bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
-  return extension_dispatcher_->IsAdblockPlusWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_->
+      IsAdblockPlusWithWebRequestInstalled();
 }
 
 bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
-  return extension_dispatcher_->IsOtherExtensionWithWebRequestInstalled();
+  return g_current_client->extension_dispatcher_->
+      IsOtherExtensionWithWebRequestInstalled();
 }
 
 void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(

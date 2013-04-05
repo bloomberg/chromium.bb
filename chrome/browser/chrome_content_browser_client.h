@@ -36,6 +36,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
+  // Notification that the application locale has changed. This allows us to
+  // update our I/O thread cache of this value.
+  static void SetApplicationLocale(const std::string& locale);
+
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual std::string GetStoragePartitionIdForSite(
@@ -200,7 +204,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;
-  virtual void ClearInspectorSettings(content::RenderViewHost* rvh) OVERRIDE;
   virtual void BrowserURLHandlerCreated(
       content::BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
@@ -238,20 +241,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
           const GURL& url) OVERRIDE;
 #endif
 
-  // Notification that the application locale has changed. This allows us to
-  // update our I/O thread cache of this value.
-  void SetApplicationLocale(const std::string& locale);
-
  private:
-  // Sets io_thread_application_locale_ to the given value.
-  void SetApplicationLocaleOnIOThread(const std::string& locale);
-
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
-
-  // Cached version of the locale so we can return the locale on the I/O
-  // thread.
-  std::string io_thread_application_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };

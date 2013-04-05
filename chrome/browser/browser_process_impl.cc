@@ -612,8 +612,7 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
 void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
   locale_ = locale;
   extension_l10n_util::SetProcessLocale(locale);
-  static_cast<chrome::ChromeContentBrowserClient*>(
-      content::GetContentClient()->browser())->SetApplicationLocale(locale);
+  chrome::ChromeContentBrowserClient::SetApplicationLocale(locale);
 }
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {

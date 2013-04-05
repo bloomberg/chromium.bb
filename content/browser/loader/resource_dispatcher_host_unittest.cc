@@ -1733,14 +1733,13 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
 
   // Temporarily replace ContentBrowserClient with one that will trigger the
   // transfer navigation code paths.
-  ContentBrowserClient* old_client = GetContentClient()->browser();
   TransfersAllNavigationsContentBrowserClient new_client;
-  GetContentClient()->set_browser_for_testing(&new_client);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
 
   // Restore.
-  GetContentClient()->set_browser_for_testing(old_client);
+  SetBrowserClientForTesting(old_client);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
@@ -1792,14 +1791,13 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
 
   // Temporarily replace ContentBrowserClient with one that will trigger the
   // transfer navigation code paths.
-  ContentBrowserClient* old_client = GetContentClient()->browser();
   TransfersAllNavigationsContentBrowserClient new_client;
-  GetContentClient()->set_browser_for_testing(&new_client);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
 
   // Restore.
-  GetContentClient()->set_browser_for_testing(old_client);
+  SetBrowserClientForTesting(old_client);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(

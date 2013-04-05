@@ -1865,6 +1865,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   risk::GetFingerprint(
       gaia_id, window_bounds, *web_contents(), chrome::VersionInfo().Version(),
       charset, accept_languages, install_time, dialog_type_,
+      g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
 }

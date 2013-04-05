@@ -112,8 +112,7 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    original_browser_client_ = GetContentClient()->browser();
-    GetContentClient()->set_browser_for_testing(&browser_client_);
+    original_browser_client_ = SetBrowserClientForTesting(&browser_client_);
 
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
@@ -121,7 +120,7 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    GetContentClient()->set_browser_for_testing(original_browser_client_);
+    SetBrowserClientForTesting(original_browser_client_);
   }
 
  private:

@@ -211,8 +211,7 @@ void ShellWebContentsViewDelegate::OnReloadMenuActivated(GtkWidget* widget) {
 
 void ShellWebContentsViewDelegate::OnOpenURLMenuActivated(GtkWidget* widget) {
   ShellBrowserContext* browser_context =
-      static_cast<ShellContentBrowserClient*>(
-        GetContentClient()->browser())->browser_context();
+      ShellContentBrowserClient::Get()->browser_context();
   Shell::CreateNewWindow(browser_context,
                          params_.link_url,
                          NULL,

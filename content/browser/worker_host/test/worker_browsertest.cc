@@ -289,7 +289,7 @@ class WorkerTest : public ContentBrowserTest {
 
   void NavigateAndWaitForAuth(const GURL& url) {
     ShellContentBrowserClient* browser_client =
-        static_cast<ShellContentBrowserClient*>(GetContentClient()->browser());
+        ShellContentBrowserClient::Get();
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
     browser_client->resource_dispatcher_host_delegate()->
         set_login_request_callback(

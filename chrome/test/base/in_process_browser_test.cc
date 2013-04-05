@@ -118,7 +118,7 @@ void InProcessBrowserTest::SetUp() {
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    content::GetContentClient()->set_renderer_for_testing(
+    content::SetRendererClientForTesting(
         &g_chrome_content_renderer_client.Get());
   }
 

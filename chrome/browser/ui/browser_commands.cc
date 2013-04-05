@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -67,7 +68,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -960,7 +960,7 @@ void ToggleRequestTabletSite(Browser* browser) {
     current_tab->SetUserAgentOverride(
         webkit_glue::BuildUserAgentFromOSAndProduct(
             kOsOverrideForTabletSite,
-            content::GetContentClient()->GetProduct()));
+            ChromeContentClient::GetProductImpl()));
   }
   controller.ReloadOriginalRequestURL(true);
 }

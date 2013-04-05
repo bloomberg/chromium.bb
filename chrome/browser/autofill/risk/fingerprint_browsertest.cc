@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/port.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/browser/risk/proto/fingerprint.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,6 +131,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
   internal::GetFingerprintInternal(
       kGaiaId, kWindowBounds, kContentBounds, screen_info, "25.0.0.123",
       kCharset, kAcceptLanguages, base::Time::Now(), DIALOG_TYPE_AUTOCHECKOUT,
+      g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 

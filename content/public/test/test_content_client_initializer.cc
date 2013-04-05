@@ -16,12 +16,11 @@ namespace content {
 TestContentClientInitializer::TestContentClientInitializer() {
   notification_service_.reset(new NotificationServiceImpl());
 
-  DCHECK(!GetContentClient());
   content_client_.reset(new TestContentClient);
   SetContentClient(content_client_.get());
 
   content_browser_client_.reset(new TestContentBrowserClient());
-  content_client_->set_browser_for_testing(content_browser_client_.get());
+  content::SetBrowserClientForTesting(content_browser_client_.get());
 }
 
 TestContentClientInitializer::~TestContentClientInitializer() {
@@ -29,7 +28,6 @@ TestContentClientInitializer::~TestContentClientInitializer() {
   rph_factory_.reset();
   notification_service_.reset();
 
-  DCHECK_EQ(content_client_.get(), GetContentClient());
   SetContentClient(NULL);
   content_client_.reset();
 

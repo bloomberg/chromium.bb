@@ -98,8 +98,7 @@ BrowserPluginTest::~BrowserPluginTest() {}
 
 void BrowserPluginTest::SetUp() {
   test_content_renderer_client_.reset(new TestContentRendererClient);
-  GetContentClient()->set_renderer_for_testing(
-      test_content_renderer_client_.get());
+  SetRendererClientForTesting(test_content_renderer_client_.get());
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::SetUp();

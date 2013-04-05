@@ -133,14 +133,13 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     DCHECK(!g_browser_process);
     g_browser_process = new TestingBrowserProcess;
 
-    DCHECK(!content::GetContentClient());
     content_client_.reset(new chrome::ChromeContentClient);
+    content::SetContentClient(content_client_.get());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
-    content_client_->set_browser_for_testing(browser_content_client_.get());
+    SetBrowserClientForTesting(browser_content_client_.get());
 #endif
-    content::SetContentClient(content_client_.get());
 
     SetUpHostResolver();
   }
@@ -151,7 +150,6 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
       g_browser_process = NULL;
     }
 
-    DCHECK_EQ(content_client_.get(), content::GetContentClient());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset();

@@ -33,6 +33,8 @@ class ShellRenderProcessObserver;
 
 class ShellContentRendererClient : public ContentRendererClient {
  public:
+  static ShellContentRendererClient* Get();
+
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
 

@@ -20,7 +20,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -33,7 +32,6 @@
 #include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/user_agent/user_agent.h"
 
 // TODO(akalin): Add tests here that exercise the whole
 // ProfileSyncService/SyncBackendHost stack while mocking out as
@@ -66,11 +64,6 @@ class ProfileSyncServiceTestHarness {
     io_thread_.StartIOThread();
     profile.reset(new TestingProfile());
     profile->CreateRequestContext();
-
-    // We need to set the user agent before the backend host can call
-    // webkit_glue::GetUserAgent().
-    webkit_glue::SetUserAgent(content::GetContentClient()->GetUserAgent(),
-                              false);
   }
 
   void TearDown() {

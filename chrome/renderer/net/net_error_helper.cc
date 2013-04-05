@@ -25,7 +25,6 @@
 
 using base::DictionaryValue;
 using chrome_common_net::DnsProbeResult;
-using content::GetContentClient;
 using content::RenderThread;
 using content::RenderView;
 using content::RenderViewObserver;

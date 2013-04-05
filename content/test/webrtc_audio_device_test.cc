@@ -87,12 +87,11 @@ class WebRTCMockRenderProcess : public RenderProcess {
 class ReplaceContentClientRenderer {
  public:
   explicit ReplaceContentClientRenderer(ContentRendererClient* new_renderer) {
-    saved_renderer_ = GetContentClient()->renderer();
-    GetContentClient()->set_renderer_for_testing(new_renderer);
+    saved_renderer_ = SetRendererClientForTesting(new_renderer);
   }
   ~ReplaceContentClientRenderer() {
     // Restore the original renderer.
-    GetContentClient()->set_renderer_for_testing(saved_renderer_);
+    SetRendererClientForTesting(saved_renderer_);
   }
  private:
   ContentRendererClient* saved_renderer_;

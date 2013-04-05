@@ -358,6 +358,13 @@ const char* const ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
 const char* const ChromeContentClient::kNaClOldPluginName =
     ::kNaClOldPluginName;
 
+std::string ChromeContentClient::GetProductImpl() {
+  chrome::VersionInfo version_info;
+  std::string product("Chrome/");
+  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+  return product;
+}
+
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);
 }
@@ -403,10 +410,7 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
 }
 
 std::string ChromeContentClient::GetProduct() const {
-  chrome::VersionInfo version_info;
-  std::string product("Chrome/");
-  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
-  return product;
+  return GetProductImpl();
 }
 
 std::string ChromeContentClient::GetUserAgent() const {

@@ -55,8 +55,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    old_browser_client_ = GetContentClient()->browser();
-    GetContentClient()->set_browser_for_testing(&test_browser_client_);
+    old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     // Claim to always handle chrome:// URLs because the CPSP's notion of
     // allowing WebUI bindings is hard-wired to this particular scheme.
@@ -65,7 +64,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
 
   virtual void TearDown() {
     test_browser_client_.ClearSchemes();
-    GetContentClient()->set_browser_for_testing(old_browser_client_);
+    SetBrowserClientForTesting(old_browser_client_);
   }
 
  protected:

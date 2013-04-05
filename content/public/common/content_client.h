@@ -57,7 +57,18 @@ struct PepperPluginInfo;
 // Setter and getter for the client.  The client should be set early, before any
 // content code is called.
 CONTENT_EXPORT void SetContentClient(ContentClient* client);
-CONTENT_EXPORT ContentClient* GetContentClient();
+
+#if defined(CONTENT_IMPLEMENTATION)
+// Content's embedder API should only be used by content.
+ContentClient* GetContentClient();
+#endif
+
+// Used for tests to override the relevant embedder interfaces. Each method
+// returns the old value.
+CONTENT_EXPORT ContentBrowserClient* SetBrowserClientForTesting(
+    ContentBrowserClient* b);
+CONTENT_EXPORT ContentRendererClient* SetRendererClientForTesting(
+    ContentRendererClient* r);
 
 // Returns the user agent string being used by the browser. SetContentClient()
 // must be called prior to calling this, and this routine must be used
@@ -154,11 +165,9 @@ class CONTENT_EXPORT ContentClient {
   virtual std::string GetCarbonInterposePath() const;
 #endif
 
-  void set_browser_for_testing(ContentBrowserClient* c) { browser_ = c; }
-  void set_renderer_for_testing(ContentRendererClient* r) { renderer_ = r; }
-
  private:
   friend class ContentClientInitializer;  // To set these pointers.
+  friend class InternalTestInitializer;
 
   // The embedder API for participating in browser logic.
   ContentBrowserClient* browser_;

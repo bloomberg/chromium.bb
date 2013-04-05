@@ -9,10 +9,10 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -61,7 +61,7 @@ void LocalOmniboxPopupSource::StartDataRequest(
   }
 
   scoped_refptr<base::RefCountedStaticMemory> response(
-      content::GetContentClient()->GetDataResourceBytes(identifier));
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(identifier));
   callback.Run(response);
 }
 

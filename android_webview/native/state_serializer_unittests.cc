@@ -33,9 +33,9 @@ TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
 TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   // This is required for NavigationEntry::Create.
   content::ContentClient content_client;
-  content::ContentBrowserClient browser_client;
-  content_client.set_browser_for_testing(&browser_client);
   content::SetContentClient(&content_client);
+  content::ContentBrowserClient browser_client;
+  content::SetBrowserClientForTesting(&browser_client);
 
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());

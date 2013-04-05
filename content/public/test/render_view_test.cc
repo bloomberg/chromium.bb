@@ -126,8 +126,10 @@ void RenderViewTest::GoForward(const WebKit::WebHistoryItem& item) {
 void RenderViewTest::SetUp() {
   // Subclasses can set the ContentClient's renderer before calling
   // RenderViewTest::SetUp().
-  if (!GetContentClient()->renderer())
-    GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
+  ContentRendererClient* old_client =
+      SetRendererClientForTesting(&content_renderer_client_);
+  if (old_client)
+    SetRendererClientForTesting(old_client);
 
   // Subclasses can set render_thread_ with their own implementation before
   // calling RenderViewTest::SetUp().

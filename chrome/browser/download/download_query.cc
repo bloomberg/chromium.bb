@@ -15,6 +15,7 @@
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
@@ -22,6 +23,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
@@ -65,10 +68,10 @@ static bool MatchesQuery(const string16& query, const DownloadItem& item) {
 
   string16 url_formatted = url_raw;
   if (item.GetBrowserContext()) {
+    Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
     url_formatted = net::FormatUrl(
         item.GetOriginalUrl(),
-        content::GetContentClient()->browser()->GetAcceptLangs(
-            item.GetBrowserContext()));
+        profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
   }
   if (base::i18n::StringSearchIgnoringCaseAndAccents(
         query, url_formatted, NULL, NULL)) {

@@ -56,11 +56,8 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
       DevToolsAgentHost::GetOrCreateFor(
           inspected_contents->GetRenderViewHost()));
 
-  ShellContentBrowserClient* browser_client =
-      static_cast<ShellContentBrowserClient*>(
-          GetContentClient()->browser());
-  ShellDevToolsDelegate* delegate =
-      browser_client->shell_browser_main_parts()->devtools_delegate();
+  ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
+      shell_browser_main_parts()->devtools_delegate();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     shell->LoadURL(GetDevToolsPathAsURL());
   else

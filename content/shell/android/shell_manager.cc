@@ -50,8 +50,7 @@ static void Init(JNIEnv* env, jclass clazz, jobject obj) {
 
 void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
   ShellBrowserContext* browserContext =
-      static_cast<ShellContentBrowserClient*>(
-          GetContentClient()->browser())->browser_context();
+      ShellContentBrowserClient::Get()->browser_context();
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   Shell::CreateNewWindow(browserContext,
                          url,

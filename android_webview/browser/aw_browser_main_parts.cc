@@ -8,10 +8,10 @@
 #include "android_webview/browser/aw_devtools_delegate.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "base/android/build_info.h"
+#include "base/android/locale_utils.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/result_codes.h"
@@ -51,7 +51,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   browser_context_->InitializeBeforeThreadCreation();
 
   ui::ResourceBundle::InitSharedInstanceLocaleOnly(
-      content::GetContentClient()->browser()->GetApplicationLocale(), NULL);
+      base::android::GetDefaultLocale(), NULL);
 
   base::FilePath pak_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);

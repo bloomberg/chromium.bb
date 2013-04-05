@@ -115,16 +115,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
-  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const
-      OVERRIDE;
-
-  // TODO(mpcomplete): remove after we collect histogram data.
-  // http://crbug.com/100411
-  bool IsAdblockInstalled();
-  bool IsAdblockPlusInstalled();
-  bool IsAdblockWithWebRequestInstalled();
-  bool IsAdblockPlusWithWebRequestInstalled();
-  bool IsOtherExtensionWithWebRequestInstalled();
+  virtual bool AllowBrowserPlugin(
+      WebKit::WebPluginContainer* container) const OVERRIDE;
+  virtual void RegisterPPAPIInterfaceFactories(
+      webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
+  virtual bool IsRequestOSFileHandleAllowedForURL(
+      const GURL& url) const OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
@@ -137,17 +133,19 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // and start over.
   void OnPurgeMemory();
 
-  virtual void RegisterPPAPIInterfaceFactories(
-      webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
-
-  WebKit::WebPlugin* CreatePlugin(
+  static WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 
-  virtual bool IsRequestOSFileHandleAllowedForURL(
-      const GURL& url) const OVERRIDE;
+  // TODO(mpcomplete): remove after we collect histogram data.
+  // http://crbug.com/100411
+  static bool IsAdblockInstalled();
+  static bool IsAdblockPlusInstalled();
+  static bool IsAdblockWithWebRequestInstalled();
+  static bool IsAdblockPlusWithWebRequestInstalled();
+  static bool IsOtherExtensionWithWebRequestInstalled();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);

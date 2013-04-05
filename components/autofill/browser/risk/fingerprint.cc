@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/risk/proto/fingerprint.pb.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -189,6 +188,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const std::string& accept_languages,
       const base::Time& install_time,
       DialogType dialog_type,
+      const std::string& app_locale,
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
@@ -227,6 +227,9 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   std::vector<webkit::WebPluginInfo> plugins_;
   bool has_loaded_plugins_;
 
+  // The current application locale.
+  std::string app_locale_;
+
   // The callback that will be called once all the data is available.
   base::Callback<void(scoped_ptr<Fingerprint>)> callback_;
 
@@ -243,6 +246,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const std::string& accept_languages,
     const base::Time& install_time,
     DialogType dialog_type,
+    const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       gaia_id_(gaia_id),
@@ -318,10 +322,9 @@ void FingerprintDataLoader::FillFingerprint() {
   machine->set_browser_install_time_hours(
       (install_time_ - base::Time::UnixEpoch()).InHours());
   machine->set_utc_offset_ms(GetTimezoneOffset().InMilliseconds());
-  machine->set_browser_language(
-      content::GetContentClient()->browser()->GetApplicationLocale());
+  machine->set_browser_language(app_locale_);
   machine->set_charset(charset_);
-  machine->set_user_agent(content::GetContentClient()->GetUserAgent());
+  machine->set_user_agent(content::GetUserAgent(GURL()));
   machine->set_ram(base::SysInfo::AmountOfPhysicalMemory());
   machine->set_browser_build(version_);
   machine->set_browser_feature(DialogTypeToBrowserFeature(dialog_type_));
@@ -371,6 +374,7 @@ void GetFingerprint(
     const std::string& accept_languages,
     const base::Time& install_time,
     DialogType dialog_type,
+    const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   gfx::Rect content_bounds;
   web_contents.GetView()->GetContainerBounds(&content_bounds);
@@ -383,7 +387,7 @@ void GetFingerprint(
 
   internal::GetFingerprintInternal(
       gaia_id, window_bounds, content_bounds, screen_info, version, charset,
-      accept_languages, install_time, dialog_type, callback);
+      accept_languages, install_time, dialog_type, app_locale, callback);
 }
 
 namespace internal {
@@ -398,12 +402,13 @@ void GetFingerprintInternal(
     const std::string& accept_languages,
     const base::Time& install_time,
     DialogType dialog_type,
+    const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
   new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
                             version, charset, accept_languages, install_time,
-                            dialog_type, callback);
+                            dialog_type, app_locale, callback);
 }
 
 }  // namespace internal

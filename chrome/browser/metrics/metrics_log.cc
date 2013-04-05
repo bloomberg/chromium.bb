@@ -41,7 +41,6 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/gpu_info.h"
@@ -803,7 +802,7 @@ void MetricsLog::RecordEnvironmentProto(
   system_profile->set_uma_enabled_date(enabled_date);
 
   system_profile->set_application_locale(
-      content::GetContentClient()->browser()->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale());
 
   SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
