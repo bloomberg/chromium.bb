@@ -1635,8 +1635,6 @@
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(cairo|ca|cf|cg|curl|efl|freetype|gstreamer|gtk|linux|mac|opengl|openvg|opentype|pango|posix|qt|soup|svg|texmap|iphone|win|wince|wx)/'],
         ['exclude', '(?<!Chromium)(Cairo|CF|CG|Curl|Gtk|JSC|Linux|Mac|OpenType|POSIX|Posix|Qt|Safari|Soup|Win|WinCE|Wx)\\.(cpp|mm?)$'],
-
-        ['exclude', 'AllInOne\\.cpp$'],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -1649,9 +1647,6 @@
       ],
       'sources': [
         '<@(webcore_html_files)',
-      ],
-      'sources/': [
-        ['exclude', 'AllInOne\\.cpp$'],
       ],
       'conditions': [
         ['OS!="android"', {
@@ -1669,9 +1664,6 @@
       ],
       'sources': [
         '<@(webcore_svg_files)',
-      ],
-      'sources/': [
-        ['exclude', 'AllInOne\\.cpp$'],
       ],
     },
     {
@@ -2015,7 +2007,6 @@
         ['exclude', '(?<!Chromium)(Cairo|CF|CG|Curl|Gtk|JSC|Linux|Mac|OpenType|POSIX|Posix|Qt|Safari|Soup|Win|WinCE|Wx)\\.(cpp|mm?)$'],
         # Previous rule excludes things like ChromiumFooWin, include those.
         ['include', 'rendering/.*Chromium.*\\.(cpp|mm?)$'],
-        ['exclude', 'AllInOne\\.cpp$'],
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
@@ -2115,8 +2106,6 @@
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(atk|cairo|ca|cf|cg|curl|efl|freetype|gstreamer|gtk|linux|mac|opengl|openvg|opentype|pango|posix|qt|soup|svg|texmap|iphone|win|wince|wx)/'],
         ['exclude', '(?<!Chromium)(Cairo|CF|CG|Curl|Gtk|JSC|Linux|Mac|OpenType|POSIX|Posix|Qt|Safari|Soup|Win|WinCE|Wx)\\.(cpp|mm?)$'],
-
-        ['exclude', 'AllInOne\\.cpp$'],
 
         ['exclude', 'Modules/filesystem/LocalFileSystem\\.cpp$'],
         ['exclude', 'Modules/indexeddb/IDBFactoryBackendInterface\\.cpp$'],
