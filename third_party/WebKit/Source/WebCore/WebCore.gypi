@@ -4274,8 +4274,6 @@
             'platform/network/chromium/SocketStreamHandle.cpp',
             'platform/network/chromium/SocketStreamHandle.h',
             'platform/network/chromium/SocketStreamHandleInternal.h',
-            'platform/posix/FileSystemPOSIX.cpp',
-            'platform/posix/SharedBufferPOSIX.cpp',
             'platform/sql/SQLValue.cpp',
             'platform/sql/SQLiteAuthorizer.cpp',
             'platform/sql/SQLiteDatabase.cpp',

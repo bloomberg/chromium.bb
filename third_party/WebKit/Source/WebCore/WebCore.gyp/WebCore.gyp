@@ -1632,8 +1632,8 @@
       ],
       'sources/': [
         # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(ca|cf|cg|gtk|linux|mac|opentype|posix|qt|svg|iphone|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Gtk|Linux|Mac|OpenType|POSIX|Posix|Win)\\.(cpp|mm?)$'],
+        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
+        ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -1687,8 +1687,8 @@
         ['include', 'platform/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(ca|cf|cg|gtk|harfbuzz|linux|mac|opentype|posix|qt|svg|iphone|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Gtk|Linux|Mac|OpenType|POSIX|Posix|Win)\\.(cpp|mm?)$'],
+        ['exclude', '(cf|cg|harfbuzz|mac|opentype|svg|win)/'],
+        ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
 
         ['exclude', 'platform/LinkHash\\.cpp$'],
         ['exclude', 'platform/MIMETypeRegistry\\.cpp$'],
@@ -2001,8 +2001,8 @@
         ['include', 'rendering/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(ca|cf|cg|gtk|linux|mac|opentype|posix|qt|svg|iphone|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Gtk|Linux|Mac|OpenType|POSIX|Posix|Win)\\.(cpp|mm?)$'],
+        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
+        ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
         # Previous rule excludes things like ChromiumFooWin, include those.
         ['include', 'rendering/.*Chromium.*\\.(cpp|mm?)$'],
       ],
@@ -2102,8 +2102,8 @@
         ['include', 'bindings/v8/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(atk|ca|cf|cg|gtk|linux|mac|opentype|posix|qt|svg|iphone|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Gtk|Linux|Mac|OpenType|POSIX|Posix|Win)\\.(cpp|mm?)$'],
+        ['exclude', '(atk|cf|cg|mac|opentype|svg|win)/'],
+        ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
         ['exclude', 'Modules/filesystem/LocalFileSystem\\.cpp$'],
         ['exclude', 'Modules/indexeddb/IDBFactoryBackendInterface\\.cpp$'],
         ['exclude', 'Modules/webdatabase/DatabaseManagerClient\\.h$'],
