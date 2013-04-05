@@ -783,16 +783,22 @@ bool OmniboxViewViews::HandlesCommand(int command_id) const {
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDS_APP_PASTE:
+      OnBeforePossibleChange();
       OnPaste();
+      OnAfterPossibleChange();
       break;
     case IDS_PASTE_AND_GO:
+      // This method call is not wrapped by OnBeforePossibleChange() and
+      // OnAfterPossibleChange() to avoid opening the omnibox popup.
       model()->PasteAndGo(GetClipboardText());
       break;
     case IDC_COPY_URL:
       CopyURL();
       break;
     default:
+      OnBeforePossibleChange();
       command_updater()->ExecuteCommand(command_id);
+      OnAfterPossibleChange();
       break;
   }
 }

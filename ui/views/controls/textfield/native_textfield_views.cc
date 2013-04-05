@@ -756,37 +756,46 @@ void NativeTextfieldViews::ExecuteCommand(int command_id, int event_flags) {
   if (!IsCommandIdEnabled(command_id))
     return;
 
-  bool text_changed = false;
-  OnBeforeUserAction();
   TextfieldController* controller = textfield_->GetController();
   if (controller && controller->HandlesCommand(command_id)) {
     controller->ExecuteCommand(command_id, 0);
   } else {
+    bool text_changed = false;
     switch (command_id) {
       case IDS_APP_CUT:
+        OnBeforeUserAction();
         text_changed = Cut();
+        UpdateAfterChange(text_changed, text_changed);
+        OnAfterUserAction();
         break;
       case IDS_APP_COPY:
+        OnBeforeUserAction();
         Copy();
+        OnAfterUserAction();
         break;
       case IDS_APP_PASTE:
+        OnBeforeUserAction();
         text_changed = Paste();
+        UpdateAfterChange(text_changed, text_changed);
+        OnAfterUserAction();
         break;
       case IDS_APP_DELETE:
+        OnBeforeUserAction();
         text_changed = model_->Delete();
+        UpdateAfterChange(text_changed, text_changed);
+        OnAfterUserAction();
         break;
       case IDS_APP_SELECT_ALL:
+        OnBeforeUserAction();
         SelectAll(false);
+        UpdateAfterChange(false, true);
+        OnAfterUserAction();
         break;
       default:
         controller->ExecuteCommand(command_id, 0);
         break;
     }
   }
-
-  // The cursor must have changed if text changed during cut/paste/delete.
-  UpdateAfterChange(text_changed, text_changed);
-  OnAfterUserAction();
 }
 
 void NativeTextfieldViews::SetColor(SkColor value) {
