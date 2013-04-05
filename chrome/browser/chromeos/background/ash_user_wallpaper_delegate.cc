@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -60,9 +61,9 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     bool is_registered = WizardController::IsDeviceRegistered();
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     bool disable_boot_animation = command_line->
-        HasSwitch(switches::kDisableBootAnimation);
+        HasSwitch(::switches::kDisableBootAnimation);
     bool disable_oobe_animation = command_line->
-        HasSwitch(switches::kDisableOobeAnimation);
+        HasSwitch(::switches::kDisableOobeAnimation);
     if ((!is_registered && disable_oobe_animation) ||
         (is_registered && disable_boot_animation))
       return false;

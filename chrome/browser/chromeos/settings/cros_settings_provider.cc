@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 

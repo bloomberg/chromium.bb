@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

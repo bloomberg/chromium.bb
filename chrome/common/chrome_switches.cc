@@ -1547,13 +1547,6 @@ const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 // default, which needs additional UI work.
 const char kEnableWebTrustCerts[]           = "enable-web-trust-certs";
 
-// Passed to Chrome on first boot. Not passed on restart after sign out.
-const char kFirstBoot[]                     = "first-boot";
-
-// Usually in browser tests the usual login manager bringup is skipped so that
-// tests can change how it's brought up. This flag disables that.
-const char kForceLoginManagerInTests[]      = "force-login-manager-in-tests";
-
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.
 const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
@@ -1564,28 +1557,6 @@ const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 
-// Enables Chrome-as-a-login-manager behavior.
-const char kLoginManager[]                  = "login-manager";
-
-// Allows to override the first login screen. The value should be the name of
-// the first login screen to show (see
-// chrome/browser/chromeos/login/login_wizard_view.cc for actual names).
-// Ignored if kLoginManager is not specified. TODO(avayvod): Remove when the
-// switch is no longer needed for testing.
-const char kLoginScreen[]                   = "login-screen";
-
-// Controls the initial login screen size. Pass width,height.
-const char kLoginScreenSize[]               = "login-screen-size";
-
-// Specifies the profile to use once a chromeos user is logged in.
-const char kLoginProfile[]                  = "login-profile";
-
-// Specifies the user which is already logged in.
-const char kLoginUser[]                     = "login-user";
-
-// Specifies a password to be used to login (along with login-user).
-const char kLoginPassword[]                 = "login-password";
-
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
 
@@ -1593,10 +1564,6 @@ const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
 // closes inactive tabs to free memory and to attempt to avoid the kernel's
 // out-of-memory process killer.
 const char kNoDiscardTabs[]                 = "no-discard-tabs";
-
-// Indicates that the browser is in "browse without sign-in" (Guest session)
-// mode. Should completely disable extensions, sync and bookmarks.
-const char kGuestSession[]                  = "bwsi";
 
 // Enables overriding the path for the default echo component extension.
 // Useful for testing.

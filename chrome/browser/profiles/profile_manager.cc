@@ -68,6 +68,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -314,8 +315,9 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
   if (logged_in_) {
     base::FilePath profile_dir;
     // If the user has logged in, pick up the new profile.
-    if (command_line.HasSwitch(switches::kLoginProfile)) {
-      profile_dir = command_line.GetSwitchValuePath(switches::kLoginProfile);
+    if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
+      profile_dir = command_line.GetSwitchValuePath(
+          chromeos::switches::kLoginProfile);
     } else {
       // We should never be logged in with no profile dir.
       NOTREACHED();
@@ -993,7 +995,7 @@ bool ProfileManager::ShouldGoOffTheRecord() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!logged_in_ &&
       (!command_line.HasSwitch(switches::kTestType) ||
-       command_line.HasSwitch(switches::kLoginProfile))) {
+       command_line.HasSwitch(chromeos::switches::kLoginProfile))) {
     go_off_the_record = true;
   }
 #endif

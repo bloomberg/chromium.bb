@@ -60,6 +60,10 @@
 #include "ui/webui/jstemplate_builder.h"
 #include "ui/webui/web_ui_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "chrome/browser/platform_util.h"
 #endif
@@ -279,7 +283,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   // TODO(altimofeev): consider implementation without 'if def' usage.
 #if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kGuestSession)) {
     new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
     new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
     new_tab_link = kLearnMoreGuestSessionUrl;

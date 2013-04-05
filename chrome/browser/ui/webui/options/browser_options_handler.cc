@@ -89,6 +89,7 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -101,6 +102,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1418,7 +1420,8 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
 void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
   // Don't show the reporting setting if we are in the guest mode.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kGuestSession)) {
     base::FundamentalValue visible(false);
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.setMetricsReportingSettingVisibility", visible);

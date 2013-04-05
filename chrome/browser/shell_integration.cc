@@ -18,6 +18,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::BrowserThread;
 
 ShellIntegration::DefaultWebClientSetPermission
@@ -81,9 +85,10 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   }
 
 #if defined(OS_CHROMEOS)
-  base::FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
+  base::FilePath profile = cmd_line.GetSwitchValuePath(
+      chromeos::switches::kLoginProfile);
   if (!profile.empty())
-    new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
+    new_cmd_line.AppendSwitchPath(chromeos::switches::kLoginProfile, profile);
 #else
   if (!profile_path.empty() && !extension_app_id.empty())
     new_cmd_line.AppendSwitchPath(switches::kProfileDirectory,

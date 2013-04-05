@@ -21,6 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 Profile::Profile()
@@ -129,8 +130,8 @@ std::string Profile::GetDebugName() {
 
 bool Profile::IsGuestSession() const {
 #if defined(OS_CHROMEOS)
-  static bool is_guest_session =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
+  static bool is_guest_session = CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kGuestSession);
   return is_guest_session;
 #else
   return false;

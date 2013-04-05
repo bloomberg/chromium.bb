@@ -411,6 +411,7 @@ extern const char kOpenAsh[];
 
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
+// See also src/chromeos/chromeos_switches.h
 extern const char kAshWebUIInit[];
 extern const char kDisableAppMode[];
 extern const char kDisableBootAnimation[];
@@ -430,22 +431,11 @@ extern const char kEnableKioskMode[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];
 extern const char kEnableWebTrustCerts[];
-extern const char kFirstBoot[];
-extern const char kForceLoginManagerInTests[];
 extern const char kHasChromeOSKeyboard[];
 extern const char kHasChromeOSDiamondKey[];
 extern const char kKioskModeScreensaverPath[];
-extern const char kLoginManager[];
-// TODO(avayvod): Remove this flag when it's unnecessary for testing
-// purposes.
-extern const char kLoginScreen[];
-extern const char kLoginScreenSize[];
-extern const char kLoginProfile[];
-extern const char kLoginUser[];
-extern const char kLoginPassword[];
 extern const char kNaturalScrollDefault[];
 extern const char kNoDiscardTabs[];
-extern const char kGuestSession[];
 extern const char kEchoExtensionPath[];
 extern const char kStubCrosSettings[];
 extern const char kAuthExtensionPath[];
