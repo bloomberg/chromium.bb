@@ -17,6 +17,10 @@ race:sqlite3StatusSet
 race:pcache1EnforceMaxPage
 race:pcache1AllocPage
 
+# http://crbug.com/102327.
+# Test-only race, won't fix.
+race:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
+
 # http://crbug.com/115540
 race:base::Thread::ThreadMain
 race:content::BrowserThread::GetCurrentThreadIdentifier
@@ -46,6 +50,7 @@ race:thread_manager
 
 # http://crbug.com/223352
 race:uprv_malloc_46
+race:uprv_realloc_46
 
 # http://crbug.com/223955
 race:PassRefPtr
