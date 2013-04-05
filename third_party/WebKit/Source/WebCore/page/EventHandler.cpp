@@ -669,7 +669,6 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     m_mouseDownMayStartSelect = canMouseDownStartSelect(event.targetNode()) && !event.scrollbar();
     
 #if ENABLE(DRAG_SUPPORT)
-    // Careful that the drag starting logic stays in sync with eventMayStartDrag()
     m_mouseDownMayStartDrag = singleClick;
 #endif
 
@@ -764,34 +763,6 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     }
     updateSelectionForMouseDrag(event.hitTestResult());
     return true;
-}
-    
-bool EventHandler::eventMayStartDrag(const PlatformMouseEvent& event) const
-{
-    // This is a pre-flight check of whether the event might lead to a drag being started.  Be careful
-    // that its logic needs to stay in sync with handleMouseMoveEvent() and the way we setMouseDownMayStartDrag
-    // in handleMousePressEvent
-    
-    if (!m_frame->contentRenderer() || !m_frame->contentRenderer()->hasLayer())
-        return false;
-
-    if (event.button() != LeftButton || event.clickCount() != 1)
-        return false;
-    
-    FrameView* view = m_frame->view();
-    if (!view)
-        return false;
-
-    Page* page = m_frame->page();
-    if (!page)
-        return false;
-
-    updateDragSourceActionsAllowed();
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
-    HitTestResult result(view->windowToContents(event.position()));
-    m_frame->contentRenderer()->hitTest(request, result);
-    DragState state;
-    return result.innerNode() && page->dragController()->draggableNode(m_frame, result.innerNode(), result.roundedPointInInnerNodeFrame(), state);
 }
 
 void EventHandler::updateSelectionForMouseDrag()
@@ -3439,9 +3410,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     
     if (eventLoopHandleMouseDragged(event))
         return true;
-    
-    // Careful that the drag starting logic stays in sync with eventMayStartDrag()
-    
+
     if (m_mouseDownMayStartDrag && !dragState().m_dragSrc) {
         dragState().m_eventDispatchPolicy = (updateDragSourceActionsAllowed() & DragSourceActionDHTML) ? DragState::DispatchEvents: DragState::DoNotDispatchEvents;
 

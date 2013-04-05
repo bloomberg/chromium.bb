@@ -220,8 +220,6 @@ public:
     void defaultTextInputEventHandler(TextEvent*);
 
 #if ENABLE(DRAG_SUPPORT)
-    bool eventMayStartDrag(const PlatformMouseEvent&) const;
-    
     void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
 #endif
 
