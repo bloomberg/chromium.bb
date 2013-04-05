@@ -357,9 +357,6 @@ static void initializeSupportedNonImageMimeTypes()
 #if ENABLE(SVG)
         "image/svg+xml",
 #endif
-#if ENABLE(FTPDIR)
-        "application/x-ftp-directory",
-#endif
         "multipart/x-mixed-replace"
         // Note: ADDING a new type here will probably render it as HTML. This can
         // result in cross-site scripting.

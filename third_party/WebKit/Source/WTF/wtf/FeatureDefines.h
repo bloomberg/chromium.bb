@@ -190,10 +190,6 @@
 /* PLATFORM(WIN) is always enabled when building for the WinCE port. */
 #if PLATFORM(WIN) && OS(WINCE)
 
-#if !defined(ENABLE_FTPDIR)
-#define ENABLE_FTPDIR 0
-#endif
-
 #if !defined(ENABLE_INSPECTOR)
 #define ENABLE_INSPECTOR 0
 #endif
@@ -407,10 +403,6 @@
 
 #if !defined(ENABLE_FONT_LOAD_EVENTS)
 #define ENABLE_FONT_LOAD_EVENTS 0
-#endif
-
-#if !defined(ENABLE_FTPDIR)
-#define ENABLE_FTPDIR 1
 #endif
 
 #if !defined(ENABLE_GAMEPAD)
