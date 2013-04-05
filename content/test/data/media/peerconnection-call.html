@@ -49,9 +49,8 @@
     createConnections(null);
     gTestWithoutMsidAndBundle = true;
     navigator.webkitGetUserMedia({audio:true, video:true},
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-    // TODO(phoglund): this should work but it doesn't! http://crbug.com/177443.
-    // waitForVideo('remote-view-1');
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);    
+    waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
 
@@ -75,10 +74,6 @@
 
   // Test call with a data channel and later add audio and video.
   function callWithDataAndLaterAddMedia() {
-    // TODO(perkj): This is needed for now until
-    // https://code.google.com/p/webrtc/issues/detail?id=1203 is fixed.
-    gTestWithoutMsidAndBundle = true;
-
     createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
     gFirstConnection.createOffer(onOfferCreated);
@@ -243,10 +238,13 @@
   function onAnswerCreated(answer) {
     gSecondConnection.setLocalDescription(answer);
     expectEquals('stable', gSecondConnection.signalingState);
-    handleAnswer(answer.sdp);
+    receiveAnswer(answer.sdp);
   }
 
-  function handleAnswer(answerSdp) {
+  function receiveAnswer(answerSdp) {
+    if (gTestWithoutMsidAndBundle) {
+      answerSdp = removeMsidAndBundle(answerSdp);
+    }
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
     gFirstConnection.setRemoteDescription(parsedAnswer);
