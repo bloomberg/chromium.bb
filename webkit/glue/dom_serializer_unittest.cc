@@ -341,7 +341,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
 // Serialize XML document which has all 5 built-in entities. After
 // finishing serialization, the serialized contents should be same
 // with original XML document.
-TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
+// Disabled because of crbug.com/227030
+TEST_F(DomSerializerTests, DISABLED_SerializeXMLDocWithBuiltInEntities) {
   base::FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
   page_file_path = page_file_path.AppendASCII("note.xml");
