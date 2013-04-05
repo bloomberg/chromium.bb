@@ -182,13 +182,6 @@ static Attr* findAttrNodeInList(AttrNodeList* attrNodeList, const QualifiedName&
     return 0;
 }
 
-// Need a template since ElementShadow is not a Node, but has the style recalc methods.
-template<class T>
-static inline bool shouldRecalcStyle(Node::StyleChange change, const T* node)
-{
-    return change >= Node::Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
-}
-
 PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
     return adoptRef(new Element(tagName, document, CreateElement));
@@ -1274,7 +1267,7 @@ void Element::attach()
     if (parentElement() && parentElement()->isInCanvasSubtree())
         setIsInCanvasSubtree(true);
 
-    updatePseudoElement(BEFORE, Force);
+    updatePseudoElement(BEFORE);
 
     // When a shadow root exists, it does the work of attaching the children.
     if (ElementShadow* shadow = this->shadow()) {
@@ -1285,7 +1278,7 @@ void Element::attach()
 
     ContainerNode::attach();
 
-    updatePseudoElement(AFTER, Force);
+    updatePseudoElement(AFTER);
 
     if (hasRareData()) {   
         ElementRareData* data = elementRareData();
@@ -1433,14 +1426,13 @@ void Element::recalcStyle(StyleChange change)
 
     // FIXME: This does not care about sibling combinators. Will be necessary in XBL2 world.
     if (ElementShadow* shadow = this->shadow()) {
-        if (shouldRecalcStyle(change, shadow)) {
+        if (change >= Inherit || shadow->childNeedsStyleRecalc() || shadow->needsStyleRecalc()) {
             parentPusher.push();
             shadow->recalcStyle(change);
         }
     }
 
-    if (shouldRecalcStyle(change, this))
-        updatePseudoElement(BEFORE, change);
+    updatePseudoElement(BEFORE, change);
 
     // FIXME: This check is good enough for :hover + foo, but it is not good enough for :hover + foo + bar.
     // For now we will just worry about the common case, since it's a lot trickier to get the second case right
@@ -1458,7 +1450,7 @@ void Element::recalcStyle(StyleChange change)
         bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == FullStyleChange;
         if ((forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling))
             element->setNeedsStyleRecalc();
-        if (shouldRecalcStyle(change, element)) {
+        if (change >= Inherit || element->childNeedsStyleRecalc() || element->needsStyleRecalc()) {
             parentPusher.push();
             element->recalcStyle(change);
         }
@@ -1466,8 +1458,7 @@ void Element::recalcStyle(StyleChange change)
         forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
 
-    if (shouldRecalcStyle(change, this))
-        updatePseudoElement(AFTER, change);
+    updatePseudoElement(AFTER, change);
 
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
@@ -2256,11 +2247,11 @@ void Element::normalizeAttributes()
 
 void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
 {
-    PseudoElement* element = pseudoElement(BEFORE);
-    if (element && (needsStyleRecalc() || shouldRecalcStyle(change, element))) {
+    PseudoElement* existing = pseudoElement(pseudoId);
+    if (existing) {
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.
-        element->recalcStyle(needsStyleRecalc() ? Force : change);
+        existing->recalcStyle(needsStyleRecalc() ? Force : change);
 
         // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
         // is false, otherwise we could continously create and destroy PseudoElements
@@ -2268,26 +2259,27 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
             setPseudoElement(pseudoId, 0);
-    } else if (change >= Inherit || needsStyleRecalc())
-        createPseudoElementIfNeeded(pseudoId);
+    } else if (RefPtr<PseudoElement> element = createPseudoElementIfNeeded(pseudoId)) {
+        element->attach();
+        setPseudoElement(pseudoId, element.release());
+    }
 }
 
-void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
+PassRefPtr<PseudoElement> Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
-    ASSERT(!isPseudoElement());
-
     if (!document()->styleSheetCollection()->usesBeforeAfterRules())
-        return;
+        return 0;
 
-    if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
-        return;
+    if (!renderer() || !renderer()->canHaveGeneratedChildren())
+        return 0;
 
-    if (!renderer()->canHaveGeneratedChildren())
-        return;
+    if (isPseudoElement())
+        return 0;
 
-    RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
-    element->attach();
-    setPseudoElement(pseudoId, element.release());
+    if (!pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
+        return 0;
+
+    return PseudoElement::create(this, pseudoId);
 }
 
 bool Element::hasPseudoElements() const
