@@ -45,12 +45,7 @@
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 
-#if USE(PLATFORM_STRATEGIES)
-#include "DatabaseStrategy.h"
-#include "PlatformStrategies.h"
-#else
 #include "DatabaseServer.h"
-#endif
 
 namespace WebCore {
 
@@ -73,11 +68,7 @@ DatabaseManager::DatabaseManager()
     , m_databaseContextInstanceCount(0)
 #endif
 {
-#if USE(PLATFORM_STRATEGIES)
-    m_server = platformStrategies()->databaseStrategy()->getDatabaseServer();
-#else
     m_server = new DatabaseServer;
-#endif
     ASSERT(m_server); // We should always have a server to work with.
 }
 

@@ -50,20 +50,11 @@
 #include "Settings.h"
 #include <wtf/text/CString.h>
 
-#if USE(PLATFORM_STRATEGIES)
-#include "PlatformStrategies.h"
-#include "VisitedLinkStrategy.h"
-#endif
-
 namespace WebCore {
 
 static inline void addVisitedLink(Page* page, const KURL& url)
 {
-#if USE(PLATFORM_STRATEGIES)
-    platformStrategies()->visitedLinkStrategy()->addVisitedLink(page, visitedLinkHash(url.string()));
-#else
     page->group().addVisitedLink(url);
-#endif
 }
 
 HistoryController::HistoryController(Frame* frame)

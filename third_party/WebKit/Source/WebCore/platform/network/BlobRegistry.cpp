@@ -29,25 +29,9 @@
 #if ENABLE(BLOB)
 
 #include "BlobRegistryImpl.h"
-#include "LoaderStrategy.h"
-#include "PlatformStrategies.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {
-
-#if !PLATFORM(CHROMIUM)
-BlobRegistry& blobRegistry()
-{
-    ASSERT(isMainThread());
-
-#if USE(PLATFORM_STRATEGIES)
-    static BlobRegistry& instance = *platformStrategies()->loaderStrategy()->createBlobRegistry();
-#else
-    DEFINE_STATIC_LOCAL(BlobRegistryImpl, instance, ());
-#endif
-    return instance;
-}
-#endif
 
 BlobRegistry::~BlobRegistry()
 {
