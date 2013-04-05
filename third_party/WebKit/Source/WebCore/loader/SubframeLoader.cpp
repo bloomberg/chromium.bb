@@ -160,61 +160,6 @@ bool SubframeLoader::requestPlugin(HTMLPlugInImageElement* ownerElement, const K
     return loadPlugin(ownerElement, url, mimeType, paramNames, paramValues, useFallback);
 }
 
-static String findPluginMIMETypeFromURL(Page* page, const String& url)
-{
-    if (!url)
-        return String();
-
-    size_t dotIndex = url.reverseFind('.');
-    if (dotIndex == notFound)
-        return String();
-
-    String extension = url.substring(dotIndex + 1);
-
-    PluginData* pluginData = page->pluginData();
-    if (!pluginData)
-        return String();
-
-    for (size_t i = 0; i < pluginData->mimes().size(); ++i) {
-        const MimeClassInfo& mimeClassInfo = pluginData->mimes()[i];
-        for (size_t j = 0; j < mimeClassInfo.extensions.size(); ++j) {
-            if (equalIgnoringCase(extension, mimeClassInfo.extensions[j]))
-                return mimeClassInfo.type;
-        }
-    }
-
-    return String();
-}
-
-static void logPluginRequest(Page* page, const String& mimeType, const String& url, bool success)
-{
-    if (!page || !page->settings()->diagnosticLoggingEnabled())
-        return;
-
-    String newMIMEType = mimeType;
-    if (!newMIMEType) {
-        // Try to figure out the MIME type from the URL extension.
-        newMIMEType = findPluginMIMETypeFromURL(page, url);
-        if (!newMIMEType)
-            return;
-    }
-
-    PluginData* pluginData = page->pluginData();
-    String pluginFile = pluginData ? pluginData->pluginFileForMimeType(newMIMEType) : String();
-    String description = !pluginFile ? newMIMEType : pluginFile;
-
-    ChromeClient* client = page->chrome()->client();
-    client->logDiagnosticMessage(success ? DiagnosticLoggingKeys::pluginLoadedKey() : DiagnosticLoggingKeys::pluginLoadingFailedKey(), description, DiagnosticLoggingKeys::noopKey());
-
-    if (!page->hasSeenAnyPlugin())
-        client->logDiagnosticMessage(DiagnosticLoggingKeys::pageContainsAtLeastOnePluginKey(), emptyString(), DiagnosticLoggingKeys::noopKey());
-    
-    if (!page->hasSeenPlugin(description))
-        client->logDiagnosticMessage(DiagnosticLoggingKeys::pageContainsPluginKey(), description, DiagnosticLoggingKeys::noopKey());
-
-    page->sawPlugin(description);
-}
-
 bool SubframeLoader::requestObject(HTMLPlugInImageElement* ownerElement, const String& url, const AtomicString& frameName, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues)
 {
     if (url.isEmpty() && mimeType.isEmpty())
@@ -233,7 +178,6 @@ bool SubframeLoader::requestObject(HTMLPlugInImageElement* ownerElement, const S
     bool useFallback;
     if (shouldUsePlugin(completedURL, mimeType, ownerElement->shouldPreferPlugInsForImages(), renderer->hasFallbackContent(), useFallback)) {
         bool success = requestPlugin(ownerElement, completedURL, mimeType, paramNames, paramValues, useFallback);
-        logPluginRequest(document()->page(), mimeType, completedURL, success);
         return success;
     }
 
@@ -318,8 +262,6 @@ PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, H
     RefPtr<Widget> widget;
     if (allowPlugins(AboutToInstantiatePlugin))
         widget = m_frame->loader()->client()->createJavaAppletWidget(size, element, baseURL, paramNames, paramValues);
-
-    logPluginRequest(document()->page(), element->serviceType(), String(), widget);
 
     if (!widget) {
         RenderEmbeddedObject* renderer = element->renderEmbeddedObject();

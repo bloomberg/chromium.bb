@@ -1609,43 +1609,6 @@ void HTMLMediaElement::mediaPlayerNetworkStateChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-static void logMediaLoadRequest(Page* page, const String& mediaEngine, const String& errorMessage, bool succeeded)
-{
-    if (!page || !page->settings()->diagnosticLoggingEnabled())
-        return;
-
-    ChromeClient* client = page->chrome()->client();
-
-    if (!succeeded) {
-        client->logDiagnosticMessage(DiagnosticLoggingKeys::mediaLoadingFailedKey(), errorMessage, DiagnosticLoggingKeys::failKey());
-        return;
-    }
-
-    client->logDiagnosticMessage(DiagnosticLoggingKeys::mediaLoadedKey(), mediaEngine, DiagnosticLoggingKeys::noopKey());
-
-    if (!page->hasSeenAnyMediaEngine())
-        client->logDiagnosticMessage(DiagnosticLoggingKeys::pageContainsAtLeastOneMediaEngineKey(), emptyString(), DiagnosticLoggingKeys::noopKey());
-
-    if (!page->hasSeenMediaEngine(mediaEngine))
-        client->logDiagnosticMessage(DiagnosticLoggingKeys::pageContainsMediaEngineKey(), mediaEngine, DiagnosticLoggingKeys::noopKey());
-
-    page->sawMediaEngine(mediaEngine);
-}
-
-static String stringForNetworkState(MediaPlayer::NetworkState state)
-{
-    switch (state) {
-    case MediaPlayer::Empty: return ASCIILiteral("Empty");
-    case MediaPlayer::Idle: return ASCIILiteral("Idle");
-    case MediaPlayer::Loading: return ASCIILiteral("Loading");
-    case MediaPlayer::Loaded: return ASCIILiteral("Loaded");
-    case MediaPlayer::FormatError: return ASCIILiteral("FormatError");
-    case MediaPlayer::NetworkError: return ASCIILiteral("NetworkError");
-    case MediaPlayer::DecodeError: return ASCIILiteral("DecodeError");
-    default: return emptyString();
-    }
-}
-
 void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
 {
     stopPeriodicTimers();
@@ -1682,8 +1645,6 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
         mediaControls()->reset();
         mediaControls()->reportedError();
     }
-
-    logMediaLoadRequest(document()->page(), String(), stringForNetworkState(error), false);
 }
 
 void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
@@ -1812,8 +1773,6 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
             mediaControls()->loadedMetadata();
         if (renderer())
             renderer()->updateFromElement();
-
-        logMediaLoadRequest(document()->page(), m_player->engineDescription(), String(), true);
     }
 
     bool shouldUpdateDisplayState = false;
