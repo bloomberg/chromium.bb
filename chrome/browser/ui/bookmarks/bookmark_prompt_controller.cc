@@ -265,7 +265,7 @@ bool BookmarkPromptController::IsEnabled() {
 void BookmarkPromptController::ActiveTabChanged(WebContents* old_contents,
                                                 WebContents* new_contents,
                                                 int index,
-                                                bool user_gesture) {
+                                                int reason) {
   SetWebContents(new_contents);
 }
 

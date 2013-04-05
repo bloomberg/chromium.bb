@@ -264,7 +264,7 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
 void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
                                           WebContents* new_contents,
                                           int index,
-                                          bool user_gesture) {
+                                          int reason) {
   scoped_ptr<ListValue> args(new ListValue());
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
   args->Append(Value::CreateIntegerValue(tab_id));
@@ -278,8 +278,10 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
   // deprecated events take two arguments: tabId, {windowId}.
   Profile* profile =
       Profile::FromBrowserContext(new_contents->GetBrowserContext());
-  EventRouter::UserGestureState gesture = user_gesture ?
-      EventRouter::USER_GESTURE_ENABLED : EventRouter::USER_GESTURE_NOT_ENABLED;
+  EventRouter::UserGestureState gesture =
+      reason & CHANGE_REASON_USER_GESTURE
+      ? EventRouter::USER_GESTURE_ENABLED
+      : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile, events::kOnTabSelectionChanged,
                 scoped_ptr<ListValue>(args->DeepCopy()), gesture);
   DispatchEvent(profile, events::kOnTabActiveChanged,

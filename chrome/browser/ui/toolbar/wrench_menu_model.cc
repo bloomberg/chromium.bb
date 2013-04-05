@@ -432,7 +432,7 @@ bool WrenchMenuModel::GetAcceleratorForCommandId(
 void WrenchMenuModel::ActiveTabChanged(WebContents* old_contents,
                                        WebContents* new_contents,
                                        int index,
-                                       bool user_gesture) {
+                                       int reason) {
   // The user has switched between tabs and the new tab may have a different
   // zoom setting.
   UpdateZoomControls();

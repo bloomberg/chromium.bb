@@ -20,7 +20,7 @@
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
-                    userGesture:(bool)wasUserGesture;
+                         reason:(int)reason;
 @end
 
 @implementation BaseBubbleController
@@ -279,7 +279,7 @@
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
-                    userGesture:(bool)wasUserGesture {
+                         reason:(int)reason {
   // The user switched tabs; close.
   [self close];
 }

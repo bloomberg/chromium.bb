@@ -601,10 +601,11 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
       if (selection == currentContents) {
         // Must manually force a selection since the model won't send
         // selection messages in this scenario.
-        [self activateTabWithContents:currentContents
-                     previousContents:NULL
-                              atIndex:i
-                          userGesture:NO];
+        [self
+            activateTabWithContents:currentContents
+                   previousContents:NULL
+                            atIndex:i
+                             reason:TabStripModelObserver::CHANGE_REASON_NONE];
       }
     }
     // Don't lay out the tabs until after the controller has been fully
@@ -1339,7 +1340,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)modelIndex
-                    userGesture:(bool)wasUserGesture {
+                         reason:(int)reason {
   // Take closing tabs into account.
   NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 

@@ -58,14 +58,13 @@ void TabStripModelObserverBridge::TabDeactivated(WebContents* contents) {
 void TabStripModelObserverBridge::ActiveTabChanged(WebContents* old_contents,
                                                    WebContents* new_contents,
                                                    int index,
-                                                   bool user_gesture) {
-  if ([controller_ respondsToSelector:
-          @selector(activateTabWithContents:previousContents:atIndex:
-                    userGesture:)]) {
+                                                   int reason) {
+  if ([controller_ respondsToSelector:@selector(
+          activateTabWithContents:previousContents:atIndex:reason:)]) {
     [controller_ activateTabWithContents:new_contents
                         previousContents:old_contents
                                  atIndex:index
-                             userGesture:user_gesture];
+                                  reason:reason];
   }
 }
 

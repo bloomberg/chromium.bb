@@ -1195,7 +1195,7 @@ void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
 void BrowserWindowGtk::ActiveTabChanged(WebContents* old_contents,
                                         WebContents* new_contents,
                                         int index,
-                                        bool user_gesture) {
+                                        int reason) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
   if (old_contents && !old_contents->IsBeingDestroyed())
     old_contents->GetView()->StoreFocus();

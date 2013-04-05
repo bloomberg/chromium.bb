@@ -26,7 +26,7 @@ void TabStripModelObserver::TabDeactivated(WebContents* contents) {
 void TabStripModelObserver::ActiveTabChanged(WebContents* old_contents,
                                              WebContents* new_contents,
                                              int index,
-                                             bool user_gesture) {
+                                             int reason) {
 }
 
 void TabStripModelObserver::TabSelectionChanged(

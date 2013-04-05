@@ -231,7 +231,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           dst_contents(a_dst_contents),
           src_index(-1),
           dst_index(a_dst_index),
-          user_gesture(false),
+          change_reason(CHANGE_REASON_NONE),
           foreground(false),
           action(a_action) {
     }
@@ -240,7 +240,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     WebContents* dst_contents;
     int src_index;
     int dst_index;
-    bool user_gesture;
+    int change_reason;
     bool foreground;
     TabStripModelObserverAction action;
   };
@@ -260,7 +260,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
             s.dst_contents == state.dst_contents &&
             s.src_index == state.src_index &&
             s.dst_index == state.dst_index &&
-            s.user_gesture == state.user_gesture &&
+            s.change_reason == state.change_reason &&
             s.foreground == state.foreground &&
             s.action == state.action);
   }
@@ -277,10 +277,10 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   virtual void ActiveTabChanged(WebContents* old_contents,
                                 WebContents* new_contents,
                                 int index,
-                                bool user_gesture) OVERRIDE {
+                                int reason) OVERRIDE {
     State s(new_contents, index, ACTIVATE);
     s.src_contents = old_contents;
-    s.user_gesture = user_gesture;
+    s.change_reason = reason;
     states_.push_back(s);
   }
   virtual void TabSelectionChanged(
@@ -431,7 +431,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(0, s1));
     State s2(contents3, 2, MockTabStripModelObserver::ACTIVATE);
     s2.src_contents = contents2;
-    s2.user_gesture = true;
+    s2.change_reason = TabStripModelObserver::CHANGE_REASON_USER_GESTURE;
     EXPECT_TRUE(observer.StateEquals(1, s2));
     State s3(contents3, 2, MockTabStripModelObserver::SELECT);
     s3.src_contents = contents2;
@@ -455,7 +455,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(1, s2));
     State s3(contents2, 1, MockTabStripModelObserver::ACTIVATE);
     s3.src_contents = contents3;
-    s3.user_gesture = false;
+    s3.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(2, s3));
     State s4(contents2, 1, MockTabStripModelObserver::SELECT);
     s4.src_contents = NULL;
@@ -468,7 +468,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(5, s6));
     State s7(detached, 2, MockTabStripModelObserver::ACTIVATE);
     s7.src_contents = contents2;
-    s7.user_gesture = false;
+    s7.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(6, s7));
     State s8(detached, 2, MockTabStripModelObserver::SELECT);
     s8.src_contents = contents2;
@@ -493,7 +493,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(2, s3));
     State s4(contents2, 1, MockTabStripModelObserver::ACTIVATE);
     s4.src_contents = contents3;
-    s4.user_gesture = false;
+    s4.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(3, s4));
     State s5(contents2, 1, MockTabStripModelObserver::SELECT);
     s5.src_contents = NULL;
@@ -2023,6 +2023,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   // And the second for selected.
   state = State(new_contents, 0, MockTabStripModelObserver::ACTIVATE);
   state.src_contents = first_contents;
+  state.change_reason = TabStripModelObserver::CHANGE_REASON_REPLACED;
   EXPECT_TRUE(tabstrip_observer.StateEquals(1, state));
 
   // Now add another tab and replace it, making sure we don't get a selected
@@ -2335,7 +2336,7 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
   State s(contents2, 1, MockTabStripModelObserver::SELECT);
   s.src_contents = contents2;
   s.src_index = 1;
-  s.user_gesture = false;
+  s.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
   EXPECT_TRUE(observer.StateEquals(0, s));
   strip.RemoveObserver(&observer);
   strip.CloseAllTabs();

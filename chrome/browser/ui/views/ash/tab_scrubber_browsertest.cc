@@ -186,7 +186,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                bool user_gesture) OVERRIDE {
+                                int reason) OVERRIDE {
     activation_order_.push_back(index);
     if (index == target_index_)
       quit_closure_.Run();

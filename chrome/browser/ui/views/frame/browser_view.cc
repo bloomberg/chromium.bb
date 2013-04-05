@@ -1499,7 +1499,7 @@ void BrowserView::TabDeactivated(WebContents* contents) {
 void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
                                    content::WebContents* new_contents,
                                    int index,
-                                   bool user_gesture) {
+                                   int reason) {
   DCHECK(new_contents);
 
   // See if the Instant overlay is being activated (committed).

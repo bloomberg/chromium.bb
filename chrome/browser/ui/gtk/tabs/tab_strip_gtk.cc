@@ -1054,7 +1054,7 @@ void TabStripGtk::TabDetachedAt(WebContents* contents, int index) {
 void TabStripGtk::ActiveTabChanged(WebContents* old_contents,
                                    WebContents* new_contents,
                                    int index,
-                                   bool user_gesture) {
+                                   int reason) {
   TRACE_EVENT0("ui::gtk", "TabStripGtk::ActiveTabChanged");
   ReStack();
 }

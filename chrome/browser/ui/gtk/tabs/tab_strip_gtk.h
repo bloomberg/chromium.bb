@@ -119,7 +119,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                bool user_gesture) OVERRIDE;
+                                int reason) OVERRIDE;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
       const ui::ListSelectionModel& old_model) OVERRIDE;

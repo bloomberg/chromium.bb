@@ -159,9 +159,13 @@ WebContents* TabStripModel::ReplaceWebContentsAt(int index,
   // too. We do this as nearly all observers need to treat a replacement of the
   // selected contents as the selection changing.
   if (active_index() == index) {
-    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      ActiveTabChanged(old_contents, new_contents,
-                                       active_index(), false));
+    FOR_EACH_OBSERVER(
+        TabStripModelObserver,
+        observers_,
+        ActiveTabChanged(old_contents,
+                         new_contents,
+                         active_index(),
+                         TabStripModelObserver::CHANGE_REASON_REPLACED));
   }
   return old_contents;
 }
@@ -1103,10 +1107,14 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                                              NotifyTypes notify_types) {
   WebContents* new_contents = GetWebContentsAtImpl(active_index());
   if (old_contents != new_contents) {
+    int reason = notify_types == NOTIFY_USER_GESTURE
+                 ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
+                 : TabStripModelObserver::CHANGE_REASON_NONE;
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      ActiveTabChanged(old_contents, new_contents,
-                                       active_index(),
-                                       notify_types == NOTIFY_USER_GESTURE));
+        ActiveTabChanged(old_contents,
+                         new_contents,
+                         active_index(),
+                         reason));
     // Activating a discarded tab reloads it, so it is no longer discarded.
     contents_data_[active_index()]->discarded = false;
   }

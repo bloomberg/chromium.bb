@@ -64,7 +64,7 @@ class BookmarkPromptController : public chrome::BrowserListObserver,
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                bool user_gesture) OVERRIDE;
+                                int reason) OVERRIDE;
 
   void AddedBookmarkInternal(Browser* browser, const GURL& url);
   void ClosingBookmarkPromptInternal();

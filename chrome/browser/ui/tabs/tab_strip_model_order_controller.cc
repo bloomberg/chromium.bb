@@ -96,7 +96,7 @@ void TabStripModelOrderController::ActiveTabChanged(
     content::WebContents* old_contents,
     content::WebContents* new_contents,
     int index,
-    bool user_gesture) {
+    int reason) {
   content::WebContents* old_opener = NULL;
   if (old_contents) {
     int index = tabstrip_->GetIndexOfWebContents(old_contents);
@@ -111,7 +111,7 @@ void TabStripModelOrderController::ActiveTabChanged(
   }
   content::WebContents* new_opener = tabstrip_->GetOpenerOfWebContentsAt(index);
 
-  if (user_gesture && new_opener != old_opener &&
+  if ((reason & CHANGE_REASON_USER_GESTURE) && new_opener != old_opener &&
       ((old_contents == NULL && new_opener == NULL) ||
           new_opener != old_contents) &&
       ((new_contents == NULL && old_opener == NULL) ||

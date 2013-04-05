@@ -39,7 +39,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                bool user_gesture) OVERRIDE;
+                                int reason) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;
@@ -75,7 +75,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 - (void)activateTabWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
-                    userGesture:(bool)wasUserGesture;
+                         reason:(int)reason;
 - (void)tabMovedWithContents:(content::WebContents*)contents
                    fromIndex:(NSInteger)from
                      toIndex:(NSInteger)to;

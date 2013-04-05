@@ -1015,13 +1015,14 @@ void Browser::TabDeactivated(WebContents* contents) {
 void Browser::ActiveTabChanged(WebContents* old_contents,
                                WebContents* new_contents,
                                int index,
-                               bool user_gesture) {
+                               int reason) {
   content::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   bool did_reload = false;
-  if (user_gesture && ShouldReloadCrashedTab(new_contents)) {
+  if ((reason & CHANGE_REASON_USER_GESTURE) &&
+      ShouldReloadCrashedTab(new_contents)) {
     LOG(WARNING) << "Reloading killed tab at " << index;
     static int reload_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS(

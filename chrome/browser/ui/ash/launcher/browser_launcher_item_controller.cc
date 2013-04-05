@@ -199,7 +199,7 @@ void BrowserLauncherItemController::ActiveTabChanged(
     content::WebContents* old_contents,
     content::WebContents* new_contents,
     int index,
-    bool user_gesture) {
+    int reason) {
   // Update immediately on a tab change.
   if (old_contents &&
       (!launcher_controller()->GetPerAppInterface() ||
