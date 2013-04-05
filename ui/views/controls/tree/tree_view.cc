@@ -197,9 +197,11 @@ void TreeView::CommitEdit() {
     return;
 
   DCHECK(selected_node_);
+  const bool editor_has_focus = editor_->HasFocus();
   model_->SetTitle(GetSelectedNode(), editor_->text());
   CancelEdit();
-  RequestFocus();
+  if (editor_has_focus)
+    RequestFocus();
 }
 
 TreeModelNode* TreeView::GetEditingNode() {
@@ -457,13 +459,11 @@ bool TreeView::HandleKeyEvent(Textfield* sender,
   }
 }
 
-void TreeView::OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) {
+void TreeView::OnWillChangeFocus(View* focused_before, View* focused_now) {
 }
 
-void TreeView::OnDidChangeFocus(View* focused_before,
-                                View* focused_now) {
-  CancelEdit();
+void TreeView::OnDidChangeFocus(View* focused_before, View* focused_now) {
+  CommitEdit();
 }
 
 gfx::Point TreeView::GetKeyboardContextMenuLocation() {

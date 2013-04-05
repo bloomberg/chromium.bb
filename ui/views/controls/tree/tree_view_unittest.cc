@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
 using ui::TreeModel;
@@ -379,6 +380,19 @@ TEST_F(TreeViewViewsTest, ExpandOrSelectChild) {
   ExpandOrSelectChild();
   EXPECT_EQ("root [a b [b1] c]", TreeViewContentsAsString());
   EXPECT_EQ("b1", GetSelectedNodeTitle());
+}
+
+// Verifies edits are committed when focus is lost.
+TEST_F(TreeViewViewsTest, CommitOnFocusLost) {
+  tree_.SetModel(&model_);
+
+  tree_.SetSelectedNode(GetNodeByTitle("root"));
+  ExpandOrSelectChild();
+  tree_.SetEditable(true);
+  tree_.StartEditing(GetNodeByTitle("a"));
+  tree_.editor()->SetText(ASCIIToUTF16("a changed"));
+  tree_.OnDidChangeFocus(NULL, NULL);
+  EXPECT_TRUE(GetNodeByTitle("a changed") != NULL);
 }
 
 }  // namespace views
