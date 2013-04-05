@@ -164,9 +164,7 @@ namespace WebCore {
             PseudoFutureCue,
             PseudoPastCue,
 #endif
-#if ENABLE(IFRAME_SEAMLESS)
             PseudoSeamlessDocument,
-#endif
 #if ENABLE(SHADOW_DOM)
             PseudoDistributed
 #endif

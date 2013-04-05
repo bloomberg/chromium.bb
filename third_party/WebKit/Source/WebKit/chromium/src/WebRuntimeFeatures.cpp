@@ -634,20 +634,12 @@ bool WebRuntimeFeatures::isExperimentalContentSecurityPolicyFeaturesEnabled()
 
 void WebRuntimeFeatures::enableSeamlessIFrames(bool enable)
 {
-#if ENABLE(IFRAME_SEAMLESS)
     return RuntimeEnabledFeatures::setSeamlessIFramesEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::areSeamlessIFramesEnabled()
 {
-#if ENABLE(IFRAME_SEAMLESS)
     return RuntimeEnabledFeatures::seamlessIFramesEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableCanvasPath(bool enable)

@@ -239,9 +239,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoFutureCue:
     case PseudoPastCue:
 #endif
-#if ENABLE(IFRAME_SEAMLESS)
     case PseudoSeamlessDocument:
-#endif
 #if ENABLE(SHADOW_DOM)
     case PseudoDistributed:
 #endif
@@ -330,9 +328,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, futureCue, ("future", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, pastCue, ("past", AtomicString::ConstructFromLiteral));
 #endif
-#if ENABLE(IFRAME_SEAMLESS)
     DEFINE_STATIC_LOCAL(AtomicString, seamlessDocument, ("-webkit-seamless-document", AtomicString::ConstructFromLiteral));
-#endif
 #if ENABLE(SHADOW_DOM)
     DEFINE_STATIC_LOCAL(AtomicString, distributed, ("-webkit-distributed(", AtomicString::ConstructFromLiteral));
 #endif
@@ -416,9 +412,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(futureCue.impl(), CSSSelector::PseudoFutureCue);
         nameToPseudoType->set(pastCue.impl(), CSSSelector::PseudoPastCue);
 #endif
-#if ENABLE(IFRAME_SEAMLESS)
         nameToPseudoType->set(seamlessDocument.impl(), CSSSelector::PseudoSeamlessDocument);
-#endif
 #if ENABLE(SHADOW_DOM)
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
 #endif
@@ -543,9 +537,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
     case PseudoAnimatingFullScreenTransition:
-#if ENABLE(IFRAME_SEAMLESS)
     case PseudoSeamlessDocument:
-#endif
     case PseudoInRange:
     case PseudoOutOfRange:
 #if ENABLE(VIDEO_TRACK)

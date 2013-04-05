@@ -278,10 +278,8 @@ public:
     static bool experimentalContentSecurityPolicyFeaturesEnabled() { return areExperimentalContentSecurityPolicyFeaturesEnabled; }
     static void setExperimentalContentSecurityPolicyFeaturesEnabled(bool isEnabled) { areExperimentalContentSecurityPolicyFeaturesEnabled = isEnabled; }
 
-#if ENABLE(IFRAME_SEAMLESS)
     static bool seamlessIFramesEnabled() { return areSeamlessIFramesEnabled; }
     static void setSeamlessIFramesEnabled(bool isEnabled) { areSeamlessIFramesEnabled = isEnabled; }
-#endif
 
     static bool langAttributeAwareFormControlUIEnabled() { return isLangAttributeAwareFormControlUIEnabled; }
     // The lang attribute support is incomplete and should only be turned on for tests.
@@ -397,9 +395,7 @@ private:
 
     static bool areExperimentalContentSecurityPolicyFeaturesEnabled;
 
-#if ENABLE(IFRAME_SEAMLESS)
     static bool areSeamlessIFramesEnabled;
-#endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
     static bool isFontLoadEventsEnabled;

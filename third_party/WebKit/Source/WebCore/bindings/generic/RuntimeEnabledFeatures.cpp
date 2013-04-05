@@ -229,9 +229,7 @@ bool RuntimeEnabledFeatures::isRequestAutocompleteEnabled = false;
 
 bool RuntimeEnabledFeatures::areExperimentalContentSecurityPolicyFeaturesEnabled = false;
 
-#if ENABLE(IFRAME_SEAMLESS)
 bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
-#endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
