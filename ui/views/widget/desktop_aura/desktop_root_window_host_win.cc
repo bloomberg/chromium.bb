@@ -59,7 +59,8 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
       root_window_host_delegate_(NULL),
       content_window_(NULL),
       should_animate_window_close_(false),
-      pending_close_(false) {
+      pending_close_(false),
+      has_non_client_view_(false) {
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
@@ -110,6 +111,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
+  has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->Init(parent_hwnd, params.bounds);
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
@@ -505,7 +507,7 @@ void DesktopRootWindowHostWin::OnWindowHidingAnimationCompleted() {
 // DesktopRootWindowHostWin, HWNDMessageHandlerDelegate implementation:
 
 bool DesktopRootWindowHostWin::IsWidgetWindow() const {
-  return true;
+  return has_non_client_view_;
 }
 
 bool DesktopRootWindowHostWin::IsUsingCustomFrame() const {
