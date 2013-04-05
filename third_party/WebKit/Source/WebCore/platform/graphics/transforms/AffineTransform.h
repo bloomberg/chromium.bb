@@ -34,10 +34,6 @@
 
 #if USE(CG)
 #include <CoreGraphics/CGAffineTransform.h>
-#elif PLATFORM(OPENVG)
-#include "VGUtils.h"
-#elif PLATFORM(QT)
-#include <QTransform>
 #elif USE(SKIA)
 #include <SkMatrix.h>
 #endif
@@ -168,10 +164,6 @@ public:
 
 #if USE(CG)
     operator CGAffineTransform() const;
-#elif PLATFORM(OPENVG)
-    operator VGMatrix() const;
-#elif PLATFORM(QT)
-    operator QTransform() const;
 #elif USE(SKIA)
     operator SkMatrix() const;
 #endif

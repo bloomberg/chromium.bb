@@ -40,16 +40,11 @@ typedef struct _CoglMatrix CoglMatrix;
 #endif
 #if USE(CG)
 typedef struct CGAffineTransform CGAffineTransform;
-#elif PLATFORM(OPENVG)
-#include "VGUtils.h"
-#elif PLATFORM(QT)
-#include <QMatrix4x4>
-#include <QTransform>
 #elif USE(SKIA)
 #include <SkMatrix.h>
 #endif
 
-#if PLATFORM(WIN) || (PLATFORM(GTK) && OS(WINDOWS)) || (PLATFORM(QT) && OS(WINDOWS))
+#if PLATFORM(WIN)
 #if COMPILER(MINGW) && !COMPILER(MINGW64)
 typedef struct _XFORM XFORM;
 #else
@@ -94,11 +89,6 @@ public:
     {
         setMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
     }
-
-#if PLATFORM(QT)
-    TransformationMatrix(const QTransform&);
-    TransformationMatrix(const QMatrix4x4&);
-#endif
 
     void setMatrix(double a, double b, double c, double d, double e, double f)
     {
@@ -343,16 +333,11 @@ public:
 #if USE(CG)
     TransformationMatrix(const CGAffineTransform&);
     operator CGAffineTransform() const;
-#elif PLATFORM(OPENVG)
-    operator VGMatrix() const;
-#elif PLATFORM(QT)
-    operator QTransform() const;
-    operator QMatrix4x4() const;
 #elif USE(SKIA)
     operator SkMatrix() const;
 #endif
 
-#if PLATFORM(WIN) || (PLATFORM(GTK) && OS(WINDOWS)) || (PLATFORM(QT) && OS(WINDOWS))
+#if PLATFORM(WIN)
     operator XFORM() const;
 #endif
 

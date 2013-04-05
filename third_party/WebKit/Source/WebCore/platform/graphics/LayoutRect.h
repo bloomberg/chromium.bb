@@ -36,14 +36,6 @@
 #include "LayoutPoint.h"
 #include <wtf/Vector.h>
 
-#if PLATFORM(QT)
-#include <qglobal.h>
-QT_BEGIN_NAMESPACE
-class QRect;
-class QRectF;
-QT_END_NAMESPACE
-#endif
-
 namespace WebCore {
 
 class FloatRect;
@@ -175,12 +167,6 @@ public:
         // Return a rect that is slightly smaller than the true max rect to allow pixelSnapping to round up to the nearest IntRect without overflowing.
         return LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax());
     }
-
-#if PLATFORM(QT)
-    explicit LayoutRect(const QRect&);
-    explicit LayoutRect(const QRectF&);
-    operator QRectF() const;
-#endif
 
 private:
     LayoutPoint m_location;

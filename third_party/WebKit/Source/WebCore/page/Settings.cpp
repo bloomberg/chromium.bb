@@ -96,10 +96,6 @@ bool Settings::gShouldPaintNativeControls = true;
 bool Settings::gAVFoundationEnabled = false;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(QT) && USE(QTKIT))
-bool Settings::gQTKitEnabled = true;
-#endif
-
 bool Settings::gMockScrollbarsEnabled = false;
 bool Settings::gUsesOverlayScrollbars = false;
 
@@ -555,17 +551,6 @@ void Settings::setAVFoundationEnabled(bool enabled)
         return;
 
     gAVFoundationEnabled = enabled;
-    HTMLMediaElement::resetMediaEngines();
-}
-#endif
-
-#if PLATFORM(MAC) || (PLATFORM(QT) && USE(QTKIT))
-void Settings::setQTKitEnabled(bool enabled)
-{
-    if (gQTKitEnabled == enabled)
-        return;
-
-    gQTKitEnabled = enabled;
     HTMLMediaElement::resetMediaEngines();
 }
 #endif

@@ -20,14 +20,7 @@
 #ifndef OpenGLShims_h
 #define OpenGLShims_h
 
-#if PLATFORM(QT)
-#include <qglobal.h>
-#include <qopenglfunctions.h>
-#include <QOpenGLContext>
-#include <QSurface>
-#else
 #include <GL/gl.h>
-#endif
 
 #if defined(GL_ES_VERSION_2_0)
 // Some openGL ES systems miss this typedef.

@@ -32,15 +32,6 @@
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#endif
-
-#if PLATFORM(QT)
-#include <QPointer>
-#include <qglobal.h>
-#endif
-
 typedef WebCore::PageClientChromium* PlatformPageClient;
 
 namespace WebCore {
@@ -146,20 +137,7 @@ public:
     // the frame rects be the same no matter what transforms are applied.
     virtual bool transformsAffectFrameRect() { return true; }
 
-#if PLATFORM(MAC)
-    NSView* getOuterView() const;
-
-    void removeFromSuperview();
-#endif
-
-#if PLATFORM(CHROMIUM)
     virtual bool isPluginContainer() const { return false; }
-#endif
-
-#if PLATFORM(QT)
-    QObject* bindingObject() const;
-    void setBindingObject(QObject*);
-#endif
 
     // Virtual methods to convert points to/from the containing ScrollView
     virtual IntRect convertToContainingView(const IntRect&) const;
@@ -187,15 +165,6 @@ private:
     bool m_parentVisible;
 
     IntRect m_frame; // Not used when a native widget exists.
-
-#if PLATFORM(MAC)
-    WidgetPrivate* m_data;
-#endif
-
-#if PLATFORM(QT)
-    QPointer<QObject> m_bindingObject;
-#endif
-
 };
 
 } // namespace WebCore

@@ -33,13 +33,7 @@
 #include "IntSize.h"
 #include <wtf/Forward.h>
 
-#if PLATFORM(CHROMIUM) || PLATFORM(QT)
 #define DefaultInterpolationQuality InterpolationMedium
-#elif USE(CG)
-#define DefaultInterpolationQuality InterpolationLow
-#else
-#define DefaultInterpolationQuality InterpolationDefault
-#endif
 
 namespace WebCore {
 

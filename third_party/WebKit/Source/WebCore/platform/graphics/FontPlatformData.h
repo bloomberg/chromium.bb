@@ -23,14 +23,8 @@
  */
 
 // FIXME: This is temporary until all ports switch to using this file.
-#if (PLATFORM(CHROMIUM) && !OS(DARWIN)) || PLATFORM(BLACKBERRY)
+#if PLATFORM(CHROMIUM) && !OS(DARWIN)
 #include "chromium/FontPlatformData.h"
-#elif PLATFORM(QT)
-#include "qt/FontPlatformData.h"
-#elif PLATFORM(WIN) && OS(WINCE)
-#include "wince/FontPlatformData.h"
-#elif PLATFORM(GTK)
-#include "freetype/FontPlatformData.h"
 #else
 
 #ifndef FontPlatformData_h
@@ -38,10 +32,6 @@
 
 #include "FontOrientation.h"
 #include "FontWidthVariant.h"
-
-#if PLATFORM(WIN)
-#include "RefCountedGDIHandle.h"
-#endif
 
 #if OS(DARWIN)
 OBJC_CLASS NSFont;
@@ -105,19 +95,10 @@ public:
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
 #endif
 #endif
-#if PLATFORM(WIN)
-    FontPlatformData(HFONT, float size, bool syntheticBold, bool syntheticOblique, bool useGDI);
-#if USE(CG)
-    FontPlatformData(HFONT, CGFontRef, float size, bool syntheticBold, bool syntheticOblique, bool useGDI);
-#endif
-#endif
 
     ~FontPlatformData();
 
-#if PLATFORM(WIN)
-    HFONT hfont() const { return m_font ? m_font->handle() : 0; }
-    bool useGDI() const { return m_useGDI; }
-#elif OS(DARWIN)
+#if OS(DARWIN)
     NSFont* font() const { return m_font; }
     void setFont(NSFont*);
 #endif
@@ -155,9 +136,7 @@ public:
 
     unsigned hash() const
     {
-#if PLATFORM(WIN)
-        return m_font ? m_font->hash() : 0;
-#elif OS(DARWIN)
+#if OS(DARWIN)
 #if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
         ASSERT(m_font || !m_cgFont);
 #endif
@@ -185,16 +164,10 @@ public:
 
     bool isHashTableDeletedValue() const
     {
-#if PLATFORM(WIN)
-        return m_font.isHashTableDeletedValue();
-#elif OS(DARWIN)
+#if OS(DARWIN)
         return m_font == hashTableDeletedFontValue();
 #endif
     }
-
-#if PLATFORM(WIN) && USE(CG)
-    PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
-#endif
 
 #ifndef NDEBUG
     String description() const;
@@ -213,8 +186,6 @@ private:
     // * cgFont - CGFontRef representing the input font at the specified point size.
     void loadFont(NSFont*, float fontSize, NSFont*& outNSFont, CGFontRef&);
     static NSFont* hashTableDeletedFontValue() { return reinterpret_cast<NSFont *>(-1); }
-#elif PLATFORM(WIN)
-    void platformDataInit(HFONT, float size, HDC, WCHAR* faceName);
 #endif
 
 public:
@@ -227,17 +198,11 @@ public:
 private:
 #if OS(DARWIN)
     NSFont* m_font;
-#elif PLATFORM(WIN)
-    RefPtr<RefCountedGDIHandle<HFONT> > m_font;
 #endif
 
 #if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
-#if PLATFORM(WIN)
-    RetainPtr<CGFontRef> m_cgFont;
-#else
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
-#endif
 #endif
 
 #if PLATFORM(CHROMIUM) && OS(DARWIN)
@@ -249,10 +214,6 @@ private:
     bool m_isCompositeFontReference;
 #if OS(DARWIN)
     bool m_isPrinterFont;
-#endif
-
-#if PLATFORM(WIN)
-    bool m_useGDI;
 #endif
 };
 

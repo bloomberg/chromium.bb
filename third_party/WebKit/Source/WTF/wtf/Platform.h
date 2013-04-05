@@ -433,29 +433,8 @@
 
 /* Operating environments */
 
-/* FIXME: these are all mixes of OS, operating environment and policy choices. */
-/* PLATFORM(CHROMIUM) */
-/* PLATFORM(QT) */
-/* PLATFORM(WX) */
-/* PLATFORM(GTK) */
-/* PLATFORM(BLACKBERRY) */
-/* PLATFORM(MAC) */
-/* PLATFORM(WIN) */
-#if defined(BUILDING_CHROMIUM__)
+/* FIXME: This should go away since we're only building chromium now */
 #define WTF_PLATFORM_CHROMIUM 1
-#elif defined(BUILDING_QT__)
-#define WTF_PLATFORM_QT 1
-#elif defined(BUILDING_WX__)
-#define WTF_PLATFORM_WX 1
-#elif defined(BUILDING_GTK__)
-#define WTF_PLATFORM_GTK 1
-#elif defined(BUILDING_BLACKBERRY__)
-#define WTF_PLATFORM_BLACKBERRY 1
-#elif OS(DARWIN)
-#define WTF_PLATFORM_MAC 1
-#elif OS(WINDOWS)
-#define WTF_PLATFORM_WIN 1
-#endif
 
 /* PLATFORM(IOS) */
 /* FIXME: this is sometimes used as an OS switch and sometimes for higher-level things */

@@ -31,12 +31,6 @@
 #include <OpenGL/gl.h>
 #include <mach/mach.h>
 
-#if PLATFORM(QT)
-#include <QGuiApplication>
-#include <QOpenGLContext>
-#include <qpa/qplatformnativeinterface.h>
-#endif
-
 namespace WebCore {
 
 static uint32_t createTexture(IOSurfaceRef handle)
@@ -92,19 +86,6 @@ public:
         , m_readFbo(0)
         , m_drawFbo(0)
     {
-#if PLATFORM(QT)
-        QPlatformNativeInterface* nativeInterface = QGuiApplication::platformNativeInterface();
-        CGLContextObj shareContextObject = static_cast<CGLContextObj>(nativeInterface->nativeResourceForContext(QByteArrayLiteral("cglContextObj"), shareContext));
-        if (!shareContextObject)
-            return;
-
-        CGLPixelFormatObj pixelFormatObject = CGLGetPixelFormat(shareContextObject);
-        if (kCGLNoError != CGLCreateContext(pixelFormatObject, shareContextObject, &m_context))
-            return;
-
-        CGLRetainContext(m_context);
-#endif
-
         unsigned pixelFormat = 'BGRA';
         unsigned bytesPerElement = 4;
         int width = m_size.width();

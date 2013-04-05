@@ -29,11 +29,7 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
-#if !PLATFORM(GTK) && !PLATFORM(BLACKBERRY) && !PLATFORM(CHROMIUM) && !PLATFORM(QT)
-#include "ANGLE/ShaderLang.h"
-#else
 #include "ShaderLang.h"
-#endif
 
 namespace WebCore {
 

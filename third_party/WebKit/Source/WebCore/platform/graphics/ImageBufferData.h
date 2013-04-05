@@ -25,8 +25,6 @@
 
 #if USE(CG)
 #include "ImageBufferDataCG.h"
-#elif PLATFORM(QT)
-#include "ImageBufferDataQt.h"
 #elif USE(SKIA)
 #include "ImageBufferDataSkia.h"
 #elif OS(WINCE)

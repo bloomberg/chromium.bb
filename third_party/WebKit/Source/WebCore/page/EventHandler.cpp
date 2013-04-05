@@ -3529,11 +3529,7 @@ bool EventHandler::isKeyboardOptionTab(KeyboardEvent* event)
 
 bool EventHandler::eventInvertsTabsToLinksClientCallResult(KeyboardEvent* event)
 {
-#if PLATFORM(MAC) || PLATFORM(QT)
-    return EventHandler::isKeyboardOptionTab(event);
-#else
     return false;
-#endif
 }
 
 bool EventHandler::tabsToLinks(KeyboardEvent* event) const
@@ -3553,14 +3549,6 @@ void EventHandler::defaultTextInputEventHandler(TextEvent* event)
     if (m_frame->editor()->handleTextEvent(event))
         event->setDefaultHandled();
 }
-
-#if PLATFORM(QT)
-// Qt handles the space event in platform-specific WebKit code.
-// Eventually it would be good to eliminate that and use the code here instead.
-void EventHandler::defaultSpaceEventHandler(KeyboardEvent*)
-{
-}
-#else
 
 void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
 {
@@ -3582,8 +3570,6 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     if (view->logicalScroll(direction, ScrollByPage))
         event->setDefaultHandled();
 }
-
-#endif
 
 void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 {

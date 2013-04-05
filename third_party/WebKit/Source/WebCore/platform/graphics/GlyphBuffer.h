@@ -49,8 +49,6 @@ class SimpleFontData;
 
 #if OS(WINCE)
 typedef wchar_t GlyphBufferGlyph;
-#elif PLATFORM(QT)
-typedef quint32 GlyphBufferGlyph;
 #else
 typedef Glyph GlyphBufferGlyph;
 #endif
@@ -83,18 +81,6 @@ public:
 
 private:
     float advance;
-};
-#elif PLATFORM(QT)
-struct GlyphBufferAdvance : public QPointF {
-public:
-    GlyphBufferAdvance(const QPointF& advance)
-        : QPointF(advance)
-    {
-    }
-
-    void setWidth(qreal width) { QPointF::setX(width); }
-    qreal width() const { return QPointF::x(); }
-    qreal height() const { return QPointF::y(); }
 };
 #else
 typedef FloatSize GlyphBufferAdvance;
@@ -152,8 +138,6 @@ public:
         m_advances.append(advance);
 #elif OS(WINCE)
         m_advances.append(width);
-#elif PLATFORM(QT)
-        m_advances.append(QPointF(width, 0));
 #else
         m_advances.append(FloatSize(width, 0));
 #endif

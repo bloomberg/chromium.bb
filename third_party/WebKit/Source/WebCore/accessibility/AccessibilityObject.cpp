@@ -75,11 +75,7 @@ AccessibilityObject::AccessibilityObject()
     , m_haveChildren(false)
     , m_role(UnknownRole)
     , m_lastKnownIsIgnoredValue(DefaultBehavior)
-#if PLATFORM(GTK)
-    , m_wrapper(0)
-#elif PLATFORM(CHROMIUM)
     , m_detached(false)
-#endif
 {
 }
 
@@ -1846,13 +1842,6 @@ bool AccessibilityObject::ariaPressedIsPresent() const
 TextIteratorBehavior AccessibilityObject::textIteratorBehaviorForTextRange() const
 {
     TextIteratorBehavior behavior = TextIteratorIgnoresStyleVisibility;
-    
-#if PLATFORM(GTK)
-    // We need to emit replaced elements for GTK, and present
-    // them with the 'object replacement character' (0xFFFC).
-    behavior = static_cast<TextIteratorBehavior>(behavior | TextIteratorEmitsObjectReplacementCharacters);
-#endif
-    
     return behavior;
 }
     

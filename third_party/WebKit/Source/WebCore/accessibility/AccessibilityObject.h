@@ -39,37 +39,6 @@
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#elif PLATFORM(WIN) && !OS(WINCE)
-#include "AccessibilityObjectWrapperWin.h"
-#include "COMPtr.h"
-#endif
-
-#if PLATFORM(MAC)
-
-typedef struct _NSRange NSRange;
-
-OBJC_CLASS NSArray;
-OBJC_CLASS NSAttributedString;
-OBJC_CLASS NSData;
-OBJC_CLASS NSMutableAttributedString;
-OBJC_CLASS NSString;
-OBJC_CLASS NSValue;
-OBJC_CLASS NSView;
-OBJC_CLASS WebAccessibilityObjectWrapper;
-
-typedef WebAccessibilityObjectWrapper AccessibilityObjectWrapper;
-
-#elif PLATFORM(GTK)
-typedef struct _AtkObject AtkObject;
-typedef struct _AtkObject AccessibilityObjectWrapper;
-#elif PLATFORM(CHROMIUM)
-// Chromium does not use a wrapper.
-#else
-class AccessibilityObjectWrapper;
-#endif
-
 namespace WebCore {
 
 class AccessibilityObject;
@@ -810,24 +779,7 @@ public:
     virtual String mathFencedCloseString() const { return String(); }
     virtual int mathLineThickness() const { return 0; }
     
-#if HAVE(ACCESSIBILITY)
-#if PLATFORM(GTK)
-    AccessibilityObjectWrapper* wrapper() const;
-    void setWrapper(AccessibilityObjectWrapper*);
-#elif !PLATFORM(CHROMIUM)
-    AccessibilityObjectWrapper* wrapper() const { return m_wrapper.get(); }
-    void setWrapper(AccessibilityObjectWrapper* wrapper) 
-    {
-        m_wrapper = wrapper;
-    }
-#endif
-#endif
-    
-#if PLATFORM(MAC)
-    void overrideAttachmentParent(AccessibilityObject* parent);
-#else
     void overrideAttachmentParent(AccessibilityObject*) { }
-#endif
     
 #if HAVE(ACCESSIBILITY)
     // a platform-specific method for determining if an attachment is ignored
@@ -863,23 +815,10 @@ protected:
     virtual AccessibilityRole buttonRoleType() const;
     bool ariaIsHidden() const;
 
-#if PLATFORM(GTK)
-    bool allowsTextRanges() const;
-    unsigned getLengthForTextRange() const;
-#else
     bool allowsTextRanges() const { return isTextControl(); }
     unsigned getLengthForTextRange() const { return text().length(); }
-#endif
 
-#if PLATFORM(MAC)
-    RetainPtr<WebAccessibilityObjectWrapper> m_wrapper;
-#elif PLATFORM(WIN) && !OS(WINCE)
-    COMPtr<AccessibilityObjectWrapper> m_wrapper;
-#elif PLATFORM(GTK)
-    AtkObject* m_wrapper;
-#elif PLATFORM(CHROMIUM)
     bool m_detached;
-#endif
 };
 
 #if !HAVE(ACCESSIBILITY)

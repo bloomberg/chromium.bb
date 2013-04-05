@@ -243,11 +243,6 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         // For now, call into the client. This is temporary!
         frame->editor()->copyImage(m_hitTestResult);
         break;
-#if PLATFORM(QT) || PLATFORM(GTK)
-    case ContextMenuItemTagCopyImageUrlToClipboard:
-        frame->editor()->copyURL(m_hitTestResult.absoluteImageURL(), m_hitTestResult.textContent());
-        break;
-#endif
     case ContextMenuItemTagOpenMediaInNewWindow:
         openNewWindow(m_hitTestResult.absoluteMediaURL(), frame);
         break;
@@ -333,11 +328,6 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         break;
     case ContextMenuItemTagUnicodeInsertZWNJMark:
         insertUnicodeCharacter(zeroWidthNonJoiner, frame);
-        break;
-#endif
-#if PLATFORM(GTK) || PLATFORM(QT)
-    case ContextMenuItemTagSelectAll:
-        frame->editor()->command("SelectAll").execute();
         break;
 #endif
     case ContextMenuItemTagSpellingGuess: {
@@ -742,10 +732,6 @@ void ContextMenuController::populate()
         contextMenuItemTagDownloadImageToDisk());
     ContextMenuItem CopyImageItem(ActionType, ContextMenuItemTagCopyImageToClipboard, 
         contextMenuItemTagCopyImageToClipboard());
-#if PLATFORM(QT) || PLATFORM(GTK)
-    ContextMenuItem CopyImageUrlItem(ActionType, ContextMenuItemTagCopyImageUrlToClipboard, 
-        contextMenuItemTagCopyImageUrlToClipboard());
-#endif
     ContextMenuItem OpenMediaInNewWindowItem(ActionType, ContextMenuItemTagOpenMediaInNewWindow, String());
     ContextMenuItem CopyMediaLinkItem(ActionType, ContextMenuItemTagCopyMediaLinkToClipboard, 
         String());
@@ -759,13 +745,7 @@ void ContextMenuController::populate()
         contextMenuItemTagToggleMediaLoop());
     ContextMenuItem EnterVideoFullscreen(ActionType, ContextMenuItemTagEnterVideoFullscreen, 
         contextMenuItemTagEnterVideoFullscreen());
-#if PLATFORM(MAC)
-    ContextMenuItem SearchSpotlightItem(ActionType, ContextMenuItemTagSearchInSpotlight, 
-        contextMenuItemTagSearchInSpotlight());
-#endif
-#if !PLATFORM(GTK)
     ContextMenuItem SearchWebItem(ActionType, ContextMenuItemTagSearchWeb, contextMenuItemTagSearchWeb());
-#endif
     ContextMenuItem CopyItem(ActionType, ContextMenuItemTagCopy, contextMenuItemTagCopy());
     ContextMenuItem BackItem(ActionType, ContextMenuItemTagGoBack, contextMenuItemTagGoBack());
     ContextMenuItem ForwardItem(ActionType, ContextMenuItemTagGoForward,  contextMenuItemTagGoForward());
@@ -783,12 +763,6 @@ void ContextMenuController::populate()
         contextMenuItemTagIgnoreGrammar());
     ContextMenuItem CutItem(ActionType, ContextMenuItemTagCut, contextMenuItemTagCut());
     ContextMenuItem PasteItem(ActionType, ContextMenuItemTagPaste, contextMenuItemTagPaste());
-#if PLATFORM(GTK)
-    ContextMenuItem DeleteItem(ActionType, ContextMenuItemTagDelete, contextMenuItemTagDelete());
-#endif
-#if PLATFORM(GTK) || PLATFORM(QT)
-    ContextMenuItem SelectAllItem(ActionType, ContextMenuItemTagSelectAll, contextMenuItemTagSelectAll());
-#endif
 
     Node* node = m_hitTestResult.innerNonSharedNode();
     if (!node)
@@ -810,10 +784,6 @@ void ContextMenuController::populate()
                 appendItem(OpenLinkInNewWindowItem, m_contextMenu.get());
                 appendItem(DownloadFileItem, m_contextMenu.get());
             }
-#if PLATFORM(QT)
-            if (m_hitTestResult.isSelected()) 
-                appendItem(CopyItem, m_contextMenu.get());
-#endif
             appendItem(CopyLinkItem, m_contextMenu.get());
         }
 
@@ -826,9 +796,6 @@ void ContextMenuController::populate()
             appendItem(DownloadImageItem, m_contextMenu.get());
             if (imageURL.isLocalFile() || m_hitTestResult.image())
                 appendItem(CopyImageItem, m_contextMenu.get());
-#if PLATFORM(QT) || PLATFORM(GTK)
-            appendItem(CopyImageUrlItem, m_contextMenu.get());
-#endif
         }
 
         KURL mediaURL = m_hitTestResult.absoluteMediaURL();
@@ -1012,22 +979,13 @@ void ContextMenuController::populate()
         appendItem(CutItem, m_contextMenu.get());
         appendItem(CopyItem, m_contextMenu.get());
         appendItem(PasteItem, m_contextMenu.get());
-#if PLATFORM(GTK)
-        appendItem(DeleteItem, m_contextMenu.get());
-        appendItem(*separatorItem(), m_contextMenu.get());
-#endif
-#if PLATFORM(GTK) || PLATFORM(QT)
-        appendItem(SelectAllItem, m_contextMenu.get());
-#endif
 
         if (!inPasswordField) {
-#if !PLATFORM(GTK)
             appendItem(*separatorItem(), m_contextMenu.get());
             ContextMenuItem SpellingAndGrammarMenuItem(SubmenuType, ContextMenuItemTagSpellingMenu, 
                 contextMenuItemTagSpellingMenu());
             createAndAppendSpellingAndGrammarSubMenu(SpellingAndGrammarMenuItem);
             appendItem(SpellingAndGrammarMenuItem, m_contextMenu.get());
-#endif
 #if PLATFORM(MAC)
             ContextMenuItem substitutionsMenuItem(SubmenuType, ContextMenuItemTagSubstitutionsMenu, 
                 contextMenuItemTagSubstitutionsMenu());
@@ -1038,11 +996,7 @@ void ContextMenuController::populate()
             createAndAppendTransformationsSubMenu(transformationsMenuItem);
             appendItem(transformationsMenuItem, m_contextMenu.get());
 #endif
-#if PLATFORM(GTK)
-            bool shouldShowFontMenu = frame->editor()->canEditRichly();
-#else
             bool shouldShowFontMenu = true;
-#endif
             if (shouldShowFontMenu) {
                 ContextMenuItem FontMenuItem(SubmenuType, ContextMenuItemTagFontMenu, 
                     contextMenuItemTagFontMenu());
@@ -1054,15 +1008,6 @@ void ContextMenuController::populate()
             createAndAppendSpeechSubMenu(SpeechMenuItem);
             appendItem(SpeechMenuItem, m_contextMenu.get());
 #endif
-#if PLATFORM(GTK)
-            EditorClient* client = frame->editor()->client();
-            if (client && client->shouldShowUnicodeMenu()) {
-                ContextMenuItem UnicodeMenuItem(SubmenuType, ContextMenuItemTagUnicode, contextMenuItemTagUnicode());
-                createAndAppendUnicodeSubMenu(UnicodeMenuItem);
-                appendItem(*separatorItem(), m_contextMenu.get());
-                appendItem(UnicodeMenuItem, m_contextMenu.get());
-            }
-#else
             ContextMenuItem WritingDirectionMenuItem(SubmenuType, ContextMenuItemTagWritingDirectionMenu, 
                 contextMenuItemTagWritingDirectionMenu());
             createAndAppendWritingDirectionSubMenu(WritingDirectionMenuItem);
@@ -1079,7 +1024,6 @@ void ContextMenuController::populate()
                     }
                 }
             }
-#endif
         }
     }
 }
@@ -1309,9 +1253,6 @@ void ContextMenuController::checkOrEnableIfNeeded(ContextMenuItem& item) const
         case ContextMenuItemTagOpenImageInNewWindow:
         case ContextMenuItemTagDownloadImageToDisk:
         case ContextMenuItemTagCopyImageToClipboard:
-#if PLATFORM(QT) || PLATFORM(GTK)
-        case ContextMenuItemTagCopyImageUrlToClipboard:
-#endif
             break;
         case ContextMenuItemTagOpenMediaInNewWindow:
             if (m_hitTestResult.mediaIsVideo())

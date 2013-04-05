@@ -33,7 +33,6 @@
 
 #if USE(PTHREADS)
 
-#include "CurrentTime.h"
 #include "DateMath.h"
 #include "dtoa.h"
 #include "dtoa/cached-powers.h"

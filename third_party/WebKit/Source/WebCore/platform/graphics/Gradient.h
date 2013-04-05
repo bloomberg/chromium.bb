@@ -42,11 +42,6 @@ typedef struct CGContext* CGContextRef;
 typedef struct CGGradient* CGGradientRef;
 typedef CGGradientRef PlatformGradient;
 
-#elif PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QGradient;
-QT_END_NAMESPACE
-typedef QGradient* PlatformGradient;
 #elif USE(SKIA)
 class SkShader;
 typedef class SkShader* PlatformGradient;
@@ -129,7 +124,7 @@ namespace WebCore {
 
         float aspectRatio() const { return m_aspectRatio; }
 
-#if OS(WINCE) && !PLATFORM(QT)
+#if OS(WINCE)
         const Vector<ColorStop, 2>& getStops() const;
 #else
         PlatformGradient platformGradient();
@@ -151,7 +146,7 @@ namespace WebCore {
         void setSpreadMethod(GradientSpreadMethod);
         GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
         void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
-        // Qt and CG transform the gradient at draw time
+        // CG transform the gradient at draw time
         AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
 
         virtual void fill(GraphicsContext*, const FloatRect&);

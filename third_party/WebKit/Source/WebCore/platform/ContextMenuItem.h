@@ -58,9 +58,6 @@ namespace WebCore {
         ContextMenuItemTagOpenImageInNewWindow,
         ContextMenuItemTagDownloadImageToDisk,
         ContextMenuItemTagCopyImageToClipboard,
-#if PLATFORM(QT) || PLATFORM(GTK)
-        ContextMenuItemTagCopyImageUrlToClipboard,
-#endif
         ContextMenuItemTagOpenFrameInNewWindow,
         ContextMenuItemTagCopy,
         ContextMenuItemTagGoBack,
@@ -69,26 +66,6 @@ namespace WebCore {
         ContextMenuItemTagReload,
         ContextMenuItemTagCut,
         ContextMenuItemTagPaste,
-#if PLATFORM(GTK)
-        ContextMenuItemTagDelete,
-#endif
-#if PLATFORM(GTK) || PLATFORM(QT)
-        ContextMenuItemTagSelectAll,
-#endif
-#if PLATFORM(GTK)
-        ContextMenuItemTagInputMethods,
-        ContextMenuItemTagUnicode,
-        ContextMenuItemTagUnicodeInsertLRMMark,
-        ContextMenuItemTagUnicodeInsertRLMMark,
-        ContextMenuItemTagUnicodeInsertLREMark,
-        ContextMenuItemTagUnicodeInsertRLEMark,
-        ContextMenuItemTagUnicodeInsertLROMark,
-        ContextMenuItemTagUnicodeInsertRLOMark,
-        ContextMenuItemTagUnicodeInsertPDFMark,
-        ContextMenuItemTagUnicodeInsertZWSMark,
-        ContextMenuItemTagUnicodeInsertZWJMark,
-        ContextMenuItemTagUnicodeInsertZWNJMark,
-#endif
         ContextMenuItemTagSpellingGuess,
         ContextMenuItemTagNoGuessesFound,
         ContextMenuItemTagIgnoreSpelling,
@@ -177,24 +154,6 @@ namespace WebCore {
 #if ENABLE(CONTEXT_MENUS)
 #if PLATFORM(MAC)
     typedef NSMenuItem* PlatformMenuItemDescription;
-#elif PLATFORM(QT)
-    struct PlatformMenuItemDescription {
-        PlatformMenuItemDescription()
-            : type(ActionType),
-              action(ContextMenuItemTagNoAction),
-              checked(false),
-              enabled(true)
-        {}
-
-        ContextMenuItemType type;
-        ContextMenuAction action;
-        String title;
-        QList<ContextMenuItem> subMenuItems;
-        bool checked;
-        bool enabled;
-    };
-#elif PLATFORM(GTK)
-    typedef GtkMenuItem* PlatformMenuItemDescription;
 #elif PLATFORM(CHROMIUM)
     struct PlatformMenuItemDescription {
         PlatformMenuItemDescription()

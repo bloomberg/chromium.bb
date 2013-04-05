@@ -38,12 +38,6 @@ typedef HICON HCURSOR;
 #include <wtf/RefCounted.h>
 #elif PLATFORM(MAC)
 #include <wtf/RetainPtr.h>
-#elif PLATFORM(GTK)
-#include "GRefPtrGtk.h"
-#elif PLATFORM(QT)
-#include <QCursor>
-#elif PLATFORM(BLACKBERRY)
-#include <BlackBerryPlatformCursor.h>
 #endif
 
 #if PLATFORM(MAC) && !PLATFORM(IOS)
@@ -55,38 +49,13 @@ typedef struct HICON__ *HICON;
 typedef HICON HCURSOR;
 #endif
 
-// Looks like it's just PLATFORM(BLACKBERRY) still not using this?
-#if PLATFORM(WIN) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(CHROMIUM)
 #define WTF_USE_LAZY_NATIVE_CURSOR 1
-#endif
 
 namespace WebCore {
 
     class Image;
 
-#if PLATFORM(WIN)
-    class SharedCursor : public RefCounted<SharedCursor> {
-    public:
-        static PassRefPtr<SharedCursor> create(HCURSOR nativeCursor) { return adoptRef(new SharedCursor(nativeCursor)); }
-        ~SharedCursor();
-        HCURSOR nativeCursor() const { return m_nativeCursor; }
-    private:
-        SharedCursor(HCURSOR nativeCursor) : m_nativeCursor(nativeCursor) { }
-        HCURSOR m_nativeCursor;
-    };
-    typedef RefPtr<SharedCursor> PlatformCursor;
-#elif PLATFORM(MAC) && !PLATFORM(IOS)
-    typedef NSCursor *PlatformCursor;
-#elif PLATFORM(GTK)
-    typedef GRefPtr<GdkCursor> PlatformCursor;
-#elif PLATFORM(QT) && !defined(QT_NO_CURSOR)
-    // Do not need to be shared but need to be created dynamically via ensurePlatformCursor.
-    typedef QCursor* PlatformCursor;
-#elif PLATFORM(BLACKBERRY)
-    typedef BlackBerry::Platform::BlackBerryCursor PlatformCursor;
-#else
     typedef void* PlatformCursor;
-#endif
 
     class Cursor {
         WTF_MAKE_FAST_ALLOCATED;
@@ -141,7 +110,6 @@ namespace WebCore {
         static const Cursor& fromType(Cursor::Type);
 
         Cursor()
-#if !PLATFORM(IOS) && !PLATFORM(BLACKBERRY)
 #if USE(LAZY_NATIVE_CURSOR)
             // This is an invalid Cursor and should never actually get used.
             : m_type(static_cast<Type>(-1))
@@ -149,11 +117,9 @@ namespace WebCore {
 #else
             : m_platformCursor(0)
 #endif // USE(LAZY_NATIVE_CURSOR)
-#endif // !PLATFORM(IOS) && !PLATFORM(BLACKBERRY)
         {
         }
 
-#if !PLATFORM(IOS)
         Cursor(Image*, const IntPoint& hotSpot);
         Cursor(const Cursor&);
 
@@ -196,12 +162,7 @@ namespace WebCore {
 #endif
 #endif
 
-#if !PLATFORM(MAC)
         mutable PlatformCursor m_platformCursor;
-#else
-        mutable RetainPtr<NSCursor> m_platformCursor;
-#endif
-#endif // !PLATFORM(IOS)
     };
 
     IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);

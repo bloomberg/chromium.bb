@@ -28,12 +28,6 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#if PLATFORM(QT)
-#include <QGuiApplication>
-#include <QOpenGLContext>
-#include <qpa/qplatformnativeinterface.h>
-#endif
-
 namespace WebCore {
 
 #define STRINGIFY(...) #__VA_ARGS__
@@ -107,12 +101,6 @@ public:
 
         if (!m_eglDisplay || !m_eglContext || !m_eglConfig) {
             m_eglDisplay = eglGetCurrentDisplay();
-
-#if PLATFORM(QT)
-            QPlatformNativeInterface* nativeInterface = QGuiApplication::platformNativeInterface();
-            m_eglConfig = static_cast<EGLConfig>(nativeInterface->nativeResourceForContext(QByteArrayLiteral("eglConfig"), shareContext));
-            EGLContext eglShareContext = static_cast<EGLContext>(nativeInterface->nativeResourceForContext(QByteArrayLiteral("eglContext"), shareContext));
-#endif
             EGLint contextAttributes[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
             m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, eglShareContext, contextAttributes);
         }
@@ -315,14 +303,8 @@ protected:
 
     EGLSurface createSurfaceFromShareHandle(const IntSize& size, HANDLE shareHandle)
     {
-        if (!m_eglDisplay  || !m_eglConfig) {
+        if (!m_eglDisplay  || !m_eglConfig)
             m_eglDisplay = eglGetCurrentDisplay();
-
-#if PLATFORM(QT)
-            QPlatformNativeInterface* nativeInterface = QGuiApplication::platformNativeInterface();
-            m_eglConfig = static_cast<EGLConfig>(nativeInterface->nativeResourceForContext(QByteArrayLiteral("eglConfig"), QOpenGLContext::currentContext()));
-#endif
-        }
 
         EGLint attributes[] = {
             EGL_WIDTH, size.width(),

@@ -17,15 +17,12 @@
  */
 
 #include "config.h"
-#if USE(3D_GRAPHICS) || defined(QT_OPENGL_SHIMS)
+#if USE(3D_GRAPHICS)
 
 #define DISABLE_SHIMS
 #include "OpenGLShims.h"
 
-#if !PLATFORM(QT)
 #include <dlfcn.h>
-#endif
-
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
@@ -37,12 +34,6 @@ OpenGLFunctionTable* openGLFunctionTable()
     return &table;
 }
 
-#if PLATFORM(QT)
-static void* getProcAddress(const char* procName)
-{
-    return reinterpret_cast<void*>(QOpenGLContext::currentContext()->getProcAddress(procName));
-}
-#else
 typedef void* (*glGetProcAddressType) (const char* procName);
 static void* getProcAddress(const char* procName)
 {
@@ -59,7 +50,6 @@ static void* getProcAddress(const char* procName)
         return dlsym(RTLD_DEFAULT, procName);
     return getProcAddressFunction(procName);
 }
-#endif
 
 static void* lookupOpenGLFunctionAddress(const char* functionName, bool* success = 0)
 {
@@ -99,18 +89,8 @@ static void* lookupOpenGLFunctionAddress(const char* functionName, bool* success
     return target;
 }
 
-#if PLATFORM(QT) && defined(QT_OPENGL_ES_2)
-
-// With Angle only EGL/GLES2 extensions are available through eglGetProcAddress, not the regular standardized functions.
-#define ASSIGN_FUNCTION_TABLE_ENTRY(FunctionName, success) \
-    openGLFunctionTable()->FunctionName = reinterpret_cast<FunctionName##Type>(::FunctionName)
-
-#else
-
 #define ASSIGN_FUNCTION_TABLE_ENTRY(FunctionName, success) \
     openGLFunctionTable()->FunctionName = reinterpret_cast<FunctionName##Type>(lookupOpenGLFunctionAddress(#FunctionName, &success))
-
-#endif
 
 #define ASSIGN_FUNCTION_TABLE_ENTRY_EXT(FunctionName) \
     openGLFunctionTable()->FunctionName = reinterpret_cast<FunctionName##Type>(lookupOpenGLFunctionAddress(#FunctionName))

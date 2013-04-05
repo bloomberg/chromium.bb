@@ -41,9 +41,6 @@ typedef CGPatternRef PlatformPatternPtr;
 #elif USE(SKIA)
 class SkShader;
 typedef SkShader* PlatformPatternPtr;
-#elif PLATFORM(QT)
-#include <QBrush>
-typedef QBrush PlatformPatternPtr;
 #elif OS(WINCE)
 typedef void* PlatformPatternPtr;
 #endif
@@ -67,9 +64,6 @@ public:
     // Pattern space is an abstract space that maps to the default user space by the transformation 'userSpaceTransformation' 
 #if USE(SKIA)
     PlatformPatternPtr platformPattern(const AffineTransform& userSpaceTransformation);
-#elif PLATFORM(QT)
-    // Qt ignores user space transformation and uses pattern's instead
-    PlatformPatternPtr createPlatformPattern() const;
 #else
     PlatformPatternPtr createPlatformPattern(const AffineTransform& userSpaceTransformation) const;
 #endif

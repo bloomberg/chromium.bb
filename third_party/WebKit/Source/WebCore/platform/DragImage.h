@@ -32,7 +32,6 @@
 #include "FloatSize.h"
 #include <wtf/Forward.h>
 
-
 //We need to #define YOffset as it needs to be shared with WebKit
 #define DragLabelBorderYOffset 2
 

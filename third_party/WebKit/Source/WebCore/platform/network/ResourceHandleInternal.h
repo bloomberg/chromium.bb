@@ -55,15 +55,6 @@
 class Frame;
 #endif
 
-#if PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QWebNetworkJob;
-QT_END_NAMESPACE
-namespace WebCore {
-class QNetworkReplyHandler;
-}
-#endif
-
 #if PLATFORM(MAC)
 OBJC_CLASS NSURLAuthenticationChallenge;
 OBJC_CLASS NSURLConnection;
@@ -118,9 +109,6 @@ namespace WebCore {
             , m_bodySize(0)
             , m_bodyDataSent(0)
             , m_redirectCount(0)
-#endif
-#if PLATFORM(QT)
-            , m_job(0)
 #endif
 #if PLATFORM(MAC)
             , m_startWhenScheduled(false)
@@ -208,16 +196,6 @@ namespace WebCore {
         SoupSession* soupSession();
         int m_redirectCount;
 #endif
-#if PLATFORM(GTK)
-        struct {
-            Credential credential;
-            AuthenticationChallenge challenge;
-        } m_credentialDataToSaveInPersistentStore;
-#endif
-#if PLATFORM(QT)
-        QNetworkReplyHandler* m_job;
-#endif
-
 #if PLATFORM(MAC)
         // We need to keep a reference to the original challenge to be able to cancel it.
         // It is almost identical to m_currentWebChallenge.nsURLAuthenticationChallenge(), but has a different sender.

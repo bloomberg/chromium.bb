@@ -897,22 +897,4 @@ void ShadowBlur::endShadowLayer(GraphicsContext* context)
     ScratchBuffer::shared().scheduleScratchBufferPurge();
 }
 
-#if PLATFORM(QT)
-bool ShadowBlur::mustUseShadowBlur(GraphicsContext* context) const
-{
-    // We can't avoid ShadowBlur, since the shadow has blur.
-    if (type() == BlurShadow)
-        return true;
-    // We can avoid ShadowBlur and optimize, since we're not drawing on a
-    // canvas and box shadows are affected by the transformation matrix.
-    if (!shadowsIgnoreTransforms())
-        return false;
-    // We can avoid ShadowBlur, since there are no transformations to apply to the canvas.
-    if (context->getCTM().isIdentity())
-        return false;
-    // Otherwise, no chance avoiding ShadowBlur.
-    return true;
-}
-#endif
-
 } // namespace WebCore

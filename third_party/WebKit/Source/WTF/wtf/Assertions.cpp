@@ -279,14 +279,8 @@ void WTFReportBacktrace()
     WTFPrintBacktrace(samples + framesToSkip, frames - framesToSkip);
 }
 
-#if OS(DARWIN) || OS(LINUX)
-#  if PLATFORM(QT) || PLATFORM(GTK)
-#    if defined(__GLIBC__) && !defined(__UCLIBC__)
-#      define WTF_USE_BACKTRACE_SYMBOLS 1
-#    endif
-#  elif !OS(ANDROID)
-#    define WTF_USE_DLADDR 1
-#  endif
+#if OS(DARWIN) || (OS(LINUX) && !OS(ANDROID))
+#define WTF_USE_DLADDR 1
 #endif
 
 void WTFPrintBacktrace(void** stack, int size)

@@ -81,10 +81,6 @@
 #include <wtf/Uint32Array.h>
 #include <wtf/text/StringBuilder.h>
 
-#if PLATFORM(QT)
-#undef emit
-#endif
-
 namespace WebCore {
 
 const double secondsBetweenRestoreAttempts = 1.0;

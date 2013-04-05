@@ -26,7 +26,6 @@
             'wtf/DecimalNumber.h',
             'wtf/Decoder.h',
             'wtf/Deque.h',
-            'wtf/DisallowCType.h',
             'wtf/DoublyLinkedList.h',
             'wtf/Encoder.h',
             'wtf/FastAllocBase.h',

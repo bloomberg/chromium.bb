@@ -25,18 +25,6 @@
 
 #if ENABLE(TOUCH_EVENTS)
 
-#if PLATFORM(QT)
-#include <QTouchEvent>
-#endif
-
-#if PLATFORM(BLACKBERRY)
-namespace BlackBerry {
-namespace Platform {
-class TouchPoint;
-};
-};
-#endif
-
 namespace WebCore {
 
 class PlatformTouchEvent;
@@ -61,10 +49,6 @@ public:
         , m_force(0)
     {
     }
-
-#if PLATFORM(BLACKBERRY)
-    PlatformTouchPoint(const BlackBerry::Platform::TouchPoint&);
-#endif
 
     unsigned id() const { return m_id; }
     State state() const { return m_state; }

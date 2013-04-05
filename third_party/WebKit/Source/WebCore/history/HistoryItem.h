@@ -40,12 +40,6 @@
 typedef struct objc_object* id;
 #endif
 
-#if PLATFORM(QT)
-#include <QVariant>
-#include <QByteArray>
-#include <QDataStream>
-#endif
-
 #if PLATFORM(BLACKBERRY)
 #include "HistoryItemViewState.h"
 #endif
@@ -198,14 +192,6 @@ public:
     void setTransientProperty(const String&, id);
 #endif
 
-#if PLATFORM(QT)
-    QVariant userData() const { return m_userData; }
-    void setUserData(const QVariant& userData) { m_userData = userData; }
-
-    static PassRefPtr<HistoryItem> restoreState(QDataStream& buffer, int version);
-    QDataStream& saveState(QDataStream& out, int version) const;
-#endif
-
 #if PLATFORM(BLACKBERRY)
     HistoryItemViewState& viewState() { return m_viewState; }
 #endif
@@ -236,10 +222,6 @@ private:
     HistoryItem* findTargetItem();
 
     void encodeBackForwardTreeNode(Encoder&) const;
-
-    /* When adding new member variables to this class, please notify the Qt team.
-     * qt/HistoryItemQt.cpp contains code to serialize history items.
-     */
 
     String m_urlString;
     String m_originalURLString;
@@ -294,13 +276,6 @@ private:
     OwnPtr<HashMap<String, RetainPtr<id> > > m_transientProperties;
 #endif
 
-#if PLATFORM(QT)
-    QVariant m_userData;
-#endif
-
-#if PLATFORM(BLACKBERRY)
-    HistoryItemViewState m_viewState;
-#endif
 }; //class HistoryItem
 
 } //namespace WebCore

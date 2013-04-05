@@ -35,14 +35,6 @@
 #include "LayoutSize.h"
 #include <wtf/MathExtras.h>
 
-#if PLATFORM(QT)
-#include <qglobal.h>
-QT_BEGIN_NAMESPACE
-class QPoint;
-class QPointF;
-QT_END_NAMESPACE
-#endif
-
 namespace WebCore {
 
 class LayoutPoint {
@@ -89,12 +81,6 @@ public:
     {
         return LayoutPoint(m_y, m_x);
     }
-
-#if PLATFORM(QT)
-    explicit LayoutPoint(const QPoint&);
-    explicit LayoutPoint(const QPointF&);
-    operator QPointF() const;
-#endif
 
 private:
     LayoutUnit m_x, m_y;

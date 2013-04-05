@@ -70,10 +70,6 @@ public:
 
     ShadowType type() const { return m_type; }
 
-#if PLATFORM(QT)
-    bool mustUseShadowBlur(GraphicsContext*) const;
-#endif
-
 private:
     void updateShadowBlurValues();
 

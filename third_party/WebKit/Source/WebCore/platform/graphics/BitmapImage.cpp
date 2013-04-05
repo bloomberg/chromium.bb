@@ -588,9 +588,7 @@ void FrameData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
     memoryObjectInfo->setClassName("FrameData");
-#if OS(WINCE) && !PLATFORM(QT)
-    info.addRawBuffer(m_frame.get(), m_frameBytes, "NativeImage", "frame");
-#elif USE(SKIA)
+#if USE(SKIA)
     info.addMember(m_frame, "frame", WTF::RetainingPointer);
 #else
     info.addRawBuffer(m_frame, m_frameBytes, "NativeImage", "frame");

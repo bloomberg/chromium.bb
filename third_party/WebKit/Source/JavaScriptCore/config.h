@@ -62,8 +62,6 @@
 #include <wtf/FastMalloc.h>
 #endif
 
-#include <wtf/DisallowCType.h>
-
 #if COMPILER(MSVC)
 #define SKIP_STATIC_CONSTRUCTORS_ON_MSVC 1
 #else

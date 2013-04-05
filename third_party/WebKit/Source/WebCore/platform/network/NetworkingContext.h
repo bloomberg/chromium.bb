@@ -34,20 +34,8 @@ class WebCookieJar;
 }
 #endif
 
-#if PLATFORM(QT)
-#include <qglobal.h>
-#endif
-
 #if PLATFORM(MAC)
 OBJC_CLASS NSOperationQueue;
-#endif
-
-#if PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QObject;
-class QNetworkAccessManager;
-class QUrl;
-QT_END_NAMESPACE
 #endif
 
 #if USE(SOUP)
@@ -82,14 +70,6 @@ public:
 
 #if PLATFORM(MAC) || USE(CFNETWORK) || USE(SOUP)
     virtual NetworkStorageSession& storageSession() const = 0;
-#endif
-
-#if PLATFORM(QT)
-    // FIXME: Wrap QNetworkAccessManager into a NetworkStorageSession to make the code cross-platform.
-    virtual QObject* originatingObject() const = 0;
-    virtual QNetworkAccessManager* networkAccessManager() const = 0;
-    virtual bool mimeSniffingEnabled() const = 0;
-    virtual bool thirdPartyCookiePolicyPermission(const QUrl&) const = 0;
 #endif
 
 #if PLATFORM(WIN)

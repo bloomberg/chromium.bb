@@ -67,10 +67,6 @@
 #endif
 
 
-#if PLATFORM(QT)
-#include <QVariant>
-#endif
-
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -2100,21 +2100,8 @@ void CanvasRenderingContext2D::strokeText(const String& text, float x, float y, 
 PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
 {
     FontCachePurgePreventer fontCachePurgePreventer;
-
     RefPtr<TextMetrics> metrics = TextMetrics::create();
-
-#if PLATFORM(QT)
-    // We always use complex text shaping since it can't be turned off for QPainterPath::addText().
-    Font::CodePath oldCodePath = Font::codePath();
-    Font::setCodePath(Font::Complex);
-#endif
-
     metrics->setWidth(accessFont().width(TextRun(text.characters(), text.length())));
-
-#if PLATFORM(QT)
-    Font::setCodePath(oldCodePath);
-#endif
-
     return metrics.release();
 }
 
@@ -2250,13 +2237,6 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 #endif
 
     c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
-
-#if PLATFORM(QT)
-    // We always use complex text shaping since it can't be turned off for QPainterPath::addText().
-    Font::CodePath oldCodePath = Font::codePath();
-    Font::setCodePath(Font::Complex);
-#endif
-
     if (useMaxWidth) {
         GraphicsContextStateSaver stateSaver(*c);
         c->translate(location.x(), location.y());
@@ -2267,10 +2247,6 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         c->drawBidiText(font, textRun, location, Font::UseFallbackIfFontNotReady);
 
     didDraw(textRect);
-
-#if PLATFORM(QT)
-    Font::setCodePath(oldCodePath);
-#endif
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const

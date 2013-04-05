@@ -49,17 +49,11 @@ namespace WebCore {
 
 #if ENABLE(CONTEXT_MENUS)
     String contextMenuItemTagOpenLinkInNewWindow();
-#if PLATFORM(QT)
-    String contextMenuItemTagOpenLinkInThisWindow();
-#endif
     String contextMenuItemTagDownloadLinkToDisk();
     String contextMenuItemTagCopyLinkToClipboard();
     String contextMenuItemTagOpenImageInNewWindow();
     String contextMenuItemTagDownloadImageToDisk();
     String contextMenuItemTagCopyImageToClipboard();
-#if PLATFORM(QT) || PLATFORM(GTK)
-    String contextMenuItemTagCopyImageUrlToClipboard();
-#endif
     String contextMenuItemTagOpenFrameInNewWindow();
     String contextMenuItemTagCopy();
     String contextMenuItemTagGoBack();
@@ -68,24 +62,6 @@ namespace WebCore {
     String contextMenuItemTagReload();
     String contextMenuItemTagCut();
     String contextMenuItemTagPaste();
-#if PLATFORM(GTK)
-    String contextMenuItemTagDelete();
-    String contextMenuItemTagInputMethods();
-    String contextMenuItemTagUnicode();
-    String contextMenuItemTagUnicodeInsertLRMMark();
-    String contextMenuItemTagUnicodeInsertRLMMark();
-    String contextMenuItemTagUnicodeInsertLREMark();
-    String contextMenuItemTagUnicodeInsertRLEMark();
-    String contextMenuItemTagUnicodeInsertLROMark();
-    String contextMenuItemTagUnicodeInsertRLOMark();
-    String contextMenuItemTagUnicodeInsertPDFMark();
-    String contextMenuItemTagUnicodeInsertZWSMark();
-    String contextMenuItemTagUnicodeInsertZWJMark();
-    String contextMenuItemTagUnicodeInsertZWNJMark();
-#endif
-#if PLATFORM(GTK) || PLATFORM(QT)
-    String contextMenuItemTagSelectAll();
-#endif
     String contextMenuItemTagNoGuessesFound();
     String contextMenuItemTagIgnoreSpelling();
     String contextMenuItemTagLearnSpelling();
@@ -108,28 +84,6 @@ namespace WebCore {
     String contextMenuItemTagDefaultDirection();
     String contextMenuItemTagLeftToRight();
     String contextMenuItemTagRightToLeft();
-#if PLATFORM(MAC)
-    String contextMenuItemTagSearchInSpotlight();
-    String contextMenuItemTagShowFonts();
-    String contextMenuItemTagStyles();
-    String contextMenuItemTagShowColors();
-    String contextMenuItemTagSpeechMenu();
-    String contextMenuItemTagStartSpeaking();
-    String contextMenuItemTagStopSpeaking();
-    String contextMenuItemTagCorrectSpellingAutomatically();
-    String contextMenuItemTagSubstitutionsMenu();
-    String contextMenuItemTagShowSubstitutions(bool show);
-    String contextMenuItemTagSmartCopyPaste();
-    String contextMenuItemTagSmartQuotes();
-    String contextMenuItemTagSmartDashes();
-    String contextMenuItemTagSmartLinks();
-    String contextMenuItemTagTextReplacement();
-    String contextMenuItemTagTransformationsMenu();
-    String contextMenuItemTagMakeUpperCase();
-    String contextMenuItemTagMakeLowerCase();
-    String contextMenuItemTagCapitalize();
-    String contextMenuItemTagChangeBack(const String& replacedString);
-#endif
     String contextMenuItemTagOpenVideoInNewWindow();
     String contextMenuItemTagOpenAudioInNewWindow();
     String contextMenuItemTagCopyVideoLinkToClipboard();
@@ -157,10 +111,6 @@ namespace WebCore {
     String AXDescriptionListDetailText();
     String AXFooterRoleDescriptionText();
     String AXFileUploadButtonText();
-#if PLATFORM(MAC)
-    String AXARIAContentGroupText(const String& ariaType);
-#endif
-    
     String AXButtonActionVerb();
     String AXRadioButtonActionVerb();
     String AXTextFieldActionVerb();
@@ -212,25 +162,6 @@ namespace WebCore {
     String multipleFileUploadText(unsigned numberOfFiles);
     String unknownFileSizeText();
 
-#if PLATFORM(WIN)
-    String uploadFileText();
-    String allFilesText();
-#endif
-
-#if PLATFORM(MAC)
-    String builtInPDFPluginName();
-    String pdfDocumentTypeDescription();
-    String postScriptDocumentTypeDescription();
-    String keygenMenuItem512();
-    String keygenMenuItem1024();
-    String keygenMenuItem2048();
-    String keygenKeychainItemName(const String& host);
-#endif
-
-#if PLATFORM(IOS)
-    String htmlSelectMultipleItems(size_t num);
-#endif
-
     String imageTitle(const String& filename, const IntSize& size);
 
     String mediaElementLoadingStateText();
@@ -268,25 +199,10 @@ namespace WebCore {
     String textTrackSubtitlesText();
     String textTrackOffText();
     String textTrackNoLabelText();
-#if PLATFORM(MAC)
-    String textTrackCountryAndLanguageMenuItemText(const String& title, const String& country, const String& language);
-    String textTrackLanguageMenuItemText(const String& title, const String& language);
-    String closedCaptionTrackMenuItemText(const String&);
-    String sdhTrackMenuItemText(const String&);
-    String easyReaderTrackMenuItemText(const String&);
-#endif
 #endif
 
     String snapshottedPlugInLabelTitle();
     String snapshottedPlugInLabelSubtitle();
-
-#if !PLATFORM(CHROMIUM)
-#define WEB_UI_STRING(string, description) WebCore::localizedString(string)
-#define WEB_UI_STRING_KEY(string, key, description) WebCore::localizedString(key)
-
-    String localizedString(const char* key);
-#endif
-
 } // namespace WebCore
 
 #endif // LocalizedStrings_h

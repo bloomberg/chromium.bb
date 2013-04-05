@@ -226,11 +226,6 @@ namespace WebCore {
         static bool isAVFoundationEnabled() { return gAVFoundationEnabled; }
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(QT) && USE(QTKIT))
-        static void setQTKitEnabled(bool flag);
-        static bool isQTKitEnabled() { return gQTKitEnabled; }
-#endif
-
         static const unsigned defaultMaximumHTMLParserDOMTreeDepth = 512;
 
 #if USE(SAFARI_THEME)

@@ -25,12 +25,7 @@
 #include "BMPImageDecoder.h"
 #include "GIFImageDecoder.h"
 #include "ICOImageDecoder.h"
-#if PLATFORM(QT)
-#include "ImageDecoderQt.h"
-#endif
-#if !PLATFORM(QT) || USE(LIBJPEG)
 #include "JPEGImageDecoder.h"
-#endif
 #include "PNGImageDecoder.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "SharedBuffer.h"
@@ -113,18 +108,14 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     if (matchesGIFSignature(contents))
         return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption));
 
-#if !PLATFORM(QT) || (PLATFORM(QT) && USE(LIBPNG))
     if (matchesPNGSignature(contents))
         return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
         return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption));
-#endif
 
-#if !PLATFORM(QT) || (PLATFORM(QT) && USE(LIBJPEG))
     if (matchesJPEGSignature(contents))
         return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
-#endif
 
 #if USE(WEBP)
     if (matchesWebPSignature(contents))
@@ -134,9 +125,6 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     if (matchesBMPSignature(contents))
         return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption));
 
-#if PLATFORM(QT)
-    return adoptPtr(new ImageDecoderQt(alphaOption, gammaAndColorProfileOption));
-#endif
     return nullptr;
 }
 

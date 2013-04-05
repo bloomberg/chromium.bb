@@ -76,7 +76,6 @@ private:
     Pasteboard();
 
     bool m_selectionMode;
-
 };
 
 } // namespace WebCore
