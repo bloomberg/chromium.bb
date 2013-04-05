@@ -272,3 +272,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        DeclarativeSendMessage) {
   ASSERT_TRUE(RunExtensionTest("webrequest_sendmessage")) << message_;
 }
+
+// Check that reloading an extension that runs in incognito split mode and
+// has two active background pages with registered events does not crash the
+// browser. Regression test for http://crbug.com/224094
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
+  // Wait for rules to be set up.
+  ExtensionTestMessageListener listener("done", true);
+  ExtensionTestMessageListener listener_incognito("done_incognito", true);
+
+  const extensions::Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("webrequest_reload"),
+      kFlagEnableIncognito);
+  ASSERT_TRUE(extension);
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
+
+  // Reload extension and wait for rules to be set up again. This should not
+  // crash the browser.
+  ExtensionTestMessageListener listener2("done", true);
+  ExtensionTestMessageListener listener_incognito2("done_incognito", true);
+
+  ReloadExtension(extension->id());
+
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
+  EXPECT_TRUE(listener_incognito2.WaitUntilSatisfied());
+}

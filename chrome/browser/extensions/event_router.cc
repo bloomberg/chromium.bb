@@ -257,10 +257,14 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
 
+  void* profile =
+      listener->process
+          ? Profile::FromBrowserContext(listener->process->GetBrowserContext())
+          : NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
-                 profile_, listener->extension_id, event_name));
+                 profile, listener->extension_id, event_name));
 
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
