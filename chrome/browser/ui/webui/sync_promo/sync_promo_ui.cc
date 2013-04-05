@@ -133,6 +133,10 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   if (profile->IsOffTheRecord())
     return false;
 
+  // Don't show for managed profiles.
+  if (profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged))
+    return false;
+
   // Display the signin promo if the user is not signed in.
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       profile->GetOriginalProfile());

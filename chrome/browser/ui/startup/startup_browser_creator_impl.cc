@@ -924,6 +924,20 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 
 void StartupBrowserCreatorImpl::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
+  PrefService* prefs = profile_->GetPrefs();
+  bool has_reset_local_passphrase_switch =
+      command_line_.HasSwitch(switches::kResetLocalPassphrase);
+  if ((is_first_run_ || has_reset_local_passphrase_switch) &&
+      prefs->GetBoolean(prefs::kProfileIsManaged)) {
+    startup_urls->insert(startup_urls->begin(),
+                         GURL(std::string(chrome::kChromeUISettingsURL) +
+                              chrome::kManagedUserSettingsSubPage));
+    if (has_reset_local_passphrase_switch) {
+      prefs->SetString(prefs::kManagedModeLocalPassphrase, "");
+      prefs->SetString(prefs::kManagedModeLocalSalt, "");
+    }
+  }
+
   // If we have urls specified by the first run master preferences use them
   // and nothing else.
   if (browser_creator_ && startup_urls->empty()) {
@@ -952,20 +966,6 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
     if (first_run::ShouldShowWelcomePage())
       startup_urls->push_back(internals::GetWelcomePageURL());
-  }
-
-  PrefService* prefs = profile_->GetPrefs();
-  bool has_reset_local_passphrase_switch =
-      command_line_.HasSwitch(switches::kResetLocalPassphrase);
-  if ((is_first_run_ || has_reset_local_passphrase_switch) &&
-      prefs->GetBoolean(prefs::kProfileIsManaged)) {
-    startup_urls->insert(startup_urls->begin(),
-                         GURL(std::string(chrome::kChromeUISettingsURL) +
-                              chrome::kManagedUserSettingsSubPage));
-    if (has_reset_local_passphrase_switch) {
-      prefs->SetString(prefs::kManagedModeLocalPassphrase, "");
-      prefs->SetString(prefs::kManagedModeLocalSalt, "");
-    }
   }
 }
 
