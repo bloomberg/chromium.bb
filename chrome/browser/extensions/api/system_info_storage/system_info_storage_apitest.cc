@@ -32,7 +32,7 @@ struct TestUnitInfo {
 
 struct TestUnitInfo kTestingData[] = {
   {"0xbeaf", "unknown", 4098, 1000, 0},
-  {"/home","harddisk", 4098, 1000, 10},
+  {"/home", "harddisk", 4098, 1000, 10},
   {"/data", "harddisk", 10000, 1000, 4097}
 };
 
@@ -105,7 +105,8 @@ class SystemInfoStorageApiTest: public ExtensionApiTest {
   void ProcessAttach(const std::string& device_id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    chrome::StorageInfo info(device_id, name, location);
+    chrome::StorageInfo info(device_id, name, location,
+                             string16(), string16(), string16(), 0);
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
   }
 

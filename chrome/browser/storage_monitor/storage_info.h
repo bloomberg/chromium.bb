@@ -12,10 +12,6 @@ namespace chrome {
 
 struct StorageInfo {
   StorageInfo();
-  // TODO(gbillock): Deprecate and remove this constructor.
-  StorageInfo(const std::string& id,
-              const string16& device_name,
-              const base::FilePath::StringType& device_location);
   StorageInfo(const std::string& id,
               const string16& device_name,
               const base::FilePath::StringType& device_location,
@@ -54,6 +50,6 @@ struct StorageInfo {
   uint64 total_size_in_bytes;
 };
 
-} // namespace chrome
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_INFO_H_

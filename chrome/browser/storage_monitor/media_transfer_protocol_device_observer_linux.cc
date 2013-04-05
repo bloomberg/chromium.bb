@@ -210,8 +210,8 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
     DCHECK(!ContainsKey(storage_map_, location));
 
-    StorageInfo storage_info(device_id, device_name, location);
-    storage_info.storage_label = device_name;
+    StorageInfo storage_info(device_id, device_name, location, device_name,
+                             string16(), string16(), 0);
     storage_map_[location] = storage_info;
     notifications_->ProcessAttach(storage_info);
   } else {

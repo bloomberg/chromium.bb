@@ -53,7 +53,7 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 
 class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
  public:
-  MediaGalleriesPrivateEjectApiTest() {}
+  MediaGalleriesPrivateEjectApiTest() : device_id_(GetDeviceId()) {}
   virtual ~MediaGalleriesPrivateEjectApiTest() {}
 
  protected:
@@ -81,21 +81,25 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
-    chrome::StorageMonitor::GetInstance()->receiver()->
-        ProcessAttach(chrome::StorageInfo(device_id, ASCIIToUTF16(kDeviceName),
-                                          kDevicePath));
+    chrome::StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
+                             string16(), string16(), string16(), 0);
+    chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
     content::RunAllPendingInMessageLoop();
   }
 
   void Detach() {
-    std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
-    chrome::StorageMonitor::GetInstance()->receiver()->
-        ProcessDetach(device_id);
+    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
+        device_id_);
     content::RunAllPendingInMessageLoop();
   }
+
+  static std::string GetDeviceId() {
+    return chrome::MediaStorageUtil::MakeDeviceId(
+        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+  }
+
+ protected:
+  const std::string device_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateEjectApiTest);
@@ -122,9 +126,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectTest) {
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
 
   ExecuteCmdAndCheckReply(host, kEjectTestCmd, kEjectListenerOk);
-  std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
-  EXPECT_EQ(device_id, monitor->ejected_device());
+  EXPECT_EQ(device_id_, monitor->ejected_device());
 
   Detach();
 }

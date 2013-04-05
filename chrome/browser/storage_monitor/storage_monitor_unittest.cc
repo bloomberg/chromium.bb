@@ -22,8 +22,9 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   monitor.AddObserver(&observer1);
   monitor.AddObserver(&observer2);
 
-  monitor.receiver()->ProcessAttach(StorageInfo(kDeviceId1, kDeviceName,
-                                                FILE_PATH_LITERAL("path")));
+  StorageInfo info(kDeviceId1, kDeviceName, FILE_PATH_LITERAL("path"),
+                   string16(), string16(), string16(), 0);
+  monitor.receiver()->ProcessAttach(info);
   message_loop.RunUntilIdle();
 
   EXPECT_EQ(kDeviceId1, observer1.last_attached().device_id);
@@ -70,8 +71,9 @@ TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
   const std::string kDeviceId1 = "42";
   const string16 kDeviceName1 = ASCIIToUTF16("test");
   const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
-  monitor.receiver()->ProcessAttach(StorageInfo(kDeviceId1, kDeviceName1,
-                                                kDevicePath1.value()));
+  StorageInfo info1(kDeviceId1, kDeviceName1, kDevicePath1.value(),
+                    string16(), string16(), string16(), 0);
+  monitor.receiver()->ProcessAttach(info1);
   message_loop.RunUntilIdle();
   std::vector<StorageInfo> devices = monitor.GetAttachedStorage();
   ASSERT_EQ(1U, devices.size());
@@ -82,8 +84,9 @@ TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
   const std::string kDeviceId2 = "44";
   const string16 kDeviceName2 = ASCIIToUTF16("test2");
   const base::FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
-  monitor.receiver()->ProcessAttach(StorageInfo(kDeviceId2, kDeviceName2,
-                                                kDevicePath2.value()));
+  StorageInfo info2(kDeviceId2, kDeviceName2, kDevicePath2.value(),
+                    string16(), string16(), string16(), 0);
+  monitor.receiver()->ProcessAttach(info2);
   message_loop.RunUntilIdle();
   devices = monitor.GetAttachedStorage();
   ASSERT_EQ(2U, devices.size());
