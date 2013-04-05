@@ -34,7 +34,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(ENABLE_APP_LIST)
@@ -356,7 +355,7 @@ void ComponentLoader::AddDefaultComponentExtensions(
   // Skip all other extensions that require user session presence.
   if (!skip_session_components) {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(chromeos::switches::kGuestSession))
+    if (!command_line->HasSwitch(switches::kGuestSession))
       Add(IDR_BOOKMARKS_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 
@@ -424,7 +423,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       // Don't load Quickoffice component extension in Guest mode because
       // it doesn't work in Incognito mode due to disabled temp fs.
       // TODO(dpolukhin): enable Quickoffice in Guest mode.
-      if (!command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+      if (!command_line->HasSwitch(switches::kGuestSession)) {
         Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
                                   "/usr/share/chromeos-assets/quick_office")));
       }

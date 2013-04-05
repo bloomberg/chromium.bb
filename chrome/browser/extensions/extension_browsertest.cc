@@ -46,10 +46,6 @@
 #include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
-#endif
-
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::FeatureSwitch;
@@ -105,9 +101,9 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // This makes sure that we create the Default profile first, with no
   // ExtensionService and then the real profile with one, as we do when
   // running on chromeos.
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+  command_line->AppendSwitchASCII(switches::kLoginUser,
                                   "TestUser@gmail.com");
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+  command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 #endif
 }
 

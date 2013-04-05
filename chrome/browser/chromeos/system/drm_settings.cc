@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/sha2.h"
@@ -44,8 +43,7 @@ void ManageDrmIdentifierOnFileThread(bool enable, const std::string& email) {
   base::FilePath drm_id_file;
   PathService::Get(chrome::DIR_USER_DATA, &drm_id_file);
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  base::FilePath profile = cmd_line.GetSwitchValuePath(
-      chromeos::switches::kLoginProfile);
+  base::FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
   if (profile.empty()) {
     LOG(ERROR) << "called with no login-profile!";
     return;

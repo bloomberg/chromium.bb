@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
@@ -139,8 +138,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     // ExtensionBrowserTest sets the login users to a non-managed value;
     // replace it. This is the default username sent in policy blobs from the
     // testserver.
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser, "user@example.com");
+    command_line->AppendSwitchASCII(switches::kLoginUser, "user@example.com");
 #endif
   }
 

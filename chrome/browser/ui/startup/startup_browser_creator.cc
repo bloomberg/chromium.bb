@@ -71,7 +71,6 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profile_startup.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
@@ -457,7 +456,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 #if defined(OS_CHROMEOS)
     // kLoginManager will cause Chrome to start up with the ChromeOS login
     // screen instead of a browser window, so it won't load any tabs.
-    } else if (command_line.HasSwitch(chromeos::switches::kLoginManager)) {
+    } else if (command_line.HasSwitch(switches::kLoginManager)) {
       expected_tab_count = 0;
 #endif
     } else if (command_line.HasSwitch(switches::kRestoreLastSession)) {
@@ -569,8 +568,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
 #if defined(OS_CHROMEOS)
   // The browser will be launched after the user logs in.
-  if (command_line.HasSwitch(chromeos::switches::kLoginManager) ||
-      command_line.HasSwitch(chromeos::switches::kLoginPassword)) {
+  if (command_line.HasSwitch(switches::kLoginManager) ||
+      command_line.HasSwitch(switches::kLoginPassword)) {
     silent_launch = true;
   }
 

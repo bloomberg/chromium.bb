@@ -50,7 +50,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 using content::BrowserThread;
@@ -141,8 +140,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   if (!extensions_enabled)
     autoupdate_enabled = false;
   else
-    autoupdate_enabled =
-        !command_line->HasSwitch(chromeos::switches::kGuestSession);
+    autoupdate_enabled = !command_line->HasSwitch(switches::kGuestSession);
 #endif
   extension_service_.reset(new ExtensionService(
       profile_,

@@ -192,19 +192,20 @@ class StubLogin : public LoginStatusConsumer,
 bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   return !command_line.HasSwitch(::switches::kDisableAppMode) &&
-      command_line.HasSwitch(switches::kLoginManager) &&
-      !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
+      command_line.HasSwitch(::switches::kLoginManager) &&
+      !command_line.HasSwitch(::switches::kForceLoginManagerInTests) &&
       !app_manager->GetAutoLaunchApp().empty() &&
       KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
-  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+  if (parsed_command_line.HasSwitch(::switches::kLoginManager)) {
     std::string first_screen =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginScreen);
     std::string size_arg =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreenSize);
+        parsed_command_line.GetSwitchValueASCII(
+            ::switches::kLoginScreenSize);
     gfx::Size size(0, 0);
     // Allow the size of the login window to be set explicitly. If not set,
     // default to the entire screen. This is mostly useful for testing.
@@ -233,12 +234,12 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
         local_state->ClearPref(prefs::kRebootAfterUpdate);
       }
     }
-  } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
-             parsed_command_line.HasSwitch(switches::kLoginPassword)) {
+  } else if (parsed_command_line.HasSwitch(::switches::kLoginUser) &&
+             parsed_command_line.HasSwitch(::switches::kLoginPassword)) {
     BootTimesLoader::Get()->RecordLoginAttempted();
     new StubLogin(
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginUser),
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginPassword));
   } else {
     if (!parsed_command_line.HasSwitch(::switches::kTestName)) {
       // We did not log in (we crashed or are debugging), so we need to
@@ -386,7 +387,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
 
-  if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
+  if (parsed_command_line().HasSwitch(::switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     singleton_command_line->AppendSwitch(::switches::kDisableSync);
     singleton_command_line->AppendSwitch(::switches::kDisableExtensions);
@@ -397,19 +398,19 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // showing the login manager or attempting a command line login, login with a
   // stub user.
   if (!base::chromeos::IsRunningOnChromeOS() &&
-      !parsed_command_line().HasSwitch(switches::kLoginManager) &&
-      !parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kGuestSession)) {
+      !parsed_command_line().HasSwitch(::switches::kLoginManager) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kGuestSession)) {
     singleton_command_line->AppendSwitchASCII(
-        switches::kLoginUser, UserManager::kStubUser);
-    if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
+        ::switches::kLoginUser, UserManager::kStubUser);
+    if (!parsed_command_line().HasSwitch(::switches::kLoginProfile)) {
       // This must be kept in sync with TestingProfile::kTestUserProfileDir.
       singleton_command_line->AppendSwitchASCII(
-          switches::kLoginProfile, "test-user");
+          ::switches::kLoginProfile, "test-user");
     }
     LOG(INFO) << "Running as stub user with profile dir: "
               << singleton_command_line->GetSwitchValuePath(
-                  switches::kLoginProfile).value();
+                  ::switches::kLoginProfile).value();
   }
 
   // Initialize the statistics provider, which will ensure that the Chrome
@@ -505,16 +506,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   //   2) if passed alone, to signal that the indicated user has already
   //      logged in and we should behave accordingly.
   // This handles case 2.
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+  if (parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginPassword)) {
     std::string username =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+        parsed_command_line().GetSwitchValueASCII(::switches::kLoginUser);
     VLOG(1) << "Relaunching browser for user: " << username;
     UserManager* user_manager = UserManager::Get();
     // TODO(nkostylev): Get user username_hash (cryptohome mount point)
     // from a separate cmd line switch.
     std::string username_hash =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
+        parsed_command_line().GetSwitchValueASCII(::switches::kLoginProfile);
     user_manager->UserLoggedIn(username, username_hash, true);
 
     // Redirects Chrome logging to the user data dir.
@@ -571,8 +572,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+  if (parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginPassword)) {
     // Make sure we flip every profile to not share proxies if the user hasn't
     // specified so explicitly.
     const PrefService::Preference* use_shared_proxies_pref =
@@ -606,7 +607,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task ||
-      parsed_command_line().HasSwitch(switches::kForceLoginManagerInTests)) {
+      parsed_command_line().HasSwitch(::switches::kForceLoginManagerInTests)) {
     if (ShouldAutoLaunchKioskApp(parsed_command_line())) {
       RunAutoLaunchKioskApp();
     } else {

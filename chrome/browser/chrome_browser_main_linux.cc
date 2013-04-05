@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 #endif  // defined(USE_LINUX_BREAKPAD)
@@ -61,8 +60,8 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
   bool breakpad_enabled = false;
   if (is_chrome_build) {
 #if defined(OS_CHROMEOS)
-    bool is_guest_session = CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kGuestSession);
+    bool is_guest_session =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
     bool is_stable_channel =
         chrome::VersionInfo::GetChannel() ==
         chrome::VersionInfo::CHANNEL_STABLE;
