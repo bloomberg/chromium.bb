@@ -13,12 +13,18 @@ def SubtractHistogram(histogram_json, start_histogram_json):
   if 'buckets' not in start_histogram:
     return histogram_json
 
+  histogram = json.loads(histogram_json)
+  if ('pid' in start_histogram and 'pid' in histogram
+      and start_histogram['pid'] != histogram['pid']):
+    raise Exception(
+        'Trying to compare histograms from different processes (%d and %d)'
+        % (start_histogram['pid'], histogram['pid']))
+
   start_histogram_buckets = dict()
   for b in start_histogram['buckets']:
     start_histogram_buckets[b['low']] = b['count']
 
   new_buckets = []
-  histogram = json.loads(histogram_json)
   for b in histogram['buckets']:
     new_bucket = b
     low = b['low']

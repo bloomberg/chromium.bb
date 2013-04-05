@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/pickle.h"
+#include "base/process_util.h"
 #include "base/values.h"
 
 namespace base {
@@ -119,6 +120,7 @@ void HistogramBase::WriteJSON(std::string* output) const {
   root.SetInteger("flags", flags());
   root.Set("params", parameters.release());
   root.Set("buckets", buckets.release());
+  root.SetInteger("pid", GetCurrentProcId());
   serializer.Serialize(root);
 }
 
