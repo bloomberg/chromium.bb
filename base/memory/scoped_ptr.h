@@ -606,15 +606,17 @@ class scoped_array {
     return *this;
   }
 
-  // Reset.  Deletes the current owned object, if any.
-  // Then takes ownership of a new object, if given.
-  // this->reset(this->get()) works.
+  // Reset. Deletes the current owned object, if any.
   void reset(C* p = NULL) {
-    if (p != array_) {
-      enum { type_must_be_complete = sizeof(C) };
-      delete[] array_;
-      array_ = p;
-    }
+    // This is a self-reset, which is no longer allowed: http://crbug.com/162971
+    if (p != NULL && p == array_)
+      abort();
+
+    C* old = array_;
+    array_ = NULL;
+    if (old != NULL)
+      delete[] old;
+    array_ = p;
   }
 
   // Get one element of the current object.
