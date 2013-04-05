@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBObjectStoreBackendImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBBindingUtilities.h"
 #include "IDBCallbacks.h"
@@ -143,5 +141,3 @@ bool IDBObjectStoreBackendImpl::updateKeyGenerator(PassRefPtr<IDBBackingStore> b
 }
 
 } // namespace WebCore
-
-#endif

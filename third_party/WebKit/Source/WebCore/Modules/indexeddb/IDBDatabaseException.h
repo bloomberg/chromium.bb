@@ -26,8 +26,6 @@
 #ifndef IDBDatabaseException_h
 #define IDBDatabaseException_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "ExceptionBase.h"
 
 namespace WebCore {
@@ -84,7 +82,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBDatabaseException_h

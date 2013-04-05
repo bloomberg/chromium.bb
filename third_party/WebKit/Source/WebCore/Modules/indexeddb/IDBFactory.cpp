@@ -29,8 +29,6 @@
 #include "config.h"
 #include "IDBFactory.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
@@ -189,5 +187,3 @@ short IDBFactory::cmp(ScriptExecutionContext* context, const ScriptValue& firstV
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

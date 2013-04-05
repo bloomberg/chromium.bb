@@ -26,8 +26,6 @@
 #ifndef IDBCursor_h
 #define IDBCursor_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBKey.h"
 #include "IDBTransaction.h"
 #include "IndexedDB.h"
@@ -105,7 +103,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBCursor_h

@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=INDEXED_DATABASE,
     ActiveDOMObject,
     EventTarget,
     JSNoStaticTables
@@ -61,4 +60,3 @@
     boolean dispatchEvent(in Event evt)
         raises(EventException);
 };
-

@@ -26,8 +26,6 @@
 #ifndef IDBTransactionCoordinator_h
 #define IDBTransactionCoordinator_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/RefPtr.h>
@@ -66,7 +64,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBTransactionCoordinator_h

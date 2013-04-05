@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBKey.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 IDBKey::~IDBKey()
@@ -97,5 +95,3 @@ bool IDBKey::isEqual(const IDBKey* other) const
 }
 
 } // namespace WebCore
-
-#endif

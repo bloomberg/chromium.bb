@@ -26,8 +26,6 @@
 #ifndef IndexedDB_h
 #define IndexedDB_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 namespace IndexedDB {
@@ -53,7 +51,5 @@ enum CursorType {
 } // namespace IndexedDB
 
 } // namespace WebCore
-
-#endif // ENABLED(INDEXED_DATABASE)
 
 #endif // IndexedDB_h

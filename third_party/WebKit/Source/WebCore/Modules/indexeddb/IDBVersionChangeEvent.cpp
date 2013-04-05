@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBVersionChangeEvent.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "EventNames.h"
 #include "IDBAny.h"
 
@@ -55,5 +53,3 @@ const AtomicString& IDBVersionChangeEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif

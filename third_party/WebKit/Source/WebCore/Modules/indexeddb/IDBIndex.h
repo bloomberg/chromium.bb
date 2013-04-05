@@ -37,8 +37,6 @@
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBObjectStore;
@@ -95,7 +93,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBIndex_h

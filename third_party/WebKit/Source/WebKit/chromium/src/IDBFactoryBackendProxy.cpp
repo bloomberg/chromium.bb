@@ -29,8 +29,6 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "CrossThreadTask.h"
 #include "DOMStringList.h"
 #include "IDBDatabaseBackendProxy.h"
@@ -235,5 +233,3 @@ void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCa
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

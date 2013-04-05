@@ -41,8 +41,6 @@
 
 #include <gtest/gtest.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 using WebKit::IDBDatabaseCallbacksProxy;
 using WebKit::WebIDBDatabase;
@@ -202,5 +200,3 @@ TEST(IDBDatabaseBackendTest, ForcedClose)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

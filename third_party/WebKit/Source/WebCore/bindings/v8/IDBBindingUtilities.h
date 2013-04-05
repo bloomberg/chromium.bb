@@ -26,8 +26,6 @@
 #ifndef IDBBindingUtilities_h
 #define IDBBindingUtilities_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "ScriptValue.h"
 #include <v8.h>
 #include <wtf/Forward.h>
@@ -48,8 +46,6 @@ ScriptValue deserializeIDBValueBuffer(DOMRequestState*, PassRefPtr<SharedBuffer>
 ScriptValue idbKeyToScriptValue(DOMRequestState*, PassRefPtr<IDBKey>);
 PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue&);
 
-}
-
-#endif // ENABLE(INDEXED_DATABASE)
+} // namespace WebCore
 
 #endif // IDBBindingUtilities_h

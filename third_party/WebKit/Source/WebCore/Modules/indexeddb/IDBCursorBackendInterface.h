@@ -26,8 +26,6 @@
 #ifndef IDBCursorBackendInterface_h
 #define IDBCursorBackendInterface_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -52,7 +50,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBCursorBackendInterface_h

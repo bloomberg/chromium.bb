@@ -29,8 +29,6 @@
 #ifndef IDBFactoryBackendProxy_h
 #define IDBFactoryBackendProxy_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBCallbacks.h"
 #include "IDBFactoryBackendInterfaceChromium.h"
 
@@ -61,7 +59,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif
 
 #endif // IDBFactoryBackendProxy_h

@@ -35,8 +35,6 @@
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 using IDBLevelDBCoding::KeyPrefix;
 
@@ -319,5 +317,3 @@ TEST(IDBFactoryBackendTest, MemoryBackingStoreLifetime)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

@@ -40,8 +40,6 @@
 
 #include <gtest/gtest.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 using namespace WebKit;
 
@@ -119,5 +117,3 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

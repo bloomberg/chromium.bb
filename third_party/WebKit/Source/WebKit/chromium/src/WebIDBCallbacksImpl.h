@@ -26,8 +26,6 @@
 #ifndef WebIDBCallbacksImpl_h
 #define WebIDBCallbacksImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "WebIDBCallbacks.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -65,7 +63,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // WebIDBCallbacksImpl_h

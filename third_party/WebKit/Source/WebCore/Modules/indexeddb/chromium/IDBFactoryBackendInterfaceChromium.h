@@ -30,8 +30,6 @@
 
 #include "IDBFactoryBackendInterface.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 typedef PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterfaceCreate();
@@ -39,7 +37,5 @@ typedef PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterfaceCreate(
 void setIDBFactoryBackendInterfaceCreateFunction(IDBFactoryBackendInterfaceCreate);
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBFactoryBackendInterfaceChromium_h

@@ -26,7 +26,6 @@
 #ifndef IDBLevelDBCoding_h
 #define IDBLevelDBCoding_h
 
-#if ENABLE(INDEXED_DATABASE)
 #if USE(LEVELDB)
 
 #include <wtf/RefPtr.h>
@@ -364,6 +363,5 @@ private:
 } // namespace WebCore
 
 #endif // USE(LEVELDB)
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBLevelDBCoding_h

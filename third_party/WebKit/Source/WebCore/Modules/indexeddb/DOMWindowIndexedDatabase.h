@@ -26,8 +26,6 @@
 #ifndef DOMWindowIndexedDatabase_h
 #define DOMWindowIndexedDatabase_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMWindowProperty.h"
 #include "Supplementable.h"
 
@@ -61,7 +59,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // DOMWindowIndexedDatabase_h

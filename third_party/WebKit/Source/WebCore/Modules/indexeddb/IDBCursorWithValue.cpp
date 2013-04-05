@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBCursorWithValue.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBCursorBackendInterface.h"
 #include "IDBKey.h"
 
@@ -54,5 +52,3 @@ IDBCursorWithValue::~IDBCursorWithValue()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

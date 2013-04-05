@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBDatabaseImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBCursor.h"
@@ -211,5 +209,3 @@ void WebIDBDatabaseImpl::deleteIndex(long long transactionId, long long objectSt
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

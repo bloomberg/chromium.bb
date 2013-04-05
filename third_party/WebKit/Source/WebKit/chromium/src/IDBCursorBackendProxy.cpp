@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBCursorBackendProxy.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBAny.h"
 #include "IDBCallbacks.h"
 #include "IDBKey.h"
@@ -73,5 +71,3 @@ void IDBCursorBackendProxy::postSuccessHandlerCallback()
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

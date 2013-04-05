@@ -26,8 +26,6 @@
 #ifndef IDBBackingStore_h
 #define IDBBackingStore_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBKey.h"
 #include "IDBMetadata.h"
 #include "IndexedDB.h"
@@ -197,7 +195,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBBackingStore_h

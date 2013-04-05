@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=INDEXED_DATABASE,
     Supplemental=DOMWindow
 ] interface DOMWindowIndexedDatabase {
     [ImplementedAs=indexedDB,V8MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
@@ -53,4 +52,3 @@
     attribute IDBTransactionConstructor IDBTransaction;
     attribute IDBVersionChangeEventConstructor IDBVersionChangeEvent;
 };
-

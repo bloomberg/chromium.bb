@@ -26,7 +26,6 @@
 #include "config.h"
 #include "IDBLevelDBCoding.h"
 
-#if ENABLE(INDEXED_DATABASE)
 #if USE(LEVELDB)
 
 #include "IDBKey.h"
@@ -954,7 +953,7 @@ int compare(const LevelDBSlice& a, const LevelDBSlice& b, bool indexKeys, bool& 
     return 0;
 }
 
-}
+} // namespace
 
 int compare(const LevelDBSlice& a, const LevelDBSlice& b, bool indexKeys)
 {
@@ -1806,4 +1805,3 @@ PassRefPtr<IDBKey> IndexDataKey::primaryKey() const
 } // namespace WebCore
 
 #endif // USE(LEVELDB)
-#endif // ENABLE(INDEXED_DATABASE)

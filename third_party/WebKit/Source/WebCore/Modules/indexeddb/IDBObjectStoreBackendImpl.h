@@ -33,8 +33,6 @@
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBDatabaseBackendImpl;
@@ -73,7 +71,5 @@ namespace IDBObjectStoreBackendImpl {
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBObjectStoreBackendImpl_h

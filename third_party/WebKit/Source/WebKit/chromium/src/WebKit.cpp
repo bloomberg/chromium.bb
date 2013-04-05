@@ -33,6 +33,7 @@
 
 #include "CustomElementRegistry.h"
 #include "EventTracer.h"
+#include "IDBFactoryBackendProxy.h"
 #include "ImageDecodingStore.h"
 #include "LayoutTestSupport.h"
 #include "Logging.h"
@@ -53,10 +54,6 @@
 #include <wtf/Threading.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/text/AtomicString.h>
-
-#if ENABLE(INDEXED_DATABASE)
-#include "IDBFactoryBackendProxy.h"
-#endif
 
 #if ENABLE(VIDEO)
 #include "MediaPlayerPrivateChromium.h"
@@ -163,9 +160,7 @@ void initializeWithoutV8(Platform* webKitPlatformSupport)
 
     WebCore::EventTracer::initialize();
 
-#if ENABLE(INDEXED_DATABASE)
     WebCore::setIDBFactoryBackendInterfaceCreateFunction(WebKit::IDBFactoryBackendProxy::create);
-#endif
 
 #if ENABLE(VIDEO)
     WebCore::MediaPlayerPrivate::setMediaEngineRegisterSelfFunction(WebKit::WebMediaPlayerClientImpl::registerSelf);

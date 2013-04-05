@@ -26,8 +26,6 @@
 #ifndef IDBAny_h
 #define IDBAny_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBKeyPath.h"
 #include "ScriptValue.h"
 #include "ScriptWrappable.h"
@@ -139,7 +137,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBAny_h

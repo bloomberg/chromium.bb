@@ -37,8 +37,6 @@
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 
 namespace {
@@ -129,5 +127,3 @@ TEST(IDBAbortTest, TheTest)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

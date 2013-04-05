@@ -26,7 +26,6 @@
 #include "config.h"
 #include "LevelDBTransaction.h"
 
-#if ENABLE(INDEXED_DATABASE)
 #if USE(LEVELDB)
 
 #include "LevelDBDatabase.h"
@@ -537,4 +536,3 @@ bool LevelDBWriteOnlyTransaction::commit()
 } // namespace WebCore
 
 #endif // USE(LEVELDB)
-#endif // ENABLE(INDEXED_DATABASE)

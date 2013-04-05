@@ -29,8 +29,6 @@
 #ifndef IDBTracing_h
 #define IDBTracing_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #if PLATFORM(CHROMIUM)
 
 #include "TraceEvent.h"
@@ -42,7 +40,5 @@
 #define IDB_TRACE(a) LOG(StorageAPI, a)
 
 #endif //  PLATFORM(CHROMIUM)
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBTracing_h

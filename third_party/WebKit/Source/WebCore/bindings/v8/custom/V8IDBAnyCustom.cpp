@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "V8IDBAny.h"
 
 #include "ScriptValue.h"
@@ -107,5 +105,3 @@ v8::Handle<v8::Value> toV8ForMainWorld(IDBAny* impl, v8::Handle<v8::Object> crea
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

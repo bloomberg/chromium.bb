@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBMetadata.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBMetadata.h"
 #include "WebIDBKeyPath.h"
 #include <public/WebString.h>
@@ -89,5 +87,3 @@ WebIDBMetadata::operator IDBDatabaseMetadata() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

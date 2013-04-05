@@ -26,8 +26,6 @@
 #ifndef IDBOpenDBRequest_h
 #define IDBOpenDBRequest_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBRequest.h"
 
 namespace WebCore {
@@ -64,7 +62,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBOpenDBRequest_h

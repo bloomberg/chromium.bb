@@ -29,8 +29,6 @@
 #ifndef WebIDBFactoryImpl_h
 #define WebIDBFactoryImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "WebDOMStringList.h"
 #include "WebIDBFactory.h"
 #include <wtf/RefPtr.h>
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // WebIDBFactoryImpl_h

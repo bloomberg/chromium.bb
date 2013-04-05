@@ -26,8 +26,6 @@
 #ifndef IDBPendingTransactionMonitor_h
 #define IDBPendingTransactionMonitor_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/Noncopyable.h>
 #include <wtf/Vector.h>
 
@@ -51,7 +49,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBPendingTransactionMonitor_h

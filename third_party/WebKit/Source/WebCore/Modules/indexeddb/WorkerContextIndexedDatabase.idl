@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=INDEXED_DATABASE,
     Supplemental=WorkerContext
 ] interface WorkerContextIndexedDatabase {
     [ImplementedAs=indexedDB,V8EnabledAtRuntime] readonly attribute IDBFactory webkitIndexedDB;
@@ -53,4 +52,3 @@
     attribute IDBTransactionConstructor IDBTransaction;
     attribute IDBVersionChangeEventConstructor IDBVersionChangeEvent;
 };
-

@@ -29,8 +29,6 @@
 #include "config.h"
 #include "IDBRequest.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
@@ -570,5 +568,3 @@ EventTargetData* IDBRequest::ensureEventTargetData()
 }
 
 } // namespace WebCore
-
-#endif

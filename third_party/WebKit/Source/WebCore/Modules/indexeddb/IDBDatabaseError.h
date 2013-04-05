@@ -31,8 +31,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBDatabaseError : public RefCounted<IDBDatabaseError> {
@@ -69,7 +67,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBDatabaseError_h

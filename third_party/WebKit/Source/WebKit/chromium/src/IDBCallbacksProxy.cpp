@@ -29,8 +29,6 @@
 #include "config.h"
 #include "IDBCallbacksProxy.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendInterface.h"
@@ -170,6 +168,3 @@ void IDBCallbacksProxy::setDatabaseCallbacks(PassRefPtr<IDBDatabaseCallbacksProx
 }
 
 } // namespace WebKit
-
-
-#endif // ENABLE(INDEXED_DATABASE)

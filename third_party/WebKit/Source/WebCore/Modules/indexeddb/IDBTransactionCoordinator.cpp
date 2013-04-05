@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBTransactionCoordinator.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseBackendImpl.h"
 #include "IDBTransactionBackendImpl.h"
 
@@ -147,6 +145,5 @@ bool IDBTransactionCoordinator::canRunTransaction(IDBTransactionBackendImpl* tra
     return false;
 }
 
-};
+} // namespace WebCore
 
-#endif // ENABLE(INDEXED_DATABASE)

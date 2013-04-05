@@ -41,11 +41,9 @@ void V8RecursionScope::didLeaveScriptContext()
 {
     // FIXME: Instrument any work that takes place when script exits to c++ (e.g. Mutation Observers).
 
-#if ENABLE(INDEXED_DATABASE)
     // Indexed DB requires that transactions are created with an internal |active| flag
     // set to true, but the flag becomes false when control returns to the event loop.
     IDBPendingTransactionMonitor::deactivateNewTransactions();
-#endif
 
     if (m_isDocumentContext) {
         MutationObserver::deliverAllMutations();

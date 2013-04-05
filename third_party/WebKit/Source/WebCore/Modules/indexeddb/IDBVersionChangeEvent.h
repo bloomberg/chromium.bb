@@ -26,8 +26,6 @@
 #ifndef IDBVersionChangeEvent_h
 #define IDBVersionChangeEvent_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "Event.h"
 #include "IDBAny.h"
 #include <wtf/PassRefPtr.h>
@@ -54,7 +52,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBVersionChangeEvent_h

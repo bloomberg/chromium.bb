@@ -9,10 +9,10 @@ EventSource
 FileReader conditional=BLOB
 FileWriter conditional=FILE_SYSTEM
 FontLoader conditional=FONT_LOAD_EVENTS
-IDBDatabase conditional=INDEXED_DATABASE
-IDBOpenDBRequest conditional=INDEXED_DATABASE
-IDBRequest conditional=INDEXED_DATABASE
-IDBTransaction conditional=INDEXED_DATABASE
+IDBDatabase
+IDBOpenDBRequest
+IDBRequest
+IDBTransaction
 ScriptProcessorNode conditional=WEB_AUDIO
 LocalMediaStream conditional=MEDIA_STREAM
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2

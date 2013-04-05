@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "InspectorIndexedDBAgent.h"
 
 #include "DOMStringList.h"
@@ -793,6 +791,5 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(document, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }
-} // namespace WebCore
 
-#endif // ENABLE(INDEXED_DATABASE)
+} // namespace WebCore

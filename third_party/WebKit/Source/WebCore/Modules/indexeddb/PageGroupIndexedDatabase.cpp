@@ -26,8 +26,6 @@
 #include "config.h"
 #include "PageGroupIndexedDatabase.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBFactoryBackendInterface.h"
 #include "PageGroup.h"
 
@@ -66,5 +64,3 @@ IDBFactoryBackendInterface* PageGroupIndexedDatabase::factoryBackend()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

@@ -29,8 +29,6 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "ActiveDOMObject.h"
 #include "DOMError.h"
 #include "DOMRequestState.h"
@@ -163,7 +161,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBRequest_h

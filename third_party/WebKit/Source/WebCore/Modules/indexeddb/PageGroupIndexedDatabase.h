@@ -26,8 +26,6 @@
 #ifndef PageGroupIndexedDatabase_h
 #define PageGroupIndexedDatabase_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "Supplementable.h"
 
 namespace WebCore {
@@ -50,7 +48,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // PageGroupIndexedDatabase_h

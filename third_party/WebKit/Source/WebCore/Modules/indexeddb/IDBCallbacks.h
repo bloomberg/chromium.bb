@@ -36,8 +36,6 @@
 #include "SharedBuffer.h"
 #include <wtf/RefCounted.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 class DOMStringList;
 class IDBCursorBackendInterface;
@@ -75,7 +73,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBCallbacks_h

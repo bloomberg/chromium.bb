@@ -33,8 +33,6 @@
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 
 namespace {
@@ -128,5 +126,3 @@ TEST(IDBKeyPathTest, InvalidKeyPath5)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

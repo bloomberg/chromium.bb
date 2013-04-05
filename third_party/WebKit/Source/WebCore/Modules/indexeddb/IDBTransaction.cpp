@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBTransaction.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "EventException.h"
 #include "EventQueue.h"
 #include "ExceptionCodePlaceholder.h"
@@ -452,6 +450,4 @@ IDBDatabaseBackendInterface* IDBTransaction::backendDB() const
     return db()->backend();
 }
 
-}
-
-#endif // ENABLE(INDEXED_DATABASE)
+} // namespace WebCore

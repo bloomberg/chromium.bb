@@ -106,9 +106,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_agents.append(databaseAgentPtr.release());
 #endif
 
-#if ENABLE(INDEXED_DATABASE)
     m_agents.append(InspectorIndexedDBAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), pageAgent));
-#endif
 
 #if ENABLE(FILE_SYSTEM)
     m_agents.append(InspectorFileSystemAgent::create(m_instrumentingAgents.get(), pageAgent, m_state.get()));

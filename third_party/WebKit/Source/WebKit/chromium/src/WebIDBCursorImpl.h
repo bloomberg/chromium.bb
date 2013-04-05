@@ -26,8 +26,6 @@
 #ifndef WebIDBCursorImpl_h
 #define WebIDBCursorImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "WebExceptionCode.h"
 #include "WebIDBCursor.h"
 #include <public/WebCommon.h>
@@ -55,7 +53,5 @@ public:
 };
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // WebIDBCursorImpl_h

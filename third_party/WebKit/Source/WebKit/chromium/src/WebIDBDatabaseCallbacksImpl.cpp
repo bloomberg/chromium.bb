@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseCallbacks.h"
 #include <public/WebString.h>
 
@@ -64,7 +62,4 @@ void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId)
     m_callbacks->onComplete(transactionId);
 }
 
-
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

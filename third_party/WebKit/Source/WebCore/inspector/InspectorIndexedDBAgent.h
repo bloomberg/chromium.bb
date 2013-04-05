@@ -31,8 +31,6 @@
 #ifndef InspectorIndexedDBAgent_h
 #define InspectorIndexedDBAgent_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "InspectorBaseAgent.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
@@ -72,5 +70,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INDEXED_DATABASE)
 #endif // !defined(InspectorIndexedDBAgent_h)

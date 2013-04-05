@@ -27,8 +27,6 @@
 #ifndef IDBCursorBackendImpl_h
 #define IDBCursorBackendImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBCursorBackendInterface.h"
 #include "IDBTransactionBackendImpl.h"
@@ -87,7 +85,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBCursorBackendImpl_h

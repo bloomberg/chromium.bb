@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBDatabase.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "EventQueue.h"
 #include "ExceptionCode.h"
@@ -384,5 +382,3 @@ EventTargetData* IDBDatabase::ensureEventTargetData()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

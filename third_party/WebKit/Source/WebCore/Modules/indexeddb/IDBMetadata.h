@@ -34,8 +34,6 @@
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 struct IDBIndexMetadata {
@@ -110,7 +108,5 @@ struct IDBDatabaseMetadata {
 };
 
 }
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBMetadata_h

@@ -26,8 +26,6 @@
 #ifndef IDBKeyPath_h
 #define IDBKeyPath_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
@@ -79,7 +77,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBKeyPath_h

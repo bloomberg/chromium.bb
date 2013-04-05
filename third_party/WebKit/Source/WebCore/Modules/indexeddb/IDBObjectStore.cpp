@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBObjectStore.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "IDBAny.h"
 #include "IDBBindingUtilities.h"
@@ -574,5 +572,3 @@ IDBDatabaseBackendInterface* IDBObjectStore::backendDB() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

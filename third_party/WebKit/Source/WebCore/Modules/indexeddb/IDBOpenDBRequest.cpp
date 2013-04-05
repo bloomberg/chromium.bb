@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBOpenDBRequest.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabase.h"
 #include "IDBDatabaseCallbacksImpl.h"
 #include "IDBPendingTransactionMonitor.h"
@@ -154,5 +152,3 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtr<Event> event)
 }
 
 } // namespace WebCore
-
-#endif

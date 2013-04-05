@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBAny.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBCursorWithValue.h"
 #include "IDBDatabase.h"
 #include "IDBFactory.h"
@@ -214,5 +212,3 @@ IDBAny::IDBAny(int64_t value)
 }
 
 } // namespace WebCore
-
-#endif

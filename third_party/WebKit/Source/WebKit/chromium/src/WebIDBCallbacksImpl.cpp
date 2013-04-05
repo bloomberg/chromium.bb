@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBCallbacksImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "IDBCallbacks.h"
 #include "IDBCursorBackendProxy.h"
@@ -122,5 +120,3 @@ void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* 
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

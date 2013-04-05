@@ -26,8 +26,6 @@
 #ifndef WebIDBDatabaseImpl_h
 #define WebIDBDatabaseImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseCallbacksProxy.h"
 #include "WebExceptionCode.h"
 #include "WebIDBDatabase.h"
@@ -77,5 +75,3 @@ private:
 } // namespace WebKit
 
 #endif // WebIDBDatabaseImpl_h
-
-#endif // ENABLE(INDEXED_DATABASE)

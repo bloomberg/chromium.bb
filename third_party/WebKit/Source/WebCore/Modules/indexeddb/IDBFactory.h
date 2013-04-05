@@ -35,8 +35,6 @@
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBKey;
@@ -71,7 +69,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBFactory_h

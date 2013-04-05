@@ -26,8 +26,6 @@
 #ifndef IDBKeyRange_h
 #define IDBKeyRange_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "Dictionary.h"
 #include "IDBKey.h"
 #include "ScriptWrappable.h"
@@ -89,7 +87,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBKeyRange_h

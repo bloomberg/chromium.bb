@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBBindingUtilities.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMRequestState.h"
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
@@ -330,5 +328,3 @@ PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue& scri
 }
 
 } // namespace WebCore
-
-#endif

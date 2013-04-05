@@ -41,8 +41,6 @@
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 using namespace WebKit;
 
@@ -211,5 +209,3 @@ TEST_F(InjectIDBKeyTest, DISABLED_SubProperty)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBTransactionBackendImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBCursorBackendImpl.h"
 #include "IDBDatabaseBackendImpl.h"
@@ -267,6 +265,4 @@ void IDBTransactionBackendImpl::closeOpenCursors()
     m_openCursors.clear();
 }
 
-};
-
-#endif // ENABLE(INDEXED_DATABASE)
+} // namespace WebCore

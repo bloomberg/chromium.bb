@@ -33,8 +33,6 @@
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBBackingStore;
@@ -132,7 +130,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBDatabaseBackendImpl_h

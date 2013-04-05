@@ -28,8 +28,6 @@
 
 #include "config.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseException.h"
 
 namespace WebCore {
@@ -114,5 +112,3 @@ ExceptionCode IDBDatabaseException::getLegacyErrorCode(ExceptionCode ec)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

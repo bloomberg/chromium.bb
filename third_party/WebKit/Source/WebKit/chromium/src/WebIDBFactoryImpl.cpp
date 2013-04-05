@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebIDBFactoryImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMStringList.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
@@ -79,5 +77,3 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name, WebIDBCallbacks* c
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBIndex.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseException.h"
 #include "IDBKey.h"
 #include "IDBKeyRange.h"
@@ -208,5 +206,3 @@ IDBDatabaseBackendInterface* IDBIndex::backendDB() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

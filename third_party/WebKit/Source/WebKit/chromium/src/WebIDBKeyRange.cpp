@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBKeyRange.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBKey.h"
 #include "IDBKeyRange.h"
 #include "WebIDBKey.h"
@@ -95,5 +93,3 @@ WebIDBKeyRange::operator PassRefPtr<IDBKeyRange>() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

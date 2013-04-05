@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DOMWindowIndexedDatabase.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "DOMWindow.h"
 #include "Document.h"
 #include "IDBFactory.h"
@@ -116,5 +114,3 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

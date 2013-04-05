@@ -26,7 +26,6 @@
 #include "config.h"
 #include "IDBLevelDBCoding.h"
 
-#if ENABLE(INDEXED_DATABASE)
 #if USE(LEVELDB)
 
 #include "IDBKey.h"
@@ -746,4 +745,3 @@ TEST(IDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest)
 } // namespace
 
 #endif // USE(LEVELDB)
-#endif // ENABLE(INDEXED_DATABASE)

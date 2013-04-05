@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBKeyPath.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBKeyPath.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
@@ -113,5 +111,3 @@ WebIDBKeyPath::operator const WebCore::IDBKeyPath&() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

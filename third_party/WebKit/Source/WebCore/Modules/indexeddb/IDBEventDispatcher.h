@@ -29,8 +29,6 @@
 #ifndef IDBEventDispatcher_h
 #define IDBEventDispatcher_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
@@ -48,7 +46,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBEventDispatcher_h

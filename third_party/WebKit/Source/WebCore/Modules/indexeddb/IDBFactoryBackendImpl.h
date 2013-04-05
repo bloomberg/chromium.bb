@@ -38,8 +38,6 @@
 #include <wtf/WeakPtr.h>
 #include <wtf/text/StringHash.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class DOMStringList;
@@ -81,7 +79,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBFactoryBackendImpl_h

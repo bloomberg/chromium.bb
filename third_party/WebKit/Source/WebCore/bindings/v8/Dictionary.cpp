@@ -28,18 +28,15 @@
 
 #include "ArrayValue.h"
 #include "DOMStringList.h"
+#include "IDBKeyRange.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"
 #include "V8EventTarget.h"
+#include "V8IDBKeyRange.h"
 #include "V8Storage.h"
 #include "V8Uint8Array.h"
 #include "V8Utilities.h"
 #include <wtf/MathExtras.h>
-
-#if ENABLE(INDEXED_DATABASE)
-#include "IDBKeyRange.h"
-#include "V8IDBKeyRange.h"
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
 #include "V8MediaKeyError.h"

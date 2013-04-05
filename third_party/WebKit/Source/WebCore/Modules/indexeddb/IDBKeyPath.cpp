@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBKeyPath.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/ASCIICType.h>
 #include <wtf/dtoa.h>
 #include <wtf/unicode/Unicode.h>
@@ -250,7 +248,4 @@ bool IDBKeyPath::operator==(const IDBKeyPath& other) const
     return false;
 }
 
-
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

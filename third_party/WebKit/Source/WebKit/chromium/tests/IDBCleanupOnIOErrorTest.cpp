@@ -30,8 +30,6 @@
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 using namespace WebCore;
 
 namespace {
@@ -82,5 +80,3 @@ TEST(IDBIOErrorTest, CleanUpTest)
 }
 
 } // namespace
-
-#endif // ENABLE(INDEXED_DATABASE)

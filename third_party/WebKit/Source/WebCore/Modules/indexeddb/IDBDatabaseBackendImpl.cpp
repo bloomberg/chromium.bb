@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBDatabaseBackendImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBCursorBackendImpl.h"
 #include "IDBDatabaseException.h"
@@ -1389,5 +1387,3 @@ void IDBDatabaseBackendImpl::VersionChangeAbortOperation::perform(IDBTransaction
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

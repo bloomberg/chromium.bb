@@ -26,8 +26,6 @@
 #ifndef IDBDatabaseBackendProxy_h
 #define IDBDatabaseBackendProxy_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseBackendInterface.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -70,7 +68,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif
 
 #endif // IDBDatabaseBackendProxy_h

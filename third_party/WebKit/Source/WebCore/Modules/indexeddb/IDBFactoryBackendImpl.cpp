@@ -38,8 +38,6 @@
 #include "SecurityOrigin.h"
 #include <wtf/UnusedParam.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 template<typename K, typename M>
@@ -188,5 +186,3 @@ void IDBFactoryBackendImpl::open(const String& name, int64_t version, int64_t tr
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

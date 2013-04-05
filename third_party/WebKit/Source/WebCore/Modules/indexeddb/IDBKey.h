@@ -26,8 +26,6 @@
 #ifndef IDBKey_h
 #define IDBKey_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -164,8 +162,6 @@ private:
     enum { OverheadSize = 16 };
 };
 
-}
-
-#endif // ENABLE(INDEXED_DATABASE)
+} // namespace WebCore
 
 #endif // IDBKey_h

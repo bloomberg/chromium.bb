@@ -34,8 +34,6 @@
 #error "Chromium should not compile this file and instead define its own version of this factory that navigates the multi-process boundry."
 #endif
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterface::create()
@@ -44,5 +42,3 @@ PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterface::create()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

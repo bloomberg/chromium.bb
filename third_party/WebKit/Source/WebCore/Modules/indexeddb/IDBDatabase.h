@@ -41,8 +41,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class ScriptExecutionContext;
@@ -139,7 +137,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBDatabase_h

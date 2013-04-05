@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBDatabaseCallbacksProxy.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "WebIDBDatabaseCallbacks.h"
 
 using namespace WebCore;
@@ -69,5 +67,3 @@ void IDBDatabaseCallbacksProxy::onComplete(int64_t transactionId)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

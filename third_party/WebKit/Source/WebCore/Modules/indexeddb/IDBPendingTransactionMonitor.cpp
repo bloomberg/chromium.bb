@@ -30,8 +30,6 @@
 
 using WTF::ThreadSpecific;
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 typedef Vector<RefPtr<IDBTransaction> > TransactionList;
@@ -60,4 +58,3 @@ void IDBPendingTransactionMonitor::deactivateNewTransactions()
 }
 
 };
-#endif // ENABLE(INDEXED_DATABASE)

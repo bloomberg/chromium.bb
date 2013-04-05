@@ -31,8 +31,6 @@
 #include "IDBDatabaseException.h"
 #include "IDBKey.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::create(PassRefPtr<IDBKey> prpKey)
@@ -141,5 +139,3 @@ bool IDBKeyRange::isOnlyKey() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

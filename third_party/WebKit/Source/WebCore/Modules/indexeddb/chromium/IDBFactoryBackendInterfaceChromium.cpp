@@ -28,8 +28,6 @@
 #include "config.h"
 #include "IDBFactoryBackendInterfaceChromium.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 static IDBFactoryBackendInterfaceCreate* s_idbFactoryBackendInterfaceCreateFunction = 0;
@@ -48,5 +46,3 @@ PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterface::create()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

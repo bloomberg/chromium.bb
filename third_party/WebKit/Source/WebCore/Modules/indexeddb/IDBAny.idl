@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=INDEXED_DATABASE,
     CustomToJSObject,
     V8NoWrapperCache,
     JSNoStaticTables

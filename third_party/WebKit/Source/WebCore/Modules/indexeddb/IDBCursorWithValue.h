@@ -26,8 +26,6 @@
 #ifndef IDBCursorWithValue_h
 #define IDBCursorWithValue_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBCursor.h"
 
 namespace WebCore {
@@ -49,7 +47,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBCursorWithValue_h

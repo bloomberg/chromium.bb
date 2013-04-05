@@ -26,8 +26,6 @@
 #ifndef IDBTransaction_h
 #define IDBTransaction_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "ActiveDOMObject.h"
 #include "DOMError.h"
 #include "Event.h"
@@ -171,7 +169,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBTransaction_h

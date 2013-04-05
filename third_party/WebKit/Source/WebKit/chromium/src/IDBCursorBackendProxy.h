@@ -26,8 +26,6 @@
 #ifndef IDBCursorBackendProxy_h
 #define IDBCursorBackendProxy_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBCursorBackendInterface.h"
 #include "WebIDBCursor.h"
 #include <wtf/OwnPtr.h>
@@ -56,7 +54,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif
 
 #endif // IDBCursorBackendProxy_h

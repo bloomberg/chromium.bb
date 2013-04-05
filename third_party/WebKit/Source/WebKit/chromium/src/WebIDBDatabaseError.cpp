@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebIDBDatabaseError.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBDatabaseError.h"
 #include <public/WebString.h>
 
@@ -87,5 +85,3 @@ WebIDBDatabaseError::operator PassRefPtr<IDBDatabaseError>() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)

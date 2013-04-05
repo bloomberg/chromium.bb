@@ -29,8 +29,6 @@
 #include "config.h"
 #include "IDBEventDispatcher.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "Event.h"
 #include "EventTarget.h"
 
@@ -88,5 +86,3 @@ doneDispatching:
 }
 
 } // namespace WebCore
-
-#endif

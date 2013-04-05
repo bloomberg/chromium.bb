@@ -30,8 +30,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INDEXED_DATABASE)
-
 namespace WebCore {
 
 class IDBDatabase;
@@ -58,7 +56,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // IDBDatabaseCallbacksImpl_h

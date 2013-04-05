@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBBackingStore.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "FileSystem.h"
 #include "HistogramSupport.h"
 #include "IDBKey.h"
@@ -1997,5 +1995,3 @@ void IDBBackingStore::Transaction::rollback()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

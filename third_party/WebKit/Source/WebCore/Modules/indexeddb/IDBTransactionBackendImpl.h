@@ -26,8 +26,6 @@
 #ifndef IDBTransactionBackendImpl_h
 #define IDBTransactionBackendImpl_h
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBDatabaseBackendInterface.h"
 #include "IDBDatabaseError.h"
@@ -113,7 +111,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)
 
 #endif // IDBTransactionBackendImpl_h

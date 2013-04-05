@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBCursor.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBAny.h"
 #include "IDBBindingUtilities.h"
 #include "IDBCallbacks.h"
@@ -334,5 +332,3 @@ const AtomicString& IDBCursor::directionToString(unsigned short direction)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

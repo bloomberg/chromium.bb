@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBCursorBackendImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBBackingStore.h"
 #include "IDBCallbacks.h"
 #include "IDBDatabaseBackendImpl.h"
@@ -245,5 +243,3 @@ void IDBCursorBackendImpl::close()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INDEXED_DATABASE)

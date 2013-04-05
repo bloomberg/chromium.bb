@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebIDBCursorImpl.h"
 
-#if ENABLE(INDEXED_DATABASE)
-
 #include "IDBAny.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBCursorBackendInterface.h"
@@ -73,5 +71,3 @@ void WebIDBCursorImpl::prefetchReset(int usedPrefetches, int unusedPrefetches)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INDEXED_DATABASE)
