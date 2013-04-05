@@ -36,9 +36,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_file_error_injector.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
@@ -84,11 +84,6 @@ class DownloadsEventsListener : public content::NotificationObserver {
     registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
                       content::NotificationService::AllSources());
     STLDeleteElements(&events_);
-  }
-
-  void ClearEvents() {
-    STLDeleteElements(&events_);
-    events_.clear();
   }
 
   class Event {
@@ -338,10 +333,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
                             "    \"current\": \"interrupted\"}}]",
                             item->GetId(),
                             expected_error));
-  }
-
-  void ClearEvents() {
-    events_listener_->ClearEvents();
   }
 
   std::string GetExtensionURL() {
@@ -3105,154 +3096,108 @@ IN_PROC_BROWSER_TEST_F(
                          result_id)));
 }
 
-// TODO(benjhayden) Merge this with the other TestObservers.
-class JustInProgressDownloadObserver
-    : public content::DownloadTestObserverInProgress {
- public:
-  JustInProgressDownloadObserver(
-      DownloadManager* download_manager, size_t wait_count)
-      : content::DownloadTestObserverInProgress(download_manager, wait_count) {
-  }
-
-  virtual ~JustInProgressDownloadObserver() {}
-
- private:
-  virtual bool IsDownloadInFinalState(DownloadItem* item) OVERRIDE {
-    return item->GetState() == DownloadItem::IN_PROGRESS;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(JustInProgressDownloadObserver);
-};
-
-// Test download interruption while extensions determining filename. Should not
-// re-dispatch onDeterminingFilename.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume \
-        DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume
-#else
-#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume \
-        DownloadExtensionTest_OnDeterminingFilename_InterruptedResume
-#endif
+// Test download interruption while extensions determining filename, re-run
+// through fan-out and fan-in.
+// TODO(rdsmith): FILE_OPERATION_INITIALIZE is not right for this test.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
+    DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
   LoadExtension("downloads_split");
   CHECK(StartTestServer());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
   AddFilenameDeterminer();
 
+  // TODO Interrupt the download instead of responding to onDeterminingFilename.
+  scoped_refptr<content::TestFileErrorInjector> injector(
+      content::TestFileErrorInjector::Create(
+          GetCurrentManager()));
+  content::TestFileErrorInjector::FileErrorInfo error_info = {
+      download_url,
+      content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+      0,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
+  injector->AddError(error_info);
+  injector->InjectErrors();
+
   // Start a download.
-  DownloadItem* item = NULL;
-  {
-    DownloadManager* manager = GetCurrentManager();
-    scoped_ptr<content::DownloadTestObserver> observer(
-        new JustInProgressDownloadObserver(manager, 1));
-    ASSERT_EQ(0, manager->InProgressCount());
-    // Tabs created just for a download are automatically closed, invalidating
-    // the download's WebContents. Downloads without WebContents cannot be
-    // resumed. http://crbug.com/225901
-    ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(),
-        GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl),
-        CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
-    observer->WaitForFinished();
-    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
-    DownloadManager::DownloadVector items;
-    manager->GetAllDownloads(&items);
-    for (DownloadManager::DownloadVector::iterator iter = items.begin();
-          iter != items.end(); ++iter) {
-      if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
-        // There should be only one IN_PROGRESS item.
-        EXPECT_EQ(NULL, item);
-        item = *iter;
-      }
-    }
-    ASSERT_TRUE(item);
-  }
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
 
   // Wait for the onCreated and onDeterminingFilename event.
   ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
       base::StringPrintf("[{\"danger\": \"safe\","
-                         "  \"incognito\": false,"
-                         "  \"id\": %d,"
-                         "  \"mime\": \"application/octet-stream\","
-                         "  \"paused\": false}]",
-                         item->GetId())));
+                          "  \"incognito\": false,"
+                          "  \"id\": %d,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"url\": \"%s\"}]",
+                          result_id,
+                          download_url.c_str())));
   ASSERT_TRUE(WaitFor(
       events::kOnDownloadDeterminingFilename,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"incognito\": false,"
-                         "  \"filename\":\"download-unknown-size\"}]",
-                         item->GetId())));
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
   ASSERT_TRUE(item->IsInProgress());
 
-  ClearEvents();
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(),
-      GURL(URLRequestSlowDownloadJob::kErrorDownloadUrl),
-      NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"interrupted\"}}]",
+                          result_id)));
+  ASSERT_TRUE(item->IsInterrupted());
+  item->ResumeInterruptedDownload();
 
-  // Errors caught before filename determination are delayed until after
-  // filename determination.
+  // Wait for and respond to the onDeterminingFilename event.
+  ASSERT_TRUE(WaitFor(
+      events::kOnDownloadDeterminingFilename,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"incognito\": false,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_TRUE(item->IsInProgress());
   std::string error;
   ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
       current_browser()->profile(),
       false,
       GetExtensionId(),
-      item->GetId(),
+      result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
       false,
-      &error)) << error;
+      &error));
   EXPECT_EQ("", error);
-
-  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
-      base::StringPrintf("[{\"id\": %d,"
-                         "  \"error\":{\"current\":20},"
-                         "  \"state\":{"
-                         "    \"previous\":\"in_progress\","
-                         "    \"current\":\"interrupted\"}}]",
-                         item->GetId())));
-  // TODO(benjhayden) These next two lines fail on chromeos.
-  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
-  ASSERT_TRUE(item->IsInterrupted());
-
-  ClearEvents();
-  item->ResumeInterruptedDownload();
-
-  // Errors caught before filename determination is complete are delayed until
-  // after filename determination so that, on resumption, filename determination
-  // does not need to be re-done. So, there will not be a second
-  // onDeterminingFilename event.
-
-  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
-      base::StringPrintf("[{\"id\": %d,"
-                         "  \"error\":{\"previous\":20},"
-                         "  \"state\":{"
-                         "    \"previous\":\"interrupted\","
-                         "    \"current\":\"in_progress\"}}]",
-                         item->GetId())));
-
-  ClearEvents();
-  FinishPendingSlowDownloads();
 
   // The download should complete successfully.
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
-                         "  \"filename\": {"
-                         "    \"previous\": \"%s\","
-                         "    \"current\": \"%s\"},"
+                          "  \"filename\": {"
+                          "    \"previous\": \"%s\","
+                          "    \"current\": \"%s\"},"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id,
+                          GetFilename("42.txt.crdownload").c_str(),
+                          GetFilename("42.txt").c_str())));
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
                          "    \"previous\": \"in_progress\","
                          "    \"current\": \"complete\"}}]",
-                         item->GetId(),
-                         GetFilename("42.txt.crdownload").c_str(),
-                         GetFilename("42.txt").c_str())));
+                         result_id)));
 }
 
 // TODO(benjhayden) Figure out why DisableExtension() does not fire
