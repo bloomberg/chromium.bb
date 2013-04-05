@@ -357,6 +357,7 @@ WebInspector.ProfilesPanel = function(name, type)
     var singleProfileMode = typeof name !== "undefined";
     name = name || "profiles";
     WebInspector.Panel.call(this, name);
+    this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
 
