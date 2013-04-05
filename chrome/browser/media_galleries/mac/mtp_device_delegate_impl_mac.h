@@ -5,21 +5,15 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MTP_DEVICE_DELEGATE_IMPL_MAC_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MTP_DEVICE_DELEGATE_IMPL_MAC_H_
 
+#include <list>
+#include <map>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
-#include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/media/mtp_device_delegate.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
+#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
 namespace chrome {
 
@@ -28,100 +22,117 @@ namespace chrome {
 // and names of all files notified through the ItemAdded call will be
 // all appear as children of that directory. (ItemAdded calls with directories
 // will be ignored.)
-class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
+// Note on thread management: This class is thread-compatible: it can be created
+// on any thread, but then mutates all state on the UI thread. The async
+// delegate interface can be invoked on any thread, as it simply forwards calls
+// to the UI thread.
+class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceAsyncDelegate {
  public:
   MTPDeviceDelegateImplMac(const std::string& device_id,
-                           const base::FilePath::StringType& synthetic_path,
-                           base::SequencedTaskRunner* media_task_runner);
+                           const base::FilePath::StringType& synthetic_path);
 
-  // MTPDeviceDelegate:
-  virtual base::PlatformFileError GetFileInfo(
+  // MTPDeviceAsyncDelegate implementation. These functions are called on the
+  // IO thread by the async filesystem file util. They forward to
+  // similarly-named methods on the UI thread.
+  virtual void GetFileInfo(
       const base::FilePath& file_path,
-      base::PlatformFileInfo* file_info) OVERRIDE;
-  virtual scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      CreateFileEnumerator(const base::FilePath& root, bool recursive) OVERRIDE;
-  virtual base::PlatformFileError CreateSnapshotFile(
+      const GetFileInfoSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void ReadDirectory(
+      const base::FilePath& root,
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
-      base::PlatformFileInfo* file_info) OVERRIDE;
+      const CreateSnapshotFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
-  // Forward delegates for ImageCaptureDeviceListener
+  // Forward delegates for ImageCaptureDeviceListener. These are
+  // invoked in callbacks of the ImageCapture library on the UI thread.
   virtual void ItemAdded(const std::string& name,
                          const base::PlatformFileInfo& info);
   virtual void NoMoreItems();
   virtual void DownloadedFile(const std::string& name,
                               base::PlatformFileError error);
 
-  // Implementation returned by |CreateFileEnumerator()|. Must be deleted
-  // before CancelPendingTasksAndDeleteDelegate is called.
-  class Enumerator :
-      public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
-   public:
-    explicit Enumerator(MTPDeviceDelegateImplMac* delegate);
-    virtual ~Enumerator();
-
-    virtual base::FilePath Next() OVERRIDE;
-    virtual int64 Size() OVERRIDE;
-    virtual base::Time LastModifiedTime() OVERRIDE;
-    virtual bool IsDirectory() OVERRIDE;
-
-    // Called by the delegate to signal any waiters that the received items
-    // list has changed state.
-    void ItemsChanged();
-
-   private:
-    MTPDeviceDelegateImplMac* delegate_;
-    size_t position_;
-    base::WaitableEvent wait_for_items_;
-  };
-
-  // GetFile and HasAllFiles called by enumerators.
-  base::FilePath GetFile(size_t index);
-  bool ReceivedAllFiles();
-  void RemoveEnumerator(Enumerator* enumerator);
+  // Scheduled when early directory reads are requested. The
+  // timeout will signal an ABORT error to the caller if the
+  // device metadata cannot be read.
+  void ReadDirectoryTimeout(const base::FilePath& root);
 
  private:
-  friend class base::DeleteHelper<MTPDeviceDelegateImplMac>;
-
   class DeviceListener;
 
   virtual ~MTPDeviceDelegateImplMac();
 
+  // Delegate for GetFileInfo, called on the UI thread.
+  void GetFileInfoImpl(const base::FilePath& file_path,
+                       base::PlatformFileInfo* file_info,
+                       base::PlatformFileError* error);
+
+  // Delegate for ReadDirectory, called on the UI thread.
+  void ReadDirectoryImpl(
+      const base::FilePath& root,
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
+
+  // Delegate for CreateSnapshotFile, called on the UI thread.
+  void DownloadFile(
+      const base::FilePath& device_file_path,
+      const base::FilePath& local_path,
+      const CreateSnapshotFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
+
+  // Public for closures; should not be called except by
+  // CancelTasksAndDeleteDelegate.
+  void CancelAndDelete();
+
+  // Cancels any outstanding downloads.
+  void CancelDownloads();
+
+  // If necessary, notifies the ReadDirectory callback that all data
+  // has been read.
+  void NotifyReadDir();
+
   std::string device_id_;
   base::FilePath root_path_;
-
-  // Stores a reference to worker pool thread. All requests and response of file
-  // operations are posted on |media_task_runner_|. All callbacks from the
-  // camera will come through this task runner as well.
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   // Interface object for the camera underlying this MTP session.
   scoped_ptr<DeviceListener> camera_interface_;
 
-  // This lock protects all subsequent state. While calling into the delegate
-  // from the FileSystem API happens in sequence, these calls may be
-  // interleaved with calls on other threads in the sequenced task runner
-  // forwarded from the device.
-  base::Lock mutex_;
-
-  // Weak pointer to the enumerator which may be listening for files to come in.
-  Enumerator* enumerator_;
-
   // Stores a map from filename to file metadata received from the camera.
-  base::hash_map<base::FilePath::StringType, base::PlatformFileInfo> file_info_;
-
-  // Notification for pending download.
-  base::WaitableEvent* file_download_event_;
-
-  // Resulting error code for pending download.
-  base::PlatformFileError file_download_error_;
+  base::hash_map<base::FilePath::StringType,
+                 base::PlatformFileInfo> file_info_;
 
   // List of files received from the camera.
   std::vector<base::FilePath> file_paths_;
 
   // Set to true when all file metadata has been received from the camera.
   bool received_all_files_;
+
+  typedef std::map<std::string,
+                   std::pair<CreateSnapshotFileSuccessCallback,
+                             ErrorCallback> > ReadFileTransactionMap;
+
+  struct ReadDirectoryRequest {
+    ReadDirectoryRequest(const base::FilePath& dir,
+                         ReadDirectorySuccessCallback success_cb,
+                         ErrorCallback error_cb);
+    ~ReadDirectoryRequest();
+
+    base::FilePath directory;
+    ReadDirectorySuccessCallback success_callback;
+    ErrorCallback error_callback;
+  };
+
+  typedef std::list<ReadDirectoryRequest> ReadDirTransactionList;
+
+  ReadFileTransactionMap read_file_transactions_;
+  ReadDirTransactionList read_dir_transactions_;
+
+  base::WeakPtrFactory<MTPDeviceDelegateImplMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplMac);
 };

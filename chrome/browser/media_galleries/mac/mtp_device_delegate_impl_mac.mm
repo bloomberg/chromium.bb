@@ -5,16 +5,30 @@
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/sequenced_task_runner.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "chrome/browser/storage_monitor/image_capture_device.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/fileapi/async_file_util.h"
 
 namespace chrome {
+
+namespace {
+
+int kReadDirectoryTimeLimitSeconds = 20;
+
+using fileapi::MTPDeviceAsyncDelegate;
+typedef MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
+    CreateSnapshotFileSuccessCallback;
+typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
+typedef MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
+    GetFileInfoSuccessCallback;
+typedef MTPDeviceAsyncDelegate::ReadDirectorySuccessCallback
+    ReadDirectorySuccessCallback;
+
+}  // namespace
 
 // This class handles the UI-thread hand-offs needed to interface
 // with the ImageCapture library. It will forward callbacks to
@@ -41,6 +55,10 @@ class MTPDeviceDelegateImplMac::DeviceListener
   virtual void DownloadedFile(const std::string& name,
                               base::PlatformFileError error) OVERRIDE;
   virtual void DeviceRemoved() OVERRIDE;
+
+  // Used during delegate destruction to ensure there are no more calls
+  // to the delegate by the listener.
+  virtual void ResetDelegate();
 
  private:
   scoped_nsobject<ImageCaptureDevice> camera_device_;
@@ -75,35 +93,40 @@ void MTPDeviceDelegateImplMac::DeviceListener::DownloadFile(
 void MTPDeviceDelegateImplMac::DeviceListener::ItemAdded(
     const std::string& name,
     const base::PlatformFileInfo& info) {
-  delegate_->ItemAdded(name, info);
+  if (delegate_)
+    delegate_->ItemAdded(name, info);
 }
 
 void MTPDeviceDelegateImplMac::DeviceListener::NoMoreItems() {
-  delegate_->NoMoreItems();
+  if (delegate_)
+    delegate_->NoMoreItems();
 }
 
 void MTPDeviceDelegateImplMac::DeviceListener::DownloadedFile(
     const std::string& name,
     base::PlatformFileError error) {
-delegate_->DownloadedFile(name, error);
+  if (delegate_)
+    delegate_->DownloadedFile(name, error);
 }
 
 void MTPDeviceDelegateImplMac::DeviceListener::DeviceRemoved() {
   [camera_device_ close];
   camera_device_.reset();
+  if (delegate_)
+    delegate_->NoMoreItems();
+}
+
+void MTPDeviceDelegateImplMac::DeviceListener::ResetDelegate() {
+  delegate_ = NULL;
 }
 
 MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
     const std::string& device_id,
-    const base::FilePath::StringType& synthetic_path,
-    base::SequencedTaskRunner* media_task_runner)
+    const base::FilePath::StringType& synthetic_path)
     : device_id_(device_id),
       root_path_(synthetic_path),
-      media_task_runner_(media_task_runner),
-      enumerator_(NULL),
-      file_download_event_(NULL),
-      file_download_error_(base::PLATFORM_FILE_OK),
-      received_all_files_(false) {
+      received_all_files_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 
   // Make a synthetic entry for the root of the filesystem.
   base::PlatformFileInfo info;
@@ -118,99 +141,184 @@ MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
 }
 
 MTPDeviceDelegateImplMac::~MTPDeviceDelegateImplMac() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(enumerator_ == NULL);
 }
 
-base::PlatformFileError MTPDeviceDelegateImplMac::GetFileInfo(
+namespace {
+
+void ForwardGetFileInfo(
+    base::PlatformFileInfo* info,
+    base::PlatformFileError* error,
+    const GetFileInfoSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  if (*error == base::PLATFORM_FILE_OK)
+    success_callback.Run(*info);
+  else
+    error_callback.Run(*error);
+}
+
+}  // namespace
+
+void MTPDeviceDelegateImplMac::GetFileInfo(
     const base::FilePath& file_path,
-    base::PlatformFileInfo* file_info) {
-  base::AutoLock lock(mutex_);
-  base::hash_map<base::FilePath::StringType,
-                 base::PlatformFileInfo>::const_iterator i =
-      file_info_.find(file_path.value());
-  if (i == file_info_.end())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-  *file_info = i->second;
-  return base::PLATFORM_FILE_OK;
+    const GetFileInfoSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  base::PlatformFileInfo* info = new base::PlatformFileInfo;
+  base::PlatformFileError* error = new base::PlatformFileError;
+  // Note: ownership of these objects passed into the reply callback.
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&MTPDeviceDelegateImplMac::GetFileInfoImpl,
+                 base::Unretained(this), file_path, info, error),
+      base::Bind(&ForwardGetFileInfo,
+                 base::Owned(info), base::Owned(error),
+                 success_callback, error_callback));
 }
 
-scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-MTPDeviceDelegateImplMac::CreateFileEnumerator(const base::FilePath& root,
-                                               bool recursive) {
-  base::AutoLock lock(mutex_);
-  DCHECK(!enumerator_);
-  enumerator_ = new Enumerator(this);
-  return make_scoped_ptr(enumerator_)
-      .PassAs<fileapi::FileSystemFileUtil::AbstractFileEnumerator>();
-}
-
-base::PlatformFileError MTPDeviceDelegateImplMac::CreateSnapshotFile(
-    const base::FilePath& device_file_path,
-    const base::FilePath& local_path,
-    base::PlatformFileInfo* file_info) {
-  base::PlatformFileError error = GetFileInfo(device_file_path, file_info);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  // Set up to wait for download. Callers are ensuring this particular function
-  // will not be re-entered.
-  base::WaitableEvent waiter(true, false);
-  {
-    base::AutoLock lock(mutex_);
-    DCHECK(file_download_event_ == NULL);
-    file_download_event_ = &waiter;
-  }
-
-  // Start the download in the UI thread.
+void MTPDeviceDelegateImplMac::ReadDirectory(
+      const base::FilePath& root,
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback) {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DeviceListener::DownloadFile,
-                 base::Unretained(camera_interface_.get()),
-                 device_file_path.BaseName().value(), local_path));
-  waiter.Wait();
-  {
-    base::AutoLock lock(mutex_);
-    file_download_event_ = NULL;
-    error = file_download_error_;
-  }
+      base::Bind(&MTPDeviceDelegateImplMac::ReadDirectoryImpl,
+                 base::Unretained(this),
+                 root, success_callback, error_callback));
+}
 
-  // Modify the last modified time to null. This prevents the time stamp
-  // verification in LocalFileStreamReader.
-  file_info->last_modified = base::Time();
-
-  return error;
+void MTPDeviceDelegateImplMac::CreateSnapshotFile(
+      const base::FilePath& device_file_path,
+      const base::FilePath& local_path,
+      const CreateSnapshotFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) {
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&MTPDeviceDelegateImplMac::DownloadFile,
+                 base::Unretained(this),
+                 device_file_path, local_path,
+                 success_callback, error_callback));
 }
 
 void MTPDeviceDelegateImplMac::CancelPendingTasksAndDeleteDelegate() {
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&MTPDeviceDelegateImplMac::CancelAndDelete,
+                 base::Unretained(this)));
+}
+
+void MTPDeviceDelegateImplMac::GetFileInfoImpl(
+    const base::FilePath& file_path,
+    base::PlatformFileInfo* file_info,
+    base::PlatformFileError* error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::hash_map<base::FilePath::StringType,
+                 base::PlatformFileInfo>::const_iterator i =
+      file_info_.find(file_path.value());
+  if (i == file_info_.end()) {
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
+  }
+  *file_info = i->second;
+  *error = base::PLATFORM_FILE_OK;
+}
+
+void MTPDeviceDelegateImplMac::ReadDirectoryImpl(
+      const base::FilePath& root,
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  read_dir_transactions_.push_back(ReadDirectoryRequest(
+      root, success_callback, error_callback));
+
+  if (received_all_files_) {
+    NotifyReadDir();
+    return;
+  }
+
+  // Schedule a timeout in case the directory read doesn't complete.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&MTPDeviceDelegateImplMac::ReadDirectoryTimeout,
+                 weak_factory_.GetWeakPtr(), root),
+      base::TimeDelta::FromSeconds(kReadDirectoryTimeLimitSeconds));
+}
+
+void MTPDeviceDelegateImplMac::ReadDirectoryTimeout(
+    const base::FilePath& root) {
+  if (received_all_files_)
+    return;
+
+  for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
+       iter != read_dir_transactions_.end();) {
+    if (iter->directory != root) {
+      iter++;
+      continue;
+    }
+    iter->error_callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    iter = read_dir_transactions_.erase(iter);
+  }
+}
+
+void MTPDeviceDelegateImplMac::DownloadFile(
+      const base::FilePath& device_file_path,
+      const base::FilePath& local_path,
+      const CreateSnapshotFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  base::PlatformFileError error;
+  base::PlatformFileInfo info;
+  GetFileInfoImpl(device_file_path, &info, &error);
+  if (error != base::PLATFORM_FILE_OK) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(error_callback,
+                                                error));
+    return;
+  }
+
+  read_file_transactions_[device_file_path.BaseName().value()] =
+      std::make_pair(success_callback, error_callback);
+  camera_interface_->DownloadFile(device_file_path.BaseName().value(),
+                                  local_path);
+}
+
+void MTPDeviceDelegateImplMac::CancelAndDelete() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Artificially pretend that we have already gotten all items we're going
   // to get.
   NoMoreItems();
 
-  {
-    base::AutoLock lock(mutex_);
-    // Artificially wake up any downloads pending with an error code.
-    if (file_download_event_) {
-      file_download_error_ = base::PLATFORM_FILE_ERROR_FAILED;
-      file_download_event_->Signal();
-    }
-  }
+  CancelDownloads();
 
   // Schedule the camera session to be closed and the interface deleted.
+  camera_interface_->ResetDelegate();
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&DeviceListener::CloseCameraSessionAndDelete,
                  base::Unretained(camera_interface_.release())));
 
-  media_task_runner_->DeleteSoon(FROM_HERE, this);
+  delete this;
 }
 
+void MTPDeviceDelegateImplMac::CancelDownloads() {
+  // Cancel any outstanding callbacks.
+  for (ReadFileTransactionMap::iterator iter = read_file_transactions_.begin();
+       iter != read_file_transactions_.end(); ++iter) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+        base::Bind(iter->second.second, base::PLATFORM_FILE_ERROR_ABORT));
+  }
+  read_file_transactions_.clear();
+
+  for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
+       iter != read_dir_transactions_.end(); ++iter) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+        base::Bind(iter->error_callback, base::PLATFORM_FILE_ERROR_ABORT));
+  }
+  read_dir_transactions_.clear();
+
+  // TODO(gbillock): ImageCapture currently offers no way to cancel
+  // in-progress downloads.
+}
+
+// Called on the UI thread by the listener
 void MTPDeviceDelegateImplMac::ItemAdded(
     const std::string& name, const base::PlatformFileInfo& info) {
-  base::AutoLock lock(mutex_);
-
-  // Make sure that if we're canceled and an enumerator is awake, that
-  // it will stay consistent. May need to revisit this if we need
-  // notifications of files added after we think we're done.
   if (received_all_files_)
     return;
 
@@ -224,94 +332,74 @@ void MTPDeviceDelegateImplMac::ItemAdded(
   file_info_[item_filename.value()] = info;
   file_paths_.push_back(item_filename);
 
-  if (enumerator_)
-    enumerator_->ItemsChanged();
+  // TODO(gbillock): Should we send new files to
+  // read_dir_transactions_ callbacks?
 }
 
+// Called in the UI thread by delegate.
 void MTPDeviceDelegateImplMac::NoMoreItems() {
-  base::AutoLock lock(mutex_);
   received_all_files_ = true;
-
-  if (enumerator_)
-    enumerator_->ItemsChanged();
+  NotifyReadDir();
 }
 
+void MTPDeviceDelegateImplMac::NotifyReadDir() {
+  // Note: this assumes the only directory read we get is for the root.
+  // When this class supports directory hierarchies, this will change.
+  for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
+       iter != read_dir_transactions_.end(); ++iter) {
+    fileapi::AsyncFileUtil::EntryList entry_list;
+    for (size_t i = 0; i < file_paths_.size(); ++i) {
+      base::PlatformFileInfo info = file_info_[file_paths_[i].value()];
+      base::FileUtilProxy::Entry entry;
+      entry.name = file_paths_[i].value();
+      entry.is_directory = info.is_directory;
+      entry.size = info.size;
+      entry.last_modified_time = info.last_modified;
+      entry_list.push_back(entry);
+    }
+    content::BrowserThread::PostTask(content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(iter->success_callback, entry_list, false));
+  }
+}
+
+// Invoked on UI thread from the listener.
 void MTPDeviceDelegateImplMac::DownloadedFile(
     const std::string& name, base::PlatformFileError error) {
-  // If we're cancelled and deleting, we have already signaled all enumerators.
+  // If we're cancelled and deleting, we may have deleted the camera.
   if (!camera_interface_.get())
     return;
 
-  base::AutoLock lock(mutex_);
-  file_download_error_ = error;
-  file_download_event_->Signal();
-}
+  ReadFileTransactionMap::iterator iter = read_file_transactions_.find(name);
+  if (iter == read_file_transactions_.end())
+    return;
 
-base::FilePath MTPDeviceDelegateImplMac::GetFile(size_t index) {
-  base::AutoLock lock(mutex_);
-  if (index >= file_paths_.size())
-    return base::FilePath();
-  else
-    return file_paths_[index];
-}
-
-bool MTPDeviceDelegateImplMac::ReceivedAllFiles() {
-  base::AutoLock lock(mutex_);
-  return received_all_files_;
-}
-
-void MTPDeviceDelegateImplMac::RemoveEnumerator(Enumerator* enumerator) {
-  base::AutoLock lock(mutex_);
-  DCHECK(enumerator_ == enumerator);
-  enumerator_ = NULL;
-}
-
-MTPDeviceDelegateImplMac::Enumerator::Enumerator(
-    MTPDeviceDelegateImplMac* delegate)
-    : delegate_(delegate),
-      position_(0),
-      wait_for_items_(false, false) {}
-
-MTPDeviceDelegateImplMac::Enumerator::~Enumerator() {
-  delegate_->RemoveEnumerator(this);
-}
-
-base::FilePath MTPDeviceDelegateImplMac::Enumerator::Next() {
-  base::FilePath next_file = delegate_->GetFile(position_);
-  while (next_file.empty() && !delegate_->ReceivedAllFiles()) {
-    wait_for_items_.Wait();
-    next_file = delegate_->GetFile(position_);
+  if (error != base::PLATFORM_FILE_OK) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+        base::Bind(iter->second.second, error));
+    read_file_transactions_.erase(iter);
+    return;
   }
 
-  position_++;
-  return next_file;
+  base::PlatformFileInfo info = file_info_[name];
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(iter->second.first, info, base::FilePath(name)));
+  read_file_transactions_.erase(iter);
 }
 
-int64 MTPDeviceDelegateImplMac::Enumerator::Size() {
-  base::PlatformFileInfo info;
-  delegate_->GetFileInfo(delegate_->GetFile(position_ - 1), &info);
-  return info.size;
-}
+MTPDeviceDelegateImplMac::ReadDirectoryRequest::ReadDirectoryRequest(
+    const base::FilePath& dir,
+    ReadDirectorySuccessCallback success_cb,
+    ErrorCallback error_cb)
+    : directory(dir),
+      success_callback(success_cb),
+      error_callback(error_cb) {}
 
-base::Time MTPDeviceDelegateImplMac::Enumerator::LastModifiedTime() {
-  base::PlatformFileInfo info;
-  delegate_->GetFileInfo(delegate_->GetFile(position_ - 1), &info);
-  return info.last_modified;
-}
+MTPDeviceDelegateImplMac::ReadDirectoryRequest::~ReadDirectoryRequest() {}
 
-bool MTPDeviceDelegateImplMac::Enumerator::IsDirectory() {
-  base::PlatformFileInfo info;
-  delegate_->GetFileInfo(delegate_->GetFile(position_ - 1), &info);
-  return info.is_directory;
-}
-
-void MTPDeviceDelegateImplMac::Enumerator::ItemsChanged() {
-  wait_for_items_.Signal();
-}
-
-void CreateMTPDeviceDelegate(const std::string& device_location,
-                             base::SequencedTaskRunner* media_task_runner,
-                             const CreateMTPDeviceDelegateCallback& cb) {
+void CreateMTPDeviceAsyncDelegate(
+    const base::FilePath::StringType& device_location,
+    const CreateMTPDeviceAsyncDelegateCallback& cb) {
   std::string device_name = base::FilePath(device_location).BaseName().value();
   std::string device_id;
   MediaStorageUtil::Type type;
@@ -320,8 +408,7 @@ void CreateMTPDeviceDelegate(const std::string& device_location,
   DCHECK(cracked);
   DCHECK_EQ(MediaStorageUtil::MAC_IMAGE_CAPTURE, type);
 
-  cb.Run(new MTPDeviceDelegateImplMac(device_id, device_location,
-                                      media_task_runner));
+  cb.Run(new MTPDeviceDelegateImplMac(device_id, device_location));
 }
 
 }  // namespace chrome
