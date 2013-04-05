@@ -41,13 +41,6 @@ class Page;
 
 class InspectorClient : public InspectorStateClient {
 public:
-    virtual ~InspectorClient() { }
-
-    virtual void inspectorDestroyed() = 0;
-
-    virtual InspectorFrontendChannel* openInspectorFrontend(InspectorController*) = 0;
-    virtual void closeInspectorFrontend() = 0;
-    virtual void bringFrontendToFront() = 0;
     virtual void didResizeMainFrame(Frame*) { }
 
     virtual void highlight() = 0;
@@ -61,14 +54,8 @@ public:
         unsigned char flags);
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
-    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*fontScaleFactor*/, bool /*fitWindow*/)
-    {
-        // FIXME: Platforms may want to implement this (see https://bugs.webkit.org/show_bug.cgi?id=82886).
-    }
-    virtual void autoZoomPageToFitWidth()
-    {
-        // FIXME: Platforms may want to implement this (see https://bugs.webkit.org/show_bug.cgi?id=82886).
-    }
+    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*fontScaleFactor*/, bool /*fitWindow*/) { }
+    virtual void autoZoomPageToFitWidth() { }
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }
@@ -85,6 +72,9 @@ public:
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) { }
 
     static bool doDispatchMessageOnFrontendPage(Page* frontendPage, const String& message);
+
+protected:
+    virtual ~InspectorClient() { }
 };
 
 } // namespace WebCore

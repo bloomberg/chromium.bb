@@ -80,9 +80,6 @@ public:
 
     Page* inspectedPage() const;
 
-    void show();
-    void close();
-
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
     bool hasInspectorFrontendClient() const;
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);

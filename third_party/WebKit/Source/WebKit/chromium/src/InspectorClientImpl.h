@@ -49,17 +49,11 @@ public:
     ~InspectorClientImpl();
 
     // InspectorClient methods:
-    virtual void inspectorDestroyed();
-    virtual WebCore::InspectorFrontendChannel* openInspectorFrontend(WebCore::InspectorController*);
-    virtual void closeInspectorFrontend();
-    virtual void bringFrontendToFront();
-
     virtual void highlight();
     virtual void hideHighlight();
 
     virtual bool sendMessageToFrontend(const WTF::String&);
 
-    virtual bool supportsInspectorStateUpdates() const { return true; }
     virtual void updateInspectorStateCookie(const WTF::String&);
 
     virtual void clearBrowserCache();
