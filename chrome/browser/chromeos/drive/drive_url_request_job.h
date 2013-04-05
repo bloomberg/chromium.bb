@@ -90,11 +90,9 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper callback for handling result of file_util::GetFileSize().
   void OnGetFileSize(int64 *file_size, bool success);
 
-  // Helper callback for GetEntryInfoByResourceId invoked by Start().
-  void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                  DriveFileError error,
-                                  const base::FilePath& drive_file_path,
-                                  scoped_ptr<DriveEntryProto> entry_proto);
+  // Helper callback for GetEntryInfoByPath invoked by Start().
+  void OnGetEntryInfoByPath(DriveFileError error,
+                            scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
   // stream in a streaming fashion.

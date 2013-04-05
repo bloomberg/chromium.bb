@@ -283,9 +283,8 @@ void OnDriveFileFound(Profile* profile,
   if (error == drive::DRIVE_FILE_OK) {
     GURL page_url;
     if (file_type == drive::REGULAR_FILE) {
-      page_url = drive::util::GetFileResourceUrl(
-          entry_proto->resource_id(),
-          entry_proto->base_name());
+      page_url = drive::util::FilePathToDriveURL(
+          drive::util::ExtractDrivePath(file_path));
     } else if (file_type == drive::HOSTED_DOCUMENT) {
       page_url = GURL(entry_proto->file_specific_info().alternate_url());
     } else {

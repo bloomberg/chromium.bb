@@ -5,10 +5,36 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 
 #include "base/files/file_path.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 namespace util {
+
+TEST(DriveFileSystemUtilTest, FilePathToDriveURL) {
+  base::FilePath path;
+
+  // Path with alphabets and numbers.
+  path = GetDriveMyDriveRootPath().AppendASCII("foo/bar012.txt");
+  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
+
+  // Path with symbols.
+  path = GetDriveMyDriveRootPath().AppendASCII(
+      " !\"#$%&'()*+,-.:;<=>?@[\\]^_`{|}~");
+  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
+
+  // Path with '%'.
+  path = GetDriveMyDriveRootPath().AppendASCII("%19%20%21.txt");
+  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
+
+  // Path with multi byte characters.
+  string16 utf16_string;
+  utf16_string.push_back(0x307b);  // HIRAGANA_LETTER_HO
+  utf16_string.push_back(0x3052);  // HIRAGANA_LETTER_GE
+  path = GetDriveMyDriveRootPath().Append(
+      base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(utf16_string) + ".txt"));
+  EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
+}
 
 TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(

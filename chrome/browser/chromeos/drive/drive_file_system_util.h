@@ -89,10 +89,11 @@ const std::string& GetDriveMountPointPathAsString();
 // Returns the 'local' root of remote file system as "/special".
 const base::FilePath& GetSpecialRemoteRootPath();
 
-// Returns the gdata file resource url formatted as
-// chrome://drive/<resource_id>/<file_name>.
-GURL GetFileResourceUrl(const std::string& resource_id,
-                        const std::string& file_name);
+// Returns the gdata file resource url formatted as "drive:<path>"
+GURL FilePathToDriveURL(const base::FilePath& path);
+
+// Converts a drive: URL back to a path that can be passed to DriveFileSystem.
+base::FilePath DriveURLToFilePath(const GURL& url);
 
 // Given a profile and a drive_cache_path, return the file resource url.
 void ModifyDriveFileResourceUrl(Profile* profile,

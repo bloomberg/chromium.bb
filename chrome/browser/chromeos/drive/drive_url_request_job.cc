@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -69,20 +70,6 @@ std::string FixupMimeType(const std::string& type) {
   return type;
 }
 
-// Helper function that extracts and unescapes resource_id from drive urls
-// (drive:<resource_id>).
-bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
-  const std::string drive_schema(chrome::kDriveScheme + std::string(":"));
-  if (!StartsWithASCII(path, drive_schema, false) ||
-      path.size() <= drive_schema.size()) {
-    return false;
-  }
-
-  std::string id = path.substr(drive_schema.size());
-  *resource_id = net::UnescapeURLComponent(id, kUrlPathUnescapeMask);
-  return resource_id->size();
-}
-
 // Helper function to cancel Drive download operation on UI thread.
 void CancelDriveDownloadOnUIThread(
     const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
@@ -109,39 +96,37 @@ void CancelDriveDownload(
                  file_system_getter, drive_file_path));
 }
 
-// Helper function to call DriveFileSystem::GetEntryInfoByResourceId.
-void GetEntryInfoByResourceIdOnUIThread(
+// Helper function to call DriveFileSystem::GetEntryInfoByPath.
+void GetEntryInfoByPathOnUIThread(
     const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
-    const std::string& resource_id,
-    const drive::GetEntryInfoWithFilePathCallback& callback) {
+    const base::FilePath& path,
+    const drive::GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED,
-                 base::FilePath(),
-                 scoped_ptr<DriveEntryProto>());
+    callback.Run(DRIVE_FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
     return;
   }
-  file_system->GetEntryInfoByResourceId(resource_id, callback);
+  file_system->GetEntryInfoByPath(path, callback);
 }
 
-// Returns the entry info for the |resource_id| on DriveFileSystem returned by
+// Returns the entry info for the |path| on DriveFileSystem returned by
 // |file_system_getter| via |callback|.
 // The main task will be done on UI thread, but this method itself is designed
 // to be run on IO thread. Also the |callback| will be run on IO thread, too.
-void GetEntryInfoByResourceId(
+void GetEntryInfoByPath(
     const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
-    const std::string& resource_id,
-    const drive::GetEntryInfoWithFilePathCallback& callback) {
+    const base::FilePath& path,
+    const drive::GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetEntryInfoByResourceIdOnUIThread,
+      base::Bind(&GetEntryInfoByPathOnUIThread,
                  file_system_getter,
-                 resource_id,
+                 path,
                  google_apis::CreateRelayCallback(callback)));
 }
 
@@ -262,19 +247,10 @@ void DriveURLRequestJob::Start() {
                                            net::ERR_METHOD_NOT_SUPPORTED));
     return;
   }
-
-  std::string resource_id;
-  if (!ParseDriveUrl(request_->url().spec(), &resource_id)) {
-    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                           net::ERR_INVALID_URL));
-    return;
-  }
-
-  GetEntryInfoByResourceId(
-      file_system_getter_,
-      resource_id,
-      base::Bind(&DriveURLRequestJob::OnGetEntryInfoByResourceId,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id));
+  GetEntryInfoByPath(file_system_getter_,
+                     util::DriveURLToFilePath(request_->url()),
+                     base::Bind(&DriveURLRequestJob::OnGetEntryInfoByPath,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveURLRequestJob::Kill() {
@@ -435,32 +411,32 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 
 //======================= DriveURLRequestJob private methods ===================
 
-void DriveURLRequestJob::OnGetEntryInfoByResourceId(
-    const std::string& resource_id,
+void DriveURLRequestJob::OnGetEntryInfoByPath(
     DriveFileError error,
-    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error == DRIVE_FILE_OK) {
-    DCHECK(entry_proto.get());
-    mime_type_ = entry_proto->file_specific_info().content_mime_type();
-    drive_file_path_ = drive_file_path;
-    initial_file_size_ = entry_proto->file_info().size();
-  } else {
+  if (error != DRIVE_FILE_OK) {
     mime_type_.clear();
     drive_file_path_.clear();
     initial_file_size_ = 0;
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           net::ERR_FILE_NOT_FOUND));
+    return;
   }
+  DCHECK(entry_proto.get());
+  mime_type_ = entry_proto->file_specific_info().content_mime_type();
+  drive_file_path_ = util::DriveURLToFilePath(request_->url());
+  initial_file_size_ = entry_proto->file_info().size();
   remaining_bytes_ = initial_file_size_;
 
   DVLOG(1) << "Getting file for resource id";
   GetFileByResourceId(
       file_system_getter_,
-      resource_id,
+      entry_proto->resource_id(),
       base::Bind(&DriveURLRequestJob::OnGetFileByResourceId,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DriveURLRequestJob::OnUrlFetchDownloadData,

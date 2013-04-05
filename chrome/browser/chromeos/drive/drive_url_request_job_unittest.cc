@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_test_util.h"
@@ -45,7 +46,8 @@ class DriveURLRequestJobTest : public testing::Test {
 
 TEST_F(DriveURLRequestJobTest, NonGetMethod) {
   net::TestURLRequest request(
-      GURL("drive:file_id"), delegate_.get(), url_request_context_.get());
+      util::FilePathToDriveURL(base::FilePath::FromUTF8Unsafe("file")),
+      delegate_.get(), url_request_context_.get());
   request.set_method("POST");  // Set non "GET" method.
 
   scoped_refptr<DriveURLRequestJob> job(
@@ -57,22 +59,6 @@ TEST_F(DriveURLRequestJobTest, NonGetMethod) {
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request.status().error());
-}
-
-TEST_F(DriveURLRequestJobTest, NonDriveScheme) {
-  net::TestURLRequest request(
-      GURL("http://www.google.com"),
-      delegate_.get(), url_request_context_.get());
-
-  scoped_refptr<DriveURLRequestJob> job(
-      new DriveURLRequestJob(
-          base::Bind(&GetNullDriveFileSystem),
-          &request, network_delegate_.get()));
-  job->Start();
-  MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_INVALID_URL, request.status().error());
 }
 
 }  // namespace drive

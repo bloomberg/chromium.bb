@@ -115,18 +115,16 @@ void OpenEditURLUIThread(Profile* profile, const GURL& edit_url) {
 void OnGetEntryInfoByResourceId(Profile* profile,
                                 const std::string& resource_id,
                                 DriveFileError error,
-                                const base::FilePath& /* drive_file_path */,
+                                const base::FilePath& drive_file_path,
                                 scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != DRIVE_FILE_OK)
     return;
 
-  DCHECK(entry_proto.get());
-  const std::string& base_name = entry_proto->base_name();
-  const GURL edit_url = GetFileResourceUrl(resource_id, base_name);
+  const GURL edit_url = FilePathToDriveURL(drive_file_path);
   OpenEditURLUIThread(profile, edit_url);
-  DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
+  DVLOG(1) << "OnGetEntryInfoByResourceId " << edit_url;
 }
 
 }  // namespace
@@ -179,13 +177,19 @@ const base::FilePath& GetDriveMyDriveMountPointPath() {
   return drive_mydrive_mount_path;
 }
 
-GURL GetFileResourceUrl(const std::string& resource_id,
-                        const std::string& file_name) {
-  std::string url(base::StringPrintf(
-      "%s:%s",
-      chrome::kDriveScheme,
-      net::EscapePath(resource_id).c_str()));
+GURL FilePathToDriveURL(const base::FilePath& path) {
+  std::string url(base::StringPrintf("%s:%s",
+                                     chrome::kDriveScheme,
+                                     path.AsUTF8Unsafe().c_str()));
   return GURL(url);
+}
+
+base::FilePath DriveURLToFilePath(const GURL& url) {
+  if (!url.is_valid() || url.scheme() != chrome::kDriveScheme)
+    return base::FilePath();
+  std::string path_string = net::UnescapeURLComponent(
+      url.path(), net::UnescapeRule::NORMAL);
+  return base::FilePath::FromUTF8Unsafe(path_string);
 }
 
 void ModifyDriveFileResourceUrl(Profile* profile,
