@@ -17,6 +17,7 @@
         'out_newlib64': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'force_arm_pnacl': 1,
         'sources': [
           'pnacl_shim.c',
           'shim_entry.c',
