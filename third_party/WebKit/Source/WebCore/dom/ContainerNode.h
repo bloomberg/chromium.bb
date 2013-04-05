@@ -108,7 +108,6 @@ public:
 
     virtual void attach() OVERRIDE;
     virtual void detach() OVERRIDE;
-    virtual LayoutRect boundingBox() const OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
     virtual void setActive(bool active = true, bool pause = false) OVERRIDE;
     virtual void setHovered(bool = true) OVERRIDE;
@@ -155,9 +154,6 @@ private:
     static void dispatchPostAttachCallbacks();
     void suspendPostAttachCallbacks();
     void resumePostAttachCallbacks();
-
-    bool getUpperLeftCorner(FloatPoint&) const;
-    bool getLowerRightCorner(FloatPoint&) const;
 
     Node* m_firstChild;
     Node* m_lastChild;
