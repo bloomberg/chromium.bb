@@ -48,7 +48,6 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   string16 display_name;
   bool connected;
   bool paired;
-  bool visible;
 };
 
 typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;

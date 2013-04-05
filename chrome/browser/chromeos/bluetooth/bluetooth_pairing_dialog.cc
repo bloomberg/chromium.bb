@@ -33,10 +33,9 @@ BluetoothPairingDialog::BluetoothPairingDialog(
     gfx::NativeWindow parent_window,
     const device::BluetoothDevice* device)
     : parent_window_(parent_window) {
-  device_data_.SetString("address", device->address());
+  device_data_.SetString("address", device->GetAddress());
   device_data_.SetString("name", device->GetName());
   device_data_.SetBoolean("paired", device->IsPaired());
-  device_data_.SetBoolean("bonded", device->IsBonded());
   device_data_.SetBoolean("connected", device->IsConnected());
 }
 

@@ -26,11 +26,11 @@ void BluetoothAdapterExperimentalChromeOS::RemoveObserver(
     BluetoothAdapter::Observer* observer) {
 }
 
-std::string BluetoothAdapterExperimentalChromeOS::address() const {
+std::string BluetoothAdapterExperimentalChromeOS::GetAddress() const {
   return std::string();
 }
 
-std::string BluetoothAdapterExperimentalChromeOS::name() const {
+std::string BluetoothAdapterExperimentalChromeOS::GetName() const {
   return std::string();
 }
 

@@ -19,20 +19,23 @@ class MockBluetoothAdapter;
 class MockBluetoothDevice : public BluetoothDevice {
  public:
   MockBluetoothDevice(MockBluetoothAdapter* adapter,
+                      uint32 bluetooth_class,
                       const std::string& name,
                       const std::string& address,
                       bool paired,
-                      bool bonded,
                       bool connected);
   virtual ~MockBluetoothDevice();
 
-  MOCK_CONST_METHOD0(address, const std::string&());
+  MOCK_CONST_METHOD0(GetBluetoothClass, uint32());
+  MOCK_CONST_METHOD0(GetDeviceName, std::string());
+  MOCK_CONST_METHOD0(GetAddress, std::string());
   MOCK_CONST_METHOD0(GetName, string16());
   MOCK_CONST_METHOD0(GetDeviceType, BluetoothDevice::DeviceType());
   MOCK_CONST_METHOD0(IsPaired, bool());
-  MOCK_CONST_METHOD0(IsBonded, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
-  MOCK_CONST_METHOD0(GetServices, const ServiceList&());
+  MOCK_CONST_METHOD0(IsConnectable, bool());
+  MOCK_CONST_METHOD0(IsConnecting, bool());
+  MOCK_CONST_METHOD0(GetServices, ServiceList());
   MOCK_METHOD2(GetServiceRecords,
                void(const BluetoothDevice::ServiceRecordsCallback&,
                     const BluetoothDevice::ErrorCallback&));
@@ -70,7 +73,8 @@ class MockBluetoothDevice : public BluetoothDevice {
            const BluetoothDevice::ErrorCallback& error_callback));
 
  private:
-  string16 name_;
+  uint32 bluetooth_class_;
+  std::string name_;
   std::string address_;
   BluetoothDevice::ServiceList service_list_;
 };

@@ -60,7 +60,6 @@ cr.define('options', function() {
      *         address: string,
      *         icon: Constants.DEVICE_TYPE,
      *         paired: boolean,
-     *         bonded: boolean,
      *         connected: boolean,
      *         pairing: string|undefined,
      *         passkey: number|undefined,

@@ -30,8 +30,9 @@ BluetoothDeviceWin::BluetoothDeviceWin(
   name_ = state.name;
   address_ = state.address;
   bluetooth_class_ = state.bluetooth_class;
+  visible_ = state.visible;
   connected_ = state.connected;
-  bonded_ = state.authenticated;
+  paired_ = state.authenticated;
 
   for (ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>::const_iterator
        iter = state.service_record_states.begin();
@@ -58,11 +59,35 @@ void BluetoothDeviceWin::SetVisible(bool visible) {
   visible_ = visible;
 }
 
+uint32 BluetoothDeviceWin::GetBluetoothClass() const {
+  return bluetooth_class_;
+}
+
+std::string BluetoothDeviceWin::GetDeviceName() const {
+  return name_;
+}
+
+std::string BluetoothDeviceWin::GetAddress() const {
+  return address_;
+}
+
 bool BluetoothDeviceWin::IsPaired() const {
+  return paired_;
+}
+
+bool BluetoothDeviceWin::IsConnected() const {
+  return connected_;
+}
+
+bool BluetoothDeviceWin::IsConnectable() const {
   return false;
 }
 
-const BluetoothDevice::ServiceList& BluetoothDeviceWin::GetServices() const {
+bool BluetoothDeviceWin::IsConnecting() const {
+  return false;
+}
+
+BluetoothDevice::ServiceList BluetoothDeviceWin::GetServices() const {
   return service_uuids_;
 }
 

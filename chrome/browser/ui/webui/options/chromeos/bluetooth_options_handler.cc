@@ -296,7 +296,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
           base::Bind(&base::DoNothing),
           base::Bind(&BluetoothOptionsHandler::ConnectError,
                      weak_ptr_factory_.GetWeakPtr(),
-                     device->address()));
+                     device->GetAddress()));
     }
   } else if (command == kCancelCommand) {
     // Cancel pairing.
@@ -317,13 +317,13 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
         base::Bind(&base::DoNothing),
         base::Bind(&BluetoothOptionsHandler::DisconnectError,
                    weak_ptr_factory_.GetWeakPtr(),
-                   device->address()));
+                   device->GetAddress()));
   } else if (command == kForgetCommand) {
     // Disconnect from device and delete pairing information.
     VLOG(1) << "Forget device: " << address;
     device->Forget(base::Bind(&BluetoothOptionsHandler::ForgetError,
                               weak_ptr_factory_.GetWeakPtr(),
-                              device->address()));
+                              device->GetAddress()));
   } else {
     LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }
@@ -406,9 +406,8 @@ void BluetoothOptionsHandler::SendDeviceNotification(
     base::DictionaryValue* params) {
   base::DictionaryValue js_properties;
   js_properties.SetString("name", device->GetName());
-  js_properties.SetString("address", device->address());
+  js_properties.SetString("address", device->GetAddress());
   js_properties.SetBoolean("paired", device->IsPaired());
-  js_properties.SetBoolean("bonded", device->IsBonded());
   js_properties.SetBoolean("connected", device->IsConnected());
   js_properties.SetBoolean("connectable", device->IsConnectable());
   if (params)
@@ -489,7 +488,7 @@ void BluetoothOptionsHandler::DeviceRemoved(device::BluetoothAdapter* adapter,
   DCHECK(adapter == adapter_.get());
   DCHECK(device);
 
-  base::StringValue address(device->address());
+  base::StringValue address(device->GetAddress());
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.removeBluetoothDevice",
       address);

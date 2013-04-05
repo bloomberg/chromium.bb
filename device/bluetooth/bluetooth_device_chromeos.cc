@@ -50,6 +50,11 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     BluetoothAdapterChromeOS* adapter)
     : BluetoothDevice(),
       adapter_(adapter),
+      bluetooth_class_(0),
+      paired_(false),
+      connected_(false),
+      connectable_(true),
+      connecting_(false),
       pairing_delegate_(NULL),
       connecting_applications_counter_(0),
       connecting_calls_(0),
@@ -60,11 +65,35 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
 BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {
 }
 
-bool BluetoothDeviceChromeOS::IsPaired() const {
-  return !object_path_.value().empty();
+uint32 BluetoothDeviceChromeOS::GetBluetoothClass() const {
+  return bluetooth_class_;
 }
 
-const BluetoothDevice::ServiceList&
+std::string BluetoothDeviceChromeOS::GetDeviceName() const {
+  return name_;
+}
+
+std::string BluetoothDeviceChromeOS::GetAddress() const {
+  return address_;
+}
+
+bool BluetoothDeviceChromeOS::IsPaired() const {
+  return paired_;
+}
+
+bool BluetoothDeviceChromeOS::IsConnected() const {
+  return connected_;
+}
+
+bool BluetoothDeviceChromeOS::IsConnectable() const {
+  return connectable_;
+}
+
+bool BluetoothDeviceChromeOS::IsConnecting() const {
+  return connecting_;
+}
+
+BluetoothDeviceChromeOS::ServiceList
 BluetoothDeviceChromeOS::GetServices() const {
   return service_uuids_;
 }
@@ -129,7 +158,7 @@ void BluetoothDeviceChromeOS::Connect(
       weak_ptr_factory_.GetWeakPtr(),
       error_callback);
 
-  if (IsPaired() || IsBonded() || IsConnected()) {
+  if (IsPaired() || IsConnected()) {
     // Connection to already paired or connected device.
     ConnectApplications(wrapped_callback, wrapped_error_callback);
 
@@ -301,7 +330,7 @@ void BluetoothDeviceChromeOS::SetOutOfBandPairingData(
   DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
       AddRemoteData(
           object_path_,
-          address(),
+          address_,
           data,
           base::Bind(&BluetoothDeviceChromeOS::OnRemoteDataCallback,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -315,7 +344,7 @@ void BluetoothDeviceChromeOS::ClearOutOfBandPairingData(
   DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
       RemoveRemoteData(
           object_path_,
-          address(),
+          address_,
           base::Bind(&BluetoothDeviceChromeOS::OnRemoteDataCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      callback,
@@ -360,9 +389,7 @@ void BluetoothDeviceChromeOS::Update(
       GetServiceRecords(base::Bind(&DoNothingServiceRecordList),
                         base::Bind(&base::DoNothing));
 
-    // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
-    // spec refers to this as bonded. Use the spec name for our interface.
-    bonded_ = properties->paired.value();
+    paired_ = properties->paired.value();
     connected_ = properties->connected.value();
   }
 }
@@ -454,7 +481,7 @@ void BluetoothDeviceChromeOS::CollectServiceRecordsCallback(
   for (BluetoothDeviceClient::ServiceMap::const_iterator i =
       service_map.begin(); i != service_map.end(); ++i) {
     service_records_.push_back(
-        new BluetoothServiceRecordChromeOS(address(), i->second));
+        new BluetoothServiceRecordChromeOS(address_, i->second));
   }
   service_records_loaded_ = true;
 

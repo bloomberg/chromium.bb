@@ -6,7 +6,6 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -26,7 +25,7 @@ struct BluetoothOutOfBandPairingData;
 //
 // The class is instantiated and managed by the BluetoothAdapter class
 // and pointers should only be obtained from that class and not cached,
-// instead use the address() method as a unique key for a device.
+// instead use the GetAddress() method as a unique key for a device.
 //
 // Since the lifecycle of BluetoothDevice instances is managed by
 // BluetoothAdapter, that class rather than this provides observer methods
@@ -153,7 +152,7 @@ class BluetoothDevice {
 
   // Returns the Bluetooth of address the device. This should be used as
   // a unique key to identify the device and copied where needed.
-  virtual const std::string& address() const;
+  virtual std::string GetAddress() const = 0;
 
   // Returns the name of the device suitable for displaying, this may
   // be a synthesied string containing the address and localized type name
@@ -166,35 +165,24 @@ class BluetoothDevice {
   // DEVICE_PERIPHERAL.
   DeviceType GetDeviceType() const;
 
-  // Indicates whether the device is paired to the adapter, whether or not
-  // that pairing is permanent or temporary.
+  // Indicates whether the device is paired with the adapter.
   virtual bool IsPaired() const = 0;
 
-  // Indicates whether the device is visible to the adapter, this is not
-  // mutually exclusive to being paired.
-  virtual bool IsVisible() const;
+  // Indicates whether the device is currently connected to the adapter.
+  virtual bool IsConnected() const = 0;
 
-  // Indicates whether the device is bonded to the adapter, bonding is
-  // formed by pairing and exchanging high-security link keys so that
-  // connections may be encrypted.
-  virtual bool IsBonded() const;
-
-  // Indicates whether the device is currently connected to the adapter
-  // and at least one service available for use.
-  virtual bool IsConnected() const;
-
-  // Indicates whether the bonded device accepts connections initiated from the
-  // adapter. This value is undefined for unbonded devices.
-  virtual bool IsConnectable() const;
+  // Indicates whether the paired device accepts connections initiated from the
+  // adapter. This value is undefined for unpaired devices.
+  virtual bool IsConnectable() const = 0;
 
   // Indicates whether there is a call to Connect() ongoing. For this attribute,
   // we consider a call is ongoing if none of the callbacks passed to Connect()
   // were called after the corresponding call to Connect().
-  virtual bool IsConnecting() const;
+  virtual bool IsConnecting() const = 0;
 
   // Returns the services (as UUID strings) that this device provides.
   typedef std::vector<std::string> ServiceList;
-  virtual const ServiceList& GetServices() const = 0;
+  virtual ServiceList GetServices() const = 0;
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
@@ -326,31 +314,11 @@ class BluetoothDevice {
  protected:
   BluetoothDevice();
 
-  // The Bluetooth class of the device, a bitmask that may be decoded using
-  // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
-  uint32 bluetooth_class_;
+  // Returns the Bluetooth class of the device, used by GetDeviceType().
+  virtual uint32 GetBluetoothClass() const = 0;
 
-  // The name of the device, as supplied by the remote device.
-  std::string name_;
-
-  // The Bluetooth address of the device.
-  std::string address_;
-
-  // Tracked device state, updated by the adapter managing the lifecyle of
-  // the device.
-  bool visible_;
-  bool bonded_;
-  bool connected_;
-
-  // Indicates whether the device normally accepts connections initiated from
-  // the adapter once paired.
-  bool connectable_;
-
-  // Indicated whether the device is in a connecting status.
-  bool connecting_;
-
-  // The services (identified by UUIDs) that this device provides.
-  ServiceList service_uuids_;
+  // Returns the internal name of the Bluetooth device, used by GetName().
+  virtual std::string GetDeviceName() const = 0;
 
  private:
   // Returns a localized string containing the device's bluetooth address and

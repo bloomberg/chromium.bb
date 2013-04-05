@@ -43,8 +43,8 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   // BluetoothAdapter override
   virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
-  virtual std::string address() const OVERRIDE;
-  virtual std::string name() const OVERRIDE;
+  virtual std::string GetAddress() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;

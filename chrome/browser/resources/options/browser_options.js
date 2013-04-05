@@ -1349,7 +1349,6 @@ cr.define('options', function() {
      * @param {{name: string,
      *          address: string,
      *          paired: boolean,
-     *          bonded: boolean,
      *          connected: boolean}} device
      *     Decription of the Bluetooth device.
      * @private

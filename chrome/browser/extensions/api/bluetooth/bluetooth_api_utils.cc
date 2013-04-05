@@ -17,9 +17,8 @@ namespace bluetooth {
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
                                 Device* out) {
   out->name = UTF16ToUTF8(device.GetName());
-  out->address = device.address();
+  out->address = device.GetAddress();
   out->paired = device.IsPaired();
-  out->bonded = device.IsBonded();
   out->connected = device.IsConnected();
 }
 
@@ -28,8 +27,8 @@ void PopulateAdapterState(const device::BluetoothAdapter& adapter,
   out->discovering = adapter.IsDiscovering();
   out->available = adapter.IsPresent();
   out->powered = adapter.IsPowered();
-  out->name = adapter.name();
-  out->address = adapter.address();
+  out->name = adapter.GetName();
+  out->address = adapter.GetAddress();
 }
 
 }  // namespace bluetooth

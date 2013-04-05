@@ -86,10 +86,10 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // The address of this adapter.  The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.
-  virtual std::string address() const = 0;
+  virtual std::string GetAddress() const = 0;
 
   // The name of the adapter.
-  virtual std::string name() const = 0;
+  virtual std::string GetName() const = 0;
 
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
@@ -121,7 +121,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   //
   // Since discovery may already be in progress when this method is called,
   // callers should retrieve the current set of discovered devices by calling
-  // GetDevices() and checking for those with IsVisible() as true.
+  // GetDevices() and checking for those with IsPaired() as false.
   virtual void StartDiscovering(const base::Closure& callback,
                                 const ErrorCallback& error_callback) = 0;
 

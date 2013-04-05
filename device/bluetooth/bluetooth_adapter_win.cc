@@ -45,11 +45,11 @@ void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::string BluetoothAdapterWin::address() const {
+std::string BluetoothAdapterWin::GetAddress() const {
   return address_;
 }
 
-std::string BluetoothAdapterWin::name() const {
+std::string BluetoothAdapterWin::GetName() const {
   return name_;
 }
 

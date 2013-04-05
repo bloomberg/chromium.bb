@@ -531,11 +531,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     for (size_t i = 0; i < devices.size(); ++i) {
       device::BluetoothDevice* device = devices[i];
       ash::BluetoothDeviceInfo info;
-      info.address = device->address();
+      info.address = device->GetAddress();
       info.display_name = device->GetName();
       info.connected = device->IsConnected();
       info.paired = device->IsPaired();
-      info.visible = device->IsVisible();
       list->push_back(info);
     }
   }

@@ -24,8 +24,12 @@ class BluetoothDeviceMac : public BluetoothDevice {
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
+  virtual std::string GetAddress() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
-  virtual const ServiceList& GetServices() const OVERRIDE;
+  virtual bool IsConnected() const OVERRIDE;
+  virtual bool IsConnectable() const OVERRIDE;
+  virtual bool IsConnecting() const OVERRIDE;
+  virtual ServiceList GetServices() const OVERRIDE;
   virtual void GetServiceRecords(
       const ServiceRecordsCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
@@ -59,6 +63,11 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
+ protected:
+  // BluetoothDevice override
+  virtual uint32 GetBluetoothClass() const OVERRIDE;
+  virtual std::string GetDeviceName() const OVERRIDE;
+
  private:
   friend class BluetoothAdapterMac;
 
@@ -68,6 +77,24 @@ class BluetoothDeviceMac : public BluetoothDevice {
   uint32 device_fingerprint() const {
     return device_fingerprint_;
   }
+
+  // The Bluetooth class of the device, a bitmask that may be decoded using
+  // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
+  uint32 bluetooth_class_;
+
+  // The name of the device, as supplied by the remote device.
+  std::string name_;
+
+  // The Bluetooth address of the device.
+  std::string address_;
+
+  // Tracked device state, updated by the adapter managing the lifecyle of
+  // the device.
+  bool paired_;
+  bool connected_;
+
+  // The services (identified by UUIDs) that this device provides.
+  ServiceList service_uuids_;
 
   // Used to compare the devices.
   const uint32 device_fingerprint_;

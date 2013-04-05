@@ -134,7 +134,7 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     device::BluetoothAdapter* adapter, bool present) {
   if (adapter != adapter_) {
-    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
   }
   DispatchAdapterStateEvent();
@@ -143,7 +143,7 @@ void ExtensionBluetoothEventRouter::AdapterPresentChanged(
 void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter, bool has_power) {
   if (adapter != adapter_) {
-    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
   }
   DispatchAdapterStateEvent();
@@ -152,7 +152,7 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
 void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter, bool discovering) {
   if (adapter != adapter_) {
-    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
   }
 
@@ -169,7 +169,7 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* device) {
   if (adapter != adapter_) {
-    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;
   }
 

@@ -130,7 +130,7 @@ TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithAddress) {
 
   // Adapter should be present with the given address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(adapter_address, adapter_->address());
+  EXPECT_EQ(adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithoutAddress) {
@@ -185,7 +185,7 @@ TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithoutAddress) {
 
   // Adapter should be present with the given address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(adapter_address, adapter_->address());
+  EXPECT_EQ(adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterBecomesPresentWithAddress) {
@@ -230,7 +230,7 @@ TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterBecomesPresentWithAddress) {
 
   // Adapter should be present with the new address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(adapter_address, adapter_->address());
+  EXPECT_EQ(adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithAddress) {
@@ -289,7 +289,7 @@ TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithAddress) {
 
   // Adapter should be present with the new address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(new_adapter_address, adapter_->address());
+  EXPECT_EQ(new_adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest,
@@ -348,7 +348,7 @@ TEST_F(BluetoothAdapterChromeOSTest,
 
   // Adapter should be present with the new address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(adapter_address, adapter_->address());
+  EXPECT_EQ(adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithoutAddress) {
@@ -417,7 +417,7 @@ TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithoutAddress) {
 
   // Adapter should be present with the new address.
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(new_adapter_address, adapter_->address());
+  EXPECT_EQ(new_adapter_address, adapter_->GetAddress());
 }
 
 TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterRemoved) {

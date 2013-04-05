@@ -85,7 +85,7 @@ class BluetoothDeviceWinTest : public testing::Test {
 };
 
 TEST_F(BluetoothDeviceWinTest, GetServices) {
-  const BluetoothDevice::ServiceList& service_list = device_->GetServices();
+  BluetoothDevice::ServiceList service_list = device_->GetServices();
 
   EXPECT_EQ(2, service_list.size());
   EXPECT_STREQ(kTestAudioSdpUuid, service_list[0].c_str());

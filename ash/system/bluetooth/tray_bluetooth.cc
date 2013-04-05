@@ -138,7 +138,7 @@ class BluetoothDetailedView : public TrayDetailsView,
         connected_devices_.push_back(list[i]);
       else if (list[i].paired)
         paired_not_connected_devices_.push_back(list[i]);
-      else if (list[i].visible)
+      else
         discovered_not_paired_devices_.push_back(list[i]);
     }
   }

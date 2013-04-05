@@ -40,8 +40,12 @@ class BluetoothDeviceChromeOS
   virtual ~BluetoothDeviceChromeOS();
 
   // BluetoothDevice override
+  virtual std::string GetAddress() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
-  virtual const ServiceList& GetServices() const OVERRIDE;
+  virtual bool IsConnected() const OVERRIDE;
+  virtual bool IsConnectable() const OVERRIDE;
+  virtual bool IsConnecting() const OVERRIDE;
+  virtual ServiceList GetServices() const OVERRIDE;
   virtual void GetServiceRecords(
       const ServiceRecordsCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
@@ -75,22 +79,33 @@ class BluetoothDeviceChromeOS
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
+ protected:
+  // BluetoothDevice override
+  virtual uint32 GetBluetoothClass() const OVERRIDE;
+  virtual std::string GetDeviceName() const OVERRIDE;
+
  private:
   friend class BluetoothAdapterChromeOS;
   friend class device::MockBluetoothDevice;
 
   explicit BluetoothDeviceChromeOS(BluetoothAdapterChromeOS* adapter);
 
+  // Returns whether this device has an object path.
+  bool HasObjectPath() const { return !object_path_.value().empty(); }
+
   // Sets the dbus object path for the device to |object_path|, indicating
-  // that the device has gone from being discovered to paired or bonded.
+  // that the device has gone from being discovered to paired or connected.
   void SetObjectPath(const dbus::ObjectPath& object_path);
 
   // Removes the dbus object path from the device, indicating that the
-  // device is no longer paired or bonded, but perhaps still visible.
+  // device is no longer paired or connected, but perhaps still visible.
   void RemoveObjectPath();
 
-  // Sets whether the device is visible to the owning adapter to |visible|.
-  void SetVisible(bool visible) { visible_ = visible; }
+  // Returns whether this was a discovered device.
+  bool WasDiscovered() const { return discovered_; }
+
+  // Sets whether the device was discovered.
+  void SetDiscovered(bool discovered) { discovered_ = discovered; }
 
   // Updates device information from the properties in |properties|, device
   // state properties such as |paired_| and |connected_| are ignored unless
@@ -371,8 +386,34 @@ class BluetoothDeviceChromeOS
   // been discovered and not yet paired with.
   dbus::ObjectPath object_path_;
 
+  // The Bluetooth class of the device, a bitmask that may be decoded using
+  // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
+  uint32 bluetooth_class_;
+
+  // The name of the device, as supplied by the remote device.
+  std::string name_;
+
+  // The Bluetooth address of the device.
+  std::string address_;
+
+  // Tracked device state, updated by the adapter managing the lifecyle of
+  // the device.
+  bool paired_;
+  bool connected_;
+
+  // Indicates whether the device normally accepts connections initiated from
+  // the adapter once paired.
+  bool connectable_;
+
+  // Indicated whether the device is in a connecting status.
+  bool connecting_;
+
+  // Used by BluetoothAdapterChromeOS (a friend) to avoid removing discovered
+  // devices when they are unpaired.
+  bool discovered_;
+
   // The services (identified by UUIDs) that this device provides.
-  std::vector<std::string> service_uuids_;
+  ServiceList service_uuids_;
 
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and

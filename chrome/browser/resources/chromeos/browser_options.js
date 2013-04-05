@@ -41,7 +41,6 @@ cr.define('options', function() {
    * @param {{name: string,
    *          address: string,
    *          paired: boolean,
-   *          bonded: boolean,
    *          pairing: string | undefined
    *          pincode: string | undefined
    *          passkey: number | undefined

@@ -40,8 +40,7 @@ BluetoothDeviceMac::BluetoothDeviceMac(const IOBluetoothDevice* device)
   address_ = base::SysNSStringToUTF8([device addressString]);
   bluetooth_class_ = [device classOfDevice];
   connected_ = [device isConnected];
-  bonded_ = [device isPaired];
-  visible_ = true;
+  paired_ = [device isPaired];
 
   for (IOBluetoothSDPServiceRecord* service in [device services]) {
     BluetoothServiceRecord* service_record =
@@ -54,11 +53,35 @@ BluetoothDeviceMac::BluetoothDeviceMac(const IOBluetoothDevice* device)
 BluetoothDeviceMac::~BluetoothDeviceMac() {
 }
 
-bool BluetoothDeviceMac::IsPaired() const {
-  return bonded_;
+uint32 BluetoothDeviceMac::GetBluetoothClass() const {
+  return bluetooth_class_;
 }
 
-const BluetoothDevice::ServiceList& BluetoothDeviceMac::GetServices() const {
+std::string BluetoothDeviceMac::GetDeviceName() const {
+  return name_;
+}
+
+std::string BluetoothDeviceMac::GetAddress() const {
+  return address_;
+}
+
+bool BluetoothDeviceMac::IsPaired() const {
+  return paired_;
+}
+
+bool BluetoothDeviceMac::IsConnected() const {
+  return connected_;
+}
+
+bool BluetoothDeviceMac::IsConnectable() const {
+  return false;
+}
+
+bool BluetoothDeviceMac::IsConnecting() const {
+  return false;
+}
+
+BluetoothDevice::ServiceList BluetoothDeviceMac::GetServices() const {
   return service_uuids_;
 }
 

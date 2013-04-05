@@ -155,7 +155,7 @@ TEST_F(BluetoothAdapterDevicesChromeOSTest, DeviceRemovedAfterFound) {
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceCreated(adapter_path_, device_path);
 
-  // Finally remove the adapter again;
+  // Finally remove the device again;
   // BluetoothAdapterClient::Observer::DeviceRemoved should be not called,
   // instead BluetoothAdapterClient::Observer::DeviceChanged will be called.
   EXPECT_CALL(adapter_observer_, DeviceRemoved(adapter_.get(), device))
@@ -167,7 +167,6 @@ TEST_F(BluetoothAdapterDevicesChromeOSTest, DeviceRemovedAfterFound) {
       ->DeviceRemoved(adapter_path_, device_path);
 
   // Verify that the device is still visible, just no longer paired.
-  EXPECT_TRUE(device->IsVisible());
   EXPECT_FALSE(device->IsPaired());
 }
 

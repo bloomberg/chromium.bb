@@ -60,11 +60,11 @@ class BluetoothApiTest : public ExtensionApiTest {
     event_router()->SetAdapterForTest(mock_adapter_);
 
     device1_.reset(new testing::NiceMock<MockBluetoothDevice>(
-        mock_adapter_, "d1", "11:12:13:14:15:16",
-        true /* paired */, false /* bonded */, true /* connected */));
+        mock_adapter_, 0, "d1", "11:12:13:14:15:16",
+        true /* paired */, true /* connected */));
     device2_.reset(new testing::NiceMock<MockBluetoothDevice>(
-        mock_adapter_, "d2", "21:22:23:24:25:26",
-        false /* paired */, true /* bonded */, false /* connected */));
+        mock_adapter_, 0, "d2", "21:22:23:24:25:26",
+        false /* paired */, false /* connected */));
   }
 
   template <class T>
@@ -142,9 +142,9 @@ static void CallConnectToServiceCallback(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
-  EXPECT_CALL(*mock_adapter_, address())
+  EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
-  EXPECT_CALL(*mock_adapter_, name())
+  EXPECT_CALL(*mock_adapter_, GetName())
       .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(false));
@@ -208,14 +208,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::Truly(CallClosure),
                                         testing::_));
 
   std::string params = base::StringPrintf(
-      "[{\"deviceAddress\":\"%s\"}]", device1_->address().c_str());
+      "[{\"deviceAddress\":\"%s\"}]", device1_->GetAddress().c_str());
 
   scoped_refptr<api::BluetoothSetOutOfBandPairingDataFunction> set_oob_function;
   set_oob_function = setupFunction(
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device1_.get());
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::_,
@@ -314,9 +314,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
-  EXPECT_CALL(*mock_adapter_, address())
+  EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
-  EXPECT_CALL(*mock_adapter_, name())
+  EXPECT_CALL(*mock_adapter_, GetName())
       .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
@@ -369,9 +369,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("bluetooth/events")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  EXPECT_CALL(*mock_adapter_, address())
+  EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
-  EXPECT_CALL(*mock_adapter_, name())
+  EXPECT_CALL(*mock_adapter_, GetName())
       .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(false));
@@ -381,9 +381,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
       .WillOnce(testing::Return(false));
   event_router()->AdapterPoweredChanged(mock_adapter_, false);
 
-  EXPECT_CALL(*mock_adapter_, address())
+  EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
-  EXPECT_CALL(*mock_adapter_, name())
+  EXPECT_CALL(*mock_adapter_, GetName())
       .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
@@ -393,9 +393,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
       .WillOnce(testing::Return(true));
   event_router()->AdapterPresentChanged(mock_adapter_, true);
 
-  EXPECT_CALL(*mock_adapter_, address())
+  EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
-  EXPECT_CALL(*mock_adapter_, name())
+  EXPECT_CALL(*mock_adapter_, GetName())
       .WillOnce(testing::Return(kName));
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Permissions) {
   PermissionsRequestFunction::SetAutoConfirmForTests(true);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
-  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
               ConnectToService(testing::_, testing::_))
