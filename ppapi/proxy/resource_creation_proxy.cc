@@ -70,6 +70,13 @@ InterfaceProxy* ResourceCreationProxy::Create(Dispatcher* dispatcher) {
   return new ResourceCreationProxy(dispatcher);
 }
 
+PP_Resource ResourceCreationProxy::CreateDirectoryReader(
+    PP_Instance instance,
+    PP_Resource directory_ref) {
+  return (new DirectoryReaderResource(
+      GetConnection(), instance, directory_ref))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
   return (new FileIOResource(GetConnection(), instance))->GetReference();
 }
@@ -326,13 +333,6 @@ PP_Resource ResourceCreationProxy::CreateBrowserFont(
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
                                                 uint32_t size) {
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
-}
-
-PP_Resource ResourceCreationProxy::CreateDirectoryReader(
-    PP_Instance instance,
-    PP_Resource directory_ref) {
-  return (new DirectoryReaderResource(
-      GetConnection(), instance, directory_ref))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {

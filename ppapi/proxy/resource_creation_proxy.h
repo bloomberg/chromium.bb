@@ -37,6 +37,8 @@ class ResourceCreationProxy : public InterfaceProxy,
   static InterfaceProxy* Create(Dispatcher* dispatcher);
 
   // ResourceCreationAPI (called in plugin).
+  virtual PP_Resource CreateDirectoryReader(PP_Instance instance,
+                                            PP_Resource directory_ref) OVERRIDE;
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) OVERRIDE;
@@ -143,9 +145,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_BrowserFont_Trusted_Description* description) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;
-  virtual PP_Resource CreateDirectoryReader(
-      PP_Instance instance,
-      PP_Resource directory_ref) OVERRIDE;
   virtual PP_Resource CreateFlashDeviceID(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,

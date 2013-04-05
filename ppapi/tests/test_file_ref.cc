@@ -32,9 +32,7 @@ const char* kTempFileName = "temporary";
 const char* kParentPath = "/foo/bar";
 const char* kPersFilePath = "/foo/bar/persistent";
 const char* kTempFilePath = "/foo/bar/temporary";
-#ifndef PPAPI_OS_NACL  // Only used for a test that NaCl can't run yet.
 const char* kTerribleName = "!@#$%^&*()-_=+{}[] ;:'\"|`~\t\n\r\b?";
-#endif
 
 std::string ReportMismatch(const std::string& method_name,
                            const std::string& returned_result,
@@ -81,9 +79,7 @@ void TestFileRef::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteFileAndDirectory, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(RenameFileAndDirectory, filter);
   RUN_CALLBACK_TEST(TestFileRef, Query, filter);
-#ifndef PPAPI_OS_NACL  // NaCl can't run this test yet.
   RUN_TEST_FORCEASYNC_AND_NOT(FileNameEscaping, filter);
-#endif
 }
 
 std::string TestFileRef::TestCreate() {
@@ -745,7 +741,6 @@ std::string TestFileRef::TestQuery() {
   PASS();
 }
 
-#ifndef PPAPI_OS_NACL
 std::string TestFileRef::TestFileNameEscaping() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
@@ -803,4 +798,3 @@ std::string TestFileRef::TestFileNameEscaping() {
 
   PASS();
 }
-#endif

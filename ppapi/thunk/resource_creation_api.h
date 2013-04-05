@@ -43,6 +43,8 @@ class ResourceCreationAPI {
  public:
   virtual ~ResourceCreationAPI() {}
 
+  virtual PP_Resource CreateDirectoryReader(PP_Instance instance,
+                                            PP_Resource directory_ref) = 0;
   virtual PP_Resource CreateFileIO(PP_Instance instance) = 0;
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) = 0;
@@ -150,9 +152,6 @@ class ResourceCreationAPI {
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
-  virtual PP_Resource CreateDirectoryReader(
-      PP_Instance instance,
-      PP_Resource directory_ref) = 0;
   virtual PP_Resource CreateFlashDeviceID(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
