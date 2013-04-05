@@ -124,6 +124,7 @@ h3,
 #search-field {
   border-bottom: 1px solid rgb(220, 220, 220);
   border-top: 1px solid rgb(220, 220, 220);
+  display: block;
   margin-bottom: -1px;
   overflow: hidden;
 }
