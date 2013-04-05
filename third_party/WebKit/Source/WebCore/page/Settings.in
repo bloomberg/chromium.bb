@@ -139,9 +139,6 @@ scrollingCoordinatorEnabled initial=false
 scrollAnimatorEnabled initial=true, conditional=SMOOTH_SCROLLING
 notificationsEnabled initial=true
 
-# Some apps needs isLoadingInAPISense to account for active subresource loaders.
-needsIsLoadingInAPISenseQuirk initial=false
-
 shouldRespectImageOrientation initial=false
 wantsBalancedSetDefersLoadingBehavior initial=false
 requestAnimationFrameEnabled initial=true
