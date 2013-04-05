@@ -1026,6 +1026,8 @@ WebInspector.DataGrid.prototype = {
         // Give each column some padding so that they don't disappear.
         var leftMinimum = leftEdgeOfPreviousColumn + this.ColumnResizePadding;
         var rightMaximum = rightEdgeOfNextColumn - this.ColumnResizePadding;
+        if (leftMinimum > rightMaximum)
+            return;
 
         dragPoint = Number.constrain(dragPoint, leftMinimum, rightMaximum);
 
@@ -1059,7 +1061,7 @@ WebInspector.DataGrid.prototype = {
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
     },
 
-    ColumnResizePadding: 10,
+    ColumnResizePadding: 24,
 
     CenterResizerOverBorderAdjustment: 3,
 
