@@ -62,7 +62,6 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   void CreateBackend(uint32 flags, base::Thread* thread);
 
   void InitCache();
-  void InitDefaultCacheViaCreator();
   void SimulateCrash();
   void SetTestMode();
 

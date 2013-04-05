@@ -11,7 +11,44 @@
 #include "net/disk_cache/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 
-namespace disk_cache {
+namespace {
+
+// Builds an instance of the backend depending on platform, type, experiments
+// etc. Takes care of the retry state. This object will self-destroy when
+// finished.
+class CacheCreator {
+ public:
+  CacheCreator(const base::FilePath& path, bool force, int max_bytes,
+               net::CacheType type, uint32 flags,
+               base::MessageLoopProxy* thread, net::NetLog* net_log,
+               disk_cache::Backend** backend,
+               const net::CompletionCallback& callback);
+
+  // Creates the backend.
+  int Run();
+
+ private:
+  ~CacheCreator();
+
+  void DoCallback(int result);
+
+  void OnIOComplete(int result);
+
+  const base::FilePath& path_;
+  bool force_;
+  bool retry_;
+  int max_bytes_;
+  net::CacheType type_;
+  uint32 flags_;
+  scoped_refptr<base::MessageLoopProxy> thread_;
+  disk_cache::Backend** backend_;
+  net::CompletionCallback callback_;
+  disk_cache::Backend* created_cache_;
+  net::NetLog* net_log_;
+  bool use_simple_cache_backend_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheCreator);
+};
 
 CacheCreator::CacheCreator(
     const base::FilePath& path, bool force, int max_bytes,
@@ -102,6 +139,10 @@ void CacheCreator::OnIOComplete(int result) {
   int rv = Run();
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
 }
+
+}  // namespace
+
+namespace disk_cache {
 
 int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
                        int max_bytes,

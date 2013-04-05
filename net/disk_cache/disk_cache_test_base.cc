@@ -259,25 +259,6 @@ void DiskCacheTestWithCache::InitDiskCache() {
   CreateBackend(disk_cache::kNoRandom, &cache_thread_);
 }
 
-// Testing backend creation retry logic is hard because the CacheCreator and
-// cache backend(s) are tightly coupled. So we take the default backend often.
-// Tests themselves need to be adjusted for platforms where the BackendImpl is
-// not the default backend.
-void DiskCacheTestWithCache::InitDefaultCacheViaCreator() {
-  if (!cache_thread_.IsRunning()) {
-    ASSERT_TRUE(cache_thread_.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
-  }
-  ASSERT_TRUE(cache_thread_.message_loop() != NULL);
-
-  net::TestCompletionCallback cb;
-  disk_cache::CacheCreator* creator = new disk_cache::CacheCreator(
-      cache_path_, true, 0, net::DISK_CACHE, disk_cache::kNoRandom,
-      cache_thread_.message_loop_proxy(), NULL, &cache_, cb.callback());
-  int rv = creator->Run();
-  ASSERT_EQ(net::OK, cb.GetResult(rv));
-}
-
 void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
   base::MessageLoopProxy* runner;
   if (use_current_thread_)

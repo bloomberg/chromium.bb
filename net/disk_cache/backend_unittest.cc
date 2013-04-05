@@ -245,17 +245,25 @@ TEST_F(DiskCacheTest, CreateBackend) {
   MessageLoop::current()->RunUntilIdle();
 }
 
-// Testst that re-creating the cache performs the expected cleanup.
+// Tests that |BackendImpl| fails to initialize with a missing file.
 TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   ASSERT_TRUE(CopyTestCache("bad_entry"));
   base::FilePath filename = cache_path_.AppendASCII("data_1");
   file_util::Delete(filename, false);
-  DisableFirstCleanup();
-  SetForceCreation();
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+  net::TestCompletionCallback cb;
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  InitDefaultCacheViaCreator();
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      cache_path_, cache_thread.message_loop_proxy(), NULL);
+  int rv = cache->Init(cb.callback());
+  ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
   base::ThreadRestrictions::SetIOAllowed(prev);
+
+  delete cache;
+  DisableIntegrityCheck();
 }
 
 TEST_F(DiskCacheBackendTest, ExternalFiles) {
@@ -1541,7 +1549,21 @@ TEST_F(DiskCacheTest, WrongVersion) {
 // Tests that the cache is properly restarted on recovery error.
 TEST_F(DiskCacheBackendTest, DeleteOld) {
   ASSERT_TRUE(CopyTestCache("wrong_version"));
-  InitDefaultCacheViaCreator();
+  SetNewEviction();
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+
+  net::TestCompletionCallback cb;
+  bool prev = base::ThreadRestrictions::SetIOAllowed(false);
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, cache_path_, 0, true,
+                                          cache_thread.message_loop_proxy(),
+                                          NULL, &cache_, cb.callback());
+  ASSERT_EQ(net::OK, cb.GetResult(rv));
+  base::ThreadRestrictions::SetIOAllowed(prev);
+  delete cache_;
+  cache_ = NULL;
+  EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
 }
 
 // We want to be able to deal with messed up entries on disk.
