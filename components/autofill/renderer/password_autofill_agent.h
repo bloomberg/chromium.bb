@@ -49,6 +49,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver,
   // cleared when the selection changes.  However, this method returns
   // true when |node| is fillable by password Autofill.
   bool DidClearAutofillSelection(const WebKit::WebNode& node);
+  // Shows an Autofill popup with username suggestions for |element|.
+  // Returns true if any suggestions were shown, false otherwise.
+  bool ShowSuggestions(const WebKit::WebInputElement& element);
 
  private:
   friend class PasswordAutofillAgentTest;

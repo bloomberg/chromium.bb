@@ -334,8 +334,18 @@ bool PasswordAutofillAgent::DidClearAutofillSelection(
   return FindLoginInfo(node, &input, &password);
 }
 
+bool PasswordAutofillAgent::ShowSuggestions(
+    const WebKit::WebInputElement& element) {
+  LoginToPasswordInfoMap::const_iterator iter =
+      login_to_password_info_.find(element);
+  if (iter == login_to_password_info_.end())
+    return false;
+
+  return ShowSuggestionPopup(iter->second.fill_data, element);
+}
+
 void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
-                                              bool only_visible) {
+                                                bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
   WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
   if (!origin.canAccessPasswordManager())

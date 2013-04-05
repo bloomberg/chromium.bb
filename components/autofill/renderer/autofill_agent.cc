@@ -802,6 +802,8 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   }
 
   element_ = element;
+  if (password_autofill_agent_->ShowSuggestions(element))
+    return;
 
   // If autocomplete is disabled at the form level, then we might want to show a
   // warning in place of suggestions.  However, if autocomplete is disabled
