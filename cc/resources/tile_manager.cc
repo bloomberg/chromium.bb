@@ -923,11 +923,11 @@ void TileManager::RunRasterTask(
                                      total_pixels_rasterized,
                                      metadata.is_tile_in_pending_tree_now_bin);
 
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeMS",
-                                duration.InMilliseconds(),
-                                0,
-                                10,
-                                10);
+    HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeUS",
+                            duration.InMicroseconds(),
+                            0,
+                            100000,
+                            100);
 
     if (metadata.prediction_benchmarking) {
       PicturePileImpl::Analysis analysis;
@@ -953,12 +953,12 @@ void TileManager::RunRasterTask(
 void TileManager::RecordCheapnessPredictorResults(bool is_predicted_cheap,
                                                   bool is_actually_cheap) {
   if (is_predicted_cheap && !is_actually_cheap)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorBadlyWrong", true);
+    HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorBadlyWrong", true);
   else if (!is_predicted_cheap && is_actually_cheap)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorSafelyWrong", true);
+    HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorSafelyWrong", true);
 
-  UMA_HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorAccuracy",
-                        is_predicted_cheap == is_actually_cheap);
+  HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorAccuracy",
+                    is_predicted_cheap == is_actually_cheap);
 }
 
 // static
@@ -988,29 +988,28 @@ void TileManager::RecordSolidColorPredictorResults(
   }
 
   if (is_predicted_solid && !is_actually_solid)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualNotSolid", true);
+    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualNotSolid", true);
   else if (is_predicted_solid &&
            is_actually_solid &&
            predicted_color != actual_color)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongColor", true);
+    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongColor", true);
   else if (!is_predicted_solid && is_actually_solid)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualSolid", true);
+    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualSolid", true);
 
   bool correct_guess = (is_predicted_solid && is_actually_solid &&
                         predicted_color == actual_color) ||
                        (!is_predicted_solid && !is_actually_solid);
-  UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy", correct_guess);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy", correct_guess);
 
   if (correct_guess)
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
+    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
                           is_predicted_solid);
 
   if (is_predicted_transparent)
-    UMA_HISTOGRAM_BOOLEAN(
-        "Renderer4.ColorPredictor.PredictedTransparentIsActually",
-        is_transparent);
-  UMA_HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsActuallyTransparent",
-                        is_transparent);
+    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.PredictedTransparentIsActually",
+                      is_transparent);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsActuallyTransparent",
+                    is_transparent);
 }
 
 // static
