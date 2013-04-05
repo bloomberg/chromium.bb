@@ -712,12 +712,12 @@ void Window::SetVisible(bool visible) {
                     OnWindowVisibilityChanging(this, visible));
 
   RootWindow* root_window = GetRootWindow();
-  if (client::GetVisibilityClient(root_window)) {
-    client::GetVisibilityClient(root_window)->UpdateLayerVisibility(
-        this, visible);
-  } else {
+  client::VisibilityClient* visibility_client =
+      client::GetVisibilityClient(this);
+  if (visibility_client)
+    visibility_client->UpdateLayerVisibility(this, visible);
+  else
     layer_->SetVisible(visible);
-  }
   visible_ = visible;
   SchedulePaint();
   if (parent_ && parent_->layout_manager_.get())

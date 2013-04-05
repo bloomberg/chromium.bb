@@ -8,7 +8,6 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 namespace client {
 
@@ -25,10 +24,12 @@ class AURA_EXPORT VisibilityClient {
   virtual ~VisibilityClient() {}
 };
 
-// Sets/Gets the VisibilityClient on the RootWindow.
-AURA_EXPORT void SetVisibilityClient(RootWindow* root_window,
-                                     VisibilityClient* client);
-AURA_EXPORT VisibilityClient* GetVisibilityClient(RootWindow* root_window);
+// Sets the VisibilityClient on the Window.
+AURA_EXPORT void SetVisibilityClient(Window* window, VisibilityClient* client);
+
+// Gets the VisibilityClient for the window. This will crawl up |window|'s
+// hierarchy until it finds one.
+AURA_EXPORT VisibilityClient* GetVisibilityClient(Window* window);
 
 }  // namespace clients
 }  // namespace aura
