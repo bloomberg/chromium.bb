@@ -79,7 +79,9 @@ enum PosixSignals {
  * Prototype for a signal handler.  The handler will receive the POSIX
  * signal number and an opaque platform dependent signal object.
  */
-typedef void (*NaClSignalHandler)(int sig_num, void *ctx);
+typedef void (*NaClSignalHandler)(int sig_num,
+                                  const struct NaClSignalContext *regs,
+                                  int is_untrusted);
 
 
 /*
@@ -144,9 +146,6 @@ void NaClSignalContextToHandler(void *raw_ctx,
                                 const struct NaClSignalContext *sig_ctx);
 
 
-int NaClSignalContextIsUntrustedForCurrentThread(
-    const struct NaClSignalContext *sig_ctx);
-
 int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
                                  const struct NaClSignalContext *sig_ctx);
 
@@ -159,7 +158,9 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
  * a signal is encountered in the untrusted code, otherwise
  * the signal is passed to the next handler.
  */
-void NaClSignalHandleUntrusted(int signal_number, void *ctx);
+void NaClSignalHandleUntrusted(int signal_number,
+                               const struct NaClSignalContext *regs,
+                               int is_untrusted);
 
 
 /*

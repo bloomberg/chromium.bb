@@ -148,8 +148,10 @@ void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
   exit(-1);
 }
 
-void Handler(int signal_number, void *ctx) {
-  UNREFERENCED_PARAMETER(ctx);
+void Handler(int signal_number, const struct NaClSignalContext *context,
+             int is_untrusted) {
+  UNREFERENCED_PARAMETER(context);
+  UNREFERENCED_PARAMETER(is_untrusted);
 
   g_SigFound = signal_number;
 

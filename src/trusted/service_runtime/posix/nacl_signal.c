@@ -369,11 +369,11 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
   }
 
   if (g_handler_func != NULL) {
-    g_handler_func(sig, uc);
+    g_handler_func(sig, &sig_ctx, is_untrusted);
     return;
   }
 
-  NaClSignalHandleUntrusted(sig, uc);
+  NaClSignalHandleUntrusted(sig, &sig_ctx, is_untrusted);
 
   FindAndRunHandler(sig, info, uc);
 }

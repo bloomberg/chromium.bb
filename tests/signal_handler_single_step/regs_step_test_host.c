@@ -76,21 +76,20 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   return 0;
 }
 
-static void TrapSignalHandler(int signal, void *ucontext) {
-  struct NaClSignalContext context;
+static void TrapSignalHandler(int signal,
+                              const struct NaClSignalContext *context_ptr,
+                              int is_untrusted) {
   uint32_t prog_ctr;
-  int is_inside_trampoline;
-  int is_untrusted;
   char buf[100];
   int len;
   struct NaClSignalContext *expected_regs = &g_test_shm->expected_regs;
+  struct NaClSignalContext context = *context_ptr;
 
   if (signal != SIGTRAP) {
     SignalSafeLogStringLiteral("Error: Received unexpected signal\n");
     _exit(1);
   }
 
-  NaClSignalContextFromHandler(&context, ucontext);
   /* Get the prog_ctr value relative to untrusted address space. */
   prog_ctr = (uint32_t) context.prog_ctr;
   /*
@@ -105,10 +104,9 @@ static void TrapSignalHandler(int signal, void *ucontext) {
    * TODO(mseaborn): Move this range check into the non-test part of
    * the thread suspension code.
    */
-  is_inside_trampoline = (prog_ctr >= NACL_TRAMPOLINE_START &&
-                          prog_ctr < NACL_TRAMPOLINE_END);
-  is_untrusted = (NaClSignalContextIsUntrustedForCurrentThread(&context) &&
-                  !is_inside_trampoline);
+  if (prog_ctr >= NACL_TRAMPOLINE_START && prog_ctr < NACL_TRAMPOLINE_END) {
+    is_untrusted = 0;
+  }
   if (g_in_untrusted_code != is_untrusted) {
     g_context_switch_count++;
     g_in_untrusted_code = is_untrusted;

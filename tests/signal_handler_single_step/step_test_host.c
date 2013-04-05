@@ -83,28 +83,24 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   return 0;
 }
 
-static void TrapSignalHandler(int signal, void *ucontext) {
+static void TrapSignalHandler(int signal,
+                              const struct NaClSignalContext *context,
+                              int is_untrusted) {
   if (signal == SIGTRAP) {
-    struct NaClSignalContext context;
-    int is_untrusted;
-
-    NaClSignalContextFromHandler(&context, ucontext);
-
     g_instruction_count++;
     /*
      * This is a heuristic for detecting jumps, based on the maximum
      * length of an x86 instruction being 15 bytes.  We would miss
      * short forward jumps.
      */
-    if (context.prog_ctr - g_last_prog_ctr > 15) {
+    if (context->prog_ctr - g_last_prog_ctr > 15) {
       g_jump_count++;
     } else {
       /* Measure total size of instructions, except for taken branches. */
-      g_instruction_byte_count += context.prog_ctr - g_last_prog_ctr;
+      g_instruction_byte_count += context->prog_ctr - g_last_prog_ctr;
     }
-    g_last_prog_ctr = context.prog_ctr;
+    g_last_prog_ctr = context->prog_ctr;
 
-    is_untrusted = NaClSignalContextIsUntrustedForCurrentThread(&context);
     if (g_in_untrusted_code != is_untrusted) {
       g_context_switch_count++;
       g_in_untrusted_code = is_untrusted;

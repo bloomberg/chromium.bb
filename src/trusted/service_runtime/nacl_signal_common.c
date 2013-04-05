@@ -125,20 +125,6 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
 }
 
 /*
- * Returns whether the signal happened while executing untrusted code.
- *
- * Like NaClSignalContextGetCurrentThread(), this should only be
- * called from the thread in which the signal occurred.
- */
-int NaClSignalContextIsUntrustedForCurrentThread(
-    const struct NaClSignalContext *sig_ctx) {
-  struct NaClAppThread *thread_unused;
-  int is_untrusted;
-  NaClSignalContextGetCurrentThread(sig_ctx, &is_untrusted, &thread_unused);
-  return is_untrusted;
-}
-
-/*
  * This function takes the register state (sig_ctx) for a thread
  * (natp) that has been suspended and returns whether the thread was
  * suspended while executing untrusted code.
@@ -170,23 +156,22 @@ int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
           prog_ctr >= NACL_TRAMPOLINE_END);
 }
 
-void NaClSignalHandleUntrusted(int signal, void *ctx) {
-  struct NaClSignalContext sig_ctx;
+void NaClSignalHandleUntrusted(int signal,
+                               const struct NaClSignalContext *regs,
+                               int is_untrusted) {
   char tmp[128];
   /*
    * Return an 8 bit error code which is -signal to
    * simulate normal OS behavior
    */
-  NaClSignalContextFromHandler(&sig_ctx, ctx);
-  if (NaClSignalContextIsUntrustedForCurrentThread(&sig_ctx)) {
+  if (is_untrusted) {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: "
-             "pc=%" NACL_PRIxNACL_REG "\n", signal, sig_ctx.prog_ctr);
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, regs->prog_ctr);
     NaClSignalErrorMessage(tmp);
     NaClExit((-signal) & 0xFF);
-  }
-  else {
+  } else {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: "
-             "pc=%" NACL_PRIxNACL_REG "\n", signal, sig_ctx.prog_ctr);
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, regs->prog_ctr);
     NaClSignalErrorMessage(tmp);
     /*
      * Continue the search for another handler so that trusted crashes
