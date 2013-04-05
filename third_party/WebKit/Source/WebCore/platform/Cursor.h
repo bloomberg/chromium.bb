@@ -56,7 +56,7 @@ typedef HICON HCURSOR;
 #endif
 
 // Looks like it's just PLATFORM(BLACKBERRY) still not using this?
-#if PLATFORM(WIN) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(CHROMIUM)
+#if PLATFORM(WIN) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(CHROMIUM)
 #define WTF_USE_LAZY_NATIVE_CURSOR 1
 #endif
 
@@ -79,8 +79,6 @@ namespace WebCore {
     typedef NSCursor *PlatformCursor;
 #elif PLATFORM(GTK)
     typedef GRefPtr<GdkCursor> PlatformCursor;
-#elif PLATFORM(EFL)
-    typedef const char* PlatformCursor;
 #elif PLATFORM(QT) && !defined(QT_NO_CURSOR)
     // Do not need to be shared but need to be created dynamically via ensurePlatformCursor.
     typedef QCursor* PlatformCursor;

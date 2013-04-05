@@ -197,10 +197,8 @@ IntPoint Widget::convertFromContainingView(const IntPoint& parentPoint) const
     return parentPoint;
 }
 
-#if !PLATFORM(EFL)
 void Widget::frameRectsChanged()
 {
 }
-#endif
 
 } // namespace WebCore

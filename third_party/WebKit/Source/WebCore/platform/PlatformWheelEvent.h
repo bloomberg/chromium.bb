@@ -36,10 +36,6 @@
 typedef struct _GdkEventScroll GdkEventScroll;
 #endif
 
-#if PLATFORM(EFL)
-typedef struct _Evas_Event_Mouse_Wheel Evas_Event_Mouse_Wheel;
-#endif
-
 namespace WebCore {
 
     class FloatPoint;
@@ -140,10 +136,6 @@ namespace WebCore {
 
 #if PLATFORM(GTK)
         explicit PlatformWheelEvent(GdkEventScroll*);
-#endif
-
-#if PLATFORM(EFL)
-        explicit PlatformWheelEvent(const Evas_Event_Mouse_Wheel*);
 #endif
 
 #if PLATFORM(MAC) || PLATFORM(CHROMIUM)

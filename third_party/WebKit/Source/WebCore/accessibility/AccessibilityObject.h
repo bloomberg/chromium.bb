@@ -61,7 +61,7 @@ OBJC_CLASS WebAccessibilityObjectWrapper;
 
 typedef WebAccessibilityObjectWrapper AccessibilityObjectWrapper;
 
-#elif PLATFORM(GTK) || (PLATFORM(EFL) && HAVE(ACCESSIBILITY))
+#elif PLATFORM(GTK)
 typedef struct _AtkObject AtkObject;
 typedef struct _AtkObject AccessibilityObjectWrapper;
 #elif PLATFORM(CHROMIUM)
@@ -811,7 +811,7 @@ public:
     virtual int mathLineThickness() const { return 0; }
     
 #if HAVE(ACCESSIBILITY)
-#if PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(GTK)
     AccessibilityObjectWrapper* wrapper() const;
     void setWrapper(AccessibilityObjectWrapper*);
 #elif !PLATFORM(CHROMIUM)
@@ -863,7 +863,7 @@ protected:
     virtual AccessibilityRole buttonRoleType() const;
     bool ariaIsHidden() const;
 
-#if PLATFORM(GTK) || (PLATFORM(EFL) && HAVE(ACCESSIBILITY))
+#if PLATFORM(GTK)
     bool allowsTextRanges() const;
     unsigned getLengthForTextRange() const;
 #else
@@ -875,7 +875,7 @@ protected:
     RetainPtr<WebAccessibilityObjectWrapper> m_wrapper;
 #elif PLATFORM(WIN) && !OS(WINCE)
     COMPtr<AccessibilityObjectWrapper> m_wrapper;
-#elif PLATFORM(GTK) || (PLATFORM(EFL) && HAVE(ACCESSIBILITY))
+#elif PLATFORM(GTK)
     AtkObject* m_wrapper;
 #elif PLATFORM(CHROMIUM)
     bool m_detached;

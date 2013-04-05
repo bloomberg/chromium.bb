@@ -1257,8 +1257,6 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
         updateScrollbars(scrollOffset());
 }
 
-#if !PLATFORM(EFL)
-
 void ScrollView::platformInit()
 {
 }
@@ -1266,8 +1264,6 @@ void ScrollView::platformInit()
 void ScrollView::platformDestroy()
 {
 }
-
-#endif
 
 #if !PLATFORM(MAC)
 

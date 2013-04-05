@@ -49,8 +49,6 @@
 
 #elif PLATFORM(WX)
 #include <wx/datetime.h>
-#elif PLATFORM(EFL)
-#include <Ecore.h>
 #else
 #include <sys/time.h>
 #endif
@@ -245,13 +243,6 @@ double currentTime()
     return (double)now.GetTicks() + (double)(now.GetMillisecond() / 1000.0);
 }
 
-#elif PLATFORM(EFL)
-
-double currentTime()
-{
-    return ecore_time_unix_get();
-}
-
 #elif OS(QNX)
 
 double currentTime()
@@ -284,13 +275,6 @@ double monotonicallyIncreasingTime()
         ASSERT_UNUSED(kr, kr == KERN_SUCCESS);
     }
     return (mach_absolute_time() * timebaseInfo.numer) / (1.0e9 * timebaseInfo.denom);
-}
-
-#elif PLATFORM(EFL)
-
-double monotonicallyIncreasingTime()
-{
-    return ecore_time_get();
 }
 
 #elif PLATFORM(GTK)

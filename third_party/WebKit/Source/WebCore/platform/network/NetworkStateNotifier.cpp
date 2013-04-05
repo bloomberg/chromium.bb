@@ -57,6 +57,6 @@ void NetworkStateNotifier::setOnLine(bool onLine)
     if (m_networkStateChangedFunction)
         m_networkStateChangedFunction();
 }
-#endif // PLATFORM(CHROMIUM) || PLATFORM(EFL)
+#endif // PLATFORM(CHROMIUM)
 
 }

@@ -38,22 +38,6 @@ typedef struct HPEN__* HPEN;
 typedef struct HRGN__* HRGN;
 #endif
 
-#if PLATFORM(EFL)
-typedef struct _Ecore_Evas Ecore_Evas;
-typedef struct _Ecore_IMF_Context Ecore_IMF_Context;
-typedef struct _Ecore_Pipe Ecore_Pipe;
-typedef struct _Eina_Hash Eina_Hash;
-typedef struct _Eina_Module Eina_Module;
-#if USE(EO)
-typedef struct _Eo Evas_Object;
-#else
-typedef struct _Evas_Object Evas_Object;
-#endif
-#if USE(ACCELERATED_COMPOSITING)
-typedef struct _Evas_GL Evas_GL;
-#endif
-#endif
-
 namespace WTF {
 
     template <typename T> inline void deleteOwnedPtr(T* ptr)
@@ -71,18 +55,6 @@ namespace WTF {
     WTF_EXPORT_PRIVATE void deleteOwnedPtr(HPALETTE);
     WTF_EXPORT_PRIVATE void deleteOwnedPtr(HPEN);
     WTF_EXPORT_PRIVATE void deleteOwnedPtr(HRGN);
-#endif
-
-#if PLATFORM(EFL)
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Ecore_Evas*);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Ecore_IMF_Context*);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Ecore_Pipe*);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Eina_Hash*);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Eina_Module*);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Evas_Object*);
-#if USE(ACCELERATED_COMPOSITING)
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(Evas_GL*);
-#endif
 #endif
 
 } // namespace WTF

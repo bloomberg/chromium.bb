@@ -24,11 +24,7 @@
 #include "Frame.h"
 #include "WebKitAccessibleWrapperAtk.h"
 
-#if PLATFORM(EFL)
-#include <glib.h>
-#else
 #include <gtk/gtk.h>
-#endif
 
 #include <wtf/RefPtr.h>
 

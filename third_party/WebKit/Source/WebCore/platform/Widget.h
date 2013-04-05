@@ -152,11 +152,6 @@ public:
     void removeFromSuperview();
 #endif
 
-#if PLATFORM(EFL)
-    void setEvasObject(Evas_Object*);
-    Evas_Object* evasObject() { return m_evasObject; }
-#endif
-
 #if PLATFORM(CHROMIUM)
     virtual bool isPluginContainer() const { return false; }
 #endif
@@ -195,10 +190,6 @@ private:
 
 #if PLATFORM(MAC)
     WidgetPrivate* m_data;
-#endif
-
-#if PLATFORM(EFL)
-    Evas_Object* m_evasObject;
 #endif
 
 #if PLATFORM(QT)

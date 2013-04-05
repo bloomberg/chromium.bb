@@ -57,13 +57,6 @@ namespace WebCore {
 typedef ClutterActor PlatformLayer;
 };
 #endif
-#elif PLATFORM(EFL)
-#if USE(TEXTURE_MAPPER)
-namespace WebCore {
-class TextureMapperPlatformLayer;
-typedef TextureMapperPlatformLayer PlatformLayer;
-};
-#endif
 #elif PLATFORM(BLACKBERRY)
 namespace WebCore {
 class LayerWebKitThread;

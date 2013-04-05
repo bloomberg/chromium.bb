@@ -229,15 +229,6 @@
 
 #endif /* PLATFORM(WX) */
 
-/* --------- EFL port (Unix) --------- */
-#if PLATFORM(EFL)
-
-#if !defined(ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH)
-#define ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH 1
-#endif
-
-#endif /* PLATFORM(EFL) */
-
 /* --------- Gtk port (Unix, Windows, Mac) --------- */
 #if PLATFORM(GTK)
 

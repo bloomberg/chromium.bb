@@ -29,7 +29,7 @@
 #include "qt/FontPlatformData.h"
 #elif PLATFORM(WIN) && OS(WINCE)
 #include "wince/FontPlatformData.h"
-#elif PLATFORM(EFL) || PLATFORM(GTK)
+#elif PLATFORM(GTK)
 #include "freetype/FontPlatformData.h"
 #else
 
