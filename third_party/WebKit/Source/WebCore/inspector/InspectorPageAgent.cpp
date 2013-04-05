@@ -703,11 +703,6 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
     DOMPatchSupport::patchDocument(document, html);
 }
 
-void InspectorPageAgent::canOverrideDeviceMetrics(ErrorString*, bool* result)
-{
-    *result = m_client->canOverrideDeviceMetrics();
-}
-
 void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double fontScaleFactor, bool fitWindow)
 {
     const static long maxDimension = 10000000;
@@ -756,11 +751,6 @@ void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
 
     if (!show && mainFrame() && mainFrame()->view())
         mainFrame()->view()->invalidate();
-}
-
-void InspectorPageAgent::canShowDebugBorders(ErrorString*, bool* outParam)
-{
-    *outParam = m_client->canShowDebugBorders();
 }
 
 void InspectorPageAgent::setShowDebugBorders(ErrorString*, bool show)
@@ -1296,16 +1286,14 @@ void InspectorPageAgent::setCompositingBordersVisible(ErrorString*, bool visible
     settings->setShowRepaintCounter(visible);
 }
 
-void InspectorPageAgent::captureScreenshot(ErrorString* errorString, String* data)
+void InspectorPageAgent::captureScreenshot(ErrorString*, String*)
 {
-    if (!m_client->captureScreenshot(data))
-        *errorString = "Could not capture screenshot";
+    // Handled on the browser level.
 }
 
 void InspectorPageAgent::handleJavaScriptDialog(ErrorString* errorString, bool accept, const String* promptText)
 {
-    if (!m_client->handleJavaScriptDialog(accept, promptText))
-        *errorString = "Could not handle JavaScript dialog";
+    // Handled on the browser level.
 }
 
 } // namespace WebCore

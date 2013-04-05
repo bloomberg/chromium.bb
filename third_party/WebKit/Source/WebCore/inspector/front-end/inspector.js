@@ -52,8 +52,7 @@ var WebInspector = {
             allProfilers.push(new WebInspector.PanelDescriptor("cpu-profiler", WebInspector.UIString("CPU Profiler"), "CPUProfilerPanel", "ProfilesPanel.js"));
             if (!WebInspector.WorkerManager.isWorkerFrontend())
                 allProfilers.push(new WebInspector.PanelDescriptor("css-profiler", WebInspector.UIString("CSS Profiler"), "CSSSelectorProfilerPanel", "ProfilesPanel.js"));
-            if (Capabilities.heapProfilerPresent)
-                allProfilers.push(new WebInspector.PanelDescriptor("heap-profiler", WebInspector.UIString("Heap Profiler"), "HeapProfilerPanel", "ProfilesPanel.js"));
+            allProfilers.push(new WebInspector.PanelDescriptor("heap-profiler", WebInspector.UIString("Heap Profiler"), "HeapProfilerPanel", "ProfilesPanel.js"));
             if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
                 allProfilers.push(new WebInspector.PanelDescriptor("canvas-profiler", WebInspector.UIString("Canvas Profiler"), "CanvasProfilerPanel", "ProfilesPanel.js"));
             if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled()) {
@@ -376,17 +375,8 @@ WebInspector.doLoadedDone = function()
     InspectorFrontendHost.loaded();
     WebInspector.WorkerManager.loaded();
 
-    DebuggerAgent.causesRecompilation(WebInspector._initializeCapability.bind(WebInspector, "debuggerCausesRecompilation", null));
-    DebuggerAgent.supportsSeparateScriptCompilationAndExecution(WebInspector._initializeCapability.bind(WebInspector, "separateScriptCompilationAndExecutionEnabled", null));
-    ProfilerAgent.causesRecompilation(WebInspector._initializeCapability.bind(WebInspector, "profilerCausesRecompilation", null));
-    ProfilerAgent.isSampling(WebInspector._initializeCapability.bind(WebInspector, "samplingCPUProfiler", null));
-    HeapProfilerAgent.hasHeapProfiler(WebInspector._initializeCapability.bind(WebInspector, "heapProfilerPresent", null));
-    TimelineAgent.supportsFrameInstrumentation(WebInspector._initializeCapability.bind(WebInspector, "timelineSupportsFrameInstrumentation", null));
-    TimelineAgent.canMonitorMainThread(WebInspector._initializeCapability.bind(WebInspector, "timelineCanMonitorMainThread", null));
-    PageAgent.canShowDebugBorders(WebInspector._initializeCapability.bind(WebInspector, "canShowDebugBorders", null));
     PageAgent.canShowFPSCounter(WebInspector._initializeCapability.bind(WebInspector, "canShowFPSCounter", null));
     PageAgent.canContinuouslyPaint(WebInspector._initializeCapability.bind(WebInspector, "canContinuouslyPaint", null));
-    PageAgent.canOverrideDeviceMetrics(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceMetrics", null));
     PageAgent.canOverrideGeolocation(WebInspector._initializeCapability.bind(WebInspector, "canOverrideGeolocation", null));
     WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", null));
     PageAgent.canOverrideDeviceOrientation(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceOrientation", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
@@ -505,8 +495,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.databaseModel = new WebInspector.DatabaseModel();
     this.domStorageModel = new WebInspector.DOMStorageModel();
 
-    if (!Capabilities.profilerCausesRecompilation || WebInspector.settings.profilerEnabled.get())
-        ProfilerAgent.enable();
+    ProfilerAgent.enable();
 
     if (WebInspector.settings.showPaintRects.get())
         PageAgent.setShowPaintRects(true);

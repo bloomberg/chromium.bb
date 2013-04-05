@@ -54,10 +54,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     {
         function formatMilliseconds(time)
         {
-            if (Capabilities.samplingCPUProfiler)
-                return WebInspector.UIString("%.0f\u2009ms", time);
-            else
-                return WebInspector.UIString("%.3f\u2009ms", time);
+            return WebInspector.UIString("%.0f\u2009ms", time);
         }
 
         var data = {};

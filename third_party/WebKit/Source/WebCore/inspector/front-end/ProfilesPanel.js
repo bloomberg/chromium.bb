@@ -357,7 +357,6 @@ WebInspector.ProfilesPanel = function(name, type)
     var singleProfileMode = typeof name !== "undefined";
     name = name || "profiles";
     WebInspector.Panel.call(this, name);
-    this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
 
@@ -369,23 +368,12 @@ WebInspector.ProfilesPanel = function(name, type)
     this._singleProfileMode = singleProfileMode;
     this._profileTypesByIdMap = {};
 
-    var panelEnablerHeading = WebInspector.UIString("You need to enable profiling before you can use the Profiles panel.");
-    var panelEnablerDisclaimer = WebInspector.UIString("Enabling profiling will make scripts run slower.");
-    var panelEnablerButton = WebInspector.UIString("Enable Profiling");
-    this.panelEnablerView = new WebInspector.PanelEnablerView(name, panelEnablerHeading, panelEnablerDisclaimer, panelEnablerButton);
-    this.panelEnablerView.addEventListener("enable clicked", this.enableProfiler, this);
-
     this.profileViews = document.createElement("div");
     this.profileViews.id = "profile-views";
     this.splitView.mainElement.appendChild(this.profileViews);
 
     this._statusBarButtons = [];
 
-    this.enableToggleButton = new WebInspector.StatusBarButton("", "enable-toggle-status-bar-item");
-    if (Capabilities.profilerCausesRecompilation) {
-        this._statusBarButtons.push(this.enableToggleButton);
-        this.enableToggleButton.addEventListener("click", this._onToggleProfiling, this);
-    }
     this.recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
     this.recordButton.addEventListener("click", this.toggleRecordButton, this);
     this._statusBarButtons.push(this.recordButton);
@@ -400,8 +388,6 @@ WebInspector.ProfilesPanel = function(name, type)
     this._profileViewStatusBarItemsContainer = document.createElement("div");
     this._profileViewStatusBarItemsContainer.className = "status-bar-items";
 
-    this._profilerEnabled = !Capabilities.profilerCausesRecompilation;
-
     if (singleProfileMode) {
         this._launcherView = this._createLauncherView();
         this._registerProfileType(/** @type {!WebInspector.ProfileType} */ (type));
@@ -414,8 +400,7 @@ WebInspector.ProfilesPanel = function(name, type)
         this._registerProfileType(new WebInspector.CPUProfileType());
         if (!WebInspector.WorkerManager.isWorkerFrontend())
             this._registerProfileType(new WebInspector.CSSSelectorProfileType());
-        if (Capabilities.heapProfilerPresent)
-            this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
+        this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled()) {
             this._registerProfileType(new WebInspector.NativeSnapshotProfileType());
             this._registerProfileType(new WebInspector.NativeMemoryProfileType());
@@ -506,7 +491,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     _populateAllProfiles: function()
     {
-        if (!this._profilerEnabled || this._profilesWereRequested)
+        if (this._profilesWereRequested)
             return;
         this._profilesWereRequested = true;
         for (var typeId in this._profileTypesByIdMap)
@@ -517,27 +502,6 @@ WebInspector.ProfilesPanel.prototype = {
     {
         WebInspector.Panel.prototype.wasShown.call(this);
         this._populateAllProfiles();
-    },
-
-    _profilerWasEnabled: function()
-    {
-        if (this._profilerEnabled)
-            return;
-
-        this._profilerEnabled = true;
-
-        this._reset();
-        if (this.isShowing())
-            this._populateAllProfiles();
-    },
-
-    _profilerWasDisabled: function()
-    {
-        if (!this._profilerEnabled)
-            return;
-
-        this._profilerEnabled = false;
-        this._reset();
     },
 
     /**
@@ -587,7 +551,9 @@ WebInspector.ProfilesPanel.prototype = {
 
         this.removeAllListeners();
 
-        this._updateInterface();
+        this.recordButton.visible = true;
+        this._profileViewStatusBarItemsContainer.removeStyleClass("hidden");
+        this.clearResultsButton.element.removeStyleClass("hidden");
         this.profilesItemTreeElement.select();
         this._showLauncherView();
     },
@@ -1102,66 +1068,6 @@ WebInspector.ProfilesPanel.prototype = {
         var profiles = this._getAllProfiles();
         for (var i = 0; i < profiles.length; ++i)
             profiles[i]._profilesTreeElement.searchMatches = 0;
-    },
-
-    _updateInterface: function()
-    {
-        // FIXME: Replace ProfileType-specific button visibility changes by a single ProfileType-agnostic "combo-button" visibility change.
-        if (this._profilerEnabled) {
-            this.enableToggleButton.title = WebInspector.UIString("Profiling enabled. Click to disable.");
-            this.enableToggleButton.toggled = true;
-            this.recordButton.visible = true;
-            this._profileViewStatusBarItemsContainer.removeStyleClass("hidden");
-            this.clearResultsButton.element.removeStyleClass("hidden");
-            this.panelEnablerView.detach();
-        } else {
-            this.enableToggleButton.title = WebInspector.UIString("Profiling disabled. Click to enable.");
-            this.enableToggleButton.toggled = false;
-            this.recordButton.visible = false;
-            this._profileViewStatusBarItemsContainer.addStyleClass("hidden");
-            this.clearResultsButton.element.addStyleClass("hidden");
-            this.panelEnablerView.show(this.element);
-        }
-    },
-
-    get profilerEnabled()
-    {
-        return this._profilerEnabled;
-    },
-
-    enableProfiler: function()
-    {
-        if (this._profilerEnabled)
-            return;
-        this._toggleProfiling(this.panelEnablerView.alwaysEnabled);
-    },
-
-    disableProfiler: function()
-    {
-        if (!this._profilerEnabled)
-            return;
-        this._toggleProfiling(this.panelEnablerView.alwaysEnabled);
-    },
-
-    /**
-     * @param {WebInspector.Event} event
-     */
-    _onToggleProfiling: function(event) {
-        this._toggleProfiling(true);
-    },
-
-    /**
-     * @param {boolean} always
-     */
-    _toggleProfiling: function(always)
-    {
-        if (this._profilerEnabled) {
-            WebInspector.settings.profilerEnabled.set(false);
-            ProfilerAgent.disable(this._profilerWasDisabled.bind(this));
-        } else {
-            WebInspector.settings.profilerEnabled.set(always);
-            ProfilerAgent.enable(this._profilerWasEnabled.bind(this));
-        }
     },
 
     /**

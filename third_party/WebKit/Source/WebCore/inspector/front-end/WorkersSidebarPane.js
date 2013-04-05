@@ -55,12 +55,10 @@ WebInspector.WorkersSidebarPane = function(workerManager)
     this._enableWorkersCheckbox.addEventListener(this._autoattachToWorkersClicked.bind(this));
     this._enableWorkersCheckbox.checked = false;
 
-    if (Preferences.sharedWorkersDebugNote) {
-        var note = this.bodyElement.createChild("div");
-        note.id = "shared-workers-list";
-        note.addStyleClass("sidebar-label")
-        note.textContent = Preferences.sharedWorkersDebugNote;
-    }
+    var note = this.bodyElement.createChild("div");
+    note.id = "shared-workers-list";
+    note.addStyleClass("sidebar-label")
+    note.textContent = WebInspector.UIString("Shared workers can be inspected in the Task Manager");
 
     var separator = this.bodyElement.createChild("div", "sidebar-separator");
     separator.textContent = WebInspector.UIString("Dedicated worker inspectors");

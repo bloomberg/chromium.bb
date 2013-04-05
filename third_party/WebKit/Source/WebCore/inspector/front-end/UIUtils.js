@@ -669,7 +669,7 @@ Number.withThousandsSeparator = function(num)
 
 WebInspector.useLowerCaseMenuTitles = function()
 {
-    return WebInspector.platform() === "windows" && Preferences.useLowerCaseMenuTitlesOnWindows;
+    return WebInspector.platform() === "windows";
 }
 
 WebInspector.formatLocalized = function(format, substitutions, formatters, initialValue, append)

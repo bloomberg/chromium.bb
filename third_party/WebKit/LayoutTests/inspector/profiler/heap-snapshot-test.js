@@ -169,65 +169,32 @@ InspectorTest.startProfilerTest = function(callback)
     WebInspector.showPanel("profiles");
     WebInspector.settings.showHeapSnapshotObjectsHiddenProperties.set(true);
 
-    function profilerEnabled()
-    {
-        InspectorTest.addResult("Profiler was enabled.");
-        // We mock out HeapProfilerAgent -- as DRT runs in single-process mode, Inspector
-        // and test share the same heap. Taking a snapshot takes too long for a test,
-        // so we provide synthetic snapshots.
-        InspectorTest._panelReset = InspectorTest.override(WebInspector.panels.profiles, "_reset", function(){}, true);
-        InspectorTest.addSniffer(WebInspector.HeapSnapshotView.prototype, "show", InspectorTest._snapshotViewShown, true);
+    InspectorTest.addResult("Profiler was enabled.");
+    // We mock out HeapProfilerAgent -- as DRT runs in single-process mode, Inspector
+    // and test share the same heap. Taking a snapshot takes too long for a test,
+    // so we provide synthetic snapshots.
+    InspectorTest._panelReset = InspectorTest.override(WebInspector.panels.profiles, "_reset", function(){}, true);
+    InspectorTest.addSniffer(WebInspector.HeapSnapshotView.prototype, "show", InspectorTest._snapshotViewShown, true);
 
-        detailedHeapProfilesEnabled();
-    }
-
-    function detailedHeapProfilesEnabled()
-    {
-        // Reduce the number of populated nodes to speed up testing.
-        WebInspector.HeapSnapshotContainmentDataGrid.prototype.defaultPopulateCount = function() { return 10; };
-        WebInspector.HeapSnapshotConstructorsDataGrid.prototype.defaultPopulateCount = function() { return 10; };
-        WebInspector.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 5; };
-        WebInspector.HeapSnapshotDominatorsDataGrid.prototype.defaultPopulateCount = function() { return 3; }
-        InspectorTest.addResult("Detailed heap profiles were enabled.");
-        InspectorTest.safeWrap(callback)();
-    }
-
-    if (WebInspector.panels.profiles._profilerEnabled)
-        profilerEnabled();
-    else {
-        InspectorTest.addSniffer(WebInspector.panels.profiles, "_profilerWasEnabled", profilerEnabled);
-        WebInspector.panels.profiles._toggleProfiling(false);
-    }
+    // Reduce the number of populated nodes to speed up testing.
+    WebInspector.HeapSnapshotContainmentDataGrid.prototype.defaultPopulateCount = function() { return 10; };
+    WebInspector.HeapSnapshotConstructorsDataGrid.prototype.defaultPopulateCount = function() { return 10; };
+    WebInspector.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 5; };
+    WebInspector.HeapSnapshotDominatorsDataGrid.prototype.defaultPopulateCount = function() { return 3; }
+    InspectorTest.addResult("Detailed heap profiles were enabled.");
+    InspectorTest.safeWrap(callback)();
 };
 
 InspectorTest.completeProfilerTest = function()
 {
     // There is no way to disable detailed heap profiles.
-
-    function completeTest()
-    {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Profiler was disabled.");
-        InspectorTest.completeTest();
-    }
-
-    var profilesPanel = WebInspector.panels.profiles;
-    if (!profilesPanel._profilerEnabled)
-        completeTest();
-    else {
-        InspectorTest.addSniffer(WebInspector.panels.profiles, "_profilerWasDisabled", completeTest);
-        profilesPanel._toggleProfiling(false);
-    }
+    InspectorTest.addResult("");
+    InspectorTest.addResult("Profiler was disabled.");
+    InspectorTest.completeTest();
 };
 
 InspectorTest.runHeapSnapshotTestSuite = function(testSuite)
 {
-    if (!Capabilities.heapProfilerPresent) {
-        InspectorTest.addResult("Heap profiler is disabled");
-        InspectorTest.completeTest();
-        return;
-    }
-
     InspectorTest._nextUid = 1;
     var testSuiteTests = testSuite.slice();
 

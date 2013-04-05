@@ -54,8 +54,7 @@ WebInspector.OverridesView = function()
     var container = paneContent.createChild("div", "help-container-wrapper").createChild("div", "settings-tab help-content help-container");
     this.containerElement = container;
     appendBlockTo(container, this._createUserAgentControl());
-    if (Capabilities.canOverrideDeviceMetrics)
-        appendBlockTo(container, this._createDeviceMetricsControl());
+    appendBlockTo(container, this._createDeviceMetricsControl());
     if (Capabilities.canOverrideGeolocation)
         appendBlockTo(container, this._createGeolocationOverrideControl());
     if (Capabilities.canOverrideDeviceOrientation)
@@ -234,7 +233,7 @@ WebInspector.OverridesView.prototype = {
             this._otherUserAgentElement.focus();
         }
 
-        if (isUserGesture && Capabilities.canOverrideDeviceMetrics) {
+        if (isUserGesture) {
             var metrics = this._selectElement.options[this._selectElement.selectedIndex]._metrics;
             this._setDeviceMetricsOverride(WebInspector.UserAgentSupport.DeviceMetrics.parseSetting(metrics), false, true);
         }

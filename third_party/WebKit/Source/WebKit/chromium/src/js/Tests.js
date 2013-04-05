@@ -417,7 +417,7 @@ TestSuite.prototype.testPauseWhenScriptIsRunning = function()
     function testScriptPause() {
         // The script should be in infinite loop. Click "Pause" button to
         // pause it and wait for the result.
-        WebInspector.panels.scripts.pauseButton.click();
+        WebInspector.panels.scripts._pauseButton.element.click();
 
         this._waitForScriptPause(this.releaseControl.bind(this));
     }

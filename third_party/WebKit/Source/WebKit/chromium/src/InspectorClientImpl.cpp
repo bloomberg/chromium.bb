@@ -109,36 +109,16 @@ void InspectorClientImpl::updateInspectorStateCookie(const WTF::String& inspecto
         agent->updateInspectorStateCookie(inspectorState);
 }
 
-bool InspectorClientImpl::canClearBrowserCache()
-{
-    return true;
-}
-
 void InspectorClientImpl::clearBrowserCache()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
         agent->clearBrowserCache();
 }
 
-bool InspectorClientImpl::canClearBrowserCookies()
-{
-    return true;
-}
-
 void InspectorClientImpl::clearBrowserCookies()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
         agent->clearBrowserCookies();
-}
-
-bool InspectorClientImpl::canMonitorMainThread()
-{
-    return true;
-}
-
-bool InspectorClientImpl::canOverrideDeviceMetrics()
-{
-    return true;
 }
 
 void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float fontScaleFactor, bool fitWindow)
@@ -161,11 +141,6 @@ bool InspectorClientImpl::overridesShowPaintRects()
 void InspectorClientImpl::setShowPaintRects(bool show)
 {
     m_inspectedWebView->setShowPaintRects(show);
-}
-
-bool InspectorClientImpl::canShowDebugBorders()
-{
-    return true;
 }
 
 void InspectorClientImpl::setShowDebugBorders(bool show)
@@ -197,11 +172,6 @@ void InspectorClientImpl::setContinuousPaintingEnabled(bool enabled)
     m_inspectedWebView->setContinuousPaintingEnabled(enabled);
 }
 
-bool InspectorClientImpl::supportsFrameInstrumentation()
-{
-    return true;
-}
-
 void InspectorClientImpl::getAllocatedObjects(HashSet<const void*>& set)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
@@ -212,25 +182,6 @@ void InspectorClientImpl::dumpUncountedAllocatedObjects(const HashMap<const void
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
         agent->dumpUncountedAllocatedObjects(map);
-}
-
-bool InspectorClientImpl::captureScreenshot(String* data)
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        return agent->captureScreenshot(data);
-    return false;
-}
-
-bool InspectorClientImpl::handleJavaScriptDialog(bool accept, const String* promptText)
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        return agent->handleJavaScriptDialog(accept, promptText);
-    return false;
-}
-
-bool InspectorClientImpl::canSetFileInputFiles()
-{
-    return true;
 }
 
 void InspectorClientImpl::setTraceEventCallback(TraceEventCallback callback)

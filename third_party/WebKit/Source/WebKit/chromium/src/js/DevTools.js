@@ -33,17 +33,6 @@
  * port as well as additional features specific to the Chromium port.
  */
 
-{(function () {
-    Preferences.useLowerCaseMenuTitlesOnWindows = true;
-    Preferences.sharedWorkersDebugNote = "Shared workers can be inspected in the Task Manager";
-    Preferences.localizeUI = false;
-    Preferences.applicationTitle = "Developer Tools - %s";
-    Preferences.exposeDisableCache = true;
-    Preferences.showDockToRight = true;
-    Preferences.exposeFileSystemInspection = true;
-    Preferences.experimentsEnabled = false;
-})();}
-
 function buildPlatformExtensionAPI(extensionInfo)
 {
     return "var extensionInfo = " + JSON.stringify(extensionInfo) + ";" +
@@ -54,11 +43,6 @@ function buildPlatformExtensionAPI(extensionInfo)
 WebInspector.setInspectedTabId = function(tabId)
 {
     WebInspector._inspectedTabId = tabId;
-}
-
-WebInspector.clipboardAccessDeniedMessage = function()
-{
-    return "You need to install a Chrome extension that grants clipboard access to Developer Tools.";
 }
 
 window.DEBUG = true;

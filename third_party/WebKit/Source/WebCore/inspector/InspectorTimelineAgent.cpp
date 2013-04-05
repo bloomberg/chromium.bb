@@ -213,16 +213,6 @@ void InspectorTimelineAgent::stop(ErrorString*)
     m_state->setBoolean(TimelineAgentState::timelineAgentEnabled, false);
 }
 
-void InspectorTimelineAgent::canMonitorMainThread(ErrorString*, bool* result)
-{
-    *result = m_client && m_client->canMonitorMainThread();
-}
-
-void InspectorTimelineAgent::supportsFrameInstrumentation(ErrorString*, bool* result)
-{
-    *result = m_client && m_client->supportsFrameInstrumentation();
-}
-
 void InspectorTimelineAgent::didBeginFrame()
 {
 #if PLATFORM(CHROMIUM)

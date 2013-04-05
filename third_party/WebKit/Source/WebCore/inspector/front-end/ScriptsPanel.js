@@ -125,18 +125,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
-    var panelEnablerHeading = WebInspector.UIString("You need to enable debugging before you can use the Scripts panel.");
-    var panelEnablerDisclaimer = WebInspector.UIString("Enabling debugging will make scripts run slower.");
-    var panelEnablerButton = WebInspector.UIString("Enable Debugging");
-
-    this.panelEnablerView = new WebInspector.PanelEnablerView("scripts", panelEnablerHeading, panelEnablerDisclaimer, panelEnablerButton);
-    this.panelEnablerView.addEventListener("enable clicked", this._enableDebugging, this);
-
-    this.enableToggleButton = new WebInspector.StatusBarButton("", "enable-toggle-status-bar-item");
-    this.enableToggleButton.addEventListener("click", this._toggleDebugging, this);
-    if (!Capabilities.debuggerCausesRecompilation)
-        this.enableToggleButton.element.addStyleClass("hidden");
-
     this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
     this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
 
@@ -189,7 +177,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
 WebInspector.ScriptsPanel.prototype = {
     get statusBarItems()
     {
-        return [this.enableToggleButton.element, this._pauseOnExceptionButton.element, this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
+        return [this._pauseOnExceptionButton.element, this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
     },
 
     /**
@@ -598,15 +586,9 @@ WebInspector.ScriptsPanel.prototype = {
     _updateDebuggerButtons: function()
     {
         if (WebInspector.debuggerModel.debuggerEnabled()) {
-            this.enableToggleButton.title = WebInspector.UIString("Debugging enabled. Click to disable.");
-            this.enableToggleButton.toggled = true;
             this._pauseOnExceptionButton.visible = true;
-            this.panelEnablerView.detach();
         } else {
-            this.enableToggleButton.title = WebInspector.UIString("Debugging disabled. Click to enable.");
-            this.enableToggleButton.toggled = false;
             this._pauseOnExceptionButton.visible = false;
-            this.panelEnablerView.show(this.element);
         }
 
         if (this._paused) {
@@ -648,26 +630,6 @@ WebInspector.ScriptsPanel.prototype = {
 
         this._clearCurrentExecutionLine();
         this._updateDebuggerButtons();
-    },
-
-    _enableDebugging: function()
-    {
-        this._toggleDebugging(this.panelEnablerView.alwaysEnabled);
-    },
-
-    _toggleDebugging: function(optionalAlways)
-    {
-        this._paused = false;
-        this._waitingToPause = false;
-        this._stepping = false;
-
-        if (WebInspector.debuggerModel.debuggerEnabled()) {
-            WebInspector.settings.debuggerEnabled.set(false);
-            WebInspector.debuggerModel.disableDebugger();
-        } else {
-            WebInspector.settings.debuggerEnabled.set(!!optionalAlways);
-            WebInspector.debuggerModel.enableDebugger();
-        }
     },
 
     _togglePauseOnExceptions: function()
@@ -851,7 +813,7 @@ WebInspector.ScriptsPanel.prototype = {
     _createButtonAndRegisterShortcuts: function(buttonId, buttonTitle, handler, shortcuts)
     {
         var button = new WebInspector.StatusBarButton(buttonTitle, buttonId);
-        button.addEventListener("click", handler);
+        button.element.addEventListener("click", handler, false);
         button.className = "status-bar-item";
         button.id = buttonId;
         button.shortcuts = shortcuts;

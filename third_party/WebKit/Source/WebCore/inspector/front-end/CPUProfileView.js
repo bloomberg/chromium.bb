@@ -42,10 +42,6 @@ WebInspector.CPUProfileView = function(profileHeader)
     var columns = [];
     columns.push({id: "self", title: WebInspector.UIString("Self"), width: "72px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
     columns.push({id: "total", title: WebInspector.UIString("Total"), width: "72px", sortable: true});
-    if (!Capabilities.samplingCPUProfiler) {
-        columns.push({id: "average", title: WebInspector.UIString("Average"), width: "72px", sortable: true});
-        columns.push({id: "calls", title: WebInspector.UIString("Calls"), width: "54px", sortable: true});
-    }
     columns.push({id: "function", title: WebInspector.UIString("Function"), disclosure: true, sortable: true});
 
     this.dataGrid = new WebInspector.DataGrid(columns);

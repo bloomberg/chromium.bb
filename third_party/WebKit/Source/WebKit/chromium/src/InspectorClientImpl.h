@@ -62,21 +62,15 @@ public:
     virtual bool supportsInspectorStateUpdates() const { return true; }
     virtual void updateInspectorStateCookie(const WTF::String&);
 
-    virtual bool canClearBrowserCache();
     virtual void clearBrowserCache();
-    virtual bool canClearBrowserCookies();
     virtual void clearBrowserCookies();
 
-    virtual bool canMonitorMainThread();
-
-    virtual bool canOverrideDeviceMetrics();
     virtual void overrideDeviceMetrics(int, int, float, bool);
     virtual void autoZoomPageToFitWidth();
 
     virtual bool overridesShowPaintRects();
     virtual void setShowPaintRects(bool);
 
-    virtual bool canShowDebugBorders();
     virtual void setShowDebugBorders(bool);
 
     virtual bool canShowFPSCounter();
@@ -85,17 +79,10 @@ public:
     virtual bool canContinuouslyPaint();
     virtual void setContinuousPaintingEnabled(bool);
 
-    virtual bool supportsFrameInstrumentation();
-
     virtual void getAllocatedObjects(HashSet<const void*>&);
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
 
-    virtual bool captureScreenshot(WTF::String* data);
     virtual void setTraceEventCallback(TraceEventCallback);
-
-    virtual bool handleJavaScriptDialog(bool accept, const WTF::String* promptText);
-
-    virtual bool canSetFileInputFiles();
 
 private:
     WebDevToolsAgentImpl* devToolsAgent();

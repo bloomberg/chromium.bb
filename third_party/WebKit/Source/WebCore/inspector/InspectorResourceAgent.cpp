@@ -627,7 +627,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)
 {
-    *result = m_client->canClearBrowserCache();
+    *result = true;
 }
 
 void InspectorResourceAgent::clearBrowserCache(ErrorString*)
@@ -637,7 +637,7 @@ void InspectorResourceAgent::clearBrowserCache(ErrorString*)
 
 void InspectorResourceAgent::canClearBrowserCookies(ErrorString*, bool* result)
 {
-    *result = m_client->canClearBrowserCookies();
+    *result = true;
 }
 
 void InspectorResourceAgent::clearBrowserCookies(ErrorString*)

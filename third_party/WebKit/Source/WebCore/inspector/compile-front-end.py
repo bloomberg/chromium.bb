@@ -137,7 +137,6 @@ modules = [
             "KeyboardShortcut.js",
             "OverviewGrid.js",
             "Panel.js",
-            "PanelEnablerView.js",
             "Placard.js",
             "Popover.js",
             "ProgressIndicator.js",

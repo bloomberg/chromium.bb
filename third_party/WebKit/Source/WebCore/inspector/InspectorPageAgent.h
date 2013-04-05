@@ -106,10 +106,8 @@ public:
     virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&);
     virtual void searchInResources(ErrorString*, const String&, const bool* caseSensitive, const bool* isRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchResult> >&);
     virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html);
-    virtual void canOverrideDeviceMetrics(ErrorString*, bool*);
     virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double fontScaleFactor, bool fitWindow);
     virtual void setShowPaintRects(ErrorString*, bool show);
-    virtual void canShowDebugBorders(ErrorString*, bool*);
     virtual void setShowDebugBorders(ErrorString*, bool show);
     virtual void canShowFPSCounter(ErrorString*, bool*);
     virtual void setShowFPSCounter(ErrorString*, bool show);

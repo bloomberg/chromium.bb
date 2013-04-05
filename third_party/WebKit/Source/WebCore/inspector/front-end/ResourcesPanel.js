@@ -77,7 +77,7 @@ WebInspector.ResourcesPanel = function(database)
     this.applicationCacheListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Application Cache"), "ApplicationCache", ["application-cache-storage-tree-item"]);
     this.sidebarTree.appendChild(this.applicationCacheListTreeElement);
 
-    if (Preferences.exposeFileSystemInspection && WebInspector.experimentsSettings.fileSystemInspection.isEnabled()) {
+    if (WebInspector.experimentsSettings.fileSystemInspection.isEnabled()) {
         this.fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(this);
         this.sidebarTree.appendChild(this.fileSystemListTreeElement);
     }

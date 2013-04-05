@@ -4962,7 +4962,6 @@
             'inspector/front-end/OverridesView.js',
             'inspector/front-end/OverviewGrid.js',
             'inspector/front-end/Panel.js',
-            'inspector/front-end/PanelEnablerView.js',
             'inspector/front-end/ParsedURL.js',
             'inspector/front-end/Placard.js',
             'inspector/front-end/Popover.js',

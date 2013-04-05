@@ -1283,11 +1283,6 @@ void InspectorDOMAgent::focus(ErrorString* errorString, int nodeId)
 
 void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, const RefPtr<InspectorArray>& files)
 {
-    if (!m_client->canSetFileInputFiles()) {
-        *errorString = "Cannot set file input files";
-        return;
-    }
-
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;

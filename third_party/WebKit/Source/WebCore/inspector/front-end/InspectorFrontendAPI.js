@@ -31,52 +31,8 @@
 var InspectorFrontendAPI = {
     _pendingCommands: [],
 
-    isDebuggingEnabled: function()
-    {
-        return WebInspector.debuggerModel.debuggerEnabled();
-    },
-
-    setDebuggingEnabled: function(enabled)
-    {
-        if (enabled) {
-            WebInspector.debuggerModel.enableDebugger();
-            WebInspector.showPanel("scripts");
-        } else
-            WebInspector.debuggerModel.disableDebugger();
-    },
-
-    isTimelineProfilingEnabled: function()
-    {
-        return WebInspector.panels.timeline && WebInspector.panels.timeline.timelineProfilingEnabled;
-    },
-
-    setTimelineProfilingEnabled: function(enabled)
-    {
-        WebInspector.showPanel("timeline").setTimelineProfilingEnabled(enabled);
-    },
-
-    isProfilingJavaScript: function()
-    {
-        return WebInspector.panels.profiles && WebInspector.CPUProfileType.instance && WebInspector.CPUProfileType.instance.isRecordingProfile();
-    },
-
-    startProfilingJavaScript: function()
-    {
-        WebInspector.showPanel("profiles").enableProfiler();
-        if (WebInspector.CPUProfileType.instance)
-            WebInspector.CPUProfileType.instance.startRecordingProfile();
-    },
-
-    stopProfilingJavaScript: function()
-    {
-        WebInspector.showPanel("profiles");
-        if (WebInspector.CPUProfileType.instance)
-            WebInspector.CPUProfileType.instance.stopRecordingProfile();
-    },
-
     setAttachedWindow: function(side)
     {
-      
     },
 
     setDockSide: function(side)

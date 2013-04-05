@@ -141,7 +141,7 @@ WebInspector.TimelinePanel = function()
 
     this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
     this._cpuBarsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-cpu-bars");
-    this._mainThreadMonitoringEnabled = Capabilities.timelineCanMonitorMainThread && WebInspector.settings.showCpuOnTimelineRuler.get();
+    this._mainThreadMonitoringEnabled = WebInspector.settings.showCpuOnTimelineRuler.get();
     WebInspector.settings.showCpuOnTimelineRuler.addChangeListener(this._showCpuOnTimelineRulerChanged, this);
 
     this._createFileSelector();

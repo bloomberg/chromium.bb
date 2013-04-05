@@ -80,17 +80,6 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
     this._initializeView();
-    function onCanClearBrowserCache(error, result)
-    {
-        this._canClearBrowserCache = result;
-    }
-    NetworkAgent.canClearBrowserCache(onCanClearBrowserCache.bind(this));
-
-    function onCanClearBrowserCookies(error, result)
-    {
-        this._canClearBrowserCookies = result;
-    }
-    NetworkAgent.canClearBrowserCookies(onCanClearBrowserCookies.bind(this));
 
     WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
 }
@@ -1069,13 +1058,9 @@ WebInspector.NetworkLogView.prototype = {
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as HAR with content" : "Save as HAR with Content"), this._exportAll.bind(this));
         }
 
-        if (this._canClearBrowserCache || this._canClearBrowserCookies)
-            contextMenu.appendSeparator();
-        if (this._canClearBrowserCache)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
-        if (this._canClearBrowserCookies)
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
-
+        contextMenu.appendSeparator();
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cache" : "Clear Browser Cache"), this._clearBrowserCache.bind(this));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear browser cookies" : "Clear Browser Cookies"), this._clearBrowserCookies.bind(this));
 
         if (request && request.type === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();

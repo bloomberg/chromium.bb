@@ -37,30 +37,13 @@ var Preferences = {
     minElementsSidebarWidth: 200,
     minElementsSidebarHeight: 200,
     minScriptsSidebarWidth: 200,
-    styleRulesExpandedState: {},
-    showMissingLocalizedStrings: false,
-    useLowerCaseMenuTitlesOnWindows: false,
-    sharedWorkersDebugNote: undefined,
-    localizeUI: true,
-    exposeDisableCache: false,
-    applicationTitle: "Web Inspector - %s",
-    showDockToRight: false,
-    exposeFileSystemInspection: false,
-    experimentsEnabled: true
+    applicationTitle: "Developer Tools - %s",
+    experimentsEnabled: false
 }
 
 var Capabilities = {
-    samplingCPUProfiler: false,
-    debuggerCausesRecompilation: true,
-    separateScriptCompilationAndExecutionEnabled: false,
-    profilerCausesRecompilation: true,
-    heapProfilerPresent: false,
-    canOverrideDeviceMetrics: false,
-    timelineSupportsFrameInstrumentation: false,
-    timelineCanMonitorMainThread: false,
     canOverrideGeolocation: false,
     canOverrideDeviceOrientation: false,
-    canShowDebugBorders: false,
     canShowFPSCounter: false,
     canContinuouslyPaint: false,
     canInspectWorkers: false
@@ -76,9 +59,7 @@ WebInspector.Settings = function()
 
     this.colorFormat = this.createSetting("colorFormat", "original");
     this.consoleHistory = this.createSetting("consoleHistory", []);
-    this.debuggerEnabled = this.createSetting("debuggerEnabled", false);
     this.domWordWrap = this.createSetting("domWordWrap", true);
-    this.profilerEnabled = this.createSetting("profilerEnabled", false);
     this.eventListenersFilter = this.createSetting("eventListenersFilter", "all");
     this.lastActivePanel = this.createSetting("lastActivePanel", "elements");
     this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");

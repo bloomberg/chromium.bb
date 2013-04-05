@@ -302,8 +302,7 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.SettingsTab.call(this, WebInspector.UIString("General"));
 
     var p = this._appendSection();
-    if (Preferences.exposeDisableCache)
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Disable cache"), WebInspector.settings.cacheDisabled));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Disable cache"), WebInspector.settings.cacheDisabled));
     var disableJSElement = this._createCheckboxSetting(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
     p.appendChild(disableJSElement);
     WebInspector.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
@@ -329,10 +328,9 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
     WebInspector.settings.showPaintRects.addChangeListener(this._showPaintRectsChanged, this);
 
-    if (Capabilities.canShowDebugBorders) {
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
-        WebInspector.settings.showDebugBorders.addChangeListener(this._showDebugBordersChanged, this);
-    }
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
+    WebInspector.settings.showDebugBorders.addChangeListener(this._showDebugBordersChanged, this);
+
     if (Capabilities.canShowFPSCounter) {
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter));
         WebInspector.settings.showFPSCounter.addChangeListener(this._showFPSCounterChanged, this);
@@ -369,8 +367,7 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.settings.timelineLimitStackFramesFlag.addChangeListener(this._timelineLimitStackFramesChanged.bind(this, fieldset));
     checkbox.appendChild(fieldset);
 
-    if (Capabilities.timelineCanMonitorMainThread)
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
 
     p = this._appendSection(WebInspector.UIString("Console"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));

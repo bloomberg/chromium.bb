@@ -57,10 +57,8 @@ WebInspector.TimelineOverviewPane = function(model)
     this._overviewItems = {};
     this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Events] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-events",
         WebInspector.UIString("Events"));
-    if (Capabilities.timelineSupportsFrameInstrumentation) {
-        this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
-            WebInspector.UIString("Frames"));
-    }
+    this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
+        WebInspector.UIString("Frames"));
     this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Memory] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-memory",
         WebInspector.UIString("Memory"));
 

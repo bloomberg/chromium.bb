@@ -49,7 +49,6 @@ WebInspector.Toolbar = function()
     document.getElementById("close-button-left").addEventListener("click", this._onClose, true);
     document.getElementById("close-button-right").addEventListener("click", this._onClose, true);
 
-    this._isWindowMoveSupported = WebInspector.isMac() && !Preferences.showDockToRight;
     this._panelDescriptors = [];
 }
 
@@ -224,7 +223,7 @@ WebInspector.Toolbar.prototype = {
      */
     _toolbarDragStart: function(event)
     {
-        if (this._isUndocked() && !this._isWindowMoveSupported)
+        if (this._isUndocked())
             return false;
 
         var target = event.target;
@@ -261,10 +260,7 @@ WebInspector.Toolbar.prototype = {
         if (this._isUndocked())
             return this._toolbarDragMoveWindow(event);
 
-        if (Preferences.showDockToRight)
-            return this._toolbarDragChangeDocking(event);
-
-        return this._toolbarDragChangeHeight(event);
+        return this._toolbarDragChangeDocking(event);
     },
 
     _toolbarDragMoveWindow: function(event)
@@ -291,15 +287,6 @@ WebInspector.Toolbar.prototype = {
                 return true;
             }
         }
-    },
-
-    _toolbarDragChangeHeight: function(event)
-    {
-        // Change the inspector window height for dock-to-bottom only mode.
-        var height = this._lastHeightDuringDrag - (event.screenY - this._lastScreenY);
-        this._lastHeightDuringDrag = height;
-        this._lastScreenY = event.screenY;
-        InspectorFrontendHost.setAttachedWindowHeight(height);
     },
 
     _onClose: function()

@@ -104,8 +104,6 @@ public:
 
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics);
     virtual void stop(ErrorString*);
-    virtual void canMonitorMainThread(ErrorString*, bool*);
-    virtual void supportsFrameInstrumentation(ErrorString*, bool*);
 
     int id() const { return m_id; }
 
