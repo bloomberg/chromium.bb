@@ -24,7 +24,7 @@
           "type": {
             "type": "string",
             "description": "Target type.",
-            "enum" : ["page", "background_page", "other" ]
+            "enum" : ["page", "background_page", "worker", "other" ]
           },
           "id": { "type": "string", "description": "Target id." },
           "attached": { "type": "boolean", "description": "True if debugger is already attached." },

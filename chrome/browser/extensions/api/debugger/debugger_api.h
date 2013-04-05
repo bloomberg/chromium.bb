@@ -24,22 +24,22 @@ class DictionaryValue;
 }
 
 namespace content {
-class DevToolsClientHost;
+class DevToolsAgentHost;
 class WebContents;
 }
 
 class DebuggerFunction : public AsyncExtensionFunction {
  protected:
   DebuggerFunction();
-  virtual ~DebuggerFunction() {}
+  virtual ~DebuggerFunction();
 
   void FormatErrorMessage(const std::string& format);
 
-  bool InitWebContents();
+  bool InitAgentHost();
   bool InitClientHost();
 
-  content::WebContents* contents_;
   Debuggee debuggee_;
+  scoped_refptr<content::DevToolsAgentHost> agent_host_;
   ExtensionDevToolsClientHost* client_host_;
 };
 
@@ -98,6 +98,11 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void CollectWorkerInfo(base::ListValue* list);
+
+  void SendTargetList(base::ListValue* list);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
