@@ -202,6 +202,7 @@ class GitWrapper(SCMWrapper):
     cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
     cmd2 = ['git', 'config', 'diff.ignoreSubmodules', 'all']
     cmd3 = ['git', 'config', 'branch.autosetupmerge']
+    cmd4 = ['git', 'config', 'fetch.recurseSubmodules', 'false']
     kwargs = {'cwd': self.checkout_path,
               'print_stdout': False,
               'filter_fn': lambda x: None}
@@ -216,6 +217,8 @@ class GitWrapper(SCMWrapper):
       gclient_utils.CheckCallAndFilter(cmd3, **kwargs)
     except subprocess2.CalledProcessError:
       gclient_utils.CheckCallAndFilter(cmd3 + ['always'], **kwargs)
+
+    gclient_utils.CheckCallAndFilter(cmd4, **kwargs)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
