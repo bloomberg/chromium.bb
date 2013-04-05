@@ -294,12 +294,10 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
     if (!m_isExternalScript && !m_element->document()->contentSecurityPolicy()->allowInlineScript(m_element->document()->url(), m_startLineNumber))
         return;
 
-#if ENABLE(NOSNIFF)
     if (m_isExternalScript && m_cachedScript && !m_cachedScript->mimeTypeAllowedByNosniff()) {
         m_element->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_cachedScript->url().elidedString() + "' because its MIME type ('" + m_cachedScript->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
         return;
     }
-#endif
 
     RefPtr<Document> document = m_element->document();
     ASSERT(document);

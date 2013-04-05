@@ -46,9 +46,7 @@ namespace WebCore {
         String mimeType() const;
 
         virtual void destroyDecodedData();
-#if ENABLE(NOSNIFF)
         bool mimeTypeAllowedByNosniff() const;
-#endif
 
         virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

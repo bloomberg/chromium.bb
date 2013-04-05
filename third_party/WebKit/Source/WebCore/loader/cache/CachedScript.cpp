@@ -101,12 +101,10 @@ void CachedScript::destroyDecodedData()
         makePurgeable(true);
 }
 
-#if ENABLE(NOSNIFF)
 bool CachedScript::mimeTypeAllowedByNosniff() const
 {
     return !parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) == ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }
-#endif
 
 void CachedScript::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
