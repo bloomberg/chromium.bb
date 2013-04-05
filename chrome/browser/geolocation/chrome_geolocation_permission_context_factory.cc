@@ -82,5 +82,10 @@ void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(
 
 bool ChromeGeolocationPermissionContextFactory::
 ServiceRedirectedInIncognito() const {
+  return false;
+}
+
+bool ChromeGeolocationPermissionContextFactory::
+ServiceHasOwnInstanceInIncognito() const {
   return true;
 }

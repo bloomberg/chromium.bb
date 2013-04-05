@@ -461,6 +461,22 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
+  // First, check infobar will be created for incognito profile.
+  ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
+  AddGeolocationWatch(true);
+  // Response won't be persisted.
+  SetInfobarResponse(current_url_, true);
+  CheckGeoposition(fake_latitude_, fake_longitude_);
+  // Disables further prompts from this tab.
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
+  // Go to the regular profile, infobar will be created.
+  ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  AddGeolocationWatch(true);
+  SetInfobarResponse(current_url_, false);
+  CheckStringValueFromJavascript("1", "geoGetLastError()");
+}
+
 // crbug.com/176291
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        DISABLED_IFramesWithFreshPosition) {
