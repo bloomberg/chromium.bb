@@ -85,6 +85,16 @@ MAX_URL_OPEN_ATTEMPTS = 30
 _http_services = {}
 _http_services_lock = threading.Lock()
 
+# Used by get_flavor().
+FLAVOR_MAPPING = {
+  'cygwin': 'win',
+  'win32': 'win',
+  'darwin': 'mac',
+  'sunos5': 'solaris',
+  'freebsd7': 'freebsd',
+  'freebsd8': 'freebsd',
+}
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -98,15 +108,7 @@ class MappingError(OSError):
 
 def get_flavor():
   """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
-  flavors = {
-    'cygwin': 'win',
-    'win32': 'win',
-    'darwin': 'mac',
-    'sunos5': 'solaris',
-    'freebsd7': 'freebsd',
-    'freebsd8': 'freebsd',
-  }
-  return flavors.get(sys.platform, 'linux')
+  return FLAVOR_MAPPING.get(sys.platform, 'linux')
 
 
 def fix_default_encoding():
@@ -549,6 +551,7 @@ class HttpService(object):
         if e.code in (302, 401, 403):
           # Try to authenticate only once. If it doesn't help, then server does
           # not support app engine authentication.
+          logging.debug('Got %s', e.code)
           if not authenticated and self.authenticate():
             authenticated = True
             continue

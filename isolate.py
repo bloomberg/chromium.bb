@@ -1496,8 +1496,8 @@ class SavedState(Flattenable):
     out += '  files: %d\n' % len(self.files)
     out += '  isolate_file: %s\n' % self.isolate_file
     out += '  read_only: %s\n' % self.read_only
-    out += '  relative_cwd: %s' % self.relative_cwd
-    out += '  isolated_files: %s' % self.isolated_files
+    out += '  relative_cwd: %s\n' % self.relative_cwd
+    out += '  isolated_files: %s\n' % self.isolated_files
     out += '  variables: %s' % ''.join(
         '\n    %s=%s' % (k, self.variables[k]) for k in sorted(self.variables))
     out += ')'
