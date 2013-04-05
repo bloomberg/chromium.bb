@@ -24,10 +24,6 @@ if env.Bit('bitcode') and env.Bit('nacl_pic'):
 if env.Bit('build_arm'):
   Return()
 
-# R-DFA does not support stubout mode
-if env.Bit('validator_ragel'):
-  Return()
-
 if 'TRUSTED_ENV' not in env:
   Return()
 
@@ -36,6 +32,13 @@ stubout_tool = env['TRUSTED_ENV'].File(
 
 partly_invalid_nexe = env.ComponentProgram('partly_invalid', 'partly_invalid.c',
                                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+# R-DFA does not support stubout mode but we need to create at least file
+# partly_invalid.nexe used in PPAPI tests thus we first create a rule for
+# this file and only then bail out.
+if env.Bit('validator_ragel'):
+  Return()
+
 partly_invalid_stubout_nexe = env.File('partly_invalid_stubout${PROGSUFFIX}')
 
 node = env.Command(
