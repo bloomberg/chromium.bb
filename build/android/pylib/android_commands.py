@@ -684,7 +684,7 @@ class AndroidCommands(object):
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
     md5sum_output = cmd_helper.GetCmdOutput(
         ['%s_host' % self._md5sum_path, local_path])
-    hashes_on_host = _ComputeFileListHash(md5sum_output)
+    hashes_on_host = _ComputeFileListHash(md5sum_output.splitlines())
     if hashes_on_device == hashes_on_host:
       return
 
