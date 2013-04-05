@@ -426,7 +426,7 @@ void Shell::Init() {
     output_configurator_->AddObserver(display_change_observer_.get());
     display_error_observer_.reset(new internal::DisplayErrorObserver());
     output_configurator_->AddObserver(display_error_observer_.get());
-    output_configurator_->set_delegate(display_change_observer_.get());
+    output_configurator_->set_state_controller(display_change_observer_.get());
     output_configurator_->Start();
     display_change_observer_->OnDisplayModeChanged();
   }

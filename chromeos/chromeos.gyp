@@ -155,6 +155,8 @@
         'disks/disk_mount_manager.h',
         'display/output_configurator.cc',
         'display/output_configurator.h',
+        'display/real_output_configurator_delegate.cc',
+        'display/real_output_configurator_delegate.h',
         'ime/component_extension_ime_manager.cc',
         'ime/component_extension_ime_manager.h',
         'ime/extension_ime_util.cc',
@@ -251,6 +253,8 @@
           'sources!': [
             'display/output_configurator.cc',
             'display/output_configurator.h',
+            'display/real_output_configurator_delegate.cc',
+            'display/real_output_configurator_delegate.h',
           ],
         }],
       ],

@@ -19,21 +19,11 @@
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
 typedef unsigned long XID;
-typedef XID Window;
 typedef XID RROutput;
 typedef XID RRCrtc;
 typedef XID RRMode;
 
-struct _XDisplay;
-typedef struct _XDisplay Display;
-struct _XRROutputInfo;
-typedef _XRROutputInfo XRROutputInfo;
-struct _XRRScreenResources;
-typedef _XRRScreenResources XRRScreenResources;
-
 namespace chromeos {
-
-struct OutputSnapshot;
 
 // Used to describe the state of a multi-display configuration.
 enum OutputState {
@@ -55,13 +45,58 @@ struct OutputInfo {
 };
 
 // This class interacts directly with the underlying Xrandr API to manipulate
-// CTRCs and Outputs.  It will likely grow more state, over time, or expose
-// Output info in other ways as more of the Chrome display code grows up around
-// it.
+// CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
  public:
+  // Information about an output's current state.
+  struct OutputSnapshot {
+    OutputSnapshot();
+
+    RROutput output;
+
+    // CRTC that should be used for this output.  Not necessarily the CRTC
+    // that XRandR reports is currently being used.
+    RRCrtc crtc;
+
+    RRMode current_mode;
+    RRMode native_mode;
+    RRMode mirror_mode;
+
+    int y;
+    int height;
+
+    bool is_internal;
+    bool is_aspect_preserving_scaling;
+
+    // XInput device ID or 0 if this output isn't a touchscreen.
+    int touch_device_id;
+  };
+
+  struct CoordinateTransformation {
+    // Initialized to the identity transformation.
+    CoordinateTransformation();
+
+    float x_scale;
+    float x_offset;
+    float y_scale;
+    float y_offset;
+  };
+
+  struct CrtcConfig {
+    CrtcConfig();
+    CrtcConfig(RRCrtc crtc, int x, int y, RRMode mode, RROutput output);
+
+    RRCrtc crtc;
+    int x;
+    int y;
+    RRMode mode;
+    RROutput output;
+  };
+
   class Observer {
    public:
+    virtual ~Observer() {}
+
     // Called when the change of the display mode finished.  It will usually
     // start the fading in the displays.
     virtual void OnDisplayModeChanged() {}
@@ -71,11 +106,77 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
   };
 
-  class Delegate {
+  // Interface for classes that make decisions about which output state
+  // should be used.
+  class StateController {
    public:
+    virtual ~StateController() {}
+
     // Called when displays are detected.
     virtual OutputState GetStateForOutputs(
         const std::vector<OutputInfo>& outputs) const = 0;
+  };
+
+  // Interface for classes that perform actions on behalf of OutputController.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void SetPanelFittingEnabled(bool enabled) = 0;
+
+    // Initializes the XRandR extension, saving the base event ID to
+    // |event_base|.
+    virtual void InitXRandRExtension(int* event_base) = 0;
+
+    // Tells XRandR to update its configuration in response to |event|, an
+    // RRScreenChangeNotify event.
+    virtual void UpdateXRandRConfiguration(const base::NativeEvent& event) = 0;
+
+    // Grabs the X server and refreshes XRandR-related resources.  While
+    // the server is grabbed, other clients are blocked.  Must be balanced
+    // by a call to UngrabServer().
+    virtual void GrabServer() = 0;
+
+    // Ungrabs the server and frees XRandR-related resources.
+    virtual void UngrabServer() = 0;
+
+    // Flushes all pending requests and waits for replies.
+    virtual void SyncWithServer() = 0;
+
+    // Sets the window's background color to |color_argb|.
+    virtual void SetBackgroundColor(uint32 color_argb) = 0;
+
+    // Enables DPMS and forces it to the "on" state.
+    virtual void ForceDPMSOn() = 0;
+
+    // Returns information about the current outputs.
+    virtual std::vector<OutputSnapshot> GetOutputs() = 0;
+
+    // Gets details corresponding to |mode|.  Parameters may be NULL.
+    // Returns true on success.
+    virtual bool GetModeDetails(RRMode mode,
+                                int* width,
+                                int* height,
+                                bool* interlaced) = 0;
+
+    // Calls XRRSetCrtcConfig() with the given options but some of our
+    // default output count and rotation arguments.
+    virtual void ConfigureCrtc(CrtcConfig* config) = 0;
+
+    // Called to set the frame buffer (underlying XRR "screen") size.  Has
+    // a side-effect of disabling all CRTCs.
+    virtual void CreateFrameBuffer(int width,
+                                   int height,
+                                   CrtcConfig* config1,
+                                   CrtcConfig* config2) = 0;
+
+    // Configures XInput's Coordinate Transformation Matrix property.
+    // |touch_device_id| the ID of the touchscreen device to configure.
+    // |ctm| contains the desired transformation parameters.  The offsets
+    // in it should be normalized so that 1 corresponds to the X or Y axis
+    // size for the corresponding offset.
+    virtual void ConfigureCTM(int touch_device_id,
+                              const CoordinateTransformation& ctm) = 0;
   };
 
   // Flags that can be passed to SetDisplayPower().
@@ -85,6 +186,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Do not change the state if multiple displays are connected or if the
   // only connected display is external.
   static const int kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
+
+  // Returns true if an output named |name| is an internal display.
+  static bool IsInternalOutputName(const std::string& name);
 
   OutputConfigurator();
   virtual ~OutputConfigurator();
@@ -98,7 +202,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   }
   DisplayPowerState display_power_state() const { return power_state_; }
 
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void set_state_controller(StateController* controller) {
+    state_controller_ = controller;
+  }
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
@@ -133,9 +239,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Tells if the output specified by |name| is for internal display.
-  static bool IsInternalOutputName(const std::string& name);
-
   // Sets all the displays into pre-suspend mode; usually this means
   // configure them for their resume state. This allows faster resume on
   // machines where display configuration is slow.
@@ -152,72 +255,23 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
 
-  // Returns a vector filled with properties of the first two connected outputs
-  // found on |display| and |screen|.
-  std::vector<OutputSnapshot> GetDualOutputs(Display* display,
-                                             XRRScreenResources* screen);
-
-  // Looks for a mode on internal and external outputs having same resolution.
-  // |display| and |screen| parameters are needed for some XRandR calls.
-  // |internal_info| and |external_info| are used to search for the modes.
-  // |internal_output_id| is used to create a new mode, if applicable.
-  // |try_creating|=true will enable creating panel-fitting mode
-  // on the |internal_info| output instead of
-  // only searching for a matching mode. Note: it may lead to a crash,
-  // if |internal_info| is not capable of panel fitting.
-  // |preserve_aspect|=true will limit the search / creation
-  // only to the modes having the native aspect ratio of |external_info|.
-  // |internal_mirror_mode| and |external_mirror_mode| are the out-parameters
-  // for the modes on the two outputs which will have the same resolution.
-  // Returns false if no mode appropriate for mirroring has been found/created.
-  bool FindOrCreateMirrorMode(Display* display,
-                              XRRScreenResources* screen,
-                              XRROutputInfo* internal_info,
-                              XRROutputInfo* external_info,
-                              RROutput internal_output_id,
-                              bool try_creating,
-                              bool preserve_aspect,
-                              RRMode* internal_mirror_mode,
-                              RRMode* external_mirror_mode);
-
-  // Searches for touchscreens among input devices,
-  // and tries to match them up to screens in |outputs|.
-  // |display| and |screen| are used to make X calls.
-  // |outputs| is an array of detected screens.
-  // If a touchscreen with same resolution as an output's native mode
-  // is detected, its id will be stored in this output.
-  void GetTouchscreens(Display* display,
-                       XRRScreenResources* screen,
-                       std::vector<OutputSnapshot>& outputs);
-
   // Configures X to the state specified in |output_state| and
-  // |power_state|.  |display|, |screen| and |window| are used to change X
-  // configuration.  |outputs| contains information on the currently
+  // |power_state|.  |outputs| contains information on the currently
   // configured state, as well as how to apply the new state.
-  bool EnterState(Display* display,
-                  XRRScreenResources* screen,
-                  Window window,
-                  OutputState output_state,
+  bool EnterState(OutputState output_state,
                   DisplayPowerState power_state,
                   const std::vector<OutputSnapshot>& outputs);
 
-  // Outputs UMA metrics of previous state (the state that is being left).
-  // Updates |mirror_mode_preserved_aspect_| and |last_enter_state_time_|.
-  void RecordPreviousStateUMA();
-
   // Returns next state.
-  OutputState GetNextState(Display* display,
-                           XRRScreenResources* screen,
-                           OutputState current_state,
-                           const std::vector<OutputSnapshot>& outputs) const;
+  OutputState GetNextState(const std::vector<OutputSnapshot>& outputs) const;
 
+  // Computes the relevant transformation for mirror mode.
+  // |output| is the output on which mirror mode is being applied.
+  // Returns the transformation, which would be identity if computations fail.
+  CoordinateTransformation GetMirrorModeCTM(
+      const OutputConfigurator::OutputSnapshot* output);
 
-  // Tells if the output specified by |output_info| is for internal display.
-  static bool IsInternalOutput(const XRROutputInfo* output_info);
-
-  // Returns output's native mode, None if not found.
-  static RRMode GetOutputNativeMode(const XRROutputInfo* output_info);
-
+  StateController* state_controller_;
   Delegate* delegate_;
 
   // This is detected by the constructor to determine whether or not we should
@@ -226,10 +280,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // If this flag is set to false, any attempts to change the output
   // configuration to immediately fail without changing the state.
   bool configure_display_;
-
-  // This is set externally in Init,
-  // and is used to enable modes which rely on panel fitting.
-  bool is_panel_fitting_enabled_;
 
   // The number of outputs that are connected.
   int connected_output_count_;
@@ -250,16 +300,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // The timer to delay configuring outputs. See also the comments in
   // |Dispatch()|.
   scoped_ptr<base::OneShotTimer<OutputConfigurator> > configure_timer_;
-
-  // Next 3 members are used for UMA of time spent in various states.
-  // Indicates that current OutputSnapshot has aspect preserving mirror mode.
-  bool mirror_mode_will_preserve_aspect_;
-
-  // Indicates that last entered mirror mode preserved aspect.
-  bool mirror_mode_preserved_aspect_;
-
-  // Indicates the time at which |output_state_| was entered.
-  base::TimeTicks last_enter_state_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };
