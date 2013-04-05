@@ -2492,8 +2492,6 @@
             'rendering/RenderThemeMac.mm',
             'rendering/RenderThemeMacShared.h',
             'rendering/RenderThemeMacShared.mm',
-            'rendering/RenderThemeSafari.cpp',
-            'rendering/RenderThemeSafari.h',
             'rendering/RenderThemeWin.cpp',
             'rendering/RenderThemeWin.h',
             'rendering/RenderTreeAsText.cpp',
