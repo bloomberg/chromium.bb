@@ -102,8 +102,6 @@ class InspectorObject;
 
 typedef String ErrorString;
 
-#if ENABLE(INSPECTOR)
-
 class InspectorFrontend {
 public:
     InspectorFrontend(InspectorFrontendChannel*);
@@ -113,8 +111,6 @@ $domainClassList
 private:
 ${fieldDeclarations}};
 
-#endif // ENABLE(INSPECTOR)
-
 } // namespace WebCore
 #endif // !defined(InspectorFrontend_h)
 """)
@@ -123,10 +119,11 @@ backend_h = (
 """#ifndef InspectorBackendDispatcher_h
 #define InspectorBackendDispatcher_h
 
+#include "InspectorTypeBuilder.h"
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
-#include "InspectorTypeBuilder.h"
 
 namespace WebCore {
 
@@ -203,16 +200,13 @@ backend_cpp = (
 """
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorBackendDispatcher.h"
-#include <wtf/text/WTFString.h>
-#include <wtf/text/CString.h>
+
 
 #include "InspectorAgent.h"
-#include "InspectorValues.h"
 #include "InspectorFrontendChannel.h"
+#include "InspectorValues.h"
+#include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -504,21 +498,18 @@ COMPILE_ASSERT(static_cast<int>(InspectorBackendDispatcher::kMethodNamesEnumSize
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 """)
 
 frontend_cpp = (
 """
 
 #include "config.h"
-#if ENABLE(INSPECTOR)
 
 #include "InspectorFrontend.h"
-#include <wtf/text/WTFString.h>
-#include <wtf/text/CString.h>
-
 #include "InspectorFrontendChannel.h"
 #include "InspectorValues.h"
+
+#include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -531,7 +522,6 @@ $methods
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 """)
 
 typebuilder_h = (
@@ -539,9 +529,8 @@ typebuilder_h = (
 #ifndef InspectorTypeBuilder_h
 #define InspectorTypeBuilder_h
 
-#if ENABLE(INSPECTOR)
-
 #include "InspectorValues.h"
+
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>
 
@@ -831,8 +820,6 @@ ${typeBuilders}
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
-
 #endif // !defined(InspectorTypeBuilder_h)
 
 """)
@@ -841,9 +828,9 @@ typebuilder_cpp = (
 """
 
 #include "config.h"
-#if ENABLE(INSPECTOR)
 
 #include "InspectorTypeBuilder.h"
+
 #include <wtf/text/CString.h>
 
 namespace WebCore {
@@ -883,7 +870,6 @@ $validatorCode
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 """)
 
 backend_js = (
