@@ -397,12 +397,11 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList(
   const ScopedVector<google_apis::ResourceEntry>& entries =
       resource_list->entries();
   for (size_t i = 0; i < entries.size(); ++i) {
-    const google_apis::ResourceEntry& entry = *entries[i];
-    if (base::FilePath(entry.title()) == base_name) {
+    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(
+        ConvertResourceEntryToDriveEntryProto(*entries[i])));
+    if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
-      scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto(
-          ConvertResourceEntryToDriveEntryProto(entry)));
-      callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
+      callback.Run(DRIVE_FILE_OK, entry.Pass());
       return;
     }
   }

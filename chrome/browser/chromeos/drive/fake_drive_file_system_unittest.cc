@@ -63,6 +63,38 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
   EXPECT_TRUE(entry);  // Just make sure something is returned.
 }
 
+TEST_F(FakeDriveFileSystemTest,
+       GetEntryInfoByResourceId_PathCompatibleWithGetEntryInfoByPath) {
+  const std::string document_resource_id = "document:5_document_resource_id";
+
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry;
+  base::FilePath file_path;
+
+  // Get entry info by resource id.
+  fake_drive_file_system_->GetEntryInfoByResourceId(
+      document_resource_id,
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->file_specific_info().is_hosted_document());
+
+  // Get entry info by path given by GetEntryInfoByResourceId.
+  error = DRIVE_FILE_ERROR_FAILED;
+  entry.reset();
+  fake_drive_file_system_->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(document_resource_id, entry->resource_id());
+}
+
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
