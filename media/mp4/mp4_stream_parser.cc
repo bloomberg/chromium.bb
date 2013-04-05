@@ -237,7 +237,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       is_audio_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_audio_track_encrypted_: " << is_audio_track_encrypted_;
       audio_config.Initialize(kCodecAAC, sample_format,
-                              aac.channel_layout(),
+                              aac.GetChannelLayout(has_sbr_),
                               aac.GetOutputSamplesPerSecond(has_sbr_),
                               NULL, 0, is_audio_track_encrypted_, false);
       has_audio_ = true;

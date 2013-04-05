@@ -38,7 +38,13 @@ class MEDIA_EXPORT AAC {
   // Returns the samples_per_second value that should used in an
   // AudioDecoderConfig.
   int GetOutputSamplesPerSecond(bool sbr_in_mimetype) const;
-  ChannelLayout channel_layout() const;
+
+  // Gets the channel layout for the AAC stream.
+  // |sbr_in_mimetype| should be set to true if the SBR mode is
+  // signalled in the mimetype. (ie mp4a.40.5 in the codecs parameter).
+  // Returns the channel_layout value that should used in an
+  // AudioDecoderConfig.
+  ChannelLayout GetChannelLayout(bool sbr_in_mimetype) const;
 
   // This function converts a raw AAC frame into an AAC frame with an ADTS
   // header. On success, the function returns true and stores the converted data

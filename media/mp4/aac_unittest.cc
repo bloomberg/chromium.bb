@@ -19,7 +19,7 @@ TEST(AACTest, BasicProfileTest) {
 
   EXPECT_TRUE(aac.Parse(data));
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 44100);
-  EXPECT_EQ(aac.channel_layout(), CHANNEL_LAYOUT_STEREO);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_STEREO);
 }
 
 TEST(AACTest, ExtensionTest) {
@@ -32,10 +32,33 @@ TEST(AACTest, ExtensionTest) {
   EXPECT_TRUE(aac.Parse(data));
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 48000);
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(true), 48000);
-  EXPECT_EQ(aac.channel_layout(), CHANNEL_LAYOUT_STEREO);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_STEREO);
 }
 
-TEST(AACTest, TestImplicitSBR) {
+// Test implicit SBR with mono channel config.
+// Mono channel layout should only be reported if SBR is not
+// specified. Otherwise stereo should be reported.
+// See ISO-14496-3 Section 1.6.6.1.2 for details about this special casing.
+TEST(AACTest, TestImplicitSBR_ChannelConfig0) {
+  AAC aac;
+  uint8 buffer[] = {0x13, 0x08};
+  std::vector<uint8> data;
+
+  data.assign(buffer, buffer + sizeof(buffer));
+
+  EXPECT_TRUE(aac.Parse(data));
+
+  // Test w/o implict SBR.
+  EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 24000);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_MONO);
+
+  // Test implicit SBR.
+  EXPECT_EQ(aac.GetOutputSamplesPerSecond(true), 48000);
+  EXPECT_EQ(aac.GetChannelLayout(true), CHANNEL_LAYOUT_STEREO);
+}
+
+// Tests implicit SBR with a stereo channel config.
+TEST(AACTest, TestImplicitSBR_ChannelConfig1) {
   AAC aac;
   uint8 buffer[] = {0x13, 0x10};
   std::vector<uint8> data;
@@ -43,9 +66,14 @@ TEST(AACTest, TestImplicitSBR) {
   data.assign(buffer, buffer + sizeof(buffer));
 
   EXPECT_TRUE(aac.Parse(data));
+
+  // Test w/o implict SBR.
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 24000);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_STEREO);
+
+  // Test implicit SBR.
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(true), 48000);
-  EXPECT_EQ(aac.channel_layout(), CHANNEL_LAYOUT_STEREO);
+  EXPECT_EQ(aac.GetChannelLayout(true), CHANNEL_LAYOUT_STEREO);
 }
 
 TEST(AACTest, SixChannelTest) {
@@ -57,7 +85,7 @@ TEST(AACTest, SixChannelTest) {
 
   EXPECT_TRUE(aac.Parse(data));
   EXPECT_EQ(aac.GetOutputSamplesPerSecond(false), 48000);
-  EXPECT_EQ(aac.channel_layout(), CHANNEL_LAYOUT_5_1);
+  EXPECT_EQ(aac.GetChannelLayout(false), CHANNEL_LAYOUT_5_1);
 }
 
 TEST(AACTest, DataTooShortTest) {
