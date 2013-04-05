@@ -155,7 +155,6 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
 
     CharacterType lastLastCh = pos > 1 ? str[pos - 2] : static_cast<CharacterType>(lazyBreakIterator.secondToLastCharacter());
     CharacterType lastCh = pos > 0 ? str[pos - 1] : static_cast<CharacterType>(lazyBreakIterator.lastCharacter());
-    unsigned priorContextLength = lazyBreakIterator.priorContextLength();
     for (int i = pos; i < len; i++) {
         CharacterType ch = str[i];
 
@@ -163,16 +162,10 @@ static inline int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator
             return i;
 
         if (needsLineBreakIterator<treatNoBreakSpaceAsBreak>(ch) || needsLineBreakIterator<treatNoBreakSpaceAsBreak>(lastCh)) {
-            if (nextBreak < i) {
-                // Don't break if positioned at start of primary context and there is no prior context.
-                if (i || priorContextLength) {
-                    TextBreakIterator* breakIterator = lazyBreakIterator.get(priorContextLength);
-                    if (breakIterator) {
-                        nextBreak = textBreakFollowing(breakIterator, i - 1 + priorContextLength);
-                        if (nextBreak >= 0)
-                            nextBreak -= priorContextLength;
-                    }
-                }
+            if (nextBreak < i && i) {
+                TextBreakIterator* breakIterator = lazyBreakIterator.get();
+                if (breakIterator)
+                    nextBreak = textBreakFollowing(breakIterator, i - 1);
             }
             if (i == nextBreak && !isBreakableSpace<treatNoBreakSpaceAsBreak>(lastCh))
                 return i;

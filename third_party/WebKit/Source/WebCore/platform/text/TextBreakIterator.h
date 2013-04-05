@@ -38,10 +38,8 @@ class TextBreakIterator;
 TextBreakIterator* cursorMovementIterator(const UChar*, int length);
 
 TextBreakIterator* wordBreakIterator(const UChar*, int length);
-TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale, const UChar* priorContext,
-                                            unsigned priorContextLength);
-TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale, const UChar* priorContext,
-                                            unsigned priorContextLength);
+TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale);
+TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale);
 void releaseLineBreakIterator(TextBreakIterator*);
 TextBreakIterator* sentenceBreakIterator(const UChar*, int length);
 
@@ -110,30 +108,13 @@ public:
         m_priorContext[1] = 0;
     }
 
-    unsigned priorContextLength() const
-    {
-        unsigned priorContextLength = 0;
-        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
-        if (m_priorContext[1]) {
-            ++priorContextLength;
-            if (m_priorContext[0])
-                ++priorContextLength;
-        }
-        return priorContextLength;
-    }
-
-    // Obtain text break iterator, possibly previously cached, where this iterator is (or has been)
-    // initialized to use the previously stored string as the primary breaking context and using
-    // previously stored prior context if non-empty.
-    TextBreakIterator* get(unsigned priorContextLength)
+    TextBreakIterator* get()
     {
         if (!m_iterator) {
-            ASSERT(priorContextLength <= priorContextCapacity);
-            const UChar* priorContext = priorContextLength ? &m_priorContext[priorContextCapacity - priorContextLength] : 0;
             if (m_string.is8Bit())
-                m_iterator = acquireLineBreakIterator(m_string.characters8(), m_string.length(), m_locale, priorContext, priorContextLength);
+                m_iterator = acquireLineBreakIterator(m_string.characters8(), m_string.length(), m_locale);
             else
-                m_iterator = acquireLineBreakIterator(m_string.characters16(), m_string.length(), m_locale, priorContext, priorContextLength);
+                m_iterator = acquireLineBreakIterator(m_string.characters16(), m_string.length(), m_locale);
         }
         return m_iterator;
     }
