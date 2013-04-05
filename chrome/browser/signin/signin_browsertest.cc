@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -91,9 +92,13 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, ProcessIsolation) {
 
   // Entry points to signin request "SINGLETON_TAB" mode, so a new request
   // shouldn't change anything.
-  LoginUIService* login = LoginUIServiceFactory::GetForProfile(
-      browser()->profile());
-  login->ShowLoginPopup();
+  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+      browser(),
+      GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
+                                        SyncPromoUI::SOURCE_NTP_LINK,
+                                        false))));
+  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser(), params);
   EXPECT_EQ(active_tab, browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(kOneClickSigninEnabled,
             signin->IsSigninProcess(active_tab_process_id));

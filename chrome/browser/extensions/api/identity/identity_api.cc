@@ -12,13 +12,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/extensions/api/experimental_identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
@@ -26,6 +24,7 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -50,18 +49,23 @@ namespace LaunchWebAuthFlow = api::experimental_identity::LaunchWebAuthFlow;
 namespace identity = api::experimental_identity;
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
-    : interactive_(false) {}
+    : should_prompt_for_scopes_(false),
+      should_prompt_for_signin_(false) {}
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}
 
 bool IdentityGetAuthTokenFunction::RunImpl() {
   scoped_ptr<GetAuthToken::Params> params(GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  if (params->details.get() && params->details->interactive.get())
-    interactive_ = *params->details->interactive;
+  bool interactive = params->details.get() &&
+      params->details->interactive.get() &&
+      *params->details->interactive;
+
+  should_prompt_for_scopes_ = interactive;
+  should_prompt_for_signin_ = interactive;
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
 
-  // Check that the necessary information is present in the manfist.
+  // Check that the necessary information is present in the manifest.
   if (oauth2_info.client_id.empty()) {
     error_ = identity_constants::kInvalidClientId;
     return false;
@@ -73,24 +77,26 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
   }
 
   // Balanced in OnIssueAdviceSuccess|OnMintTokenSuccess|OnMintTokenFailure|
-  // InstallUIAbort|OnLoginUIClosed.
+  // InstallUIAbort|SigninFailed.
   AddRef();
 
   if (!HasLoginToken()) {
-    if (StartLogin()) {
-      return true;
-    } else {
+    if (!should_prompt_for_signin_) {
+      error_ = identity_constants::kUserNotSignedIn;
       Release();
       return false;
     }
+    // Display a login prompt. If the subsequent mint fails, don't display the
+    // prompt again.
+    should_prompt_for_signin_ = false;
+    ShowLoginPopup();
+  } else {
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+    refresh_token_ = token_service->GetOAuth2LoginRefreshToken();
+    StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
   }
 
-  if (StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
-    return true;
-  } else {
-    Release();
-    return false;
-  }
+  return true;
 }
 
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
@@ -102,6 +108,24 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
 
 void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
+  switch (error.state()) {
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+          profile())->ReportAuthError(error);
+      if (should_prompt_for_signin_) {
+        // Display a login prompt and try again (once).
+        should_prompt_for_signin_ = false;
+        ShowLoginPopup();
+        return;
+      }
+      break;
+    default:
+      // Return error to caller.
+      break;
+  }
+
   error_ = std::string(identity_constants::kAuthFailure) + error.ToString();
   SendResponse(false);
   Release();  // Balanced in RunImpl.
@@ -109,9 +133,10 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
+  should_prompt_for_signin_ = false;
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
-  if (interactive_) {
+  if (should_prompt_for_scopes_) {
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
     ShowOAuthApprovalDialog(issue_advice);
   } else {
@@ -121,21 +146,22 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   }
 }
 
-void IdentityGetAuthTokenFunction::OnLoginUIClosed(
-    LoginUIService::LoginUI* ui) {
-  StopObservingLoginService();
-  if (!StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
-    SendResponse(false);
-    Release();
-  }
+void IdentityGetAuthTokenFunction::SigninSuccess(const std::string& token) {
+  refresh_token_ = token;
+  StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+}
+
+void IdentityGetAuthTokenFunction::SigninFailed() {
+  error_ = identity_constants::kUserNotSignedIn;
+  SendResponse(false);
+  Release();
 }
 
 void IdentityGetAuthTokenFunction::InstallUIProceed() {
   DCHECK(install_ui_->record_oauth2_grant());
   // The user has accepted the scopes, so we may now force (recording a grant
   // and receiving a token).
-  bool success = StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
-  DCHECK(success);
+  StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
 }
 
 void IdentityGetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
@@ -144,45 +170,15 @@ void IdentityGetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
   Release();  // Balanced in RunImpl.
 }
 
-bool IdentityGetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
-  if (!HasLoginToken()) {
-    error_ = identity_constants::kUserNotSignedIn;
-    return false;
-  }
-
-  flow_.reset(CreateMintTokenFlow(mode));
-  flow_->Start();
-  return true;
-}
-
-bool IdentityGetAuthTokenFunction::StartLogin() {
-  if (!interactive_) {
-    error_ = identity_constants::kUserNotSignedIn;
-    return false;
-  }
-
-  ShowLoginPopup();
-  return true;
-}
-
-void IdentityGetAuthTokenFunction::StartObservingLoginService() {
-  LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(profile());
-  login_ui_service->AddObserver(this);
-}
-
-void IdentityGetAuthTokenFunction::StopObservingLoginService() {
-  LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(profile());
-  login_ui_service->RemoveObserver(this);
+void IdentityGetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
+  signin_flow_.reset(NULL);
+  mint_token_flow_.reset(CreateMintTokenFlow(mode));
+  mint_token_flow_->Start();
 }
 
 void IdentityGetAuthTokenFunction::ShowLoginPopup() {
-  StartObservingLoginService();
-
-  LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(profile());
-  login_ui_service->ShowLoginPopup();
+  signin_flow_.reset(new IdentitySigninFlow(this, profile()));
+  signin_flow_->Start();
 }
 
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
@@ -193,13 +189,12 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
     OAuth2MintTokenFlow::Mode mode) {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
   OAuth2MintTokenFlow* mint_token_flow =
       new OAuth2MintTokenFlow(
           profile()->GetRequestContext(),
           this,
           OAuth2MintTokenFlow::Parameters(
-              token_service->GetOAuth2LoginRefreshToken(),
+              refresh_token_,
               GetExtension()->id(),
               oauth2_info.client_id,
               oauth2_info.scopes,
@@ -274,11 +269,37 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure() {
   Release();  // Balanced in RunImpl.
 }
 
-IdentityAPI::IdentityAPI(Profile* profile) {
+IdentityAPI::IdentityAPI(Profile* profile)
+    : profile_(profile),
+      signin_manager_(NULL),
+      error_(GoogleServiceAuthError::NONE) {
   (new OAuth2ManifestHandler)->Register();
 }
 
 IdentityAPI::~IdentityAPI() {
+}
+
+void IdentityAPI::Initialize() {
+  signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
+  signin_manager_->signin_global_error()->AddProvider(this);
+
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                 content::Source<TokenService>(token_service));
+}
+
+void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
+  if (!signin_manager_)
+    Initialize();
+
+  error_ = error;
+  signin_manager_->signin_global_error()->AuthStatusChanged();
+}
+
+void IdentityAPI::Shutdown() {
+  if (signin_manager_)
+    signin_manager_->signin_global_error()->RemoveProvider(this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
@@ -287,6 +308,30 @@ static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
 // static
 ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return &g_factory.Get();
+}
+
+GoogleServiceAuthError IdentityAPI::GetAuthStatus() const {
+  return error_;
+}
+
+void IdentityAPI::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  CHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
+  TokenService::TokenAvailableDetails* token_details =
+      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+  if (token_details->service() ==
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+    error_ = GoogleServiceAuthError::AuthErrorNone();
+    signin_manager_->signin_global_error()->AuthStatusChanged();
+  }
+}
+
+template <>
+void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(TokenServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 }  // namespace extensions

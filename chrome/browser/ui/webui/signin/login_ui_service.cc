@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -42,23 +43,7 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
 }
 
 void LoginUIService::ShowLoginPopup() {
-  if (current_login_ui()) {
-    current_login_ui()->FocusUI();
-    return;
-  }
-
-  Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile_,
-                                        chrome::GetActiveDesktop()));
-  // TODO(munjal): Change the source from SOURCE_NTP_LINK to something else
-  // once we have added a new source for extension API.
-  GURL signin_url(SyncPromoUI::GetSyncPromoURL(GURL(),
-                                               SyncPromoUI::SOURCE_NTP_LINK,
-                                               true));
-  chrome::NavigateParams params(browser,
-                                signin_url,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = CURRENT_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  Browser* browser = FindOrCreateTabbedBrowser(profile_,
+                                               chrome::GetActiveDesktop());
+  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_APP_LAUNCHER);
 }

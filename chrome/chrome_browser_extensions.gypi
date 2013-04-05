@@ -224,6 +224,8 @@
         'browser/extensions/api/icons/icons_api.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
+        'browser/extensions/api/identity/identity_signin_flow.cc',
+        'browser/extensions/api/identity/identity_signin_flow.h',
         'browser/extensions/api/identity/web_auth_flow.cc',
         'browser/extensions/api/identity/web_auth_flow.h',
         'browser/extensions/api/idle/idle_api.cc',
