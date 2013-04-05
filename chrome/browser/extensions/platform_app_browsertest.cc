@@ -796,7 +796,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
 #else
-#define MAYBE_WebContentsHasFocus WebContentsHasFocus
+// This test depends on focus and so needs to be in interactive_ui_tests.
+// http://crbug.com/227041
+#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   ExtensionTestMessageListener launched_listener("Launched", true);
