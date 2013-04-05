@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/disconnect_window.h"
-
 #include <gtk/gtk.h>
 #include <math.h>
 
@@ -11,19 +9,24 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "remoting/host/client_session_control.h"
+#include "remoting/host/host_window.h"
 #include "remoting/host/ui_strings.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 namespace remoting {
 
-class DisconnectWindowGtk : public DisconnectWindow {
+namespace {
+
+class DisconnectWindowGtk : public HostWindow {
  public:
-  explicit DisconnectWindowGtk(const UiStrings* ui_strings);
+  explicit DisconnectWindowGtk(const UiStrings& ui_strings);
   virtual ~DisconnectWindowGtk();
 
-  virtual bool Show(const base::Closure& disconnect_callback,
-                    const std::string& username) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  // HostWindow overrides.
+  virtual void Start(
+      const base::WeakPtr<ClientSessionControl>& client_session_control)
+      OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnDelete, GdkEvent*);
@@ -33,9 +36,12 @@ class DisconnectWindowGtk : public DisconnectWindow {
   CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
-  void CreateWindow();
+  // Used to disconnect the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
 
-  base::Closure disconnect_callback_;
+  // Localized UI strings.
+  UiStrings ui_strings_;
+
   GtkWidget* disconnect_window_;
   GtkWidget* message_;
   GtkWidget* button_;
@@ -45,33 +51,54 @@ class DisconnectWindowGtk : public DisconnectWindow {
   int current_width_;
   int current_height_;
 
-  // Points to the localized strings.
-  const UiStrings* ui_strings_;
-
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowGtk);
 };
 
-DisconnectWindowGtk::DisconnectWindowGtk(const UiStrings* ui_strings)
-    : disconnect_window_(NULL),
+// Helper function for creating a rectangular path with rounded corners, as
+// Cairo doesn't have this facility.  |radius| is the arc-radius of each
+// corner.  The bounding rectangle extends from (0, 0) to (width, height).
+void AddRoundRectPath(cairo_t* cairo_context, int width, int height,
+                      int radius) {
+  cairo_new_sub_path(cairo_context);
+  cairo_arc(cairo_context, width - radius, radius, radius, -M_PI_2, 0);
+  cairo_arc(cairo_context, width - radius, height - radius, radius, 0, M_PI_2);
+  cairo_arc(cairo_context, radius, height - radius, radius, M_PI_2, 2 * M_PI_2);
+  cairo_arc(cairo_context, radius, radius, radius, 2 * M_PI_2, 3 * M_PI_2);
+  cairo_close_path(cairo_context);
+}
+
+DisconnectWindowGtk::DisconnectWindowGtk(const UiStrings& ui_strings)
+    : ui_strings_(ui_strings),
+      disconnect_window_(NULL),
       current_width_(0),
-      current_height_(0),
-      ui_strings_(ui_strings) {
+      current_height_(0) {
 }
 
 DisconnectWindowGtk::~DisconnectWindowGtk() {
-  Hide();
+  DCHECK(CalledOnValidThread());
+
+  if (disconnect_window_) {
+    gtk_widget_destroy(disconnect_window_);
+    disconnect_window_ = NULL;
+  }
 }
 
-void DisconnectWindowGtk::CreateWindow() {
-  if (disconnect_window_)
-    return;
+void DisconnectWindowGtk::Start(
+    const base::WeakPtr<ClientSessionControl>& client_session_control) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!client_session_control_);
+  DCHECK(client_session_control);
+  DCHECK(!disconnect_window_);
 
+  client_session_control_ = client_session_control;
+
+  // Create the window.
   disconnect_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   GtkWindow* window = GTK_WINDOW(disconnect_window_);
 
   g_signal_connect(disconnect_window_, "delete-event",
                    G_CALLBACK(OnDeleteThunk), this);
-  gtk_window_set_title(window, UTF16ToUTF8(ui_strings_->product_name).c_str());
+  gtk_window_set_title(window, UTF16ToUTF8(ui_strings_.product_name).c_str());
   gtk_window_set_resizable(window, FALSE);
 
   // Try to keep the window always visible.
@@ -115,7 +142,7 @@ void DisconnectWindowGtk::CreateWindow() {
   gtk_container_add(GTK_CONTAINER(align), button_row);
 
   button_ = gtk_button_new_with_label(
-      UTF16ToUTF8(ui_strings_->disconnect_button_text).c_str());
+      UTF16ToUTF8(ui_strings_.disconnect_button_text).c_str());
   gtk_box_pack_end(GTK_BOX(button_row), button_, FALSE, FALSE, 0);
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);
@@ -131,63 +158,36 @@ void DisconnectWindowGtk::CreateWindow() {
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
 
   gtk_widget_show_all(disconnect_window_);
-}
 
-bool DisconnectWindowGtk::Show(const base::Closure& disconnect_callback,
-                               const std::string& username) {
-  DCHECK(disconnect_callback_.is_null());
-  DCHECK(!disconnect_callback.is_null());
-  DCHECK(!disconnect_window_);
-
-  disconnect_callback_ = disconnect_callback;
-  CreateWindow();
-
-  string16 text = ReplaceStringPlaceholders(
-      ui_strings_->disconnect_message, UTF8ToUTF16(username), NULL);
+  // Extract the user name from the JID.
+  std::string client_jid = client_session_control_->client_jid();
+  string16 username = UTF8ToUTF16(client_jid.substr(0, client_jid.find('/')));
+  string16 text =
+      ReplaceStringPlaceholders(ui_strings_.disconnect_message, username, NULL);
   gtk_label_set_text(GTK_LABEL(message_), UTF16ToUTF8(text).c_str());
-  gtk_window_present(GTK_WINDOW(disconnect_window_));
-  return true;
-}
-
-void DisconnectWindowGtk::Hide() {
-  if (disconnect_window_) {
-    gtk_widget_destroy(disconnect_window_);
-    disconnect_window_ = NULL;
-  }
-
-  disconnect_callback_.Reset();
+  gtk_window_present(window);
 }
 
 void DisconnectWindowGtk::OnClicked(GtkWidget* button) {
-  disconnect_callback_.Run();
-  Hide();
+  DCHECK(CalledOnValidThread());
+
+  if (client_session_control_)
+    client_session_control_->DisconnectSession();
 }
 
-gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window, GdkEvent* event) {
-  disconnect_callback_.Run();
-  Hide();
+gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window,
+                                       GdkEvent* event) {
+  DCHECK(CalledOnValidThread());
 
+  if (client_session_control_)
+    client_session_control_->DisconnectSession();
   return TRUE;
 }
 
-namespace {
-// Helper function for creating a rectangular path with rounded corners, as
-// Cairo doesn't have this facility.  |radius| is the arc-radius of each
-// corner.  The bounding rectangle extends from (0, 0) to (width, height).
-void AddRoundRectPath(cairo_t* cairo_context, int width, int height,
-                      int radius) {
-  cairo_new_sub_path(cairo_context);
-  cairo_arc(cairo_context, width - radius, radius, radius, -M_PI_2, 0);
-  cairo_arc(cairo_context, width - radius, height - radius, radius, 0, M_PI_2);
-  cairo_arc(cairo_context, radius, height - radius, radius, M_PI_2, 2 * M_PI_2);
-  cairo_arc(cairo_context, radius, radius, radius, 2 * M_PI_2, 3 * M_PI_2);
-  cairo_close_path(cairo_context);
-}
-
-}  // namespace
-
 gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
-                                            GdkEventConfigure* event) {
+                                          GdkEventConfigure* event) {
+  DCHECK(CalledOnValidThread());
+
   // Only generate bitmaps if the size has actually changed.
   if (event->width == current_width_ && event->height == current_height_)
     return FALSE;
@@ -273,7 +273,9 @@ gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
 }
 
 gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
-                                              GdkEventButton* event) {
+                                            GdkEventButton* event) {
+  DCHECK(CalledOnValidThread());
+
   gtk_window_begin_move_drag(GTK_WINDOW(disconnect_window_),
                              event->button,
                              event->x_root,
@@ -282,9 +284,12 @@ gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
-    const UiStrings* ui_strings) {
-  return scoped_ptr<DisconnectWindow>(new DisconnectWindowGtk(ui_strings));
+}  // namespace
+
+// static
+scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new DisconnectWindowGtk(ui_strings));
 }
 
 }  // namespace remoting

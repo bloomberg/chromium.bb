@@ -287,11 +287,6 @@ void DesktopProcessTest::SendCrashRequest() {
 }
 
 void DesktopProcessTest::SendStartSessionAgent() {
-  // TODO(alexeypa): Fix DesktopProcess to use the desktop environment
-  // to create the disconnect window instead of directly calling
-  // DisconnectWindow::Create(). This will take care of "Uninteresting mock
-  // function call" warnings printed when DisconnectWindow::Show() and
-  // DisconnectWindow::Hide() are called.
   network_channel_->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       "user@domain/rest-of-jid", ScreenResolution()));
 }

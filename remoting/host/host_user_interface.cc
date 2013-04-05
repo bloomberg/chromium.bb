@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "remoting/host/chromoting_host.h"
-#include "remoting/host/disconnect_window.h"
-#include "remoting/host/local_input_monitor.h"
 
 namespace remoting {
 
@@ -26,14 +24,10 @@ HostUserInterface::HostUserInterface(
 
 HostUserInterface::~HostUserInterface() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  disconnect_window_->Hide();
 }
 
 void HostUserInterface::Init() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  disconnect_window_ = DisconnectWindow::Create(&ui_strings());
 }
 
 void HostUserInterface::Start(ChromotingHost* host,
@@ -82,7 +76,6 @@ void HostUserInterface::OnShutdown() {
 void HostUserInterface::OnDisconnectCallback() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  disconnect_window_->Hide();
   DisconnectSession();
 }
 
@@ -103,20 +96,10 @@ void HostUserInterface::DisconnectSession() const {
 void HostUserInterface::ProcessOnClientAuthenticated(
     const std::string& username) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  if (!disconnect_window_->Show(
-          base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
-          username)) {
-    LOG(ERROR) << "Failed to show the disconnect window.";
-    DisconnectSession();
-    return;
-  }
 }
 
 void HostUserInterface::ProcessOnClientDisconnected() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  disconnect_window_->Hide();
 }
 
 }  // namespace remoting

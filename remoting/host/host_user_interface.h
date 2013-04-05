@@ -23,7 +23,6 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class ChromotingHost;
-class DisconnectWindow;
 
 class HostUserInterface : public HostStatusObserver {
  public:
@@ -72,9 +71,6 @@ class HostUserInterface : public HostStatusObserver {
 
   // Used to ask the host to disconnect the session.
   base::Closure disconnect_callback_;
-
-  // Provide a user interface allowing the host user to close the connection.
-  scoped_ptr<DisconnectWindow> disconnect_window_;
 
  private:
   // Invoked from the UI thread when the user clicks on the Disconnect button

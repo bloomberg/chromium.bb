@@ -14,19 +14,6 @@
 
 namespace remoting {
 
-SessionDesktopEnvironment::SessionDesktopEnvironment(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control,
-    const base::Closure& inject_sas)
-    : Me2MeDesktopEnvironment(caller_task_runner,
-                              input_task_runner,
-                              ui_task_runner,
-                              client_session_control),
-      inject_sas_(inject_sas) {
-}
-
 SessionDesktopEnvironment::~SessionDesktopEnvironment() {
 }
 
@@ -42,14 +29,31 @@ scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector() {
   return input_injector.Pass();
 }
 
+SessionDesktopEnvironment::SessionDesktopEnvironment(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const UiStrings* ui_strings,
+    const base::Closure& inject_sas)
+    : Me2MeDesktopEnvironment(caller_task_runner,
+                              input_task_runner,
+                              ui_task_runner,
+                              client_session_control,
+                              ui_strings),
+      inject_sas_(inject_sas) {
+}
+
 SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings,
     const base::Closure& inject_sas)
     : Me2MeDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
-                                     ui_task_runner),
+                                     ui_task_runner,
+                                     ui_strings),
       inject_sas_(inject_sas) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
@@ -66,6 +70,7 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
                                     input_task_runner(),
                                     ui_task_runner(),
                                     client_session_control,
+                                    &ui_strings(),
                                     inject_sas_));
 }
 

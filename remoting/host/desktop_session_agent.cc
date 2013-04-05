@@ -15,7 +15,6 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/disconnect_window.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
@@ -69,7 +68,6 @@ DesktopSessionAgent::Delegate::~Delegate() {
 DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!audio_capturer_);
   DCHECK(!desktop_environment_);
-  DCHECK(!disconnect_window_);
   DCHECK(!network_channel_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
@@ -194,7 +192,6 @@ void DesktopSessionAgent::OnStartSessionAgent(
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
   DCHECK(!desktop_environment_);
-  DCHECK(!disconnect_window_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
@@ -227,12 +224,6 @@ void DesktopSessionAgent::OnStartSessionAgent(
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
       new DesktopSesssionClipboardStub(this));
   input_injector_->Start(clipboard_stub.Pass());
-
-  // Create the disconnect window.
-  disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
-  disconnect_window_->Show(
-      base::Bind(&DesktopSessionAgent::DisconnectSession, this),
-      authenticated_jid.substr(0, authenticated_jid.find('/')));
 
   // Start the audio capturer.
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
@@ -327,10 +318,6 @@ void DesktopSessionAgent::Stop() {
 
   if (started_) {
     started_ = false;
-
-    // Close the disconnect window and stop listening to local input.
-    disconnect_window_->Hide();
-    disconnect_window_.reset();
 
     // Ignore any further callbacks.
     control_factory_.InvalidateWeakPtrs();

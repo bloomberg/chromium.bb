@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/disconnect_window.h"
 
 namespace remoting {
 struct UiStrings;

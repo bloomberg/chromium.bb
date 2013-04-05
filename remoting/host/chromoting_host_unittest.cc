@@ -68,9 +68,7 @@ class MockIt2MeHostUserInterface : public It2MeHostUserInterface {
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  void InitFrom(
-      scoped_ptr<DisconnectWindow> disconnect_window,
-      scoped_ptr<ContinueWindow> continue_window);
+  void InitFrom(scoped_ptr<ContinueWindow> continue_window);
 
   // A test-only version of Start that does not register a HostStatusObserver.
   // TODO(rmsousa): Make the unit tests work with the regular Start().
@@ -85,11 +83,9 @@ MockIt2MeHostUserInterface::MockIt2MeHostUserInterface(
 }
 
 void MockIt2MeHostUserInterface::InitFrom(
-    scoped_ptr<DisconnectWindow> disconnect_window,
     scoped_ptr<ContinueWindow> continue_window) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
-  disconnect_window_ = disconnect_window.Pass();
   continue_window_ = continue_window.Pass();
 }
 
@@ -136,12 +132,10 @@ class ChromotingHostTest : public testing::Test {
         ui_task_runner_); // UI
     host_->AddStatusObserver(&host_status_observer_);
 
-    disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
     it2me_host_user_interface_.reset(
         new MockIt2MeHostUserInterface(ui_task_runner_, ui_task_runner_));
     it2me_host_user_interface_->InitFrom(
-        scoped_ptr<DisconnectWindow>(disconnect_window_),
         scoped_ptr<ContinueWindow>(continue_window_));
 
     it2me_host_user_interface_->Start(
@@ -371,7 +365,6 @@ class ChromotingHostTest : public testing::Test {
 
   // Expect the host to start.
   void ExpectHostStart() {
-    EXPECT_CALL(*disconnect_window_, Hide());
     EXPECT_CALL(*continue_window_, Hide());
   }
 
@@ -492,7 +485,6 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
 
   // Owned by |host_|.
-  MockDisconnectWindow* disconnect_window_;
   MockContinueWindow* continue_window_;
 
   MockConnectionToClient*& get_connection(int connection_index) {

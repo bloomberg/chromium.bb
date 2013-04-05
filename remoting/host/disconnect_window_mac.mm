@@ -6,10 +6,13 @@
 
 #import "remoting/host/disconnect_window_mac.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "remoting/host/disconnect_window.h"
+#include "remoting/host/client_session_control.h"
+#include "remoting/host/host_window.h"
 #include "remoting/host/ui_strings.h"
 
 @interface DisconnectWindowController()
@@ -17,58 +20,66 @@
 - (void)Hide;
 @end
 
+const int kMaximumConnectedNameWidthInPixels = 400;
+
 namespace remoting {
 
-class DisconnectWindowMac : public remoting::DisconnectWindow {
+class DisconnectWindowMac : public HostWindow {
  public:
-  explicit DisconnectWindowMac(const UiStrings* ui_strings);
+  explicit DisconnectWindowMac(const UiStrings& ui_strings);
   virtual ~DisconnectWindowMac();
 
-  virtual bool Show(const base::Closure& disconnect_callback,
-                    const std::string& username) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  // HostWindow overrides.
+  virtual void Start(
+      const base::WeakPtr<ClientSessionControl>& client_session_control)
+      OVERRIDE;
 
  private:
-  DisconnectWindowController* window_controller_;
+  // Localized UI strings.
+  UiStrings ui_strings_;
 
-  // Points to the localized strings.
-  const UiStrings* ui_strings_;
+  DisconnectWindowController* window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowMac);
 };
 
-DisconnectWindowMac::DisconnectWindowMac(const UiStrings* ui_strings)
-    : window_controller_(nil),
-      ui_strings_(ui_strings) {
+DisconnectWindowMac::DisconnectWindowMac(const UiStrings& ui_strings)
+    : ui_strings_(ui_strings),
+      window_controller_(nil) {
 }
 
 DisconnectWindowMac::~DisconnectWindowMac() {
-  Hide();
-}
+  DCHECK(CalledOnValidThread());
 
-bool DisconnectWindowMac::Show(const base::Closure& disconnect_callback,
-                               const std::string& username) {
-  DCHECK(!disconnect_callback.is_null());
-  DCHECK(window_controller_ == nil);
-
-  window_controller_ =
-      [[DisconnectWindowController alloc] initWithUiStrings:ui_strings_
-                                                   callback:disconnect_callback
-                                                   username:username];
-  [window_controller_ showWindow:nil];
-  return true;
-}
-
-void DisconnectWindowMac::Hide() {
   // DisconnectWindowController is responsible for releasing itself in its
   // windowWillClose: method.
   [window_controller_ Hide];
   window_controller_ = nil;
 }
 
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
-    const UiStrings* ui_strings) {
-  return scoped_ptr<DisconnectWindow>(new DisconnectWindowMac(ui_strings));
+void DisconnectWindowMac::Start(
+    const base::WeakPtr<ClientSessionControl>& client_session_control) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(client_session_control);
+  DCHECK(window_controller_ == nil);
+
+  // Create the window.
+  base::Closure disconnect_callback =
+      base::Bind(&ClientSessionControl::DisconnectSession,
+                 client_session_control);
+  std::string client_jid = client_session_control->client_jid();
+  std::string username = client_jid.substr(0, client_jid.find('/'));
+  window_controller_ =
+      [[DisconnectWindowController alloc] initWithUiStrings:&ui_strings_
+                                                   callback:disconnect_callback
+                                                   username:username];
+  [window_controller_ showWindow:nil];
+}
+
+// static
+scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new DisconnectWindowMac(ui_strings));
 }
 
 }  // namespace remoting
@@ -120,10 +131,8 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
   CGFloat newConnectedWidth = NSWidth(connectedToFrame);
 
   // Set a max width for the connected to text field.
-  if (newConnectedWidth >
-      remoting::DisconnectWindow::kMaximumConnectedNameWidthInPixels) {
-    newConnectedWidth
-        = remoting::DisconnectWindow::kMaximumConnectedNameWidthInPixels;
+  if (newConnectedWidth > kMaximumConnectedNameWidthInPixels) {
+    newConnectedWidth = kMaximumConnectedNameWidthInPixels;
     connectedToFrame.size.width = newConnectedWidth;
     [connectedToField_ setFrame:connectedToFrame];
   }

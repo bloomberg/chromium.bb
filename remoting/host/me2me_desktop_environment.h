@@ -25,7 +25,8 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const UiStrings* ui_strings);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Me2MeDesktopEnvironment);
@@ -37,7 +38,8 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
   Me2MeDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const UiStrings& ui_strings);
   virtual ~Me2MeDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory interface.

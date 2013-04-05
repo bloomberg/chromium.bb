@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/disconnect_window.h"
-
 #include <windows.h>
 
 #include "base/compiler_specific.h"
@@ -14,12 +12,12 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
+#include "remoting/host/client_session_control.h"
+#include "remoting/host/host_window.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/host/win/core_resource.h"
 
-// TODO(garykac): Lots of duplicated code in this file and
-// continue_window_win.cc. If we need to expand this then we should
-// create a class with the shared code.
+namespace remoting {
 
 namespace {
 
@@ -32,28 +30,24 @@ const size_t kMaxSharingWithTextLength = 100;
 const wchar_t kShellTrayWindowName[] = L"Shell_TrayWnd";
 const int kWindowBorderRadius = 14;
 
-} // namespace anonymous
-
-namespace remoting {
-
-class DisconnectWindowWin : public DisconnectWindow {
+class DisconnectWindowWin : public HostWindow {
  public:
-  explicit DisconnectWindowWin(const UiStrings* ui_strings);
+  explicit DisconnectWindowWin(const UiStrings& ui_strings);
   virtual ~DisconnectWindowWin();
 
-  // DisconnectWindow interface.
-  virtual bool Show(const base::Closure& disconnect_callback,
-                    const std::string& username) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+  // HostWindow overrides.
+  virtual void Start(
+      const base::WeakPtr<ClientSessionControl>& client_session_control)
+      OVERRIDE;
 
-private:
+ protected:
   static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wparam,
                                      LPARAM lparam);
 
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   // Creates the dialog window and registers the disconnect hot key.
-  bool BeginDialog(const std::string& username);
+  bool BeginDialog();
 
   // Closes the dialog, unregisters the hot key and invokes the disconnect
   // callback, if set.
@@ -63,20 +57,25 @@ private:
   void SetDialogPosition();
 
   // Applies localization string and resizes the dialog.
-  bool SetStrings(const string16& username);
+  bool SetStrings();
 
-  base::Closure disconnect_callback_;
+  // Used to disconnect the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  // Localized UI strings.
+  UiStrings ui_strings_;
+
+  // Specifies the remote user name.
+  std::string username_;
+
   HWND hwnd_;
   bool has_hotkey_;
   base::win::ScopedGDIObject<HPEN> border_pen_;
 
-  // Points to the localized strings.
-  const UiStrings* ui_strings_;
-
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
 
-static int GetControlTextWidth(HWND control) {
+int GetControlTextWidth(HWND control) {
   RECT rect = {0, 0, 0, 0};
   WCHAR text[256];
   int result = GetWindowText(control, text, arraysize(text));
@@ -89,41 +88,36 @@ static int GetControlTextWidth(HWND control) {
   return rect.right;
 }
 
-DisconnectWindowWin::DisconnectWindowWin(const UiStrings* ui_strings)
-    : hwnd_(NULL),
+DisconnectWindowWin::DisconnectWindowWin(const UiStrings& ui_strings)
+    : ui_strings_(ui_strings),
+      hwnd_(NULL),
       has_hotkey_(false),
       border_pen_(CreatePen(PS_SOLID, 5,
-                            RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))),
-      ui_strings_(ui_strings) {
+                            RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {
 }
 
 DisconnectWindowWin::~DisconnectWindowWin() {
-  Hide();
-}
-
-bool DisconnectWindowWin::Show(const base::Closure& disconnect_callback,
-                               const std::string& username) {
-  DCHECK(disconnect_callback_.is_null());
-  DCHECK(!disconnect_callback.is_null());
-
-  disconnect_callback_ = disconnect_callback;
-
-  if (BeginDialog(username)) {
-    return true;
-  } else {
-    Hide();
-    return false;
-  }
-}
-
-void DisconnectWindowWin::Hide() {
-  // Clear the |disconnect_callback_| so it won't be invoked by EndDialog().
-  disconnect_callback_.Reset();
   EndDialog();
 }
 
-INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT message,
-                                                 WPARAM wparam, LPARAM lparam) {
+void DisconnectWindowWin::Start(
+    const base::WeakPtr<ClientSessionControl>& client_session_control) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!client_session_control_);
+  DCHECK(client_session_control);
+
+  client_session_control_ = client_session_control;
+
+  std::string client_jid = client_session_control_->client_jid();
+  username_ = client_jid.substr(0, client_jid.find('/'));
+  if (!BeginDialog())
+    EndDialog();
+}
+
+INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd,
+                                                 UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam) {
   LONG_PTR self = NULL;
   if (message == WM_INITDIALOG) {
     self = lparam;
@@ -144,8 +138,12 @@ INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT message,
   return FALSE;
 }
 
-BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
-                                          WPARAM wparam, LPARAM lparam) {
+BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd,
+                                          UINT message,
+                                          WPARAM wparam,
+                                          LPARAM lparam) {
+  DCHECK(CalledOnValidThread());
+
   switch (message) {
     // Ignore close messages.
     case WM_CLOSE:
@@ -210,7 +208,8 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
   return FALSE;
 }
 
-bool DisconnectWindowWin::BeginDialog(const std::string& username) {
+bool DisconnectWindowWin::BeginDialog() {
+  DCHECK(CalledOnValidThread());
   DCHECK(!hwnd_);
 
   // Load the dialog resource so that we can modify the RTL flags if necessary.
@@ -233,7 +232,7 @@ bool DisconnectWindowWin::BeginDialog(const std::string& username) {
   // standard headers, so we treat it as a generic pointer and manipulate the
   // correct offsets explicitly.
   scoped_array<unsigned char> rtl_dialog_template;
-  if (ui_strings_->direction == UiStrings::RTL) {
+  if (ui_strings_.direction == UiStrings::RTL) {
     unsigned long dialog_template_size =
         SizeofResource(module, dialog_resource);
     rtl_dialog_template.reset(new unsigned char[dialog_template_size]);
@@ -254,7 +253,7 @@ bool DisconnectWindowWin::BeginDialog(const std::string& username) {
     has_hotkey_ = true;
   }
 
-  if (!SetStrings(UTF8ToUTF16(username)))
+  if (!SetStrings())
     return false;
 
   SetDialogPosition();
@@ -263,6 +262,8 @@ bool DisconnectWindowWin::BeginDialog(const std::string& username) {
 }
 
 void DisconnectWindowWin::EndDialog() {
+  DCHECK(CalledOnValidThread());
+
   if (has_hotkey_) {
     UnregisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID);
     has_hotkey_ = false;
@@ -273,13 +274,13 @@ void DisconnectWindowWin::EndDialog() {
     hwnd_ = NULL;
   }
 
-  if (!disconnect_callback_.is_null()) {
-    disconnect_callback_.Run();
-    disconnect_callback_.Reset();
-  }
+  if (client_session_control_)
+    client_session_control_->DisconnectSession();
 }
 
 void DisconnectWindowWin::SetDialogPosition() {
+  DCHECK(CalledOnValidThread());
+
   // Try to center the window above the task-bar. If that fails, use the
   // primary monitor. If that fails (very unlikely), use the default position.
   HWND taskbar = FindWindow(kShellTrayWindowName, NULL);
@@ -297,8 +298,10 @@ void DisconnectWindowWin::SetDialogPosition() {
   }
 }
 
-bool DisconnectWindowWin::SetStrings(const string16& username) {
-  if (!SetWindowText(hwnd_, ui_strings_->product_name.c_str()))
+bool DisconnectWindowWin::SetStrings() {
+  DCHECK(CalledOnValidThread());
+
+  if (!SetWindowText(hwnd_, ui_strings_.product_name.c_str()))
     return false;
 
   // Localize the disconnect button text and measure length of the old and new
@@ -308,7 +311,7 @@ bool DisconnectWindowWin::SetStrings(const string16& username) {
     return false;
   int button_old_required_width = GetControlTextWidth(disconnect_button);
   if (!SetWindowText(disconnect_button,
-                     ui_strings_->disconnect_button_text.c_str())) {
+                     ui_strings_.disconnect_button_text.c_str())) {
     return false;
   }
   int button_new_required_width = GetControlTextWidth(disconnect_button);
@@ -316,8 +319,8 @@ bool DisconnectWindowWin::SetStrings(const string16& username) {
       button_new_required_width - button_old_required_width;
 
   // Format and truncate "Your desktop is shared with ..." message.
-  string16 text = ReplaceStringPlaceholders(ui_strings_->disconnect_message,
-                                            username, NULL);
+  string16 text = ReplaceStringPlaceholders(ui_strings_.disconnect_message,
+                                            UTF8ToUTF16(username_), NULL);
   if (text.length() > kMaxSharingWithTextLength)
     text.erase(kMaxSharingWithTextLength);
 
@@ -385,9 +388,12 @@ bool DisconnectWindowWin::SetStrings(const string16& username) {
   return true;
 }
 
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
-    const UiStrings* ui_strings) {
-  return scoped_ptr<DisconnectWindow>(new DisconnectWindowWin(ui_strings));
+} // namespace
+
+// static
+scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new DisconnectWindowWin(ui_strings));
 }
 
 }  // namespace remoting

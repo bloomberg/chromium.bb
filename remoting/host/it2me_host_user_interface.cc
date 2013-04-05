@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/continue_window.h"
-#include "remoting/host/disconnect_window.h"
 #include "remoting/host/local_input_monitor.h"
 
 namespace {

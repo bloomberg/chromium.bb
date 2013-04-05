@@ -9,8 +9,10 @@
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_resizer.h"
+#include "remoting/host/host_window.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
+#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
@@ -40,21 +42,25 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const UiStrings* ui_strings)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
                               ui_task_runner,
-                              client_session_control) {
+                              client_session_control,
+                              ui_strings) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings)
     : BasicDesktopEnvironmentFactory(caller_task_runner,
                                      input_task_runner,
-                                     ui_task_runner) {
+                                     ui_task_runner,
+                                     ui_strings) {
 }
 
 Me2MeDesktopEnvironmentFactory::~Me2MeDesktopEnvironmentFactory() {
@@ -68,7 +74,8 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
       new Me2MeDesktopEnvironment(caller_task_runner(),
                                   input_task_runner(),
                                   ui_task_runner(),
-                                  client_session_control));
+                                  client_session_control,
+                                  &ui_strings()));
 }
 
 }  // namespace remoting

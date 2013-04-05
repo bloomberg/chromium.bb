@@ -18,7 +18,6 @@
 #include "media/video/capture/screen/screen_capturer.h"
 #include "media/video/capture/screen/shared_buffer.h"
 #include "remoting/host/client_session_control.h"
-#include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -35,7 +34,6 @@ class AudioPacket;
 class AutoThreadTaskRunner;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
-class DisconnectWindow;
 class InputInjector;
 class RemoteInputFilter;
 class ScreenControls;
@@ -221,9 +219,6 @@ class DesktopSessionAgent
   // The DesktopEnvironment instance used by this agent.
   scoped_ptr<DesktopEnvironment> desktop_environment_;
 
-  // Provides a user interface allowing the local user to close the connection.
-  scoped_ptr<DisconnectWindow> disconnect_window_;
-
   // Executes keyboard, mouse and clipboard events.
   scoped_ptr<InputInjector> input_injector_;
 
@@ -258,8 +253,6 @@ class DesktopSessionAgent
 
   // Captures the screen.
   scoped_ptr<media::ScreenCapturer> video_capturer_;
-
-  UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

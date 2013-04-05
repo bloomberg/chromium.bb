@@ -57,15 +57,6 @@ void MockInputInjector::Start(
   StartPtr(client_clipboard.get());
 }
 
-MockDisconnectWindow::MockDisconnectWindow() {}
-
-MockDisconnectWindow::~MockDisconnectWindow() {}
-
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
-    const UiStrings* ui_strings) {
-  return scoped_ptr<DisconnectWindow>(new MockDisconnectWindow());
-}
-
 MockContinueWindow::MockContinueWindow() {}
 
 MockContinueWindow::~MockContinueWindow() {}

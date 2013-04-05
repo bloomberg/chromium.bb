@@ -51,7 +51,6 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
-#include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/ipc_host_event_logger.h"
@@ -276,9 +275,6 @@ class HostProcess
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
-  // Created on the UI thread and used on the network thread.
-  scoped_ptr<HostUserInterface> host_user_interface_;
-
   scoped_refptr<ChromotingHost> host_;
 
   // Used to keep this HostProcess alive until it is shutdown.
@@ -318,7 +314,6 @@ HostProcess::~HostProcess() {
   DCHECK(!config_watcher_);
   DCHECK(!daemon_channel_);
   DCHECK(!desktop_environment_factory_);
-  DCHECK(!host_user_interface_);
 
   // We might be getting deleted on one of the threads the |host_context| owns,
   // so we need to post it back to the caller thread to safely join & delete the
@@ -551,6 +546,9 @@ void HostProcess::StartOnUiThread() {
   }
 #endif  // defined(OS_LINUX)
 
+  // TODO(alexeypa): Localize the UI strings. See http://crbug.com/155204.
+  UiStrings ui_strings;
+
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
@@ -570,6 +568,7 @@ void HostProcess::StartOnUiThread() {
           context_->network_task_runner(),
           context_->input_task_runner(),
           context_->ui_task_runner(),
+          ui_strings,
           base::Bind(&HostProcess::SendSasToConsole, this));
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
@@ -578,33 +577,11 @@ void HostProcess::StartOnUiThread() {
       new Me2MeDesktopEnvironmentFactory(
           context_->network_task_runner(),
           context_->input_task_runner(),
-          context_->ui_task_runner());
+          context_->ui_task_runner(),
+          ui_strings);
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
-
-  // The host UI should be created on the UI thread.
-  bool want_user_interface = true;
-#if defined(OS_LINUX) || defined(REMOTING_MULTI_PROCESS)
-  want_user_interface = false;
-#elif defined(OS_MACOSX)
-  // Don't try to display any UI on top of the system's login screen as this
-  // is rejected by the Window Server on OS X 10.7.4, and prevents the
-  // capturer from working (http://crbug.com/140984).
-
-  // TODO(lambroslambrou): Use a better technique of detecting whether we're
-  // running in the LoginWindow context, and refactor this into a separate
-  // function to be used here and in CurtainMode::ActivateCurtain().
-  want_user_interface = getuid() != 0;
-#endif  // OS_MACOSX
-
-  if (want_user_interface) {
-    UiStrings ui_strings;
-    host_user_interface_.reset(
-        new HostUserInterface(context_->network_task_runner(),
-                              context_->ui_task_runner(), ui_strings));
-    host_user_interface_->Init();
-  }
 
   context_->network_task_runner()->PostTask(
       FROM_HERE,
@@ -625,7 +602,6 @@ void HostProcess::ShutdownOnUiThread() {
   network_change_notifier_.reset();
   daemon_channel_.reset();
   desktop_environment_factory_.reset();
-  host_user_interface_.reset();
 
   // It is now safe for the HostProcess to be deleted.
   self_ = NULL;
@@ -957,11 +933,6 @@ void HostProcess::StartHost() {
   curtaining_host_observer_.reset(new CurtainingHostObserver(
       curtain, host_->AsWeakPtr()));
   curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
-
-  if (host_user_interface_.get()) {
-    host_user_interface_->Start(
-        host_, base::Bind(&HostProcess::OnDisconnectRequested, this));
-  }
 
   host_->Start(xmpp_login_);
 
