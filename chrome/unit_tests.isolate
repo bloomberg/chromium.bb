@@ -80,6 +80,7 @@
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
+          '<(PRODUCT_DIR)/test_data/ui/',
         ],
       },
     }],
@@ -95,7 +96,6 @@
           '../skia/ext/data/',
           '../third_party/python_26/',
           '../ui/base/glib/',
-          '<(PRODUCT_DIR)/test_data/ui/',
         ],
       },
     }],
