@@ -145,7 +145,9 @@ Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     *fs = *hist->NextOut();
     hist->Increment();
   }
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void IirFilterInterpreter::SetHardwarePropertiesImpl(

@@ -326,28 +326,29 @@ bool LookaheadFilterInterpreter::LiftoffJumpStarting(
   return false;
 }
 
-Gesture LookaheadFilterInterpreter::TapDownOccurringGesture(stime_t now) const {
+void LookaheadFilterInterpreter::TapDownOccurringGesture(stime_t now) {
   if (suppress_immediate_tapdown_.val_)
-    return Gesture();
+    return;
   if (queue_.size() < 2)
-    return Gesture();  // Not enough data to know
+    return;  // Not enough data to know
   HardwareState& hs = queue_.Tail()->state_;
   if (queue_.Tail()->state_.timestamp != now)
-    return Gesture();  // We didn't push a new hardware state now
+    return;  // We didn't push a new hardware state now
   // See if latest hwstate has finger that previous doesn't
   HardwareState& prev_hs = queue_.Tail()->prev_->state_;
   if (hs.finger_cnt > prev_hs.finger_cnt) {
     // Finger was added.
-    return Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp, 0, 0,
-                   GESTURES_FLING_TAP_DOWN);
+    ProduceGesture(Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp,
+                           0, 0, GESTURES_FLING_TAP_DOWN));
+    return;
   }
   // Go finger by finger for a final check
   for (size_t i = 0; i < hs.finger_cnt; i++)
     if (!prev_hs.GetFingerState(hs.fingers[i].tracking_id)) {
-      return Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp, 0, 0,
-                     GESTURES_FLING_TAP_DOWN);
+      ProduceGesture(Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp,
+                             0, 0, GESTURES_FLING_TAP_DOWN));
+      return;
     }
-  return Gesture();
 }
 
 void LookaheadFilterInterpreter::SeparateFinger(QState* node,
@@ -401,16 +402,8 @@ void LookaheadFilterInterpreter::AttemptInterpolation() {
 
 Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
                                                      stime_t* timeout) {
-  result_ = TapDownOccurringGesture(now);
-  Gesture* result = NULL;
+  TapDownOccurringGesture(now);
   stime_t next_timeout = -1.0;
-
-  // todo(denniskempin): we will have to cache gestures->next here
-  // because it will be invalidated as soon as we call HandleTimer
-  // or SyncInterpret a second time. For now we will drop extra gestures.
-  // This might cause gestures to get lost, so we use CombineGestures
-  // to keep the higher priority ones.
-  bool drop_next_gestures = false;
 
   while (true) {
     if (interpreter_due_ > 0.0) {
@@ -420,9 +413,8 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
       }
       next_timeout = -1.0;
       last_interpreted_time_ = now;
-      if (drop_next_gestures)
-        result_.next = NULL;
-      result = next_->HandleTimer(now, &next_timeout);
+      Gesture* gesture = next_->HandleTimer(now, &next_timeout);
+      ConsumeGestureList(gesture);
     } else {
       if (queue_.Empty())
         break;
@@ -450,9 +442,9 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
         node->state_.rel_wheel,
         node->state_.rel_hwheel,
       };
-      if (drop_next_gestures)
-        result_.next = NULL;
-      result = next_->SyncInterpret(&hs_copy, &next_timeout);
+      Gesture* gesture = next_->SyncInterpret(&hs_copy, &next_timeout);
+      ConsumeGestureList(gesture);
+
       // Clear previously completed nodes, but keep at least two nodes.
       while (queue_.size() > 2 && queue_.Head()->completed_)
         free_list_.PushBack(queue_.PopFront());
@@ -461,53 +453,47 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
       // node in the queue.
       node->completed_ = true;
     }
-    if (result) {
-      result = ApplySuppression(result, queue_.Head());
-      CombineGestures(&result_, result);
-    }
     UpdateInterpreterDue(next_timeout, now, timeout);
-    drop_next_gestures = true;
   }
   UpdateInterpreterDue(next_timeout, now, timeout);
 
-  return result_.type == kGestureTypeNull ? NULL : &result_;
+  return NULL;
 }
 
-Gesture* LookaheadFilterInterpreter::ApplySuppression(Gesture* gesture,
-                                                      QState* node) {
-  if (!gesture)
-    return NULL;
-
-  if (gesture->next)
-    gesture->next = ApplySuppression(gesture->next, node);
+void LookaheadFilterInterpreter::ConsumeGesture(const Gesture& gesture) {
+  QState* node = queue_.Head();
 
   float distance_sq = 0.0;
   // Slow movements should potentially be suppressed
-  switch (gesture->type) {
+  switch (gesture.type) {
     case kGestureTypeMove:
-      distance_sq = gesture->details.move.dx * gesture->details.move.dx +
-          gesture->details.move.dy * gesture->details.move.dy;
+      distance_sq = gesture.details.move.dx * gesture.details.move.dx +
+          gesture.details.move.dy * gesture.details.move.dy;
       break;
     case kGestureTypeScroll:
-      distance_sq = gesture->details.scroll.dx * gesture->details.scroll.dx +
-          gesture->details.scroll.dy * gesture->details.scroll.dy;
+      distance_sq = gesture.details.scroll.dx * gesture.details.scroll.dx +
+          gesture.details.scroll.dy * gesture.details.scroll.dy;
       break;
     default:
       // Non-movement: just allow it.
-      return gesture;
+      ProduceGesture(gesture);
+      return;
   }
-  stime_t time_delta = gesture->end_time - gesture->start_time;
+  stime_t time_delta = gesture.end_time - gesture.start_time;
   float min_nonsuppress_dist_sq =
       min_nonsuppress_speed_.val_ * min_nonsuppress_speed_.val_ *
       time_delta * time_delta;
-  if (distance_sq >= min_nonsuppress_dist_sq)
-    return gesture;
+  if (distance_sq >= min_nonsuppress_dist_sq) {
+    ProduceGesture(gesture);
+    return;
+  }
   // Speed is slow. Suppress if fingers have changed.
   for (QState* iter = node->next_; iter != queue_.End(); iter = iter->next_)
     if (!node->state_.SameFingersAs(iter->state_) ||
         (node->state_.buttons_down != iter->state_.buttons_down))
-      return gesture->next;
-  return gesture;
+      return; // suppress
+
+  ProduceGesture(gesture);
 }
 
 void LookaheadFilterInterpreter::UpdateInterpreterDue(

@@ -41,7 +41,9 @@ Gesture* ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     prev_pressure_[fs.tracking_id] = fs.pressure;
   }
 
-  return next_->SyncInterpret(hwstate, timeout);
+  Gesture* result = next_->SyncInterpret(hwstate, timeout);
+  ConsumeGestureList(result);
+  return NULL;
 }
 
 void ClickWiggleFilterInterpreter::UpdateClickWiggle(

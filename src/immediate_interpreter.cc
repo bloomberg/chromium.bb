@@ -792,7 +792,9 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   prev_gs_fingers_ = gs_fingers;
   prev_result_ = result_;
   prev_gesture_type_ = current_gesture_type_;
-  return result_.type != kGestureTypeNull ? &result_ : NULL;
+  if (result_.type != kGestureTypeNull)
+    ProduceGesture(result_);
+  return NULL;
 }
 
 Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
@@ -805,7 +807,9 @@ Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
                    false,
                    now,
                    timeout);
-  return result_.type != kGestureTypeNull ? &result_ : NULL;
+  if (result_.type != kGestureTypeNull)
+    ProduceGesture(result_);
+  return NULL;
 }
 
 void ImmediateInterpreter::FillOriginInfo(

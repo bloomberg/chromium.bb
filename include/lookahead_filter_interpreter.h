@@ -68,9 +68,9 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
 
   void LogVectors();
 
-  // Returns a tapdown fling gesture iff we just got a new hardware state
+  // Produces a tapdown fling gesture if we just got a new hardware state
   // with a finger missing from the previous, or a null gesture otherwise.
-  Gesture TapDownOccurringGesture(stime_t now) const;
+  void TapDownOccurringGesture(stime_t now);
 
   // Looks at the most recent 2 states in the queue (one of which may have
   // already completed), and if they are separated by split_min_period_ time,
@@ -102,7 +102,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   void UpdateInterpreterDue(stime_t new_interpreter_due,
                             stime_t now,
                             stime_t* timeout);
-  Gesture* ApplySuppression(Gesture* gesture, QState* node);
+  void ConsumeGesture(const Gesture& gesture);
 
   stime_t ExtraVariableDelay() const;
 

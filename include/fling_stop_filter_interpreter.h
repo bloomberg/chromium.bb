@@ -34,6 +34,8 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
 
   virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
 
+  virtual void ConsumeGesture(const Gesture& gesture);
+
  private:
   // May override an outgoing gesture with a fling stop gesture.
   bool NeedsExtraTime(const HardwareState& hwstate) const;
@@ -46,11 +48,15 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
   // Which tracking id's were on the pad at the last fling
   set<short, kMaxFingers> fingers_present_for_last_fling_;
 
+  // tracking id's of the last hardware state
+  set<short, kMaxFingers> fingers_of_last_hwstate_;
+
   // touch_cnt from previously input HardwareState.
   short prev_touch_cnt_;
   // timestamp from previous input HardwareState.
   stime_t prev_timestamp_;
-
+  // timeout set by current sync interpret
+  stime_t next_timeout_;
   // Result to pass out.
   Gesture result_;
 

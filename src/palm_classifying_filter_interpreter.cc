@@ -52,8 +52,10 @@ Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
   UpdatePalmState(*hwstate);
   UpdatePalmFlags(hwstate);
   FillPrevInfo(*hwstate);
-  if (next_.get())
-    return next_->SyncInterpret(hwstate, timeout);
+  if (next_.get()) {
+    Gesture* result = next_->SyncInterpret(hwstate, timeout);
+    ConsumeGestureList(result);
+  }
   return NULL;
 }
 

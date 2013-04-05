@@ -21,45 +21,34 @@ FlingStopFilterInterpreter::FlingStopFilterInterpreter(PropRegistry* prop_reg,
   InitName();
 }
 
+
 Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                        stime_t* timeout) {
+  fingers_of_last_hwstate_.clear();
+  for (int i = 0; i < hwstate->finger_cnt; i++)
+    fingers_of_last_hwstate_.insert(hwstate->fingers[i].tracking_id);
+
   UpdateFlingStopDeadline(*hwstate);
 
   stime_t next_timeout = -1.0;
-  Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
-
-  if (result && result->type == kGestureTypeFling) {
-    fingers_present_for_last_fling_.clear();
-    for (int i = 0; i < hwstate->finger_cnt; i++)
-      fingers_present_for_last_fling_.insert(hwstate->fingers[i].tracking_id);
-    already_extended_ = false;
-  }
-
   if (fling_stop_deadline_ != 0.0) {
     if (!already_extended_ && NeedsExtraTime(*hwstate)) {
       fling_stop_deadline_ += fling_stop_extra_delay_.val_;
       already_extended_ = true;
     }
-
-    if (result && result->type == kGestureTypeScroll) {
-      // Don't need to stop fling, since the user is scrolling
-      result->details.scroll.stop_fling = 0;
-      fling_stop_deadline_ = 0.0;
-    } else if (hwstate->timestamp > fling_stop_deadline_ ||
-       (result && result->type == kGestureTypeButtonsChange)) {
-      // Try to sub in a fling-stop for this gesture, as we should have received
-      // a callback by now
-      result_ = Gesture(kGestureFling, prev_timestamp_,
-                        hwstate->timestamp, 0.0, 0.0,
-                        GESTURES_FLING_TAP_DOWN);
-      AppendGesture(&result_, result);
-      result = &result_;
+    if (hwstate->timestamp > fling_stop_deadline_) {
+      // sub in a fling before processing other interpreters
+      ProduceGesture(Gesture(kGestureFling, prev_timestamp_,
+                             hwstate->timestamp, 0.0, 0.0,
+                             GESTURES_FLING_TAP_DOWN));
       fling_stop_deadline_ = 0.0;
     }
   }
+  Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
+  ConsumeGestureList(result);
   *timeout = SetNextDeadlineAndReturnTimeoutVal(hwstate->timestamp,
                                                 next_timeout);
-  return result;
+  return NULL;
 }
 
 bool FlingStopFilterInterpreter::NeedsExtraTime(
@@ -73,6 +62,31 @@ bool FlingStopFilterInterpreter::NeedsExtraTime(
   }
 
   return (num_new_fingers >= 2);
+}
+
+void FlingStopFilterInterpreter::ConsumeGesture(const Gesture& gesture) {
+  if (gesture.type == kGestureTypeFling) {
+    fingers_present_for_last_fling_ = fingers_of_last_hwstate_;
+    already_extended_ = false;
+  }
+
+  if (fling_stop_deadline_ != 0.0) {
+    if (gesture.type == kGestureTypeScroll) {
+      // Don't need to stop fling, since the user is scrolling
+      Gesture copy = gesture;
+      copy.details.scroll.stop_fling = 1;
+      fling_stop_deadline_ = 0.0;
+      ProduceGesture(copy);
+      return;
+    } else if (gesture.type == kGestureTypeButtonsChange) {
+      // sub in a fling before the button
+      ProduceGesture(Gesture(kGestureFling, gesture.start_time,
+                             gesture.start_time, 0.0, 0.0,
+                             GESTURES_FLING_TAP_DOWN));
+      fling_stop_deadline_ = 0.0;
+    }
+  }
+  ProduceGesture(gesture);
 }
 
 void FlingStopFilterInterpreter::UpdateFlingStopDeadline(
@@ -124,14 +138,13 @@ Gesture* FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
       return NULL;
     }
     fling_stop_deadline_ = 0.0;
-    // Easy, just return fling stop
-    result_ = Gesture(kGestureFling, prev_timestamp_,
-                      now, 0.0, 0.0,
-                      GESTURES_FLING_TAP_DOWN);
+    ProduceGesture(Gesture(kGestureFling, prev_timestamp_,
+                           now, 0.0, 0.0,
+                           GESTURES_FLING_TAP_DOWN));
     stime_t next_timeout = next_timer_deadline_ == 0.0 ? -1.0 :
         std::max(0.0, next_timer_deadline_ - now);
     *timeout = SetNextDeadlineAndReturnTimeoutVal(now, next_timeout);
-    return &result_;
+    return NULL;
   }
   // Call next_
   if (next_timer_deadline_ > now) {
@@ -140,9 +153,10 @@ Gesture* FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
     return NULL;
   }
   stime_t next_timeout = -1.0;
-  Gesture* ret = next_->HandleTimer(now, &next_timeout);
+  Gesture* result = next_->HandleTimer(now, &next_timeout);
+  ConsumeGestureList(result);
   *timeout = SetNextDeadlineAndReturnTimeoutVal(now, next_timeout);
-  return ret;
+  return NULL;
 }
 
 }  // namespace gestures
