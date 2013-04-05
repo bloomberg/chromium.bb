@@ -249,9 +249,7 @@ void RenderVideo::updatePlayer()
         return;
     }
 
-#if USE(ACCELERATED_COMPOSITING)
     contentChanged(VideoChanged);
-#endif
     
     IntRect videoBounds = videoBox(); 
     mediaPlayer->setFrameView(document()->view());
@@ -274,7 +272,6 @@ LayoutUnit RenderVideo::minimumReplacedHeight() const
     return RenderReplaced::minimumReplacedHeight(); 
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool RenderVideo::supportsAcceleratedRendering() const
 {
     MediaPlayer* p = mediaElement()->player();
@@ -290,7 +287,6 @@ void RenderVideo::acceleratedRenderingStateChanged()
     if (p)
         p->acceleratedRenderingStateChanged();
 }
-#endif  // USE(ACCELERATED_COMPOSITING)
 
 static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
 {

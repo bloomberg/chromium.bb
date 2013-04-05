@@ -36,9 +36,7 @@ public:
     virtual void setWidget(PassRefPtr<Widget>);
     virtual void viewCleared();
 
-#if USE(ACCELERATED_COMPOSITING)
     bool requiresAcceleratedCompositing() const;
-#endif
 
     virtual bool needsPreferredWidthsRecalculation() const;
     virtual RenderBox* embeddedContentBox() const;
@@ -46,9 +44,7 @@ public:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
 protected:
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool requiresLayer() const;
-#endif
 
 private:
     virtual bool isRenderPart() const { return true; }

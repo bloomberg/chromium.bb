@@ -48,6 +48,7 @@
 #include "RenderGeometryMap.h"
 #include "RenderInline.h"
 #include "RenderLayer.h"
+#include "RenderLayerCompositor.h"
 #include "RenderPart.h"
 #include "RenderRegion.h"
 #include "RenderTableCell.h"
@@ -59,10 +60,6 @@
 #include <algorithm>
 #include <math.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 using namespace std;
 

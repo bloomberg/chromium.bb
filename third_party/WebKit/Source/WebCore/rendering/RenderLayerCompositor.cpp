@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "RenderLayerCompositor.h"
 
 #include "AnimationController.h"
@@ -2964,5 +2963,3 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
 }
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)

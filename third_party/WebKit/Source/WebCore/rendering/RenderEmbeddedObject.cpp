@@ -92,7 +92,6 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
         frameView()->removeWidgetToUpdate(this);
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool RenderEmbeddedObject::requiresLayer() const
 {
     if (RenderPart::requiresLayer())
@@ -105,7 +104,6 @@ bool RenderEmbeddedObject::allowsAcceleratedCompositing() const
 {
     return widget() && widget()->isPluginViewBase() && toPluginViewBase(widget())->platformLayer();
 }
-#endif
 
 static String unavailablePluginReplacementText(RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {

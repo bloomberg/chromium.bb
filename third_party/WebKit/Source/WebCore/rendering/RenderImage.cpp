@@ -270,10 +270,8 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
         
         repaintRectangle(repaintRect);
 
-#if USE(ACCELERATED_COMPOSITING)
         // Tell any potential compositing layers that the image needs updating.
         contentChanged(ImageChanged);
-#endif
     }
 }
 
@@ -287,15 +285,11 @@ void RenderImage::notifyFinished(CachedResource* newImage)
 
     invalidateBackgroundObscurationStatus();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (newImage == m_imageResource->cachedImage()) {
         // tell any potential compositing layers
         // that the image is done and they can reference it directly.
         contentChanged(ImageChanged);
     }
-#else
-    UNUSED_PARAM(newImage);
-#endif
 }
 
 void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

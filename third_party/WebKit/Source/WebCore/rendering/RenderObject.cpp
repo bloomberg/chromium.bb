@@ -53,6 +53,7 @@
 #include "RenderInline.h"
 #include "RenderLayer.h"
 #include "RenderLayerBacking.h"
+#include "RenderLayerCompositor.h"
 #include "RenderListItem.h"
 #include "RenderMultiColumnBlock.h"
 #include "RenderNamedFlowThread.h"
@@ -75,10 +76,6 @@
 #include <stdio.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/UnusedParam.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #if ENABLE(SVG)
 #include "RenderSVGResourceContainer.h"
@@ -1283,7 +1280,6 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     
     RenderLayerModelObject* repaintContainer = 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     if (v->usesCompositing()) {
         if (RenderLayer* parentLayer = enclosingLayer()) {
             RenderLayer* compLayer = parentLayer->enclosingCompositingLayerForRepaint();
@@ -1291,8 +1287,7 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
                 repaintContainer = compLayer->renderer();
         }
     }
-#endif
-    
+
 #if ENABLE(CSS_FILTERS)
     if (document()->view()->hasSoftwareFilters()) {
         if (RenderLayer* parentLayer = enclosingLayer()) {
@@ -1340,7 +1335,6 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     }
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
     RenderView* v = view();
     if (repaintContainer->isRenderView()) {
         ASSERT(repaintContainer == v);
@@ -1358,10 +1352,6 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         ASSERT(repaintContainer->hasLayer() && repaintContainer->layer()->isComposited());
         repaintContainer->layer()->setBackingNeedsRepaintInRect(r);
     }
-#else
-    if (repaintContainer->isRenderView())
-        toRenderView(repaintContainer)->repaintViewRectangle(r);
-#endif
 }
 
 void RenderObject::repaint() const
@@ -1711,7 +1701,6 @@ void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
-#if USE(ACCELERATED_COMPOSITING)
     // If transform changed, and we are not composited, need to do a layout.
     if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
         // Text nodes share style with their parents but transforms don't apply to them,
@@ -1756,9 +1745,6 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         if (hasLayer() != toRenderLayerModelObject(this)->requiresLayer())
             diff = StyleDifferenceLayout;
     }
-#else
-    UNUSED_PARAM(contextSensitiveProperties);
-#endif
 
     // If we have no layer(), just treat a RepaintLayer hint as a normal Repaint.
     if (diff == StyleDifferenceRepaintLayer && !hasLayer())
@@ -1787,11 +1773,9 @@ void RenderObject::setPseudoStyle(PassRefPtr<RenderStyle> pseudoStyle)
 void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 {
     if (m_style == style) {
-#if USE(ACCELERATED_COMPOSITING)
         // We need to run through adjustStyleDifference() for iframes, plugins, and canvas so
         // style sharing is disabled for them. That should ensure that we never hit this code path.
         ASSERT(!isRenderIFrame() && !isEmbeddedObject() && !isCanvas());
-#endif
         return;
     }
 
@@ -1933,7 +1917,6 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
         bool newStyleSlowScroll = newStyle && !shouldBlitOnFixedBackgroundImage && newStyle->hasFixedBackgroundImage();
         bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
 
-#if USE(ACCELERATED_COMPOSITING)
         bool drawsRootBackground = isRoot() || (isBody() && !rendererHasBackground(document()->documentElement()->renderer()));
         if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
             if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
@@ -1944,7 +1927,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
                     oldStyleSlowScroll = false;
             }
         }
-#endif
+
         if (oldStyleSlowScroll != newStyleSlowScroll) {
             if (oldStyleSlowScroll)
                 view()->frameView()->removeSlowRepaintObject();

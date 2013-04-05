@@ -65,7 +65,6 @@ void RenderPart::viewCleared()
 {
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool RenderPart::requiresLayer() const
 {
     if (RenderWidget::requiresLayer())
@@ -94,7 +93,6 @@ bool RenderPart::requiresAcceleratedCompositing() const
 
     return false;
 }
-#endif
 
 bool RenderPart::needsPreferredWidthsRecalculation() const
 {

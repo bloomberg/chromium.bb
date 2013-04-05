@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "RenderLayerBacking.h"
 
 #include "AnimationController.h"
@@ -2160,5 +2158,3 @@ void RenderLayerBacking::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) c
 }
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)
