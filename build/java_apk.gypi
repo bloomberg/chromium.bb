@@ -102,6 +102,7 @@
     'codegen_input_paths': [],
     'final_apk_path': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
+    'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -219,7 +220,8 @@
       'conditions': [
         ['gyp_managed_install == 1', {
           'variables': {
-            'apk_libraries_dir': '<(intermediate_dir)/lib.stripped/',
+            'apk_libraries_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
+            'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
             'device_library_dir': '/data/local/tmp/chromium/lib.stripped/<(_target_name)',
           },
           'dependencies': [
@@ -270,7 +272,7 @@
         }, {
           # gyp_managed_install != 1
           'variables': {
-            'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
+            'apk_libraries_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [ '<(strip_stamp)' ],
           },
         }],
@@ -555,6 +557,7 @@
         '-DASSET_DIR=<(asset_location)',
         '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
         '-DKEYSTORE_PATH=<(DEPTH)/build/android/ant/chromium-debug.keystore',
+        '-DNATIVE_LIBS_DIR=<(apk_package_native_libs_dir)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DRESOURCE_DIR=<(resource_dir)',
         '-DSOURCE_DIR=<(java_in_dir)/src',

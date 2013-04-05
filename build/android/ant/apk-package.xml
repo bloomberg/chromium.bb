@@ -63,7 +63,7 @@
   <property name="asset.dir" value="${ASSET_DIR}" />
   <property name="asset.absolute.dir" location="${asset.dir}" />
 
-  <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
+  <property name="native.libs.absolute.dir" location="${NATIVE_LIBS_DIR}" />
 
   <property name="aapt" location="${android.platform.tools.dir}/aapt" />
 
