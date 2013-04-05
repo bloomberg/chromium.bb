@@ -7,6 +7,17 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
+
+/*
+ * Needed to prevent unnecessary export in gyp builds.
+ * Scons passes optiond -D VALIDATOR_EXPORT=DLL_EXPORT.
+ * See https://code.google.com/p/nativeclient/issues/detail?id=3367 for details.
+ */
+#ifndef VALIDATOR_EXPORT
+#define VALIDATOR_EXPORT
+#endif
+
+
 /* All supported features are enabled */
 const NaClCPUFeaturesX86 kFullCPUIDFeatures = {
   {
@@ -51,7 +62,7 @@ const NaClCPUFeaturesX86 kFullCPUIDFeatures = {
   }
 };
 
-DLLEXPORT
+VALIDATOR_EXPORT
 const NaClCPUFeaturesX86* GetFullCPUIDFeatures(void) {
     return &kFullCPUIDFeatures;
 }

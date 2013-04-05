@@ -9,6 +9,17 @@
 
 #include "native_client/src/trusted/validator_ragel/decoder.h"
 
+
+/*
+ * Needed to prevent unnecessary export in gyp builds.
+ * Scons passes optiond -D VALIDATOR_EXPORT=DLL_EXPORT.
+ * See https://code.google.com/p/nativeclient/issues/detail?id=3367 for details.
+ */
+#ifndef VALIDATOR_EXPORT
+#define VALIDATOR_EXPORT
+#endif
+
+
 EXTERN_C_BEGIN
 
 enum validation_callback_info {
@@ -177,7 +188,7 @@ typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_begin,
  * by all invocations of user_callback, so custom validation logic can be
  * placed there.
  */
-DLLEXPORT
+VALIDATOR_EXPORT
 Bool ValidateChunkAMD64(const uint8_t codeblock[],
                         size_t size,
                         uint32_t options,
@@ -188,7 +199,7 @@ Bool ValidateChunkAMD64(const uint8_t codeblock[],
 /*
  * See ValidateChunkAMD64
  */
-DLLEXPORT
+VALIDATOR_EXPORT
 Bool ValidateChunkIA32(const uint8_t codeblock[],
                        size_t size,
                        uint32_t options,
