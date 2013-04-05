@@ -100,7 +100,7 @@ class SpdyFramerTestUtil {
   class DecompressionVisitor : public SpdyFramerVisitorInterface {
    public:
     explicit DecompressionVisitor(int version)
-        : version_(version), buffer_(NULL), size_(0), finished_(false) {
+        : version_(version), size_(0), finished_(false) {
     }
 
     void ResetBuffer() {
