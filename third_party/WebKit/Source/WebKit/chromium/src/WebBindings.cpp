@@ -31,14 +31,12 @@
 #include "config.h"
 #include "WebBindings.h"
 
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
-
-#if USE(V8)
 #include "BindingState.h"
 #include "DOMWindow.h"
 #include "Frame.h"
 #include "NPV8Object.h"  // for PrivateIdentifier
+#include "npruntime_impl.h"
+#include "npruntime_priv.h"
 #include "Range.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
@@ -46,15 +44,11 @@
 #include "V8Element.h"
 #include "V8NPUtils.h"
 #include "V8Range.h"
-#include <wtf/ArrayBufferView.h>
-// FIXME: Remove the USE(JSC) ifdefs because we don't support USE(JSC) anymore.
-#elif USE(JSC)
-#include "bridge/c/c_utility.h"
-#endif
 #include "WebArrayBuffer.h"
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
+#include <wtf/ArrayBufferView.h>
 
 using namespace WebCore;
 

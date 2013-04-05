@@ -75,9 +75,6 @@
       '../bindings/generic',
       '../bindings/v8',
       '../bindings/v8/custom',
-      '../bridge',
-      '../bridge/jni',
-      '../bridge/jni/v8',
       '../css',
       '../dom',
       '../dom/default',
@@ -2114,13 +2111,6 @@
         ['exclude', 'bindings/[^/]+/'],
         ['include', 'bindings/generic/'],
         ['include', 'bindings/v8/'],
-
-        # Exclude most of bridge, except for the V8-related parts.
-        ['exclude', 'bridge/'],
-        ['include', 'bridge/jni/'],
-        ['exclude', 'bridge/jni/[^/]+_jsobject\\.mm$'],
-        ['exclude', 'bridge/jni/[^/]+_objc\\.mm$'],
-        ['exclude', 'bridge/jni/jsc/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(atk|cairo|ca|cf|cg|curl|efl|freetype|gstreamer|gtk|linux|mac|opengl|openvg|opentype|pango|posix|qt|soup|svg|texmap|iphone|win|wince|wx)/'],

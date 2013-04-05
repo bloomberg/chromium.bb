@@ -32,16 +32,9 @@
 
 #include "V8DOMWrapper.h"
 
-#if PLATFORM(CHROMIUM)
-// FIXME: Chromium uses a different npruntime.h, which is in
-// the Chromium source repository under third_party/npapi/bindings.
-// The Google-specific changes in that file should probably be
-// moved into bridge/npruntime.h, guarded by an #if PlATFORM(CHROMIUM).
+// Chromium uses npruntime.h from the Chromium source repository under
+// third_party/npapi/bindings.
 #include <bindings/npruntime.h>
-#else
-#include "npruntime.h" // Use WebCore version for other ports.
-#endif
-
 #include <v8.h>
 
 namespace WebCore {
