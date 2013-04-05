@@ -231,6 +231,12 @@ TestEventListener.prototype = {
   }
 }
 
+// Gets the path for operations. The path is relative to the mount point for
+// local entries and relative to the "My Drive" root for Drive entries.
+function getPath(relativePath, isOnDrive) {
+  return (isOnDrive ? 'root/' : '') + relativePath;
+}
+
 /**
  * Initializes test parameters:
  * - Gets local file system.
@@ -292,9 +298,14 @@ function initTests(callback) {
             testParams.isOnDrive = mountPointPath == 'drive/';
 
             var testWatchEntries = [
-              {name: 'file', path: 'test_dir/test_file.xul', type: 'file'},
-              {name: 'dir', path: 'test_dir/', type: 'dir'},
-              {name: 'subdir', path: 'test_dir/subdir', type: 'dir'},
+              {name: 'file',
+               path: getPath('test_dir/test_file.xul', testParams.isOnDrive),
+               type: 'file'},
+              {name: 'dir', path: getPath('test_dir/', testParams.isOnDrive),
+               type: 'dir'},
+              {name: 'subdir',
+               path: getPath('test_dir/subdir', testParams.isOnDrive),
+               type: 'dir'},
             ];
 
             // Gets the first entry in |testWatchEntries| list.
@@ -378,7 +389,8 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getDirectory(
-          'test_dir/subdir/subsubdir', {create: true, exclusive: true},
+          getPath('test_dir/subdir/subsubdir', testParams.isOnDrive),
+          {create: true, exclusive: true},
           testEventListener.onFileSystemOperation.bind(testEventListener),
           testEventListener.onError.bind(testEventListener,
                                          'Failed to create directory.'));
@@ -393,7 +405,8 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getFile(
-          'test_dir/subdir/file', {create: true, exclusive: true},
+          getPath('test_dir/subdir/file', testParams.isOnDrive),
+          {create: true, exclusive: true},
           testEventListener.onFileSystemOperation.bind(testEventListener),
           testEventListener.onError.bind(testEventListener,
                                          'Failed to create file.'));
@@ -409,7 +422,8 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getFile(
-          'test_dir/subdir/file', {},
+          getPath('test_dir/subdir/file', testParams.isOnDrive),
+          {},
           function(entry) {
             entry.moveTo(testParams.entries.subdir, 'renamed',
                 testEventListener.onFileSystemOperation.bind(testEventListener),
@@ -429,7 +443,7 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getFile(
-          'test_dir/subdir/renamed', {},
+          getPath('test_dir/subdir/renamed', testParams.isOnDrive), {},
           function(entry) {
             entry.remove(
                 testEventListener.onFileSystemOperation.bind(testEventListener,
@@ -456,7 +470,7 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getFile(
-          'test_dir/test_file.xul', {},
+          getPath('test_dir/test_file.xul', testParams.isOnDrive), {},
           function(entry) {
             entry.remove(
                 testEventListener.onFileSystemOperation.bind(testEventListener,
@@ -477,7 +491,7 @@ initTests(function(testParams, errorMessage) {
       testEventListener.start();
 
       testParams.mountPoint.getDirectory(
-          'test_dir/subdir/subsubdir', {},
+          getPath('test_dir/subdir/subsubdir', testParams.isOnDrive), {},
           function(entry) {
             entry.removeRecursively(
                 testEventListener.onFileSystemOperation.bind(testEventListener,
@@ -503,7 +517,8 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'deleted');
       testEventListener.start();
 
-      testParams.mountPoint.getDirectory('test_dir/subdir', {},
+      testParams.mountPoint.getDirectory(
+          getPath('test_dir/subdir', testParams.isOnDrive), {},
           function(entry) {
             entry.removeRecursively(
                 testEventListener.onFileSystemOperation.bind(testEventListener,

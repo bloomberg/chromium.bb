@@ -56,7 +56,7 @@ function DirectoryModel(root, singleSelection, fileFilter,
  * @private
  */
 DirectoryModel.fakeDriveEntry_ = {
-  fullPath: RootDirectory.DRIVE,
+  fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
   isDirectory: true
 };
 

@@ -87,33 +87,38 @@ ACTION_P(MockReadDirectory, test_entries) {
   callback.Run(DRIVE_FILE_OK, false /* hide_hosted_document */, entries.Pass());
 }
 
+#define FPL FILE_PATH_LITERAL
+
 const TestEntry kEmptyDrive[] = {
-  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, 0, "id:drive" },
+  { FPL("drive/root"), TYPE_DIRECTORY, 0, 0, "id:drive" },
 };
 
 const TestEntry kOneFileDrive[] = {
-  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, 0, "id:drive" },
-  { FILE_PATH_LITERAL("drive/abc.txt"), TYPE_REGULAR_FILE, 1, 0, "id:abc" },
+  { FPL("drive/root"), TYPE_DIRECTORY, 0, 0, "id:drive" },
+  { FPL("drive/root/abc.txt"), TYPE_REGULAR_FILE, 1, 0,
+      "id:abc" },
 };
 
 const char* kExpectedOneFile[] = { "id:abc" };
 
 const TestEntry kComplexDrive[] = {
-  // Path                                  Type           Access Modify   ID
-  { FILE_PATH_LITERAL("drive"),            TYPE_DIRECTORY,    0, 0, "id:root" },
-  { FILE_PATH_LITERAL("drive/a"),          TYPE_DIRECTORY,    0, 0, "id:a" },
-  { FILE_PATH_LITERAL("drive/a/foo.txt"),  TYPE_REGULAR_FILE, 3, 2, "id:foo1" },
-  { FILE_PATH_LITERAL("drive/a/b"),        TYPE_DIRECTORY,    8, 0, "id:b" },
-  { FILE_PATH_LITERAL("drive/a/bar.jpg"),  TYPE_REGULAR_FILE, 5, 0, "id:bar1",
-                                           999 },
-  { FILE_PATH_LITERAL("drive/a/b/x.gdoc"), TYPE_HOSTED_FILE,  7, 0, "id:new" },
-  { FILE_PATH_LITERAL("drive/a/buz.zip"),  TYPE_REGULAR_FILE, 4, 0, "id:buz1" },
-  { FILE_PATH_LITERAL("drive/a/old.gdoc"), TYPE_HOSTED_FILE,  1, 0, "id:old" },
-  { FILE_PATH_LITERAL("drive/c"),          TYPE_DIRECTORY,    0, 0, "id:c" },
-  { FILE_PATH_LITERAL("drive/c/foo.txt"),  TYPE_REGULAR_FILE, 3, 1, "id:foo2" },
-  { FILE_PATH_LITERAL("drive/c/buz.zip"),  TYPE_REGULAR_FILE, 1, 0, "id:buz2" },
-  { FILE_PATH_LITERAL("drive/bar.jpg"),    TYPE_REGULAR_FILE, 6, 0, "id:bar2" },
+  // Path                          Type          Access Modify    ID
+  { FPL("drive/root"),            TYPE_DIRECTORY,    0, 0, "id:root" },
+  { FPL("drive/root/a"),          TYPE_DIRECTORY,    0, 0, "id:a" },
+  { FPL("drive/root/a/foo.txt"),  TYPE_REGULAR_FILE, 3, 2, "id:foo1" },
+  { FPL("drive/root/a/b"),        TYPE_DIRECTORY,    8, 0, "id:b" },
+  { FPL("drive/root/a/bar.jpg"),  TYPE_REGULAR_FILE, 5, 0, "id:bar1",
+                                  999 },
+  { FPL("drive/root/a/b/x.gdoc"), TYPE_HOSTED_FILE,  7, 0, "id:new" },
+  { FPL("drive/root/a/buz.zip"),  TYPE_REGULAR_FILE, 4, 0, "id:buz1" },
+  { FPL("drive/root/a/old.gdoc"), TYPE_HOSTED_FILE,  1, 0, "id:old" },
+  { FPL("drive/root/c"),          TYPE_DIRECTORY,    0, 0, "id:c" },
+  { FPL("drive/root/c/foo.txt"),  TYPE_REGULAR_FILE, 3, 1, "id:foo2" },
+  { FPL("drive/root/c/buz.zip"),  TYPE_REGULAR_FILE, 1, 0, "id:buz2" },
+  { FPL("drive/root/bar.jpg"),    TYPE_REGULAR_FILE, 6, 0, "id:bar2" },
 };
+
+#undef FPL
 
 const char* kTop3Files[] = {
   "id:bar2",  // The file with the largest timestamp

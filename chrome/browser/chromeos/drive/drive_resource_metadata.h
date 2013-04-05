@@ -69,7 +69,7 @@ enum DriveFileType {
 
 // This should be incremented when incompatibility change is made in
 // drive.proto.
-const int32 kProtoVersion = 2;
+const int32 kProtoVersion = 3;
 
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.

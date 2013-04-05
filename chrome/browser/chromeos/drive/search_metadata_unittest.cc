@@ -128,7 +128,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
+      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
 }
 
 // This test checks if |FindAndHighlight| does case-insensitive search.
@@ -148,7 +148,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
+      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
@@ -174,10 +174,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   // All base names should contain "File".
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(
-          "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
+          "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
       result->at(0).path);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/Directory 1/SubDirectory File 1.txt"), result->at(1).path);
+      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(1).path);
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
@@ -197,7 +197,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(
-          "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
+          "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
       result->at(0).path);
 }
 
@@ -215,7 +215,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe("drive/Directory 1"),
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1"),
       result->at(0).path);
 }
 
@@ -233,7 +233,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
 
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/Document 1.gdoc"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/Document 1.gdoc"),
             result->at(0).path);
 }
 

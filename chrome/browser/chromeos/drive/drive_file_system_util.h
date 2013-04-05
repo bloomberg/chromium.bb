@@ -59,10 +59,8 @@ const base::FilePath::CharType kDriveMyDriveRootDirName[] =
 const base::FilePath::CharType kDriveOtherDirName[] =
     FILE_PATH_LITERAL("other");
 
-// TODO(haruki): Change this to "drive/root" in order to use separate namespace.
-// http://crbug.com/174233
 const base::FilePath::CharType kDriveMyDriveRootPath[] =
-    FILE_PATH_LITERAL("drive");
+    FILE_PATH_LITERAL("drive/root");
 
 const base::FilePath::CharType kDriveOtherDirPath[] =
     FILE_PATH_LITERAL("drive/other");

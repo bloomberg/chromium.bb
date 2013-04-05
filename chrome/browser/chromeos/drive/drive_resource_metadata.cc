@@ -293,13 +293,32 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
                       true /* recursive */);
   }
 
-  // Initialize the root entry.
-  if (!storage_->GetEntry(root_resource_id_)) {
+  // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
+  // As an intermediate change, "/drive/root" is also added here.
+  // TODO(haruki): Move this initialization to change_list_loader where we
+  // can retrieve the root folder ID from the server.
+  if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId)) {
     DriveEntryProto root;
     root.mutable_file_info()->set_is_directory(true);
-    root.set_resource_id(root_resource_id_);
+    root.set_resource_id(util::kDriveGrandRootSpecialResourceId);
     root.set_title(util::kDriveGrandRootDirName);
     storage_->PutEntry(CreateEntryWithProperBaseName(root));
+  }
+  if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId)) {
+    DriveEntryProto other_dir;
+    other_dir.mutable_file_info()->set_is_directory(true);
+    other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
+    other_dir.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
+    other_dir.set_title(util::kDriveOtherDirName);
+    AddEntryToDirectory(other_dir);
+  }
+  if (!storage_->GetEntry(root_resource_id_)) {
+    DriveEntryProto mydrive_root;
+    mydrive_root.mutable_file_info()->set_is_directory(true);
+    mydrive_root.set_resource_id(root_resource_id_);
+    mydrive_root.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
+    mydrive_root.set_title(util::kDriveMyDriveRootDirName);
+    AddEntryToDirectory(mydrive_root);
   }
   return DRIVE_FILE_OK;
 }
@@ -312,7 +331,8 @@ void DriveResourceMetadata::DestroyOnBlockingPool() {
 void DriveResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  RemoveDirectoryChildren(root_resource_id_);
+  RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
+  InitializeOnBlockingPool();
   last_serialized_ = base::Time();
   serialized_size_ = 0;
   storage_->SetLargestChangestamp(0);
@@ -599,8 +619,8 @@ DriveResourceMetadata::RemoveEntryOnBlockingPool(
     const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // Disallow deletion of root.
-  if (resource_id == root_resource_id_)
+  // Disallow deletion of special entries "/drive" and "/drive/other".
+  if (util::IsSpecialResourceId(resource_id))
     return FileMoveResult(DRIVE_FILE_ERROR_ACCESS_DENIED);
 
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
@@ -616,7 +636,7 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadata::FindEntryByPathSync(
     const base::FilePath& file_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   scoped_ptr<DriveEntryProto> current_dir =
-      storage_->GetEntry(root_resource_id_);
+      storage_->GetEntry(util::kDriveGrandRootSpecialResourceId);
   DCHECK(current_dir);
 
   if (file_path == GetFilePath(current_dir->resource_id()))
@@ -733,7 +753,7 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
   }
 
   // Update data.
-  if (entry->resource_id() != root_resource_id_) {
+  if (!util::IsSpecialResourceId(entry->resource_id())) {
     scoped_ptr<DriveEntryProto> new_parent =
         GetDirectory(entry_proto.parent_resource_id());
 
@@ -898,7 +918,8 @@ void DriveResourceMetadata::GetDescendantDirectoryPaths(
 void DriveResourceMetadata::RemoveAllOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  RemoveDirectoryChildren(root_resource_id_);
+  RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
+  InitializeOnBlockingPool();
 }
 
 void DriveResourceMetadata::MaybeSaveOnBlockingPool() {
@@ -911,7 +932,8 @@ void DriveResourceMetadata::MaybeSaveOnBlockingPool() {
   const base::FilePath path = data_directory_path_.Append(kProtoFileName);
 
   DriveRootDirectoryProto proto;
-  DirectoryToProto(root_resource_id_, proto.mutable_drive_directory());
+  DirectoryToProto(util::kDriveGrandRootSpecialResourceId,
+                   proto.mutable_drive_directory());
   proto.set_largest_changestamp(storage_->GetLargestChangestamp());
   proto.set_version(kProtoVersion);
 
@@ -1052,7 +1074,9 @@ void DriveResourceMetadata::AddDescendantsFromProto(
 #if !defined(NDEBUG)
   std::vector<std::string> children;
   storage_->GetChildren(proto.drive_entry().resource_id(), &children);
-  DCHECK(children.empty());
+  DCHECK(proto.drive_entry().resource_id() ==
+             util::kDriveGrandRootSpecialResourceId ||
+         children.empty());
 #endif
 
   // Add child files.
@@ -1161,7 +1185,7 @@ bool DriveResourceMetadata::ParseFromString(
   }
 
   if (proto.drive_directory().drive_entry().resource_id() !=
-      root_resource_id_) {
+      util::kDriveGrandRootSpecialResourceId) {
     LOG(ERROR) << "Incompatible proto detected (incompatible root ID): "
                << proto.drive_directory().drive_entry().resource_id();
     return false;

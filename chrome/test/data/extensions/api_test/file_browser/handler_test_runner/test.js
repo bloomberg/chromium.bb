@@ -8,8 +8,8 @@
  * - Open external filesystem.
  * - Get the test mount point root. The root is determined by probing exitents
  *   of root directories 'local' or 'drive'.
- * - Get files 'test_dir/test_file.xul' and 'test_dir/test_file.tiff' on the
- *   test mount point.
+ * - Get files 'test_dir/test_file.xul' and 'test_dir/test_file.tiff'
+ *   on the test mount point.
  *   Chrome part of the test should ensure that these actually exist.
  * - For each of the files do following:
  *   - Get registered file tasks.
@@ -149,9 +149,10 @@ function run() {
    * @param {DirectoryEntry} mountPointEntry The mount points root dir entry.
    */
   function onFoundMountPoint(mountPointEntry) {
+    var isOnDrive = mountPointEntry.fullPath == '/drive';
     kTestCases.forEach(function(testCase) {
       mountPointEntry.getFile(
-          testCase.path, {},
+          (isOnDrive ? 'root/' : '') + testCase.path, {},
           onGotEntry.bind(null, testCase.mimeType),
           onError.bind(null, 'Unable to get file: ' + testCase.path));
     });

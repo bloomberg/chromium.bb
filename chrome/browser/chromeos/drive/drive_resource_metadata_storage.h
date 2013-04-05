@@ -121,7 +121,7 @@ class DriveResourceMetadataStorageDB
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 1;
+  static const int kDBVersion = 2;
 
   explicit DriveResourceMetadataStorageDB(const base::FilePath& directory_path);
   virtual ~DriveResourceMetadataStorageDB();

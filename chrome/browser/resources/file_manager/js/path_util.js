@@ -133,11 +133,11 @@ PathUtil.getRootPath = function(path) {
   var type = PathUtil.getRootType(path);
 
   // TODO(haruki): Add support for "drive/root" and "drive/other".
-  if (type == RootType.DOWNLOADS || type == RootType.DRIVE ||
-      type == RootType.DRIVE_OFFLINE || type == RootType.DRIVE_SHARED_WITH_ME)
+  if (type == RootType.DOWNLOADS || type == RootType.DRIVE_OFFLINE ||
+      type == RootType.DRIVE_SHARED_WITH_ME)
     return PathUtil.getTopDirectory(path);
 
-  if (type == RootType.ARCHIVE ||
+  if (type == RootType.DRIVE || type == RootType.ARCHIVE ||
       type == RootType.REMOVABLE) {
     var components = PathUtil.split(path);
     if (components.length > 1) {
@@ -213,7 +213,7 @@ PathUtil.getRootLabel = function(path) {
     return path.substring(RootDirectory.REMOVABLE.length + 1);
 
   // TODO(haruki): Add support for "drive/root" and "drive/other".
-  if (path === RootDirectory.DRIVE)
+  if (path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT)
     return str('DRIVE_DIRECTORY_LABEL');
 
   if (path === RootDirectory.DRIVE_OFFLINE)

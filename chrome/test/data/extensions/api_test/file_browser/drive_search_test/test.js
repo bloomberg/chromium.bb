@@ -73,7 +73,7 @@ chrome.test.runTests([
     chrome.fileBrowserPrivate.requestLocalFileSystem(
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
-        fileSystem.root.getDirectory('drive/test_dir', {create: false},
+        fileSystem.root.getDirectory('drive/root/test_dir', {create: false},
             // Also read a non-root directory. This will initiate loading of
             // the full resource metadata. As of now, 'search' only works
             // with the resource metadata fully loaded. crbug.com/181075
@@ -92,14 +92,14 @@ chrome.test.runTests([
     var testCases = [
       {
         nextFeed: '',
-        expectedPath: '/drive/test_dir/empty_test_dir',
+        expectedPath: '/drive/root/test_dir/empty_test_dir',
         expectedType: 'dir',
         expectedNextFeed: 'http://localhost/?start-offset=1&max-results=1',
       },
       {
         // The same as the previous test case's expected next feed.
         nextFeed: 'http://localhost/?start-offset=1&max-results=1',
-        expectedPath: '/drive/test_dir/empty_test_file.foo',
+        expectedPath: '/drive/root/test_dir/empty_test_file.foo',
         expectedType: 'file',
         expectedNextFeed: '',
       }
@@ -147,13 +147,13 @@ chrome.test.runTests([
     // matches in the test file system.
     var expectedResults = [
         // (2012-01-02T00:00:01.000Z, 2012-01-02T00:00:0.000Z)
-        {path: '/drive/test_dir', type: 'dir'},
+        {path: '/drive/root/test_dir', type: 'dir'},
         // (2012-01-02T00:00:00.000Z, 2012-01-01T00:00:00.005Z)
-        {path: '/drive/test_dir/test_file.xul', type: 'file'},
+        {path: '/drive/root/test_dir/test_file.xul', type: 'file'},
         // (2012-01-02T00:00:00.000Z, 2011-04-03T11:11:10.000Z)
-        {path: '/drive/test_dir/test_file.tiff', type: 'file'},
+        {path: '/drive/root/test_dir/test_file.tiff', type: 'file'},
         // (2012-01-01T11:00:00.000Z, 2012-01-01T10:00:30.00Z)
-        {path: '/drive/test_dir/test_file.xul.foo', type: 'file'},
+        {path: '/drive/root/test_dir/test_file.xul.foo', type: 'file'},
     ];
 
     chrome.fileBrowserPrivate.searchDriveMetadata(

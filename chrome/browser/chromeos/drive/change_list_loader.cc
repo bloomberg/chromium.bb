@@ -217,10 +217,12 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
     LoadChangeListFromServer(about_resource.Pass(),
                              start_changestamp,
                              callback);
-  } else if (directory_fetch_info.changestamp() < remote_changestamp) {
+  } else if (directory_fetch_info.changestamp() < remote_changestamp &&
+             !util::IsSpecialResourceId(directory_fetch_info.resource_id())) {
     // If the caller is interested in a particular directory, and the
     // directory changestamp is older than server's, start loading the
-    // directory first.
+    // directory first. Skip special entries as they are not meaningful in the
+    // server.
     DVLOG(1) << "Fast-fetching directory: " << directory_fetch_info.ToString()
              << "; remote_changestamp: " << remote_changestamp;
     const DirectoryFetchInfo new_directory_fetch_info(

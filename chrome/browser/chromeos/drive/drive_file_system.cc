@@ -1378,7 +1378,7 @@ void DriveFileSystem::SetHideHostedDocuments(bool hide) {
 
   // Kick off directory refresh when this setting changes.
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnDirectoryChanged(util::GetDriveMyDriveRootPath()));
+                    OnDirectoryChanged(util::GetDriveGrandRootPath()));
 }
 
 //============= DriveFileSystem: internal helper functions =====================

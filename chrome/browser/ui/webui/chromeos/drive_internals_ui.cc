@@ -582,7 +582,7 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
     return;
 
   // Start rendering the file system tree as text.
-  const base::FilePath root_path = drive::util::GetDriveMyDriveRootPath();
+  const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
 
   system_service->file_system()->GetEntryInfoByPath(
       root_path,

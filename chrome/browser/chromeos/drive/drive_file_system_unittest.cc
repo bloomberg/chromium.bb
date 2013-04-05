@@ -305,9 +305,9 @@ class DriveFileSystemTest : public testing::Test {
   };
 
   // Saves a file representing a filesystem with directories:
-  // drive, drive/Dir1, drive/Dir1/SubDir2
+  // drive/root, drive/root/Dir1, drive/root/Dir1/SubDir2
   // and files
-  // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3.
+  // drive/root/File1, drive/root/Dir1/File2, drive/root/Dir1/SubDir2/File3.
   // If |use_up_to_date_timestamp| is true, sets the changestamp to 654321,
   // equal to that of "account_metadata.json" test data, indicating the cache is
   // holding the latest file system info.
@@ -337,7 +337,12 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // drive/File1
+    // drive/root is already prepared by DriveResourceMetadata.
+    // TODO(haruki): Create drive/root here when we start creating it in
+    // ChangeListLoader.
+    base::FilePath file_path;
+
+    // drive/root/File1
     DriveEntryProto file1;
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
@@ -345,7 +350,6 @@ class DriveFileSystemTest : public testing::Test {
     file1.mutable_file_specific_info()->set_file_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
-    base::FilePath file_path;
     resource_metadata->AddEntry(
         file1,
         google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
@@ -353,7 +357,7 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // drive/Dir1
+    // drive/root/Dir1
     DriveEntryProto dir1;
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
@@ -366,7 +370,7 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // drive/Dir1/File2
+    // drive/root/Dir1/File2
     DriveEntryProto file2;
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
@@ -381,7 +385,7 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // drive/Dir1/SubDir2
+    // drive/root/Dir1/SubDir2
     DriveEntryProto dir2;
     dir2.set_title("SubDir2");
     dir2.set_resource_id("resource_id:SubDir2");
@@ -394,7 +398,7 @@ class DriveFileSystemTest : public testing::Test {
     if (error != DRIVE_FILE_OK)
       return false;
 
-    // drive/Dir1/SubDir2/File3
+    // drive/root/Dir1/SubDir2/File3
     DriveEntryProto file3;
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
@@ -480,7 +484,7 @@ void AsyncInitializationCallback(
 TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   // The root directory will be loaded that triggers the event.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   int counter = 0;
   ReadDirectoryWithSettingCallback callback = base::Bind(
@@ -490,9 +494,9 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
       &message_loop_);
 
   file_system_->ReadDirectoryByPath(
-      base::FilePath(FILE_PATH_LITERAL("drive")), callback);
+      base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
   file_system_->ReadDirectoryByPath(
-      base::FilePath(FILE_PATH_LITERAL("drive")), callback);
+      base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
@@ -512,20 +516,47 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
       << ": " << fake_drive_service_->resource_list_load_count();
 }
 
-TEST_F(DriveFileSystemTest, GetRootEntry) {
-  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("drive"));
+TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
+  const base::FilePath kFilePath =
+      base::FilePath(FILE_PATH_LITERAL("drive"));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry->resource_id());
+
+  // Getting the grand root entry should not cause the resource load to happen.
+  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
+}
+
+TEST_F(DriveFileSystemTest, GetMyDriveRootEntry) {
+  const base::FilePath kFilePath =
+      base::FilePath(FILE_PATH_LITERAL("drive/root"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
-  // Getting the root entry should not cause the resource load to happen.
+  // Getting the "My Drive" root entry should not cause the resource load to
+  // happen.
+  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
+}
+
+TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
+  const base::FilePath kFilePath =
+      base::FilePath(FILE_PATH_LITERAL("drive/other"));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ(util::kDriveOtherDirSpecialResourceId, entry->resource_id());
+
+  // Getting the "other" directory entry should not cause the resource load to
+  // happen.
   EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(DriveFileSystemTest, GetNonRootEntry) {
   const base::FilePath kFilePath =
-      base::FilePath(FILE_PATH_LITERAL("drive/whatever.txt"));
+      base::FilePath(FILE_PATH_LITERAL("drive/root/whatever.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   // The entry should not exist as the resource metadata only contains the
   // root entry now.
@@ -539,7 +570,8 @@ TEST_F(DriveFileSystemTest, GetNonRootEntry) {
 TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("drive"));
+  const base::FilePath kFilePath =
+      base::FilePath(FILE_PATH_LITERAL("drive/root"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
@@ -553,7 +585,7 @@ TEST_F(DriveFileSystemTest, SearchExistingFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/File 1.txt"));
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
@@ -563,7 +595,7 @@ TEST_F(DriveFileSystemTest, SearchExistingDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
@@ -573,7 +605,7 @@ TEST_F(DriveFileSystemTest, SearchNonExistingFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/nonexisting.file"));
+      FILE_PATH_LITERAL("drive/root/nonexisting.file"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_FALSE(entry.get());
 }
@@ -582,18 +614,18 @@ TEST_F(DriveFileSystemTest, SearchEncodedFileNames) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath1 = base::FilePath(
-      FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
+      FILE_PATH_LITERAL("drive/root/Slash / in file 1.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_FALSE(entry.get());
 
   const base::FilePath kFilePath2 = base::FilePath::FromUTF8Unsafe(
-      "drive/Slash \xE2\x88\x95 in file 1.txt");
+      "drive/root/Slash \xE2\x88\x95 in file 1.txt");
   entry = GetEntryInfoByPathSync(kFilePath2);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:slash_file_resource_id", entry->resource_id());
 
   const base::FilePath kFilePath3 = base::FilePath::FromUTF8Unsafe(
-      "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+      "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = GetEntryInfoByPathSync(kFilePath3);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
@@ -603,18 +635,18 @@ TEST_F(DriveFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath1 = base::FilePath(
-      FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
+      FILE_PATH_LITERAL("drive/root/Slash / in file 1.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_FALSE(entry.get());
 
   const base::FilePath kFilePath2 = base::FilePath::FromUTF8Unsafe(
-      "drive/Slash \xE2\x88\x95 in file 1.txt");
+      "drive/root/Slash \xE2\x88\x95 in file 1.txt");
   entry = GetEntryInfoByPathSync(kFilePath2);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:slash_file_resource_id", entry->resource_id());
 
   const base::FilePath kFilePath3 = base::FilePath::FromUTF8Unsafe(
-      "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+      "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = GetEntryInfoByPathSync(kFilePath3);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
@@ -624,13 +656,13 @@ TEST_F(DriveFileSystemTest, SearchDuplicateNames) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath1 = base::FilePath(
-      FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
+      FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_TRUE(entry.get());
   const std::string resource_id1 = entry->resource_id();
 
   const base::FilePath kFilePath2 = base::FilePath(
-      FILE_PATH_LITERAL("drive/Duplicate Name (2).txt"));
+      FILE_PATH_LITERAL("drive/root/Duplicate Name (2).txt"));
   entry = GetEntryInfoByPathSync(kFilePath2);
   ASSERT_TRUE(entry.get());
   const std::string resource_id2 = entry->resource_id();
@@ -649,7 +681,7 @@ TEST_F(DriveFileSystemTest, SearchExistingDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1"));
+      FILE_PATH_LITERAL("drive/root/Directory 1"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
@@ -663,7 +695,7 @@ TEST_F(DriveFileSystemTest, SearchInSubdir) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("file:subdirectory_file_1_id", entry->resource_id());
@@ -674,7 +706,7 @@ TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1/Sub Directory Folder/"
+      FILE_PATH_LITERAL("drive/root/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
@@ -682,13 +714,12 @@ TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
 }
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
-  // The root directory will be loaded that triggers the event.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<DriveEntryProtoVector> entries(
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
+      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries.get());
   EXPECT_EQ(8U, entries->size());
@@ -698,7 +729,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<DriveEntryProtoVector> entries(
       ReadDirectoryByPathSync(
-          base::FilePath::FromUTF8Unsafe("drive/Directory 1")));
+          base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
   // The non root directory should also be read correctly.
   // There was a bug (crbug.com/181487), which broke this behavior.
   // Make sure this is fixed.
@@ -710,27 +741,26 @@ TEST_F(DriveFileSystemTest, FilePathTests) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt"))));
+      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"))));
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
-  EXPECT_TRUE(EntryExists(
-      base::FilePath(
-          FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"))));
+      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(2);
 
   ASSERT_TRUE(LoadChangeFeed("chromeos/gdata/delta_file_added_in_root.json"));
-  EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
+  EXPECT_TRUE(EntryExists(
+      base::FilePath(FILE_PATH_LITERAL("drive/root/Added file.gdoc"))));
 
   ASSERT_TRUE(LoadChangeFeed("chromeos/gdata/delta_file_deleted_in_root.json"));
-  EXPECT_FALSE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
+  EXPECT_FALSE(EntryExists(
+      base::FilePath(FILE_PATH_LITERAL("drive/root/Added file.gdoc"))));
 }
 
 
@@ -738,44 +768,48 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
+      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1"))));
 
   // Add file to an existing directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
   ASSERT_TRUE(
       LoadChangeFeed("chromeos/gdata/delta_file_added_in_directory.json"));
   EXPECT_TRUE(EntryExists(base::FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
+      FILE_PATH_LITERAL("drive/root/Directory 1/Added file.gdoc"))));
 
   // Remove that file from the directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
   ASSERT_TRUE(
       LoadChangeFeed("chromeos/gdata/delta_file_deleted_in_directory.json"));
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
+      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1"))));
   EXPECT_FALSE(EntryExists(base::FilePath(
-      FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
+      FILE_PATH_LITERAL("drive/root/Directory 1/Added file.gdoc"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
   // Add file to a new directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/New Directory"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/New Directory")))))
+      .Times(1);
 
   ASSERT_TRUE(
       LoadChangeFeed("chromeos/gdata/delta_file_added_in_new_directory.json"));
 
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/New Directory"))));
+      EntryExists(base::FilePath(
+          FILE_PATH_LITERAL("drive/root/New Directory"))));
   EXPECT_TRUE(EntryExists(base::FilePath(
-      FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
+      FILE_PATH_LITERAL("drive/root/New Directory/File in new dir.gdoc"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
@@ -793,41 +827,45 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2"))));
+      "drive/root/Directory 2"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder/"
+      "Sub Sub Directory Folder"))));
 
-  // This will move "Directory 1" from "drive/" to "drive/Directory 2/".
+  // This will move "Directory 1" from "drive/root/" to
+  // "drive/root/Directory 2/".
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 2"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 2/Directory 1")))))
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
       .Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 2")))))
+      .Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(
+          FILE_PATH_LITERAL("drive/root/Directory 2/Directory 1"))))).Times(1);
   ASSERT_TRUE(LoadChangeFeed(
       "chromeos/gdata/delta_dir_moved_from_root_to_directory.json"));
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2"))));
+      "drive/root/Directory 2"))));
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2/Directory 1"))));
+      "drive/root/Directory 2/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 2/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2/Directory 1/Sub Directory Folder"))));
+      "drive/root/Directory 2/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 2/Directory 1/Sub Directory Folder/"
+      "drive/root/Directory 2/Directory 1/Sub Directory Folder/"
       "Sub Sub Directory Folder"))));
 }
 
@@ -835,54 +873,58 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder/"
+      "Sub Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
   ASSERT_TRUE(LoadChangeFeed(
       "chromeos/gdata/delta_file_moved_from_directory_to_root.json"));
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/root/Directory 1/Sub Directory Folder/"
+      "Sub Sub Directory Folder"))));
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/SubDirectory File 1.txt"))));
+      "drive/root/SubDirectory File 1.txt"))));
 }
 
 TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
   ASSERT_TRUE(LoadChangeFeed(
       "chromeos/gdata/delta_file_renamed_in_directory.json"));
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1"))));
+      "drive/root/Directory 1"))));
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/Directory 1/New SubDirectory File 1.txt"))));
+      "drive/root/Directory 1/New SubDirectory File 1.txt"))));
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoading) {
@@ -890,14 +932,16 @@ TEST_F(DriveFileSystemTest, CachedFeedLoading) {
   // Tests that cached data can be loaded even if the server is not reachable.
   fake_drive_service_->set_offline(true);
 
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Dir1"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/File1"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1"))));
   EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Dir1/File2"))));
-  EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2"))));
+      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/Dir1/File2"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1/SubDir2"))));
   EXPECT_TRUE(EntryExists(
-      base::FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3"))));
+      base::FilePath(FILE_PATH_LITERAL("drive/root/Dir1/SubDir2/File3"))));
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
@@ -954,7 +998,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
 
   // We'll add a file to the Drive root directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   // Prepare a local file.
   base::ScopedTempDir temp_dir;
@@ -966,7 +1010,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
 
   // Confirm that the remote file does not exist.
   const base::FilePath remote_dest_file_path(
-      FILE_PATH_LITERAL("drive/remote.txt"));
+      FILE_PATH_LITERAL("drive/root/remote.txt"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
 
   // Transfer the local file to Drive.
@@ -1002,14 +1046,15 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 
   // Confirm that the remote file does not exist.
   const base::FilePath remote_dest_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/Document 1.gdoc"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
 
   // We'll add a file to the Drive root and then move to "Directory 1".
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
 
   // We'll copy a hosted document using CopyHostedDocument.
   // ".gdoc" suffix should be stripped when copying.
@@ -1040,14 +1085,15 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath local_dest_file_path =
       temp_dir.path().AppendASCII("local_copy.txt");
 
-  base::FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath remote_src_file_path(
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> file = GetEntryInfoByPathSync(
       remote_src_file_path);
   const int64 file_size = file->file_info().size();
@@ -1093,7 +1139,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   base::FilePath local_dest_file_path =
       temp_dir.path().AppendASCII("local_copy.txt");
   base::FilePath remote_src_file_path(
-      FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path,
@@ -1110,8 +1156,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
 }
 
 TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
-  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/Dummy file.txt"));
+  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1130,9 +1176,9 @@ TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
 }
 
 TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
-  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
-  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/root/Dummy"));
+  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Dummy/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1162,11 +1208,11 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
 // Test the case where the parent of |dest_file_path| is an existing file,
 // not a directory.
 TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
   base::FilePath dest_parent_path(
-      FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
+      FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   base::FilePath dest_file_path(FILE_PATH_LITERAL(
-      "drive/Duplicate Name.txt/Document 1.gdoc"));
+      "drive/root/Duplicate Name.txt/Document 1.gdoc"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1200,10 +1246,11 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
 
 TEST_F(DriveFileSystemTest, RenameFile) {
   const base::FilePath src_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-  const base::FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  const base::FilePath src_parent_path(
+      FILE_PATH_LITERAL("drive/root/Directory 1"));
   const base::FilePath dest_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/Test.log"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1215,7 +1262,8 @@ TEST_F(DriveFileSystemTest, RenameFile) {
       src_entry_proto->resource_id();
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->Move(
@@ -1231,10 +1279,10 @@ TEST_F(DriveFileSystemTest, RenameFile) {
 }
 
 TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
-  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/root/Directory 1"));
   base::FilePath dest_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/Test.log"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1255,9 +1303,10 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->Move(
@@ -1273,10 +1322,10 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
 }
 
 TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
-  base::FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
+  base::FilePath src_parent_path(FILE_PATH_LITERAL("drive/root/Directory 1"));
   base::FilePath src_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1297,9 +1346,10 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->Move(
@@ -1315,18 +1365,18 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 }
 
 TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
-  base::FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
+  base::FilePath src_parent_path(FILE_PATH_LITERAL("drive/root/Directory 1"));
   base::FilePath src_file_path(
-      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/New Folder 1"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/root/New Folder 1"));
   base::FilePath dest_file_path(
-      FILE_PATH_LITERAL("drive/New Folder 1/Test.log"));
-  base::FilePath interim_file_path(FILE_PATH_LITERAL("drive/Test.log"));
+      FILE_PATH_LITERAL("drive/root/New Folder 1/Test.log"));
+  base::FilePath interim_file_path(FILE_PATH_LITERAL("drive/root/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   AddDirectoryFromFile(dest_parent_path,
                        "chromeos/gdata/directory_entry_atom.json");
@@ -1357,9 +1407,11 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
+      .Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/New Folder 1")))))
+      .Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->Move(
@@ -1378,8 +1430,8 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
 }
 
 TEST_F(DriveFileSystemTest, MoveNotExistingFile) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
-  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/Dummy file.txt"));
+  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1398,9 +1450,9 @@ TEST_F(DriveFileSystemTest, MoveNotExistingFile) {
 }
 
 TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
-  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
-  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/root/Dummy"));
+  base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Dummy/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1429,11 +1481,11 @@ TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
 // Test the case where the parent of |dest_file_path| is a existing file,
 // not a directory.
 TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   base::FilePath dest_parent_path(
-      FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
+      FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   base::FilePath dest_file_path(FILE_PATH_LITERAL(
-      "drive/Duplicate Name.txt/Test.log"));
+      "drive/root/Duplicate Name.txt/Test.log"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1466,11 +1518,12 @@ TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
 TEST_F(DriveFileSystemTest, RemoveEntries) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath nonexisting_file(FILE_PATH_LITERAL("drive/Dummy file.txt"));
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  base::FilePath dir_in_root(FILE_PATH_LITERAL("drive/Directory 1"));
+  base::FilePath nonexisting_file(
+      FILE_PATH_LITERAL("drive/root/Dummy file.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath dir_in_root(FILE_PATH_LITERAL("drive/root/Directory 1"));
   base::FilePath file_in_subdir(
-      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
 
   ASSERT_TRUE(EntryExists(file_in_root));
   scoped_ptr<DriveEntryProto> file_in_root_proto = GetEntryInfoByPathSync(
@@ -1490,7 +1543,7 @@ TEST_F(DriveFileSystemTest, RemoveEntries) {
 
   // Once for file in root and once for file...
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(2);
 
   // Remove first file in root.
   EXPECT_TRUE(RemoveEntry(file_in_root));
@@ -1511,7 +1564,7 @@ TEST_F(DriveFileSystemTest, RemoveEntries) {
   EXPECT_FALSE(RemoveEntry(nonexisting_file));
 
   // Try removing root file element.
-  EXPECT_FALSE(RemoveEntry(base::FilePath(FILE_PATH_LITERAL("drive"))));
+  EXPECT_FALSE(RemoveEntry(base::FilePath(FILE_PATH_LITERAL("drive/root"))));
 
   // Need this to ensure OnDirectoryChanged() is run.
   google_apis::test_util::RunBlockingPoolTask();
@@ -1521,20 +1574,21 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   // Create directory in root.
-  base::FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
+  base::FilePath dir_path(FILE_PATH_LITERAL("drive/root/New Folder 1"));
   EXPECT_FALSE(EntryExists(dir_path));
   AddDirectoryFromFile(dir_path, "chromeos/gdata/directory_entry_atom.json");
   EXPECT_TRUE(EntryExists(dir_path));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/New Folder 1")))))
+      .Times(1);
 
   // Create directory in a sub directory.
   base::FilePath subdir_path(
-      FILE_PATH_LITERAL("drive/New Folder 1/New Folder 2"));
+      FILE_PATH_LITERAL("drive/root/New Folder 1/New Folder 2"));
   EXPECT_FALSE(EntryExists(subdir_path));
   AddDirectoryFromFile(subdir_path,
                        "chromeos/gdata/directory_entry_atom2.json");
@@ -1545,11 +1599,11 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
 TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
   ASSERT_TRUE(LoadRootFeedDocument());
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->CreateDirectory(
-      base::FilePath(FILE_PATH_LITERAL("drive/Sample Directory Title")),
+      base::FilePath(FILE_PATH_LITERAL("drive/root/Sample Directory Title")),
       false,  // is_exclusive
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -1564,9 +1618,9 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   const int64 file_size = entry_proto->file_info().size();
 
@@ -1590,7 +1644,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
 
   // Pretend we have no space at all.
@@ -1614,9 +1668,9 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   const int64 file_size = entry_proto->file_info().size();
 
@@ -1666,7 +1720,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   const int64 file_size = entry_proto->file_info().size();
 
@@ -1696,7 +1750,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
 
   // Store something as cached version of this file.
@@ -1725,7 +1779,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
 TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
   scoped_ptr<DriveEntryProto> src_entry_proto =
       GetEntryInfoByPathSync(file_in_root);
   ASSERT_TRUE(src_entry_proto.get());
@@ -1752,11 +1806,11 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
 
   DriveFileError error = DRIVE_FILE_OK;
@@ -1776,7 +1830,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 }
 
 TEST_F(DriveFileSystemTest, CancelGetFile) {
-  base::FilePath cancel_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath cancel_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   file_system_->CancelGetFile(cancel_file_path);
   EXPECT_EQ(cancel_file_path, fake_drive_service_->last_cancelled_file());
 }
@@ -1786,7 +1840,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
 
   // Store something as cached version of this file.
@@ -1825,7 +1879,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // This is a file defined in root_feed.json.
-  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/File 1.txt"));
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
   const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
 
@@ -1869,7 +1923,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
   scoped_ptr<DriveEntryProtoVector> root_directory_entries(
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
+      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root")));
   ASSERT_TRUE(root_directory_entries.get());
   const int num_files_in_root = CountFiles(*root_directory_entries);
 
@@ -1892,7 +1946,8 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // This is nonexistent in root_feed.json.
-  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/Nonexistent.txt"));
+  const base::FilePath kFilePath(
+      FILE_PATH_LITERAL("drive/root/Nonexistent.txt"));
   const std::string kResourceId("file:nonexistent_resource_id");
   const std::string kMd5("nonexistent_md5");
 
@@ -1911,12 +1966,12 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const SearchResultPair kExpectedResults[] = {
-    { "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder",
+    { "drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder",
       true },
-    { "drive/Directory 1/Sub Directory Folder", true },
-    { "drive/Directory 1/SubDirectory File 1.txt", false },
-    { "drive/Directory 1", true },
-    { "drive/Directory 2", true },
+    { "drive/root/Directory 1/Sub Directory Folder", true },
+    { "drive/root/Directory 1/SubDirectory File 1.txt", false },
+    { "drive/root/Directory 1", true },
+    { "drive/root/Directory 2", true },
   };
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
@@ -1946,7 +2001,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   // shouldn't be included in the search result even though it matches
   // "Directory 1".
   const SearchResultPair kExpectedResults[] = {
-    { "drive/Directory 1", true }
+    { "drive/root/Directory 1", true }
   };
 
   // At the same time, unknown entry should trigger delta feed request.
@@ -2011,9 +2066,9 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
-  const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
+  const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));
   const int64 file_size = entry_proto->file_info().size();
   const std::string& file_resource_id =
@@ -2028,7 +2083,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(
       file_size + kMinFreeSpace);
 
-  // Open kFileInRoot ("drive/File 1.txt").
+  // Open kFileInRoot ("drive/root/File 1.txt").
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   base::FilePath file_path;
   file_system_->OpenFile(
@@ -2071,7 +2126,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(cache_file_path, opened_file_path);
 
-  // Close kFileInRoot ("drive/File 1.txt").
+  // Close kFileInRoot ("drive/root/File 1.txt").
   file_system_->CloseFile(
       kFileInRoot,
       google_apis::test_util::CreateCopyResultCallback(&error));
