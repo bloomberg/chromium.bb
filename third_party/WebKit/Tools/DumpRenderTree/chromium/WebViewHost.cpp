@@ -409,15 +409,6 @@ WebPlugin* WebViewHost::createPlugin(WebFrame* frame, const WebPluginParams& par
     return webkit_support::CreateWebPlugin(frame, params);
 }
 
-WebMediaPlayer* WebViewHost::createMediaPlayer(WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
-{
-#if ENABLE(MEDIA_STREAM)
-    return webkit_support::CreateMediaPlayer(frame, url, client, testMediaStreamClient());
-#else
-    return webkit_support::CreateMediaPlayer(frame, url, client);
-#endif
-}
-
 WebApplicationCacheHost* WebViewHost::createApplicationCacheHost(WebFrame* frame, WebApplicationCacheHostClient* client)
 {
     return webkit_support::CreateApplicationCacheHost(frame, client);
@@ -727,6 +718,17 @@ void WebViewHost::captureHistoryForWindow(WebTestProxyBase* proxy, WebVector<Web
         if (m_shell->windowList()[i]->proxy() == proxy)
             m_shell->captureHistoryForWindow(i, history, currentEntryIndex);
     }
+}
+
+WebMediaPlayer* WebViewHost::createWebMediaPlayer(WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
+{
+    return webkit_support::CreateMediaPlayer(frame, url, client,
+#if ENABLE(MEDIA_STREAM)
+        testMediaStreamClient()
+#else
+        0
+#endif
+        );
 }
 
 // Public functions -----------------------------------------------------------
