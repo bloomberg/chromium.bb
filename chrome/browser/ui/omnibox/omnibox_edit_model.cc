@@ -93,11 +93,13 @@ enum UserTextClearedType {
 
 OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& user_text,
+                               const string16& instant_suggestion,
                                const string16& keyword,
                                bool is_keyword_hint,
                                OmniboxFocusState focus_state)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
+      instant_suggestion(instant_suggestion),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
       focus_state(focus_state) {
@@ -156,7 +158,11 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     }
   }
 
-  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
+  return State(user_input_in_progress_,
+               user_text_,
+               view_->GetInstantSuggestion(),
+               keyword_,
+               is_keyword_hint_,
                focus_state_);
 }
 
@@ -170,6 +176,7 @@ void OmniboxEditModel::RestoreState(const State& state) {
     is_keyword_hint_ = state.is_keyword_hint;
     view_->SetUserText(state.user_text,
         DisplayTextFromUserText(state.user_text), false);
+    view_->SetInstantSuggestion(state.instant_suggestion);
   }
 }
 
@@ -184,9 +191,19 @@ bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
   // doesn't have focus, we want to revert the edit to show the new URL.  (The
   // common case where the edit doesn't have focus is when the user has started
   // an edit and then abandoned it and clicked a link on the page.)
+  //
+  // If the page is auto-committing an instant suggestion, however, we generally
+  // don't want to make any change to the edit.  While auto-commits modify the
+  // underlying permanent URL, they're intended to have no effect on the user's
+  // editing process -- before and after the auto-commit, the omnibox should
+  // show the same user text and the same instant suggestion, even if the
+  // auto-commit happens while the edit doesn't have focus.
+  string16 instant_suggestion = view_->GetInstantSuggestion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
-      (!user_input_in_progress_ || !has_focus());
+      (!user_input_in_progress_ || !has_focus()) &&
+      (instant_suggestion.empty() ||
+       new_permanent_text != user_text_ + instant_suggestion);
 
   permanent_text_ = new_permanent_text;
   return visibly_changed_permanent_text;
@@ -813,8 +830,6 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT,
                                  view_gaining_focus);
   }
-
-  SetInstantSuggestion(InstantSuggestion());
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller_->StopZeroSuggest();

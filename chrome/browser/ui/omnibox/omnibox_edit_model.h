@@ -64,6 +64,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   struct State {
     State(bool user_input_in_progress,
           const string16& user_text,
+          const string16& instant_suggestion,
           const string16& keyword,
           bool is_keyword_hint,
           OmniboxFocusState focus_state);
@@ -71,6 +72,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
 
     bool user_input_in_progress;
     const string16 user_text;
+    const string16 instant_suggestion;
     const string16 keyword;
     const bool is_keyword_hint;
     OmniboxFocusState focus_state;

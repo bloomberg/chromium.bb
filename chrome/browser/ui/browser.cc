@@ -1045,7 +1045,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     ProcessPendingUIUpdates();
 
   // Propagate the profile to the location bar.
-  UpdateToolbar(true);
+  UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
 
   // Propagate tab state to toolbar, tab-strip, etc.
   UpdateSearchState(new_contents);

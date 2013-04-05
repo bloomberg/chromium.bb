@@ -142,9 +142,11 @@ void BrowserInstantController::CommitInstant(
     browser_->tab_strip_model()->AddWebContents(overlay.release(), -1,
         instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
+    content::WebContents* contents = overlay.get();
     ReplaceWebContentsAt(
         browser_->tab_strip_model()->active_index(),
         overlay.Pass());
+    browser_->window()->GetLocationBar()->SaveStateToContents(contents);
   }
 }
 

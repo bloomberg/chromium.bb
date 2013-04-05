@@ -334,24 +334,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
   // Commit the overlay by lost focus (e.g. clicking on the page).
   instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 
-  // Search term extraction should kick in with the autocompleted text.
-  EXPECT_EQ(ASCIIToUTF16("johnny depp"), omnibox()->GetText());
-
-  // Suggestion should be cleared at this point.
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+  // Omnibox text and suggestion should not be changed.
+  EXPECT_EQ(ASCIIToUTF16("johnny"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(" depp"), GetGrayText());
 }
 
 // Test that omnibox text is correctly set when clicking on committed SERP.
 // Disabled on Mac because omnibox focus loss is not working correctly.
-#if defined(OS_MACOSX)
-#define MAYBE_OmniboxTextUponFocusedCommittedSERP \
-    DISABLED_OmniboxTextUponFocusedCommittedSERP
-#else
-#define MAYBE_OmniboxTextUponFocusedCommittedSERP \
-    OmniboxTextUponFocusedCommittedSERP
-#endif
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_OmniboxTextUponFocusedCommittedSERP) {
+                       OmniboxTextUponFocusedCommittedSERP) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
@@ -377,25 +368,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                                      "handleOnChange();"));
   instant()->instant_tab()->contents()->GetView()->Focus();
 
-  // Search term extraction should kick in with the autocompleted text.
-  EXPECT_EQ(ASCIIToUTF16("hello kitty"), omnibox()->GetText());
-
-  // Suggestion should be cleared at this point.
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
+  // Omnibox text and suggestion should not be changed.
+  EXPECT_EQ(ASCIIToUTF16("hello"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(" kitty"), GetGrayText());
 }
 
 // Checks that a previous Navigation suggestion is not re-used when a search
-// suggestion comes in. Disabled on Mac because omnibox focus loss is not
-// working correctly. http://crbug.com/178520
-#if defined(OS_MACOSX)
-#define MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion \
-        DISABLED_NavigationSuggestionIsDiscardedUponSearchSuggestion
-#else
-#define MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion \
-        NavigationSuggestionIsDiscardedUponSearchSuggestion
-#endif
+// suggestion comes in.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-    MAYBE_NavigationSuggestionIsDiscardedUponSearchSuggestion) {
+                       NavigationSuggestionIsDiscardedUponSearchSuggestion) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantExtendedSupport();
@@ -408,12 +389,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Now send a search suggestion and see that Navigation suggestion is no
   // longer kept.
-  SetOmniboxText("exam");
   EXPECT_TRUE(ExecuteScript("suggestion = 'exams are great';"
-                            "behavior = 2;"
-                            "handleOnChange();"));
+                            "behavior = 2;"));
+  SetOmniboxText("exam");
+  // Wait for JavaScript to run handleOnChange by executing a blank script.
+  EXPECT_TRUE(ExecuteScript(std::string()));
+
   instant()->overlay()->contents()->GetView()->Focus();
-  EXPECT_EQ(ASCIIToUTF16("exams are great"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("exam"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("s are great"), GetGrayText());
 
   // TODO(jered): Remove this after fixing OnBlur().
   omnibox()->RevertAll();

@@ -369,8 +369,6 @@ void OmniboxViewMac::ApplyCaretVisibility() {
 }
 
 void OmniboxViewMac::SetText(const string16& display_text) {
-  // If we are setting the text directly, there cannot be any suggest text.
-  SetInstantSuggestion(string16());
   SetTextInternal(display_text);
 }
 
@@ -495,18 +493,10 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(const string16& display_text,
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
-  SetInstantSuggestion(string16());
   SetWindowTextAndCaretPos(display_text, display_text.size(), false, false);
   if (notify_text_changed)
     model()->OnChanged();
   [field_ clearUndoChain];
-}
-
-void OmniboxViewMac::OnStartingIME() {
-  // Reset the suggest text just before starting an IME composition session,
-  // otherwise the IME composition may be interrupted when the suggest text
-  // gets reset by the IME composition change.
-  SetInstantSuggestion(string16());
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -659,15 +649,6 @@ void OmniboxViewMac::OnDidEndEditing() {
 }
 
 bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
-  if (cmd != @selector(moveRight:) &&
-      cmd != @selector(insertTab:) &&
-      cmd != @selector(insertTabIgnoringFieldEditor:)) {
-    // Reset the suggest text for any change other than key right or tab.
-    // TODO(rohitrao): This is here to prevent complications when editing text.
-    // See if this can be removed.
-    SetInstantSuggestion(string16());
-  }
-
   if (cmd == @selector(deleteForward:))
     delete_was_pressed_ = true;
 
