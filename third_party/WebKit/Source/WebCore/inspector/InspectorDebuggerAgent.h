@@ -66,9 +66,7 @@ public:
 
     virtual ~InspectorDebuggerAgent();
 
-    virtual void causesRecompilation(ErrorString*, bool*);
-    virtual void canSetScriptSource(ErrorString*, bool*);
-    virtual void supportsSeparateScriptCompilationAndExecution(ErrorString*, bool*);
+    virtual void canSetScriptSource(ErrorString*, bool* result) { *result = true; }
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();

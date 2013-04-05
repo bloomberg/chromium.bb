@@ -75,9 +75,6 @@ public:
     static PassRefPtr<ScriptProfile> stopForWorkerContext(WorkerContext*, const String& title);
 #endif
     static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(const String& title, HeapSnapshotProgress*);
-    static bool causesRecompilation() { return false; }
-    static bool isSampling() { return true; }
-    static bool hasHeapProfiler() { return true; }
     static void initialize();
     static void visitNodeWrappers(WrappedNodeVisitor*);
     static void visitExternalStrings(ExternalStringVisitor*);

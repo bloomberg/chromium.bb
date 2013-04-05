@@ -34,7 +34,6 @@
 
 #include "ScopedPersistent.h"
 #include "ScriptBreakpoint.h"
-#include "Timer.h"
 #include <v8-debug.h>
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
@@ -75,15 +74,8 @@ public:
     void stepOverStatement();
     void stepOutOfFunction();
 
-    bool canSetScriptSource();
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result);
     void updateCallStack(ScriptValue* callFrame);
-
-    bool causesRecompilation() { return false; }
-    bool supportsSeparateScriptCompilationAndExecution() { return true; }
-
-    void recompileAllJSFunctionsSoon() { }
-    void recompileAllJSFunctions(Timer<ScriptDebugServer>* = 0) { }
 
     void setScriptPreprocessor(const String& preprocessorBody);
 

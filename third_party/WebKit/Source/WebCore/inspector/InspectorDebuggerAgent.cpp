@@ -111,21 +111,6 @@ bool InspectorDebuggerAgent::enabled()
     return m_state->getBoolean(DebuggerAgentState::debuggerEnabled);
 }
 
-void InspectorDebuggerAgent::causesRecompilation(ErrorString*, bool* result)
-{
-    *result = scriptDebugServer().causesRecompilation();
-}
-
-void InspectorDebuggerAgent::canSetScriptSource(ErrorString*, bool* result)
-{
-    *result = scriptDebugServer().canSetScriptSource();
-}
-
-void InspectorDebuggerAgent::supportsSeparateScriptCompilationAndExecution(ErrorString*, bool* result)
-{
-    *result = scriptDebugServer().supportsSeparateScriptCompilationAndExecution();
-}
-
 void InspectorDebuggerAgent::enable(ErrorString*)
 {
     if (enabled())

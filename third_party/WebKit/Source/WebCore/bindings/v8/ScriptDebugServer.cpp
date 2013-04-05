@@ -310,11 +310,6 @@ void ScriptDebugServer::stepOutOfFunction()
     continueProgram();
 }
 
-bool ScriptDebugServer::canSetScriptSource()
-{
-    return true;
-}
-
 bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result)
 {
     class EnableLiveEditScope {

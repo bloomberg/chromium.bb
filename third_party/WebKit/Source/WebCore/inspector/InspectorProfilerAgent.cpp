@@ -74,11 +74,6 @@ public:
     virtual ~PageProfilerAgent() { }
 
 private:
-    virtual void recompileScript()
-    {
-        PageScriptDebugServer::shared().recompileAllJSFunctionsSoon();
-    }
-
     virtual void startProfiling(const String& title)
     {
         ScriptProfiler::startForPage(m_inspectedPage, title);
@@ -105,8 +100,6 @@ public:
     virtual ~WorkerProfilerAgent() { }
 
 private:
-    virtual void recompileScript() { }
-
     virtual void startProfiling(const String& title)
     {
         ScriptProfiler::startForWorkerContext(m_workerContext, title);
@@ -196,21 +189,6 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::createS
     return header.release();
 }
 
-void InspectorProfilerAgent::causesRecompilation(ErrorString*, bool* result)
-{
-    *result = ScriptProfiler::causesRecompilation();
-}
-
-void InspectorProfilerAgent::isSampling(ErrorString*, bool* result)
-{
-    *result = ScriptProfiler::isSampling();
-}
-
-void InspectorProfilerAgent::hasHeapProfiler(ErrorString*, bool* result)
-{
-    *result = ScriptProfiler::hasHeapProfiler();
-}
-
 void InspectorProfilerAgent::enable(ErrorString*)
 {
     if (enabled())
@@ -231,7 +209,6 @@ void InspectorProfilerAgent::disable()
         return;
     m_enabled = false;
     m_state->setBoolean(ProfilerAgentState::profileHeadersRequested, false);
-    recompileScript();
 }
 
 void InspectorProfilerAgent::enable(bool skipRecompile)
@@ -239,8 +216,6 @@ void InspectorProfilerAgent::enable(bool skipRecompile)
     if (m_enabled)
         return;
     m_enabled = true;
-    if (!skipRecompile)
-        recompileScript();
 }
 
 String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool incrementProfileNumber)
@@ -378,7 +353,6 @@ void InspectorProfilerAgent::start(ErrorString*)
         return;
     if (!enabled()) {
         enable(true);
-        PageScriptDebugServer::shared().recompileAllJSFunctions(0);
     }
     m_recordingCPUProfile = true;
     String title = getCurrentUserInitiatedProfileName(true);

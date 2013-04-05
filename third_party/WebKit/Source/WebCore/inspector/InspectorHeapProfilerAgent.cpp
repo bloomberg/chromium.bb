@@ -113,11 +113,6 @@ PassRefPtr<TypeBuilder::HeapProfiler::ProfileHeader> InspectorHeapProfilerAgent:
     return header.release();
 }
 
-void InspectorHeapProfilerAgent::hasHeapProfiler(ErrorString*, bool* result)
-{
-    *result = ScriptProfiler::hasHeapProfiler();
-}
-
 void InspectorHeapProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::HeapProfiler::ProfileHeader> >& headers)
 {
     m_state->setBoolean(HeapProfilerAgentState::profileHeadersRequested, true);

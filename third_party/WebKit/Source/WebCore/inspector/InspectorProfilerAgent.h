@@ -70,11 +70,6 @@ public:
     virtual void collectGarbage(ErrorString*);
     virtual void clearProfiles(ErrorString*);
 
-    virtual void causesRecompilation(ErrorString*, bool*);
-    virtual void recompileScript() = 0;
-    virtual void isSampling(ErrorString*, bool*);
-    virtual void hasHeapProfiler(ErrorString*, bool*);
-
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void start(ErrorString* = 0);

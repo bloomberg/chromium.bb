@@ -2741,22 +2741,6 @@
         ],
         "commands": [
             {
-                "name": "causesRecompilation",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if enabling debugger causes scripts recompilation." }
-                ],
-                "hidden": true,
-                "description": "Tells whether enabling debugger causes scripts recompilation."
-            },
-            {
-                "name": "supportsSeparateScriptCompilationAndExecution",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "True if debugger supports separate script compilation and execution." }
-                ],
-                "hidden": true,
-                "description": "Tells whether debugger supports separate script compilation and execution."
-            },
-            {
                 "name": "enable",
                 "description": "Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received."
             },
@@ -2850,7 +2834,7 @@
                 "returns": [
                     { "name": "result", "type": "boolean", "description": "True if <code>setScriptSource</code> is supported." }
                 ],
-                "description": "Tells whether <code>setScriptSource</code> is supported."
+                "description": "Always returns true."
             },
             {
                 "name": "setScriptSource",
@@ -3149,24 +3133,6 @@
         ],
         "commands": [
             {
-                "name": "causesRecompilation",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
-                "name": "isSampling",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
-                "name": "hasHeapProfiler",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
-            {
                 "name": "enable"
             },
             {
@@ -3297,12 +3263,6 @@
             }
         ],
         "commands": [
-            {
-                "name": "hasHeapProfiler",
-                "returns": [
-                    { "name": "result", "type": "boolean" }
-                ]
-            },
             {
                 "name": "getProfileHeaders",
                 "returns": [
