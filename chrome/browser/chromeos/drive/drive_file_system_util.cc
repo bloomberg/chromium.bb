@@ -236,19 +236,21 @@ bool IsUnderDriveMountPoint(const base::FilePath& path) {
 }
 
 bool NeedsNamespaceMigration(const base::FilePath& path) {
-  return false;
-  // TODO(haruki): Update this along with http://crbug.com/174233.
-  //  return IsUnderDriveMountPoint(path) &&
-  //      !(GetDriveMyDriveMountPointPath() == path ||
-  //          GetDriveMyDriveMountPointPath().IsParent(path));
+  // Before migration, "My Drive" which was represented as "drive.
+  // The user might use some path pointing a directory in "My Drive".
+  // e.g. "drive/downloads_dir"
+  // We changed the path for the "My Drive" to "drive/root", hence the user pref
+  // pointing to the old path needs update to the new path.
+  // e.g. "drive/root/downloads_dir"
+  // If |path| already points to some directory in "drive/root", there's no need
+  // to update it.
+  return IsUnderDriveMountPoint(path) &&
+         !(GetDriveMyDriveMountPointPath() == path ||
+           GetDriveMyDriveMountPointPath().IsParent(path));
 }
 
 base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path) {
-  // Double check the path.
-  // TODO(haruki): Update this with DCHECK(NeedsNamespaceMigration(path)).
-  DCHECK(IsUnderDriveMountPoint(path) &&
-         !(GetDriveMyDriveMountPointPath() == path ||
-           GetDriveMyDriveMountPointPath().IsParent(path)));
+  DCHECK(NeedsNamespaceMigration(path));
 
   // Need to migrate "/special/drive(.*)" to "/special/drive/root(.*)".
   // Append the relative path from "/special/drive".

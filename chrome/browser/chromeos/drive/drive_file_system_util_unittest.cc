@@ -151,13 +151,12 @@ TEST(DriveFileSystemUtilTest, NeedsNamespaceMigration) {
   EXPECT_FALSE(NeedsNamespaceMigration(
       base::FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
 
-  // Before migration. TODO(haruki): These cases should be EXPECT_TRUE.
-  // Update this along with http://crbug.com/174233.
-  EXPECT_FALSE(NeedsNamespaceMigration(
+  // Before migration.
+  EXPECT_TRUE(NeedsNamespaceMigration(
       base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_FALSE(NeedsNamespaceMigration(
+  EXPECT_TRUE(NeedsNamespaceMigration(
       base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_FALSE(NeedsNamespaceMigration(
+  EXPECT_TRUE(NeedsNamespaceMigration(
       base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 
   // Already migrated.
