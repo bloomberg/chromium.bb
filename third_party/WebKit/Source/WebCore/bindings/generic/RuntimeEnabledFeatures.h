@@ -209,10 +209,8 @@ public:
     static void setQuotaEnabled(bool isEnabled) { isQuotaEnabled = isEnabled; }
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
     static bool mediaSourceEnabled() { return isMediaSourceEnabled; }
     static void setMediaSourceEnabled(bool isEnabled) { isMediaSourceEnabled = isEnabled; }
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
     static bool encryptedMediaEnabled() { return isEncryptedMediaEnabled; }
@@ -341,9 +339,7 @@ private:
 
     static bool isFullScreenAPIEnabled;
 
-#if ENABLE(MEDIA_SOURCE)
     static bool isMediaSourceEnabled;
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
     static bool isEncryptedMediaEnabled;

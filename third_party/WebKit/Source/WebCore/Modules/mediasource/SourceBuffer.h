@@ -31,8 +31,6 @@
 #ifndef SourceBuffer_h
 #define SourceBuffer_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "ExceptionCode.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -73,5 +71,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

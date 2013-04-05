@@ -17,7 +17,7 @@ ScriptProcessorNode conditional=WEB_AUDIO
 LocalMediaStream conditional=MEDIA_STREAM
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 MediaController conditional=VIDEO
-MediaSource conditional=MEDIA_SOURCE
+MediaSource
 MediaStream conditional=MEDIA_STREAM
 MediaStreamTrack conditional=MEDIA_STREAM
 MessagePort
@@ -30,7 +30,7 @@ RTCDTMFSender conditional=MEDIA_STREAM
 RTCPeerConnection conditional=MEDIA_STREAM
 SharedWorker conditional=SHARED_WORKERS
 SharedWorkerContext conditional=SHARED_WORKERS
-SourceBufferList conditional=MEDIA_SOURCE
+SourceBufferList
 SpeechRecognition conditional=SCRIPTED_SPEECH
 SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
 SVGElementInstance conditional=SVG

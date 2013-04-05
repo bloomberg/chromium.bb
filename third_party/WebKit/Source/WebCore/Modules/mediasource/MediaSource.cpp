@@ -31,8 +31,6 @@
 #include "config.h"
 #include "MediaSource.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "ContentType.h"
 #include "Event.h"
 #include "MIMETypeRegistry.h"
@@ -333,5 +331,3 @@ void MediaSource::scheduleEvent(const AtomicString& eventName)
 }
 
 } // namespace WebCore
-
-#endif

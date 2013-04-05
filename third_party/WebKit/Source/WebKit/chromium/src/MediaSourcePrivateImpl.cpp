@@ -31,8 +31,6 @@
 #include "config.h"
 #include "MediaSourcePrivateImpl.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "SourceBufferPrivateImpl.h"
 #include "WebMediaSourceClient.h"
 #include "WebSourceBuffer.h"
@@ -83,5 +81,3 @@ void MediaSourcePrivateImpl::endOfStream(WebCore::MediaSourcePrivate::EndOfStrea
 }
 
 }
-
-#endif

@@ -31,8 +31,6 @@
 #include "config.h"
 #include "SourceBufferList.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "Event.h"
 #include "GenericEventQueue.h"
 #include "SourceBuffer.h"
@@ -115,5 +113,3 @@ EventTargetData* SourceBufferList::ensureEventTargetData()
 }
 
 } // namespace WebCore
-
-#endif

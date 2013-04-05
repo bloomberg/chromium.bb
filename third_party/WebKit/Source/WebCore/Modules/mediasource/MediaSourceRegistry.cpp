@@ -31,8 +31,6 @@
 #include "config.h"
 #include "MediaSourceRegistry.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "KURL.h"
 #include "MediaSource.h"
 #include <wtf/MainThread.h>
@@ -76,5 +74,3 @@ MediaSource* MediaSourceRegistry::lookupMediaSource(const String& url)
 }
 
 } // namespace WebCore
-
-#endif

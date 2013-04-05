@@ -299,20 +299,16 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 void WebMediaPlayerClientImpl::load(const String& url)
 {
     m_url = KURL(ParsedURLString, url);
-#if ENABLE(MEDIA_SOURCE)
     m_mediaSource = 0;
-#endif
     loadRequested();
 }
 
-#if ENABLE(MEDIA_SOURCE)
 void WebMediaPlayerClientImpl::load(const String& url, PassRefPtr<WebCore::MediaSource> mediaSource)
 {
     m_url = KURL(ParsedURLString, url);
     m_mediaSource = mediaSource;
     loadRequested();
 }
-#endif
 
 void WebMediaPlayerClientImpl::loadRequested()
 {
@@ -348,12 +344,10 @@ void WebMediaPlayerClientImpl::loadInternal()
 #endif
 
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_mediaPlayer->mediaPlayerClient()->mediaPlayerCORSMode());
-#if ENABLE(MEDIA_SOURCE)
         if (m_mediaSource) {
             m_webMediaPlayer->load(m_url, new WebMediaSourceImpl(m_mediaSource), corsMode);
             return;
         }
-#endif
         m_webMediaPlayer->load(m_url, corsMode);
     }
 }

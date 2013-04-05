@@ -31,8 +31,6 @@
 #ifndef SourceBufferList_h
 #define SourceBufferList_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "EventTarget.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -85,5 +83,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

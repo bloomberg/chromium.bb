@@ -65,9 +65,7 @@ class AudioSourceProvider;
 class Document;
 class GStreamerGWorld;
 class MediaPlayerPrivateInterface;
-#if ENABLE(MEDIA_SOURCE)
 class MediaSource;
-#endif
 class TextTrackRepresentation;
 
 // Structure that will hold every native
@@ -273,9 +271,7 @@ public:
     void setSize(const IntSize& size);
 
     bool load(const KURL&, const ContentType&, const String& keySystem);
-#if ENABLE(MEDIA_SOURCE)
     bool load(const KURL&, PassRefPtr<MediaSource>);
-#endif
     void cancelLoad();
 
     bool visible() const;
@@ -496,9 +492,7 @@ private:
     WebMediaPlayerProxy* m_playerProxy;    // not owned or used, passed to m_private
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
     RefPtr<MediaSource> m_mediaSource;
-#endif
 };
 
 typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);

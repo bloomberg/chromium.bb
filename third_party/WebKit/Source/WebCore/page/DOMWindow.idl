@@ -792,9 +792,9 @@
     attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
     attribute MutationObserverConstructor MutationObserver;
 
-    [Conditional=MEDIA_SOURCE, V8EnabledAtRuntime=mediaSource] attribute MediaSourceConstructor WebKitMediaSource;
-    [Conditional=MEDIA_SOURCE, V8EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
-    [Conditional=MEDIA_SOURCE, V8EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
+    [V8EnabledAtRuntime=mediaSource] attribute MediaSourceConstructor WebKitMediaSource;
+    [V8EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
+    [V8EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
 
 #endif // defined(LANGUAGE_JAVASCRIPT)
 

@@ -30,8 +30,6 @@
 #ifndef MediaSourcePrivate_h
 #define MediaSourcePrivate_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include <wtf/Forward.h>
 
 namespace WebCore {
@@ -55,5 +53,4 @@ public:
 
 }
 
-#endif
 #endif

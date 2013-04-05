@@ -31,8 +31,6 @@
 #include "config.h"
 #include "SourceBufferPrivateImpl.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "WebSourceBuffer.h"
 
 namespace WebKit {
@@ -85,5 +83,3 @@ void SourceBufferPrivateImpl::removedFromMediaSource()
 }
 
 }
-
-#endif

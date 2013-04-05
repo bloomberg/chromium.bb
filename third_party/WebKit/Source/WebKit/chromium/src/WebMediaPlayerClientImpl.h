@@ -87,9 +87,8 @@ public:
 
     // MediaPlayerPrivateInterface methods:
     virtual void load(const WTF::String& url);
-#if ENABLE(MEDIA_SOURCE)
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::MediaSource>);
-#endif
+
     virtual void cancelLoad();
 #if USE(ACCELERATED_COMPOSITING)
     virtual WebKit::WebLayer* platformLayer() const;
@@ -229,9 +228,7 @@ private:
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
     RefPtr<WebCore::MediaSource> m_mediaSource;
-#endif
 };
 
 } // namespace WebKit

@@ -31,8 +31,6 @@
 #ifndef WebMediaSourceImpl_h
 #define WebMediaSourceImpl_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "MediaSource.h"
 #include "WebMediaSource.h"
 
@@ -51,7 +49,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

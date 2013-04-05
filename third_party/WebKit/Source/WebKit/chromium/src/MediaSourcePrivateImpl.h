@@ -31,8 +31,6 @@
 #ifndef MediaSourcePrivateImpl_h
 #define MediaSourcePrivateImpl_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "MediaSourcePrivate.h"
 #include <wtf/OwnPtr.h>
 
@@ -57,7 +55,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

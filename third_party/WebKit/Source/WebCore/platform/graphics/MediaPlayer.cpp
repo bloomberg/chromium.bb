@@ -36,16 +36,13 @@
 #include "Logging.h"
 #include "MIMETypeRegistry.h"
 #include "MediaPlayerPrivate.h"
+#include "MediaSource.h"
 #include "Settings.h"
 #include "TimeRanges.h"
 #include <wtf/text/CString.h>
 
 #if ENABLE(VIDEO_TRACK)
 #include "InbandTextTrackPrivate.h"
-#endif
-
-#if ENABLE(MEDIA_SOURCE)
-#include "MediaSource.h"
 #endif
 
 #if PLATFORM(QT)
@@ -95,9 +92,7 @@ public:
     NullMediaPlayerPrivate(MediaPlayer*) { }
 
     virtual void load(const String&) { }
-#if ENABLE(MEDIA_SOURCE)
     virtual void load(const String&, PassRefPtr<MediaSource>) { }
-#endif
     virtual void cancelLoad() { }
 
     virtual void prepareToPlay() { }
@@ -368,10 +363,7 @@ bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const St
     m_url = url;
     m_keySystem = keySystem.lower();
     m_contentMIMETypeWasInferredFromExtension = false;
-
-#if ENABLE(MEDIA_SOURCE)
     m_mediaSource = 0;
-#endif
 
     // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
     if (m_contentMIMEType.isEmpty() || m_contentMIMEType == applicationOctetStream() || m_contentMIMEType == textPlain()) {
@@ -395,7 +387,6 @@ bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const St
     return m_currentMediaEngine;
 }
 
-#if ENABLE(MEDIA_SOURCE)
 bool MediaPlayer::load(const KURL& url, PassRefPtr<MediaSource> mediaSource)
 {
     m_mediaSource = mediaSource;
@@ -407,7 +398,6 @@ bool MediaPlayer::load(const KURL& url, PassRefPtr<MediaSource> mediaSource)
     loadWithNextMediaEngine(0);
     return m_currentMediaEngine;
 }
-#endif
 
 void MediaPlayer::loadWithNextMediaEngine(MediaPlayerFactory* current)
 {
@@ -441,12 +431,10 @@ void MediaPlayer::loadWithNextMediaEngine(MediaPlayerFactory* current)
     }
 
     if (m_private) {
-#if ENABLE(MEDIA_SOURCE)
         if (m_mediaSource)
             m_private->load(m_url.string(), m_mediaSource);
         else
-#endif
-        m_private->load(m_url.string());
+            m_private->load(m_url.string());
     } else {
         m_private = createNullMediaPlayer(this);
         if (m_mediaPlayerClient) {

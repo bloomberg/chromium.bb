@@ -523,10 +523,6 @@
 #define ENABLE_MEDIA_CAPTURE 0
 #endif
 
-#if !defined(ENABLE_MEDIA_SOURCE)
-#define ENABLE_MEDIA_SOURCE 0
-#endif
-
 #if !defined(ENABLE_MEDIA_STATISTICS)
 #define ENABLE_MEDIA_STATISTICS 0
 #endif

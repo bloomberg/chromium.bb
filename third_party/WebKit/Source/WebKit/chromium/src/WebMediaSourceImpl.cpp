@@ -34,8 +34,6 @@
 #include "MediaSourcePrivateImpl.h"
 #include "WebMediaSourceClient.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 namespace WebKit {
 
 
@@ -56,5 +54,3 @@ void WebMediaSourceImpl::open(WebMediaSourceClient* client)
 }
 
 }
-
-#endif

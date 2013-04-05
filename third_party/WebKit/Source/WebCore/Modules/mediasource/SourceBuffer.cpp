@@ -31,8 +31,6 @@
 #include "config.h"
 #include "SourceBuffer.h"
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "MediaSource.h"
 #include "SourceBufferPrivate.h"
 #include "TimeRanges.h"
@@ -177,5 +175,3 @@ bool SourceBuffer::isEnded() const
 }
 
 } // namespace WebCore
-
-#endif

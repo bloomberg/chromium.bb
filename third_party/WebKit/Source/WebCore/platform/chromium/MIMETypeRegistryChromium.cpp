@@ -132,13 +132,11 @@ bool MIMETypeRegistry::isSupportedMediaMIMEType(const String& mimeType)
     return !mimeType.isEmpty() && supportedMediaMIMETypes.contains(mimeType);
 }
 
-#if ENABLE(MEDIA_SOURCE)
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
 {
     return !mimeType.isEmpty() && !codecs.isEmpty()
         && WebKit::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType, codecs);
 }
-#endif
 
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
 {

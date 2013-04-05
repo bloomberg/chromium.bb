@@ -45,11 +45,9 @@ public:
     virtual ~MediaPlayerPrivateInterface() { }
 
     virtual void load(const String& url) = 0;
-#if ENABLE(MEDIA_SOURCE)
     virtual void load(const String& url, PassRefPtr<MediaSource>) = 0;
-#endif
     virtual void cancelLoad() = 0;
-    
+
     virtual void prepareToPlay() { }
     virtual PlatformMedia platformMedia() const { return NoPlatformMedia; }
 #if USE(ACCELERATED_COMPOSITING)
@@ -57,7 +55,7 @@ public:
 #endif
 
     virtual void play() = 0;
-    virtual void pause() = 0;    
+    virtual void pause() = 0;
 
     virtual bool supportsFullscreen() const { return false; }
     virtual bool supportsSave() const { return false; }

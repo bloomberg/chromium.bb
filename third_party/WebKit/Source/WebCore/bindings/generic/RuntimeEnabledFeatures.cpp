@@ -167,9 +167,7 @@ bool RuntimeEnabledFeatures::isQuotaEnabled = false;
 
 bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
 
-#if ENABLE(MEDIA_SOURCE)
 bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
-#endif
 
 #if ENABLE(VIDEO_TRACK)
 #if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY) || PLATFORM(WIN)

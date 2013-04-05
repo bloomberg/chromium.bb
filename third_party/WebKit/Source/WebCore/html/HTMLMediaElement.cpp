@@ -64,6 +64,8 @@
 #include "MediaList.h"
 #include "MediaPlayer.h"
 #include "MediaQueryEvaluator.h"
+#include "MediaSource.h"
+#include "MediaSourceRegistry.h"
 #include "MouseEvent.h"
 #include "MIMETypeRegistry.h"
 #include "NodeRenderingContext.h"
@@ -115,11 +117,6 @@
 #include "DisplaySleepDisabler.h"
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
-#include "MediaSource.h"
-#include "MediaSourceRegistry.h"
-#endif
-
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStreamRegistry.h"
 #endif
@@ -165,10 +162,8 @@ static const char* boolString(bool val)
 #define LOG_CACHED_TIME_WARNINGS 0
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
 // URL protocol used to signal that the media source API is being used.
 static const char* mediaSourceBlobProtocol = "blob";
-#endif
 
 using namespace HTMLNames;
 using namespace std;
@@ -339,9 +334,7 @@ HTMLMediaElement::~HTMLMediaElement()
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     setMediaKeys(0);
@@ -750,9 +743,7 @@ void HTMLMediaElement::prepareForLoad()
     if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
         scheduleEvent(eventNames().abortEvent);
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
 #if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     createMediaPlayer();
@@ -991,7 +982,6 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
         m_muted = true;
     updateVolume();
 
-#if ENABLE(MEDIA_SOURCE)
     ASSERT(!m_mediaSource);
 
     if (url.protocolIs(mediaSourceBlobProtocol))
@@ -1000,10 +990,9 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     if (m_mediaSource) {
         if (!m_player->load(url, m_mediaSource))
             mediaLoadingFailed(MediaPlayer::FormatError);
-    } else
-#endif
-    if (!m_player->load(url, contentType, keySystem))
+    } else if (!m_player->load(url, contentType, keySystem)) {
         mediaLoadingFailed(MediaPlayer::FormatError);
+    }
 
     // If there is no poster to display, allow the media engine to render video frames as soon as
     // they are available.
@@ -1490,9 +1479,7 @@ void HTMLMediaElement::noneSupported()
     // 7 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().errorEvent);
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
     // 8 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1521,9 +1508,7 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().errorEvent);
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
     // 4 - Set the element's networkState attribute to the NETWORK_EMPTY value and queue a
     // task to fire a simple event called emptied at the element.
@@ -2029,12 +2014,10 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
     // cancel poster display.
     bool noSeekRequired = !seekableRanges->length() || (time == now && displayMode() != Poster);
 
-#if ENABLE(MEDIA_SOURCE)
     // Always notify the media engine of a seek if the source is not closed. This ensures that the source is
     // always in a flushed state when the 'seeking' event fires.
     if (m_mediaSource && m_mediaSource->readyState() != MediaSource::closedKeyword())
         noSeekRequired = false;
-#endif
 
     if (noSeekRequired) {
         if (time == now) {
@@ -2396,7 +2379,6 @@ void HTMLMediaElement::pauseInternal()
     updatePlayState();
 }
 
-#if ENABLE(MEDIA_SOURCE)
 void HTMLMediaElement::setSourceState(const String& state)
 {
     if (!m_mediaSource)
@@ -2406,7 +2388,6 @@ void HTMLMediaElement::setSourceState(const String& state)
     if (state == MediaSource::closedKeyword())
         m_mediaSource = 0;
 }
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
@@ -3808,9 +3789,7 @@ void HTMLMediaElement::userCancelledLoad()
     // 3 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(eventNames().abortEvent);
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
     // 4 - If the media element's readyState attribute has a value equal to HAVE_NOTHING, set the 
     // element's networkState attribute to the NETWORK_EMPTY value and queue a task to fire a 
@@ -3853,9 +3832,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
 #if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 
-#if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
-#endif
 
     m_player.clear();
 #endif
@@ -4445,10 +4422,8 @@ void HTMLMediaElement::createMediaPlayer()
         m_audioSourceNode->lock();
 #endif
 
-#if ENABLE(MEDIA_SOURCE)
     if (m_mediaSource)
         m_mediaSource->setReadyState(MediaSource::closedKeyword());
-#endif
 
     m_player = MediaPlayer::create(this);
 
@@ -4791,9 +4766,7 @@ void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     info.addMember(m_proxyWidget, "proxyWidget");
 #endif
-#if ENABLE(MEDIA_SOURCE)
     info.addMember(m_mediaSource, "mediaSource");
-#endif
 #if ENABLE(VIDEO_TRACK)
     info.addMember(m_textTracks, "textTracks");
     info.addMember(m_textTracksWhenResourceSelectionBegan, "textTracksWhenResourceSelectionBegan");

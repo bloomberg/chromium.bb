@@ -379,20 +379,12 @@ bool WebRuntimeFeatures::isFullScreenAPIEnabled()
 
 void WebRuntimeFeatures::enableMediaSource(bool enable)
 {
-#if ENABLE(MEDIA_SOURCE)
     RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isMediaSourceEnabled()
 {
-#if ENABLE(MEDIA_SOURCE)
     return RuntimeEnabledFeatures::mediaSourceEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)

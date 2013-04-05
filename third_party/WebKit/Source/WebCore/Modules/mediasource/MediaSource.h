@@ -31,8 +31,6 @@
 #ifndef MediaSource_h
 #define MediaSource_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "ActiveDOMObject.h"
 #include "GenericEventQueue.h"
 #include "MediaSourcePrivate.h"
@@ -99,5 +97,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

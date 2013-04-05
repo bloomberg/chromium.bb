@@ -30,8 +30,6 @@
 #ifndef SourceBufferPrivate_h
 #define SourceBufferPrivate_h
 
-#if ENABLE(MEDIA_SOURCE)
-
 #include "TimeRanges.h"
 
 namespace WebCore {
@@ -50,5 +48,4 @@ public:
 
 }
 
-#endif
 #endif

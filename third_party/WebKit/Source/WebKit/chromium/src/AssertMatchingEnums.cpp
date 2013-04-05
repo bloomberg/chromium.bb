@@ -62,9 +62,7 @@
 #include "IDBMetadata.h"
 #include "IconURL.h"
 #include "MediaPlayer.h"
-#if ENABLE(MEDIA_SOURCE)
 #include "MediaSourcePrivate.h"
-#endif
 #include "MediaStreamSource.h"
 #include "NotificationClient.h"
 #include "PageVisibilityState.h"
@@ -411,7 +409,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadNone, MediaPlayer::None);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadMetaData, MediaPlayer::MetaData);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadAuto, MediaPlayer::Auto);
 
-#if ENABLE(MEDIA_SOURCE)
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusOk, MediaSourcePrivate::Ok);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusNotSupported, MediaSourcePrivate::NotSupported);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusReachedIdLimit, MediaSourcePrivate::ReachedIdLimit);
@@ -419,7 +416,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::AddStatusReachedIdLimit, Medi
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusNoError, MediaSourcePrivate::EosNoError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusNetworkError, MediaSourcePrivate::EosNetworkError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaSourceClient::EndOfStreamStatusDecodeError, MediaSourcePrivate::EosDecodeError);
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::MediaKeyExceptionNoError, MediaPlayer::NoError);
