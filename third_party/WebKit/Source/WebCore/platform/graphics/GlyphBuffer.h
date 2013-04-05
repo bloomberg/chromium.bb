@@ -39,11 +39,11 @@
 #include <CoreGraphics/CGGeometry.h>
 #endif
 
-#if OS(DARWIN) && (PLATFORM(WX) || PLATFORM(CHROMIUM))
+#if OS(DARWIN) && PLATFORM(CHROMIUM)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#if USE(CAIRO) || (PLATFORM(WX) && defined(wxUSE_CAIRO) && wxUSE_CAIRO)
+#if USE(CAIRO)
 #include <cairo.h>
 #endif
 
@@ -51,7 +51,7 @@ namespace WebCore {
 
 class SimpleFontData;
 
-#if USE(CAIRO) || (PLATFORM(WX) && defined(wxUSE_CAIRO) && wxUSE_CAIRO)
+#if USE(CAIRO)
 // FIXME: Why does Cairo use such a huge struct instead of just an offset into an array?
 typedef cairo_glyph_t GlyphBufferGlyph;
 #elif OS(WINCE)
@@ -64,7 +64,7 @@ typedef Glyph GlyphBufferGlyph;
 
 // CG uses CGSize instead of FloatSize so that the result of advances()
 // can be passed directly to CGContextShowGlyphsWithAdvances in FontMac.mm
-#if USE(CG) || (OS(DARWIN) && (PLATFORM(WX) || PLATFORM(CHROMIUM)))
+#if USE(CG) || (OS(DARWIN) && PLATFORM(CHROMIUM))
 struct GlyphBufferAdvance : CGSize {
 public:
     GlyphBufferAdvance(CGSize size) : CGSize(size)
@@ -131,7 +131,7 @@ public:
     
     Glyph glyphAt(int index) const
     {
-#if USE(CAIRO) || (PLATFORM(WX) && defined(wxUSE_CAIRO) && wxUSE_CAIRO)
+#if USE(CAIRO)
         return m_glyphs[index].index;
 #else
         return m_glyphs[index];
@@ -157,7 +157,7 @@ public:
     {
         m_fontData.append(font);
 
-#if USE(CAIRO) || (PLATFORM(WX) && defined(wxUSE_CAIRO) && wxUSE_CAIRO)
+#if USE(CAIRO)
         cairo_glyph_t cairoGlyph;
         cairoGlyph.index = glyph;
         m_glyphs.append(cairoGlyph);
@@ -165,7 +165,7 @@ public:
         m_glyphs.append(glyph);
 #endif
 
-#if USE(CG) || (OS(DARWIN) && (PLATFORM(WX) || PLATFORM(CHROMIUM)))
+#if USE(CG) || (OS(DARWIN) && PLATFORM(CHROMIUM))
         CGSize advance = { width, 0 };
         m_advances.append(advance);
 #elif OS(WINCE)
@@ -190,7 +190,7 @@ public:
     void add(Glyph glyph, const SimpleFontData* font, GlyphBufferAdvance advance)
     {
         m_fontData.append(font);
-#if USE(CAIRO) || (PLATFORM(WX) && defined(wxUSE_CAIRO) && wxUSE_CAIRO)
+#if USE(CAIRO)
         cairo_glyph_t cairoGlyph;
         cairoGlyph.index = glyph;
         m_glyphs.append(cairoGlyph);
