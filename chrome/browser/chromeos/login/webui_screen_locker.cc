@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -67,6 +68,9 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   OnWindowCreated();
   LoadURL(GURL(kLoginURL));
   lock_window->Grab();
+
+  // Subscribe to crash events.
+  content::WebContentsObserver::Observe(GetWebContents());
 
   // User list consisting of a single logged-in user.
   UserList users(1, chromeos::UserManager::Get()->GetLoggedInUser());
@@ -301,6 +305,14 @@ void WebUIScreenLocker::SystemResumed(const base::TimeDelta& sleep_duration) {
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
+}
+
+void WebUIScreenLocker::RenderViewGone(base::TerminationStatus status) {
+  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID &&
+      status != base::TERMINATION_STATUS_NORMAL_TERMINATION) {
+    LOG(ERROR) << "Renderer crash on lock screen";
+    Signout();
+  }
 }
 
 }  // namespace chromeos
