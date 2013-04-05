@@ -766,6 +766,15 @@ WebInspector.HeapSnapshotProfileType = function()
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
 
 WebInspector.HeapSnapshotProfileType.prototype = {
+    /**
+     * @override
+     * @return {string}
+     */
+    fileExtension: function()
+    {
+        return ".heapsnapshot";
+    },
+
     get buttonTooltip()
     {
         return WebInspector.UIString("Take heap snapshot.");
@@ -1089,7 +1098,7 @@ WebInspector.HeapProfileHeader.prototype = {
             HeapProfilerAgent.getHeapSnapshot(this.uid);
         }
         this._savingToFile = true;
-        this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + ".heapsnapshot";
+        this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
         fileOutputStream.open(this._fileName, onOpen.bind(this));
     },
 

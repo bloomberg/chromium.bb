@@ -65,9 +65,8 @@ InspectorTest.showProfileWhenAdded = function(title)
 
 InspectorTest._profileHeaderAdded = function(profile)
 {
-    if (InspectorTest._showProfileWhenAdded === profile.title) {
+    if (InspectorTest._showProfileWhenAdded === profile.title)
         WebInspector.panels.profiles._showProfile(profile);
-    }
 };
 
 InspectorTest.waitUntilProfileViewIsShown = function(title, callback)
@@ -75,7 +74,7 @@ InspectorTest.waitUntilProfileViewIsShown = function(title, callback)
     callback = InspectorTest.safeWrap(callback);
 
     var profilesPanel = WebInspector.panels.profiles;
-    if (profilesPanel.visibleView && profilesPanel.visibleView.profile && profilesPanel.visibleView.profile.title === title)
+    if (profilesPanel.visibleView && profilesPanel.visibleView.profile && profilesPanel.visibleView.profileHeader.title === title)
         callback(profilesPanel.visibleView);
     else
         InspectorTest._waitUntilProfileViewIsShownCallback = { title: title, callback: callback };
@@ -84,7 +83,7 @@ InspectorTest.waitUntilProfileViewIsShown = function(title, callback)
 InspectorTest._profileViewRefresh = function()
 {
     // Called in the context of ProfileView.
-    if (InspectorTest._waitUntilProfileViewIsShownCallback && InspectorTest._waitUntilProfileViewIsShownCallback.title === this.profile.title) {
+    if (InspectorTest._waitUntilProfileViewIsShownCallback && InspectorTest._waitUntilProfileViewIsShownCallback.title === this.profileHeader.title) {
         var callback = InspectorTest._waitUntilProfileViewIsShownCallback;
         delete InspectorTest._waitUntilProfileViewIsShownCallback;
         callback.callback(this);

@@ -50,6 +50,14 @@ WebInspector.ProfileType.Events = {
 }
 
 WebInspector.ProfileType.prototype = {
+    /**
+     * @return {string|null}
+     */
+    fileExtension: function()
+    {
+        return null;
+    },
+
     get statusBarItems()
     {
         return [];
@@ -441,17 +449,39 @@ WebInspector.ProfilesPanel.prototype = {
         return new WebInspector.ProfileLauncherView(this);
     },
 
+    _findProfileTypeByExtension: function(fileName)
+    {
+        for (var id in this._profileTypesByIdMap) {
+            var type = this._profileTypesByIdMap[id];
+            var extension = type.fileExtension();
+            if (!extension)
+                continue;
+            if (fileName.endsWith(type.fileExtension()))
+                return type;
+        }
+        return null;
+    },
+
     /**
      * @param {!File} file
      */
     _loadFromFile: function(file)
     {
-        if (!file.name.endsWith(".heapsnapshot")) {
-            WebInspector.log(WebInspector.UIString("Only heap snapshots from files with extension '.heapsnapshot' can be loaded."));
+        this._createFileSelectorElement();
+
+        var profileType = this._findProfileTypeByExtension(file.name);
+        if (!profileType) {
+            var extensions = [];
+            for (var id in this._profileTypesByIdMap) {
+                var extension = this._profileTypesByIdMap[id].fileExtension();
+                if (!extension)
+                    continue;
+                extensions.push(extension);
+            }
+            WebInspector.log(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
             return;
         }
 
-        var profileType = this.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
         if (!!profileType.findTemporaryProfile()) {
             WebInspector.log(WebInspector.UIString("Can't load profile when other profile is recording."));
             return;
@@ -459,10 +489,8 @@ WebInspector.ProfilesPanel.prototype = {
 
         var temporaryProfile = profileType.createTemporaryProfile(WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName + "." + file.name);
         profileType.addProfile(temporaryProfile);
-
         temporaryProfile._fromFile = true;
         temporaryProfile.loadFromFile(file);
-        this._createFileSelectorElement();
     },
 
     get statusBarItems()
@@ -631,7 +659,7 @@ WebInspector.ProfilesPanel.prototype = {
             var contextMenu = new WebInspector.ContextMenu(event);
             if (this.visibleView instanceof WebInspector.HeapSnapshotView)
                 this.visibleView.populateContextMenu(contextMenu, event);
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Load heap snapshot\u2026" : "Load Heap Snapshot\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
+            contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
             contextMenu.show();
         }
 
@@ -1298,14 +1326,10 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
         var profile = this.profile;
         var contextMenu = new WebInspector.ContextMenu(event);
         // FIXME: use context menu provider
-        if (profile.canSaveToFile()) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save heap snapshot\u2026" : "Save Heap Snapshot\u2026"), profile.saveToFile.bind(profile));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Load heap snapshot\u2026" : "Load Heap Snapshot\u2026"), panel._fileSelectorElement.click.bind(panel._fileSelectorElement));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete heap snapshot" : "Delete Heap Snapshot"), this.ondelete.bind(this));
-        } else {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Load heap snapshot\u2026" : "Load Heap Snapshot\u2026"), panel._fileSelectorElement.click.bind(panel._fileSelectorElement));
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete profile" : "Delete Profile"), this.ondelete.bind(this));
-        }
+        contextMenu.appendItem(WebInspector.UIString("Load\u2026"), panel._fileSelectorElement.click.bind(panel._fileSelectorElement));
+        if (profile.canSaveToFile())
+            contextMenu.appendItem(WebInspector.UIString("Save\u2026"), profile.saveToFile.bind(profile));
+        contextMenu.appendItem(WebInspector.UIString("Delete"), this.ondelete.bind(this));
         contextMenu.show();
     },
 

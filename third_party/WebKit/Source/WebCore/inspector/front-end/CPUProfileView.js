@@ -26,9 +26,9 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.CPUProfileHeader} profile
+ * @param {WebInspector.CPUProfileHeader} profileHeader
  */
-WebInspector.CPUProfileView = function(profile)
+WebInspector.CPUProfileView = function(profileHeader)
 {
     WebInspector.View.call(this);
 
@@ -86,11 +86,14 @@ WebInspector.CPUProfileView = function(profile)
     this.resetButton.addEventListener("click", this._resetClicked, this);
 
     this.profileHead = /** @type {?ProfilerAgent.CPUProfileNode} */ (null);
-    this.profile = profile;
+    this.profileHeader = profileHeader;
 
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
-    ProfilerAgent.getCPUProfile(this.profile.uid, this._getCPUProfileCallback.bind(this));
+    if (this.profileHeader._profile) // If the profile has been loaded from file then use it.
+        this._processProfileData(this.profileHeader._profile);
+    else
+        ProfilerAgent.getCPUProfile(this.profileHeader.uid, this._getCPUProfileCallback.bind(this));
 }
 
 WebInspector.CPUProfileView._TypeTree = "Tree";
@@ -121,6 +124,12 @@ WebInspector.CPUProfileView.prototype = {
             // Profiling was tentatively terminated with the "Clear all profiles." button.
             return;
         }
+
+        this._processProfileData(profile);
+    },
+
+    _processProfileData: function(profile)
+    {
         this.profileHead = profile.head;
         this.samples = profile.samples;
 
@@ -405,7 +414,7 @@ WebInspector.CPUProfileView.prototype = {
 
     _changeView: function()
     {
-        if (!this.profile)
+        if (!this.profileHeader)
             return;
 
         switch (this.viewSelectComboBox.selectedOption().value) {
@@ -621,6 +630,15 @@ WebInspector.CPUProfileType = function()
 WebInspector.CPUProfileType.TypeId = "CPU";
 
 WebInspector.CPUProfileType.prototype = {
+    /**
+     * @override
+     * @return {string}
+     */
+    fileExtension: function()
+    {
+        return ".cpuprofile";
+    },
+
     get buttonTooltip()
     {
         return this._recording ? WebInspector.UIString("Stop CPU profiling.") : WebInspector.UIString("Start CPU profiling.");
@@ -758,6 +776,8 @@ WebInspector.CPUProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
+ * @implements {WebInspector.OutputStream}
+ * @implements {WebInspector.OutputStreamDelegate}
  * @param {!WebInspector.CPUProfileType} type
  * @param {string} title
  * @param {number=} uid
@@ -768,6 +788,59 @@ WebInspector.CPUProfileHeader = function(type, title, uid)
 }
 
 WebInspector.CPUProfileHeader.prototype = {
+    onTransferStarted: function()
+    {
+        this._jsonifiedProfile = "";
+        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026 %s", Number.bytesToString(this._jsonifiedProfile.length));
+    },
+
+    /**
+     * @param {WebInspector.ChunkedReader} reader
+     */
+    onChunkTransferred: function(reader)
+    {
+        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026 %d\%", Number.bytesToString(this._jsonifiedProfile.length));
+    },
+
+    onTransferFinished: function()
+    {
+
+        this.sidebarElement.subtitle = WebInspector.UIString("Parsing\u2026");
+        this._profile = JSON.parse(this._jsonifiedProfile);
+        this._jsonifiedProfile = null;
+        this.sidebarElement.subtitle = WebInspector.UIString("Loaded");
+        this.isTemporary = false;
+    },
+
+    /**
+     * @param {WebInspector.ChunkedReader} reader
+     */
+    onError: function(reader, e)
+    {
+        switch(e.target.error.code) {
+        case e.target.error.NOT_FOUND_ERR:
+            this.sidebarElement.subtitle = WebInspector.UIString("'%s' not found.", reader.fileName());
+        break;
+        case e.target.error.NOT_READABLE_ERR:
+            this.sidebarElement.subtitle = WebInspector.UIString("'%s' is not readable", reader.fileName());
+        break;
+        case e.target.error.ABORT_ERR:
+            break;
+        default:
+            this.sidebarElement.subtitle = WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code);
+        }
+    },
+
+    /**
+     * @param {string} text
+     */
+    write: function(text)
+    {
+        this._jsonifiedProfile += text;
+    },
+
+    close: function() { },
+
     /**
      * @override
      */
@@ -783,6 +856,61 @@ WebInspector.CPUProfileHeader.prototype = {
     createView: function(profilesPanel)
     {
         return new WebInspector.CPUProfileView(this);
+    },
+
+    /**
+     * @override
+     * @return {boolean}
+     */
+    canSaveToFile: function()
+    {
+        return true;
+    },
+
+    saveToFile: function()
+    {
+        var fileOutputStream = new WebInspector.FileOutputStream();
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {ProfilerAgent.CPUProfile} profile
+         */
+        function getCPUProfileCallback(error, profile)
+        {
+            if (error) {
+                fileOutputStream.close();
+                return;
+            }
+
+            if (!profile.head) {
+                // Profiling was tentatively terminated with the "Clear all profiles." button.
+                fileOutputStream.close();
+                return;
+            }
+
+            fileOutputStream.write(JSON.stringify(profile), fileOutputStream.close.bind(fileOutputStream));
+        }
+
+        function onOpen()
+        {
+            ProfilerAgent.getCPUProfile(this.uid, getCPUProfileCallback.bind(this));
+        }
+
+        this._fileName = this._fileName || "CPU-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
+        fileOutputStream.open(this._fileName, onOpen.bind(this));
+    },
+
+    /**
+     * @param {File} file
+     */
+    loadFromFile: function(file)
+    {
+        this.title = file.name;
+        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
+        this.sidebarElement.wait = true;
+
+        var fileReader = new WebInspector.ChunkedFileReader(file, 10000000, this);
+        fileReader.start(this);
     },
 
     __proto__: WebInspector.ProfileHeader.prototype
