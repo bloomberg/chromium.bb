@@ -28,7 +28,6 @@
 #include "HTMLMediaElement.h"
 
 #include "ApplicationCacheHost.h"
-#include "ApplicationCacheResource.h"
 #include "Attribute.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -942,27 +941,6 @@ void HTMLMediaElement::loadNextSourceChild()
     loadResource(mediaURL, contentType, keySystem);
 }
 
-#if !PLATFORM(CHROMIUM)
-static KURL createFileURLForApplicationCacheResource(const String& path)
-{
-    // KURL should have a function to create a url from a path, but it does not. This function
-    // is not suitable because KURL::setPath uses encodeWithURLEscapeSequences, which it notes
-    // does not correctly escape '#' and '?'. This function works for our purposes because
-    // app cache media files are always created with encodeForFileName(createCanonicalUUIDString()).
-
-#if USE(CF) && PLATFORM(WIN)
-    RetainPtr<CFURLRef> cfURL(AdoptCF, CFURLCreateWithFileSystemPath(0, path.createCFString().get(), kCFURLWindowsPathStyle, false));
-    KURL url(cfURL.get());
-#else
-    KURL url;
-
-    url.setProtocol(ASCIILiteral("file"));
-    url.setPath(path);
-#endif
-    return url;
-}
-#endif
-
 void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& contentType, const String& keySystem)
 {
     ASSERT(isSafeToLoadURL(initialURL, Complain));
@@ -984,31 +962,9 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     // The resource fetch algorithm 
     m_networkState = NETWORK_LOADING;
 
-#if !PLATFORM(CHROMIUM)
-    // If the url should be loaded from the application cache, pass the url of the cached file
-    // to the media engine.
-    ApplicationCacheHost* cacheHost = frame->loader()->documentLoader()->applicationCacheHost();
-    ApplicationCacheResource* resource = 0;
-    if (cacheHost && cacheHost->shouldLoadResourceFromApplicationCache(ResourceRequest(url), resource)) {
-        // Resources that are not present in the manifest will always fail to load (at least, after the
-        // cache has been primed the first time), making the testing of offline applications simpler.
-        if (!resource || resource->path().isEmpty()) {
-            mediaLoadingFailed(MediaPlayer::NetworkError);
-            return;
-        }
-    }
-#endif
-
     // Set m_currentSrc *before* changing to the cache url, the fact that we are loading from the app
     // cache is an internal detail not exposed through the media element API.
     m_currentSrc = url;
-
-#if !PLATFORM(CHROMIUM)
-    if (resource) {
-        url = createFileURLForApplicationCacheResource(resource->path());
-        LOG(Media, "HTMLMediaElement::loadResource - will load from app cache -> %s", urlForLoggingMedia(url).utf8().data());
-    }
-#endif
 
     LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 

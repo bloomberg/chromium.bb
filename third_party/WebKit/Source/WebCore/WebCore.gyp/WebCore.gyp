@@ -2105,7 +2105,6 @@
         ['exclude', 'inspector/InspectorFrontendClientLocal\\.cpp$'],
         ['exclude', 'inspector/JavaScript[^/]*\\.cpp$'],
         ['exclude', 'loader/UserStyleSheetLoader\\.cpp$'],
-        ['exclude', 'loader/appcache/'],
         ['exclude', 'loader/icon/IconDatabase\\.cpp$'],
         ['exclude', 'storage/StorageAreaImpl\\.(cpp|h)$'],
         ['exclude', 'storage/StorageAreaSync\\.(cpp|h)$'],
@@ -2120,9 +2119,6 @@
         ['exclude', 'storage/StorageTrackerClient\\.h$'],
         ['exclude', 'workers/SharedWorkerRepository\\.cpp$'],
         ['exclude', 'workers/DefaultSharedWorkerRepository\\.(cpp|h)$'],
-
-        ['include', 'loader/appcache/ApplicationCacheHost\.h$'],
-        ['include', 'loader/appcache/DOMApplicationCache\.(cpp|h)$'],
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
