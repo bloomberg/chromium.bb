@@ -194,8 +194,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnGetTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
                                     OnCreateVideoDecoder)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyVideoDecoder,
-                        OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
                         OnSetSurfaceVisible)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DiscardBackbuffer,
@@ -744,13 +742,8 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
   int decoder_route_id = channel_->GenerateRouteID();
   GpuVideoDecodeAccelerator* decoder =
       new GpuVideoDecodeAccelerator(decoder_route_id, this);
-  video_decoders_.AddWithID(decoder, decoder_route_id);
+  video_decoders_.push_back(decoder);
   decoder->Initialize(profile, reply_message);
-}
-
-void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyVideoDecoder");
-  video_decoders_.Remove(decoder_route_id);
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {

@@ -531,12 +531,10 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
                            uint32 /* size */)
 
 // Create and initialize a hardware video decoder, returning its new route_id.
+// Created decoders should be freed with AcceleratedVideoDecoderMsg_Destroy when
+// no longer needed.
 IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
                            media::VideoCodecProfile /* profile */,
-                           int /* route_id */)
-
-// Release all resources held by the named hardware video decoder.
-IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_DestroyVideoDecoder,
                            int /* route_id */)
 
 // Tells the proxy that there was an error and the command buffer had to be

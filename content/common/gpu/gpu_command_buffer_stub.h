@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/id_map.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
@@ -159,7 +159,6 @@ class GpuCommandBufferStub
   void OnCreateVideoDecoder(
       media::VideoCodecProfile profile,
       IPC::Message* reply_message);
-  void OnDestroyVideoDecoder(int32 decoder_route_id);
 
   void OnSetSurfaceVisible(bool visible);
 
@@ -228,9 +227,9 @@ class GpuCommandBufferStub
 
   GpuWatchdog* watchdog_;
 
-  // Zero or more video decoders owned by this stub, keyed by their
-  // decoder_route_id.
-  IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
+  // Zero or more video decoders owned by this stub.  Only used for lifecycle
+  // management (so the order within the vector is irrelevant).
+  ScopedVector<GpuVideoDecodeAccelerator> video_decoders_;
 
   ObserverList<DestructionObserver> destruction_observers_;
 
