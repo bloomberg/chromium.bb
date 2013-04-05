@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/ime/xkeyboard.h"
@@ -97,7 +96,7 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kNaturalScroll,
       CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kNaturalScrollDefault),
+          switches::kNaturalScrollDefault),
       PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                                 false,
@@ -792,7 +791,7 @@ void Preferences::OnIsSyncingChanged() {
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kNaturalScrollDefault) &&
+          switches::kNaturalScrollDefault) &&
       prefs_->IsSyncing() &&
       !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
     DVLOG(1) << "Natural scroll forced to true";

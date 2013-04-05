@@ -21,7 +21,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -75,7 +74,7 @@ class LoginUserTest : public LoginTestBase {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kLoginUser, "TestUser@gmail.com");
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-    command_line->AppendSwitch(::switches::kNoFirstRun);
+    command_line->AppendSwitch(switches::kNoFirstRun);
   }
 };
 
@@ -83,9 +82,9 @@ class LoginGuestTest : public LoginTestBase {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kGuestSession);
-    command_line->AppendSwitch(::switches::kIncognito);
+    command_line->AppendSwitch(switches::kIncognito);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-    command_line->AppendSwitch(::switches::kNoFirstRun);
+    command_line->AppendSwitch(switches::kNoFirstRun);
   }
 };
 

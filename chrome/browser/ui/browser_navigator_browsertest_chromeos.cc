@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -26,8 +25,7 @@ class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     CommandLine command_line_copy = *command_line;
-    command_line_copy.AppendSwitchASCII(
-        chromeos::switches::kLoginProfile, "user");
+    command_line_copy.AppendSwitchASCII(switches::kLoginProfile, "user");
     chromeos::GetOffTheRecordCommandLine(GetGoogleURL(),
                                          command_line_copy,
                                          command_line);

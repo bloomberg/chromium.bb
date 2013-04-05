@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "net/base/escape.h"
@@ -110,7 +109,7 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     bool in_guest_mode = GetParam();
     if (in_guest_mode) {
-      command_line->AppendSwitch(chromeos::switches::kGuestSession);
+      command_line->AppendSwitch(switches::kGuestSession);
       command_line->AppendSwitch(switches::kIncognito);
     }
     ExtensionApiTest::SetUpCommandLine(command_line);

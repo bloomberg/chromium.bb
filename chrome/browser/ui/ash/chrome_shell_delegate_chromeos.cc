@@ -40,7 +40,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -55,8 +54,7 @@ bool ChromeShellDelegate::IsUserLoggedIn() const {
   // workstation) and not running as login-manager, pretend like we're always
   // logged in.
   if (!base::chromeos::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kLoginManager)) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
     return true;
   }
 
@@ -69,13 +67,11 @@ bool ChromeShellDelegate::IsSessionStarted() const {
 }
 
 bool ChromeShellDelegate::IsGuestSession() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kGuestSession);
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
 }
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kFirstBoot);
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot);
 }
 
 bool ChromeShellDelegate::CanLockScreen() const {

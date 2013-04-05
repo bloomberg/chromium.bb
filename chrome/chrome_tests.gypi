@@ -361,9 +361,6 @@
           ],
         }],
         ['chromeos==1', {
-          'dependencies': [
-            '../chromeos/chromeos.gyp:chromeos',
-          ],
           'sources': [
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
             'browser/chromeos/cros/cros_in_process_browser_test.h',

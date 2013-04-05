@@ -159,7 +159,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 // TODO(port): several win-only methods have been pulled out of this, but
@@ -320,7 +319,7 @@ PrefService* InitializeLocalState(
   }
 
 #if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(chromeos::switches::kLoginManager)) {
+  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     std::string owner_locale = local_state->GetString(prefs::kOwnerLocale);
     // Ensure that we start with owner's locale.
     if (!owner_locale.empty() &&

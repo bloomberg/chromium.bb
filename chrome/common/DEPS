@@ -2,7 +2,6 @@ include_rules = [
   "+apps/app_shim",  # For app shim messages.
   "+breakpad",  # For Breakpad constants.
   "+chrome/plugin",  # For checking whether we're a plugin process.
-  "+chromeos",  # For chromeos_switches.h
   "+components/autofill/common",
   "+device/bluetooth",  # For BluetoothDevicePermission
   "+device/media_transfer_protocol",  # For MediaTransferProtocolManager

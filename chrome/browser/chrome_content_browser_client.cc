@@ -134,7 +134,6 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chromeos/chromeos_switches.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -1108,11 +1107,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #if defined(OS_CHROMEOS)
     const std::string& login_profile =
-        browser_command_line.GetSwitchValueASCII(
-            chromeos::switches::kLoginProfile);
+        browser_command_line.GetSwitchValueASCII(switches::kLoginProfile);
     if (!login_profile.empty())
-      command_line->AppendSwitchASCII(
-          chromeos::switches::kLoginProfile, login_profile);
+      command_line->AppendSwitchASCII(switches::kLoginProfile, login_profile);
 #endif
 
     content::RenderProcessHost* process =
@@ -1220,9 +1217,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kPluginProcess) {
     static const char* const kSwitchNames[] = {
-#if defined(OS_CHROMEOS)
-      chromeos::switches::kLoginProfile,
-#endif
+  #if defined(OS_CHROMEOS)
+      switches::kLoginProfile,
+  #endif
       switches::kMemoryProfiling,
       switches::kSilentDumpOnDCHECK,
       switches::kUserDataDir,

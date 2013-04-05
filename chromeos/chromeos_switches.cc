@@ -28,52 +28,19 @@ const char kEnableNewNetworkChangeNotifier[] =
 const char kEnableOOBEBlockingUpdate[] =
     "enable-oobe-blocking-update";
 
+// Enables usage of the new ManagedNetworkConfigurationHandler and
+// NetworkConfigurationHandler singletons.
+const char kUseNewNetworkConfigurationHandlers[] =
+    "use-new-network-configuration-handlers";
+
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
 
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
 
-// Passed to Chrome on first boot. Not passed on restart after sign out.
-const char kFirstBoot[]                     = "first-boot";
-
-// Usually in browser tests the usual login manager bringup is skipped so that
-// tests can change how it's brought up. This flag disables that.
-const char kForceLoginManagerInTests[]      = "force-login-manager-in-tests";
-
-// Indicates that the browser is in "browse without sign-in" (Guest session)
-// mode. Should completely disable extensions, sync and bookmarks.
-const char kGuestSession[]                  = "bwsi";
-
-// Enables Chrome-as-a-login-manager behavior.
-const char kLoginManager[]                  = "login-manager";
-
-// Specifies a password to be used to login (along with login-user).
-const char kLoginPassword[]                 = "login-password";
-
-// Specifies the profile to use once a chromeos user is logged in.
-const char kLoginProfile[]                  = "login-profile";
-
-// Allows to override the first login screen. The value should be the name of
-// the first login screen to show (see
-// chrome/browser/chromeos/login/login_wizard_view.cc for actual names).
-// Ignored if kLoginManager is not specified. TODO(avayvod): Remove when the
-// switch is no longer needed for testing.
-const char kLoginScreen[]                   = "login-screen";
-
-// Controls the initial login screen size. Pass width,height.
-const char kLoginScreenSize[]               = "login-screen-size";
-
-// Specifies the user which is already logged in.
-const char kLoginUser[]                     = "login-user";
-
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 
-// Enables usage of the new ManagedNetworkConfigurationHandler and
-// NetworkConfigurationHandler singletons.
-const char kUseNewNetworkConfigurationHandlers[] =
-    "use-new-network-configuration-handlers";
-
-} // namespace switches
+}  // namespace switches
 }  // namespace chromeos
