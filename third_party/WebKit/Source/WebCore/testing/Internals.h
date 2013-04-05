@@ -305,6 +305,8 @@ public:
     void simulateAudioInterruption(Node*);
 #endif
 
+    bool isSelectPopupVisible(Node*);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;
