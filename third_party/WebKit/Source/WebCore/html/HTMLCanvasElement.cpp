@@ -494,10 +494,7 @@ StyleResolver* HTMLCanvasElement::styleResolver()
 
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 {
-#if USE(IOSURFACE_CANVAS_BACKING_STORE)
-    UNUSED_PARAM(size);
-    return document()->settings() && document()->settings()->canvasUsesAcceleratedDrawing();
-#elif ENABLE(ACCELERATED_2D_CANVAS)
+#if ENABLE(ACCELERATED_2D_CANVAS)
     if (m_context && !m_context->is2d())
         return false;
 

@@ -70,7 +70,6 @@ public:
 #if ENABLE(DIALOG_ELEMENT)
         bool m_originalDialogElementEnabled;
 #endif
-        bool m_originalCanvasUsesAcceleratedDrawing;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalUsesOverlayScrollbars;
         bool m_langAttributeAwareFormControlUIEnabled;

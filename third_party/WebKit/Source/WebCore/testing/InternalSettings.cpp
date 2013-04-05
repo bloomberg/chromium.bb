@@ -86,7 +86,6 @@ InternalSettings::Backup::Backup(Settings* settings)
 #if ENABLE(DIALOG_ELEMENT)
     , m_originalDialogElementEnabled(RuntimeEnabledFeatures::dialogElementEnabled())
 #endif
-    , m_originalCanvasUsesAcceleratedDrawing(settings->canvasUsesAcceleratedDrawing())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
@@ -124,7 +123,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 #if ENABLE(DIALOG_ELEMENT)
     RuntimeEnabledFeatures::setDialogElementEnabled(m_originalDialogElementEnabled);
 #endif
-    settings->setCanvasUsesAcceleratedDrawing(m_originalCanvasUsesAcceleratedDrawing);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);

@@ -1,6 +1,4 @@
 description("Series of tests to ensure correct results on applying different blend modes.");
-if (self.testRunner)
-  testRunner.overridePreference("WebKitCanvasUsesAcceleratedDrawing", 0);
 
 var tmpimg = document.createElement('canvas');
 tmpimg.width = 200;
