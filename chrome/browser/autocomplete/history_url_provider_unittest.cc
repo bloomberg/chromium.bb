@@ -165,12 +165,25 @@ class HistoryURLProviderTest : public testing::Test,
   void FillData();
 
   // Runs an autocomplete query on |text| and checks to see that the returned
-  // results' destination URLs match those provided.
+  // results' destination URLs match those provided.  Also allows checking
+  // that the input type was identified correctly.
   void RunTest(const string16 text,
                const string16& desired_tld,
                bool prevent_inline_autocomplete,
                const std::string* expected_urls,
-               size_t num_results);
+               size_t num_results,
+               AutocompleteInput::Type* identified_input_type);
+
+  // A version of the above without the final |type| output parameter.
+  void RunTest(const string16 text,
+               const string16& desired_tld,
+               bool prevent_inline_autocomplete,
+               const std::string* expected_urls,
+               size_t num_results) {
+    AutocompleteInput::Type type;
+    return RunTest(text, desired_tld, prevent_inline_autocomplete,
+                   expected_urls, num_results, &type);
+  }
 
   void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
 
@@ -240,14 +253,17 @@ void HistoryURLProviderTest::FillData() {
       false, history::SOURCE_BROWSED);
 }
 
-void HistoryURLProviderTest::RunTest(const string16 text,
-                                     const string16& desired_tld,
-                                     bool prevent_inline_autocomplete,
-                                     const std::string* expected_urls,
-                                     size_t num_results) {
+void HistoryURLProviderTest::RunTest(
+    const string16 text,
+    const string16& desired_tld,
+    bool prevent_inline_autocomplete,
+    const std::string* expected_urls,
+    size_t num_results,
+    AutocompleteInput::Type* identified_input_type) {
   AutocompleteInput input(text, string16::npos, desired_tld, GURL(),
                           prevent_inline_autocomplete, false, true,
                           AutocompleteInput::ALL_MATCHES);
+  *identified_input_type = input.type();
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();
@@ -607,6 +623,44 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
       EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
       EXPECT_LT(matches_[0].relevance, test_cases[i].relevance + 10);
     }
+  }
+}
+
+TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
+  struct TestCase {
+    const char* input;
+    int relevance;
+    AutocompleteInput::Type type;
+  } test_cases[] = {
+    { "gooey", 1410, AutocompleteInput::UNKNOWN },
+    { "gooey/", 1410, AutocompleteInput::URL },
+    { "gooey#", 1200, AutocompleteInput::UNKNOWN },
+    { "gooey/#", 1200, AutocompleteInput::URL },
+    { "gooey#foo", 1200, AutocompleteInput::UNKNOWN },
+    { "gooey/#foo", 1200, AutocompleteInput::URL },
+    { "gooey# foo", 1200, AutocompleteInput::UNKNOWN },
+    { "gooey/# foo", 1200, AutocompleteInput::URL },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE(test_cases[i].input);
+    const std::string output[] = {
+      URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec()
+    };
+    AutocompleteInput::Type type;
+    ASSERT_NO_FATAL_FAILURE(
+        RunTest(ASCIIToUTF16(test_cases[i].input),
+                string16(), false, output, arraysize(output), &type));
+    // Actual relevance should be at least what test_cases expects and
+    // and no more than 10 more.
+    EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
+    EXPECT_LT(matches_[0].relevance, test_cases[i].relevance + 10);
+    // Input type should be what we expect.  This is important because
+    // this provider counts on SearchProvider to give queries a relevance
+    // score >1200 for UNKNOWN inputs and <1200 for URL inputs.  (That's
+    // already tested in search_provider_unittest.cc.)  For this test
+    // here to test that the user sees the correct behavior, it needs
+    // to check that the input type was identified correctly.
+    EXPECT_EQ(test_cases[i].type, type);
   }
 }
 
