@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -211,6 +212,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
                        action);
 }
 
+// static
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
                                     int x,
                                     int y) {
@@ -237,6 +239,7 @@ void DevToolsWindow::OpenExternalFrontend(
   window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
+// static
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
     const GURL& frontend_url,
@@ -361,6 +364,8 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       inspected_window->Show();
       TabStripModel* tab_strip_model = inspected_browser->tab_strip_model();
       tab_strip_model->ActivateTabAt(inspected_tab_index, true);
+      PrefsTabHelper::CreateForWebContents(web_contents_);
+      GetRenderViewHost()->SyncRendererPrefs();
       ScheduleAction(action);
       return;
     } else {
@@ -476,6 +481,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   browser_->tab_strip_model()->AddWebContents(
       web_contents_, -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);
+  GetRenderViewHost()->SyncRendererPrefs();
 }
 
 bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
