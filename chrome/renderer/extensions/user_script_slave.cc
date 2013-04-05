@@ -321,8 +321,6 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     }
 
     if (!sources.empty()) {
-      int isolated_world_id = 0;
-
       // Emulate Greasemonkey API for scripts that were converted to extensions
       // and "standalone" user scripts.
       if (script->is_standalone() || script->emulate_greasemonkey()) {
@@ -330,9 +328,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
             WebScriptSource(WebString::fromUTF8(api_js_.as_string())));
       }
 
-      // TODO(aa): Can extension_id() ever be empty anymore?
-      if (!script->extension_id().empty())
-        isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
+      int isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
 
       PerfTimer exec_timer;
       DOMActivityLogger::AttachToWorld(
