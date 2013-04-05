@@ -21,6 +21,7 @@
 #ifndef RenderProgress_h
 #define RenderProgress_h
 
+#if ENABLE(PROGRESS_ELEMENT)
 #include "RenderBlock.h"
 
 namespace WebCore {
@@ -69,4 +70,7 @@ void toRenderProgress(const RenderProgress*);
 
 } // namespace WebCore
 
+#endif
+
 #endif // RenderProgress_h
+

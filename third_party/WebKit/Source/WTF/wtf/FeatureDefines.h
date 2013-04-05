@@ -582,6 +582,10 @@
 #define ENABLE_MEDIA_STREAM 0
 #endif
 
+#if !defined(ENABLE_METER_ELEMENT)
+#define ENABLE_METER_ELEMENT 1
+#endif
+
 #if !defined(ENABLE_MHTML)
 #define ENABLE_MHTML 0
 #endif
@@ -658,6 +662,10 @@
 
 #if !defined(ENABLE_POINTER_LOCK)
 #define ENABLE_POINTER_LOCK 0
+#endif
+
+#if !defined(ENABLE_PROGRESS_ELEMENT)
+#define ENABLE_PROGRESS_ELEMENT 0
 #endif
 
 #if !defined(ENABLE_PROXIMITY_EVENTS)

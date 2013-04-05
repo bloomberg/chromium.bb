@@ -589,6 +589,8 @@ LayoutUnit RenderThemeChromiumSkia::sliderTickSnappingThreshold() const
 }
 #endif
 
+#if ENABLE(PROGRESS_ELEMENT)
+
 //
 // Following values are come from default of GTK+
 //
@@ -649,5 +651,8 @@ RenderThemeChromiumSkia::DirectionFlippingScope::~DirectionFlippingScope()
         return;
     m_paintInfo.context->restore();
 }
+
+
+#endif
 
 } // namespace WebCore

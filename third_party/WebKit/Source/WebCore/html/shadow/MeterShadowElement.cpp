@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-
+#if ENABLE(METER_ELEMENT)
 #include "MeterShadowElement.h"
 
 #include "CSSPropertyNames.h"
@@ -110,3 +110,6 @@ void MeterValueElement::setWidthPercentage(double width)
 }
 
 }
+
+#endif
+

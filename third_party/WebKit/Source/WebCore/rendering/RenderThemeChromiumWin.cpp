@@ -611,6 +611,8 @@ bool RenderThemeChromiumWin::paintInnerSpinButton(RenderObject* object, const Pa
     return false;
 }
 
+#if ENABLE(PROGRESS_ELEMENT)
+
 // MSDN says that update intervals for the bar is 30ms.
 // http://msdn.microsoft.com/en-us/library/bb760842(v=VS.85).aspx
 static const double progressAnimationFrameRate = 0.033;
@@ -647,6 +649,8 @@ bool RenderThemeChromiumWin::paintProgressBar(RenderObject* o, const PaintInfo& 
     WebKit::Platform::current()->themeEngine()->paintProgressBar(canvas, WebKit::WebRect(r), WebKit::WebRect(valueRect), renderProgress->isDeterminate(), animatedSeconds);
     return false;
 }
+
+#endif
 
 bool RenderThemeChromiumWin::shouldOpenPickerWithF4Key() const
 {

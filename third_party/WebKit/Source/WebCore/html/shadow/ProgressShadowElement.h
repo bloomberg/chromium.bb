@@ -32,6 +32,7 @@
 #ifndef ProgressShadowElement_h
 #define ProgressShadowElement_h
 
+#if ENABLE(PROGRESS_ELEMENT)
 #include "HTMLDivElement.h"
 #include <wtf/Forward.h>
 
@@ -94,5 +95,5 @@ inline PassRefPtr<ProgressValueElement> ProgressValueElement::create(Document* d
 }
 
 }
-
+#endif // ENABLE(PROGRESS_ELEMENT)
 #endif // ProgressShadowElement_h

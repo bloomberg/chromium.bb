@@ -31,6 +31,7 @@
 #ifndef MeterShadowElement_h
 #define MeterShadowElement_h
 
+#if ENABLE(METER_ELEMENT)
 #include "HTMLDivElement.h"
 #include <wtf/Forward.h>
 
@@ -102,5 +103,5 @@ inline PassRefPtr<MeterValueElement> MeterValueElement::create(Document* documen
 }
 
 }
-
+#endif // ENABLE(METER_ELEMENT)
 #endif // MeterShadowElement_h

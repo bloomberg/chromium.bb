@@ -33,19 +33,22 @@
 #include "FrameSelection.h"
 #include "GraphicsContext.h"
 #include "HTMLInputElement.h"
-#include "HTMLMeterElement.h"
 #include "HTMLNames.h"
 #include "LocalizedStrings.h"
 #include "MediaControlElements.h"
 #include "Page.h"
 #include "PaintInfo.h"
-#include "RenderMeter.h"
 #include "RenderStyle.h"
 #include "RenderView.h"
 #include "Settings.h"
 #include "SpinButtonElement.h"
 #include "StringTruncator.h"
 #include "TextControlInnerElements.h"
+
+#if ENABLE(METER_ELEMENT)
+#include "HTMLMeterElement.h"
+#include "RenderMeter.h"
+#endif
 
 #if ENABLE(INPUT_SPEECH)
 #include "RenderInputSpeech.h"
@@ -234,14 +237,18 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
         return adjustSearchFieldResultsDecorationStyle(styleResolver, style, e);
     case SearchFieldResultsButtonPart:
         return adjustSearchFieldResultsButtonStyle(styleResolver, style, e);
+#if ENABLE(PROGRESS_ELEMENT)
     case ProgressBarPart:
         return adjustProgressBarStyle(styleResolver, style, e);
+#endif
+#if ENABLE(METER_ELEMENT)
     case MeterPart:
     case RelevancyLevelIndicatorPart:
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
         return adjustMeterStyle(styleResolver, style, e);
+#endif
 #if ENABLE(INPUT_SPEECH)
     case InputSpeechButtonPart:
         return adjustInputFieldSpeechButtonStyle(styleResolver, style, e);
@@ -299,13 +306,18 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
 #endif
     case MenulistPart:
         return paintMenuList(o, paintInfo, r);
+#if ENABLE(METER_ELEMENT)
     case MeterPart:
     case RelevancyLevelIndicatorPart:
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
         return paintMeter(o, paintInfo, r);
+#endif
+#if ENABLE(PROGRESS_ELEMENT)
+    case ProgressBarPart:
         return paintProgressBar(o, paintInfo, r);
+#endif
     case SliderHorizontalPart:
     case SliderVerticalPart:
         return paintSliderTrack(o, paintInfo, r);
@@ -403,12 +415,16 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     case DefaultButtonPart:
     case ButtonPart:
     case MenulistPart:
+#if ENABLE(METER_ELEMENT)
     case MeterPart:
     case RelevancyLevelIndicatorPart:
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
+#endif
+#if ENABLE(PROGRESS_ELEMENT)
     case ProgressBarPart:
+#endif
     case SliderHorizontalPart:
     case SliderVerticalPart:
     case SliderThumbHorizontalPart:
@@ -446,12 +462,16 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     case DefaultButtonPart:
     case ButtonPart:
     case MenulistPart:
+#if ENABLE(METER_ELEMENT)
     case MeterPart:
     case RelevancyLevelIndicatorPart:
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
+#endif
+#if ENABLE(PROGRESS_ELEMENT)
     case ProgressBarPart:
+#endif
     case SliderHorizontalPart:
     case SliderVerticalPart:
     case SliderThumbHorizontalPart:
@@ -917,6 +937,7 @@ bool RenderTheme::paintInputFieldSpeechButton(RenderObject* object, const PaintI
 }
 #endif
 
+#if ENABLE(METER_ELEMENT)
 void RenderTheme::adjustMeterStyle(StyleResolver*, RenderStyle* style, Element*) const
 {
     style->setBoxShadow(nullptr);
@@ -936,6 +957,8 @@ bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
 {
     return true;
 }
+
+#endif
 
 #if ENABLE(DATALIST_ELEMENT)
 LayoutUnit RenderTheme::sliderTickSnappingThreshold() const
@@ -1026,6 +1049,7 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
 }
 #endif
 
+#if ENABLE(PROGRESS_ELEMENT)
 double RenderTheme::animationRepeatIntervalForProgressBar(RenderProgress*) const
 {
     return 0;
@@ -1039,6 +1063,7 @@ double RenderTheme::animationDurationForProgressBar(RenderProgress*) const
 void RenderTheme::adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const
 {
 }
+#endif
 
 bool RenderTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
 {

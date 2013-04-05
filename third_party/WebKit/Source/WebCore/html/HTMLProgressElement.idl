@@ -17,7 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLProgressElement : HTMLElement {
+[
+    Conditional=PROGRESS_ELEMENT
+] interface HTMLProgressElement : HTMLElement {
              attribute  double                value
                  setter raises(DOMException);
              attribute  double                max
@@ -25,3 +27,4 @@ interface HTMLProgressElement : HTMLElement {
     readonly attribute  double                position;
     readonly attribute  NodeList              labels;
 };
+

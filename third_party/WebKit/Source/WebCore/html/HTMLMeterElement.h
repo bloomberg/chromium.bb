@@ -21,6 +21,7 @@
 #ifndef HTMLMeterElement_h
 #define HTMLMeterElement_h
 
+#if ENABLE(METER_ELEMENT)
 #include "LabelableElement.h"
 
 namespace WebCore {
@@ -94,4 +95,5 @@ inline HTMLMeterElement* toHTMLMeterElement(Node* node)
 
 } // namespace
 
+#endif
 #endif
