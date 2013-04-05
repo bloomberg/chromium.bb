@@ -55,7 +55,34 @@
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
-        }
+        },
+        {
+          'target_name': 'components_perftests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_perf',
+            '../content/content.gyp:test_support_content',
+            '../testing/gtest.gyp:gtest',
+            '../ui/compositor/compositor.gyp:compositor',
+            'visitedlink_browser',
+          ],
+         'include_dirs': [
+           '..',
+         ],
+         'sources': [
+           'visitedlink/test/visitedlink_perftest.cc',
+         ],
+         'conditions': [
+           ['OS == "android" and gtest_target_type == "shared_library"', {
+             'dependencies': [
+               '../testing/android/native_test.gyp:native_test_native_code',
+             ],
+           }],
+         ],
+         # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+         'msvs_disabled_warnings': [ 4267, ],
+        },
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {

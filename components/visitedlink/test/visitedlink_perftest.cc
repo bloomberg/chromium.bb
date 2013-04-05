@@ -40,11 +40,6 @@ class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
   virtual void NewTable(base::SharedMemory* table) OVERRIDE {}
   virtual void Add(VisitedLinkCommon::Fingerprint) OVERRIDE {}
   virtual void Reset() OVERRIDE {}
-
-  static DummyVisitedLinkEventListener* GetInstance() {
-    static DummyVisitedLinkEventListener instance;
-    return &instance;
-  }
 };
 
 
@@ -84,7 +79,7 @@ class VisitedLink : public testing::Test {
 // useful to make another set of tests to test these things in isolation.
 TEST_F(VisitedLink, TestAddAndQuery) {
   // init
-  VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
+  VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                            NULL, true, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
 
@@ -115,7 +110,7 @@ TEST_F(VisitedLink, TestLoad) {
   {
     PerfTimeLogger table_initialization_timer("Table_initialization");
 
-    VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
+    VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                              NULL, true, true, db_path_, 0);
 
     // time init with empty table
@@ -153,7 +148,7 @@ TEST_F(VisitedLink, TestLoad) {
     {
       PerfTimer cold_timer;
 
-      VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
+      VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                                NULL,
                                true,
                                true,
@@ -170,7 +165,7 @@ TEST_F(VisitedLink, TestLoad) {
     {
       PerfTimer hot_timer;
 
-      VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
+      VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                                NULL,
                                true,
                                true,
