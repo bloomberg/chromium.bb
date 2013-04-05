@@ -26,19 +26,20 @@ def DoPush(options):
   libraries = build_utils.ReadJson(options.libraries_json)
 
   adb = android_commands.AndroidCommands()
+  serial_number = adb.Adb().GetSerialNumber()
   needs_directory = True
   for lib in libraries:
     device_path = os.path.join(options.device_dir, lib)
     host_path = os.path.join(options.libraries_dir, lib)
 
-    md5_stamp = '%s.%s.md5' % (host_path, adb.Adb().GetSerialNumber())
+    md5_stamp = '%s.%s.push.md5' % (host_path, serial_number)
     md5_checker = md5_check.Md5Checker(stamp=md5_stamp, inputs=[host_path])
     if md5_checker.IsStale():
       if needs_directory:
         adb.RunShellCommand('mkdir ' + options.device_dir)
         needs_directory = False
       adb.PushIfNeeded(host_path, device_path)
-    md5_checker.Write()
+      md5_checker.Write()
 
 
 def main(argv):
