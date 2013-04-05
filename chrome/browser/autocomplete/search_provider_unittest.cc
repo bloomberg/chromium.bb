@@ -1557,17 +1557,19 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // Check when there is neither verbatim nor a query suggestion that,
     // because we can demote navsuggestions below a query suggestion,
     // we abandon suggested relevance scores entirely.  One consequence is
-    // that this means we restore the keyword verbatim match.  Another
-    // consequence is that we only accept one navsuggestion (the first in the
-    // list).
+    // that this means we restore the keyword verbatim match.  Note
+    // that in this case of abandoning suggested relevance scores, we still
+    // keep the navsuggestions in order by their original scores (just
+    // not at their original scores), and continue to allow multiple
+    // navsuggestions to appear.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
       { { "a", true },
+        { "a2.com", false },
         { "a1.com", false },
         { "k a", false },
-        { kNotApplicable, false },
         { kNotApplicable, false } } },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
@@ -1575,8 +1577,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:suggestrelevance\":[9999, 9998]}]",
       { { "a", true },
         { "a1.com", false },
+        { "a2.com", false },
         { "k a", false },
-        { kNotApplicable, false },
         { kNotApplicable, false } } },
     // More checks that everything works when it's not necessary to demote.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"

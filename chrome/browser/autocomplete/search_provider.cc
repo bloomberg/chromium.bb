@@ -872,16 +872,6 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     }
   }
 
-  // In keyword mode with suggested relevance scores, demote navsuggestions
-  // below the top query match (what-you-typed or suggestion).  (We
-  // don't want keyword navsuggestions to be inlined.)
-  if (is_keyword && (relevances != NULL)) {
-    // If we fail to demote navigational result relevance scores, then
-    // cancel suggested relevance scoring for keyword mode entirely.
-    if (!DemoteKeywordNavigationMatchesBelowTopQueryMatch())
-      relevances = NULL;
-  }
-
   // Apply calculated relevance scores if a valid list was not provided.
   if (relevances == NULL) {
     ApplyCalculatedSuggestRelevance(suggest_results);
@@ -889,7 +879,12 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   } else {
     *has_suggested_relevance = true;
   }
-
+  // Keep the result lists sorted.
+  const CompareScoredResults comparator = CompareScoredResults();
+  std::stable_sort(suggest_results->begin(), suggest_results->end(),
+                   comparator);
+  std::stable_sort(navigation_results->begin(), navigation_results->end(),
+                   comparator);
   have_suggest_results_ = true;
   return true;
 }
@@ -977,6 +972,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     matches_.resize(max_total_matches);
 }
 
+bool SearchProvider::IsTopMatchNavigationInKeywordMode() const {
+  return (!providers_.keyword_provider().empty() &&
+          (matches_.front().type == AutocompleteMatch::NAVSUGGEST));
+}
+
 bool SearchProvider::IsTopMatchScoreTooLow() const {
   // Here we use CalculateRelevanceForVerbatimIgnoringKeywordModeState()
   // rather than CalculateRelevanceForVerbatim() because the latter returns
@@ -1017,8 +1017,21 @@ void SearchProvider::UpdateMatches() {
   if (!matches_.empty() &&
       (has_default_suggested_relevance_ || default_verbatim_relevance_ >= 0 ||
        has_keyword_suggested_relevance_ || keyword_verbatim_relevance_ >= 0)) {
-    // These two blocks attempt to repair undesirable behavior by suggested
+    // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
+    if (IsTopMatchNavigationInKeywordMode()) {
+      // Correct the suggested relevance scores if the top match is a
+      // navigation in keyword mode, since inlining a navigation match
+      // would break the user out of keyword mode.  By the way, if the top
+      // match is a non-keyword match (query or navsuggestion) in keyword
+      // mode, the user would also break out of keyword mode.  However,
+      // that situation is impossible given the current scoring paradigm
+      // and the fact that only one search engine (Google) provides suggested
+      // relevance scores at this time.
+      DemoteKeywordNavigationMatchesPastTopQuery();
+      ConvertResultsToAutocompleteMatches();
+      DCHECK(!IsTopMatchNavigationInKeywordMode());
+    }
     if (IsTopMatchScoreTooLow()) {
       // Disregard the suggested verbatim relevance if the top score is below
       // the usual verbatim value. For example, a BarProvider may rely on
@@ -1048,6 +1061,7 @@ void SearchProvider::UpdateMatches() {
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
+    DCHECK(!IsTopMatchNavigationInKeywordMode());
     DCHECK(!IsTopMatchScoreTooLow());
     DCHECK(!IsTopMatchHighRankSearchForURL());
     DCHECK(!IsTopMatchNotInlinable());
@@ -1069,15 +1083,11 @@ void SearchProvider::AddNavigationResultsToMatches(
          it != navigation_results.end(); ++it)
       matches_.push_back(NavigationToMatch(*it));
   } else {
-    // Pick one element only in absence of the suggested relevance scores.
+    // Pick the highest-scoring element only in absence of the
+    // suggested relevance scores.  (The results are already sorted.)
     // TODO(kochi|msw): Add more navigational results if they get more
     //                  meaningful relevance values; see http://b/1170574.
-    // CompareScoredResults sorts by descending relevance; so use min_element.
-    NavigationResults::const_iterator result(
-        std::min_element(navigation_results.begin(),
-                         navigation_results.end(),
-                         CompareScoredResults()));
-    matches_.push_back(NavigationToMatch(*result));
+    matches_.push_back(NavigationToMatch(navigation_results.front()));
   }
 }
 
@@ -1105,9 +1115,9 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
     // query.  If we find one, then just keep that score set.
     scored_results = ScoreHistoryResults(results, prevent_inline_autocomplete,
                                          false, input_text, is_keyword);
-    if ((scored_results[0].relevance() <
+    if ((scored_results.front().relevance() <
              AutocompleteResult::kLowestDefaultScore) ||
-        !HasMultipleWords(scored_results[0].suggestion()))
+        !HasMultipleWords(scored_results.front().suggestion()))
       scored_results.clear();  // Didn't detect the case above, score normally.
   }
   if (scored_results.empty())
@@ -1471,44 +1481,37 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   return match;
 }
 
-bool SearchProvider::DemoteKeywordNavigationMatchesBelowTopQueryMatch() {
+void SearchProvider::DemoteKeywordNavigationMatchesPastTopQuery() {
   // First, determine the maximum score of any keyword query match (verbatim or
   // query suggestion).
   int max_query_relevance = GetKeywordVerbatimRelevance();
   if (!keyword_suggest_results_.empty()) {
-    // CompareScoredResults sorts by descending relevance; so use min_element
-    // to get the highest relevance.
-    SuggestResults::const_iterator max_suggest_it = std::min_element(
-        keyword_suggest_results_.begin(),
-        keyword_suggest_results_.end(),
-        CompareScoredResults());
     max_query_relevance =
-        std::max(max_suggest_it->relevance(), max_query_relevance);
+        std::max(keyword_suggest_results_.front().relevance(),
+                 max_query_relevance);
   }
   // If no query is supposed to appear, then navigational matches cannot
-  // be demoted past it.  Bail.
-  if (max_query_relevance == 0)
-    return false;
+  // be demoted past it.  Get rid of suggested relevance scores for
+  // navsuggestions and introduce the verbatim results again.  The keyword
+  // verbatim match will outscore the navsuggest matches.
+  if (max_query_relevance == 0) {
+    ApplyCalculatedNavigationRelevance(&keyword_navigation_results_);
+    ApplyCalculatedNavigationRelevance(&default_navigation_results_);
+    keyword_verbatim_relevance_ = -1;
+    default_verbatim_relevance_ = -1;
+    return;
+  }
   // Now we know we can enforce the minimum score constraint even after
   // the navigation matches are demoted.  Proceed to demote the navigation
   // matches to enforce the query-must-come-first constraint.
-  // Sort the keyword navigation results by decreasing relevance scores.
-  std::stable_sort(keyword_navigation_results_.begin(),
-                   keyword_navigation_results_.end(),
-                   CompareScoredResults());
   // Cap the relevance score of all results.
   for (NavigationResults::iterator it = keyword_navigation_results_.begin();
        it != keyword_navigation_results_.end(); ++it) {
-    if (it->relevance() >= max_query_relevance) {
-      if (max_query_relevance > 0)
-        --max_query_relevance;
-      it->set_relevance(max_query_relevance);
-    } else {
-      // No later results will need to be capped.
-      break;
-    }
+    if (it->relevance() < max_query_relevance)
+      return;
+    max_query_relevance = std::max(max_query_relevance - 1, 0);
+    it->set_relevance(max_query_relevance);
   }
-  return true;
 }
 
 void SearchProvider::UpdateDone() {
