@@ -51,11 +51,14 @@ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
-  platform_view_->GetContainerBounds(out);
+  out->SetRect(0, 0, size_.width(), size_.height());
 }
 
 void WebContentsViewGuest::SizeContents(const gfx::Size& size) {
-  platform_view_->SizeContents(size);
+  size_ = size;
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
 }
 
 void WebContentsViewGuest::SetInitialFocus() {
@@ -63,7 +66,7 @@ void WebContentsViewGuest::SetInitialFocus() {
 }
 
 gfx::Rect WebContentsViewGuest::GetViewBounds() const {
-  return platform_view_->GetViewBounds();
+  return gfx::Rect(size_);
 }
 
 #if defined(OS_MACOSX)
@@ -75,6 +78,7 @@ void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
 void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
                                       gfx::NativeView context) {
   platform_view_->CreateView(initial_size, context);
+  size_ = initial_size;
 }
 
 RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(

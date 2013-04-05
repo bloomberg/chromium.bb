@@ -97,6 +97,7 @@ class CONTENT_EXPORT WebContentsViewGuest
   // The platform dependent view backing this WebContentsView.
   // Calls to this WebContentsViewGuest are forwarded to |platform_view_|.
   WebContentsViewPort* platform_view_;
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGuest);
 };

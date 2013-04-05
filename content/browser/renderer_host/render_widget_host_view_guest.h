@@ -205,6 +205,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   BrowserPluginGuest *guest_;
   bool is_hidden_;
+  gfx::Size size_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.

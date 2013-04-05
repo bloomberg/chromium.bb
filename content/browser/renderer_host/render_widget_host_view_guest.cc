@@ -76,11 +76,12 @@ void RenderWidgetHostViewGuest::WasHidden() {
 }
 
 void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
-  platform_view_->SetSize(size);
+  size_ = size;
+  host_->WasResized();
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
-  return platform_view_->GetBoundsInRootWindow();
+  return gfx::Rect(size_);
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
@@ -124,7 +125,7 @@ bool RenderWidgetHostViewGuest::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
-  return platform_view_->GetViewBounds();
+  return gfx::Rect(size_);
 }
 
 void RenderWidgetHostViewGuest::RenderViewGone(base::TerminationStatus status,
@@ -178,7 +179,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
-  platform_view_->SetBounds(rect);
+  SetSize(rect.size());
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
