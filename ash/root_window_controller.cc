@@ -464,15 +464,20 @@ void RootWindowController::ShowContextMenu(
   if (!menu_model.get())
     return;
 
-  views::MenuRunner menu_runner(menu_model.get());
-  views::Widget* widget =
-      root_window_->GetProperty(kDesktopController)->widget();
-
-  if (menu_runner.RunMenuAt(
-          widget, NULL, gfx::Rect(location_in_screen, gfx::Size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::CONTEXT_MENU) ==
-      views::MenuRunner::MENU_DELETED)
+  internal::DesktopBackgroundWidgetController* background =
+      root_window_->GetProperty(kDesktopController);
+  // Background controller may not be set yet if user clicked on status are
+  // before initial animation completion. See crbug.com/222218
+  if (!background)
     return;
+
+  views::MenuRunner menu_runner(menu_model.get());
+  if (menu_runner.RunMenuAt(background->widget(),
+          NULL, gfx::Rect(location_in_screen, gfx::Size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED) {
+    return;
+  }
 
   Shell::GetInstance()->UpdateShelfVisibility();
 }
