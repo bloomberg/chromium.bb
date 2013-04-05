@@ -1200,10 +1200,19 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(overlay, active_tab);
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com/227076
+#define MAYBE_CommitWhenShownInFullHeightWithoutFocus \
+        DISABLED_CommitWhenShownInFullHeightWithoutFocus
+#else
+#define MAYBE_CommitWhenShownInFullHeightWithoutFocus \
+        CommitWhenShownInFullHeightWithoutFocus
+#endif
+
 // Test that the overlay is committed when shown at 100% height without focus
 // in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       CommitWhenShownInFullHeightWithoutFocus) {
+                       MAYBE_CommitWhenShownInFullHeightWithoutFocus) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus omnibox and confirm overlay isn't shown.
