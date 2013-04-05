@@ -25,6 +25,7 @@ MEDIA_EXPORT extern const char kUseCras[];
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
+MEDIA_EXPORT extern const char kForceWaveAudio[];
 #endif
 
 MEDIA_EXPORT extern const char kDisableAudioFallback[];

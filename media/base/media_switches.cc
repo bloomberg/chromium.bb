@@ -28,6 +28,9 @@ const char kUseCras[] = "use-cras";
 // See http://msdn.microsoft.com/en-us/library/windows/desktop/dd370844(v=vs.85).aspx
 // for details.
 const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
+
+// Use Windows WaveOut/In audio API even if Core Audio is supported.
+const char kForceWaveAudio[] = "force-wave-audio";
 #endif
 
 // Disable automatic fallback from low latency to high latency path.

@@ -147,6 +147,13 @@ bool CanCreateDeviceEnumerator() {
 }
 
 bool CoreAudioUtil::IsSupported() {
+  // It is possible to force usage of WaveXxx APIs by using a command line flag.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
+    LOG(WARNING) << "Forcing usage of Windows WaveXxx APIs";
+    return false;
+  }
+
   // Microsoft does not plan to make the Core Audio APIs available for use
   // with earlier versions of Windows, including Microsoft Windows Server 2003,
   // Windows XP, Windows Millennium Edition, Windows 2000, and Windows 98.
