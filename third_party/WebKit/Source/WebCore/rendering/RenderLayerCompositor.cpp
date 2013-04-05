@@ -58,6 +58,7 @@
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "TiledBacking.h"
+#include "TraceEvent.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -477,12 +478,14 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         CompositingState compState(updateRoot, m_compositingConsultsOverlap);
         bool layersChanged = false;
         bool saw3DTransform = false;
-        if (m_compositingConsultsOverlap) {
-            OverlapMap overlapTestRequestMap;
-            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform);
-        } else
-            computeCompositingRequirements(0, updateRoot, 0, compState, layersChanged, saw3DTransform);
-        
+        {
+            TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::computeCompositingRequirements");
+            if (m_compositingConsultsOverlap) {
+                OverlapMap overlapTestRequestMap;
+                computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, compState, layersChanged, saw3DTransform);
+            } else
+                computeCompositingRequirements(0, updateRoot, 0, compState, layersChanged, saw3DTransform);
+        }
         needHierarchyUpdate |= layersChanged;
     }
 
@@ -503,7 +506,10 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     if (needHierarchyUpdate) {
         // Update the hierarchy of the compositing layers.
         Vector<GraphicsLayer*> childList;
-        rebuildCompositingLayerTree(updateRoot, childList, 0);
+        {
+            TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::rebuildCompositingLayerTree");
+            rebuildCompositingLayerTree(updateRoot, childList, 0);
+        }
 
         // Host the document layer in the RenderView's root layer.
         if (isFullUpdate) {
