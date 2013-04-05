@@ -43,7 +43,6 @@ class TiledBacking;
 
 enum CompositingLayerType {
     NormalCompositingLayer, // non-tiled layer with backing store
-    TiledCompositingLayer, // tiled layer (always has backing store)
     MediaCompositingLayer, // layer that contains an image, video, webGL or plugin
     ContainerCompositingLayer // layer with no backing store
 };
@@ -145,15 +144,9 @@ public:
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
 
-    bool usingTiledBacking() const { return m_usingTiledCacheLayer; }
-    TiledBacking* tiledBacking() const;
-    void adjustTiledBackingCoverage();
-    
     void updateDebugIndicators(bool showBorder, bool showRepaintCounter);
 
     // GraphicsLayerClient interface
-    virtual bool shouldUseTiledBacking(const GraphicsLayer*) const OVERRIDE;
-    virtual void tiledBackingUsageChanged(const GraphicsLayer*, bool /*usingTiledBacking*/) OVERRIDE;
     virtual void notifyAnimationStarted(const GraphicsLayer*, double startTime) OVERRIDE;
     virtual void notifyFlushRequired(const GraphicsLayer*) OVERRIDE;
     virtual void notifyFlushBeforeDisplayRefresh(const GraphicsLayer*) OVERRIDE;
@@ -197,8 +190,6 @@ public:
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
-    
-    void willDestroyLayer(const GraphicsLayer*);
     
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(const String&);
 
@@ -297,8 +288,6 @@ private:
     bool m_canCompositeFilters;
 #endif
     bool m_backgroundLayerPaintsFixedRootBackground;
-
-    static bool m_creatingPrimaryGraphicsLayer;
 };
 
 } // namespace WebCore

@@ -26,13 +26,9 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "Animation.h"
 #include "Color.h"
-#if ENABLE(CSS_FILTERS)
 #include "FilterOperations.h"
-#endif
 #include "FloatPoint.h"
 #include "FloatPoint3D.h"
 #include "FloatSize.h"
@@ -48,9 +44,8 @@ enum LayerTreeAsTextBehaviorFlags {
     LayerTreeAsTextBehaviorNormal = 0,
     LayerTreeAsTextDebug = 1 << 0, // Dump extra debugging info like layer addresses.
     LayerTreeAsTextIncludeVisibleRects = 1 << 1,
-    LayerTreeAsTextIncludeTileCaches = 1 << 2,
-    LayerTreeAsTextIncludeRepaintRects = 1 << 3,
-    LayerTreeAsTextIncludePaintingPhases = 1 << 4
+    LayerTreeAsTextIncludeRepaintRects = 1 << 2,
+    LayerTreeAsTextIncludePaintingPhases = 1 << 3
 };
 typedef unsigned LayerTreeAsTextBehavior;
 
@@ -62,7 +57,6 @@ class GraphicsContext;
 class GraphicsLayerFactory;
 class Image;
 class TextStream;
-class TiledBacking;
 class TimingFunction;
 
 // Base class for animation values (also used for transitions). Here to
@@ -122,7 +116,6 @@ private:
     TransformOperations m_value;
 };
 
-#if ENABLE(CSS_FILTERS)
 // Used to store one filter value in a keyframe list.
 class FilterAnimationValue : public AnimationValue {
 public:
@@ -139,7 +132,6 @@ public:
 private:
     FilterOperations m_value;
 };
-#endif
 
 // Used to store a series of values in a keyframe list. Values will all be of the same type,
 // which can be inferred from the property.
@@ -256,9 +248,6 @@ public:
     const FloatPoint& position() const { return m_position; }
     virtual void setPosition(const FloatPoint& p) { m_position = p; }
 
-    // For platforms that move underlying platform layers on a different thread for scrolling; just update the GraphicsLayer state.
-    virtual void syncPosition(const FloatPoint& p) { m_position = p; }
-    
     // Anchor point: (0, 0) is top left, (1, 1) is bottom right. The anchor point
     // affects the origin of the transforms.
     const FloatPoint3D& anchorPoint() const { return m_anchorPoint; }
@@ -290,9 +279,6 @@ public:
     bool contentsAreVisible() const { return m_contentsVisible; }
     virtual void setContentsVisible(bool b) { m_contentsVisible = b; }
 
-    bool acceleratesDrawing() const { return m_acceleratesDrawing; }
-    virtual void setAcceleratesDrawing(bool b) { m_acceleratesDrawing = b; }
-
     // The color used to paint the layer background. Pass an invalid color to remove it.
     // Note that this covers the entire layer. Use setContentsToSolidColor() if the color should
     // only cover the contentsRect.
@@ -309,12 +295,10 @@ public:
     float opacity() const { return m_opacity; }
     virtual void setOpacity(float opacity) { m_opacity = opacity; }
 
-#if ENABLE(CSS_FILTERS)
     const FilterOperations& filters() const { return m_filters; }
     
     // Returns true if filter can be rendered by the compositor
     virtual bool setFilters(const FilterOperations& filters) { m_filters = filters; return true; }
-#endif
 
     // Some GraphicsLayers paint only the foreground or the background content
     GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
@@ -403,12 +387,6 @@ public:
     virtual void deviceOrPageScaleFactorChanged() { }
     void noteDeviceOrPageScaleFactorChangedIncludingDescendants();
 
-    // Some compositing systems may do internal batching to synchronize compositing updates
-    // with updates drawn into the window. These methods flush internal batched state on this layer
-    // and descendant layers, and this layer only.
-    virtual void flushCompositingState(const FloatRect& /* clipRect */) { }
-    virtual void flushCompositingStateForThisLayerOnly() { }
-
     // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
     // for example to allocate new tiles.
     virtual bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
@@ -420,19 +398,12 @@ public:
     // Return an estimate of the backing store memory cost (in bytes). May be incorrect for tiled layers.
     virtual double backingStoreMemoryEstimate() const;
 
-    bool usingTiledBacking() const { return m_usingTiledBacking; }
-    virtual TiledBacking* tiledBacking() const { return 0; }
-
     void resetTrackedRepaints();
     void addRepaintRect(const FloatRect&);
 
     static bool supportsBackgroundColorContent()
     {
-#if USE(CA) || USE(TEXTURE_MAPPER) || PLATFORM(CHROMIUM)
         return true;
-#else
-        return false;
-#endif
     }
 
     void updateDebugIndicators();
@@ -443,7 +414,6 @@ protected:
     // Should be called from derived class destructors. Should call willBeDestroyed() on super.
     virtual void willBeDestroyed();
 
-#if ENABLE(CSS_FILTERS)
     // This method is used by platform GraphicsLayer classes to clear the filters
     // when compositing is not done in hardware. It is not virtual, so the caller
     // needs to notifiy the change to the platform layer as needed.
@@ -451,7 +421,6 @@ protected:
 
     // Given a KeyframeValueList containing filterOperations, return true if the operations are valid.
     static int validateFilterOperations(const KeyframeValueList&);
-#endif
 
     // Given a list of TransformAnimationValues, see if all the operations for each keyframe match. If so
     // return the index of the KeyframeValueList entry that has that list of operations (it may not be
@@ -494,18 +463,14 @@ protected:
     float m_opacity;
     float m_zPosition;
     
-#if ENABLE(CSS_FILTERS)
     FilterOperations m_filters;
-#endif
 
     bool m_contentsOpaque : 1;
     bool m_preserves3D: 1;
     bool m_backfaceVisibility : 1;
-    bool m_usingTiledBacking : 1;
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
-    bool m_acceleratesDrawing : 1;
     bool m_maintainsPixelAlignment : 1;
     bool m_appliesPageScale : 1; // Set for the layer which has the page scale applied to it.
     bool m_showDebugBorder : 1;
@@ -536,7 +501,5 @@ protected:
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showGraphicsLayerTree(const WebCore::GraphicsLayer* layer);
 #endif
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif // GraphicsLayer_h

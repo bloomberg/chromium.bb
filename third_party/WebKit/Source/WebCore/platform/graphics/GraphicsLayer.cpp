@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "GraphicsLayer.h"
 
 #include "FloatPoint.h"
@@ -83,11 +81,9 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsOpaque(false)
     , m_preserves3D(false)
     , m_backfaceVisibility(true)
-    , m_usingTiledBacking(false)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
-    , m_acceleratesDrawing(false)
     , m_maintainsPixelAlignment(false)
     , m_appliesPageScale(false)
     , m_showDebugBorder(false)
@@ -348,12 +344,6 @@ void GraphicsLayer::resumeAnimations()
 void GraphicsLayer::getDebugBorderInfo(Color& color, float& width) const
 {
     if (drawsContent()) {
-        if (m_usingTiledBacking) {
-            color = Color(255, 128, 0, 128); // tiled layer: orange
-            width = 2;
-            return;
-        }
-
         color = Color(0, 128, 32, 128); // normal layer: green
         width = 2;
         return;
@@ -410,7 +400,6 @@ void GraphicsLayer::distributeOpacity(float accumulatedOpacity)
     }
 }
 
-#if ENABLE(CSS_FILTERS)
 static inline const FilterOperations* filterOperationsAt(const KeyframeValueList& valueList, size_t index)
 {
     return static_cast<const FilterAnimationValue*>(valueList.at(index))->value();
@@ -448,7 +437,6 @@ int GraphicsLayer::validateFilterOperations(const KeyframeValueList& valueList)
     
     return firstIndex;
 }
-#endif
 
 // An "invalid" list is one whose functions don't match, and therefore has to be animated as a Matrix
 // The hasBigRotation flag will always return false if isValid is false. Otherwise hasBigRotation is 
@@ -605,11 +593,6 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
         ts << "(opacity " << m_opacity << ")\n";
     }
     
-    if (m_usingTiledBacking) {
-        writeIndent(ts, indent + 1);
-        ts << "(usingTiledLayer " << m_usingTiledBacking << ")\n";
-    }
-
     if (m_contentsOpaque) {
         writeIndent(ts, indent + 1);
         ts << "(contentsOpaque " << m_contentsOpaque << ")\n";
@@ -774,9 +757,7 @@ void showGraphicsLayerTree(const WebCore::GraphicsLayer* layer)
     if (!layer)
         return;
 
-    String output = layer->layerTreeAsText(LayerTreeAsTextDebug | LayerTreeAsTextIncludeVisibleRects | LayerTreeAsTextIncludeTileCaches);
+    String output = layer->layerTreeAsText(LayerTreeAsTextDebug | LayerTreeAsTextIncludeVisibleRects);
     fprintf(stderr, "%s\n", output.utf8().data());
 }
 #endif
-
-#endif // USE(ACCELERATED_COMPOSITING)

@@ -45,7 +45,6 @@ class StickyPositionViewportConstraints;
 #if ENABLE(VIDEO)
 class RenderVideo;
 #endif
-class TiledBacking;
 
 enum CompositingUpdateType {
     CompositingUpdateAfterStyleChange,
@@ -231,8 +230,6 @@ public:
     virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
     virtual void notifyFlushBeforeDisplayRefresh(const GraphicsLayer*) OVERRIDE;
 
-    void layerTiledBackingUsageChanged(const GraphicsLayer*, bool /*usingTiledBacking*/);
-    
     bool keepLayersPixelAligned() const;
     bool acceleratedDrawingEnabled() const { return m_acceleratedDrawingEnabled; }
 
@@ -262,8 +259,6 @@ public:
     void setShouldReevaluateCompositingAfterLayout() { m_reevaluateCompositingAfterLayout = true; }
 
     bool viewHasTransparentBackground(Color* backgroundColor = 0) const;
-
-    bool hasNonMainLayersWithTiledBacking() const { return m_layersWithTiledBackingCount; }
 
     CompositingReasons reasonsForCompositing(const RenderLayer*) const;
     
@@ -332,7 +327,6 @@ private:
     void notifyIFramesOfCompositingChange();
 
     Page* page() const;
-    TiledBacking* pageTiledBacking() const;
     
     GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
@@ -396,8 +390,6 @@ private:
 
     bool m_isTrackingRepaints; // Used for testing.
     
-    unsigned m_layersWithTiledBackingCount;
-
     RootLayerAttachment m_rootLayerAttachment;
 
     // Enclosing clipping layer for iframe content

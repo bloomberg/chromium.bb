@@ -104,8 +104,6 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(RenderLayer* layer)
     return page->scrollingCoordinator();
 }
 
-bool RenderLayerBacking::m_creatingPrimaryGraphicsLayer = false;
-
 RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
     : m_owningLayer(layer)
     , m_artificiallyInflatedBounds(false)
@@ -133,20 +131,6 @@ RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
     }
     
     createPrimaryGraphicsLayer();
-
-    if (m_usingTiledCacheLayer) {
-        TiledBacking* tiledBacking = this->tiledBacking();
-        if (Page* page = renderer()->frame()->page()) {
-            Frame* frame = renderer()->frame();
-            tiledBacking->setIsInWindow(page->isInWindow());
-
-            if (m_isMainFrameRenderViewLayer)
-                tiledBacking->setUnparentsOffscreenTiles(true);
-
-            tiledBacking->setScrollingPerformanceLoggingEnabled(frame->settings() && frame->settings()->scrollingPerformanceLoggingEnabled());
-            adjustTiledBackingCoverage();
-        }
-    }
 }
 
 RenderLayerBacking::~RenderLayerBacking()
@@ -158,14 +142,6 @@ RenderLayerBacking::~RenderLayerBacking()
     updateMaskLayer(false);
     updateScrollingLayers(false);
     destroyGraphicsLayers();
-}
-
-void RenderLayerBacking::willDestroyLayer(const GraphicsLayer* layer)
-{
-    if (layer && layer->usingTiledBacking()) {
-        if (RenderLayerCompositor* compositor = this->compositor())
-            compositor->layerTiledBackingUsageChanged(layer, false);
-    }
 }
 
 PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& name)
@@ -188,43 +164,6 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& 
 #endif    
     
     return graphicsLayer.release();
-}
-
-bool RenderLayerBacking::shouldUseTiledBacking(const GraphicsLayer*) const
-{
-    return m_usingTiledCacheLayer && m_creatingPrimaryGraphicsLayer;
-}
-
-void RenderLayerBacking::tiledBackingUsageChanged(const GraphicsLayer* layer, bool usingTiledBacking)
-{
-    compositor()->layerTiledBackingUsageChanged(layer, usingTiledBacking);
-}
-
-TiledBacking* RenderLayerBacking::tiledBacking() const
-{
-    return m_graphicsLayer->tiledBacking();
-}
-
-void RenderLayerBacking::adjustTiledBackingCoverage()
-{
-    if (!m_usingTiledCacheLayer)
-        return;
-
-    TiledBacking::TileCoverage tileCoverage = TiledBacking::CoverageForVisibleArea;
-
-    // FIXME: When we use TiledBacking for overflow, this should look at RenderView scrollability.
-    Frame* frame = renderer()->frame();
-    if (frame) {
-        FrameView* frameView = frame->view();
-        bool clipsToExposedRect = tiledBacking()->clipsToExposedRect();
-        if (frameView->horizontalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
-            tileCoverage |= TiledBacking::CoverageForHorizontalScrolling;
-
-        if (frameView->verticalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
-            tileCoverage |= TiledBacking::CoverageForVerticalScrolling;
-    }
-
-    tiledBacking()->setTileCoverage(tileCoverage);
 }
 
 void RenderLayerBacking::updateDebugIndicators(bool showBorder, bool showRepaintCounter)
@@ -278,14 +217,7 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     layerName = m_owningLayer->name();
 #endif
     
-    // The call to createGraphicsLayer ends calling back into here as
-    // a GraphicsLayerClient to ask if it shouldUseTiledBacking(). We only want
-    // the tile cache on our main layer. This is pretty ugly, but saves us from
-    // exposing the API to all clients.
-
-    m_creatingPrimaryGraphicsLayer = true;
     m_graphicsLayer = createGraphicsLayer(layerName);
-    m_creatingPrimaryGraphicsLayer = false;
 
     if (m_usingTiledCacheLayer)
         m_childContainmentLayer = createGraphicsLayer("TiledBacking Flattening Layer");
@@ -315,10 +247,8 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
 
 void RenderLayerBacking::destroyGraphicsLayers()
 {
-    if (m_graphicsLayer) {
-        willDestroyLayer(m_graphicsLayer.get());
+    if (m_graphicsLayer)
         m_graphicsLayer->removeFromParent();
-    }
 
     m_ancestorClippingLayer = nullptr;
     m_contentsContainmentLayer = nullptr;
@@ -977,7 +907,6 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
             layersChanged = true;
         }
     } else if (m_ancestorClippingLayer) {
-        willDestroyLayer(m_ancestorClippingLayer.get());
         m_ancestorClippingLayer->removeFromParent();
         m_ancestorClippingLayer = nullptr;
         layersChanged = true;
@@ -990,7 +919,6 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
             layersChanged = true;
         }
     } else if (hasClippingLayer()) {
-        willDestroyLayer(m_childContainmentLayer.get());
         m_childContainmentLayer->removeFromParent();
         m_childContainmentLayer = nullptr;
         layersChanged = true;
@@ -1040,7 +968,6 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
             horizontalScrollbarLayerChanged = true;
         }
     } else if (m_layerForHorizontalScrollbar) {
-        willDestroyLayer(m_layerForHorizontalScrollbar.get());
         m_layerForHorizontalScrollbar = nullptr;
         horizontalScrollbarLayerChanged = true;
     }
@@ -1052,7 +979,6 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
             verticalScrollbarLayerChanged = true;
         }
     } else if (m_layerForVerticalScrollbar) {
-        willDestroyLayer(m_layerForVerticalScrollbar.get());
         m_layerForVerticalScrollbar = nullptr;
         verticalScrollbarLayerChanged = true;
     }
@@ -1064,7 +990,6 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
             scrollCornerLayerChanged = true;
         }
     } else if (m_layerForScrollCorner) {
-        willDestroyLayer(m_layerForScrollCorner.get());
         m_layerForScrollCorner = nullptr;
         scrollCornerLayerChanged = true;
     }
@@ -1144,7 +1069,6 @@ bool RenderLayerBacking::updateForegroundLayer(bool needsForegroundLayer)
             layerChanged = true;
         }
     } else if (m_foregroundLayer) {
-        willDestroyLayer(m_foregroundLayer.get());
         m_foregroundLayer->removeFromParent();
         m_foregroundLayer = nullptr;
         layerChanged = true;
@@ -1184,13 +1108,11 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
         }
     } else {
         if (m_backgroundLayer) {
-            willDestroyLayer(m_backgroundLayer.get());
             m_backgroundLayer->removeFromParent();
             m_backgroundLayer = nullptr;
             layerChanged = true;
         }
         if (m_contentsContainmentLayer) {
-            willDestroyLayer(m_contentsContainmentLayer.get());
             m_contentsContainmentLayer->removeFromParent();
             m_contentsContainmentLayer = nullptr;
             layerChanged = true;
@@ -1212,7 +1134,6 @@ bool RenderLayerBacking::updateMaskLayer(bool needsMaskLayer)
             layerChanged = true;
         }
     } else if (m_maskLayer) {
-        willDestroyLayer(m_maskLayer.get());
         m_maskLayer = nullptr;
         layerChanged = true;
     }
@@ -1249,8 +1170,6 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
                 scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer);
         }
     } else if (m_scrollingLayer) {
-        willDestroyLayer(m_scrollingLayer.get());
-        willDestroyLayer(m_scrollingContentsLayer.get());
         m_scrollingLayer = nullptr;
         m_scrollingContentsLayer = nullptr;
         layerChanged = true;
@@ -2175,7 +2094,7 @@ CompositingLayerType RenderLayerBacking::compositingLayerType() const
         return MediaCompositingLayer;
 
     if (m_graphicsLayer->drawsContent())
-        return m_graphicsLayer->usingTiledBacking() ? TiledCompositingLayer : NormalCompositingLayer;
+        return NormalCompositingLayer;
     
     return ContainerCompositingLayer;
 }

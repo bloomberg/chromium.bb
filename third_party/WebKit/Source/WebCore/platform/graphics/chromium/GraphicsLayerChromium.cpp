@@ -41,8 +41,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "GraphicsLayerChromium.h"
 
 #include "AnimationTranslationUtil.h"
@@ -914,5 +912,3 @@ void GraphicsLayerChromium::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
 }
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)

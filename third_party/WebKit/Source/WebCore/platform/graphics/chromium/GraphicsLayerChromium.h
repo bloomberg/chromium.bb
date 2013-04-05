@@ -31,8 +31,6 @@
 #ifndef GraphicsLayerChromium_h
 #define GraphicsLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "GraphicsContext.h"
 #include "GraphicsLayer.h"
 #include "OpaqueRectTrackingContentLayerDelegate.h"
@@ -216,7 +214,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

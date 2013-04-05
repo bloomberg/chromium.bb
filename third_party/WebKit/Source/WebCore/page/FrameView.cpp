@@ -826,19 +826,6 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
     return renderView->compositor()->layerForScrollCorner();
 }
 
-TiledBacking* FrameView::tiledBacking()
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return 0;
-
-    RenderLayerBacking* backing = renderView->layer()->backing();
-    if (!backing)
-        return 0;
-
-    return backing->graphicsLayer()->tiledBacking();
-}
-
 #if ENABLE(RUBBER_BANDING)
 GraphicsLayer* FrameView::layerForOverhangAreas() const
 {
@@ -1978,12 +1965,6 @@ bool FrameView::isRubberBandInProgress() const
 bool FrameView::requestScrollPositionUpdate(const IntPoint& position)
 {
 #if ENABLE(THREADED_SCROLLING)
-    if (TiledBacking* tiledBacking = this->tiledBacking()) {
-        IntRect visibleRect = visibleContentRect();
-        visibleRect.setLocation(position);
-        tiledBacking->prepopulateRect(visibleRect);
-    }
-
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             return scrollingCoordinator->requestScrollPositionUpdate(this, position);
@@ -2044,12 +2025,6 @@ void FrameView::repaintContentRectangle(const IntRect& r)
     if (!shouldUpdate())
         return;
 
-#if USE(TILED_BACKING_STORE)
-    if (frame()->tiledBackingStore()) {
-        frame()->tiledBackingStore()->invalidate(r);
-        return;
-    }
-#endif
     ScrollView::repaintContentRectangle(r);
 }
 
@@ -2157,12 +2132,6 @@ void FrameView::doDeferredRepaints()
     }
     unsigned size = m_repaintRects.size();
     for (unsigned i = 0; i < size; i++) {
-#if USE(TILED_BACKING_STORE)
-        if (frame()->tiledBackingStore()) {
-            frame()->tiledBackingStore()->invalidate(pixelSnappedIntRect(m_repaintRects[i]));
-            continue;
-        }
-#endif
         ScrollView::repaintContentRectangle(pixelSnappedIntRect(m_repaintRects[i]));
     }
     m_repaintRects.clear();
@@ -3941,14 +3910,8 @@ AXObjectCache* FrameView::axObjectCache() const
     return 0;
 }
     
-void FrameView::setScrollingPerformanceLoggingEnabled(bool flag)
+void FrameView::setScrollingPerformanceLoggingEnabled(bool)
 {
-#if USE(ACCELERATED_COMPOSITING)
-    if (TiledBacking* tiledBacking = this->tiledBacking())
-        tiledBacking->setScrollingPerformanceLoggingEnabled(flag);
-#else
-    UNUSED_PARAM(flag);
-#endif
 }
 
 } // namespace WebCore

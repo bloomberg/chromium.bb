@@ -57,7 +57,6 @@
 #include "ScrollingConstraints.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
-#include "TiledBacking.h"
 #include "TraceEvent.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
@@ -209,7 +208,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_forceCompositingMode(false)
     , m_inPostLayoutUpdate(false)
     , m_isTrackingRepaints(false)
-    , m_layersWithTiledBackingCount(0)
     , m_rootLayerAttachment(RootLayerUnattached)
 #if !LOG_DISABLED
     , m_rootLayerUpdateCount(0)
@@ -325,28 +323,7 @@ void RenderLayerCompositor::scheduleLayerFlush()
 
 void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
 {
-    // FrameView::flushCompositingStateIncludingSubframes() flushes each subframe,
-    // but GraphicsLayer::flushCompositingState() will cross frame boundaries
-    // if the GraphicsLayers are connected (the RootLayerAttachedViaEnclosingFrame case).
-    // As long as we're not the root of the flush, we can bail.
-    if (!isFlushRoot && rootLayerAttachment() == RootLayerAttachedViaEnclosingFrame)
-        return;
-    
-    if (rootLayerAttachment() == RootLayerUnattached) {
-        m_shouldFlushOnReattach = true;
-        return;
-    }
-
-    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame()->animation());
-
-    if (GraphicsLayer* rootLayer = rootGraphicsLayer()) {
-        FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
-        if (frameView) {
-            // Having a m_clipLayer indicates that we're doing scrolling via GraphicsLayers.
-            IntRect visibleRect = m_clipLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
-            rootLayer->flushCompositingState(visibleRect);
-        }
-    }
+    // FIXME: Delete this.
 }
 
 void RenderLayerCompositor::didChangeVisibleRect()
@@ -380,16 +357,6 @@ void RenderLayerCompositor::notifyFlushBeforeDisplayRefresh(const GraphicsLayer*
 void RenderLayerCompositor::flushLayers(GraphicsLayerUpdater*)
 {
     flushPendingLayerChanges(true); // FIXME: deal with iframes
-}
-
-void RenderLayerCompositor::layerTiledBackingUsageChanged(const GraphicsLayer*, bool usingTiledBacking)
-{
-    if (usingTiledBacking)
-        ++m_layersWithTiledBackingCount;
-    else {
-        ASSERT(m_layersWithTiledBackingCount > 0);
-        --m_layersWithTiledBackingCount;
-    }
 }
 
 void RenderLayerCompositor::scheduleCompositingLayerUpdate()
@@ -1233,16 +1200,11 @@ void RenderLayerCompositor::frameViewDidScroll()
 
 void RenderLayerCompositor::frameViewDidLayout()
 {
-    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
-    if (renderViewBacking)
-        renderViewBacking->adjustTiledBackingCoverage();
 }
 
 void RenderLayerCompositor::rootFixedBackgroundsChanged()
 {
-    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
-    if (renderViewBacking && renderViewBacking->usingTiledBacking())
-        setCompositingLayersNeedRebuild();
+    // FIXME: Implement when root fixed background layer is implemented.
 }
 
 void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
@@ -1265,8 +1227,6 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
         layerTreeBehavior |= LayerTreeAsTextDebug;
     if (flags & LayerTreeFlagsIncludeVisibleRects)
         layerTreeBehavior |= LayerTreeAsTextIncludeVisibleRects;
-    if (flags & LayerTreeFlagsIncludeTileCaches)
-        layerTreeBehavior |= LayerTreeAsTextIncludeTileCaches;
     if (flags & LayerTreeFlagsIncludeRepaintRects)
         layerTreeBehavior |= LayerTreeAsTextIncludeRepaintRects;
     if (flags & LayerTreeFlagsIncludePaintingPhases)
@@ -1502,17 +1462,8 @@ GraphicsLayer* RenderLayerCompositor::scrollLayer() const
     return m_scrollLayer.get();
 }
 
-TiledBacking* RenderLayerCompositor::pageTiledBacking() const
-{
-    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
-    return renderViewBacking ? renderViewBacking->tiledBacking() : 0;
-}
-
 void RenderLayerCompositor::setIsInWindow(bool isInWindow)
 {
-    if (TiledBacking* tiledBacking = pageTiledBacking())
-        tiledBacking->setIsInWindow(isInWindow);
-
     if (!inCompositingMode())
         return;
 
@@ -2206,8 +2157,7 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
-    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
-    return renderViewBacking && renderViewBacking->usingTiledBacking();
+    return false;  // FIXME: Return true if this is supported when implemented.
 }
 
 bool RenderLayerCompositor::needsFixedRootBackgroundLayer(const RenderLayer* layer) const
