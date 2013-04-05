@@ -27,6 +27,9 @@
     'devtools': {
       'filepath': 'inspector|DevTools|devtools',
     },
+    'loader': {
+      'filepath': 'Source/WebCore/loader',
+    },
     'public_api': {
       'filepath': 'Source/Platform/chromium/public' \
                   '|Source/WebKit/chromium/public' \
@@ -65,7 +68,8 @@
                   'vsevik+blink@chromium.org',
                   'yurys+blink@chromium.org',
                   'caseq+blink@chromium.org'],
-    'bindings': [ 'abarth@chromium.org' ],
+    'bindings': [ 'abarth@chromium.org', 'japhet@chromium.org' ],
+    'loader': [ 'japhet@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
