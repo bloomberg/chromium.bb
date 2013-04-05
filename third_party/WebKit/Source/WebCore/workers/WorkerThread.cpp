@@ -166,9 +166,7 @@ void WorkerThread::workerThread()
 #endif
 
     WorkerScriptController* script = m_workerContext->script();
-#if ENABLE(INSPECTOR)
     InspectorInstrumentation::willEvaluateWorkerScript(workerContext(), m_startupData->m_startMode);
-#endif
     script->evaluate(ScriptSourceCode(m_startupData->m_sourceCode, m_startupData->m_scriptURL));
     // Free the startup data to cause its member variable deref's happen on the worker's thread (since
     // all ref/derefs of these objects are happening on the thread at this point). Note that
@@ -209,9 +207,7 @@ public:
     {
         ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
         WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-#if ENABLE(INSPECTOR)
         workerContext->clearInspector();
-#endif
         // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
         workerContext->clearScript();
     }

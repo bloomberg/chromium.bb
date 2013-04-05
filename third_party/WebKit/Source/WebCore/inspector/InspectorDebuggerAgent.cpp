@@ -28,8 +28,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 #include "InspectorDebuggerAgent.h"
 
 #include "CachedResource.h"
@@ -797,4 +795,3 @@ void InspectorDebuggerAgent::reset()
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)

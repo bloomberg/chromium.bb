@@ -65,7 +65,6 @@ double ScriptProfile::idleTime() const
     return m_idleTime;
 }
 
-#if ENABLE(INSPECTOR)
 static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(const v8::CpuProfileNode* node)
 {
     v8::HandleScope handleScope;
@@ -105,6 +104,5 @@ PassRefPtr<TypeBuilder::Array<int> > ScriptProfile::buildInspectorObjectForSampl
     return array.release();
 }
 
-#endif
 
 } // namespace WebCore

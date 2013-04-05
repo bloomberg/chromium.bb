@@ -31,7 +31,6 @@
 #ifndef InspectorRuntimeAgent_h
 #define InspectorRuntimeAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "ScriptState.h"
@@ -85,9 +84,7 @@ public:
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup);
     virtual void run(ErrorString*);
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     void setScriptDebugServer(ScriptDebugServer*);
-#endif
 
 protected:
     InspectorRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
@@ -101,12 +98,9 @@ protected:
 
 private:
     InjectedScriptManager* m_injectedScriptManager;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ScriptDebugServer* m_scriptDebugServer;
-#endif
 };
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 #endif // InspectorRuntimeAgent_h

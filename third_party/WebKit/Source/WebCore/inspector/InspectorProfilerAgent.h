@@ -30,7 +30,6 @@
 #ifndef InspectorProfilerAgent_h
 #define InspectorProfilerAgent_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
@@ -138,6 +137,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorProfilerAgent_h)

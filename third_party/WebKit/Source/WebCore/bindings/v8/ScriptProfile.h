@@ -31,13 +31,10 @@
 #ifndef ScriptProfile_h
 #define ScriptProfile_h
 
+#include "InspectorTypeBuilder.h"
 #include "ScriptProfileNode.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
-
-#if ENABLE(INSPECTOR)
-#include "InspectorTypeBuilder.h"
-#endif
 
 namespace v8 {
 class CpuProfile;
@@ -45,9 +42,7 @@ class CpuProfile;
 
 namespace WebCore {
 
-#if ENABLE(INSPECTOR)
 class InspectorObject;
-#endif
 
 class ScriptProfile : public RefCounted<ScriptProfile> {
 public:
@@ -62,10 +57,8 @@ public:
     PassRefPtr<ScriptProfileNode> head() const;
     double idleTime() const;
 
-#if ENABLE(INSPECTOR)
     PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
     PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
-#endif
 
 private:
     ScriptProfile(const v8::CpuProfile* profile, double idleTime)

@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "InjectedScriptCanvasModule.h"
 
@@ -203,4 +202,3 @@ void InjectedScriptCanvasModule::resourceState(ErrorString* errorString, const T
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

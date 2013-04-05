@@ -31,7 +31,7 @@
 #ifndef InspectorFileSystemAgent_h
 #define InspectorFileSystemAgent_h
 
-#if ENABLE(INSPECTOR) && ENABLE(FILE_SYSTEM)
+#if ENABLE(FILE_SYSTEM)
 
 #include "InspectorBaseAgent.h"
 
@@ -73,5 +73,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR) && ENABLE(FILE_SYSTEM)
+#endif // ENABLE(FILE_SYSTEM)
 #endif // InspectorFileSystemAgent_h

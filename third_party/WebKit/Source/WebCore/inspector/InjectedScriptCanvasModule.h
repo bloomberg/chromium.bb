@@ -40,7 +40,6 @@ namespace WebCore {
 class InjectedScriptManager;
 class ScriptObject;
 
-#if ENABLE(INSPECTOR)
 
 class InjectedScriptCanvasModule : public InjectedScriptModule {
 public:
@@ -71,7 +70,6 @@ private:
     void callVoidFunctionWithTraceLogIdArgument(const String&, ErrorString*, const String&);
 };
 
-#endif
 
 } // namespace WebCore
 

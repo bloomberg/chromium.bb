@@ -91,9 +91,7 @@ WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPt
     , m_groupSettings(settings)
     , m_script(adoptPtr(new WorkerScriptController(this)))
     , m_thread(thread)
-#if ENABLE(INSPECTOR)
     , m_workerInspectorController(adoptPtr(new WorkerInspectorController(this)))
-#endif
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_topOrigin(topOrigin)
@@ -211,12 +209,10 @@ void WorkerContext::clearTimeout(int timeoutId)
     DOMTimer::removeById(scriptExecutionContext(), timeoutId);
 }
 
-#if ENABLE(INSPECTOR)
 void WorkerContext::clearInspector()
 {
     m_workerInspectorController.clear();
 }
-#endif
 
 int WorkerContext::setInterval(PassOwnPtr<ScheduledAction> action, int timeout)
 {

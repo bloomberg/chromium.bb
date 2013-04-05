@@ -28,7 +28,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "ContentSearchUtils.h"
 
@@ -201,4 +200,3 @@ String findSourceMapURL(const String& content)
 } // namespace ContentSearchUtils
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

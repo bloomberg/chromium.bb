@@ -31,7 +31,6 @@
 #include "config.h"
 #include "V8JavaScriptCallFrame.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "V8Binding.h"
 
@@ -85,4 +84,3 @@ v8::Handle<v8::Value> V8JavaScriptCallFrame::typeAttrGetterCustom(v8::Local<v8::
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)

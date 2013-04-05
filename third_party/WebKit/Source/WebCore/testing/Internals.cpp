@@ -156,7 +156,6 @@ static MockPagePopupDriver* s_pagePopupDriver = 0;
 
 using namespace HTMLNames;
 
-#if ENABLE(INSPECTOR)
 class InspectorFrontendClientDummy : public InspectorFrontendClientLocal {
 public:
     InspectorFrontendClientDummy(InspectorController*, Page*);
@@ -200,7 +199,6 @@ bool InspectorFrontendChannelDummy::sendMessageToFrontend(const String& message)
 {
     return InspectorClient::doDispatchMessageOnFrontendPage(m_frontendPage, message);
 }
-#endif // ENABLE(INSPECTOR)
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)
 {
@@ -270,10 +268,8 @@ void Internals::resetToConsistentState(Page* page)
     if (page->chrome())
         page->chrome()->client()->resetPagePopupDriver();
 #endif
-#if ENABLE(INSPECTOR) && ENABLE(JAVASCRIPT_DEBUGGER)
     if (page->inspectorController())
         page->inspectorController()->setProfilerEnabled(false);
-#endif
 #if ENABLE(VIDEO_TRACK) && !PLATFORM(WIN)
     page->group().captionPreferences()->setTestingMode(false);
 #endif
@@ -925,7 +921,6 @@ PassRefPtr<ClientRect> Internals::boundingBox(Element* element, ExceptionCode& e
 
 PassRefPtr<ClientRectList> Internals::inspectorHighlightRects(Document* document, ExceptionCode& ec)
 {
-#if ENABLE(INSPECTOR)
     if (!document || !document->page() || !document->page()->inspectorController()) {
         ec = INVALID_ACCESS_ERR;
         return ClientRectList::create();
@@ -934,11 +929,6 @@ PassRefPtr<ClientRectList> Internals::inspectorHighlightRects(Document* document
     Highlight highlight;
     document->page()->inspectorController()->getHighlight(&highlight);
     return ClientRectList::create(highlight.quads);
-#else
-    UNUSED_PARAM(document);
-    UNUSED_PARAM(ec);
-    return ClientRectList::create();
-#endif
 }
 
 unsigned Internals::markerCountForNode(Node* node, const String& markerType, ExceptionCode& ec)
@@ -1430,18 +1420,14 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int x, int y, 
 
 void Internals::emitInspectorDidBeginFrame()
 {
-#if ENABLE(INSPECTOR)
     InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
     inspectorController->didBeginFrame();
-#endif
 }
 
 void Internals::emitInspectorDidCancelFrame()
 {
-#if ENABLE(INSPECTOR)
     InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
     inspectorController->didCancelFrame();
-#endif
 }
 
 void Internals::setBatteryStatus(Document* document, const String& eventType, bool charging, double chargingTime, double dischargingTime, double level, ExceptionCode& ec)
@@ -1536,7 +1522,6 @@ void Internals::toggleOverwriteModeEnabled(Document* document, ExceptionCode&)
     document->frame()->editor()->toggleOverwriteModeEnabled();
 }
 
-#if ENABLE(INSPECTOR)
 unsigned Internals::numberOfLiveNodes() const
 {
     return InspectorCounters::counterValue(InspectorCounters::NodeCounter);
@@ -1621,7 +1606,6 @@ void Internals::setJavaScriptProfilingEnabled(bool enabled, ExceptionCode& ec)
 
     page->inspectorController()->setProfilerEnabled(enabled);
 }
-#endif // ENABLE(INSPECTOR)
 
 bool Internals::hasGrammarMarker(Document* document, int from, int length, ExceptionCode&)
 {

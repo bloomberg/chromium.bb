@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorAgent.h"
 
 #include "Document.h"
@@ -184,4 +181,3 @@ KURL InspectorAgent::inspectedURLWithoutFragment() const
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

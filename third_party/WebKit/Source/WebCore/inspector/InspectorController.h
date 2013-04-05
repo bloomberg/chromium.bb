@@ -31,7 +31,6 @@
 #ifndef InspectorController_h
 #define InspectorController_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include <wtf/Forward.h>
@@ -107,12 +106,10 @@ public:
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     bool profilerEnabled();
     void setProfilerEnabled(bool);
 
     void resume();
-#endif
 
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
 
@@ -147,11 +144,9 @@ private:
     InspectorResourceAgent* m_resourceAgent;
     InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     InspectorDebuggerAgent* m_debuggerAgent;
     InspectorDOMDebuggerAgent* m_domDebuggerAgent;
     InspectorProfilerAgent* m_profilerAgent;
-#endif
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;
@@ -164,6 +159,5 @@ private:
 
 }
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorController_h)

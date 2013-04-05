@@ -76,9 +76,7 @@ namespace WebCore {
 
         WorkerScriptController* script() { return m_script.get(); }
         void clearScript() { m_script.clear(); }
-#if ENABLE(INSPECTOR)
         void clearInspector();
-#endif
 
         WorkerThread* thread() const { return m_thread; }
 
@@ -109,9 +107,7 @@ namespace WebCore {
         virtual bool isContextThread() const OVERRIDE;
         virtual bool isJSExecutionForbidden() const OVERRIDE;
 
-#if ENABLE(INSPECTOR)
         WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
-#endif
         // These methods are used for GC marking. See JSWorkerContext::visitChildrenVirtual(SlotVisitor&) in
         // JSWorkerContextCustom.cpp.
         WorkerNavigator* optionalNavigator() const { return m_navigator.get(); }
@@ -177,9 +173,7 @@ namespace WebCore {
 #if ENABLE(BLOB)
         mutable RefPtr<DOMURL> m_domURL;
 #endif
-#if ENABLE(INSPECTOR)
         OwnPtr<WorkerInspectorController> m_workerInspectorController;
-#endif
         bool m_closing;
         EventTargetData m_eventTargetData;
 

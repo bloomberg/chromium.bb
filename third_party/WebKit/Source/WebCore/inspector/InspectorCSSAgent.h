@@ -60,7 +60,6 @@ class StyleResolver;
 class StyleRule;
 class UpdateRegionLayoutTask;
 
-#if ENABLE(INSPECTOR)
 
 class InspectorCSSAgent
     : public InspectorBaseAgent<InspectorCSSAgent>
@@ -192,7 +191,6 @@ private:
     OwnPtr<SelectorProfile> m_currentSelectorProfile;
 };
 
-#endif
 
 } // namespace WebCore
 

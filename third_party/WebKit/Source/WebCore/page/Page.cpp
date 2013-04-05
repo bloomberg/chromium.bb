@@ -126,9 +126,7 @@ Page::Page(PageClients& pageClients)
 #if ENABLE(CONTEXT_MENUS)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
 #endif
-#if ENABLE(INSPECTOR)
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
-#endif
 #if ENABLE(POINTER_LOCK)
     , m_pointerLockController(PointerLockController::create(this))
 #endif
@@ -211,9 +209,7 @@ Page::~Page()
     if (m_alternativeTextClient)
         m_alternativeTextClient->pageDestroyed();
 
-#if ENABLE(INSPECTOR)
     m_inspectorController->inspectedPageDestroyed();
-#endif
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->pageDestroyed();
@@ -1462,9 +1458,7 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 #if ENABLE(CONTEXT_MENUS)
     info.addMember(m_contextMenuController, "contextMenuController");
 #endif
-#if ENABLE(INSPECTOR)
     info.addMember(m_inspectorController, "inspectorController");
-#endif
 #if ENABLE(POINTER_LOCK)
     info.addMember(m_pointerLockController, "pointerLockController");
 #endif

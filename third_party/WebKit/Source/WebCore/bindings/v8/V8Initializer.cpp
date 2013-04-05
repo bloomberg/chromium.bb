@@ -127,9 +127,7 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
     v8::V8::SetFatalErrorHandler(reportFatalErrorInMainThread);
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ScriptProfiler::initialize();
-#endif
     V8PerIsolateData::ensureInitialized(isolate);
 }
 

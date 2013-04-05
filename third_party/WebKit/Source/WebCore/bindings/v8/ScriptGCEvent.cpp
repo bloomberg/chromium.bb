@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "ScriptGCEvent.h"
 #include "ScriptGCEventListener.h"
@@ -110,4 +109,3 @@ void ScriptGCEvent::gcEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flag
     
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

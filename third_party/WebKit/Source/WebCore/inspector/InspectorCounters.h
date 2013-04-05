@@ -51,38 +51,25 @@ public:
 
     static inline void incrementCounter(CounterType type)
     {
-#if ENABLE(INSPECTOR)
         ASSERT(isMainThread());
         ++s_counters[type];
-#else
-        UNUSED_PARAM(type);
-#endif
     }
 
     static inline void decrementCounter(CounterType type)
     {
-#if ENABLE(INSPECTOR)
         ASSERT(isMainThread());
         --s_counters[type];
-#else
-        UNUSED_PARAM(type);
-#endif
     }
 
-#if ENABLE(INSPECTOR)
     static int counterValue(CounterType);
-#endif
 
 private:
     InspectorCounters();
 
-#if ENABLE(INSPECTOR)
     static int s_counters[CounterTypeLength];
-#endif
 };
 
 
-#if ENABLE(INSPECTOR)
 class ThreadLocalInspectorCounters {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -109,7 +96,6 @@ public:
 private:
     int m_counters[CounterTypeLength];
 };
-#endif
 
 } // namespace WebCore
 

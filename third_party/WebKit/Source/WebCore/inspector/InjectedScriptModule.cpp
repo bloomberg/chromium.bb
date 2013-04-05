@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InjectedScriptModule.h"
 
 #include "InjectedScript.h"
@@ -76,4 +73,3 @@ void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptM
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

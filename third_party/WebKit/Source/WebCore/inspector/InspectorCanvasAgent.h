@@ -31,7 +31,6 @@
 #ifndef InspectorCanvasAgent_h
 #define InspectorCanvasAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
@@ -111,6 +110,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorCanvasAgent_h)

@@ -41,6 +41,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "InspectorInstrumentation.h"
+#include "ProgressTracker.h"
 #include "ResourceError.h"
 #include "ResourceRequest.h"
 #include "SchemeRegistry.h"
@@ -49,10 +50,6 @@
 #include "ThreadableLoaderClient.h"
 #include <wtf/Assertions.h>
 #include <wtf/UnusedParam.h>
-
-#if ENABLE(INSPECTOR)
-#include "ProgressTracker.h"
-#endif
 
 namespace WebCore {
 
@@ -247,11 +244,9 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
 
     String accessControlErrorDescription;
     if (m_actualRequest) {
-#if ENABLE(INSPECTOR)
         DocumentLoader* loader = m_document->frame()->loader()->documentLoader();
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_document->frame(), identifier, response);
         InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, response, 0);
-#endif
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
             preflightFailure(identifier, response.url(), accessControlErrorDescription);
@@ -291,9 +286,7 @@ void DocumentThreadableLoader::didReceiveData(unsigned long identifier, const ch
 
     // Preflight data should be invisible to clients.
     if (m_actualRequest) {
-#if ENABLE(INSPECTOR)
         InspectorInstrumentation::didReceiveData(m_document->frame(), identifier, 0, 0, dataLength);
-#endif
         return;
     }
 
@@ -314,9 +307,7 @@ void DocumentThreadableLoader::notifyFinished(CachedResource* resource)
 void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double finishTime)
 {
     if (m_actualRequest) {
-#if ENABLE(INSPECTOR)
         InspectorInstrumentation::didFinishLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, finishTime);
-#endif
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         preflightSuccess();
@@ -326,10 +317,8 @@ void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double
 
 void DocumentThreadableLoader::didFail(unsigned long identifier, const ResourceError& error)
 {
-#if ENABLE(INSPECTOR)
     if (m_actualRequest)
         InspectorInstrumentation::didFailLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, error);
-#endif
 
     m_client->didFail(error);
 }
@@ -350,10 +339,8 @@ void DocumentThreadableLoader::preflightSuccess()
 void DocumentThreadableLoader::preflightFailure(unsigned long identifier, const String& url, const String& errorDescription)
 {
     ResourceError error(errorDomainWebKitInternal, 0, url, errorDescription);
-#if ENABLE(INSPECTOR)
     if (m_actualRequest)
         InspectorInstrumentation::didFailLoading(m_document->frame(), m_document->frame()->loader()->documentLoader(), identifier, error);
-#endif
     m_actualRequest = nullptr; // Prevent didFinishLoading() from bypassing access check.
     m_client->didFailAccessControlCheck(error);
 }
@@ -384,12 +371,10 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
         ASSERT(!m_resource);
         m_resource = m_document->cachedResourceLoader()->requestRawResource(newRequest);
         if (m_resource) {
-#if ENABLE(INSPECTOR)
             if (m_resource->loader()) {
                 unsigned long identifier = m_resource->loader()->identifier();
                 InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
             }
-#endif
             m_resource->addClient(this);
         }
         return;

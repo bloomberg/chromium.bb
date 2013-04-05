@@ -92,9 +92,7 @@ private:
 
     void unbindAllResources();
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     void toggleRecordButton(bool);
-#endif
 
     bool isMainResourceLoader(DocumentLoader*, const KURL& requestUrl);
 

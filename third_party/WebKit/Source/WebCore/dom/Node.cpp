@@ -128,9 +128,7 @@
 #include "GestureEvent.h"
 #endif
 
-#if ENABLE(INSPECTOR)
 #include "InspectorController.h"
-#endif
 
 #if USE(JSC)
 #include <runtime/JSGlobalData.h>
@@ -679,10 +677,8 @@ bool Node::isContentRichlyEditable()
 
 void Node::inspect()
 {
-#if ENABLE(INSPECTOR)
     if (document() && document()->page())
         document()->page()->inspectorController()->inspect(this);
-#endif
 }
 
 bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatment treatment) const

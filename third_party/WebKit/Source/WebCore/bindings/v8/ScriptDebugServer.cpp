@@ -31,7 +31,6 @@
 #include "config.h"
 #include "ScriptDebugServer.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "DebuggerScriptSource.h"
 #include "JavaScriptCallFrame.h"
@@ -646,4 +645,3 @@ void ScriptDebugServer::runScript(ScriptState* state, const String& scriptId, Sc
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)

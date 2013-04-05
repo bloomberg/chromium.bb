@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "ConsoleMessage.h"
 
@@ -279,4 +278,3 @@ unsigned ConsoleMessage::argumentCount()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

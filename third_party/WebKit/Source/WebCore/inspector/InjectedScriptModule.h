@@ -39,7 +39,6 @@ namespace WebCore {
 
 class InjectedScriptManager;
 
-#if ENABLE(INSPECTOR)
 
 class InjectedScriptModule : public InjectedScriptBase {
 public:
@@ -53,7 +52,6 @@ protected:
     void ensureInjected(InjectedScriptManager*, ScriptState*);
 };
 
-#endif
 
 } // namespace WebCore
 

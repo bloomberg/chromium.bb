@@ -31,7 +31,6 @@
 #include "config.h"
 
 #if USE(ACCELERATED_COMPOSITING)
-#if ENABLE(INSPECTOR)
 
 #include "InspectorLayerTreeAgent.h"
 
@@ -353,5 +352,4 @@ void InspectorLayerTreeAgent::unbindPseudoElement(PseudoElement* pseudoElement)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 #endif // USE(ACCELERATED_COMPOSITING)

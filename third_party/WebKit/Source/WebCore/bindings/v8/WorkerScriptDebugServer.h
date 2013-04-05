@@ -31,7 +31,7 @@
 #ifndef WorkerScriptDebugServer_h
 #define WorkerScriptDebugServer_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "ScriptDebugServer.h"
 
@@ -69,6 +69,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(WORKERS)
+#endif // ENABLE(WORKERS)
 
 #endif // WorkerScriptDebugServer_h

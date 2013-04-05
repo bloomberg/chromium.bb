@@ -79,7 +79,6 @@ private:
     GCEventListeners m_listeners;
 };
 
-#if ENABLE(INSPECTOR)
 
 class ScriptGCEvent
 {
@@ -94,7 +93,6 @@ private:
     static size_t getUsedHeapSize();
 };
 
-#endif // ENABLE(INSPECTOR)
 
 } // namespace WebCore
 

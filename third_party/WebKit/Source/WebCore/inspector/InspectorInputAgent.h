@@ -31,7 +31,6 @@
 #ifndef InspectorInputAgent_h
 #define InspectorInputAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 
@@ -65,7 +64,6 @@ private:
     Page* m_page;
 };
 
-#endif // ENABLE(INSPECTOR)
 
 } // namespace WebCore
 

@@ -34,7 +34,6 @@
 #include "InspectorConsoleAgent.h"
 #include <wtf/PassOwnPtr.h>
 
-#if ENABLE(INSPECTOR)
 
 namespace WebCore {
 
@@ -63,6 +62,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(PageConsoleAgent_h)

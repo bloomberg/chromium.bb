@@ -69,7 +69,6 @@ bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, const S
     return scope.success();
 }
 
-#if ENABLE(INSPECTOR)
 bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InspectorFrontendHost* value)
 {
     ScriptScope scope(scriptState);
@@ -83,7 +82,6 @@ bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, Injecte
     scope.global()->Set(v8::String::NewSymbol(name), toV8(value, v8::Handle<v8::Object>(), scriptState->isolate()));
     return scope.success();
 }
-#endif
 
 bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptObject& value)
 {

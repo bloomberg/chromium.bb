@@ -46,10 +46,8 @@ namespace WebCore {
         virtual void postExceptionToWorkerObject(const String& errorMessage, int lineNumber, const String& sourceURL) = 0;
 
         virtual void postConsoleMessageToWorkerObject(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) = 0;
-#if ENABLE(INSPECTOR)
         virtual void postMessageToPageInspector(const String&) = 0;
         virtual void updateInspectorStateCookie(const String&) = 0;
-#endif
         // Invoked when close() is invoked on the worker context.
         virtual void workerContextClosed() = 0;
 

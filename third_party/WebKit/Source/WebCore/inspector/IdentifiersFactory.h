@@ -28,7 +28,6 @@
 
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INSPECTOR)
 
 namespace WebCore {
 
@@ -45,6 +44,5 @@ private:
 
 } // namespace WebCore
 
-#endif // !defined(IdentifiersFactory_h)
 
-#endif // ENABLE(INSPECTOR)
+#endif // IdentifiersFactory_h

@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorResourceAgent.h"
 
 #include "CachedRawResource.h"
@@ -686,4 +683,3 @@ InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentin
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

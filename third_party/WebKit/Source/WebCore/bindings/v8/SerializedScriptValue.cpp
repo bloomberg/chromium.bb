@@ -2491,7 +2491,6 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     return deserializer.deserialize();
 }
 
-#if ENABLE(INSPECTOR)
 ScriptValue SerializedScriptValue::deserializeForInspector(ScriptState* scriptState)
 {
     v8::HandleScope handleScope;
@@ -2499,7 +2498,6 @@ ScriptValue SerializedScriptValue::deserializeForInspector(ScriptState* scriptSt
 
     return ScriptValue(deserialize(scriptState->isolate()));
 }
-#endif
 
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()
 {

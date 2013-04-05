@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR) && ENABLE(FILE_SYSTEM)
+#if ENABLE(FILE_SYSTEM)
 
 #include "InspectorFileSystemAgent.h"
 
@@ -739,4 +739,4 @@ ScriptExecutionContext* InspectorFileSystemAgent::assertScriptExecutionContextFo
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR) && ENABLE(FILE_SYSTEM)
+#endif // ENABLE(FILE_SYSTEM)

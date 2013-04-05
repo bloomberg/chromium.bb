@@ -29,7 +29,6 @@
 #ifndef InspectorLayerTreeAgent_h
 #define InspectorLayerTreeAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
@@ -99,6 +98,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorLayerTreeAgent_h)

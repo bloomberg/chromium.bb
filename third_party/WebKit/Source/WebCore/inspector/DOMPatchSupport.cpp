@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "DOMPatchSupport.h"
 
@@ -526,4 +525,3 @@ void DOMPatchSupport::dumpMap(const ResultMap& map, const String& name)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

@@ -29,9 +29,6 @@
 */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "TimelineTraceEventProcessor.h"
 
 #include "InspectorClient.h"
@@ -324,4 +321,3 @@ void TimelineTraceEventProcessor::processBackgroundEvents()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

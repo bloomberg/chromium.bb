@@ -23,9 +23,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorCSSAgent.h"
 
 #include "CSSComputedStyleDeclaration.h"
@@ -1317,4 +1314,3 @@ void InspectorCSSAgent::resetPseudoStates()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

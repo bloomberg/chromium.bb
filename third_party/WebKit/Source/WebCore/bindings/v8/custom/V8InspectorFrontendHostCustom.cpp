@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INSPECTOR)
 #include "V8InspectorFrontendHost.h"
 
 #include "HistogramSupport.h"
@@ -163,4 +162,3 @@ v8::Handle<v8::Value> V8InspectorFrontendHost::recordSettingChangedMethodCustom(
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

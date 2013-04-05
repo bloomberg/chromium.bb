@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorDOMAgent.h"
 
 #include "Attr.h"
@@ -1826,4 +1823,3 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

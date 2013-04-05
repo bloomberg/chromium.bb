@@ -116,7 +116,6 @@ public:
     InspectorApplicationCacheAgent* inspectorApplicationCacheAgent() const { return m_inspectorApplicationCacheAgent; }
     void setInspectorApplicationCacheAgent(InspectorApplicationCacheAgent* agent) { m_inspectorApplicationCacheAgent = agent; }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     InspectorDebuggerAgent* inspectorDebuggerAgent() const { return m_inspectorDebuggerAgent; }
     void setInspectorDebuggerAgent(InspectorDebuggerAgent* agent) { m_inspectorDebuggerAgent = agent; }
 
@@ -131,7 +130,6 @@ public:
 
     InspectorHeapProfilerAgent* inspectorHeapProfilerAgent() const { return m_inspectorHeapProfilerAgent; }
     void setInspectorHeapProfilerAgent(InspectorHeapProfilerAgent* agent) { m_inspectorHeapProfilerAgent = agent; }
-#endif
 
 #if ENABLE(WORKERS)
     InspectorWorkerAgent* inspectorWorkerAgent() const { return m_inspectorWorkerAgent; }
@@ -169,13 +167,11 @@ private:
     InspectorFileSystemAgent* m_inspectorFileSystemAgent;
 #endif
     InspectorApplicationCacheAgent* m_inspectorApplicationCacheAgent;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     InspectorDebuggerAgent* m_inspectorDebuggerAgent;
     PageDebuggerAgent* m_pageDebuggerAgent;
     InspectorDOMDebuggerAgent* m_inspectorDOMDebuggerAgent;
     InspectorProfilerAgent* m_inspectorProfilerAgent;
     InspectorHeapProfilerAgent* m_inspectorHeapProfilerAgent;
-#endif
 #if ENABLE(WORKERS)
     InspectorWorkerAgent* m_inspectorWorkerAgent;
 #endif

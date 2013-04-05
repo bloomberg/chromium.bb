@@ -83,9 +83,7 @@ public:
     v8::Handle<v8::Value> deserialize(MessagePortArray* = 0);
     v8::Handle<v8::Value> deserialize(v8::Isolate*, MessagePortArray* = 0);
 
-#if ENABLE(INSPECTOR)
     ScriptValue deserializeForInspector(ScriptState*);
-#endif
 
     const Vector<String>& blobURLs() const { return m_blobURLs; }
 

@@ -164,7 +164,6 @@ void Console::markTimeline(PassRefPtr<ScriptArguments> arguments)
     InspectorInstrumentation::consoleTimeStamp(m_frame, arguments);
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 void Console::profile(const String& title, ScriptState* state)
 {
@@ -205,7 +204,6 @@ void Console::profileEnd(const String& title, ScriptState* state)
     InspectorInstrumentation::addProfile(page, profile, callStack);
 }
 
-#endif
 
 void Console::time(const String& title)
 {

@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "HeapGraphSerializer.h"
 
@@ -252,4 +251,3 @@ void HeapGraphSerializer::addRootNode()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

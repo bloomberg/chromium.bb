@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-#if ENABLE(INSPECTOR)
 
 class HeapSizeCache {
     WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED;
@@ -132,21 +131,18 @@ size_t quantizeMemorySize(size_t size)
     return bucketSizeList[numberOfBuckets - 1];
 }
 
-#endif
 
 MemoryInfo::MemoryInfo(Frame* frame)
 {
     if (!frame || !frame->settings())
         return;
 
-#if ENABLE(INSPECTOR)
     if (frame->settings()->memoryInfoEnabled())
         ScriptGCEvent::getHeapSize(m_info);
     else if (true || frame->settings()->quantizedMemoryInfoEnabled()) {
         DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());
         heapSizeCache.getCachedHeapSize(m_info);
     }
-#endif
 }
 
 } // namespace WebCore

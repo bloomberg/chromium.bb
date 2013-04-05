@@ -241,7 +241,6 @@ public:
     void insertAuthorCSS(Document*, const String&) const;
     void insertUserCSS(Document*, const String&) const;
 
-#if ENABLE(INSPECTOR)
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
@@ -249,7 +248,6 @@ public:
     void closeDummyInspectorFrontend();
     void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionCode&);
     void setJavaScriptProfilingEnabled(bool enabled, ExceptionCode&);
-#endif
 
     String counterValue(Element*);
 
@@ -316,10 +314,8 @@ private:
     Vector<String> iconURLs(Document*, int iconTypesMask) const;
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionCode&);
-#if ENABLE(INSPECTOR)
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
-#endif
 };
 
 } // namespace WebCore

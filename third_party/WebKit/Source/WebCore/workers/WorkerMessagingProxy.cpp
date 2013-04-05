@@ -230,10 +230,8 @@ private:
 
     virtual void performTask(ScriptExecutionContext*)
     {
-#if ENABLE(INSPECTOR)
         if (WorkerContextProxy::PageInspector* pageInspector = m_messagingProxy->m_pageInspector)
             pageInspector->dispatchMessageFromWorker(m_message);
-#endif
     }
 
     WorkerMessagingProxy* m_messagingProxy;
@@ -255,9 +253,7 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject)
     , m_unconfirmedMessageCount(0)
     , m_workerThreadHadPendingActivity(false)
     , m_askedToTerminate(false)
-#if ENABLE(INSPECTOR)
     , m_pageInspector(0)
-#endif
 {
     ASSERT(m_workerObject);
     ASSERT((m_scriptExecutionContext->isDocument() && isMainThread())
@@ -370,14 +366,11 @@ void WorkerMessagingProxy::workerObjectDestroyedInternal(ScriptExecutionContext*
         proxy->workerContextDestroyedInternal();
 }
 
-#if ENABLE(INSPECTOR)
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 static void connectToWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
     static_cast<WorkerContext*>(context)->workerInspectorController()->connectFrontend();
 }
-#endif
 
 void WorkerMessagingProxy::connectToInspector(WorkerContextProxy::PageInspector* pageInspector)
 {
@@ -385,47 +378,36 @@ void WorkerMessagingProxy::connectToInspector(WorkerContextProxy::PageInspector*
         return;
     ASSERT(!m_pageInspector);
     m_pageInspector = pageInspector;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_workerThread->runLoop().postTaskForMode(createCallbackTask(connectToWorkerContextInspectorTask, true), WorkerDebuggerAgent::debuggerTaskMode);
-#endif
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 static void disconnectFromWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
     static_cast<WorkerContext*>(context)->workerInspectorController()->disconnectFrontend();
 }
-#endif
 
 void WorkerMessagingProxy::disconnectFromInspector()
 {
     m_pageInspector = 0;
     if (m_askedToTerminate)
         return;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_workerThread->runLoop().postTaskForMode(createCallbackTask(disconnectFromWorkerContextInspectorTask, true), WorkerDebuggerAgent::debuggerTaskMode);
-#endif
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 static void dispatchOnInspectorBackendTask(ScriptExecutionContext* context, const String& message)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
     static_cast<WorkerContext*>(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
 }
-#endif
 
 void WorkerMessagingProxy::sendMessageToInspector(const String& message)
 {
     if (m_askedToTerminate)
         return;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_workerThread->runLoop().postTaskForMode(createCallbackTask(dispatchOnInspectorBackendTask, String(message)), WorkerDebuggerAgent::debuggerTaskMode);
     WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
-#endif
 }
-#endif
 
 void WorkerMessagingProxy::workerContextDestroyed()
 {
@@ -464,7 +446,6 @@ void WorkerMessagingProxy::terminateWorkerContext()
     InspectorInstrumentation::workerContextTerminated(m_scriptExecutionContext.get(), this);
 }
 
-#if ENABLE(INSPECTOR)
 void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
 {
     m_scriptExecutionContext->postTask(PostMessageToPageInspectorTask::create(this, message));
@@ -474,7 +455,6 @@ void WorkerMessagingProxy::updateInspectorStateCookie(const String&)
 {
     notImplemented();
 }
-#endif
 
 void WorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {

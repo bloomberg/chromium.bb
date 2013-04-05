@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InjectedScriptHost.h"
 
 #include "Element.h"
@@ -163,14 +160,11 @@ String InjectedScriptHost::storageIdImpl(Storage* storage)
     return String();
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 ScriptDebugServer& InjectedScriptHost::scriptDebugServer()
 {
     return m_debuggerAgent->scriptDebugServer();
 }
-#endif
 
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

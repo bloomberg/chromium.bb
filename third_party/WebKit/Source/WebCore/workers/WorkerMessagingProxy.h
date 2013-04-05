@@ -58,21 +58,17 @@ namespace WebCore {
         virtual void postMessageToWorkerContext(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) OVERRIDE;
         virtual bool hasPendingActivity() const OVERRIDE;
         virtual void workerObjectDestroyed() OVERRIDE;
-#if ENABLE(INSPECTOR)
         virtual void connectToInspector(WorkerContextProxy::PageInspector*) OVERRIDE;
         virtual void disconnectFromInspector() OVERRIDE;
         virtual void sendMessageToInspector(const String&) OVERRIDE;
-#endif
 
         // Implementations of WorkerObjectProxy.
         // (Only use these methods in the worker context thread.)
         virtual void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) OVERRIDE;
         virtual void postExceptionToWorkerObject(const String& errorMessage, int lineNumber, const String& sourceURL) OVERRIDE;
         virtual void postConsoleMessageToWorkerObject(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
-#if ENABLE(INSPECTOR)
         virtual void postMessageToPageInspector(const String&) OVERRIDE;
         virtual void updateInspectorStateCookie(const String&) OVERRIDE;
-#endif
         virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) OVERRIDE;
         virtual void reportPendingActivity(bool hasPendingActivity) OVERRIDE;
         virtual void workerContextClosed() OVERRIDE;
@@ -115,9 +111,7 @@ namespace WebCore {
         bool m_askedToTerminate;
 
         Vector<OwnPtr<ScriptExecutionContext::Task> > m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
-#if ENABLE(INSPECTOR)
         WorkerContextProxy::PageInspector* m_pageInspector;
-#endif
     };
 
 } // namespace WebCore

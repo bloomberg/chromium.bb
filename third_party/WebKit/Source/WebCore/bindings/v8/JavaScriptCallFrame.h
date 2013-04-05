@@ -31,7 +31,6 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "ScopedPersistent.h"
 #include <v8-debug.h>
@@ -73,6 +72,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 #endif // JavaScriptCallFrame_h

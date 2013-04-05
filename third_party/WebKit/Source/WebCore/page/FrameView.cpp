@@ -2740,7 +2740,6 @@ void FrameView::performPostLayoutTasks()
         if (resized) {
             m_frame->eventHandler()->sendResizeEvent();
 
-#if ENABLE(INSPECTOR)
             if (InspectorInstrumentation::hasFrontends()) {
                 if (page) {
                     if (page->mainFrame() == m_frame) {
@@ -2749,7 +2748,6 @@ void FrameView::performPostLayoutTasks()
                     }
                 }
             }
-#endif
         }
     }
 }

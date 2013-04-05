@@ -30,7 +30,6 @@
 #ifndef ScriptDebugListener_h
 #define ScriptDebugListener_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "ScriptState.h"
 #include <wtf/Forward.h>
@@ -74,6 +73,5 @@ public:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 #endif // ScriptDebugListener_h

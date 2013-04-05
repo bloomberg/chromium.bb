@@ -31,7 +31,6 @@
 #ifndef ScriptGCEventListener_h
 #define ScriptGCEventListener_h
 
-#if ENABLE(INSPECTOR)
 
 namespace WebCore {
 
@@ -44,5 +43,4 @@ public:
     
 } // namespace WebCore
 
-#endif // !ENABLE(INSPECTOR)
 #endif // !defined(ScriptGCEventListener_h)

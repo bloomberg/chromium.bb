@@ -24,8 +24,6 @@
 
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
 #include "InspectorConsoleAgent.h"
 
 #include "InstrumentingAgents.h"
@@ -340,4 +338,3 @@ void InspectorConsoleAgent::addInspectedHeapObject(ErrorString*, int inspectedHe
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

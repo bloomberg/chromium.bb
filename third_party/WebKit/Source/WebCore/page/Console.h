@@ -44,9 +44,7 @@ class MemoryInfo;
 class Page;
 class ScriptArguments;
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 typedef Vector<RefPtr<ScriptProfile> > ProfilesArray;
-#endif
 
 class Console : public ScriptWrappable, public RefCounted<Console>, public DOMWindowProperty {
 public:
@@ -66,11 +64,9 @@ public:
     void assertCondition(ScriptState*, PassRefPtr<ScriptArguments>, bool condition);
     void count(ScriptState*, PassRefPtr<ScriptArguments>);
     void markTimeline(PassRefPtr<ScriptArguments>);
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     const ProfilesArray& profiles() const { return m_profiles; }
     void profile(const String&, ScriptState*);
     void profileEnd(const String&, ScriptState*);
-#endif
     void time(const String&);
     void timeEnd(ScriptState*, const String&);
     void timeStamp(PassRefPtr<ScriptArguments>);
@@ -85,9 +81,7 @@ private:
 
     explicit Console(Frame*);
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ProfilesArray m_profiles;
-#endif
 };
 
 } // namespace WebCore

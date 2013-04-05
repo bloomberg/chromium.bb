@@ -31,7 +31,6 @@
 #ifndef InspectorMemoryAgent_h
 #define InspectorMemoryAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
@@ -81,5 +80,4 @@ private:
 
 } // namespace WebCore
 
-#endif // !ENABLE(INSPECTOR)
 #endif // !defined(InspectorMemoryAgent_h)

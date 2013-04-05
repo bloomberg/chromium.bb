@@ -43,7 +43,6 @@ class ContainerNode;
 class Element;
 class Node;
 
-#if ENABLE(INSPECTOR)
 
 class InspectorHistory {
     WTF_MAKE_NONCOPYABLE(InspectorHistory); WTF_MAKE_FAST_ALLOCATED;
@@ -83,7 +82,6 @@ private:
     size_t m_afterLastActionIndex;
 };
 
-#endif // ENABLE(INSPECTOR)
 
 } // namespace WebCore
 

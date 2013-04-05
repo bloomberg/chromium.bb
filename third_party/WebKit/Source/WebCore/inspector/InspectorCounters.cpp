@@ -29,9 +29,6 @@
 */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorCounters.h"
 
 #include "ThreadGlobalData.h"
@@ -63,4 +60,3 @@ ThreadLocalInspectorCounters& ThreadLocalInspectorCounters::current()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

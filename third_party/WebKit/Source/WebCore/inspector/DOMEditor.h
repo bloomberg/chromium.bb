@@ -42,7 +42,6 @@ class InspectorHistory;
 class Node;
 class Text;
 
-#if ENABLE(INSPECTOR)
 
 typedef String ErrorString;
 
@@ -82,7 +81,6 @@ private:
     InspectorHistory* m_history;
 };
 
-#endif // ENABLE(INSPECTOR)
 
 } // namespace WebCore
 

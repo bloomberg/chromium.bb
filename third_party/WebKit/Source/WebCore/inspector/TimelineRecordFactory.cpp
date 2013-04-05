@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "TimelineRecordFactory.h"
 
 #include "Event.h"
@@ -251,4 +248,3 @@ void TimelineRecordFactory::appendLayoutRoot(InspectorObject* data, const FloatQ
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

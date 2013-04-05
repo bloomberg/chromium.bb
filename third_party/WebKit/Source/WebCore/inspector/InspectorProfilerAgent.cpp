@@ -28,9 +28,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
-
 #include "InspectorProfilerAgent.h"
 
 #include "Console.h"
@@ -522,4 +519,3 @@ void InspectorProfilerAgent::didProcessTask()
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)

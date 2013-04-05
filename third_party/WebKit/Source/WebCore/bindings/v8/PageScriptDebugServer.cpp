@@ -31,7 +31,6 @@
 #include "config.h"
 #include "PageScriptDebugServer.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "Frame.h"
 #include "InspectorInstrumentation.h"
@@ -195,4 +194,3 @@ void PageScriptDebugServer::quitMessageLoopOnPause()
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)

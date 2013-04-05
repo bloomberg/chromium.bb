@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "DOMEditor.h"
 
@@ -457,4 +456,3 @@ bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ErrorString
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

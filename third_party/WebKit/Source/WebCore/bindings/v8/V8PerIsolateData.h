@@ -43,9 +43,7 @@ class StringCache;
 class V8HiddenPropertyName;
 struct WrapperTypeInfo;
 
-#if ENABLE(INSPECTOR)
 class ExternalStringVisitor;
-#endif
 
 typedef WTF::Vector<DOMDataStore*> DOMDataList;
 
@@ -94,9 +92,7 @@ public:
 
     v8::Persistent<v8::Value> ensureLiveRoot();
 
-#if ENABLE(INSPECTOR)
     void visitExternalStrings(ExternalStringVisitor*);
-#endif
     DOMDataList& allStores() { return m_domDataList; }
 
     V8HiddenPropertyName* hiddenPropertyName() { return m_hiddenPropertyName.get(); }

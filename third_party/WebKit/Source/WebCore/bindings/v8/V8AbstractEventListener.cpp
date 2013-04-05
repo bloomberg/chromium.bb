@@ -58,9 +58,7 @@ V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, const WorldCo
     , m_worldContext(worldContext)
     , m_isolate(isolate)
 {
-#if ENABLE(INSPECTOR)
     ThreadLocalInspectorCounters::current().incrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
-#endif
 }
 
 V8AbstractEventListener::~V8AbstractEventListener()
@@ -69,9 +67,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
         v8::HandleScope scope;
         V8EventListenerList::clearWrapper(v8::Local<v8::Object>::New(m_listener.get()), m_isAttribute);
     }
-#if ENABLE(INSPECTOR)
     ThreadLocalInspectorCounters::current().decrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
-#endif
 }
 
 void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event* event)

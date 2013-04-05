@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WorkerScriptDebugServer.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "ScriptDebugListener.h"
 #include "WorkerContext.h"
@@ -116,4 +116,4 @@ void WorkerScriptDebugServer::quitMessageLoopOnPause()
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(WORKERS)
+#endif // ENABLE(WORKERS)

@@ -83,7 +83,6 @@ String ScriptValue::toString(ScriptState*) const
     return v8StringToWebCoreString<String>(string, DoNotExternalize);
 }
 
-#if ENABLE(INSPECTOR)
 static PassRefPtr<InspectorValue> v8ToInspectorValue(v8::Handle<v8::Value> value, int maxDepth)
 {
     if (value.IsEmpty()) {
@@ -144,6 +143,5 @@ PassRefPtr<InspectorValue> ScriptValue::toInspectorValue(ScriptState* scriptStat
     v8::Context::Scope contextScope(scriptState->context());
     return v8ToInspectorValue(v8ValueRaw(), InspectorValue::maxDepth);
 }
-#endif
 
 } // namespace WebCore

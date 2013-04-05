@@ -46,7 +46,6 @@ class DOMEditor;
 class Document;
 class Node;
 
-#if ENABLE(INSPECTOR)
 
 class DOMPatchSupport {
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
@@ -81,7 +80,6 @@ private:
     UnusedNodesMap m_unusedNodesMap;
 };
 
-#endif // ENABLE(INSPECTOR)
 
 } // namespace WebCore
 

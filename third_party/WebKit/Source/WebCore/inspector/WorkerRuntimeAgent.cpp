@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "WorkerRuntimeAgent.h"
 
@@ -82,7 +82,6 @@ void WorkerRuntimeAgent::run(ErrorString*)
     m_paused = false;
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 void WorkerRuntimeAgent::pauseWorkerContext(WorkerContext* context)
 {
     m_paused = true;
@@ -92,8 +91,7 @@ void WorkerRuntimeAgent::pauseWorkerContext(WorkerContext* context)
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && m_paused);
 }
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR) && ENABLE(WORKERS)
+#endif // ENABLE(WORKERS)

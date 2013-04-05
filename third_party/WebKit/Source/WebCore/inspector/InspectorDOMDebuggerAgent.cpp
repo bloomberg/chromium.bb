@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR) && ENABLE(JAVASCRIPT_DEBUGGER)
-
 #include "InspectorDOMDebuggerAgent.h"
 
 #include "HTMLElement.h"
@@ -450,4 +447,3 @@ void InspectorDOMDebuggerAgent::clear()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR) && ENABLE(JAVASCRIPT_DEBUGGER)

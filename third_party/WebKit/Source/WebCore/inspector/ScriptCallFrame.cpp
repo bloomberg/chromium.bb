@@ -56,7 +56,6 @@ bool ScriptCallFrame::isEqual(const ScriptCallFrame& o) const
         && m_lineNumber == o.m_lineNumber;
 }
 
-#if ENABLE(INSPECTOR)
 PassRefPtr<TypeBuilder::Console::CallFrame> ScriptCallFrame::buildInspectorObject() const
 {
     return TypeBuilder::Console::CallFrame::create()
@@ -66,6 +65,5 @@ PassRefPtr<TypeBuilder::Console::CallFrame> ScriptCallFrame::buildInspectorObjec
         .setColumnNumber(m_column)
         .release();
 }
-#endif
 
 } // namespace WebCore

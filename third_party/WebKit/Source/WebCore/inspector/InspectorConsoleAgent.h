@@ -25,7 +25,6 @@
 #ifndef InspectorConsoleAgent_h
 #define InspectorConsoleAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
@@ -87,10 +86,8 @@ public:
     void didFinishXHRLoading(unsigned long requestIdentifier, const String& url, const String& sendURL, unsigned sendLineNumber);
     void didReceiveResponse(unsigned long requestIdentifier, const ResourceResponse&);
     void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-#endif
     virtual void setMonitoringXHREnabled(ErrorString*, bool enabled);
     virtual void addInspectedNode(ErrorString*, int nodeId) = 0;
     virtual void addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId);
@@ -114,6 +111,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorConsoleAgent_h)

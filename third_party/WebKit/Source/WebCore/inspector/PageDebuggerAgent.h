@@ -31,7 +31,6 @@
 #ifndef PageDebuggerAgent_h
 #define PageDebuggerAgent_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 #include "InspectorDebuggerAgent.h"
 #include "PageScriptDebugServer.h"
 
@@ -72,6 +71,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #endif // !defined(PageDebuggerAgent_h)

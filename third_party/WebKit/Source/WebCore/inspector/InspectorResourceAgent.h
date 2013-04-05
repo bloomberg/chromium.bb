@@ -39,7 +39,6 @@
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INSPECTOR)
 
 namespace WTF {
 class String;
@@ -176,6 +175,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorResourceAgent_h)

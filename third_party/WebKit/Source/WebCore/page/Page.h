@@ -184,9 +184,7 @@ public:
 #if ENABLE(CONTEXT_MENUS)
     ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
 #endif
-#if ENABLE(INSPECTOR)
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
-#endif
 #if ENABLE(POINTER_LOCK)
     PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }
 #endif
@@ -415,9 +413,7 @@ private:
 #if ENABLE(CONTEXT_MENUS)
     OwnPtr<ContextMenuController> m_contextMenuController;
 #endif
-#if ENABLE(INSPECTOR)
     OwnPtr<InspectorController> m_inspectorController;
-#endif
 #if ENABLE(POINTER_LOCK)
     OwnPtr<PointerLockController> m_pointerLockController;
 #endif

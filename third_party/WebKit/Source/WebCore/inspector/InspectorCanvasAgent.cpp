@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorCanvasAgent.h"
 
 #include "BindingVisitors.h"
@@ -349,4 +346,3 @@ void InspectorCanvasAgent::didBeginFrame()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

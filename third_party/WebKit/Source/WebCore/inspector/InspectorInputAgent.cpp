@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorInputAgent.h"
 
 #include "Chrome.h"
@@ -158,4 +155,3 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

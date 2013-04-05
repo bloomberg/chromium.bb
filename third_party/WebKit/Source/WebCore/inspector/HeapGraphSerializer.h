@@ -31,7 +31,6 @@
 #ifndef HeapGraphSerializer_h
 #define HeapGraphSerializer_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorFrontend.h"
 #include <wtf/Forward.h>
@@ -112,5 +111,4 @@ private:
 
 } // namespace WebCore
 
-#endif // !ENABLE(INSPECTOR)
 #endif // !defined(HeapGraphSerializer_h)

@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorBaseAgent.h"
 
 #include "InspectorState.h"
@@ -95,4 +92,3 @@ void InspectorAgentRegistry::discardAgents()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

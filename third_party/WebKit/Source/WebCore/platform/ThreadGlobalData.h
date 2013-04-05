@@ -70,9 +70,7 @@ namespace WebCore {
         TECConverterWrapper& cachedConverterTEC() { return *m_cachedConverterTEC; }
 #endif
 
-#if ENABLE(INSPECTOR)
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
-#endif
 
     private:
         OwnPtr<CachedResourceRequestInitiators> m_cachedResourceRequestInitiators;
@@ -92,9 +90,7 @@ namespace WebCore {
         OwnPtr<TECConverterWrapper> m_cachedConverterTEC;
 #endif
 
-#if ENABLE(INSPECTOR)
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
-#endif
 
 #if ENABLE(WORKERS)
         static ThreadSpecific<ThreadGlobalData>* staticData;

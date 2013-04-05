@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "InjectedScript.h"
 
@@ -214,7 +213,6 @@ void InjectedScript::releaseObject(const String& objectId)
     makeCall(function, &result);
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames)
 {
     ASSERT(!hasNoValue());
@@ -228,7 +226,6 @@ PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& 
         return Array<CallFrame>::runtimeCast(result);
     return Array<CallFrame>::create();
 }
-#endif
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const ScriptValue& value, const String& groupName, bool generatePreview) const
 {
@@ -307,4 +304,3 @@ ScriptValue InjectedScript::nodeAsScriptValue(Node* node)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

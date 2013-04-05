@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorRuntimeAgent.h"
 
 #include "InjectedScript.h"
@@ -40,9 +37,7 @@
 #include <wtf/PassRefPtr.h>
 
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 #include "ScriptDebugServer.h"
-#endif
 
 namespace WebCore {
 
@@ -55,9 +50,7 @@ InspectorRuntimeAgent::InspectorRuntimeAgent(InstrumentingAgents* instrumentingA
     : InspectorBaseAgent<InspectorRuntimeAgent>("Runtime", instrumentingAgents, state)
     , m_enabled(false)
     , m_injectedScriptManager(injectedScriptManager)
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     , m_scriptDebugServer(0)
-#endif
 {
 }
 
@@ -65,7 +58,6 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 {
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 static ScriptDebugServer::PauseOnExceptionsState setPauseOnExceptionsState(ScriptDebugServer* scriptDebugServer, ScriptDebugServer::PauseOnExceptionsState newState)
 {
     ASSERT(scriptDebugServer);
@@ -74,18 +66,15 @@ static ScriptDebugServer::PauseOnExceptionsState setPauseOnExceptionsState(Scrip
         scriptDebugServer->setPauseOnExceptionsState(newState);
     return presentState;
 }
-#endif
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.hasNoValue())
         return;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ScriptDebugServer::PauseOnExceptionsState previousPauseOnExceptionsState = ScriptDebugServer::DontPauseOnExceptions;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         previousPauseOnExceptionsState = setPauseOnExceptionsState(m_scriptDebugServer, ScriptDebugServer::DontPauseOnExceptions);
-#endif
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         muteConsole();
 
@@ -93,9 +82,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& exp
 
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         unmuteConsole();
-#if ENABLE(JAVASCRIPT_DEBUGGER)
         setPauseOnExceptionsState(m_scriptDebugServer, previousPauseOnExceptionsState);
-#endif
     }
 }
 
@@ -110,11 +97,9 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const Strin
     if (optionalArguments)
         arguments = (*optionalArguments)->toJSONString();
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ScriptDebugServer::PauseOnExceptionsState previousPauseOnExceptionsState = ScriptDebugServer::DontPauseOnExceptions;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         previousPauseOnExceptionsState = setPauseOnExceptionsState(m_scriptDebugServer, ScriptDebugServer::DontPauseOnExceptions);
-#endif
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         muteConsole();
 
@@ -122,9 +107,7 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const Strin
 
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         unmuteConsole();
-#if ENABLE(JAVASCRIPT_DEBUGGER)
         setPauseOnExceptionsState(m_scriptDebugServer, previousPauseOnExceptionsState);
-#endif
     }
 }
 
@@ -136,18 +119,14 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
         return;
     }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     ScriptDebugServer::PauseOnExceptionsState previousPauseOnExceptionsState = setPauseOnExceptionsState(m_scriptDebugServer, ScriptDebugServer::DontPauseOnExceptions);
-#endif
     muteConsole();
 
     injectedScript.getProperties(errorString, objectId, ownProperties ? *ownProperties : false, &result);
     injectedScript.getInternalProperties(errorString, objectId, &internalProperties);
 
     unmuteConsole();
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     setPauseOnExceptionsState(m_scriptDebugServer, previousPauseOnExceptionsState);
-#endif
 }
 
 void InspectorRuntimeAgent::releaseObject(ErrorString*, const String& objectId)
@@ -166,13 +145,10 @@ void InspectorRuntimeAgent::run(ErrorString*)
 {
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 void InspectorRuntimeAgent::setScriptDebugServer(ScriptDebugServer* scriptDebugServer)
 {
     m_scriptDebugServer = scriptDebugServer;
 }
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

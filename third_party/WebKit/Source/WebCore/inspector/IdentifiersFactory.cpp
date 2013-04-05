@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "IdentifiersFactory.h"
 
@@ -66,4 +65,3 @@ String IdentifiersFactory::addProcessIdPrefixTo(const String& id)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

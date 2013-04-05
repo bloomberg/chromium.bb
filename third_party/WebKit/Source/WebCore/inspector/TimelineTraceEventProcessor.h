@@ -31,7 +31,6 @@
 #ifndef TimelineTraceEventProcessor_h
 #define TimelineTraceEventProcessor_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorTimelineAgent.h"
 #include "InspectorValues.h"
@@ -258,5 +257,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 #endif // !defined(TimelineTraceEventProcessor_h)

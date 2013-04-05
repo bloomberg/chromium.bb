@@ -2672,9 +2672,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
-#if ENABLE(INSPECTOR)
     InspectorInstrumentation::willModifyDOMAttr(document(), this, oldValue, newValue);
-#endif
 }
 
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)

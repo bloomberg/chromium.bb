@@ -30,7 +30,6 @@
 #ifndef InspectorDebuggerAgent_h
 #define InspectorDebuggerAgent_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "InjectedScript.h"
@@ -185,6 +184,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorDebuggerAgent_h)

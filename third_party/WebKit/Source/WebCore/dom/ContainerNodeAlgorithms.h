@@ -215,9 +215,7 @@ inline void ChildNodeInsertionNotifier::notify(Node* node)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-#if ENABLE(INSPECTOR)
     InspectorInstrumentation::didInsertDOMNode(node->document(), node);
-#endif
 
     RefPtr<Document> protectDocument(node->document());
     RefPtr<Node> protectNode(node);

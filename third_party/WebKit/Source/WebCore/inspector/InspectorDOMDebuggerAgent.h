@@ -31,7 +31,6 @@
 #ifndef InspectorDOMDebuggerAgent_h
 #define InspectorDOMDebuggerAgent_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #include "InspectorBaseAgent.h"
 #include "InspectorDebuggerAgent.h"
@@ -113,6 +112,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorDOMDebuggerAgent_h)

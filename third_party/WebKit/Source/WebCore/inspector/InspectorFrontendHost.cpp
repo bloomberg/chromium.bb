@@ -28,9 +28,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorFrontendHost.h"
 
 #include "ContextMenu.h"
@@ -344,4 +341,3 @@ String InspectorFrontendHost::hiddenPanels()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

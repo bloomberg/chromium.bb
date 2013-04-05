@@ -23,9 +23,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorStyleTextEditor.h"
 
 #include "CSSPropertySourceData.h"
@@ -270,4 +267,3 @@ void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStylePrope
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

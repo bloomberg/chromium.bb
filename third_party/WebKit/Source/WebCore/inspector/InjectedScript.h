@@ -47,7 +47,6 @@ class InjectedScriptModule;
 class Node;
 class SerializedScriptValue;
 
-#if ENABLE(INSPECTOR)
 
 class InjectedScript : public InjectedScriptBase {
 public:
@@ -88,9 +87,7 @@ public:
     Node* nodeForObjectId(const String& objectId);
     void releaseObject(const String& objectId);
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > wrapCallFrames(const ScriptValue&);
-#endif
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(const ScriptValue&, const String& groupName, bool generatePreview = false) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;
@@ -108,7 +105,6 @@ private:
     ScriptValue nodeAsScriptValue(Node*);
 };
 
-#endif
 
 } // namespace WebCore
 

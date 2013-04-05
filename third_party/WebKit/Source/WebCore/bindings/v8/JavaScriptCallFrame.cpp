@@ -31,7 +31,6 @@
 #include "config.h"
 #include "JavaScriptCallFrame.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "V8Binding.h"
 
@@ -147,4 +146,3 @@ v8::Handle<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, con
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)

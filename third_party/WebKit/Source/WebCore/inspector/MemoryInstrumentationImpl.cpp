@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "MemoryInstrumentationImpl.h"
 
 #include "HeapGraphSerializer.h"
@@ -87,10 +84,6 @@ bool MemoryInstrumentationClientImpl::checkCountedObject(const void* object)
     if (!m_allocatedObjects.contains(object)) {
         ++m_totalObjectsNotInAllocatedSet;
         return false;
-#if 0
-        printf("Found unknown object referenced by pointer: %p\n", object);
-        WTFReportBacktrace();
-#endif
     }
     return true;
 }
@@ -159,4 +152,3 @@ void MemoryInstrumentationImpl::reportMemoryUsage(MemoryObjectInfo* memoryObject
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

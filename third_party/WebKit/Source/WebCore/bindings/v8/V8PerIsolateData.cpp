@@ -165,7 +165,6 @@ bool V8PerIsolateData::hasInstance(WrapperTypeInfo* info, v8::Handle<v8::Value> 
     return result->value->HasInstance(value);
 }
 
-#if ENABLE(INSPECTOR)
 void V8PerIsolateData::visitExternalStrings(ExternalStringVisitor* visitor)
 {
     v8::HandleScope handleScope;
@@ -184,7 +183,6 @@ void V8PerIsolateData::visitExternalStrings(ExternalStringVisitor* visitor)
     } v8Visitor(visitor);
     v8::V8::VisitExternalResources(&v8Visitor);
 }
-#endif
 
 v8::Handle<v8::Value> V8PerIsolateData::constructorOfToString(const v8::Arguments& args)
 {

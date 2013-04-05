@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR)
 
 #include "InjectedScriptBase.h"
 
@@ -144,4 +143,3 @@ void InjectedScriptBase::makeEvalCall(ErrorString* errorString, ScriptFunctionCa
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

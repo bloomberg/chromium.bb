@@ -31,7 +31,7 @@
 #ifndef InspectorDatabaseResource_h
 #define InspectorDatabaseResource_h
 
-#if ENABLE(SQL_DATABASE) && ENABLE(INSPECTOR)
+#if ENABLE(SQL_DATABASE)
 #include "InspectorFrontend.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

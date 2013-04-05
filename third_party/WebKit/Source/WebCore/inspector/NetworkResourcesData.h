@@ -38,7 +38,6 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(INSPECTOR)
 
 namespace WebCore {
 
@@ -188,6 +187,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(NetworkResourcesData_h)

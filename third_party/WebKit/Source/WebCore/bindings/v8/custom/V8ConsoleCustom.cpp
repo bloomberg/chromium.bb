@@ -57,7 +57,6 @@ v8::Handle<v8::Value> V8Console::assertMethodCustom(const v8::Arguments& args)
     return v8Undefined();
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 v8::Handle<v8::Value> V8Console::profileMethodCustom(const v8::Arguments& args)
 {
     Console* imp = V8Console::toNative(args.Holder());
@@ -73,6 +72,5 @@ v8::Handle<v8::Value> V8Console::profileEndMethodCustom(const v8::Arguments& arg
     imp->profileEnd(title, ScriptState::current());
     return v8Undefined();
 }
-#endif
 
 } // namespace WebCore

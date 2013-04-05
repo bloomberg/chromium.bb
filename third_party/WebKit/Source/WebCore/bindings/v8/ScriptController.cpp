@@ -678,7 +678,6 @@ void ScriptController::clearWindowShell(DOMWindow*, bool)
     HistogramSupport::histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
-#if ENABLE(INSPECTOR)
 void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
 {
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
@@ -699,7 +698,6 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
         result.append(std::pair<ScriptState*, SecurityOrigin*>(scriptState, origin));
     }
 }
-#endif
 
 bool ScriptController::setContextDebugId(int debugId)
 {

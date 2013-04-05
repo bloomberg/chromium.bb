@@ -134,9 +134,7 @@ namespace WebCore {
         ContextMenuItemTagRightToLeft,
         ContextMenuItemTagPDFSinglePageScrolling,
         ContextMenuItemTagPDFFacingPagesScrolling,
-#if ENABLE(INSPECTOR)
         ContextMenuItemTagInspectElement,
-#endif
         ContextMenuItemTagTextDirectionMenu, // Text Direction sub-menu
         ContextMenuItemTagTextDirectionDefault,
         ContextMenuItemTagTextDirectionLeftToRight,

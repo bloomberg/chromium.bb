@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorMemoryAgent.h"
 
 #include "BindingVisitors.h"
@@ -409,4 +406,3 @@ void InspectorMemoryAgent::clearFrontend()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

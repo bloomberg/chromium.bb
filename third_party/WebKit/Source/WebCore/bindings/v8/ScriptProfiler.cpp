@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INSPECTOR)
 #include "ScriptProfiler.h"
 
 #include "BindingVisitors.h"
@@ -300,4 +299,3 @@ ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

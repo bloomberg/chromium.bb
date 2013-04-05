@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorPageAgent.h"
 
 #include "CachedCSSStyleSheet.h"
@@ -1298,4 +1295,3 @@ void InspectorPageAgent::handleJavaScriptDialog(ErrorString* errorString, bool a
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

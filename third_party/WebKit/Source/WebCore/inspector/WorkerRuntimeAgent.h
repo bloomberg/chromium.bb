@@ -31,7 +31,7 @@
 #ifndef WorkerRuntimeAgent_h
 #define WorkerRuntimeAgent_h
 
-#if ENABLE(INSPECTOR) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "InspectorRuntimeAgent.h"
 #include <wtf/PassOwnPtr.h>
@@ -51,9 +51,7 @@ public:
     // Protocol commands.
     virtual void run(ErrorString*);
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     void pauseWorkerContext(WorkerContext*);
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 private:
     WorkerRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, WorkerContext*);
@@ -66,6 +64,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
+#endif // ENABLE(WORKERS)
 
 #endif // !defined(InspectorPagerAgent_h)

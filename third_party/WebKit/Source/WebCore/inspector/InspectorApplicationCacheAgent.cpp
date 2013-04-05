@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorApplicationCacheAgent.h"
 
 #include "ApplicationCacheHost.h"
@@ -211,4 +208,3 @@ PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApp
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

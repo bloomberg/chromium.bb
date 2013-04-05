@@ -31,7 +31,7 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
-#if ENABLE(INSPECTOR) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "InspectorBaseAgent.h"
 #include <wtf/FastAllocBase.h>
@@ -65,9 +65,7 @@ public:
     void disconnectFrontend();
     void restoreInspectorStateFromCookie(const String& inspectorCookie);
     void dispatchMessageFromFrontend(const String&);
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     void resume();
-#endif
 
 private:
     friend InstrumentingAgents* instrumentationForWorkerContext(WorkerContext*);

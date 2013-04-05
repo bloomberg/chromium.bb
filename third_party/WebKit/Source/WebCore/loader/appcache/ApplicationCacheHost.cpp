@@ -273,7 +273,6 @@ void ApplicationCacheHost::stopDeferringEvents()
     m_defersEvents = false;
 }
 
-#if ENABLE(INSPECTOR)
 void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources)
 {
     ApplicationCache* cache = applicationCache();
@@ -302,7 +301,6 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::applicationCacheInfo()
     // FIXME: Add "Creation Time" and "Update Time" to Application Caches.
     return CacheInfo(cache->manifestResource()->url(), 0, 0, cache->estimatedSizeInStorage());
 }
-#endif
 
 void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)
 {

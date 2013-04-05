@@ -31,9 +31,7 @@
 #ifndef ScriptCallStack_h
 #define ScriptCallStack_h
 
-#if ENABLE(INSPECTOR)
 #include "InspectorTypeBuilder.h"
-#endif
 
 #include "ScriptCallFrame.h"
 #include <wtf/Forward.h>
@@ -57,9 +55,7 @@ public:
 
     bool isEqual(ScriptCallStack*) const;
 
-#if ENABLE(INSPECTOR)
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
-#endif
 
 private:
     ScriptCallStack(Vector<ScriptCallFrame>&);

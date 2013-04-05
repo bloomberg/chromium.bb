@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InstrumentingAgents.h"
 
 #include "InspectorController.h"
@@ -63,12 +60,10 @@ InstrumentingAgents::InstrumentingAgents()
     , m_inspectorFileSystemAgent(0)
 #endif
     , m_inspectorApplicationCacheAgent(0)
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     , m_inspectorDebuggerAgent(0)
     , m_pageDebuggerAgent(0)
     , m_inspectorDOMDebuggerAgent(0)
     , m_inspectorProfilerAgent(0)
-#endif
 #if ENABLE(WORKERS)
     , m_inspectorWorkerAgent(0)
 #endif
@@ -98,12 +93,10 @@ void InstrumentingAgents::reset()
     m_inspectorFileSystemAgent = 0;
 #endif
     m_inspectorApplicationCacheAgent = 0;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_inspectorDebuggerAgent = 0;
     m_pageDebuggerAgent = 0;
     m_inspectorDOMDebuggerAgent = 0;
     m_inspectorProfilerAgent = 0;
-#endif
 #if ENABLE(WORKERS)
     m_inspectorWorkerAgent = 0;
 #endif
@@ -129,4 +122,3 @@ InstrumentingAgents* instrumentationForWorkerContext(WorkerContext* workerContex
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

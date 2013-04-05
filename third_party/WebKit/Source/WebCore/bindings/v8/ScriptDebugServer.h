@@ -31,7 +31,6 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "ScopedPersistent.h"
 #include "ScriptBreakpoint.h"
@@ -148,6 +147,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 #endif // ScriptDebugServer_h

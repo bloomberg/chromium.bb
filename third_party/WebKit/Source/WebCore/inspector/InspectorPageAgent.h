@@ -31,7 +31,6 @@
 #ifndef InspectorPageAgent_h
 #define InspectorPageAgent_h
 
-#if ENABLE(INSPECTOR)
 
 #include "DeviceOrientationData.h"
 #include "Frame.h"
@@ -215,6 +214,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(InspectorPagerAgent_h)

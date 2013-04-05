@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#if ENABLE(INSPECTOR) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "WorkerInspectorController.h"
 
@@ -104,7 +104,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
     m_agents.append(runtimeAgent.release());
 
     OwnPtr<InspectorConsoleAgent> consoleAgent = WorkerConsoleAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get());
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     OwnPtr<InspectorDebuggerAgent> debuggerAgent = WorkerDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), workerContext, m_injectedScriptManager.get());
     InspectorDebuggerAgent* debuggerAgentPtr = debuggerAgent.get();
     m_runtimeAgent->setScriptDebugServer(&debuggerAgent->scriptDebugServer());
@@ -112,7 +111,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
 
     m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), workerContext, m_state.get(), m_injectedScriptManager.get()));
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
-#endif
     m_agents.append(InspectorTimelineAgent::create(m_instrumentingAgents.get(), 0, 0, m_state.get(), InspectorTimelineAgent::WorkerInspector, 0));
     m_agents.append(consoleAgent.release());
 
@@ -123,9 +121,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
 #endif
         , 0
         , 0
-#if ENABLE(JAVASCRIPT_DEBUGGER)
         , debuggerAgentPtr
-#endif
     );
 }
  
@@ -175,13 +171,11 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
         m_backendDispatcher->dispatch(message);
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 void WorkerInspectorController::resume()
 {
     ErrorString unused;
     m_runtimeAgent->run(&unused);
 }
-#endif
 
 }
 

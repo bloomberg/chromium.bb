@@ -29,7 +29,6 @@
 #ifndef ContentSearchUtils_h
 #define ContentSearchUtils_h
 
-#if ENABLE(INSPECTOR)
 
 #include "InspectorTypeBuilder.h"
 #include <wtf/Vector.h>
@@ -55,6 +54,5 @@ String findSourceMapURL(const String& content);
 } // namespace ContentSearchUtils
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
 
 #endif // !defined(ContentSearchUtils_h)

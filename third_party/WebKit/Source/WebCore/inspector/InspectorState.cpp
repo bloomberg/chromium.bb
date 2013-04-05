@@ -27,9 +27,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorState.h"
 
 #include "InspectorStateClient.h"
@@ -160,4 +157,3 @@ void InspectorCompositeState::inspectorStateUpdated()
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

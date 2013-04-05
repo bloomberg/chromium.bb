@@ -2807,12 +2807,10 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     if (!m_frame->page())
         return;
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && ENABLE(INSPECTOR)
     if (Page* page = m_frame->page()) {
         if (page->mainFrame() == m_frame)
             m_frame->page()->inspectorController()->resume();
     }
-#endif
 
     setProvisionalDocumentLoader(m_policyDocumentLoader.get());
     m_loadType = type;
@@ -3224,10 +3222,8 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
 
     m_client->dispatchDidClearWindowObjectInWorld(world);
 
-#if ENABLE(INSPECTOR)
     if (Page* page = m_frame->page())
         page->inspectorController()->didClearWindowObjectInWorld(m_frame, world);
-#endif
 
     InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, world);
 }

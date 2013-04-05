@@ -28,9 +28,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorDOMStorageAgent.h"
 
 #include "Database.h"
@@ -250,4 +247,3 @@ void InspectorDOMStorageAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectI
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

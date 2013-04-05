@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "InspectorController.h"
 
 #include "Frame.h"
@@ -140,7 +137,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     InspectorConsoleAgent* consoleAgent = consoleAgentPtr.get();
     m_agents.append(consoleAgentPtr.release());
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
     m_debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
@@ -155,7 +151,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
 
-#endif
 
 #if ENABLE(WORKERS)
     m_agents.append(InspectorWorkerAgent::create(m_instrumentingAgents.get(), m_state.get()));
@@ -180,9 +175,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
         , m_debuggerAgent
     );
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     runtimeAgent->setScriptDebugServer(&m_debuggerAgent->scriptDebugServer());
-#endif
 }
 
 InspectorController::~InspectorController()
@@ -359,7 +352,6 @@ Node* InspectorController::highlightedNode() const
     return m_overlay->highlightedNode();
 }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
 bool InspectorController::profilerEnabled()
 {
     return m_profilerAgent->enabled();
@@ -381,7 +373,6 @@ void InspectorController::resume()
         m_debuggerAgent->resume(&error);
     }
 }
-#endif
 
 void InspectorController::setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize)
 {
@@ -401,11 +392,9 @@ void InspectorController::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) 
     info.addMember(m_domAgent, "domAgent");
     info.addMember(m_resourceAgent, "resourceAgent");
     info.addMember(m_pageAgent, "pageAgent");
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     info.addMember(m_debuggerAgent, "debuggerAgent");
     info.addMember(m_domDebuggerAgent, "domDebuggerAgent");
     info.addMember(m_profilerAgent, "profilerAgent");
-#endif
 
     info.addMember(m_inspectorBackendDispatcher, "inspectorBackendDispatcher");
     info.addMember(m_inspectorFrontendClient, "inspectorFrontendClient");
@@ -419,19 +408,15 @@ void InspectorController::willProcessTask()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->willProcessTask();
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_profilerAgent->willProcessTask();
-#endif
 }
 
 void InspectorController::didProcessTask()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didProcessTask();
-#if ENABLE(JAVASCRIPT_DEBUGGER)
     m_profilerAgent->didProcessTask();
     m_domDebuggerAgent->didProcessTask();
-#endif
 }
 
 void InspectorController::didBeginFrame()
@@ -469,4 +454,3 @@ HashMap<String, size_t> InspectorController::processMemoryDistribution() const
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)

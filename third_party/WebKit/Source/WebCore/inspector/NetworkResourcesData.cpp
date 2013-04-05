@@ -27,9 +27,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(INSPECTOR)
-
 #include "NetworkResourcesData.h"
 
 #include "CachedResource.h"
@@ -425,4 +422,3 @@ void NetworkResourcesData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
 
 } // namespace WebCore
 
-#endif // ENABLE(INSPECTOR)
