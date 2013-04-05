@@ -19,6 +19,8 @@ jam@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file chrome_tests.gypi=*
 per-file chrome_tests_unit.gypi=*
+per-file *.isolate=csharp@chromium.org
+per-file *.isolate=maruel@chromium.org
 per-file nacl.gypi=bradchen@chromium.org
 per-file nacl.gypi=bradnelson@chromium.org
 per-file nacl.gypi=jvoung@chromium.org

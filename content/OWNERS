@@ -9,6 +9,8 @@ piman@chromium.org
 per-file *.sb=set noparent
 per-file *.sb=jeremy@chromium.org
 
+per-file *.isolate=csharp@chromium.org
+per-file *.isolate=maruel@chromium.org
 per-file content_components_navigation_interception.gypi=jknotten@chromium.org
 per-file content_components_navigation_interception.gypi=joth@chromium.org
 per-file content_components_navigation_interception.gypi=mkosiba@chromium.org

@@ -14,3 +14,6 @@ rvargas@chromium.org
 szym@chromium.org
 willchan@chromium.org
 wtc@chromium.org
+
+per-file *.isolate=csharp@chromium.org
+per-file *.isolate=maruel@chromium.org
