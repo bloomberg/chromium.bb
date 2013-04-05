@@ -21,6 +21,9 @@
     'css': {
       'filepath': 'Source/WebCore/css',
     },
+    'devtools': {
+      'filepath': 'inspector|DevTools|devtools',
+    },
     'platform_graphics': {
       'filepath': 'Source/WebCore/platform/graphics',
     },
@@ -46,6 +49,10 @@
     'animations': ['dstockwell@chromium.org',
                    'steveblock@chromium.org',
                    'shans@chromium.org'],
+    'devtools': [ 'pfeldman+blink@chromium.org',
+                  'loislo+blink@chromium.org',
+                  'vsevik+blink@chromium.org',
+                  'yurys+blink@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org' ],
     'SVG': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
