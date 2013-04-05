@@ -165,8 +165,7 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
 void ContextMenuController::showContextMenu(Event* event)
 {
 #if ENABLE(INSPECTOR)
-    if (m_page->inspectorController()->enabled())
-        addInspectElementItem();
+    addInspectElementItem();
 #endif
 
 #if USE(CROSS_PLATFORM_CONTEXT_MENUS)

@@ -60,9 +60,6 @@ bool XMLTreeViewer::hasNoStyleInformation() const
     if (!m_document->frame() || !m_document->frame()->page())
         return false;
 
-    if (!m_document->frame()->page()->settings()->developerExtrasEnabled())
-        return false;
-
     if (m_document->frame()->tree()->parent())
         return false; // This document is not in a top frame
 

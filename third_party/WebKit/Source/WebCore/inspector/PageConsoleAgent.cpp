@@ -84,11 +84,6 @@ void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
 }
 
-bool PageConsoleAgent::developerExtrasEnabled()
-{
-    return m_inspectorAgent->developerExtrasEnabled();
-}
-
 } // namespace WebCore
 
 #endif // ENABLE(INSPECTOR)

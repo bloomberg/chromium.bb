@@ -182,13 +182,6 @@ KURL InspectorAgent::inspectedURLWithoutFragment() const
     return url;
 }
 
-bool InspectorAgent::developerExtrasEnabled() const
-{
-    if (!m_inspectedPage)
-        return false;
-    return m_inspectedPage->settings()->developerExtrasEnabled();
-}
-
 } // namespace WebCore
 
 #endif // ENABLE(INSPECTOR)

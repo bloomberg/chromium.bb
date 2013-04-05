@@ -81,7 +81,6 @@ void WebPreferences::reset()
     allowRunningOfInsecureContent = true;
     authorAndUserStylesEnabled = true;
     defaultTextEncodingName = WebString::fromUTF8("ISO-8859-1");
-    developerExtrasEnabled = true;
     experimentalWebGLEnabled = false;
     experimentalCSSRegionsEnabled = true;
     experimentalCSSGridLayoutEnabled = false;
@@ -153,7 +152,6 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setAllowRunningOfInsecureContent(allowRunningOfInsecureContent);
     settings->setAuthorAndUserStylesEnabled(authorAndUserStylesEnabled);
     settings->setDefaultTextEncodingName(defaultTextEncodingName);
-    settings->setDeveloperExtrasEnabled(developerExtrasEnabled);
     settings->setExperimentalWebGLEnabled(experimentalWebGLEnabled);
     WebRuntimeFeatures::enableCSSRegions(experimentalCSSRegionsEnabled);
     settings->setExperimentalCSSGridLayoutEnabled(experimentalCSSGridLayoutEnabled);

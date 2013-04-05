@@ -61,8 +61,6 @@ public:
 
     virtual ~InspectorAgent();
 
-    bool developerExtrasEnabled() const;
-
     // Inspector front-end API.
     void enable(ErrorString*);
     void disable(ErrorString*);

@@ -100,8 +100,6 @@ public:
 protected:
     void addConsoleMessage(PassOwnPtr<ConsoleMessage>);
 
-    virtual bool developerExtrasEnabled() = 0;
-
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     ConsoleMessage* m_previousMessage;

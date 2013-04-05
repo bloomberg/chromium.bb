@@ -56,7 +56,6 @@ private:
     PageConsoleAgent(InstrumentingAgents*, InspectorAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorDOMAgent*);
     virtual void clearMessages(ErrorString*);
     virtual void addInspectedNode(ErrorString*, int nodeId);
-    virtual bool developerExtrasEnabled();
 
     InspectorAgent* m_inspectorAgent;
     InspectorDOMAgent* m_inspectorDOMAgent;

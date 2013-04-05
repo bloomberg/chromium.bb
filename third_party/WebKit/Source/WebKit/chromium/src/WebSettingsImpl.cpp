@@ -226,7 +226,6 @@ void WebSettingsImpl::setDOMPasteAllowed(bool enabled)
 
 void WebSettingsImpl::setDeveloperExtrasEnabled(bool enabled)
 {
-    m_settings->setDeveloperExtrasEnabled(enabled);
 }
 
 void WebSettingsImpl::setNeedsSiteSpecificQuirks(bool enabled)

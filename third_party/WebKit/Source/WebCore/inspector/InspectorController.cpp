@@ -73,7 +73,6 @@
 #include "PageRuntimeAgent.h"
 #include "Page.h"
 #include "ScriptObject.h"
-#include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/UnusedParam.h>
@@ -270,9 +269,6 @@ void InspectorController::disconnectFrontend()
 
 void InspectorController::show()
 {
-    if (!enabled())
-        return;
-
     if (m_inspectorFrontend)
         m_inspectorClient->bringFrontendToFront();
     else {
@@ -331,17 +327,9 @@ void InspectorController::getHighlight(Highlight* highlight) const
 
 void InspectorController::inspect(Node* node)
 {
-    if (!enabled())
-        return;
-
     show();
 
     m_domAgent->inspect(node);
-}
-
-bool InspectorController::enabled() const
-{
-    return m_inspectorAgent->developerExtrasEnabled();
 }
 
 Page* InspectorController::inspectedPage() const

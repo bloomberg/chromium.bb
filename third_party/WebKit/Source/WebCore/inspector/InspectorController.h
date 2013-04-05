@@ -79,7 +79,6 @@ public:
     static PassOwnPtr<InspectorController> create(Page*, InspectorClient*);
     void inspectedPageDestroyed();
 
-    bool enabled() const;
     Page* inspectedPage() const;
 
     void show();

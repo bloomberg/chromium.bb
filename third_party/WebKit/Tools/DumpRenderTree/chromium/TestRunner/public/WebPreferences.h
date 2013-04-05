@@ -63,7 +63,6 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool allowRunningOfInsecureContent;
     bool authorAndUserStylesEnabled;
     WebKit::WebString defaultTextEncodingName;
-    bool developerExtrasEnabled;
     bool experimentalWebGLEnabled;
     bool experimentalCSSRegionsEnabled;
     bool experimentalCSSGridLayoutEnabled;
