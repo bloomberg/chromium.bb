@@ -56,8 +56,6 @@ public:
     void removeBreakpoint(const String& breakpointId);
     void clearBreakpoints();
     void setBreakpointsActivated(bool activated);
-    void activateBreakpoints() { setBreakpointsActivated(true); }
-    void deactivateBreakpoints() { setBreakpointsActivated(false); }
 
     enum PauseOnExceptionsState {
         DontPauseOnExceptions,

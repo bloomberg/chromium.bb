@@ -164,10 +164,7 @@ void InspectorDebuggerAgent::clearFrontend()
 
 void InspectorDebuggerAgent::setBreakpointsActive(ErrorString*, bool active)
 {
-    if (active)
-        scriptDebugServer().activateBreakpoints();
-    else
-        scriptDebugServer().deactivateBreakpoints();
+    scriptDebugServer().setBreakpointsActivated(active);
 }
 
 bool InspectorDebuggerAgent::isPaused()
