@@ -289,20 +289,6 @@ static inline bool shouldGesturesTriggerActive()
 }
 #endif
 
-#if !PLATFORM(MAC)
-
-inline bool EventHandler::eventLoopHandleMouseUp(const MouseEventWithHitTestResults&)
-{
-    return false;
-}
-
-inline bool EventHandler::eventLoopHandleMouseDragged(const MouseEventWithHitTestResults&)
-{
-    return false;
-}
-
-#endif
-
 EventHandler::EventHandler(Frame* frame)
     : m_frame(frame)
     , m_mousePressed(false)
@@ -857,9 +843,6 @@ void EventHandler::lostMouseCapture()
 
 bool EventHandler::handleMouseUp(const MouseEventWithHitTestResults& event)
 {
-    if (eventLoopHandleMouseUp(event))
-        return true;
-    
     // If this was the first click in the window, we don't even want to clear the selection.
     // This case occurs when the user clicks on a draggable element, since we have to process
     // the mouse down and drag events to see if we might start a drag.  For other first clicks
@@ -3368,9 +3351,6 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
         m_mousePressed = false;
         return false;
     }
-    
-    if (eventLoopHandleMouseDragged(event))
-        return true;
 
     if (m_mouseDownMayStartDrag && !dragState().m_dragSrc) {
         dragState().m_eventDispatchPolicy = (updateDragSourceActionsAllowed() & DragSourceActionDHTML) ? DragState::DispatchEvents: DragState::DoNotDispatchEvents;

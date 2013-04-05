@@ -331,11 +331,6 @@ private:
 
     DragSourceAction updateDragSourceActionsAllowed() const;
 
-    // The following are called at the beginning of handleMouseUp and handleDrag.  
-    // If they return true it indicates that they have consumed the event.
-    bool eventLoopHandleMouseUp(const MouseEventWithHitTestResults&);
-    bool eventLoopHandleMouseDragged(const MouseEventWithHitTestResults&);
-
     void updateSelectionForMouseDrag(const HitTestResult&);
 
     void updateLastScrollbarUnderMouse(Scrollbar*, bool);
