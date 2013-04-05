@@ -147,7 +147,7 @@ std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
   std::vector<base::FilePath> shortcut_paths;
   base::FilePath base_path = shortcut_path.
       Append(web_app::internals::GetSanitizedFileName(shortcut_name)).
-      ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+      AddExtension(FILE_PATH_LITERAL(".lnk"));
 
   const int fileNamesToCheck = 10;
   for (int i = 0; i < fileNamesToCheck; ++i) {
@@ -234,7 +234,7 @@ bool CreatePlatformShortcuts(
       web_app::internals::GetSanitizedFileName(shortcut_info.title);
 
   // Creates an ico file to use with shortcut.
-  base::FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
+  base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
   if (!web_app::internals::CheckAndSaveIcon(icon_file,
         *shortcut_info.favicon.ToSkBitmap())) {
@@ -270,7 +270,7 @@ bool CreatePlatformShortcuts(
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
-        ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+        AddExtension(FILE_PATH_LITERAL(".lnk"));
     if (shortcut_paths[i] != web_app_path) {
       int unique_number =
           file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
@@ -299,7 +299,7 @@ bool CreatePlatformShortcuts(
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
-        ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+        AddExtension(FILE_PATH_LITERAL(".lnk"));
     success = base::win::TaskbarPinShortcutLink(
         shortcut_to_pin.value().c_str()) && success;
   }
@@ -316,7 +316,7 @@ void UpdatePlatformShortcuts(
 
   // If an icon file exists, and is out of date, replace it with the new icon
   // and let the shell know the icon has been modified.
-  base::FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
+  base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
   if (file_util::PathExists(icon_file)) {
     web_app::internals::CheckAndSaveIcon(icon_file,
