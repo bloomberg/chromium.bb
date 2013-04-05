@@ -35,6 +35,11 @@
                   '|Source/WebCore/platform/leveldb' \
                   '|LayoutTests/storage/indexeddb'
     },
+    "content_security_policy": {
+      'filepath': 'Source/WebCore/page/.*SecurityPolicy' \
+                  '|Source/WebCore/dom/SecurityPolicyViolationEvent' \
+                  '|LayoutTests/http/tests/security/contentSecurityPolicy'
+    },
   },
 
   'WATCHLISTS': {
@@ -47,5 +52,6 @@
     'css': [ 'darktears31@gmail.com' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
+    'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
   },
 }
