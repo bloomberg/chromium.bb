@@ -27,7 +27,7 @@
 
 module("trac");
 
-var kExampleCommitDataXML = 
+var kExampleCommitDataXML =
     '<?xml version="1.0"?>\n\n' +
     '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">\n\n' +
     '  \n\n' +

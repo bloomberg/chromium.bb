@@ -117,7 +117,8 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
         this._addDetail('summary', commitData);
         this._addDetail('author', commitData);
         this._addDetail('reviewer', commitData);
-        this._addDetail('bugID', commitData, bugzilla.bugURL);
+        // FIXME: Add bugID detail.
+        // this._addDetail('bugID', commitData, bugzilla.bugURL);
     },
     hasRevision: function(revision)
     {
