@@ -14,7 +14,12 @@ import subprocess
 import sys
 
 from util import build_utils
+from util import md5_check
 
+BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(BUILD_ANDROID_DIR)
+
+from pylib import android_commands
 
 def main(argv):
   parser = optparse.OptionParser()
@@ -32,7 +37,14 @@ def main(argv):
       'install', '-r',
       options.apk_path]
 
-  build_utils.CheckCallDie(install_cmd)
+  serial_number = android_commands.AndroidCommands().Adb().GetSerialNumber()
+  md5_stamp = '%s.%s.md5' % (options.apk_path, serial_number)
+
+  md5_checker = md5_check.Md5Checker(
+      stamp=md5_stamp, inputs=[options.apk_path], command=install_cmd)
+  if md5_checker.IsStale():
+    build_utils.CheckCallDie(install_cmd)
+    md5_checker.Write()
 
   if options.stamp:
     build_utils.Touch(options.stamp)
