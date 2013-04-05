@@ -340,8 +340,11 @@ void FakeDriveService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  "",  // empty search query
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::GetResourceListInDirectory(
@@ -351,8 +354,11 @@ void FakeDriveService::GetResourceListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  "",  // empty search query
+                  directory_resource_id,
+                  callback);
 }
 
 void FakeDriveService::Search(const std::string& search_query,
@@ -361,8 +367,11 @@ void FakeDriveService::Search(const std::string& search_query,
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  search_query,
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::SearchInDirectory(
@@ -374,8 +383,11 @@ void FakeDriveService::SearchInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  search_query,
+                  directory_resource_id,
+                  callback);
 }
 
 void FakeDriveService::GetChangeList(int64 start_changestamp,
@@ -383,8 +395,11 @@ void FakeDriveService::GetChangeList(int64 start_changestamp,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  GetResourceList(GURL(),  // no next feed
+                  start_changestamp,
+                  "",  // empty search query
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::ContinueGetResourceList(

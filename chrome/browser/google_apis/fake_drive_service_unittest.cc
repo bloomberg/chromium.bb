@@ -364,6 +364,330 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
   EXPECT_FALSE(resource_list);
 }
 
+TEST_F(FakeDriveServiceTest, GetAllResourceList) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetAllResourceList(
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check.
+  EXPECT_EQ(14U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetAllResourceList_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetAllResourceList(
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceListInDirectory(
+      fake_service_.GetRootResourceId(),
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 8 entries in the root directory.
+  EXPECT_EQ(8U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceListInDirectory(
+      "folder:1_folder_resource_id",
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There is three entries in 1_folder_resource_id
+  // directory.
+  EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceListInDirectory(
+      fake_service_.GetRootResourceId(),
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
+TEST_F(FakeDriveServiceTest, Search) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.Search(
+      "File",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 4 entries that contain "File" in their
+  // titles.
+  EXPECT_EQ(4U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.Search(
+      "title:1.txt",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 4 entries that contain "1.txt" in their
+  // titles.
+  EXPECT_EQ(4U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.Search(
+      "Directory 1",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There are 2 entries that contain both "Directory" and "1" in their titles.
+  EXPECT_EQ(2U, resource_list->entries().size());
+
+  fake_service_.Search(
+      "\"Directory 1\"",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There is 1 entry that contain "Directory 1" in its title.
+  EXPECT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, Search_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.Search(
+      "Directory 1",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
+TEST_F(FakeDriveServiceTest, SearchInDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.SearchInDirectory(
+      "File",  // search_query
+      fake_service_.GetRootResourceId(),  // directory_resource_id
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There is entry that contain "File" in their
+  // titles directly under the root directory.
+  EXPECT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, SearchInDirectory_WithAttribute) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.SearchInDirectory(
+      "title:1.txt",  // search_query
+      fake_service_.GetRootResourceId(),  // directory_resource_id
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 2 entries that contain "1.txt" in their
+  // titles directly under the root directory.
+  EXPECT_EQ(2U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, SearchInDirectory_MultipleQueries) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.SearchInDirectory(
+      "Directory 1",  // search_query
+      fake_service_.GetRootResourceId(),  // directory_resource_id
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There is one entry that contains both "Directory" and "1" in its title
+  // directly under the root directory.
+  EXPECT_EQ(1U, resource_list->entries().size());
+
+  fake_service_.SearchInDirectory(
+      "\"Directory 1\"",  // search_query
+      fake_service_.GetRootResourceId(),  // directory_resource_id
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There is one entry that contains "Directory 1" in its title
+  // directly under the root directory.
+  EXPECT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, SearchInDirectory_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.SearchInDirectory(
+      "Directory 1",  // search_query
+      fake_service_.GetRootResourceId(),  // directory_resource_id
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
+TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  // Load the account_metadata.json as well to add the largest changestamp
+  // (654321) to the existing entries.
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetChangeList(
+      654321 + 1,  // start_changestamp
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // This should be empty as the latest changestamp was passed to
+  // GetResourceList(), hence there should be no new entries.
+  EXPECT_EQ(0U, resource_list->entries().size());
+  // It's considered loaded even if the result is empty.
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  // Load the account_metadata.json as well to add the largest changestamp
+  // (654321) to the existing entries.
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+  // Add a new directory in the root directory. The new directory will have
+  // the changestamp of 654322.
+  ASSERT_TRUE(AddNewDirectory(
+      fake_service_.GetRootResourceId(), "new directory"));
+
+  // Get the resource list newer than 654321.
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetChangeList(
+      654321 + 1,  // start_changestamp
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // The result should only contain the newly created directory.
+  ASSERT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ("new directory", resource_list->entries()[0]->title());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetChangeList(
+      654321,  // start_changestamp
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
 TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
       "chromeos/gdata/account_metadata.json"));
