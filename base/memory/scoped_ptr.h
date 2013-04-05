@@ -663,6 +663,18 @@ class scoped_array {
  private:
   C* array_;
 
+  // Disable initialization from any type other than C*, by providing a
+  // constructor that matches such an initialization, but is private and has no
+  // definition. This is disabled because it is not safe to call delete[] on an
+  // array whose static type does not match its dynamic type.
+  template <typename C2> explicit scoped_array(C2* array);
+  explicit scoped_array(int disallow_construction_from_null);
+
+  // Disable reset() from any type other than C*, for the same reasons as the
+  // constructor above.
+  template <typename C2> void reset(C2* array);
+  void reset(int disallow_reset_from_null);
+
   // Forbid comparison of different scoped_array types.
   template <class C2> bool operator==(scoped_array<C2> const& p2) const;
   template <class C2> bool operator!=(scoped_array<C2> const& p2) const;
