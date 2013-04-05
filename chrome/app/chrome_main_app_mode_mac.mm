@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -68,11 +69,16 @@ AppShimController::AppShimController() : channel_(NULL) {
 
 void AppShimController::Init() {
   DCHECK(g_io_thread);
+  NSString* chrome_bundle_path =
+      base::SysUTF8ToNSString(g_info->chrome_outer_bundle_path.value());
+  NSBundle* chrome_bundle = [NSBundle bundleWithPath:chrome_bundle_path];
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (!chrome::GetUserDataDirectoryForBrowserBundle(chrome_bundle,
+                                                    &user_data_dir)) {
     Quit();
     return;
   }
+
   base::FilePath socket_path =
       user_data_dir.Append(app_mode::kAppShimSocketName);
   IPC::ChannelHandle handle(socket_path.value());

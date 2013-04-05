@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
@@ -51,24 +52,16 @@ NSBundle* OuterAppBundleInternal() {
 }
 #endif  // !defined(OS_IOS)
 
-const char* ProductDirNameInternal() {
+char* ProductDirNameForBundle(NSBundle* chrome_bundle) {
   const char* product_dir_name = NULL;
 #if !defined(OS_IOS)
   base::mac::ScopedNSAutoreleasePool pool;
 
-  // Use OuterAppBundle() to get the main app's bundle. This key needs to live
-  // in the main app's bundle because it will be set differently on the canary
-  // channel, and the autoupdate system dictates that there can be no
-  // differences between channels within the versioned directory. This would
-  // normally use base::mac::FrameworkBundle(), but that references the
-  // framework bundle within the versioned directory. Ordinarily, the profile
-  // should not be accessed from non-browser processes, but those processes do
-  // attempt to get the profile directory, so direct them to look in the outer
-  // browser .app's Info.plist for the CrProductDirName key.
-  NSBundle* bundle = chrome::OuterAppBundle();
   NSString* product_dir_name_ns =
-      [bundle objectForInfoDictionaryKey:@"CrProductDirName"];
+      [chrome_bundle objectForInfoDictionaryKey:@"CrProductDirName"];
   product_dir_name = [product_dir_name_ns fileSystemRepresentation];
+#else
+  DCHECK(!chrome_bundle);
 #endif
 
   if (!product_dir_name) {
@@ -92,8 +85,32 @@ const char* ProductDirNameInternal() {
 // official canary channel, the Info.plist will have CrProductDirName set
 // to "Google/Chrome Canary".
 std::string ProductDirName() {
-  static const char* product_dir_name = ProductDirNameInternal();
+#if defined(OS_IOS)
+  static const char* product_dir_name = ProductDirNameForBundle(nil);
+#else
+  // Use OuterAppBundle() to get the main app's bundle. This key needs to live
+  // in the main app's bundle because it will be set differently on the canary
+  // channel, and the autoupdate system dictates that there can be no
+  // differences between channels within the versioned directory. This would
+  // normally use base::mac::FrameworkBundle(), but that references the
+  // framework bundle within the versioned directory. Ordinarily, the profile
+  // should not be accessed from non-browser processes, but those processes do
+  // attempt to get the profile directory, so direct them to look in the outer
+  // browser .app's Info.plist for the CrProductDirName key.
+  static const char* product_dir_name =
+      ProductDirNameForBundle(chrome::OuterAppBundle());
+#endif
   return std::string(product_dir_name);
+}
+
+bool GetDefaultUserDataDirectoryForProduct(const std::string& product_dir,
+                                           base::FilePath* result) {
+  bool success = false;
+  if (result && PathService::Get(base::DIR_APP_DATA, result)) {
+    *result = result->Append(product_dir);
+    success = true;
+  }
+  return success;
 }
 
 }  // namespace
@@ -101,12 +118,7 @@ std::string ProductDirName() {
 namespace chrome {
 
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
-  bool success = false;
-  if (result && PathService::Get(base::DIR_APP_DATA, result)) {
-    *result = result->Append(ProductDirName());
-    success = true;
-  }
-  return success;
+  return GetDefaultUserDataDirectoryForProduct(ProductDirName(), result);
 }
 
 bool GetUserDocumentsDirectory(base::FilePath* result) {
@@ -216,6 +228,12 @@ NSBundle* OuterAppBundle() {
   // to OuterAppBundleInternal().
   static NSBundle* bundle = OuterAppBundleInternal();
   return bundle;
+}
+
+bool GetUserDataDirectoryForBrowserBundle(NSBundle* bundle,
+                                          base::FilePath* result) {
+  scoped_ptr_malloc<char> product_dir_name(ProductDirNameForBundle(bundle));
+  return GetDefaultUserDataDirectoryForProduct(product_dir_name.get(), result);
 }
 
 #endif  // !defined(OS_IOS)

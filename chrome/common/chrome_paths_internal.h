@@ -92,6 +92,15 @@ bool GetGlobalApplicationSupportDirectory(base::FilePath* result);
 // inside the helper. In unbundled applications, such as tests, returns nil.
 NSBundle* OuterAppBundle();
 
+// Get the user data directory for the Chrome browser bundle at |bundle|.
+// |bundle| should be the same value that would be returned from +[NSBundle
+// mainBundle] if Chrome were launched normaly. This is used by app shims,
+// which run from a bundle which isn't Chrome itself, but which need access to
+// the user data directory to connect to a UNIX-domain socket therein.
+// Returns false if there was a problem fetching the app data directory.
+bool GetUserDataDirectoryForBrowserBundle(NSBundle* bundle,
+                                          base::FilePath* result);
+
 #endif  // OS_MACOSX && !OS_IOS
 
 // Checks if the |process_type| has the rights to access the profile.
