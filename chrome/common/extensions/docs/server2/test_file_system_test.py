@@ -60,11 +60,11 @@ class TestFileSystemTest(unittest.TestCase):
     self.assertEqual('404.html contents', fs.ReadSingle('404.html'))
     self.assertEqual('404.html contents', fs.ReadSingle('/404.html'))
     self.assertEqual('a11y.html contents', fs.ReadSingle('apps/a11y.html'))
-    self.assertEqual({'404.html', 'apps/', 'extensions/'},
+    self.assertEqual(set(['404.html', 'apps/', 'extensions/']),
                      set(fs.ReadSingle('/')))
-    self.assertEqual({'a11y.html', 'about_apps.html', 'fakedir/'},
+    self.assertEqual(set(['a11y.html', 'about_apps.html', 'fakedir/']),
                      set(fs.ReadSingle('apps/')))
-    self.assertEqual({'a11y.html', 'about_apps.html', 'fakedir/'},
+    self.assertEqual(set(['a11y.html', 'about_apps.html', 'fakedir/']),
                      set(fs.ReadSingle('/apps/')))
 
   def testStat(self):

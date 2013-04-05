@@ -8,6 +8,7 @@ from xml.parsers.expat import ExpatError
 
 import file_system
 from future import Future
+import logging
 
 class _AsyncFetchFuture(object):
   def __init__(self, paths, fetcher, binary):
@@ -83,11 +84,14 @@ class SubversionFileSystem(file_system.FileSystem):
       next_a = a_list[i + 1]
       name = a.getAttribute('name')
       if name:
-        rev = next_a.getElementsByTagName('strong')[0]
+        try:
+          rev = next_a.getElementsByTagName('strong')[0].firstChild.nodeValue
+        except Exception as e:
+          rev = '0'
         if 'file' in next_a.getAttribute('title'):
-          child_revisions[name] = rev.firstChild.nodeValue
+          child_revisions[name] = rev
         else:
-          child_revisions[name + '/'] = rev.firstChild.nodeValue
+          child_revisions[name + '/'] = rev
     return file_system.StatInfo(dir_revision, child_revisions)
 
   def Stat(self, path):
@@ -95,7 +99,11 @@ class SubversionFileSystem(file_system.FileSystem):
     result = self._stat_fetcher.Fetch(directory + '/')
     if result.status_code == 404:
       raise file_system.FileNotFoundError(path)
-    stat_info = self._CreateStatInfo(result.content)
+    try:
+      stat_info = self._CreateStatInfo(result.content)
+    except Exception as e:
+      logging.error('Error parsing %s: %s' % (path, e))
+      raise file_system.FileNotFoundError(path)
     if not path.endswith('/'):
       filename = path.rsplit('/', 1)[-1]
       if filename not in stat_info.child_versions:
