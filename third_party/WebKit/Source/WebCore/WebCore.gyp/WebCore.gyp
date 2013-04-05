@@ -1788,9 +1788,8 @@
             # Additional files from the WebCore Mac build that are presently
             # used in the WebCore Chromium Mac build too.
 
-            # The Mac build is USE(CF) but does not use CFNetwork.
+            # The Mac build is USE(CF).
             ['include', 'CF\\.cpp$'],
-            ['exclude', 'network/cf/'],
 
             # Use native Mac font code from WebCore.
             ['include', 'platform/(graphics/)?mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],

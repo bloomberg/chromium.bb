@@ -37,7 +37,6 @@
           'loader',
           'loader/appcache',
           'loader/archive',
-          'loader/archive/cf',
           'loader/archive/mhtml',
           'loader/cache',
           'loader/icon',
