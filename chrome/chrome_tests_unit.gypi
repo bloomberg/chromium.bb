@@ -1477,16 +1477,10 @@
         'browser/web_applications/web_app_unittest.cc',
         'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
-        'browser/webdata/autofill_entry_unittest.cc',
         'browser/webdata/autofill_profile_syncable_service_unittest.cc',
-        'browser/webdata/autofill_table_unittest.cc',
         'browser/webdata/keyword_table_unittest.cc',
         'browser/webdata/token_service_table_unittest.cc',
         'browser/webdata/web_apps_table_unittest.cc',
-        'browser/webdata/web_data_service_test_util.cc',
-        'browser/webdata/web_data_service_test_util.h',
-        'browser/webdata/web_data_service_unittest.cc',
-        'browser/webdata/web_database_migration_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/cancelable_task_tracker_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
@@ -1684,6 +1678,15 @@
         '../components/autofill/browser/wallet/wallet_signin_helper_unittest.cc',
         '../components/autofill/browser/wallet/wallet_test_util.cc',
         '../components/autofill/browser/wallet/wallet_test_util.h',
+
+        # TODO(caitkp): Move to //components/components.gypi once
+        # remaining dependencies back to //chrome are eliminated.
+        '../components/webdata/autofill/autofill_entry_unittest.cc',
+        '../components/webdata/autofill/autofill_table_unittest.cc',
+        '../components/webdata/autofill/web_data_service_unittest.cc',
+        '../components/webdata/autofill/web_database_migration_unittest.cc',
+        '../components/webdata/common/web_data_service_test_util.cc',
+        '../components/webdata/common/web_data_service_test_util.h',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.

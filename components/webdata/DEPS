@@ -1,10 +1,24 @@
 include_rules = [
-  # Webdata is being made into a component (it will end up at
-  # //components/webdata and not depend on //chrome), so we have these basic
-  # rules followed by temporary exceptions.  Please don't add to the list of
-  # exceptions!
   "+components/encryptor",
   "+content/public/browser",
   "+sql",
   "+ui",
 ]
+
+specific_include_rules = {
+  # TODO(caitkp): Extract unit tests from //chrome, at lower priority
+  # than production code.
+  r'(.*_unittest|.*_test_util)\.(cc|h)': [
+    "+chrome/browser/webdata/keyword_table.h",
+    "+chrome/browser/webdata/logins_table.h",
+    "+chrome/browser/webdata/token_service_table.h",
+    "+chrome/browser/webdata/web_apps_table.h",
+    "+chrome/browser/webdata/web_data_service.h",
+    "+chrome/browser/webdata/web_data_service_factory.h",
+    "+chrome/browser/webdata/web_intents_table.h",
+    "+chrome/test/base/ui_test_utils.h",
+    "+content/public/test",
+    "+testing/gmock/include/gmock/gmock.h",
+    "+testing/gtest/include/gtest/gtest.h",
+  ],
+}

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__
-#define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -73,4 +73,4 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
   DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapper);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
