@@ -2031,7 +2031,6 @@
             'loader/MixedContentChecker.h',
             'loader/NavigationAction.cpp',
             'loader/NavigationScheduler.cpp',
-            'loader/NetscapePlugInStreamLoader.cpp',
             'loader/PingLoader.cpp',
             'loader/PingLoader.h',
             'loader/PlaceholderDocument.cpp',

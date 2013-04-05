@@ -306,7 +306,6 @@ void DocumentLoader::stopLoading()
         mainReceivedError(frameLoader->cancelledError(m_request));
     
     stopLoadingSubresources();
-    stopLoadingPlugIns();
     
     m_isStopping = false;
 }
@@ -328,7 +327,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 #endif
-    return isLoadingMainResource() || !m_subresourceLoaders.isEmpty() || !m_plugInStreamLoaders.isEmpty();
+    return isLoadingMainResource() || !m_subresourceLoaders.isEmpty();
 }
 
 void DocumentLoader::notifyFinished(CachedResource* resource)
@@ -797,7 +796,6 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_mainResource, "mainResource");
     info.addMember(m_subresourceLoaders, "subresourceLoaders");
     info.addMember(m_multipartSubresourceLoaders, "multipartSubresourceLoaders");
-    info.addMember(m_plugInStreamLoaders, "plugInStreamLoaders");
     info.addMember(m_substituteData, "substituteData");
     info.addMember(m_pageTitle.string(), "pageTitle.string()");
     info.addMember(m_overrideEncoding, "overrideEncoding");
@@ -885,7 +883,6 @@ void DocumentLoader::setupForReplace()
     m_gotFirstByte = false;
     
     stopLoadingSubresources();
-    stopLoadingPlugIns();
     clearArchiveResources();
 }
 
@@ -1254,7 +1251,6 @@ void DocumentLoader::setDefersLoading(bool defers)
         mainResourceLoader()->setDefersLoading(defers);
 
     setAllDefersLoading(m_subresourceLoaders, defers);
-    setAllDefersLoading(m_plugInStreamLoaders, defers);
     if (!defers)
         deliverSubstituteResourcesAfterDelay();
 }
@@ -1263,11 +1259,6 @@ void DocumentLoader::setMainResourceDataBufferingPolicy(DataBufferingPolicy data
 {
     if (m_mainResource)
         m_mainResource->setDataBufferingPolicy(dataBufferingPolicy);
-}
-
-void DocumentLoader::stopLoadingPlugIns()
-{
-    cancelAll(m_plugInStreamLoaders);
 }
 
 void DocumentLoader::stopLoadingSubresources()
@@ -1297,17 +1288,6 @@ void DocumentLoader::removeSubresourceLoader(ResourceLoader* loader)
     checkLoadComplete();
     if (Frame* frame = m_frame)
         frame->loader()->checkLoadComplete();
-}
-
-void DocumentLoader::addPlugInStreamLoader(ResourceLoader* loader)
-{
-    m_plugInStreamLoaders.add(loader);
-}
-
-void DocumentLoader::removePlugInStreamLoader(ResourceLoader* loader)
-{
-    m_plugInStreamLoaders.remove(loader);
-    checkLoadComplete();
 }
 
 bool DocumentLoader::isMultipartReplacingLoad() const

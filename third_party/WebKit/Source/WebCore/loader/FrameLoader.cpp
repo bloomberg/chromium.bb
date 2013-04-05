@@ -1780,8 +1780,6 @@ void FrameLoader::transitionToCommitted(PassRefPtr<CachedPage> cachedPage)
     // Nothing else can interupt this commit - set the Provisional->Committed transition in stone
     if (m_documentLoader)
         m_documentLoader->stopLoadingSubresources();
-    if (m_documentLoader)
-        m_documentLoader->stopLoadingPlugIns();
 
     setDocumentLoader(m_provisionalDocumentLoader.get());
     setProvisionalDocumentLoader(0);

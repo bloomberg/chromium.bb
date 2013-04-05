@@ -206,13 +206,9 @@ namespace WebCore {
         bool isLoadingMainResource() const { return m_loadingMainResource; }
         bool isLoadingMultipartContent() const { return m_isLoadingMultipartContent; }
 
-        void stopLoadingPlugIns();
         void stopLoadingSubresources();
-
         void addSubresourceLoader(ResourceLoader*);
         void removeSubresourceLoader(ResourceLoader*);
-        void addPlugInStreamLoader(ResourceLoader*);
-        void removePlugInStreamLoader(ResourceLoader*);
 
         void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
 
@@ -309,7 +305,6 @@ namespace WebCore {
         CachedResourceHandle<CachedRawResource> m_mainResource;
         ResourceLoaderSet m_subresourceLoaders;
         ResourceLoaderSet m_multipartSubresourceLoaders;
-        ResourceLoaderSet m_plugInStreamLoaders;
         
         mutable DocumentWriter m_writer;
 
