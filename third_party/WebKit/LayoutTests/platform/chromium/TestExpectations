@@ -539,7 +539,7 @@ dom/xhtml/level3/core/nodelookupprefix19.xhtml [ WontFix ]
 # These tests are based on the JSC JavaScript profiler. The V8 JavaScript
 # profiler is in development and will use a different approach than JSC and
 # most likely these tests will always be JSC specific.
-fast/profiler [ WontFix ]
+crbug.com/226949 fast/profiler [ WontFix ]
 
 # StorageTracker isn't used by Chromium and not all requisite platform code
 # is implemented.
