@@ -52,6 +52,9 @@
                   '|Source/WebCore/platform/leveldb' \
                   '|LayoutTests/storage/indexeddb'
     },
+    'rendering': {
+      'filepath': 'Source/WebCore/rendering'
+    },
     "content_security_policy": {
       'filepath': 'Source/WebCore/page/.*SecurityPolicy' \
                   '|Source/WebCore/dom/SecurityPolicyViolationEvent' \
@@ -78,6 +81,7 @@
     'wtf': [ 'abarth@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
+    'rendering': [ 'jchaffraix+rendering@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
   },
 }
