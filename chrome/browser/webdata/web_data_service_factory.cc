@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
@@ -36,13 +37,15 @@ void ProfileErrorCallback(sql::InitStatus status) {
 }
 
 void InitSyncableServicesOnDBThread(
-    scoped_refptr<AutofillWebDataService> autofill_web_data) {
+    scoped_refptr<AutofillWebDataService> autofill_web_data,
+    const std::string& app_locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
   AutocompleteSyncableService::CreateForWebDataService(autofill_web_data);
-  AutofillProfileSyncableService::CreateForWebDataService(autofill_web_data);
+  AutofillProfileSyncableService::CreateForWebDataService(
+      autofill_web_data, app_locale);
 }
 
 }  // namespace
@@ -87,9 +90,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       web_database_, base::Bind(&ProfileErrorCallback));
   web_data_->Init();
 
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          base::Bind(&InitSyncableServicesOnDBThread,
-                                     autofill_web_data_));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&InitSyncableServicesOnDBThread,
+                 autofill_web_data_,
+                 g_browser_process->GetApplicationLocale()));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {

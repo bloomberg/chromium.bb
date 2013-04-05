@@ -257,7 +257,7 @@ class WebDataServiceFake : public AutofillWebDataService {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
     AutocompleteSyncableService::CreateForWebDataService(this);
-    AutofillProfileSyncableService::CreateForWebDataService(this);
+    AutofillProfileSyncableService::CreateForWebDataService(this, "en-US");
 
     autocomplete_syncable_service_ =
         AutocompleteSyncableService::FromWebDataService(this);
@@ -633,7 +633,7 @@ class ProfileSyncServiceAutofillTest
         AutofillProfile p;
         p.set_guid(autofill.profile().guid());
         AutofillProfileSyncableService::OverwriteProfileWithServerData(
-            autofill.profile(), &p);
+            autofill.profile(), &p, "en-US");
         profiles->push_back(p);
       }
       child_id = child_node.GetSuccessorId();
@@ -661,7 +661,7 @@ class ProfileSyncServiceAutofillTest
         AutofillProfile p;
         p.set_guid(autofill.guid());
         AutofillProfileSyncableService::OverwriteProfileWithServerData(
-            autofill, &p);
+            autofill, &p, "en-US");
         profiles->push_back(p);
       child_id = child_node.GetSuccessorId();
     }

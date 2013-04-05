@@ -34,9 +34,9 @@ void StripPunctuation(string16* number) {
 // code corresponding to the |app_locale|.
 std::string GetRegion(const AutofillProfile& profile,
                       const std::string& app_locale) {
-  std::string country_code = profile.CountryCode();
+  string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
   if (!country_code.empty())
-    return country_code;
+    return UTF16ToASCII(country_code);
 
   return AutofillCountry::CountryCodeForLocale(app_locale);
 }

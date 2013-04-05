@@ -51,7 +51,8 @@ string16 LimitDataSize(const string16& data) {
 }
 
 void BindAutofillProfileToStatement(const AutofillProfile& profile,
-                                    sql::Statement* s) {
+                                    sql::Statement* s,
+                                    const std::string& app_locale) {
   DCHECK(base::IsValidGUID(profile.guid()));
   s->BindString(0, profile.guid());
 
@@ -67,14 +68,15 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindString16(5, LimitDataSize(text));
   text = profile.GetRawInfo(ADDRESS_HOME_ZIP);
   s->BindString16(6, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
+  text = profile.GetInfo(ADDRESS_HOME_COUNTRY, app_locale);
   s->BindString16(7, LimitDataSize(text));
-  std::string country_code = profile.CountryCode();
-  s->BindString(8, country_code);
+  text = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
+  s->BindString16(8, LimitDataSize(text));
   s->BindInt64(9, Time::Now().ToTimeT());
 }
 
-AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
+AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s,
+                                              const std::string& app_locale) {
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid(s.ColumnString(0));
   DCHECK(base::IsValidGUID(profile->guid()));
@@ -86,7 +88,7 @@ AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
   profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
   profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
   // Intentionally skip column 7, which stores the localized country name.
-  profile->SetCountryCode(s.ColumnString(8));
+  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(8));
   // Intentionally skip column 9, which stores the profile's modification date.
 
   return profile;
@@ -933,7 +935,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       "(guid, company_name, address_line_1, address_line_2, city, state,"
       " zipcode, country, country_code, date_modified)"
       "VALUES (?,?,?,?,?,?,?,?,?,?)"));
-  BindAutofillProfileToStatement(profile, &s);
+  BindAutofillProfileToStatement(profile, &s, app_locale_);
 
   if (!s.Run())
     return false;
@@ -955,7 +957,7 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   if (!s.Step())
     return false;
 
-  scoped_ptr<AutofillProfile> p(AutofillProfileFromStatement(s));
+  scoped_ptr<AutofillProfile> p(AutofillProfileFromStatement(s, app_locale_));
 
   // Get associated name info.
   AddAutofillProfileNamesToProfile(db_, p.get());
@@ -1048,7 +1050,7 @@ bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
       "    city=?, state=?, zipcode=?, country=?, country_code=?, "
       "    date_modified=? "
       "WHERE guid=?"));
-  BindAutofillProfileToStatement(profile, &s);
+  BindAutofillProfileToStatement(profile, &s, app_locale_);
   s.BindString(10, profile.guid());
 
   bool result = s.Run();
@@ -1855,7 +1857,7 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
       profile.SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(8));
       profile.SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(9));
       profile.SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(10));
-      profile.SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(11));
+      profile.SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(11), app_locale_);
       profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(12));
       int64 date_modified = s.ColumnInt64(13);
 

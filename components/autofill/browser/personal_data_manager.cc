@@ -87,7 +87,8 @@ bool IsMinimumAddress(const AutofillProfile& profile) {
   if (profile.GetRawInfo(ADDRESS_HOME_LINE1).empty())
     return false;
   std::string app_locale = AutofillCountry::ApplicationLocale();
-  std::string country_code = profile.CountryCode();
+  std::string country_code =
+      UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   if (country_code.empty())
     country_code = AutofillCountry::CountryCodeForLocale(app_locale);
@@ -278,7 +279,8 @@ bool PersonalDataManager::ImportFormData(
 
       // Reject profiles with invalid country information.
       if (field_type == ADDRESS_HOME_COUNTRY &&
-          !value.empty() && imported_profile->CountryCode().empty()) {
+          !value.empty() &&
+          imported_profile->GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
         imported_profile.reset();
         break;
       }
@@ -667,15 +669,15 @@ bool PersonalDataManager::IsValidLearnableProfile(
 
   // Reject profiles with invalid US state information.
   string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
-  if (profile.CountryCode() == "US" &&
+  if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
       !state.empty() && !FormGroup::IsValidState(state)) {
     return false;
   }
 
   // Reject profiles with invalid US zip information.
   string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
-  if (profile.CountryCode() == "US" && !zip.empty() &&
-      !autofill::IsValidZip(zip))
+  if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
+      !zip.empty() && !autofill::IsValidZip(zip))
     return false;
 
   return true;

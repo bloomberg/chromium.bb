@@ -82,7 +82,8 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
 Address::Address() {}
 
 Address::Address(const AutofillProfile& profile)
-    : country_name_code_(profile.CountryCode()),
+    : country_name_code_(
+          UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))),
       recipient_name_(profile.GetRawInfo(NAME_FULL)),
       address_line_1_(profile.GetRawInfo(ADDRESS_HOME_LINE1)),
       address_line_2_(profile.GetRawInfo(ADDRESS_HOME_LINE2)),

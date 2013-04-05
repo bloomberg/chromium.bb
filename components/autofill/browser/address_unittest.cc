@@ -27,32 +27,20 @@ class AddressTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AddressTest);
 };
 
-// Test that the getters and setters for country code are working.
-TEST_F(AddressTest, CountryCode) {
-  Address address;
-  EXPECT_EQ(std::string(), address.country_code());
-
-  address.set_country_code("US");
-  EXPECT_EQ("US", address.country_code());
-
-  address.set_country_code("CA");
-  EXPECT_EQ("CA", address.country_code());
-}
-
 // Test that country codes are properly decoded as country names.
 TEST_F(AddressTest, GetCountry) {
   Address address;
-  EXPECT_EQ(std::string(), address.country_code());
+  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   // Make sure that nothing breaks when the country code is missing.
   string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
   EXPECT_EQ(string16(), country);
 
-  address.set_country_code("US");
+  address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
-  address.set_country_code("CA");
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
 }
@@ -60,43 +48,43 @@ TEST_F(AddressTest, GetCountry) {
 // Test that we properly detect country codes appropriate for each country.
 TEST_F(AddressTest, SetCountry) {
   Address address;
-  EXPECT_EQ(std::string(), address.country_code());
+  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
   // Test basic conversion.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"), "en-US");
   string16 country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ("US", address.country_code());
+  EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test basic synonym detection.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("USA"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ("US", address.country_code());
+  EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test case-insensitivity.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("canADA"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ("CA", address.country_code());
+  EXPECT_EQ(ASCIIToUTF16("CA"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
 
   // Test country code detection.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("JP"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ("JP", address.country_code());
+  EXPECT_EQ(ASCIIToUTF16("JP"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Japan"), country);
 
   // Test that we ignore unknown countries.
   address.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Unknown"), "en-US");
   country = address.GetInfo(ADDRESS_HOME_COUNTRY, "en-US");
-  EXPECT_EQ(std::string(), address.country_code());
+  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(string16(), country);
 }
 
 // Test that we properly match typed values to stored country data.
 TEST_F(AddressTest, IsCountry) {
   Address address;
-  address.set_country_code("US");
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   const char* const kValidMatches[] = {
     "United States",
@@ -126,8 +114,8 @@ TEST_F(AddressTest, IsCountry) {
   }
 
   // Make sure that garbage values don't match when the country code is empty.
-  address.set_country_code("");
-  EXPECT_EQ(std::string(), address.country_code());
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, string16());
+  EXPECT_EQ(string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   FieldTypeSet matching_types;
   address.GetMatchingTypes(ASCIIToUTF16("Garbage"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());

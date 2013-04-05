@@ -16,7 +16,7 @@ class AuxiliaryProfileAndroidTest : public testing::Test {
   AuxiliaryProfileAndroidTest() {}
 
   AutofillProfile* GetAndLoadProfile() {
-    autofill::AuxiliaryProfilesAndroid impl(profile_loader_);
+    autofill::AuxiliaryProfilesAndroid impl(profile_loader_, "en-US");
     profile_ = impl.LoadContactsProfile();
     return profile_.get();
   }

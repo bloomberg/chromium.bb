@@ -51,7 +51,8 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
           profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
       ConvertUTF16ToJavaString(
           env,
-          profile.GetRawInfo(ADDRESS_HOME_COUNTRY)).obj(),
+          profile.GetInfo(ADDRESS_HOME_COUNTRY,
+                          g_browser_process->GetApplicationLocale())).obj(),
       ConvertUTF16ToJavaString(
           env,
           profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)).obj(),
@@ -90,10 +91,11 @@ void PopulateNativeProfileFromJava(
       ADDRESS_HOME_ZIP,
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getZip(env, jprofile)));
-  profile->SetRawInfo(
+  profile->SetInfo(
       ADDRESS_HOME_COUNTRY,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getCountry(env, jprofile)));
+          Java_AutofillProfile_getCountry(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
   profile->SetRawInfo(
       PHONE_HOME_WHOLE_NUMBER,
       ConvertJavaStringToUTF16(

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"
@@ -66,32 +67,50 @@ string16 Address::GetRawInfo(AutofillFieldType type) const {
     return zip_code_;
 
   if (type == ADDRESS_HOME_COUNTRY)
-    return Country();
+    return country_code_;
 
   return string16();
 }
 
 void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_LINE1)
+  if (type == ADDRESS_HOME_LINE1) {
     line1_ = value;
-  else if (type == ADDRESS_HOME_LINE2)
+  } else if (type == ADDRESS_HOME_LINE2) {
     line2_ = value;
-  else if (type == ADDRESS_HOME_CITY)
+  } else if (type == ADDRESS_HOME_CITY) {
     city_ = value;
-  else if (type == ADDRESS_HOME_STATE)
+  } else if (type == ADDRESS_HOME_STATE) {
     state_ = value;
-  else if (type == ADDRESS_HOME_COUNTRY)
-    // TODO(isherman): When setting the country, it should only be possible to
-    // call this with a country code, which means we should be able to drop the
-    // call to GetCountryCode() below.
-    country_code_ =
-        AutofillCountry::GetCountryCode(value,
-                                        AutofillCountry::ApplicationLocale());
-  else if (type == ADDRESS_HOME_ZIP)
+  } else if (type == ADDRESS_HOME_COUNTRY) {
+    DCHECK(value.empty() || value.length() == 2u);
+    country_code_ = value;
+  } else if (type == ADDRESS_HOME_ZIP) {
     zip_code_ = value;
-  else
+  } else {
     NOTREACHED();
+  }
+}
+
+string16 Address::GetInfo(AutofillFieldType type,
+                          const std::string& app_locale) const {
+  if (type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
+    return AutofillCountry(UTF16ToASCII(country_code_), app_locale).name();
+
+  return GetRawInfo(type);
+}
+
+bool Address::SetInfo(AutofillFieldType type,
+                      const string16& value,
+                      const std::string& app_locale) {
+  if (type == ADDRESS_HOME_COUNTRY && !value.empty()) {
+    country_code_ =
+        ASCIIToUTF16(AutofillCountry::GetCountryCode(value, app_locale));
+    return !country_code_.empty();
+  }
+
+  SetRawInfo(type, value);
+  return true;
 }
 
 void Address::GetMatchingTypes(const string16& text,
@@ -101,14 +120,6 @@ void Address::GetMatchingTypes(const string16& text,
 
   // Check to see if the |text| canonicalized as a country name is a match.
   std::string country_code = AutofillCountry::GetCountryCode(text, app_locale);
-  if (!country_code.empty() && country_code_ == country_code)
+  if (!country_code.empty() && country_code_ == ASCIIToUTF16(country_code))
     matching_types->insert(ADDRESS_HOME_COUNTRY);
-}
-
-string16 Address::Country() const {
-  if (country_code().empty())
-    return string16();
-
-  std::string app_locale = AutofillCountry::ApplicationLocale();
-  return AutofillCountry(country_code(), app_locale).name();
 }

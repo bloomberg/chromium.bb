@@ -82,10 +82,6 @@ class AutofillProfile : public FormGroup {
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
 
-  // Accessors for the stored address's country code.
-  const std::string CountryCode() const;
-  void SetCountryCode(const std::string& country_code);
-
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;
 

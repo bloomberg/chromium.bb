@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/form_group.h"
 #include "components/webdata/autofill/autofill_table.h"
@@ -41,8 +42,10 @@ void* UserDataKey() {
 const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
-    AutofillWebDataService* web_data_service)
+    AutofillWebDataService* web_data_service,
+    const std::string& app_locale)
     : web_data_service_(web_data_service),
+      app_locale_(app_locale),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
@@ -56,9 +59,11 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 
 // static
 void AutofillProfileSyncableService::CreateForWebDataService(
-    AutofillWebDataService* web_data_service) {
+    AutofillWebDataService* web_data_service,
+    const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), new AutofillProfileSyncableService(web_data_service));
+      UserDataKey(),
+      new AutofillProfileSyncableService(web_data_service, app_locale));
 }
 
 // static
@@ -299,7 +304,8 @@ bool AutofillProfileSyncableService::SaveChangesToWebData(
 // static
 bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     const sync_pb::AutofillProfileSpecifics& specifics,
-    AutofillProfile* profile) {
+    AutofillProfile* profile,
+    const std::string& app_locale) {
   bool diff = false;
   diff = UpdateMultivaluedField(NAME_FIRST,
                                 specifics.name_first(), profile) || diff;
@@ -315,8 +321,11 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
                      specifics.address_home_city(), profile) || diff;
   diff = UpdateField(ADDRESS_HOME_STATE,
                      specifics.address_home_state(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_COUNTRY,
-                     specifics.address_home_country(), profile) || diff;
+  string16 country_name_or_code =
+      ASCIIToUTF16(specifics.address_home_country());
+  std::string country_code = AutofillCountry::GetCountryCode(
+      country_name_or_code, app_locale);
+  diff = UpdateField(ADDRESS_HOME_COUNTRY, country_code, profile) || diff;
   diff = UpdateField(ADDRESS_HOME_ZIP,
                      specifics.address_home_zip(), profile) || diff;
   diff = UpdateMultivaluedField(EMAIL_ADDRESS,
@@ -415,13 +424,16 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
         autofill_specifics.guid());
   if (it != profile_map->end()) {
     // Some profile that already present is synced.
-    if (OverwriteProfileWithServerData(autofill_specifics, it->second))
+    if (OverwriteProfileWithServerData(
+            autofill_specifics, it->second, app_locale_)) {
       bundle->profiles_to_update.push_back(it->second);
+    }
   } else {
     // New profile synced.
     AutofillProfile* new_profile(
         new AutofillProfile(autofill_specifics.guid()));
-    OverwriteProfileWithServerData(autofill_specifics, new_profile);
+    OverwriteProfileWithServerData(
+        autofill_specifics, new_profile, app_locale_);
 
     // Check if profile appears under a different guid.
     for (GUIDToProfileMap::iterator i = profile_map->begin();

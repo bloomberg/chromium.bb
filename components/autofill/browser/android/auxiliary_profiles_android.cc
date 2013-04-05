@@ -49,8 +49,10 @@ string16 CollapseAddress(const string16& post_office_box,
 namespace autofill {
 
 AuxiliaryProfilesAndroid::AuxiliaryProfilesAndroid(
-    const AuxiliaryProfileLoaderAndroid& profileLoader)
-    : profile_loader_(profileLoader) {}
+    const AuxiliaryProfileLoaderAndroid& profileLoader,
+    const std::string& app_locale)
+    : profile_loader_(profileLoader),
+      app_locale_(app_locale) {}
 
 AuxiliaryProfilesAndroid::~AuxiliaryProfilesAndroid() {
 }
@@ -87,7 +89,7 @@ void AuxiliaryProfilesAndroid::LoadAddress(AutofillProfile* profile) {
   profile->SetRawInfo(ADDRESS_HOME_CITY, city);
   profile->SetRawInfo(ADDRESS_HOME_STATE, region);
   profile->SetRawInfo(ADDRESS_HOME_ZIP, postal_code);
-  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, country);
+  profile->SetInfo(ADDRESS_HOME_COUNTRY, country, app_locale_);
 }
 
 void AuxiliaryProfilesAndroid::LoadName(AutofillProfile* profile) {

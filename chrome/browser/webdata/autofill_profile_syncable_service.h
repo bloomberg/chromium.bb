@@ -47,7 +47,8 @@ class AutofillProfileSyncableService
 
   // Creates a new AutofillProfileSyncableService and hangs it off of
   // |web_data_service|, which takes ownership.
-  static void CreateForWebDataService(AutofillWebDataService* web_data_service);
+  static void CreateForWebDataService(AutofillWebDataService* web_data_service,
+                                      const std::string& app_locale);
   // Retrieves the AutofillProfileSyncableService stored on |web_data_service|.
   static AutofillProfileSyncableService* FromWebDataService(
       AutofillWebDataService* web_data_service);
@@ -73,7 +74,8 @@ class AutofillProfileSyncableService
 
  protected:
   explicit AutofillProfileSyncableService(
-      AutofillWebDataService* web_data_service);
+      AutofillWebDataService* web_data_service,
+      const std::string& app_locale);
 
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
@@ -115,7 +117,8 @@ class AutofillProfileSyncableService
   // |specifics|.
   static bool OverwriteProfileWithServerData(
       const sync_pb::AutofillProfileSpecifics& specifics,
-      AutofillProfile* profile);
+      AutofillProfile* profile,
+      const std::string& app_locale);
 
   // Writes |profile| data into supplied |profile_specifics|.
   static void WriteAutofillProfile(const AutofillProfile& profile,
@@ -168,6 +171,7 @@ class AutofillProfileSyncableService
   }
 
   AutofillWebDataService* web_data_service_;  // WEAK
+  std::string app_locale_;
   ScopedObserver<AutofillWebDataService, AutofillProfileSyncableService>
       scoped_observer_;
 

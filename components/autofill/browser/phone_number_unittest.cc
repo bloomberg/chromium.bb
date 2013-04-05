@@ -12,7 +12,7 @@
 
 TEST(PhoneNumberTest, Matcher) {
   AutofillProfile profile;
-  profile.SetCountryCode("US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   // Set phone number so country_code == 1, city_code = 650, number = 2345678.
   string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
   PhoneNumber phone_number(&profile);
@@ -83,7 +83,7 @@ TEST(PhoneNumberTest, Matcher) {
 // Verify that PhoneNumber::SetInfo() correctly formats the incoming number.
 TEST(PhoneNumberTest, SetInfo) {
   AutofillProfile profile;
-  profile.SetCountryCode("US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   PhoneNumber phone(&profile);
   EXPECT_EQ(string16(), phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
@@ -116,7 +116,7 @@ TEST(PhoneNumberTest, SetInfo) {
 // Test that cached phone numbers are correctly invalidated and updated.
 TEST(PhoneNumberTest, UpdateCachedPhoneNumber) {
   AutofillProfile profile;
-  profile.SetCountryCode("US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   PhoneNumber phone(&profile);
   phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("6502345678"));
@@ -133,14 +133,14 @@ TEST(PhoneNumberTest, UpdateCachedPhoneNumber) {
 
   // Now try parsing using the correct locale.  Note that the profile's country
   // code should override the app locale, which is still set to "US".
-  profile.SetCountryCode("GB");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("GB"));
   phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("07023456789"));
   EXPECT_EQ(ASCIIToUTF16("70"), phone.GetInfo(PHONE_HOME_CITY_CODE, "US"));
 }
 
 TEST(PhoneNumberTest, PhoneCombineHelper) {
   AutofillProfile profile;
-  profile.SetCountryCode("US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   PhoneNumber::PhoneCombineHelper number1;
   EXPECT_FALSE(number1.SetInfo(ADDRESS_BILLING_CITY,

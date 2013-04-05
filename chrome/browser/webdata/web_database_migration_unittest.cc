@@ -20,6 +20,7 @@
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
@@ -57,7 +58,7 @@ void AutofillProfile31FromStatement(const sql::Statement& s,
   profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(9));
   profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(10));
   profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(11));
-  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(12));
+  profile->SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(12), "en-US");
   profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(13));
   *date_modified = s.ColumnInt64(15);
   profile->set_guid(s.ColumnString(16));
@@ -77,7 +78,7 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
   profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
   profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
   profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
-  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(7));
+  profile->SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(7), "en-US");
   *date_modified = s.ColumnInt64(8);
 }
 

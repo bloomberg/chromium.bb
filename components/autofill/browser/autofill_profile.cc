@@ -400,14 +400,6 @@ const string16 AutofillProfile::Label() const {
   return label_;
 }
 
-const std::string AutofillProfile::CountryCode() const {
-  return address_.country_code();
-}
-
-void AutofillProfile::SetCountryCode(const std::string& country_code) {
-  address_.set_country_code(country_code);
-}
-
 bool AutofillProfile::IsEmpty() const {
   FieldTypeSet types;
   GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
@@ -483,9 +475,10 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
       // Phone numbers should be canonicalized prior to being compared.
       if (*iter != PHONE_HOME_WHOLE_NUMBER) {
         continue;
-      } else if (!autofill_i18n::PhoneNumbersMatch(GetRawInfo(*iter),
-                                                   profile.GetRawInfo(*iter),
-                                                   CountryCode())) {
+      } else if (!autofill_i18n::PhoneNumbersMatch(
+            GetRawInfo(*iter),
+            profile.GetRawInfo(*iter),
+            UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
         return false;
       }
     } else if (StringToLowerASCII(GetRawInfo(*iter)) !=
@@ -622,7 +615,7 @@ void AutofillProfile::GetSupportedTypes(FieldTypeSet* supported_types) const {
 
 bool AutofillProfile::FillCountrySelectControl(FormFieldData* field_data)
     const {
-  std::string country_code = CountryCode();
+  std::string country_code = UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
   std::string app_locale = AutofillCountry::ApplicationLocale();
 
   DCHECK_EQ(field_data->option_values.size(),
@@ -666,8 +659,9 @@ void AutofillProfile::AddPhoneIfUnique(const string16& phone,
   DCHECK(existing_phones);
   // Phones allow "fuzzy" matching, so "1-800-FLOWERS", "18003569377",
   // "(800)356-9377" and "356-9377" are considered the same.
-  if (std::find_if(existing_phones->begin(), existing_phones->end(),
-                   FindByPhone(phone, CountryCode())) ==
+  if (std::find_if(
+          existing_phones->begin(), existing_phones->end(),
+          FindByPhone(phone, UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)))) ==
       existing_phones->end()) {
     existing_phones->push_back(phone);
   }

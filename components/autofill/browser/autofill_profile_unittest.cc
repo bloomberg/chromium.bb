@@ -589,14 +589,6 @@ TEST(AutofillProfileTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
-TEST(AutofillProfileTest, CountryCode) {
-  AutofillProfile profile;
-  EXPECT_EQ(std::string(), profile.CountryCode());
-
-  profile.SetCountryCode("US");
-  EXPECT_EQ("US", profile.CountryCode());
-}
-
 TEST(AutofillProfileTest, MultiValueNames) {
   AutofillProfile p;
   const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
@@ -758,7 +750,7 @@ TEST(AutofillProfileTest, AddressCountryAbbrev) {
   field.option_contents = options;
 
   AutofillProfile profile;
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Canada"), "en-US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
   profile.FillSelectControl(ADDRESS_HOME_COUNTRY, &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }

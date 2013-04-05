@@ -153,8 +153,16 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
                               FormGroup* form_group) {
   for (DetailOutputMap::const_iterator iter = detail_outputs.begin();
        iter != detail_outputs.end(); ++iter) {
-    if (!iter->second.empty())
-      form_group->SetRawInfo(iter->first->type, iter->second);
+    if (!iter->second.empty()) {
+      if (iter->first->type == ADDRESS_HOME_COUNTRY ||
+          iter->first->type == ADDRESS_BILLING_COUNTRY) {
+        form_group->SetInfo(iter->first->type,
+                            iter->second,
+                            g_browser_process->GetApplicationLocale());
+      } else {
+        form_group->SetRawInfo(iter->first->type, iter->second);
+      }
+    }
   }
 }
 
@@ -174,6 +182,11 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
     if (it->first->type == CREDIT_CARD_VERIFICATION_CODE) {
       if (cvc)
         cvc->assign(trimmed);
+    } else if (it->first->type == ADDRESS_HOME_COUNTRY ||
+               it->first->type == ADDRESS_BILLING_COUNTRY) {
+        profile->SetInfo(it->first->type,
+                         trimmed,
+                         g_browser_process->GetApplicationLocale());
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.

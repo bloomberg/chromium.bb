@@ -443,7 +443,7 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   address.SetString("city", profile->GetRawInfo(ADDRESS_HOME_CITY));
   address.SetString("state", profile->GetRawInfo(ADDRESS_HOME_STATE));
   address.SetString("postalCode", profile->GetRawInfo(ADDRESS_HOME_ZIP));
-  address.SetString("country", profile->CountryCode());
+  address.SetString("country", profile->GetRawInfo(ADDRESS_HOME_COUNTRY));
   GetValueList(*profile, PHONE_HOME_WHOLE_NUMBER, &list);
   address.Set("phone", list.release());
   GetValueList(*profile, EMAIL_ADDRESS, &list);
@@ -524,7 +524,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
     profile.SetRawInfo(ADDRESS_HOME_ZIP, value);
 
   if (args->GetString(8, &country_code))
-    profile.SetCountryCode(country_code);
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16(country_code));
 
   if (args->GetList(9, &list_value))
     SetValueList(list_value, PHONE_HOME_WHOLE_NUMBER, &profile);

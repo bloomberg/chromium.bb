@@ -25,8 +25,9 @@ class AuxiliaryProfilesAndroid {
  public:
   // Takes in an AuxiliaryProfileLoader object which provides contact
   // information methods.
-  explicit AuxiliaryProfilesAndroid(
-     const autofill::AuxiliaryProfileLoaderAndroid& profile_loader);
+  AuxiliaryProfilesAndroid(
+     const autofill::AuxiliaryProfileLoaderAndroid& profile_loader,
+     const std::string& app_locale);
   ~AuxiliaryProfilesAndroid();
 
   // Returns autofill profile constructed from profile_loader_.
@@ -43,6 +44,7 @@ class AuxiliaryProfilesAndroid {
   void LoadPhoneNumbers(AutofillProfile* profile);
 
   const AuxiliaryProfileLoaderAndroid& profile_loader_;
+  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(AuxiliaryProfilesAndroid);
 };
