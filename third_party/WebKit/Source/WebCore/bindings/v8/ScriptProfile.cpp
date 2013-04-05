@@ -87,6 +87,7 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
         .setVisible(true)
         .setCallUID(node->GetCallUid())
         .setChildren(children.release());
+    result->setId(node->GetNodeId());
     return result.release();
 }
 
@@ -94,6 +95,16 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> ScriptProfile::buildInspectorO
 {
     return buildInspectorObjectFor(m_profile->GetTopDownRoot());
 }
+
+PassRefPtr<TypeBuilder::Array<int> > ScriptProfile::buildInspectorObjectForSamples() const
+{
+    RefPtr<TypeBuilder::Array<int> > array = TypeBuilder::Array<int>::create();
+    int count = m_profile->GetSamplesCount();
+    for (int i = 0; i < count; i++)
+        array->addItem(m_profile->GetSample(i)->GetNodeId());
+    return array.release();
+}
+
 #endif
 
 } // namespace WebCore

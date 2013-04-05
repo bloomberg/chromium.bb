@@ -293,6 +293,7 @@ void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid,
     profileObject = TypeBuilder::Profiler::CPUProfile::create();
     profileObject->setHead(it->value->buildInspectorObjectForHead());
     profileObject->setIdleTime(it->value->idleTime());
+    profileObject->setSamples(it->value->buildInspectorObjectForSamples());
 }
 
 void InspectorProfilerAgent::getHeapSnapshot(ErrorString* errorString, int rawUid)

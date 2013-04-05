@@ -59,7 +59,7 @@ void ScriptProfiler::start(ScriptState* state, const String& title)
     profileNameIdleTimeMap->add(title, 0);
 
     v8::HandleScope hs;
-    v8::CpuProfiler::StartProfiling(v8String(title, state ? state->isolate() : v8::Isolate::GetCurrent()));
+    v8::CpuProfiler::StartProfiling(v8String(title, state ? state->isolate() : v8::Isolate::GetCurrent()), true);
 }
 
 void ScriptProfiler::startForPage(Page*, const String& title)

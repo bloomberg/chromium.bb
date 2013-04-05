@@ -64,6 +64,7 @@ public:
 
 #if ENABLE(INSPECTOR)
     PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
+    PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
 #endif
 
 private:
