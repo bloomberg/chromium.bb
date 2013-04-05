@@ -290,7 +290,9 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (change_list_loader_->loaded() && !change_list_loader_->refreshing()) {
+  if (change_list_loader_ &&
+      change_list_loader_->loaded() &&
+      !change_list_loader_->refreshing()) {
     change_list_loader_->LoadFromServerIfNeeded(
         DirectoryFetchInfo(),
         base::Bind(&DriveFileSystem::OnUpdateChecked,
