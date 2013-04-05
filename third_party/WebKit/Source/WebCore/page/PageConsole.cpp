@@ -63,79 +63,6 @@ PageConsole::PageConsole(Page* page) : m_page(page) { }
 
 PageConsole::~PageConsole() { }
 
-void PageConsole::printSourceURLAndLine(const String& sourceURL, unsigned lineNumber)
-{
-    if (!sourceURL.isEmpty()) {
-        if (lineNumber > 0)
-            printf("%s:%d: ", sourceURL.utf8().data(), lineNumber);
-        else
-            printf("%s: ", sourceURL.utf8().data());
-    }
-}
-
-void PageConsole::printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel level)
-{
-    const char* sourceString;
-    switch (source) {
-    case XMLMessageSource:
-        sourceString = "XML";
-        break;
-    case JSMessageSource:
-        sourceString = "JS";
-        break;
-    case NetworkMessageSource:
-        sourceString = "NETWORK";
-        break;
-    case ConsoleAPIMessageSource:
-        sourceString = "CONSOLEAPI";
-        break;
-    case StorageMessageSource:
-        sourceString = "STORAGE";
-        break;
-    case AppCacheMessageSource:
-        sourceString = "APPCACHE";
-        break;
-    case RenderingMessageSource:
-        sourceString = "RENDERING";
-        break;
-    case CSSMessageSource:
-        sourceString = "CSS";
-        break;
-    case SecurityMessageSource:
-        sourceString = "SECURITY";
-        break;
-    case OtherMessageSource:
-        sourceString = "OTHER";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        sourceString = "UNKNOWN";
-        break;
-    }
-
-    const char* levelString;
-    switch (level) {
-    case DebugMessageLevel:
-        levelString = "DEBUG";
-        break;
-    case LogMessageLevel:
-        levelString = "LOG";
-        break;
-    case WarningMessageLevel:
-        levelString = "WARN";
-        break;
-    case ErrorMessageLevel:
-        levelString = "ERROR";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        levelString = "UNKNOWN";
-        break;
-    }
-
-    printf("%s %s:", sourceString, levelString);
-}
-
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier, Document* document)
 {
     String url;
@@ -176,14 +103,6 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
         return;
 
     page->chrome()->client()->addMessageToConsole(source, level, message, lineNumber, url);
-
-    if (!page->settings()->logsPageMessagesToSystemConsoleEnabled() && !shouldPrintExceptions())
-        return;
-
-    printSourceURLAndLine(url, lineNumber);
-    printMessageSourceAndLevelPrefix(source, level);
-
-    printf(" %s\n", message.utf8().data());
 }
 
 // static
@@ -197,18 +116,6 @@ void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
-}
-
-static bool printExceptions = false;
-
-bool PageConsole::shouldPrintExceptions()
-{
-    return printExceptions;
-}
-
-void PageConsole::setShouldPrintExceptions(bool print)
-{
-    printExceptions = print;
 }
 
 } // namespace WebCore

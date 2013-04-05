@@ -45,18 +45,12 @@ public:
     static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
     virtual ~PageConsole();
 
-    static void printSourceURLAndLine(const String& sourceURL, unsigned lineNumber);
-    static void printMessageSourceAndLevelPrefix(MessageSource, MessageLevel);
-
     void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     void addMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0, Document* = 0);
 
     static void mute();
     static void unmute();
-
-    static bool shouldPrintExceptions();
-    static void setShouldPrintExceptions(bool);
 
 private:
     PageConsole(Page*);

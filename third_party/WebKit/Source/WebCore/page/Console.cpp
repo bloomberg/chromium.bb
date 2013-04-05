@@ -94,27 +94,6 @@ static void internalAddMessage(Page* page, MessageType type, MessageLevel level,
 
     if (gotMessage)
         page->chrome()->client()->addMessageToConsole(ConsoleAPIMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
-
-    if (!page->settings()->logsPageMessagesToSystemConsoleEnabled() && !PageConsole::shouldPrintExceptions())
-        return;
-
-    PageConsole::printSourceURLAndLine(lastCaller.sourceURL(), lastCaller.lineNumber());
-    PageConsole::printMessageSourceAndLevelPrefix(ConsoleAPIMessageSource, level);
-
-    for (size_t i = 0; i < arguments->argumentCount(); ++i) {
-        String argAsString = arguments->argumentAt(i).toString(arguments->globalState());
-        printf(" %s", argAsString.utf8().data());
-    }
-
-    printf("\n");
-
-    if (printTrace) {
-        printf("Stack Trace\n");
-        for (size_t i = 0; i < callStack->size(); ++i) {
-            String functionName = String(callStack->at(i).functionName());
-            printf("\t%s\n", functionName.utf8().data());
-        }
-    }
 }
 
 void Console::debug(ScriptState* state, PassRefPtr<ScriptArguments> arguments)
