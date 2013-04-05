@@ -497,21 +497,21 @@ IntRect ChromeClientImpl::windowResizerRect() const
     return result;
 }
 
-void ChromeClientImpl::invalidateRootView(const IntRect&, bool)
+void ChromeClientImpl::invalidateRootView(const IntRect&)
 {
     notImplemented();
 }
 
-void ChromeClientImpl::invalidateContentsAndRootView(const IntRect& updateRect, bool /*immediate*/)
+void ChromeClientImpl::invalidateContentsAndRootView(const IntRect& updateRect)
 {
     if (updateRect.isEmpty())
         return;
     m_webView->invalidateRect(updateRect);
 }
 
-void ChromeClientImpl::invalidateContentsForSlowScroll(const IntRect& updateRect, bool immediate)
+void ChromeClientImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)
 {
-    invalidateContentsAndRootView(updateRect, immediate);
+    invalidateContentsAndRootView(updateRect);
 }
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)

@@ -52,7 +52,7 @@ private:
         m_image = 0;
     }
     
-    virtual void invalidateContentsAndRootView(const IntRect& r, bool)
+    virtual void invalidateContentsAndRootView(const IntRect& r)
     {
         // If m_image->m_page is null, we're being destructed, don't fire changedInRect() in that case.
         if (m_image && m_image->imageObserver() && m_image->m_page)

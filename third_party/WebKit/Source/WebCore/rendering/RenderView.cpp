@@ -490,7 +490,7 @@ bool RenderView::shouldRepaint(const LayoutRect& r) const
     return true;
 }
 
-void RenderView::repaintViewRectangle(const LayoutRect& ur, bool immediate) const
+void RenderView::repaintViewRectangle(const LayoutRect& ur) const
 {
     if (!shouldRepaint(ur))
         return;
@@ -499,7 +499,7 @@ void RenderView::repaintViewRectangle(const LayoutRect& ur, bool immediate) cons
     // or even invisible.
     Element* elt = document()->ownerElement();
     if (!elt)
-        m_frameView->repaintContentRectangle(pixelSnappedIntRect(ur), immediate);
+        m_frameView->repaintContentRectangle(pixelSnappedIntRect(ur));
     else if (RenderBox* obj = elt->renderBox()) {
         LayoutRect vr = viewRect();
         LayoutRect r = intersection(ur, vr);
@@ -510,16 +510,16 @@ void RenderView::repaintViewRectangle(const LayoutRect& ur, bool immediate) cons
 
         // FIXME: Hardcoded offsets here are not good.
         r.moveBy(obj->contentBoxRect().location());
-        obj->repaintRectangle(r, immediate);
+        obj->repaintRectangle(r);
     }
 }
 
-void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur, bool immediate)
+void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur)
 {
     if (!shouldRepaint(ur))
         return;
 
-    repaintViewRectangle(ur, immediate);
+    repaintViewRectangle(ur);
     
 #if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode()) {

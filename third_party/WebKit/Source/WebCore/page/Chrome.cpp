@@ -79,19 +79,19 @@ PassOwnPtr<Chrome> Chrome::create(Page* page, ChromeClient* client)
     return adoptPtr(new Chrome(page, client));
 }
 
-void Chrome::invalidateRootView(const IntRect& updateRect, bool immediate)
+void Chrome::invalidateRootView(const IntRect& updateRect)
 {
-    m_client->invalidateRootView(updateRect, immediate);
+    m_client->invalidateRootView(updateRect);
 }
 
-void Chrome::invalidateContentsAndRootView(const IntRect& updateRect, bool immediate)
+void Chrome::invalidateContentsAndRootView(const IntRect& updateRect)
 {
-    m_client->invalidateContentsAndRootView(updateRect, immediate);
+    m_client->invalidateContentsAndRootView(updateRect);
 }
 
-void Chrome::invalidateContentsForSlowScroll(const IntRect& updateRect, bool immediate)
+void Chrome::invalidateContentsForSlowScroll(const IntRect& updateRect)
 {
-    m_client->invalidateContentsForSlowScroll(updateRect, immediate);
+    m_client->invalidateContentsForSlowScroll(updateRect);
 }
 
 void Chrome::scroll(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)

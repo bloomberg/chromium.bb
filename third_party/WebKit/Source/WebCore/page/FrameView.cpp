@@ -428,7 +428,7 @@ void FrameView::invalidateRect(const IntRect& rect)
 {
     if (!parent()) {
         if (hostWindow())
-            hostWindow()->invalidateContentsAndRootView(rect, false /*immediate*/);
+            hostWindow()->invalidateContentsAndRootView(rect);
         return;
     }
 
@@ -1709,7 +1709,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 #endif
         if (clipsRepaints())
             updateRect.intersect(rectToScroll);
-        hostWindow()->invalidateContentsAndRootView(updateRect, false);
+        hostWindow()->invalidateContentsAndRootView(updateRect);
     }
 
     return true;
@@ -2084,7 +2084,7 @@ HostWindow* FrameView::hostWindow() const
 
 const unsigned cRepaintRectUnionThreshold = 25;
 
-void FrameView::repaintContentRectangle(const IntRect& r, bool immediate)
+void FrameView::repaintContentRectangle(const IntRect& r)
 {
     ASSERT(!m_frame->ownerElement());
 
@@ -2095,7 +2095,7 @@ void FrameView::repaintContentRectangle(const IntRect& r, bool immediate)
     }
 
     double delay = m_deferringRepaints ? 0 : adjustedDeferredRepaintDelay();
-    if ((m_deferringRepaints || m_deferredRepaintTimer.isActive() || delay) && !immediate) {
+    if (m_deferringRepaints || m_deferredRepaintTimer.isActive() || delay) {
         IntRect paintRect = r;
         if (clipsRepaints() && !paintsEntireContents())
             paintRect.intersect(visibleContentRect());
@@ -2120,7 +2120,7 @@ void FrameView::repaintContentRectangle(const IntRect& r, bool immediate)
         return;
     }
     
-    if (!shouldUpdate(immediate))
+    if (!shouldUpdate())
         return;
 
 #if USE(TILED_BACKING_STORE)
@@ -2129,7 +2129,7 @@ void FrameView::repaintContentRectangle(const IntRect& r, bool immediate)
         return;
     }
 #endif
-    ScrollView::repaintContentRectangle(r, immediate);
+    ScrollView::repaintContentRectangle(r);
 }
 
 void FrameView::contentsResized()
@@ -2242,7 +2242,7 @@ void FrameView::doDeferredRepaints()
             continue;
         }
 #endif
-        ScrollView::repaintContentRectangle(pixelSnappedIntRect(m_repaintRects[i]), false);
+        ScrollView::repaintContentRectangle(pixelSnappedIntRect(m_repaintRects[i]));
     }
     m_repaintRects.clear();
     m_repaintCount = 0;
@@ -2520,9 +2520,9 @@ void FrameView::setShouldUpdateWhileOffscreen(bool shouldUpdateWhileOffscreen)
     m_shouldUpdateWhileOffscreen = shouldUpdateWhileOffscreen;
 }
 
-bool FrameView::shouldUpdate(bool immediateRequested) const
+bool FrameView::shouldUpdate() const
 {
-    if (!immediateRequested && isOffscreen() && !shouldUpdateWhileOffscreen())
+    if (isOffscreen() && !shouldUpdateWhileOffscreen())
         return false;
     return true;
 }

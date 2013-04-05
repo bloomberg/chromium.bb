@@ -114,9 +114,9 @@ public:
     virtual bool shouldInterruptJavaScript();
     virtual WebCore::KeyboardUIMode keyboardUIMode();
     virtual WebCore::IntRect windowResizerRect() const;
-    virtual void invalidateRootView(const WebCore::IntRect&, bool);
-    virtual void invalidateContentsAndRootView(const WebCore::IntRect&, bool);
-    virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&, bool);
+    virtual void invalidateRootView(const WebCore::IntRect&);
+    virtual void invalidateContentsAndRootView(const WebCore::IntRect&);
+    virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&);
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual void scheduleAnimation();
 #endif

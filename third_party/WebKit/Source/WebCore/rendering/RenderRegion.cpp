@@ -298,12 +298,12 @@ void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
     // We'll need to expand RenderBoxRegionInfo to also hold left and right overflow values.
 }
 
-void RenderRegion::repaintFlowThreadContent(const LayoutRect& repaintRect, bool immediate) const
+void RenderRegion::repaintFlowThreadContent(const LayoutRect& repaintRect) const
 {
-    repaintFlowThreadContentRectangle(repaintRect, immediate, flowThreadPortionRect(), flowThreadPortionOverflowRect(), contentBoxRect().location());
+    repaintFlowThreadContentRectangle(repaintRect, flowThreadPortionRect(), flowThreadPortionOverflowRect(), contentBoxRect().location());
 }
 
-void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, bool immediate, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const
+void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const
 {
     ASSERT(isValid());
 
@@ -325,7 +325,7 @@ void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRe
     flipForWritingMode(clippedRect);
     
     // Issue the repaint.
-    repaintRectangle(clippedRect, immediate);
+    repaintRectangle(clippedRect);
 }
 
 void RenderRegion::installFlowThread()

@@ -127,7 +127,7 @@ public:
     // Whether or not this region is a set.
     virtual bool isRenderRegionSet() const { return false; }
     
-    virtual void repaintFlowThreadContent(const LayoutRect& repaintRect, bool immediate) const;
+    virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }
 
@@ -136,7 +136,7 @@ protected:
     void restoreRegionObjectsOriginalStyle();
 
     LayoutRect overflowRectForFlowThreadPortion(LayoutRect flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
-    void repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, bool immediate, const LayoutRect& flowThreadPortionRect,
+    void repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, const LayoutRect& flowThreadPortionRect,
         const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
 
     virtual bool shouldHaveAutoLogicalHeight() const;

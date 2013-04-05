@@ -341,12 +341,12 @@ void WebPopupMenuImpl::setTextDirection(WebTextDirection)
 //-----------------------------------------------------------------------------
 // WebCore::HostWindow
 
-void WebPopupMenuImpl::invalidateRootView(const IntRect&, bool)
+void WebPopupMenuImpl::invalidateRootView(const IntRect&)
 {
     notImplemented();
 }
 
-void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect, bool /*immediate*/)
+void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
 {
     if (paintRect.isEmpty())
         return;
@@ -354,9 +354,9 @@ void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect, b
         m_client->didInvalidateRect(paintRect);
 }
 
-void WebPopupMenuImpl::invalidateContentsForSlowScroll(const IntRect& updateRect, bool immediate)
+void WebPopupMenuImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)
 {
-    invalidateContentsAndRootView(updateRect, immediate);
+    invalidateContentsAndRootView(updateRect);
 }
 
 void WebPopupMenuImpl::scheduleAnimation()

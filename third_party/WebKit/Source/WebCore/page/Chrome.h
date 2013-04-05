@@ -70,9 +70,9 @@ public:
     ChromeClient* client() { return m_client; }
 
     // HostWindow methods.
-    virtual void invalidateRootView(const IntRect&, bool) OVERRIDE;
-    virtual void invalidateContentsAndRootView(const IntRect&, bool) OVERRIDE;
-    virtual void invalidateContentsForSlowScroll(const IntRect&, bool) OVERRIDE;
+    virtual void invalidateRootView(const IntRect&) OVERRIDE;
+    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
+    virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE;
 #if USE(TILED_BACKING_STORE)
     virtual void delegatedScrollRequested(const IntPoint& scrollPoint) OVERRIDE;

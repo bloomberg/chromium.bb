@@ -94,7 +94,7 @@ public:
 
     void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    void repaintRectangleInRegions(const LayoutRect&, bool immediate) const;
+    void repaintRectangleInRegions(const LayoutRect&) const;
 
     LayoutUnit pageLogicalTopForOffset(LayoutUnit);
     LayoutUnit pageLogicalWidthForOffset(LayoutUnit);

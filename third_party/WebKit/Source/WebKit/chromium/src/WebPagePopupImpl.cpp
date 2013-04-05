@@ -95,7 +95,7 @@ private:
 #endif
     }
 
-    virtual void invalidateContentsAndRootView(const IntRect& paintRect, bool) OVERRIDE
+    virtual void invalidateContentsAndRootView(const IntRect& paintRect) OVERRIDE
     {
         if (paintRect.isEmpty())
             return;
@@ -107,9 +107,9 @@ private:
         m_popup->widgetClient()->didScrollRect(scrollDelta.width(), scrollDelta.height(), intersection(scrollRect, clipRect));
     }
 
-    virtual void invalidateContentsForSlowScroll(const IntRect& updateRect, bool immediate) OVERRIDE
+    virtual void invalidateContentsForSlowScroll(const IntRect& updateRect) OVERRIDE
     {
-        invalidateContentsAndRootView(updateRect, immediate);
+        invalidateContentsAndRootView(updateRect);
     }
 
     virtual void scheduleAnimation() OVERRIDE

@@ -661,7 +661,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     updateRect.intersect(scrollViewRect);
 
     // Invalidate the root view (not the backing store).
-    hostWindow()->invalidateRootView(updateRect, false /*immediate*/);
+    hostWindow()->invalidateRootView(updateRect);
 
     if (m_drawPanScrollIcon) {
         // FIXME: the pan icon is broken when accelerated compositing is on, since it will draw under the compositing layers.
@@ -670,7 +670,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         IntPoint panIconDirtySquareLocation = IntPoint(m_panScrollIconPoint.x() - (panIconDirtySquareSizeLength / 2), m_panScrollIconPoint.y() - (panIconDirtySquareSizeLength / 2));
         IntRect panScrollIconDirtyRect = IntRect(panIconDirtySquareLocation, IntSize(panIconDirtySquareSizeLength, panIconDirtySquareSizeLength));
         panScrollIconDirtyRect.intersect(clipRect);
-        hostWindow()->invalidateContentsAndRootView(panScrollIconDirtyRect, false /*immediate*/);
+        hostWindow()->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
     if (canBlitOnScroll()) { // The main frame can just blit the WebView window
@@ -690,7 +690,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     frameRectsChanged();
 
     // Now blit the backingstore into the window which should be very fast.
-    hostWindow()->invalidateRootView(IntRect(), true);
+    hostWindow()->invalidateRootView(IntRect());
 }
 
 bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -701,7 +701,7 @@ bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRec
 
 void ScrollView::scrollContentsSlowPath(const IntRect& updateRect)
 {
-    hostWindow()->invalidateContentsForSlowScroll(updateRect, false);
+    hostWindow()->invalidateContentsForSlowScroll(updateRect);
 }
 
 IntPoint ScrollView::rootViewToContents(const IntPoint& rootViewPoint) const
@@ -942,7 +942,7 @@ void ScrollView::positionScrollbarLayers()
 #endif
 }
 
-void ScrollView::repaintContentRectangle(const IntRect& rect, bool now)
+void ScrollView::repaintContentRectangle(const IntRect& rect)
 {
     IntRect paintRect = rect;
     if (clipsRepaints() && !paintsEntireContents())
@@ -952,12 +952,12 @@ void ScrollView::repaintContentRectangle(const IntRect& rect, bool now)
 
     if (platformWidget()) {
         notifyPageThatContentAreaWillPaint();
-        platformRepaintContentRectangle(paintRect, now);
+        platformRepaintContentRectangle(paintRect);
         return;
     }
 
     if (hostWindow())
-        hostWindow()->invalidateContentsAndRootView(contentsToWindow(paintRect), now /*immediate*/);
+        hostWindow()->invalidateContentsAndRootView(contentsToWindow(paintRect));
 }
 
 IntRect ScrollView::scrollCornerRect() const
@@ -1165,9 +1165,9 @@ void ScrollView::updateOverhangAreas()
     }
 #endif
     if (!horizontalOverhangRect.isEmpty())
-        hostWindow()->invalidateContentsAndRootView(horizontalOverhangRect, false /*immediate*/);
+        hostWindow()->invalidateContentsAndRootView(horizontalOverhangRect);
     if (!verticalOverhangRect.isEmpty())
-        hostWindow()->invalidateContentsAndRootView(verticalOverhangRect, false /*immediate*/);
+        hostWindow()->invalidateContentsAndRootView(verticalOverhangRect);
 }
 
 void ScrollView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
@@ -1309,7 +1309,7 @@ void ScrollView::addPanScrollIcon(const IntPoint& iconPosition)
         return;
     m_drawPanScrollIcon = true;    
     m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2) ;
-    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)), true /*immediate*/);
+    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void ScrollView::removePanScrollIcon()
@@ -1317,7 +1317,7 @@ void ScrollView::removePanScrollIcon()
     if (!hostWindow())
         return;
     m_drawPanScrollIcon = false; 
-    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)), true /*immediate*/);
+    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll, bool updatePositionSynchronously)
@@ -1426,7 +1426,7 @@ bool ScrollView::platformScroll(ScrollDirection, ScrollGranularity)
     return true;
 }
 
-void ScrollView::platformRepaintContentRectangle(const IntRect&, bool /*now*/)
+void ScrollView::platformRepaintContentRectangle(const IntRect&)
 {
 }
 

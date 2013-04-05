@@ -76,7 +76,7 @@ IntRect FramelessScrollView::scrollableAreaBoundingBox() const
 void FramelessScrollView::invalidateRect(const IntRect& rect)
 {
     if (HostWindow* h = hostWindow())
-        h->invalidateContentsAndRootView(rect, false /*immediate*/);
+        h->invalidateContentsAndRootView(rect);
 }
 
 HostWindow* FramelessScrollView::hostWindow() const

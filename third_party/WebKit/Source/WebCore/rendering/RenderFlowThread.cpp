@@ -348,7 +348,7 @@ bool RenderFlowThread::shouldRepaint(const LayoutRect& r) const
     return true;
 }
 
-void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect, bool immediate) const
+void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect) const
 {
     if (!shouldRepaint(repaintRect) || !hasValidRegionInfo())
         return;
@@ -362,7 +362,7 @@ void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect, 
     for (RenderRegionList::const_iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
         RenderRegion* region = *iter;
 
-        region->repaintFlowThreadContent(repaintRect, immediate);
+        region->repaintFlowThreadContent(repaintRect);
     }
 }
 
