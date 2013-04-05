@@ -1482,4 +1482,84 @@ TEST_F(SyncFaviconCacheTest, ReuseCachedIconUrl) {
   EXPECT_EQ(0U, GetTaskCount());
 }
 
+// If we wind up with orphan image/tracking nodes, then receive an update
+// for those favicons, we should lazily create the missing nodes.
+TEST_F(SyncFaviconCacheTest, UpdatedOrphans) {
+  EXPECT_EQ(0U, GetFaviconCount());
+  SetUpInitialSync(syncer::SyncDataList(), syncer::SyncDataList());
+
+  syncer::SyncChangeList initial_image_changes;
+  syncer::SyncChangeList initial_tracking_changes;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    // Even favicons have image data but no tracking data. Odd favicons have
+    // tracking data but no image data.
+    if (i % 2 == 0) {
+      sync_pb::EntitySpecifics image_specifics;
+      FillImageSpecifics(BuildFaviconData(i),
+                         image_specifics.mutable_favicon_image());
+      initial_image_changes.push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_ADD,
+                             syncer::SyncData::CreateRemoteData(
+                                 1, image_specifics)));
+    } else {
+      sync_pb::EntitySpecifics tracking_specifics;
+      FillTrackingSpecifics(BuildFaviconData(i),
+                            tracking_specifics.mutable_favicon_tracking());
+      initial_tracking_changes.push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_ADD,
+                             syncer::SyncData::CreateRemoteData(
+                                 1, tracking_specifics)));
+    }
+  }
+
+  cache()->ProcessSyncChanges(FROM_HERE, initial_image_changes);
+  cache()->ProcessSyncChanges(FROM_HERE, initial_tracking_changes);
+  EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+
+  for (int i = 0; i < kFaviconBatchSize/2; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    cache()->OnFaviconVisited(test_data.page_url, GURL());
+    EXPECT_EQ(1U, GetTaskCount());
+    OnCustomFaviconDataAvailable(test_data);
+    syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+
+    // Even favicons had image data, so should now receive new tracking data
+    // and updated image data (we allow one update after the initial add).
+    // Odd favicons had tracking so should now receive new image data and
+    // updated tracking data.
+    if (i % 2 == 0) {
+      ASSERT_EQ(2U, changes.size());
+      EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[0].change_type());
+      EXPECT_TRUE(
+          CompareFaviconDataToSpecifics(test_data,
+                                        changes[0].sync_data().GetSpecifics()));
+      EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[1].change_type());
+      EXPECT_EQ(test_data.icon_url.spec(),
+                changes[1].sync_data().GetSpecifics().favicon_tracking().
+                    favicon_url());
+      EXPECT_NE(changes[1].sync_data().GetSpecifics().favicon_tracking().
+                    last_visit_time_ms(), 0);
+    } else {
+      ASSERT_EQ(2U, changes.size());
+      EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[0].change_type());
+      EXPECT_TRUE(
+          CompareFaviconDataToSpecifics(test_data,
+                                        changes[0].sync_data().GetSpecifics()));
+      EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[1].change_type());
+      EXPECT_EQ(test_data.icon_url.spec(),
+                changes[1].sync_data().GetSpecifics().favicon_tracking().
+                    favicon_url());
+      EXPECT_NE(changes[1].sync_data().GetSpecifics().favicon_tracking().
+                    last_visit_time_ms(), 0);
+    }
+  }
+
+  EXPECT_EQ(0U, GetTaskCount());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+}
+
 }  // namespace browser_sync

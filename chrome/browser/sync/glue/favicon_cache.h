@@ -134,13 +134,6 @@ class FaviconCache : public syncer::SyncableService,
   // Map of page url to favicon url.
   typedef std::map<GURL, GURL> PageFaviconMap;
 
-  // Enum used to decide which sync datatypes to update on a favicon change.
-  enum SyncState {
-    SYNC_IMAGE,
-    SYNC_TRACKING,
-    SYNC_BOTH
-  };
-
   // Helper method to perform OnReceivedSyncFavicon work without worrying about
   // whether caller holds a sync transaction.
   void OnReceivedSyncFaviconImpl(const GURL& icon_url,
@@ -153,12 +146,14 @@ class FaviconCache : public syncer::SyncableService,
       const GURL& page_url,
       const std::vector<history::FaviconBitmapResult>& bitmap_result);
 
-  // Helper method to update the sync state of the favicon at |icon_url|.
+  // Helper method to update the sync state of the favicon at |icon_url|. If
+  // either |image_change_type| or |tracking_change_type| is ACTION_INVALID,
+  // the corresponding datatype won't be updated.
   // Note: should only be called after both FAVICON_IMAGES and FAVICON_TRACKING
   // have been successfully set up.
   void UpdateSyncState(const GURL& icon_url,
-                       SyncState state_to_update,
-                       syncer::SyncChange::SyncChangeType change_type);
+                       syncer::SyncChange::SyncChangeType image_change_type,
+                       syncer::SyncChange::SyncChangeType tracking_change_type);
 
   // Helper method to get favicon info from |synced_favicons_|. If no info
   // exists for |icon_url|, creates a new SyncedFaviconInfo in both

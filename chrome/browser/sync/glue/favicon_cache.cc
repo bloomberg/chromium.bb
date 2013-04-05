@@ -52,6 +52,21 @@ struct SyncedFaviconInfo {
   DISALLOW_COPY_AND_ASSIGN(SyncedFaviconInfo);
 };
 
+// Information for handling local favicon updates. Used in
+// OnFaviconDataAvailable.
+struct LocalFaviconUpdateInfo {
+  LocalFaviconUpdateInfo()
+      : new_image(false),
+        new_tracking(false),
+        image_needs_rewrite(false),
+        favicon_info(NULL) {}
+
+  bool new_image;
+  bool new_tracking;
+  bool image_needs_rewrite;
+  SyncedFaviconInfo* favicon_info;
+};
+
 namespace {
 
 // Maximum number of favicons to keep in memory (0 means no limit).
@@ -185,6 +200,16 @@ bool UpdateFaviconFromBitmapResult(
     DVLOG(2) << "Ignoring local update for " << bitmap_result.icon_url.spec();
     return false;
   }
+}
+
+bool FaviconInfoHasImages(const SyncedFaviconInfo& favicon_info) {
+  return favicon_info.bitmap_data[SIZE_16].bitmap_data.get() ||
+         favicon_info.bitmap_data[SIZE_32].bitmap_data.get() ||
+         favicon_info.bitmap_data[SIZE_64].bitmap_data.get();
+}
+
+bool FaviconInfoHasTracking(const SyncedFaviconInfo& favicon_info) {
+  return !favicon_info.last_visit_time.is_null();
 }
 
 }  // namespace
@@ -325,11 +350,6 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
       } else {
         DVLOG(1) << "Deleting favicon at " << favicon_url.spec();
         DropSyncedFavicon(favicon_iter);
-        // TODO(zea): it's possible that we'll receive a deletion for an image,
-        // but not a tracking data, or vice versa, resulting in an orphan
-        // favicon node in one of the types. We should track how often this
-        // happens, and if it becomes a problem delete each part individually
-        // from the local model.
       }
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE ||
                iter->change_type() == syncer::SyncChange::ACTION_ADD) {
@@ -387,7 +407,7 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
                << ": " << icon_iter->second->favicon_url.spec();
       UpdateFaviconVisitTime(icon_iter->second->favicon_url, base::Time::Now());
       UpdateSyncState(icon_iter->second->favicon_url,
-                      SYNC_TRACKING,
+                      syncer::SyncChange::ACTION_INVALID,
                       syncer::SyncChange::ACTION_UPDATE);
       return;
     }
@@ -431,8 +451,11 @@ void FaviconCache::OnFaviconVisited(const GURL& page_url,
   page_favicon_map_[page_url] = favicon_url;
   UpdateFaviconVisitTime(favicon_url, base::Time::Now());
   UpdateSyncState(favicon_url,
-                  SYNC_TRACKING,
-                  syncer::SyncChange::ACTION_UPDATE);
+                  syncer::SyncChange::ACTION_INVALID,
+                  (FaviconInfoHasTracking(
+                       *synced_favicons_.find(favicon_url)->second) ?
+                   syncer::SyncChange::ACTION_UPDATE :
+                   syncer::SyncChange::ACTION_ADD));
 }
 
 bool FaviconCache::GetSyncedFaviconForFaviconURL(
@@ -517,11 +540,15 @@ void FaviconCache::OnReceivedSyncFaviconImpl(
   // We assume legacy favicons are 16x16.
   favicon_info->bitmap_data[SIZE_16].pixel_size.set_width(16);
   favicon_info->bitmap_data[SIZE_16].pixel_size.set_height(16);
-  UpdateFaviconVisitTime(icon_url, syncer::ProtoTimeToTime(visit_time_ms));
+  bool added_tracking = !FaviconInfoHasTracking(*favicon_info);
+  UpdateFaviconVisitTime(icon_url,
+                         syncer::ProtoTimeToTime(visit_time_ms));
 
   UpdateSyncState(icon_url,
-                  SYNC_BOTH,
-                  syncer::SyncChange::ACTION_ADD);
+                  syncer::SyncChange::ACTION_ADD,
+                  (added_tracking ?
+                   syncer::SyncChange::ACTION_ADD :
+                   syncer::SyncChange::ACTION_UPDATE));
 }
 
 void FaviconCache::SetLegacyDelegate(FaviconCacheObserver* observer) {
@@ -594,7 +621,7 @@ void FaviconCache::OnFaviconDataAvailable(
   }
 
   base::Time now = base::Time::Now();
-  std::set<SyncedFaviconInfo*> favicon_updates;
+  std::map<GURL, LocalFaviconUpdateInfo> favicon_updates;
   for (size_t i = 0; i < bitmap_results.size(); ++i) {
     const history::FaviconBitmapResult& bitmap_result = bitmap_results[i];
     GURL favicon_url = bitmap_result.icon_url;
@@ -605,15 +632,19 @@ void FaviconCache::OnFaviconDataAvailable(
     if (!favicon_info)
       return;  // We reached the in-memory limit.
 
-    if (!UpdateFaviconFromBitmapResult(bitmap_result, favicon_info))
-      continue; // Invalid favicon or no change.
-
-    favicon_updates.insert(favicon_info);
+    favicon_updates[favicon_url].new_image |=
+        !FaviconInfoHasImages(*favicon_info);
+    favicon_updates[favicon_url].new_tracking |=
+        !FaviconInfoHasTracking(*favicon_info);
+    favicon_updates[favicon_url].image_needs_rewrite |=
+        UpdateFaviconFromBitmapResult(bitmap_result, favicon_info);
+    favicon_updates[favicon_url].favicon_info = favicon_info;
   }
 
-  for (std::set<SyncedFaviconInfo*>::iterator iter = favicon_updates.begin();
-       iter != favicon_updates.end(); ++iter) {
-    SyncedFaviconInfo* favicon_info = *iter;
+  for (std::map<GURL, LocalFaviconUpdateInfo>::const_iterator
+           iter = favicon_updates.begin(); iter != favicon_updates.end();
+       ++iter) {
+    SyncedFaviconInfo* favicon_info = iter->second.favicon_info;
     const GURL& favicon_url = favicon_info->favicon_url;
     if (!favicon_info->last_visit_time.is_null()) {
       UMA_HISTOGRAM_COUNTS_10000(
@@ -621,13 +652,19 @@ void FaviconCache::OnFaviconDataAvailable(
           (now - favicon_info->last_visit_time).InHours());
     }
     favicon_info->received_local_update = true;
-    bool added_favicon = favicon_info->last_visit_time.is_null();
     UpdateFaviconVisitTime(favicon_url, now);
-    UpdateSyncState(favicon_url,
-                    SYNC_BOTH,
-                    (added_favicon ?
-                     syncer::SyncChange::ACTION_ADD :
-                     syncer::SyncChange::ACTION_UPDATE));
+
+    syncer::SyncChange::SyncChangeType image_change =
+        syncer::SyncChange::ACTION_INVALID;
+    if (iter->second.new_image)
+      image_change = syncer::SyncChange::ACTION_ADD;
+    else if (iter->second.image_needs_rewrite)
+      image_change = syncer::SyncChange::ACTION_UPDATE;
+    syncer::SyncChange::SyncChangeType tracking_change =
+        syncer::SyncChange::ACTION_UPDATE;
+    if (iter->second.new_tracking)
+      tracking_change = syncer::SyncChange::ACTION_ADD;
+    UpdateSyncState(favicon_url, image_change, tracking_change);
     if (legacy_delegate_)
       legacy_delegate_->OnFaviconUpdated(page_url, favicon_url);
 
@@ -638,8 +675,8 @@ void FaviconCache::OnFaviconDataAvailable(
 
 void FaviconCache::UpdateSyncState(
     const GURL& icon_url,
-    SyncState state_to_update,
-    syncer::SyncChange::SyncChangeType change_type) {
+    syncer::SyncChange::SyncChangeType image_change_type,
+    syncer::SyncChange::SyncChangeType tracking_change_type) {
   DCHECK(icon_url.is_valid());
   // It's possible that we'll receive a favicon update before both types
   // have finished setting up. In that case ignore the update.
@@ -654,7 +691,7 @@ void FaviconCache::UpdateSyncState(
 
   syncer::SyncChangeList image_changes;
   syncer::SyncChangeList tracking_changes;
-  if (state_to_update == SYNC_IMAGE || state_to_update == SYNC_BOTH) {
+  if (image_change_type != syncer::SyncChange::ACTION_INVALID) {
     sync_pb::EntitySpecifics new_specifics;
     sync_pb::FaviconImageSpecifics* image_specifics =
         new_specifics.mutable_favicon_image();
@@ -662,13 +699,13 @@ void FaviconCache::UpdateSyncState(
 
     image_changes.push_back(
         syncer::SyncChange(FROM_HERE,
-                           change_type,
+                           image_change_type,
                            syncer::SyncData::CreateLocalData(
                                icon_url.spec(),
                                icon_url.spec(),
                                new_specifics)));
   }
-  if (state_to_update == SYNC_TRACKING || state_to_update == SYNC_BOTH) {
+  if (tracking_change_type != syncer::SyncChange::ACTION_INVALID) {
     sync_pb::EntitySpecifics new_specifics;
     sync_pb::FaviconTrackingSpecifics* tracking_specifics =
         new_specifics.mutable_favicon_tracking();
@@ -676,7 +713,7 @@ void FaviconCache::UpdateSyncState(
 
     tracking_changes.push_back(
         syncer::SyncChange(FROM_HERE,
-                           change_type,
+                           tracking_change_type,
                            syncer::SyncData::CreateLocalData(
                                icon_url.spec(),
                                icon_url.spec(),
