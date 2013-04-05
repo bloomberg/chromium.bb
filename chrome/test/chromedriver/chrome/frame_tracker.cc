@@ -22,7 +22,7 @@ FrameTracker::~FrameTracker() {}
 Status FrameTracker::GetContextIdForFrame(
     const std::string& frame_id, int* context_id) {
   if (frame_to_context_map_.count(frame_id) == 0)
-    return Status(kUnknownError, "frame does not have execution context");
+    return Status(kNoSuchFrame, "frame does not have execution context");
   *context_id = frame_to_context_map_[frame_id];
   return Status(kOk);
 }
@@ -55,7 +55,7 @@ void FrameTracker::OnEvent(const std::string& method,
                  << json;
       return;
     }
-    frame_to_context_map_.insert(std::make_pair(frame_id, context_id));
+    frame_to_context_map_[frame_id] = context_id;
   } else if (method == "Page.frameNavigated") {
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value))

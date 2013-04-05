@@ -22,7 +22,8 @@ TEST(FrameTracker, GetContextIdForFrame) {
   base::DictionaryValue params;
   params.Set("context", base::JSONReader::Read(context));
   tracker.OnEvent("Runtime.executionContextCreated", params);
-  ASSERT_TRUE(tracker.GetContextIdForFrame("foo", &context_id).IsError());
+  ASSERT_EQ(kNoSuchFrame,
+            tracker.GetContextIdForFrame("foo", &context_id).code());
   ASSERT_EQ(-1, context_id);
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   ASSERT_EQ(100, context_id);
@@ -33,5 +34,24 @@ TEST(FrameTracker, GetContextIdForFrame) {
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   nav_params.Clear();
   tracker.OnEvent("Page.frameNavigated", nav_params);
-  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
+  ASSERT_EQ(kNoSuchFrame,
+            tracker.GetContextIdForFrame("f", &context_id).code());
+}
+
+TEST(FrameTracker, CanUpdateFrameContextId) {
+  StubDevToolsClient client;
+  FrameTracker tracker(&client);
+
+  const char context[] = "{\"id\":1,\"frameId\":\"f\"}";
+  base::DictionaryValue params;
+  params.Set("context", base::JSONReader::Read(context));
+  tracker.OnEvent("Runtime.executionContextCreated", params);
+  int context_id = -1;
+  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
+  ASSERT_EQ(1, context_id);
+
+  params.SetInteger("context.id", 2);
+  tracker.OnEvent("Runtime.executionContextCreated", params);
+  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
+  ASSERT_EQ(2, context_id);
 }

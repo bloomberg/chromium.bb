@@ -48,6 +48,17 @@ void DomTracker::OnEvent(const std::string& method,
       base::JSONWriter::Write(nodes, &json);
       LOG(ERROR) << "DOM.setChildNodes has invalid 'nodes': " << json;
     }
+  } else if (method == "DOM.childNodeInserted") {
+    const base::Value* node;
+    if (!params.Get("node", &node)) {
+      LOG(ERROR) << "DOM.childNodeInserted missing 'node'";
+      return;
+    }
+    if (!ProcessNode(node)) {
+      std::string json;
+      base::JSONWriter::Write(node, &json);
+      LOG(ERROR) << "DOM.childNodeInserted has invalid 'node': " << json;
+    }
   } else if (method == "DOM.documentUpdated") {
     node_to_frame_map_.clear();
     base::DictionaryValue params;
