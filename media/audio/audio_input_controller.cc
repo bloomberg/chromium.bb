@@ -16,7 +16,13 @@ const int kTimerResetIntervalSeconds = 1;
 // audio has faded away.
 const int kTimerInitialIntervalSeconds = 4;
 #else
-const int kTimerInitialIntervalSeconds = 1;
+// We have received reports that the timer can be too trigger happy on some
+// Mac devices and the initial timer interval has therefore been increased
+// from 1 second to 5 seconds.
+// TODO(henrika): remove usage of timers and add support for proper
+// notification of when the input device is removed.
+// See http://crbug.com/226327 for details.
+const int kTimerInitialIntervalSeconds = 5;
 #endif  // defined(OS_IOS)
 }
 
