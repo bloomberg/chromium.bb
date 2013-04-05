@@ -6,10 +6,13 @@
 
 """Unittests for lab status."""
 
+import constants
+from mock import Mock
+import sys
 import time
 import urllib
-from mock import Mock
 
+sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import lab_status
 from chromite.lib import cros_test_lib
 
@@ -51,6 +54,7 @@ class TestLabStatus(cros_test_lib.MockTestCase):
     urllib.urlopen.return_value = return_status
     return_status.read.return_value = return_status.json
     self.assertEqual(lab_status.GetLabStatus(max_attempts), expected_return)
+    # pylint: disable=E1101
     self.assertEqual(urllib.urlopen.call_count, call_count)
 
   def testGetLabStatusWithOneAttempt(self):
