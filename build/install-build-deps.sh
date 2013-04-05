@@ -206,9 +206,21 @@ fi
 
 # Install the Chrome OS default fonts.
 if test "$do_inst_chromeos_fonts" != "0"; then
+  echo
   echo "Installing Chrome OS fonts."
   dir=`echo $0 | sed -r -e 's/\/[^/]+$//'`
-  sudo $dir/linux/install-chromeos-fonts.py
+  if ! sudo $dir/linux/install-chromeos-fonts.py; then
+    echo "ERROR: The installation of the Chrome OS default fonts failed."
+    if [ `stat -f -c %T $dir` == "nfs" ]; then
+      echo "The reason is that your repo is installed on a remote file system."
+    else
+      echo "This is expected if your repo is installed on a remote file system."
+    fi
+    echo "It is recommended to install your repo on a local file system."
+    echo "You can skip the installation of the Chrome OS default founts with"
+    echo "the command line option: --no-chromeos-fonts."
+    exit 1
+  fi
 else
   echo "Skipping installation of Chrome OS fonts."
 fi
