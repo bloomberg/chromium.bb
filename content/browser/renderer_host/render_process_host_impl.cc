@@ -1007,15 +1007,15 @@ TransportDIB* RenderProcessHostImpl::MapTransportDIB(
                   STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
                   FALSE, 0);
   return TransportDIB::Map(section);
-#elif defined(OS_MACOSX)
-  // On OSX, the browser allocates all DIBs and keeps a file descriptor around
-  // for each.
-  return widget_helper_->MapTransportDIB(dib_id);
+#elif defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
+  return TransportDIB::Map(dib_id.shmkey);
 #elif defined(OS_ANDROID)
   return TransportDIB::Map(dib_id);
-#elif defined(OS_POSIX)
-  return TransportDIB::Map(dib_id.shmkey);
-#endif  // defined(OS_POSIX)
+#else
+  // On POSIX, the browser allocates all DIBs and keeps a file descriptor around
+  // for each.
+  return widget_helper_->MapTransportDIB(dib_id);
+#endif
 }
 
 TransportDIB* RenderProcessHostImpl::GetTransportDIB(
@@ -1047,7 +1047,7 @@ TransportDIB* RenderProcessHostImpl::GetTransportDIB(
       }
     }
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
     smallest_iterator->second->Detach();
 #else
     delete smallest_iterator->second;
@@ -1061,7 +1061,7 @@ TransportDIB* RenderProcessHostImpl::GetTransportDIB(
 }
 
 void RenderProcessHostImpl::ClearTransportDIBCache() {
-#if defined(USE_X11)
+#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
   std::map<TransportDIB::Id, TransportDIB*>::const_iterator dib =
       cached_dibs_.begin();
   for (; dib != cached_dibs_.end(); ++dib)

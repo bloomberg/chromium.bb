@@ -8,13 +8,13 @@
 #include "base/basictypes.h"
 #include "ui/surface/surface_export.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if !defined(TOOLKIT_GTK)
 #include "base/memory/shared_memory.h"
 #endif
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(USE_X11)
+#elif defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -80,22 +80,7 @@ class SURFACE_EXPORT TransportDIB {
     static int fake_handle = 10;
     return reinterpret_cast<Handle>(fake_handle++);
   }
-#elif defined(OS_MACOSX)
-  typedef base::SharedMemoryHandle Handle;
-  // On Mac, the inode number of the backing file is used as an id.
-  typedef base::SharedMemoryId Id;
-
-  // Returns a default, invalid handle, that is meant to indicate a missing
-  // Transport DIB.
-  static Handle DefaultHandleValue() { return Handle(); }
-
-  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
-  // ACTUALLY USED AS A REAL HANDLE.
-  static Handle GetFakeHandleForTest() {
-    static int fake_handle = 10;
-    return Handle(fake_handle++, false);
-  }
-#elif defined(USE_X11)
+#elif defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   struct Id {
     // Ensure that default initialized Ids are invalid.
@@ -123,9 +108,14 @@ class SURFACE_EXPORT TransportDIB {
     static int fake_handle = 10;
     return fake_handle++;
   }
-#elif defined(OS_ANDROID)
+#else  // OS_POSIX
   typedef base::SharedMemoryHandle Handle;
+  // On POSIX, the inode number of the backing file is used as an id.
+#if defined(OS_ANDROID)
   typedef base::SharedMemoryHandle Id;
+#else
+  typedef base::SharedMemoryId Id;
+#endif
 
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
@@ -196,7 +186,7 @@ class SURFACE_EXPORT TransportDIB {
   // wire to give this transport DIB to another process.
   Handle handle() const;
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
   // Map the shared memory into the X server and return an id for the shared
   // segment.
   XID MapToX(Display* connection);
@@ -217,17 +207,17 @@ class SURFACE_EXPORT TransportDIB {
   // Verifies that the dib can hold a canvas of the requested dimensions.
   bool VerifyCanvasSize(int w, int h);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-  explicit TransportDIB(base::SharedMemoryHandle dib);
-  base::SharedMemory shared_memory_;
-  uint32 sequence_num_;
-#elif defined(USE_X11)
+#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
   Id key_;  // SysV shared memory id
   void* address_;  // mapped address
   XSharedMemoryId x_shm_;  // X id for the shared segment
   Display* display_;  // connection to the X server
   size_t inflight_counter_;  // How many requests to the X server are in flight
   bool detached_;  // If true, delete the transport DIB when it is idle
+#else
+  explicit TransportDIB(base::SharedMemoryHandle dib);
+  base::SharedMemory shared_memory_;
+  uint32 sequence_num_;
 #endif
   size_t size_;  // length, in bytes
 

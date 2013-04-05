@@ -4,6 +4,10 @@
 
 #include "ui/surface/transport_dib.h"
 
+// Desktop GTK Linux builds use the old-style SYSV SHM based DIBs.
+// Linux Aura and Chrome OS do too. This will change very soon.
+#if !defined(TOOLKIT_GTK) && !(defined(OS_LINUX) && defined(USE_AURA))
+
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -28,7 +32,6 @@ TransportDIB::~TransportDIB() {
 // static
 TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
   TransportDIB* dib = new TransportDIB;
-  // We will use ashmem_get_size_region() to figure out the size in Map(size).
   if (!dib->shared_memory_.CreateAndMapAnonymous(size)) {
     delete dib;
     return NULL;
@@ -58,23 +61,40 @@ bool TransportDIB::is_valid_handle(Handle dib) {
 
 // static
 bool TransportDIB::is_valid_id(Id id) {
-  // Same as is_valid_handle().
-  return id.fd >= 0;
+#if defined(OS_ANDROID)
+  return is_valid_handle(id);
+#else
+  return id != 0;
+#endif
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
-  return skia::CreatePlatformCanvas(w, h, true,
+  return skia::CreatePlatformCanvas(w, h, true, 
                                     reinterpret_cast<uint8_t*>(memory()),
                                     skia::RETURN_NULL_ON_FAILURE);
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid_handle(handle()) || !shared_memory_.Map(0))
+  if (!is_valid_handle(handle()))
     return false;
-
+#if defined(OS_ANDROID)
+  if (!shared_memory_.Map(0))
+    return false;
   size_ = shared_memory_.mapped_size();
+#else
+  if (memory())
+    return true;
+
+  struct stat st;
+  if ((fstat(shared_memory_.handle().fd, &st) != 0) ||
+      (!shared_memory_.Map(st.st_size))) {
+    return false;
+  }
+
+  size_ = st.st_size;
+#endif
   return true;
 }
 
@@ -83,10 +103,16 @@ void* TransportDIB::memory() const {
 }
 
 TransportDIB::Id TransportDIB::id() const {
-  // Use FileDescriptor as id.
-  return shared_memory_.handle();
+#if defined(OS_ANDROID)
+  return handle();
+#else
+  return shared_memory_.id();
+#endif
 }
 
 TransportDIB::Handle TransportDIB::handle() const {
   return shared_memory_.handle();
 }
+
+#endif  // !defined(TOOLKIT_GTK) && !(defined(OS_LINUX) && defined(USE_AURA))
+

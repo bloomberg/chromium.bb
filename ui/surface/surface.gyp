@@ -81,9 +81,8 @@
         'surface_switches.cc',
         'transport_dib.h',
         'transport_dib.cc',
-        'transport_dib_android.cc',
-        'transport_dib_linux.cc',
-        'transport_dib_mac.cc',
+        'transport_dib_posix.cc',
+        'transport_dib_sysvipc.cc',
         'transport_dib_win.cc',
       ],
       'defines': [
