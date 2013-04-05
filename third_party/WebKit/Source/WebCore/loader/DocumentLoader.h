@@ -47,10 +47,6 @@
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
-#if HAVE(RUNLOOP_TIMER)
-#include <wtf/RunLoopTimer.h>
-#endif
-
 namespace WTF {
 class SchedulePair;
 }
@@ -287,11 +283,8 @@ namespace WebCore {
         void stopLoadingForPolicyChange();
         ResourceError interruptedForPolicyChangeError() const;
 
-#if HAVE(RUNLOOP_TIMER)
-        typedef RunLoopTimer<DocumentLoader> DocumentLoaderTimer;
-#else
         typedef Timer<DocumentLoader> DocumentLoaderTimer;
-#endif
+
         void handleSubstituteDataLoadSoon();
         void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
         void startDataLoadTimer();
