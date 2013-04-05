@@ -47,16 +47,13 @@ def DoJavac(options):
       '-source', '1.5',
       '-target', '1.5',
       '-classpath', ':'.join(classpath),
-      '-d', output_dir]
+      '-d', output_dir,
+      '-Xlint:unchecked',
+      '-Xlint:deprecation',
+      ]
 
-  # Only output Java warnings for chromium code
-  if options.chromium_code:
-    cmd += ['-Xlint:unchecked']
-  else:
-    cmd += [# Suppress "Sun proprietary API" warnings. See: goo.gl/OYxUM
-            '-XDignore.symbol.file']
-
-  build_utils.CheckCallDie(cmd + java_files)
+  suppress_output = not options.chromium_code
+  build_utils.CheckCallDie(cmd + java_files, suppress_output=suppress_output)
 
 def main(argv):
   parser = optparse.OptionParser()
