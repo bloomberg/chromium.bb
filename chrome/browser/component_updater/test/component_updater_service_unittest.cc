@@ -235,9 +235,9 @@ class ComponentUpdaterTest : public testing::Test {
     return test_config_;
   }
 
-  ComponentUpdateService::Status RegisterComponent(CrxComponent* com,
-                                                   TestComponents component,
-                                                   const Version& version) {
+  void RegisterComponent(CrxComponent* com,
+                         TestComponents component,
+                         const Version& version) {
     if (component == kTestComponent_abag) {
       com->name = "test_abag";
       com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
@@ -249,7 +249,7 @@ class ComponentUpdaterTest : public testing::Test {
     TestInstaller* installer = new TestInstaller;
     com->installer = installer;
     test_installers_.push_back(installer);
-    return component_updater_->RegisterComponent(*com);
+    component_updater_->RegisterComponent(*com);
   }
 
  private:
@@ -297,8 +297,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   content::URLRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com;
-  EXPECT_EQ(ComponentUpdateService::kOk,
-            RegisterComponent(&com, kTestComponent_abag, Version("1.1")));
+  RegisterComponent(&com, kTestComponent_abag, Version("1.1"));
 
   const GURL expected_update_url(
       "http://localhost/upd?extra=foo&x=id%3D"
@@ -652,114 +651,5 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
   ev1 = notification_tracker().at(1);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
-  component_updater()->Stop();
-}
-
-// Verify that a previously registered component can get re-registered
-// with a different version.
-TEST_F(ComponentUpdaterTest, CheckReRegistration) {
-  MessageLoop message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  content::TestBrowserThread file_thread(BrowserThread::FILE);
-  content::TestBrowserThread io_thread(BrowserThread::IO);
-
-  io_thread.StartIOThread();
-  file_thread.Start();
-
-  content::URLRequestPrepackagedInterceptor interceptor;
-
-  CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
-  CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
-
-  // Start with 0.9, and update to 1.0
-  const GURL expected_update_url_1(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
-
-  const GURL expected_update_url_2(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc");
-
-  interceptor.SetResponse(expected_update_url_1,
-                          test_file("updatecheck_reply_1.xml"));
-  interceptor.SetResponse(expected_update_url_2,
-                          test_file("updatecheck_reply_1.xml"));
-  interceptor.SetResponse(GURL(expected_crx_url),
-                          test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
-
-  // Loop twice to issue two checks: (1) with original 0.9 version
-  // and (2) with the updated 1.0 version.
-  test_configurator()->SetLoopCount(2);
-
-  component_updater()->Start();
-  message_loop.Run();
-
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
-
-  EXPECT_EQ(3, interceptor.GetHitCount());
-
-  ASSERT_EQ(5ul, notification_tracker().size());
-
-  TestNotificationTracker::Event ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
-
-  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev2.type);
-
-  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
-
-  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
-
-  // Now re-register, pretending to be an even newer version (2.2)
-  component_updater()->Stop();
-  EXPECT_EQ(ComponentUpdateService::kReplaced,
-            RegisterComponent(&com1, kTestComponent_jebg, Version("2.2")));
-
-  // Check that we send out 2.2 as our version.
-  // Interceptor's hit count should go up by 1.
-  const GURL expected_update_url_3(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D2.2%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
-
-  interceptor.SetResponse(expected_update_url_3,
-                          test_file("updatecheck_reply_1.xml"));
-
-  notification_tracker().Reset();
-
-  // Loop once just to notice the check happening with the re-register version.
-  test_configurator()->SetLoopCount(1);
-  component_updater()->Start();
-  message_loop.Run();
-
-  ASSERT_EQ(2ul, notification_tracker().size());
-
-  ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
-
-  EXPECT_EQ(4, interceptor.GetHitCount());
-
-  // The test harness's Register() function creates a new installer,
-  // so the counts go back to 0.
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
-
   component_updater()->Stop();
 }

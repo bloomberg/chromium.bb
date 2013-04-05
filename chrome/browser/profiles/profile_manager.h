@@ -216,9 +216,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 
-  // For ChromeOS, determines if the user has logged in to a real profile.
-  bool IsLoggedIn() const { return logged_in_; }
-
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);

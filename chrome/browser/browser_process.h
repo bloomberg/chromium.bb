@@ -31,7 +31,6 @@ class IntranetRedirectDetector;
 class IOThread;
 class MetricsService;
 class NotificationUIManager;
-class PnaclComponentInstaller;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -218,8 +217,6 @@ class BrowserProcess {
   virtual ComponentUpdateService* component_updater() = 0;
 
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
-
-  virtual PnaclComponentInstaller* pnacl_component_installer() = 0;
 
   virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
 
