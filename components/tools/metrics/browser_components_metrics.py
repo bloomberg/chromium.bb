@@ -17,7 +17,8 @@ import sys
 # This is done so that we can import checkdeps.  If not invoked as
 # main, our user must ensure it is in PYTHONPATH.
 if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'checkdeps'))
+  sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                               'tools', 'checkdeps'))
 
 
 import count_ifdefs
@@ -49,7 +50,7 @@ class BrowserComponentsMetricsGenerator(object):
 
 def main():
   generator = BrowserComponentsMetricsGenerator(
-      os.path.join(os.path.dirname(__file__), '..', '..'))
+      os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
   print "All metrics are for chrome/browser.\n"
   print "OS ifdefs, all:                   %d" % generator.CountIfdefs(False)
