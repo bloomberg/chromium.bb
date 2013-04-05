@@ -310,18 +310,25 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     // This block will only get hit with --enable-accelerated-drawing flag.
     needs_paint_indirect = true;
   } else {
-    // Scrollbars on Windows XP and the Windows Classic theme have particularly
-    // problematic alpha values, so always draw them indirectly.
+    // Scrollbar components on Windows Classic theme (on all Windows versions)
+    // have particularly problematic alpha values, so always draw them
+    // indirectly. In addition, scrollbar thumbs and grippers for the Windows XP
+    // theme (available only on Windows XP) also need their alpha values
+    // fixed.
     switch (part) {
       case kScrollbarDownArrow:
       case kScrollbarUpArrow:
       case kScrollbarLeftArrow:
       case kScrollbarRightArrow:
+        if (!GetThemeHandle(SCROLLBAR))
+          needs_paint_indirect = true;
+        break;
       case kScrollbarHorizontalThumb:
       case kScrollbarVerticalThumb:
       case kScrollbarHorizontalGripper:
       case kScrollbarVerticalGripper:
-        if (!GetThemeHandle(SCROLLBAR))
+        if (!GetThemeHandle(SCROLLBAR) ||
+            base::win::GetVersion() == base::win::VERSION_XP)
           needs_paint_indirect = true;
         break;
       default:
