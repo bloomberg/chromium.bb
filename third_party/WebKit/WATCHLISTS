@@ -15,6 +15,9 @@
                   '|LayoutTests/fast/animation' \
                   '|LayoutTests/animation',
     },
+    'bindings': {
+      'filepath': 'Source/WebCore/bindings',
+    },
     'test_runner': {
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
@@ -24,10 +27,18 @@
     'devtools': {
       'filepath': 'inspector|DevTools|devtools',
     },
+    'public_api': {
+      'filepath': 'Source/Platform/chromium/public' \
+                  '|Source/WebKit/chromium/public' \
+                  '|Tools/DumpRenderTree/chromium/TestRunner/public/',
+    },
+    'wtf': {
+      'filepath': 'Source/WTF',
+    },
     'platform_graphics': {
       'filepath': 'Source/WebCore/platform/graphics',
     },
-    'SVG': {
+    'svg': {
       'filepath': 'Source/WebCore/svg|Source/WebCore/rendering/svg',
     },
     'indexed_db': {
@@ -54,10 +65,13 @@
                   'vsevik+blink@chromium.org',
                   'yurys+blink@chromium.org',
                   'caseq+blink@chromium.org'],
+    'bindings': [ 'abarth@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org' ],
-    'SVG': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
+    'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
     'css': [ 'darktears31@gmail.com' ],
+    'public_api': [ 'abarth@chromum.org' ],
+    'wtf': [ 'abarth@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
