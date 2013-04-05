@@ -132,6 +132,7 @@ cr.define('cr.ui', function() {
               e.target.checkable;
           this.hideMenu(hideDelayed ? HideType.DELAYED : HideType.INSTANT);
           break;
+        case 'scroll':
         case 'resize':
           this.hideMenu();
           break;
@@ -164,6 +165,7 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(doc, 'keydown', this, true);
       this.showingEvents_.add(doc, 'mousedown', this, true);
       this.showingEvents_.add(doc, 'focus', this, true);
+      this.showingEvents_.add(doc, 'scroll', this, true);
       this.showingEvents_.add(win, 'resize', this);
       this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
