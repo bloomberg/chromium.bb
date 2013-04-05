@@ -40,14 +40,14 @@ class Gtk2UI : public ui::LinuxUI {
 
   // ui::LinuxUI:
   virtual bool UseNativeTheme() const OVERRIDE;
-  virtual gfx::Image* GetThemeImageNamed(int id) const OVERRIDE;
+  virtual gfx::Image GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
-  typedef std::map<int, gfx::Image*> ImageCache;
+  typedef std::map<int, gfx::Image> ImageCache;
 
   // This method returns the colors webkit will use for the scrollbars. When no
   // colors are specified by the GTK+ theme, this function averages of the

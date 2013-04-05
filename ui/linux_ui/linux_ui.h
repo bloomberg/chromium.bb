@@ -45,7 +45,7 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
 
   // Returns an themed image per theme_provider.h
   virtual bool UseNativeTheme() const = 0;
-  virtual gfx::Image* GetThemeImageNamed(int id) const = 0;
+  virtual gfx::Image GetThemeImageNamed(int id) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
 
   // Returns a NativeTheme that will provide system colors and draw system

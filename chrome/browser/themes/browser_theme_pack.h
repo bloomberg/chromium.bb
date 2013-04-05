@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,10 +28,6 @@ class RefCountedMemory;
 
 namespace extensions {
 class Extensions;
-}
-
-namespace gfx {
-class Image;
 }
 
 namespace ui {
@@ -84,8 +81,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   bool GetColor(int id, SkColor* color) const;
   bool GetDisplayProperty(int id, int* result) const;
 
-  // Returns an image if we have a custom image for |id|, otherwise NULL.
-  const gfx::Image* GetImageNamed(int id) const;
+  // Returns the theme pack image for |id|. Returns an empty image if an image
+  // is not found.
+  gfx::Image GetImageNamed(int id);
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
   // supposed to work for the NTP attribution and background resources.
@@ -105,10 +103,8 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   friend class base::DeleteHelper<BrowserThemePack>;
   friend class BrowserThemePackTest;
 
-  // Cached images. We cache all retrieved and generated images and keep
-  // track of the pointers. We own these and will delete them when we're done
-  // using them.
-  typedef std::map<int, const gfx::Image*> ImageCache;
+  // Cached images.
+  typedef std::map<int, gfx::Image> ImageCache;
 
   // The raw PNG memory associated with a certain id.
   typedef std::map<int, scoped_refptr<base::RefCountedMemory> > RawImages;
@@ -160,6 +156,11 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // generated when an image rep is requested via ImageSkia::GetRepresentation.
   // Source and destination is |images|.
   void CreateImages(ImageCache* images) const;
+
+  // Crops images down to a size such that most of the cropped image will be
+  // displayed in the UI. Cropping is useful because images from custom themes
+  // can be of any size. Source and destination is |images|.
+  void CropImages(ImageCache* images) const;
 
   // Creates tinted and composited frame images. Source and destination is
   // |images|.
@@ -256,7 +257,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // Loaded images. These are loaded from |image_memory_|, from |data_pack_|,
   // and by BuildFromExtension(). These images should only be accessed on the UI
   // thread.
-  mutable ImageCache images_on_ui_thread_;
+  ImageCache images_on_ui_thread_;
 
   // Cache of images created in BuildFromExtension(). Once the theme pack is
   // created, this cache should only be accessed on the file thread. There

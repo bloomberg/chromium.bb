@@ -108,21 +108,20 @@ void ThemeService::Init(Profile* profile) {
 gfx::Image ThemeService::GetImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
-  const gfx::Image* image = NULL;
-
+  gfx::Image image;
   if (theme_pack_.get())
     image = theme_pack_->GetImageNamed(id);
 
 #if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
   const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
-  if (!image && linux_ui)
+  if (image.IsEmpty() && linux_ui)
     image = linux_ui->GetThemeImageNamed(id);
 #endif
 
-  if (!image)
-    image = &rb_.GetNativeImageNamed(id);
+  if (image.IsEmpty())
+    image = rb_.GetNativeImageNamed(id);
 
-  return image ? *image : gfx::Image();
+  return image;
 }
 
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {

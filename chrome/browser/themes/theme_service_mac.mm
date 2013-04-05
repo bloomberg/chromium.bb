@@ -52,9 +52,9 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
   // - To get the generated tinted images.
   NSImage* nsimage = nil;
   if (theme_pack_.get()) {
-    const gfx::Image* image = theme_pack_->GetImageNamed(id);
-    if (image)
-      nsimage = image->ToNSImage();
+    gfx::Image image = theme_pack_->GetImageNamed(id);
+    if (!image.IsEmpty())
+      nsimage = image.ToNSImage();
   }
 
   // If the theme didn't override this image then load it from the resource

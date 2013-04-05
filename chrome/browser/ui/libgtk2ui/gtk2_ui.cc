@@ -309,20 +309,20 @@ bool Gtk2UI::UseNativeTheme() const {
   return true;
 }
 
-gfx::Image* Gtk2UI::GetThemeImageNamed(int id) const {
+gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
   // Try to get our cached version:
   ImageCache::const_iterator it = gtk_images_.find(id);
   if (it != gtk_images_.end())
     return it->second;
 
   if (/*use_gtk_ && */ IsOverridableImage(id)) {
-    gfx::Image* image = new gfx::Image(
+    gfx::Image image = gfx::Image(
         gfx::ImageSkia::CreateFrom1xBitmap(GenerateGtkThemeBitmap(id)));
     gtk_images_[id] = image;
     return image;
   }
 
-  return NULL;
+  return gfx::Image();
 }
 
 bool Gtk2UI::GetColor(int id, SkColor* color) const {
@@ -795,7 +795,7 @@ SkBitmap Gtk2UI::GenerateFrameImage(
 }
 
 SkBitmap Gtk2UI::GenerateTabImage(int base_id) const {
-  const SkBitmap* base_image = GetThemeImageNamed(base_id)->ToSkBitmap();
+  const SkBitmap* base_image = GetThemeImageNamed(base_id).ToSkBitmap();
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
       *base_image, GetDefaultTint(ThemeProperties::TINT_BACKGROUND_TAB));
   return SkBitmapOperations::CreateTiledBitmap(
@@ -973,7 +973,7 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
 }
 
 void Gtk2UI::ClearAllThemeData() {
-  STLDeleteValues(&gtk_images_);
+  gtk_images_.clear();
 }
 
 }  // namespace libgtk2ui
