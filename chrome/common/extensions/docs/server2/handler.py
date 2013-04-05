@@ -187,6 +187,9 @@ class _MockResponse(object):
   def set_status(self, status):
     self.status = status
 
+  def clear(self, *args):
+    pass
+
 class _MockRequest(object):
   def __init__(self, path):
     self.headers = {}

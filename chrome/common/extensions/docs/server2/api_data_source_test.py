@@ -99,7 +99,8 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals('method-get', dict_['functions'][0]['id'])
     self.assertEquals('event-EventA', dict_['events'][0]['id'])
 
-  def testToDict(self):
+  # TODO(kalman): re-enable this when we have a rebase option.
+  def DISABLED_testToDict(self):
     filename = 'test_file.json'
     expected_json = self._LoadJSON('expected_' + filename)
     data_source = FakeAPIAndListDataSource(

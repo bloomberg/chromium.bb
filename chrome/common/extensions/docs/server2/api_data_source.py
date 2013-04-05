@@ -17,7 +17,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # the caches used by APIDataSource. This would include changes to model.py in
 # JSON schema compiler! This allows the cache to be invalidated without having
 # to flush memcache on the production server.
-_VERSION = 15
+_VERSION = 16
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -233,17 +233,18 @@ class _JSCModel(object):
     return property_dict
 
   def _RenderTypeInformation(self, type_, dst_dict):
-    if type_.property_type == model.PropertyType.CHOICES:
+    dst_dict['is_object'] = type_.property_type is model.PropertyType.OBJECT
+    if type_.property_type is model.PropertyType.CHOICES:
       dst_dict['choices'] = self._GenerateTypes(type_.choices)
       # We keep track of which is last for knowing when to add "or" between
       # choices in templates.
       if len(dst_dict['choices']) > 0:
         dst_dict['choices'][-1]['last'] = True
-    elif type_.property_type == model.PropertyType.REF:
+    elif type_.property_type is model.PropertyType.REF:
       dst_dict['link'] = self._GetLink(type_.ref_type)
-    elif type_.property_type == model.PropertyType.ARRAY:
+    elif type_.property_type is model.PropertyType.ARRAY:
       dst_dict['array'] = self._GenerateType(type_.item_type)
-    elif type_.property_type == model.PropertyType.ENUM:
+    elif type_.property_type is model.PropertyType.ENUM:
       dst_dict['enum_values'] = []
       for enum_value in type_.enum_values:
         dst_dict['enum_values'].append({'name': enum_value})
