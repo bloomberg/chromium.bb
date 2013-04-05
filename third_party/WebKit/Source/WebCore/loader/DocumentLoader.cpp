@@ -68,10 +68,6 @@
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/Unicode.h>
 
-#if USE(CONTENT_FILTERING)
-#include "ContentFilter.h"
-#endif
-
 namespace WebCore {
 
 static void cancelAll(const ResourceLoaderSet& loaders)
@@ -365,16 +361,6 @@ void DocumentLoader::finishedLoading(double finishTime)
         m_identifierForLoadWithoutResourceLoader = 0;
     }
 
-#if USE(CONTENT_FILTERING)
-    if (m_contentFilter && m_contentFilter->needsMoreData()) {
-        m_contentFilter->finishedAddingData();
-        int length;
-        const char* data = m_contentFilter->getReplacementData(length);
-        if (data)
-            dataReceived(m_mainResource.get(), data, length);
-    }
-#endif
-
     maybeFinishLoadingMultipartContent();
 
     double responseEndTime = finishTime;
@@ -630,11 +616,6 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     }
 #endif
 
-#if USE(CONTENT_FILTERING)
-    if (response.url().protocolIs("https") && ContentFilter::isEnabled())
-        m_contentFilter = ContentFilter::create(response);
-#endif
-
     frameLoader()->policyChecker()->checkContentPolicy(m_response, callContinueAfterContentPolicy, this);
 }
 
@@ -838,24 +819,6 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 #endif
 
-#if USE(CONTENT_FILTERING)
-    bool loadWasBlockedBeforeFinishing = false;
-    if (m_contentFilter && m_contentFilter->needsMoreData()) {
-        m_contentFilter->addData(data, length);
-
-        if (m_contentFilter->needsMoreData()) {
-            // Since the filter still needs more data to make a decision,
-            // transition back to the committed state so that we don't partially
-            // load content that might later be blocked.
-            commitLoad(0, 0);
-            return;
-        }
-
-        data = m_contentFilter->getReplacementData(length);
-        loadWasBlockedBeforeFinishing = m_contentFilter->didBlockData();
-    }
-#endif
-
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
 
@@ -864,11 +827,6 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
 
     if (!isMultipartReplacingLoad())
         commitLoad(data, length);
-
-#if USE(CONTENT_FILTERING)
-    if (loadWasBlockedBeforeFinishing)
-        cancelMainResourceLoad(frameLoader()->cancelledError(m_request));
-#endif
 }
 
 void DocumentLoader::setupForReplace()

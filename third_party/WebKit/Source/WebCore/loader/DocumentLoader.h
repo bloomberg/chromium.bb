@@ -386,10 +386,6 @@ namespace WebCore {
 
         friend class ApplicationCacheHost;  // for substitute resource delivery
         OwnPtr<ApplicationCacheHost> m_applicationCacheHost;
-
-#if USE(CONTENT_FILTERING)
-        RefPtr<ContentFilter> m_contentFilter;
-#endif
     };
 
     inline void DocumentLoader::recordMemoryCacheLoadForFutureClientNotification(const ResourceRequest& request)

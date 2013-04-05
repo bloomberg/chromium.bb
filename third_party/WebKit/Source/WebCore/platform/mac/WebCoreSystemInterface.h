@@ -337,15 +337,6 @@ extern void (*wkCGPathAddRoundedRect)(CGMutablePathRef path, const CGAffineTrans
 extern void (*wkCFURLRequestAllowAllPostCaching)(CFURLRequestRef);
 #endif
 
-#if USE(CONTENT_FILTERING)
-extern BOOL (*wkFilterIsManagedSession)(void);
-extern WebFilterEvaluator *(*wkFilterCreateInstance)(NSURLResponse *);
-extern BOOL (*wkFilterWasBlocked)(WebFilterEvaluator *);
-extern BOOL (*wkFilterIsBuffering)(WebFilterEvaluator *);
-extern NSData *(*wkFilterAddData)(WebFilterEvaluator *, NSData *);
-extern NSData *(*wkFilterDataComplete)(WebFilterEvaluator *);
-#endif
-
 #if !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 extern CGFloat (*wkNSElasticDeltaForTimeDelta)(CGFloat initialPosition, CGFloat initialVelocity, CGFloat elapsedTime);
 extern CGFloat (*wkNSElasticDeltaForReboundDelta)(CGFloat delta);
