@@ -189,13 +189,25 @@ void GDataWapiService::GetResourceList(
           callback));
 }
 
+// Because GData WAPI support is expected to be gone somehow soon by migration
+// to the Drive API v2, so we'll reuse GetResourceListOperation to implement
+// following methods, instead of cleaning the operation class.
+
 void GDataWapiService::GetAllResourceList(
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // No override url
+          0,  // start changestamp
+          "",  // empty search query
+          "",  // no directory resource id
+          callback));
 }
 
 void GDataWapiService::GetResourceListInDirectory(
@@ -205,8 +217,16 @@ void GDataWapiService::GetResourceListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // No override url
+          0,  // start changestamp
+          "",  // empty search query
+          directory_resource_id,
+          callback));
 }
 
 void GDataWapiService::Search(const std::string& search_query,
@@ -215,8 +235,16 @@ void GDataWapiService::Search(const std::string& search_query,
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // No override url
+          0,  // start changestamp
+          search_query,
+          "",  // no directory resource id
+          callback));
 }
 
 void GDataWapiService::SearchInDirectory(
@@ -228,8 +256,16 @@ void GDataWapiService::SearchInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // No override url
+          0,  // start changestamp
+          search_query,
+          directory_resource_id,
+          callback));
 }
 
 void GDataWapiService::GetChangeList(int64 start_changestamp,
@@ -237,18 +273,35 @@ void GDataWapiService::GetChangeList(int64 start_changestamp,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // No override url
+          start_changestamp,
+          "",  // empty search query
+          "",  // no directory resource id
+          callback));
 }
 
 void GDataWapiService::ContinueGetResourceList(
     const GURL& override_url,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!override_url.is_empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          override_url,
+          0,  // start changestamp
+          "",  // empty search query
+          "",  // no directory resource id
+          callback));
 }
 
 void GDataWapiService::GetResourceEntry(
