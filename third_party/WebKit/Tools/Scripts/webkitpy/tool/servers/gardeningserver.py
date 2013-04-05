@@ -62,10 +62,7 @@ class GardeningHTTPRequestHandler(ReflectionHandler):
         '..',
         '..',
         '..',
-        'BuildSlaveSupport',
-        'build.webkit.org-config',
-        'public_html',
-        'TestFailures')
+        'GardeningServer')
 
     allow_cross_origin_requests = True
     debug_output = ''
