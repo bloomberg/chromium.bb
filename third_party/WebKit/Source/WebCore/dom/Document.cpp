@@ -260,6 +260,8 @@ using namespace HTMLNames;
 
 // #define INSTRUMENT_LAYOUT_SCHEDULING 1
 
+static const double cDefaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
+
 static const unsigned cMaxWriteRecursionDepth = 21;
 
 // This amount of time must have elapsed before we will even consider scheduling a layout without a delay.
@@ -1258,7 +1260,7 @@ void Document::setVisualUpdatesAllowed(ReadyState readyState)
     case Loading:
         ASSERT(!m_visualUpdatesSuppressionTimer.isActive());
         ASSERT(m_visualUpdatesAllowed);
-        m_visualUpdatesSuppressionTimer.startOneShot(settings()->incrementalRenderingSuppressionTimeoutInSeconds());
+        m_visualUpdatesSuppressionTimer.startOneShot(cDefaultIncrementalRenderingSuppressionTimeoutInSeconds);
         setVisualUpdatesAllowed(false);
         break;
     case Interactive:

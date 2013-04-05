@@ -135,7 +135,6 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     ;
 }
 
-static const double defaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
 #if USE(UNIFIED_TEXT_CHECKING)
 static const bool defaultUnifiedTextCheckerEnabled = true;
 #else
