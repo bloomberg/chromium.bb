@@ -530,8 +530,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       return PluginPlaceholder::CreateMobileYoutubePlugin(render_view, frame,
           original_params)->plugin();
 #endif
-    MissingPluginReporter::GetInstance()->ReportPluginMissing(
-        orig_mime_type, url);
+    PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
     placeholder = PluginPlaceholder::CreateMissingPlugin(
         render_view, frame, original_params);
   } else {
@@ -655,6 +654,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
+        PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
+                                                               url);
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
             render_view, frame, params, plugin, identifier, group_name,
             IDR_DISABLED_PLUGIN_HTML,

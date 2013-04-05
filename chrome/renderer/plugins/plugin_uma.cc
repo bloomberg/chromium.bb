@@ -12,7 +12,7 @@
 
 namespace {
 
-// String we will use to convert mime tyoe to plugin type.
+// String we will use to convert mime type to plugin type.
 const char kWindowsMediaPlayerType[] = "application/x-mplayer2";
 const char kSilverlightTypePrefix[] = "application/x-silverlight";
 const char kRealPlayerTypePrefix[] = "audio/x-pn-realaudio";
@@ -45,62 +45,68 @@ const char* kQuickTimeExtensions[] = {
 
 }  // namespace.
 
-class UMASenderImpl : public MissingPluginReporter::UMASender {
-  virtual void SendPluginUMA(MissingPluginReporter::PluginType plugin_type)
-      OVERRIDE;
+class UMASenderImpl : public PluginUMAReporter::UMASender {
+  virtual void SendPluginUMA(
+      PluginUMAReporter::ReportType report_type,
+      PluginUMAReporter::PluginType plugin_type) OVERRIDE;
 };
 
-void UMASenderImpl::SendPluginUMA(
-    MissingPluginReporter::PluginType plugin_type) {
-  UMA_HISTOGRAM_ENUMERATION("Plugin.MissingPlugins",
-                            plugin_type,
-                            MissingPluginReporter::OTHER);
-}
-
-// static.
-MissingPluginReporter* MissingPluginReporter::GetInstance() {
-  return Singleton<MissingPluginReporter>::get();
-}
-
-void MissingPluginReporter::ReportPluginMissing(
-    std::string plugin_mime_type, const GURL& plugin_src) {
-  PluginType plugin_type;
-  // If we know plugin's mime type, we use it to determine plugin's type. Else,
-  // we try to determine plugin type using plugin source's extension.
-  if (!plugin_mime_type.empty()) {
-    StringToLowerASCII(&plugin_mime_type);
-    plugin_type = MimeTypeToPluginType(plugin_mime_type);
-  } else {
-    plugin_type = SrcToPluginType(plugin_src);
+void UMASenderImpl::SendPluginUMA(PluginUMAReporter::ReportType report_type,
+                                  PluginUMAReporter::PluginType plugin_type) {
+  // UMA_HISTOGRAM_ENUMERATION requires constant histogram name. Use string
+  // constants explicitly instead of trying to use variables for names.
+  switch (report_type) {
+    case PluginUMAReporter::MISSING_PLUGIN:
+      UMA_HISTOGRAM_ENUMERATION("Plugin.MissingPlugins",
+                                plugin_type,
+                                PluginUMAReporter::OTHER);
+      break;
+    case PluginUMAReporter::DISABLED_PLUGIN:
+      UMA_HISTOGRAM_ENUMERATION("Plugin.DisabledPlugins",
+                                plugin_type,
+                                PluginUMAReporter::OTHER);
+      break;
+    default:
+      NOTREACHED();
   }
-  report_sender_->SendPluginUMA(plugin_type);
-}
-
-void MissingPluginReporter::SetUMASender(UMASender* sender) {
-  report_sender_.reset(sender);
-}
-
-MissingPluginReporter::MissingPluginReporter()
-    : report_sender_(new UMASenderImpl()) {
-}
-
-MissingPluginReporter::~MissingPluginReporter() {
 }
 
 // static.
-bool MissingPluginReporter::CompareCStrings(const char* first,
-                                           const char* second) {
+PluginUMAReporter* PluginUMAReporter::GetInstance() {
+  return Singleton<PluginUMAReporter>::get();
+}
+
+void PluginUMAReporter::ReportPluginMissing(
+    const std::string& plugin_mime_type, const GURL& plugin_src) {
+  report_sender_->SendPluginUMA(MISSING_PLUGIN,
+                                GetPluginType(plugin_mime_type, plugin_src));
+}
+
+void PluginUMAReporter::ReportPluginDisabled(
+    const std::string& plugin_mime_type, const GURL& plugin_src) {
+  report_sender_->SendPluginUMA(DISABLED_PLUGIN,
+                                GetPluginType(plugin_mime_type, plugin_src));
+}
+
+PluginUMAReporter::PluginUMAReporter() : report_sender_(new UMASenderImpl()) {
+}
+
+PluginUMAReporter::~PluginUMAReporter() {
+}
+
+// static.
+bool PluginUMAReporter::CompareCStrings(const char* first, const char* second) {
   return strcmp(first, second) < 0;
 }
 
-bool MissingPluginReporter::CStringArrayContainsCString(const char** array,
-                                                        size_t array_size,
-                                                        const char* str) {
+bool PluginUMAReporter::CStringArrayContainsCString(const char** array,
+                                                    size_t array_size,
+                                                    const char* str) {
   return std::binary_search(array, array + array_size, str, CompareCStrings);
 }
 
-void MissingPluginReporter::ExtractFileExtension(const GURL& src,
-    std::string* extension) {
+void PluginUMAReporter::ExtractFileExtension(const GURL& src,
+                                             std::string* extension) {
   std::string extension_file_path(src.ExtractFileName());
   if (extension_file_path.empty())
     extension_file_path = src.host();
@@ -115,7 +121,17 @@ void MissingPluginReporter::ExtractFileExtension(const GURL& src,
   StringToLowerASCII(extension);
 }
 
-MissingPluginReporter::PluginType MissingPluginReporter::SrcToPluginType(
+PluginUMAReporter::PluginType PluginUMAReporter::GetPluginType(
+    const std::string& plugin_mime_type, const GURL& plugin_src) {
+  // If we know plugin's mime type, we use it to determine plugin's type. Else,
+  // we try to determine plugin type using plugin source's extension.
+  if (!plugin_mime_type.empty())
+    return MimeTypeToPluginType(StringToLowerASCII(plugin_mime_type));
+
+  return SrcToPluginType(plugin_src);
+}
+
+PluginUMAReporter::PluginType PluginUMAReporter::SrcToPluginType(
     const GURL& src) {
   std::string file_extension;
   ExtractFileExtension(src, &file_extension);
@@ -140,7 +156,7 @@ MissingPluginReporter::PluginType MissingPluginReporter::SrcToPluginType(
   return OTHER;
 }
 
-MissingPluginReporter::PluginType MissingPluginReporter::MimeTypeToPluginType(
+PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
     const std::string& mime_type) {
   if (strcmp(mime_type.c_str(), kWindowsMediaPlayerType) == 0)
     return WINDOWS_MEDIA_PLAYER;
@@ -161,4 +177,3 @@ MissingPluginReporter::PluginType MissingPluginReporter::MimeTypeToPluginType(
 
   return OTHER;
 }
-

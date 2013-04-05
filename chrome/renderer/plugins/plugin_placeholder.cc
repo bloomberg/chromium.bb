@@ -313,7 +313,7 @@ bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   CHECK(plugin_);
   if (!new_plugin) {
-    MissingPluginReporter::GetInstance()->ReportPluginMissing(
+    PluginUMAReporter::GetInstance()->ReportPluginMissing(
         plugin_params_.mimeType.utf8(),
         plugin_params_.url);
     return;

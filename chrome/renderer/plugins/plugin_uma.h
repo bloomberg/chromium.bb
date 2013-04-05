@@ -15,8 +15,13 @@
 // ReportPluginMissing should be called whenever plugin that is not available or
 // enabled is called. We try to determine plugin's type by requested mime type,
 // or, if mime type is unknown, by plugin's src url.
-class MissingPluginReporter {
+class PluginUMAReporter {
  public:
+  enum ReportType {
+    MISSING_PLUGIN,
+    DISABLED_PLUGIN
+  };
+
   // This must be sync'd with histogram values.
   enum PluginType {
     WINDOWS_MEDIA_PLAYER = 0,
@@ -31,23 +36,25 @@ class MissingPluginReporter {
   class UMASender {
    public:
     virtual ~UMASender() {}
-    virtual void SendPluginUMA(PluginType plugin_type) = 0;
+    virtual void SendPluginUMA(ReportType report_type,
+                               PluginType plugin_type) = 0;
   };
 
   // Returns singleton instance.
-  static MissingPluginReporter* GetInstance();
+  static PluginUMAReporter* GetInstance();
 
-  void ReportPluginMissing(std::string plugin_mime_type,
+  void ReportPluginMissing(const std::string& plugin_mime_type,
                            const GURL& plugin_src);
 
-  // Used in testing.
-  void SetUMASender(UMASender* sender);
+  void ReportPluginDisabled(const std::string& plugin_mime_type,
+                            const GURL& plugin_src);
 
  private:
-  friend struct DefaultSingletonTraits<MissingPluginReporter>;
+  friend struct DefaultSingletonTraits<PluginUMAReporter>;
+  friend class PluginUMATest;
 
-  MissingPluginReporter();
-  ~MissingPluginReporter();
+  PluginUMAReporter();
+  ~PluginUMAReporter();
 
   static bool CompareCStrings(const char* first, const char* second);
   bool CStringArrayContainsCString(const char** array,
@@ -56,6 +63,9 @@ class MissingPluginReporter {
   // Extracts file extension from url.
   void ExtractFileExtension(const GURL& src, std::string* extension);
 
+  PluginType GetPluginType(const std::string& plugin_mime_type,
+                           const GURL& plugin_src);
+
   // Converts plugin's src to plugin type.
   PluginType SrcToPluginType(const GURL& src);
   // Converts plugin's mime type to plugin type.
@@ -63,7 +73,7 @@ class MissingPluginReporter {
 
   scoped_ptr<UMASender> report_sender_;
 
-  DISALLOW_COPY_AND_ASSIGN(MissingPluginReporter);
+  DISALLOW_COPY_AND_ASSIGN(PluginUMAReporter);
 };
 
 #endif  // CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
