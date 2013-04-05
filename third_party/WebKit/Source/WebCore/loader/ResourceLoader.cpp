@@ -298,6 +298,19 @@ void ResourceLoader::didReceiveData(const char* data, int length, long long enco
     didReceiveDataOrBuffer(data, length, 0, encodedDataLength, dataPayloadType);
 }
 
+void ResourceLoader::didDownloadData(ResourceHandle*, int length)
+{
+    didDownloadData(length);
+}
+
+void ResourceLoader::didDownloadData(int length)
+{
+    if (!m_cancelled && !fastMallocSize(documentLoader()->applicationCacheHost()))
+        CRASH();
+    if (!m_cancelled && !fastMallocSize(documentLoader()->frame()))
+        CRASH();
+}
+
 void ResourceLoader::didReceiveBuffer(PassRefPtr<SharedBuffer> buffer, long long encodedDataLength, DataPayloadType dataPayloadType)
 {
     didReceiveDataOrBuffer(0, 0, buffer, encodedDataLength, dataPayloadType);

@@ -241,6 +241,15 @@ void SubresourceLoader::didReceiveDataOrBuffer(const char* data, int length, Pas
         sendDataToResource(buffer ? buffer->data() : data, buffer ? buffer->size() : length);
 }
 
+void SubresourceLoader::didDownloadData(int length)
+{
+    // Reference the object in this method since the additional processing can do
+    // anything including removing the last reference to this object; one example of this is 3266216.
+    RefPtr<SubresourceLoader> protect(this);
+    ResourceLoader::didDownloadData(length);
+    m_resource->didDownloadData(length);
+}
+
 bool SubresourceLoader::checkForHTTPStatusCodeError()
 {
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())

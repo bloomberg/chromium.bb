@@ -144,6 +144,13 @@ void CachedRawResource::didSendData(unsigned long long bytesSent, unsigned long 
         c->dataSent(this, bytesSent, totalBytesToBeSent);
 }
 
+void CachedRawResource::didDownloadData(int dataLength)
+{
+    CachedResourceClientWalker<CachedRawResourceClient> w(m_clients);
+    while (CachedRawResourceClient* c = w.next())
+        c->dataDownloaded(this, dataLength);
+}
+
 void CachedRawResource::switchClientsToRevalidatedResource()
 {
     ASSERT(m_loader);
