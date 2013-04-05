@@ -19,23 +19,7 @@
  *
  */ 
 
-#if defined(HAVE_CONFIG_H) && HAVE_CONFIG_H
-#ifdef BUILDING_WITH_CMAKE
-#include "cmakeconfig.h"
-#else
-#include "autotoolsconfig.h"
-#endif
-#endif
-
 #include <wtf/Platform.h>
-
-#if PLATFORM(MAC) || PLATFORM(IOS)
-#define WTF_USE_FILE_LOCK 1
-#endif
-
-#if PLATFORM(WIN) && !OS(WINCE)
-#include <WebCore/WebCoreHeaderDetection.h>
-#endif
 
 #include <wtf/ExportMacros.h>
 #include "PlatformExportMacros.h"
@@ -86,12 +70,6 @@
 
 #endif
 
-// On MSW, wx headers need to be included before windows.h is.
-// The only way we can always ensure this is if we include wx here.
-#if PLATFORM(WX)
-#include <wx/defs.h>
-#endif
-
 #include <wtf/DisallowCType.h>
 
 #if COMPILER(MSVC)
@@ -100,60 +78,9 @@
 #define SKIP_STATIC_CONSTRUCTORS_ON_GCC 1
 #endif
 
-#if PLATFORM(WIN)
-#if PLATFORM(WIN_CAIRO)
-#undef WTF_USE_CG
-#define WTF_USE_CAIRO 1
-#define WTF_USE_CURL 1
-#ifndef _WINSOCKAPI_
-#define _WINSOCKAPI_ // Prevent inclusion of winsock.h in windows.h
-#endif
-#elif !OS(WINCE)
-#define WTF_USE_CG 1
-#undef WTF_USE_CAIRO
-#undef WTF_USE_CURL
-#endif
-#endif
-
-#if PLATFORM(MAC)
-// New theme
-#define WTF_USE_NEW_THEME 1
-#endif // PLATFORM(MAC)
-
-#if PLATFORM(CHROMIUM)
-
 // Chromium uses this file instead of JavaScriptCore/config.h to compile
 // JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,
 // this define is required.
 #define WTF_CHANGES 1
 
 #define WTF_USE_GOOGLEURL 1
-
-#endif /* PLATFORM(CHROMIUM) */
-
-#if USE(CG)
-#ifndef CGFLOAT_DEFINED
-#ifdef __LP64__
-typedef double CGFloat;
-#else
-typedef float CGFloat;
-#endif
-#define CGFLOAT_DEFINED 1
-#endif
-#endif /* USE(CG) */
-
-#if PLATFORM(WIN) && USE(CG)
-#define WTF_USE_SAFARI_THEME 1
-#endif
-
-// CoreAnimation is available to IOS, Mac and Windows if using CG
-#if PLATFORM(MAC) || PLATFORM(IOS) || (PLATFORM(WIN) && USE(CG))
-#define WTF_USE_CA 1
-#endif
-
-// FIXME: Move this to JavaScriptCore/wtf/Platform.h, which is where we define WTF_USE_AVFOUNDATION on the Mac.
-// https://bugs.webkit.org/show_bug.cgi?id=67334
-#if PLATFORM(WIN) && HAVE(AVCF)
-#define WTF_USE_AVFOUNDATION 1
-#endif
-

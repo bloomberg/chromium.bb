@@ -43,34 +43,6 @@
 OBJC_CLASS NSImage;
 #endif
 
-#if USE(CG)
-struct CGContext;
-#endif
-
-#if PLATFORM(WIN)
-typedef struct tagSIZE SIZE;
-typedef SIZE* LPSIZE;
-typedef struct HBITMAP__ *HBITMAP;
-#endif
-
-#if PLATFORM(QT)
-#include <QPixmap>
-#endif
-
-#if PLATFORM(GTK)
-typedef struct _GdkPixbuf GdkPixbuf;
-#endif
-
-#if PLATFORM(EFL)
-#if USE(EO)
-typedef struct _Eo Evas;
-typedef struct _Eo Evas_Object;
-#else
-typedef struct _Evas Evas;
-typedef struct _Evas_Object Evas_Object;
-#endif
-#endif
-
 namespace WebCore {
 
 class AffineTransform;
@@ -150,31 +122,6 @@ public:
     virtual CFDataRef getTIFFRepresentation() { return 0; }
 #endif
 
-#if USE(CG)
-    virtual CGImageRef getCGImageRef() { return 0; }
-    virtual CGImageRef getFirstCGImageRefOfSize(const IntSize&) { return 0; }
-    virtual RetainPtr<CFArrayRef> getCGImageArray() { return 0; }
-    static RetainPtr<CGImageRef> imageWithColorSpace(CGImageRef originalImage, ColorSpace);
-#endif
-
-#if PLATFORM(WIN)
-    virtual bool getHBITMAP(HBITMAP) { return false; }
-    virtual bool getHBITMAPOfSize(HBITMAP, LPSIZE) { return false; }
-#endif
-
-#if PLATFORM(GTK)
-    virtual GdkPixbuf* getGdkPixbuf() { return 0; }
-    static PassRefPtr<Image> loadPlatformThemeIcon(const char* name, int size);
-#endif
-
-#if PLATFORM(QT)
-    static void setPlatformResource(const char* name, const QPixmap&);
-#endif
-
-#if PLATFORM(EFL)
-    virtual Evas_Object* getEvasObject(Evas*) { return 0; }
-#endif
-
     virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform,
         const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator, const FloatRect& destRect, BlendMode = BlendModeNormal);
 
@@ -194,9 +141,6 @@ protected:
     static void fillWithSolidColor(GraphicsContext*, const FloatRect& dstRect, const Color&, ColorSpace styleColorSpace, CompositeOperator);
 
     // The ColorSpace parameter will only be used for untagged images.
-#if PLATFORM(WIN)
-    virtual void drawFrameMatchingSourceSize(GraphicsContext*, const FloatRect& dstRect, const IntSize& srcSize, ColorSpace styleColorSpace, CompositeOperator) { }
-#endif
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode) = 0;
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode, RespectImageOrientationEnum);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize, ColorSpace styleColorSpace,
