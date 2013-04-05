@@ -47,11 +47,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 
-#if USE(JSC)
-// FIXME: This is a layering violation.
-#include "JSDOMWindow.h"
-#endif
-
 #if ENABLE(SQL_DATABASE)
 #include "DatabaseContext.h"
 #endif
@@ -410,22 +405,6 @@ void ScriptExecutionContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
 ScriptExecutionContext::Task::~Task()
 {
 }
-
-#if USE(JSC)
-JSC::JSGlobalData* ScriptExecutionContext::globalData()
-{
-     if (isDocument())
-        return JSDOMWindow::commonJSGlobalData();
-
-#if ENABLE(WORKERS)
-    if (isWorkerContext())
-        return static_cast<WorkerContext*>(this)->script()->globalData();
-#endif
-
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-#endif
 
 #if ENABLE(SQL_DATABASE)
 void ScriptExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)

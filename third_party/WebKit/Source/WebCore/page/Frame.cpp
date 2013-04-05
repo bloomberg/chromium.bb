@@ -100,11 +100,6 @@
 #include "RenderLayerCompositor.h"
 #endif
 
-#if USE(JSC)
-#include "JSDOMWindowShell.h"
-#include "runtime_root.h"
-#endif
-
 #include "MathMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"

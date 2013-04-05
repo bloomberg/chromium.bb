@@ -67,14 +67,6 @@
 #include "CachedResourceRequestInitiators.h"
 #endif
 
-#if USE(JSC)
-#include "JSDOMBinding.h"
-#include "JSDOMWindow.h"
-#include <heap/Strong.h>
-#include <runtime/JSLock.h>
-#include <runtime/Operations.h>
-#endif
-
 namespace WebCore {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
@@ -916,17 +908,6 @@ void XMLHttpRequest::abortError()
 
 void XMLHttpRequest::dropProtection()
 {
-#if USE(JSC)
-    // The XHR object itself holds on to the responseText, and
-    // thus has extra cost even independent of any
-    // responseText or responseXML objects it has handed
-    // out. But it is protected from GC while loading, so this
-    // can't be recouped until the load is done, so only
-    // report the extra cost at that point.
-    JSC::JSGlobalData* globalData = scriptExecutionContext()->globalData();
-    JSC::JSLockHolder lock(globalData);
-    globalData->heap.reportExtraMemoryCost(m_responseBuilder.length() * 2);
-#endif
 
     unsetPendingActivity(this);
 }

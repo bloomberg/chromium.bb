@@ -43,10 +43,6 @@
 #include <wtf/Threading.h>
 #include <wtf/text/StringHash.h>
 
-#if USE(JSC)
-#include <runtime/JSGlobalData.h>
-#endif
-
 namespace WebCore {
 
 class CachedScript;
@@ -146,10 +142,6 @@ public:
     bool addTimeout(int timeoutId, DOMTimer* timer) { return m_timeouts.add(timeoutId, timer).isNewEntry; }
     void removeTimeout(int timeoutId) { m_timeouts.remove(timeoutId); }
     DOMTimer* findTimeout(int timeoutId) { return m_timeouts.get(timeoutId); }
-
-#if USE(JSC)
-    JSC::JSGlobalData* globalData();
-#endif
 
     // Interval is in seconds.
     void adjustMinimumTimerInterval(double oldMinimumTimerInterval);

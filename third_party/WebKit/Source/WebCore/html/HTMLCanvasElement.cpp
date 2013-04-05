@@ -50,12 +50,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#if USE(JSC)
-#include <runtime/JSLock.h>
-#include <runtime/Operations.h>
-#endif
-
-#if ENABLE(WEBGL)    
+#if ENABLE(WEBGL)
 #include "WebGLContextAttributes.h"
 #include "WebGLRenderingContext.h"
 #endif
@@ -181,7 +176,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         }
         return m_context.get();
     }
-#if ENABLE(WEBGL)    
+#if ENABLE(WEBGL)
     Settings* settings = document()->settings();
     if (settings && settings->webGLEnabled()
 #if !PLATFORM(CHROMIUM) && !PLATFORM(GTK) && !PLATFORM(EFL) && !PLATFORM(QT)
@@ -360,7 +355,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
         }
     }
 
-#if ENABLE(WEBGL)    
+#if ENABLE(WEBGL)
     if (is3D())
         static_cast<WebGLRenderingContext*>(m_context.get())->markLayerComposited();
 #endif
@@ -442,7 +437,7 @@ PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
     if (!m_context || !m_context->is3d())
        return 0;
 
-#if ENABLE(WEBGL)    
+#if ENABLE(WEBGL)
     WebGLRenderingContext* ctx = static_cast<WebGLRenderingContext*>(m_context.get());
 
     return ctx->paintRenderingResultsToImageData();
@@ -556,12 +551,6 @@ void HTMLCanvasElement::createImageBuffer() const
         m_imageBuffer->context()->setShouldAntialias(false);
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
-
-#if USE(JSC)
-    JSC::JSLockHolder lock(scriptExecutionContext()->globalData());
-    size_t numBytes = 4 * m_imageBuffer->internalSize().width() * m_imageBuffer->internalSize().height();
-    scriptExecutionContext()->globalData()->heap.reportExtraMemoryCost(numBytes);
-#endif
 
 #if USE(IOSURFACE_CANVAS_BACKING_STORE) || (ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING))
     if (m_context && m_context->is2d())

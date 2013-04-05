@@ -259,11 +259,6 @@ namespace WebCore {
         void setAggressiveTileRetentionEnabled(bool);
         bool aggressiveTileRetentionEnabled() { return m_aggressiveTileRetentionEnabled; }
 
-#if USE(JSC)
-        static void setShouldRespectPriorityInCSSAttributeSetters(bool);
-        static bool shouldRespectPriorityInCSSAttributeSetters();
-#endif
-
         void setTimeWithoutMouseMovementBeforeHidingControls(double time) { m_timeWithoutMouseMovementBeforeHidingControls = time; }
         double timeWithoutMouseMovementBeforeHidingControls() const { return m_timeWithoutMouseMovementBeforeHidingControls; }
 
@@ -356,9 +351,6 @@ namespace WebCore {
 #endif
 #if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
         static bool gShouldUseHighResolutionTimers;
-#endif
-#if USE(JSC)
-        static bool gShouldRespectPriorityInCSSAttributeSetters;
 #endif
 
         static double gHiddenPageDOMTimerAlignmentInterval;

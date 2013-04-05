@@ -129,11 +129,6 @@ namespace WebCore {
         bool fireEventListeners(Event*);
         bool isFiringEventListeners();
 
-#if USE(JSC)
-        void visitJSEventListeners(JSC::SlotVisitor&);
-        void invalidateJSEventListeners(JSC::JSObject*);
-#endif
-
     protected:
         virtual ~EventTarget();
         
@@ -174,15 +169,6 @@ namespace WebCore {
     #define DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(recipient, attribute) \
         EventListener* on##attribute() { return recipient ? recipient->getAttributeEventListener(eventNames().attribute##Event) : 0; } \
         void setOn##attribute(PassRefPtr<EventListener> listener) { if (recipient) recipient->setAttributeEventListener(eventNames().attribute##Event, listener); } \
-
-#if USE(JSC)
-    inline void EventTarget::visitJSEventListeners(JSC::SlotVisitor& visitor)
-    {
-        EventListenerIterator iterator(this);
-        while (EventListener* listener = iterator.nextListener())
-            listener->visitJSFunction(visitor);
-    }
-#endif
 
     inline bool EventTarget::isFiringEventListeners()
     {

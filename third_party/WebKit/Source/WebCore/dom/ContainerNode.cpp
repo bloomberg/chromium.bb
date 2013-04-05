@@ -53,10 +53,6 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 
-#if USE(JSC)
-#include "JSNode.h"
-#endif
-
 using namespace std;
 
 namespace WebCore {
@@ -937,9 +933,6 @@ static void dispatchChildRemovalEvents(Node* child)
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-#if USE(JSC)
-    willCreatePossiblyOrphanedTreeByRemoval(child);
-#endif
     InspectorInstrumentation::willRemoveDOMNode(child->document(), child);
 
     RefPtr<Node> c = child;

@@ -59,10 +59,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 
-#if USE(JSC)
-#include "JSDOMWindow.h"
-#endif
-
 namespace WebCore {
 
 PassRefPtr<Database> Database::create(ScriptExecutionContext*, PassRefPtr<DatabaseBackendBase> backend)
