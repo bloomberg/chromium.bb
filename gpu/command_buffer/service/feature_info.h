@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
 
 class CommandLine;
@@ -48,22 +49,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   struct Workarounds {
     Workarounds();
 
-    bool clear_alpha_in_readpixels;
-    bool clear_uniforms_before_program_use;
-    bool delete_instead_of_resize_fbo;
-    bool disable_angle_framebuffer_multisample;
-    bool disable_depth_texture;
-    bool disable_ext_occlusion_query;
-    bool enable_chromium_fast_npot_mo8_textures;
-    bool exit_on_context_lost;
-    bool flush_on_context_switch;
-    bool needs_glsl_built_in_function_emulation;
-    bool needs_offscreen_buffer_workaround;
-    bool restore_scissor_on_fbo_change;
-    bool reverse_point_sprite_coord_origin;
-    bool set_texture_filter_before_generating_mipmap;
-    bool use_client_side_arrays_for_stream_buffers;
-    bool use_current_program_after_successful_link;
+#define GPU_OP(type, name) bool name;
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
 
     // Note: 0 here means use driver limit.
     GLint max_texture_size;

@@ -94,23 +94,9 @@ TEST_F(FeatureInfoTest, Basic) {
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
 
-  EXPECT_FALSE(info_->workarounds().clear_alpha_in_readpixels);
-  EXPECT_FALSE(info_->workarounds().clear_uniforms_before_program_use);
-  EXPECT_FALSE(info_->workarounds().delete_instead_of_resize_fbo);
-  EXPECT_FALSE(info_->workarounds().disable_angle_framebuffer_multisample);
-  EXPECT_FALSE(info_->workarounds().disable_depth_texture);
-  EXPECT_FALSE(info_->workarounds().disable_ext_occlusion_query);
-  EXPECT_FALSE(info_->workarounds().enable_chromium_fast_npot_mo8_textures);
-  EXPECT_FALSE(info_->workarounds().exit_on_context_lost);
-  EXPECT_FALSE(info_->workarounds().flush_on_context_switch);
-  EXPECT_FALSE(info_->workarounds().needs_glsl_built_in_function_emulation);
-  EXPECT_FALSE(info_->workarounds().needs_offscreen_buffer_workaround);
-  EXPECT_FALSE(info_->workarounds().restore_scissor_on_fbo_change);
-  EXPECT_FALSE(info_->workarounds().reverse_point_sprite_coord_origin);
-  EXPECT_FALSE(
-      info_->workarounds().set_texture_filter_before_generating_mipmap);
-  EXPECT_FALSE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
-  EXPECT_FALSE(info_->workarounds().use_current_program_after_successful_link);
+#define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
   EXPECT_EQ(0, info_->workarounds().max_texture_size);
   EXPECT_EQ(0, info_->workarounds().max_cube_map_texture_size);
 

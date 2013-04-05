@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/gpu_driver_bug_workaround_type.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
@@ -76,78 +75,24 @@ void StringToWorkarounds(
     bool succeed = base::StringToInt(pieces[i], &number);
     DCHECK(succeed);
     switch (number) {
-      case gpu::CLEAR_ALPHA_IN_READPIXELS:
-        workarounds->clear_alpha_in_readpixels = true;
-        break;
-      case gpu::CLEAR_UNIFORMS_BEFORE_PROGRAM_USE:
-        workarounds->clear_uniforms_before_program_use = true;
-        break;
-      case gpu::DELETE_INSTEAD_OF_RESIZE_FBO:
-        workarounds->delete_instead_of_resize_fbo = true;
-        break;
-      case gpu::DISABLE_ANGLE_FRAMEBUFFER_MULTISAMPLE:
-        workarounds->disable_angle_framebuffer_multisample = true;
-        break;
-      case gpu::DISABLE_DEPTH_TEXTURE:
-        workarounds->disable_depth_texture = true;
-        break;
-      case gpu::DISABLE_EXT_OCCLUSION_QUERY:
-        workarounds->disable_ext_occlusion_query = true;
-        break;
-      case gpu::ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES:
-        workarounds->enable_chromium_fast_npot_mo8_textures = true;
-        break;
-      case gpu::EXIT_ON_CONTEXT_LOST:
-        workarounds->exit_on_context_lost = true;
-        break;
-      case gpu::FLUSH_ON_CONTEXT_SWITCH:
-        workarounds->flush_on_context_switch = true;
-        break;
-      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
-        if (workarounds->max_cube_map_texture_size == 0 ||
-            workarounds->max_cube_map_texture_size > 1024)
-          workarounds->max_cube_map_texture_size = 1024;
-        break;
-      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
-        if (workarounds->max_cube_map_texture_size == 0 ||
-            workarounds->max_cube_map_texture_size > 4096)
-          workarounds->max_cube_map_texture_size = 4096;
-        break;
-      case gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
-        if (workarounds->max_cube_map_texture_size == 0 ||
-            workarounds->max_cube_map_texture_size > 512)
-          workarounds->max_cube_map_texture_size = 512;
-        break;
-      case gpu::MAX_TEXTURE_SIZE_LIMIT_4096:
-        if (workarounds->max_texture_size == 0 ||
-            workarounds->max_texture_size > 4096)
-          workarounds->max_texture_size = 4096;
-        break;
-      case gpu::NEEDS_GLSL_BUILT_IN_FUNCTION_EMULATION:
-        workarounds->needs_glsl_built_in_function_emulation = true;
-        break;
-      case gpu::NEEDS_OFFSCREEN_BUFFER_WORKAROUND:
-        workarounds->needs_offscreen_buffer_workaround = true;
-        break;
-      case gpu::RESTORE_SCISSOR_ON_FBO_CHANGE:
-        workarounds->restore_scissor_on_fbo_change = true;
-        break;
-      case REVERSE_POINT_SPRITE_COORD_ORIGIN:
-        workarounds->reverse_point_sprite_coord_origin = true;
-        break;
-      case gpu::SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP:
-        workarounds->set_texture_filter_before_generating_mipmap = true;
-        break;
-      case gpu::USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS:
-        workarounds->use_client_side_arrays_for_stream_buffers = true;
-        break;
-      case gpu::USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK:
-        workarounds->use_current_program_after_successful_link = true;
-        break;
+#define GPU_OP(type, name)    \
+  case gpu::type:             \
+    workarounds->name = true; \
+    break;
+      GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
       default:
         NOTIMPLEMENTED();
     }
   }
+  if (workarounds->max_texture_size_limit_4096)
+    workarounds->max_texture_size = 4096;
+  if (workarounds->max_cube_map_texture_size_limit_4096)
+    workarounds->max_cube_map_texture_size = 4096;
+  if (workarounds->max_cube_map_texture_size_limit_1024)
+    workarounds->max_cube_map_texture_size = 1024;
+  if (workarounds->max_cube_map_texture_size_limit_512)
+    workarounds->max_cube_map_texture_size = 512;
 }
 
 }  // anonymous namespace.
@@ -173,25 +118,12 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_draw_buffers(false) {
 }
 
-FeatureInfo::Workarounds::Workarounds()
-    : clear_alpha_in_readpixels(false),
-      clear_uniforms_before_program_use(false),
-      delete_instead_of_resize_fbo(false),
-      disable_angle_framebuffer_multisample(false),
-      disable_depth_texture(false),
-      disable_ext_occlusion_query(false),
-      enable_chromium_fast_npot_mo8_textures(false),
-      exit_on_context_lost(false),
-      flush_on_context_switch(false),
-      needs_glsl_built_in_function_emulation(false),
-      needs_offscreen_buffer_workaround(false),
-      restore_scissor_on_fbo_change(false),
-      reverse_point_sprite_coord_origin(false),
-      set_texture_filter_before_generating_mipmap(false),
-      use_client_side_arrays_for_stream_buffers(false),
-      use_current_program_after_successful_link(false),
-      max_texture_size(0),
-      max_cube_map_texture_size(0) {
+FeatureInfo::Workarounds::Workarounds() :
+#define GPU_OP(type, name) name(false),
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+    max_texture_size(0),
+    max_cube_map_texture_size(0) {
 }
 
 FeatureInfo::FeatureInfo() {
