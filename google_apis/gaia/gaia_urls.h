@@ -40,6 +40,7 @@ class GaiaUrls {
   const std::string& client_login_to_oauth2_url();
   const std::string& oauth2_token_url();
   const std::string& oauth2_issue_token_url();
+  const std::string& oauth2_revoke_url();
 
   const std::string& gaia_login_form_realm();
 
@@ -76,6 +77,7 @@ class GaiaUrls {
   std::string client_login_to_oauth2_url_;
   std::string oauth2_token_url_;
   std::string oauth2_issue_token_url_;
+  std::string oauth2_revoke_url_;
 
   std::string gaia_login_form_realm_;
 

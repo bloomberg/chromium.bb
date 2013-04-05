@@ -185,6 +185,7 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
   virtual void OnClientOAuthFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
@@ -282,6 +283,10 @@ class SigninManager : public GaiaAuthConsumer,
   void HandleAuthError(const GoogleServiceAuthError& error,
                        bool clear_transient_data);
 
+  // Called to tell GAIA that we will no longer be using the current refresh
+  // token.
+  void RevokeOAuthLoginToken();
+
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
   // Callback invoked once policy registration is complete. If registration
   // fails, |client| will be null.
@@ -339,6 +344,9 @@ class SigninManager : public GaiaAuthConsumer,
 
   // UbertokenFetcher to login to user to the web property.
   scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
+
+  // OAuth revocation fetcher for sign outs.
+  scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;
 
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).

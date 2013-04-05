@@ -100,6 +100,12 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // called on the consumer on the original thread.
   void StartLsoForOAuthLoginTokenExchange(const std::string& auth_token);
 
+  // Start a request to revoke |auth_token|.
+  //
+  // Either OnRevokeOAuth2TokenSuccess or OnRevokeOAuth2TokenSuccess will be
+  // called on the consumer on the original thread.
+  void StartRevokeOAuth2Token(const std::string& auth_token);
+
   // Start a request to exchange the cookies of a signed-in user session
   // for an OAuthLogin-scoped oauth2 token.  In the case of a session with
   // multiple accounts signed in, |session_index| indicate the which of accounts
@@ -216,6 +222,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginToOAuth2BodyFormat[];
   // The format of the POST body to get OAuth2 token pair from auth code.
   static const char kOAuth2CodeToTokenPairBodyFormat[];
+  // The format of the POST body to revoke an OAuth2 token.
+  static const char kOAuth2RevokeTokenBodyFormat[];
   // The format of the POST body for GetUserInfo.
   static const char kGetUserInfoFormat[];
   // The format of the POST body for MergeSession.
@@ -272,6 +280,10 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void OnOAuth2TokenPairFetched(const std::string& data,
                                 const net::URLRequestStatus& status,
                                 int response_code);
+
+  void OnOAuth2RevokeTokenFetched(const std::string& data,
+                                  const net::URLRequestStatus& status,
+                                  int response_code);
 
   void OnGetUserInfoFetched(const std::string& data,
                             const net::URLRequestStatus& status,
@@ -338,6 +350,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeGetAuthCodeBody();
   // Given auth code, create body to get OAuth2 token pair.
   static std::string MakeGetTokenPairBody(const std::string& auth_code);
+  // Given an OAuth2 token, create body to revoke the token.
+  std::string MakeRevokeTokenBody(const std::string& auth_token);
   // Supply the lsid returned from ClientLogin in order to fetch
   // user information.
   static std::string MakeGetUserInfoBody(const std::string& lsid);
@@ -392,6 +406,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL client_login_gurl_;
   const GURL issue_auth_token_gurl_;
   const GURL oauth2_token_gurl_;
+  const GURL oauth2_revoke_gurl_;
   const GURL get_user_info_gurl_;
   const GURL merge_session_gurl_;
   const GURL uberauth_token_gurl_;

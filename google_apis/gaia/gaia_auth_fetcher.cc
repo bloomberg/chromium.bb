@@ -91,6 +91,9 @@ const char GaiaAuthFetcher::kOAuth2CodeToTokenPairBodyFormat[] =
     "client_secret=%s&"
     "code=%s";
 // static
+const char GaiaAuthFetcher::kOAuth2RevokeTokenBodyFormat[] =
+    "token=%s";
+// static
 const char GaiaAuthFetcher::kGetUserInfoFormat[] =
     "LSID=%s";
 // static
@@ -180,6 +183,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       client_login_gurl_(GaiaUrls::GetInstance()->client_login_url()),
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
+      oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       uberauth_token_gurl_(base::StringPrintf(kUberAuthTokenURLFormat,
@@ -326,6 +330,12 @@ std::string GaiaAuthFetcher::MakeGetTokenPairBody(
                             encoded_client_id.c_str(),
                             encoded_client_secret.c_str(),
                             encoded_auth_code.c_str());
+}
+
+// static
+std::string GaiaAuthFetcher::MakeRevokeTokenBody(
+    const std::string& auth_token) {
+  return base::StringPrintf(kOAuth2RevokeTokenBodyFormat, auth_token.c_str());
 }
 
 // static
@@ -646,6 +656,21 @@ void GaiaAuthFetcher::StartLsoForOAuthLoginTokenExchange(
                                    request_body_,
                                    MakeGetAuthCodeHeader(auth_token),
                                    client_login_to_oauth2_gurl_,
+                                   kLoadFlagsIgnoreCookies,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  DVLOG(1) << "Starting OAuth2 token revocation";
+  request_body_ = MakeRevokeTokenBody(auth_token);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   "",
+                                   oauth2_revoke_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
@@ -991,6 +1016,13 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
   }
 }
 
+void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(
+    const std::string& data,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  consumer_->OnOAuth2RevokeTokenCompleted();
+}
+
 void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
@@ -1119,6 +1151,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     OnClientOAuthFetched(data, status, response_code);
   } else if (url == oauth_login_gurl_) {
     OnOAuthLoginFetched(data, status, response_code);
+  } else if (url == oauth2_revoke_gurl_) {
+    OnOAuth2RevokeTokenFetched(data, status, response_code);
   } else {
     NOTREACHED();
   }

@@ -72,6 +72,8 @@ class GaiaAuthConsumer {
   virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) {}
   virtual void OnClientOAuthFailure(const GoogleServiceAuthError& error) {}
 
+  virtual void OnOAuth2RevokeTokenCompleted() {}
+
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) {}
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) {}
 

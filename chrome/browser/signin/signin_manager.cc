@@ -328,6 +328,7 @@ bool SigninManager::PrepareForSignin(SigninType type,
   // need to try again, but take care to leave state around tracking that the
   // user has successfully signed in once before with this username, so that on
   // restart we don't think sync setup has never completed.
+  RevokeOAuthLoginToken();
   ClearTransientSigninData();
   type_ = type;
   possibly_invalid_username_.assign(username);
@@ -558,8 +559,25 @@ void SigninManager::SignOut() {
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSignoutDetails>(&details));
+  RevokeOAuthLoginToken();
   token_service->ResetCredentialsInMemory();
   token_service->EraseTokensFromDB();
+}
+
+void SigninManager::RevokeOAuthLoginToken() {
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  if (token_service->HasOAuthLoginToken()) {
+    revoke_token_fetcher_.reset(
+        new GaiaAuthFetcher(this,
+                            GaiaConstants::kChromeSource,
+                            profile_->GetRequestContext()));
+    revoke_token_fetcher_->StartRevokeOAuth2Token(
+        token_service->GetOAuth2LoginRefreshToken());
+  }
+}
+
+void SigninManager::OnOAuth2RevokeTokenCompleted() {
+  revoke_token_fetcher_.reset(NULL);
 }
 
 bool SigninManager::AuthInProgress() const {
