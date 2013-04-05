@@ -37,6 +37,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     WebInspector.View.call(this);
 
     this.element.id = "console-view";
+    this._messageLevelFilters = {};
     this._messageURLFilters = WebInspector.settings.messageURLFilters.get();
     this._visibleMessages = [];
     this._messages = [];
@@ -98,9 +99,9 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this.allElement = createFilterElement.call(this, "all", WebInspector.UIString("All"));
     createDividerElement.call(this);
-    this.errorElement = createFilterElement.call(this, "errors", WebInspector.UIString("Errors"));
-    this.warningElement = createFilterElement.call(this, "warnings", WebInspector.UIString("Warnings"));
-    this.logElement = createFilterElement.call(this, "logs", WebInspector.UIString("Logs"));
+    this.errorElement = createFilterElement.call(this, "error", WebInspector.UIString("Errors"));
+    this.warningElement = createFilterElement.call(this, "warning", WebInspector.UIString("Warnings"));
+    this.logElement = createFilterElement.call(this, "log", WebInspector.UIString("Logs"));
     this.debugElement = createFilterElement.call(this, "debug", WebInspector.UIString("Debug"));
 
     this.filter(this.allElement, false);
@@ -260,54 +261,56 @@ WebInspector.ConsoleView.prototype = {
     {
         function unselectAll()
         {
+            this._messageLevelFilters = {};
+
             this.allElement.removeStyleClass("selected");
             this.errorElement.removeStyleClass("selected");
             this.warningElement.removeStyleClass("selected");
             this.logElement.removeStyleClass("selected");
             this.debugElement.removeStyleClass("selected");
-
-            this.messagesElement.classList.remove("filter-all", "filter-errors", "filter-warnings", "filter-logs", "filter-debug");
         }
 
-        var targetFilterClass = "filter-" + target.category;
-
         if (target.category === "all") {
-            if (target.hasStyleClass("selected")) {
-                // We can't unselect all, so we break early here
-                return;
-            }
-
             unselectAll.call(this);
+            target.addStyleClass("selected");
+            this._messageLevelFilters = {error: true, warning: true, log: true, debug: true};
         } else {
             // Something other than all is being selected, so we want to unselect all
             if (this.allElement.hasStyleClass("selected")) {
+                this._messageLevelFilters = {};
                 this.allElement.removeStyleClass("selected");
-                this.messagesElement.removeStyleClass("filter-all");
+            }
+
+            if (!selectMultiple) {
+                // If multiple selection is off, we want to unselect everything else
+                // and just select ourselves.
+                unselectAll.call(this);
+
+                target.addStyleClass("selected");
+
+                this._messageLevelFilters = {};
+                this._messageLevelFilters[target.category] = true;
+            } else {
+
+                if (target.hasStyleClass("selected")) {
+                    // If selectMultiple is turned on, and we were selected, we just
+                    // want to unselect ourselves.
+                    target.removeStyleClass("selected");
+
+                    if (this._messageLevelFilters[target.category])
+                        delete this._messageLevelFilters[target.category];
+
+                } else {
+                    // If selectMultiple is turned on, and we weren't selected, we just
+                    // want to select ourselves.
+                    target.addStyleClass("selected");
+
+                    this._messageLevelFilters[target.category] = true;
+                }
             }
         }
 
-        if (!selectMultiple) {
-            // If multiple selection is off, we want to unselect everything else
-            // and just select ourselves.
-            unselectAll.call(this);
-
-            target.addStyleClass("selected");
-            this.messagesElement.addStyleClass(targetFilterClass);
-
-            return;
-        }
-
-        if (target.hasStyleClass("selected")) {
-            // If selectMultiple is turned on, and we were selected, we just
-            // want to unselect ourselves.
-            target.removeStyleClass("selected");
-            this.messagesElement.removeStyleClass(targetFilterClass);
-        } else {
-            // If selectMultiple is turned on, and we weren't selected, we just
-            // want to select ourselves.
-            target.addStyleClass("selected");
-            this.messagesElement.addStyleClass(targetFilterClass);
-        }
+        this._updateMessageList();
     },
 
     willHide: function()
@@ -533,7 +536,7 @@ WebInspector.ConsoleView.prototype = {
     _shouldBeVisible: function(message)
     {
         return (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup) ||
-            (!message.url || !this._messageURLFilters[message.url]);
+            ((!message.url || !this._messageURLFilters[message.url]) && (!message.level || this._messageLevelFilters[message.level]));
     },
 
     /**
