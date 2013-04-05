@@ -1443,14 +1443,14 @@ bool ParseOutputOverscanFlag(const unsigned char* prop,
           nitems)
         break;
 
-      if (tag != kExtendedTag && payload_length < 2) {
+      if (tag != kExtendedTag || payload_length < 2) {
         data_block += payload_length + 1;
         continue;
       }
 
       unsigned char extended_tag_code = data_block[1];
       if (extended_tag_code != kExtendedVideoCapabilityTag) {
-        data_block += payload_length;
+        data_block += payload_length + 1;
         continue;
       }
 
