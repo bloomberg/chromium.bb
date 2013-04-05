@@ -174,24 +174,40 @@ function queryHistoryImpl(args, beginTime, history) {
   var endTime = args[3] || Number.MAX_VALUE;
   var maxCount = args[4];
 
-  // Advance past all entries newer than the specified end time.
-  var i = 0;
-  while (i < history.length && history[i].time >= endTime)
-    ++i;
-
-  var results = new Array();
-  if (beginTime) {
-    var j = i;
-    while (j < history.length && history[j].time >= beginTime)
-      ++j;
-
-    results = history.slice(i, j);
+  var results = [];
+  if (searchText) {
+    for (var k = 0; k < history.length; k++) {
+      // Search only by title in this stub.
+      if (history[k].title.indexOf(searchText) != -1)
+        results.push(history[k]);
+    }
   } else {
-    results = history.slice(i);
+    results = history;
   }
 
-  if (maxCount)
+  // Advance past all entries newer than the specified end time.
+  var i = 0;
+  // Finished is set from the history database so this behavior may not be
+  // completely identical.
+  var finished = true;
+  while (i < results.length && results[i].time >= endTime)
+    ++i;
+
+  if (beginTime) {
+    var j = i;
+    while (j < results.length && results[j].time >= beginTime)
+      ++j;
+
+    finished = (j == results.length);
+    results = results.slice(i, j);
+  } else {
+    results = results.slice(i);
+  }
+
+  if (maxCount) {
+    finished = (maxCount >= results.length);
     results = results.slice(0, maxCount);
+  }
 
   var queryStartTime = '';
   var queryEndTime = '';
@@ -207,7 +223,7 @@ function queryHistoryImpl(args, beginTime, history) {
       'historyResult',
       {
         term: searchText,
-        finished: (history.length <= i + results.length),
+        finished: finished,
         queryStartTime: queryStartTime,
         queryEndTime: queryEndTime
       },
@@ -499,6 +515,30 @@ TEST_F('HistoryWebUITest', 'multipleSelect', function() {
   expectEquals('checkbox-19', checked[11].id);
 
   testDone();
+});
+
+TEST_F('HistoryWebUITest', 'searchHistory', function() {
+  var getResultCount = function() {
+    return document.querySelectorAll('.entry').length;
+  };
+  // See that all the elements are there.
+  expectEquals(RESULTS_PER_PAGE, getResultCount());
+
+  // See that the search works.
+  $('search-field').value = 'Thu Oct 02 2008';
+  $('search-button').click();
+
+  waitForCallback('historyResult', function() {
+    expectEquals(31, getResultCount());
+
+    // Clear the search.
+    $('search-field').value = '';
+    $('search-button').click();
+    waitForCallback('historyResult', function() {
+      expectEquals(RESULTS_PER_PAGE, getResultCount());
+      testDone();
+    });
+  });
 });
 
 function setPageState(searchText, page, groupByDomain, range, offset) {
