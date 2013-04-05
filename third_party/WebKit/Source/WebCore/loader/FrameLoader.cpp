@@ -84,7 +84,6 @@
 #include "PageTransitionEvent.h"
 #include "PlatformStrategies.h"
 #include "PluginData.h"
-#include "PluginDatabase.h"
 #include "PluginDocument.h"
 #include "PolicyChecker.h"
 #include "ProgressTracker.h"
@@ -884,27 +883,11 @@ ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const S
     if (mimeType.isEmpty())
         mimeType = mimeTypeFromURL(url);
 
-#if !PLATFORM(MAC) && !PLATFORM(CHROMIUM) && !PLATFORM(EFL) // Mac has no PluginDatabase, nor does Chromium or EFL
-    if (mimeType.isEmpty()) {
-        String decodedPath = decodeURLEscapeSequences(url.path());
-        mimeType = PluginDatabase::installedPlugins()->MIMETypeForExtension(decodedPath.substring(decodedPath.reverseFind('.') + 1));
-    }
-#endif
-
     if (mimeType.isEmpty())
         return ObjectContentFrame; // Go ahead and hope that we can display the content.
 
-#if !PLATFORM(MAC) && !PLATFORM(CHROMIUM) && !PLATFORM(EFL) // Mac has no PluginDatabase, nor does Chromium or EFL
-    bool plugInSupportsMIMEType = PluginDatabase::installedPlugins()->isMIMETypeRegistered(mimeType);
-#else
-    bool plugInSupportsMIMEType = false;
-#endif
-
     if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
-        return shouldPreferPlugInsForImages && plugInSupportsMIMEType ? WebCore::ObjectContentNetscapePlugin : WebCore::ObjectContentImage;
-
-    if (plugInSupportsMIMEType)
-        return WebCore::ObjectContentNetscapePlugin;
+        return WebCore::ObjectContentImage;
 
     if (MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType))
         return WebCore::ObjectContentFrame;
