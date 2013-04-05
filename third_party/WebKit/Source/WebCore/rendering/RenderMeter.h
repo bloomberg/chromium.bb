@@ -21,10 +21,8 @@
 #ifndef RenderMeter_h
 #define RenderMeter_h
 
-#if ENABLE(METER_ELEMENT)
 #include "RenderBlock.h"
 #include "RenderWidget.h"
-
 
 namespace WebCore {
 
@@ -60,7 +58,4 @@ void toRenderMeter(const RenderMeter*);
 
 } // namespace WebCore
 
-#endif
-
 #endif // RenderMeter_h
-

@@ -291,11 +291,9 @@ static PassRefPtr<AccessibilityObject> createFromRenderer(RenderObject* renderer
         if (cssBox->isTableCell())
             return AccessibilityTableCell::create(toRenderTableCell(cssBox));
 
-#if ENABLE(PROGRESS_ELEMENT)
         // progress bar
         if (cssBox->isProgress())
             return AccessibilityProgressIndicator::create(toRenderProgress(cssBox));
-#endif
 
         // input type=range
         if (cssBox->isSlider())

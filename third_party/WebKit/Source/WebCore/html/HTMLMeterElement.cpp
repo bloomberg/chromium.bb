@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#if ENABLE(METER_ELEMENT)
+
 #include "HTMLMeterElement.h"
 
 #include "Attribute.h"
@@ -246,4 +246,3 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 }
 
 } // namespace
-#endif

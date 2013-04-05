@@ -21,7 +21,6 @@
 #include "config.h"
 #include "AccessibilityProgressIndicator.h"
 
-#if ENABLE(PROGRESS_ELEMENT)
 #include "FloatConversion.h"
 #include "HTMLNames.h"
 #include "HTMLProgressElement.h"
@@ -72,5 +71,3 @@ HTMLProgressElement* AccessibilityProgressIndicator::element() const
 
 
 } // namespace WebCore
-
-#endif // ENABLE(PROGRESS_ELEMENT)
