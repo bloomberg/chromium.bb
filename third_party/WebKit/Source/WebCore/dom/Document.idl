@@ -247,7 +247,6 @@
     NodeList querySelectorAll(in DOMString selectors)
         raises(DOMException);
 
-#if defined(ENABLE_FULLSCREEN_API) && ENABLE_FULLSCREEN_API
     // Mozilla version
     [V8EnabledAtRuntime] readonly attribute boolean webkitIsFullScreen;
     [V8EnabledAtRuntime] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
@@ -258,7 +257,6 @@
     [V8EnabledAtRuntime] readonly attribute boolean webkitFullscreenEnabled;
     [V8EnabledAtRuntime] readonly attribute Element webkitFullscreenElement;
     [V8EnabledAtRuntime] void webkitExitFullscreen();
-#endif
 
     [Conditional=POINTER_LOCK] void webkitExitPointerLock();
     [Conditional=POINTER_LOCK] readonly attribute Element webkitPointerLockElement;
@@ -340,8 +338,8 @@
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchmove;
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchend;
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
-    [NotEnumerable, Conditional=FULLSCREEN_API] attribute EventListener onwebkitfullscreenchange;
-    [NotEnumerable, Conditional=FULLSCREEN_API] attribute EventListener onwebkitfullscreenerror;
+    [NotEnumerable] attribute EventListener onwebkitfullscreenchange;
+    [NotEnumerable] attribute EventListener onwebkitfullscreenerror;
     [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockchange;
     [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockerror;
     [NotEnumerable, Conditional=CSP_NEXT, V8EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;

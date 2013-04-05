@@ -151,12 +151,10 @@ namespace WebCore {
             PseudoLeftPage,
             PseudoRightPage,
             PseudoFirstPage,
-#if ENABLE(FULLSCREEN_API)
             PseudoFullScreen,
             PseudoFullScreenDocument,
             PseudoFullScreenAncestor,
             PseudoAnimatingFullScreenTransition,
-#endif
             PseudoInRange,
             PseudoOutOfRange,
             PseudoUserAgentCustomElement,

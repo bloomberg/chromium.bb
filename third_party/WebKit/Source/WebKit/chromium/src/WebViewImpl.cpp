@@ -1729,7 +1729,6 @@ void WebViewImpl::willEndLiveResize()
 
 void WebViewImpl::willEnterFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     if (!m_provisionalFullScreenElement)
         return;
 
@@ -1740,12 +1739,10 @@ void WebViewImpl::willEnterFullScreen()
         m_fullScreenFrame = doc->frame();
     }
     m_provisionalFullScreenElement.clear();
-#endif
 }
 
 void WebViewImpl::didEnterFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     if (!m_fullScreenFrame)
         return;
 
@@ -1753,12 +1750,10 @@ void WebViewImpl::didEnterFullScreen()
         if (doc->webkitIsFullScreen())
             doc->webkitDidEnterFullScreenForElement(0);
     }
-#endif
 }
 
 void WebViewImpl::willExitFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     if (!m_fullScreenFrame)
         return;
 
@@ -1772,12 +1767,10 @@ void WebViewImpl::willExitFullScreen()
             doc->webkitWillExitFullScreenForElement(0);
         }
     }
-#endif
 }
 
 void WebViewImpl::didExitFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     if (!m_fullScreenFrame)
         return;
 
@@ -1787,7 +1780,6 @@ void WebViewImpl::didExitFullScreen()
     }
 
     m_fullScreenFrame.clear();
-#endif
 }
 
 #if ENABLE(BATTERY_STATUS)

@@ -232,12 +232,10 @@
     void setHeaderHeight(in Document document, in float height);
     void setFooterHeight(in Document document, in float height);
 
-#if defined(ENABLE_FULLSCREEN_API) && ENABLE_FULLSCREEN_API
     void webkitWillEnterFullScreenForElement(in Document document, in Element element);
     void webkitDidEnterFullScreenForElement(in Document document, in Element element);
     void webkitWillExitFullScreenForElement(in Document document, in Element element);
     void webkitDidExitFullScreenForElement(in Document document, in Element element);
-#endif
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(in DOMString scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(in DOMString scheme);

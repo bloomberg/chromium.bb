@@ -3089,7 +3089,6 @@ bool EventHandler::needsKeyboardEventDisambiguationQuirks() const
 }
 #endif
 
-#if ENABLE(FULLSCREEN_API)
 bool EventHandler::isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent& keyEvent) const
 {
     Document* document = m_frame->document();
@@ -3109,16 +3108,13 @@ bool EventHandler::isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent& ke
         || (keyCode >= VK_OEM_1 && keyCode <= VK_OEM_PLUS)
         || (keyCode >= VK_MULTIPLY && keyCode <= VK_OEM_8);
 }
-#endif
 
 bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtr<FrameView> protector(m_frame->view()); 
 
-#if ENABLE(FULLSCREEN_API)
     if (m_frame->document()->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(initialKeyEvent))
         return false;
-#endif
 
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
         capsLockStateMayHaveChanged();

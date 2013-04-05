@@ -187,12 +187,10 @@ public:
     virtual void enterFullscreenForNode(WebCore::Node*);
     virtual void exitFullscreenForNode(WebCore::Node*);
 
-#if ENABLE(FULLSCREEN_API)
     virtual bool supportsFullScreenForElement(const WebCore::Element*, bool withKeyboard);
     virtual void enterFullScreenForElement(WebCore::Element*);
     virtual void exitFullScreenForElement(WebCore::Element*);
     virtual void fullScreenRendererChanged(WebCore::RenderBox*);
-#endif
 
     // ChromeClientChromium methods:
     virtual void popupOpened(WebCore::PopupContainer* popupContainer,

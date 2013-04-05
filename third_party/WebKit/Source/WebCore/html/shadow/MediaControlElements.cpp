@@ -1064,7 +1064,6 @@ PassRefPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElem
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == eventNames().clickEvent) {
-#if ENABLE(FULLSCREEN_API)
         // Only use the new full screen API if the fullScreenEnabled setting has
         // been explicitly enabled. Otherwise, use the old fullscreen API. This
         // allows apps which embed a WebView to retain the existing full screen
@@ -1076,7 +1075,6 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
             else
                 document()->requestFullScreenForElement(toParentMediaElement(this), 0, Document::ExemptIFrameAllowFullScreenRequirement);
         } else
-#endif
             mediaController()->enterFullscreen();
         event->setDefaultHandled();
     }

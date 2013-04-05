@@ -417,12 +417,7 @@ void MediaPlayerPrivateAVFoundation::prepareForRendering()
 
 bool MediaPlayerPrivateAVFoundation::supportsFullscreen() const
 {
-#if ENABLE(FULLSCREEN_API)
     return true;
-#else
-    // FIXME: WebVideoFullscreenController assumes a QTKit/QuickTime media engine
-    return false;
-#endif
 }
 
 void MediaPlayerPrivateAVFoundation::updateStates()

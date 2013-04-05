@@ -4170,10 +4170,8 @@ bool HTMLMediaElement::isFullscreen() const
     if (m_isFullscreen)
         return true;
     
-#if ENABLE(FULLSCREEN_API)
     if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
         return true;
-#endif
     
     return false;
 }
@@ -4182,12 +4180,11 @@ void HTMLMediaElement::enterFullscreen()
 {
     LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-#if ENABLE(FULLSCREEN_API)
     if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
         document()->requestFullScreenForElement(this, 0, Document::ExemptIFrameAllowFullScreenRequirement);
         return;
     }
-#endif
+
     ASSERT(!m_isFullscreen);
     m_isFullscreen = true;
     if (hasMediaControls())
@@ -4202,13 +4199,12 @@ void HTMLMediaElement::exitFullscreen()
 {
     LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-#if ENABLE(FULLSCREEN_API)
     if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
         if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
             document()->webkitCancelFullScreen();
         return;
     }
-#endif
+
     ASSERT(m_isFullscreen);
     m_isFullscreen = false;
     if (hasMediaControls())

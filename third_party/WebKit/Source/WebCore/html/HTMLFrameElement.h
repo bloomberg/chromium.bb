@@ -46,9 +46,7 @@ private:
     
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-#if ENABLE(FULLSCREEN_API)
     virtual bool allowFullScreen() const { return false; }
-#endif
 
     bool m_frameBorder;
     bool m_frameBorderSet;

@@ -973,7 +973,6 @@ void ChromeClientImpl::exitFullscreenForNode(Node* node)
     ASSERT_NOT_REACHED();
 }
 
-#if ENABLE(FULLSCREEN_API)
 bool ChromeClientImpl::supportsFullScreenForElement(const Element* element, bool withKeyboard)
 {
     return true;
@@ -993,7 +992,6 @@ void ChromeClientImpl::fullScreenRendererChanged(RenderBox*)
 {
     notImplemented();
 }
-#endif
 
 bool ChromeClientImpl::selectItemWritingDirectionIsNatural()
 {

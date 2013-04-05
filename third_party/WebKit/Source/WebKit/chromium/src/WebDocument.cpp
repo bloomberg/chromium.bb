@@ -209,17 +209,13 @@ void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLev
 
 void WebDocument::cancelFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     unwrap<Document>()->webkitCancelFullScreen();
-#endif
 }
 
 WebElement WebDocument::fullScreenElement() const
 {
     Element* fullScreenElement = 0;
-#if ENABLE(FULLSCREEN_API)
     fullScreenElement = constUnwrap<Document>()->webkitCurrentFullScreenElement();
-#endif
     return WebElement(fullScreenElement);
 }
 

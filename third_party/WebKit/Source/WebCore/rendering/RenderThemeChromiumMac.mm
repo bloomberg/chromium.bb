@@ -160,13 +160,11 @@ String RenderThemeChromiumMac::extraMediaControlsStyleSheet()
     return String(mediaControlsChromiumUserAgentStyleSheet, sizeof(mediaControlsChromiumUserAgentStyleSheet));
 }
 
-#if ENABLE(FULLSCREEN_API)
 String RenderThemeChromiumMac::extraFullScreenStyleSheet()
 {
     // FIXME: Chromium may wish to style its default media controls differently in fullscreen.
     return String();
 }
-#endif
 
 String RenderThemeChromiumMac::extraDefaultStyleSheet()
 {

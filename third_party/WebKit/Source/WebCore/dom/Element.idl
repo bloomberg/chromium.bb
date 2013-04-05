@@ -145,14 +145,12 @@
     [V8PerWorldBindings] readonly attribute DOMString innerText;
 #endif
 
-#if defined(ENABLE_FULLSCREEN_API) && ENABLE_FULLSCREEN_API
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
     [V8EnabledAtRuntime] void webkitRequestFullScreen(in [Optional=DefaultIsUndefined] unsigned short flags);
 
     // W3C version
     [V8EnabledAtRuntime] void webkitRequestFullscreen();
-#endif
 
     [Conditional=POINTER_LOCK] void webkitRequestPointerLock();
 
@@ -230,8 +228,8 @@
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchmove;
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchend;
     [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchcancel;
-    [NotEnumerable, Conditional=FULLSCREEN_API, V8PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
-    [NotEnumerable, Conditional=FULLSCREEN_API, V8PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
+    [NotEnumerable, V8PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
+    [NotEnumerable, V8PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
 #endif
 };
 

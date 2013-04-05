@@ -124,9 +124,7 @@ public:
 
 #if ENABLE(VIDEO)
     virtual String extraMediaControlsStyleSheet();
-#if ENABLE(FULLSCREEN_API)
     virtual String extraFullScreenStyleSheet();
-#endif
     virtual bool supportsClosedCaptioning() const;
     virtual bool paintMediaControlsBackground(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaFullscreenButton(RenderObject*, const PaintInfo&, const IntRect&);

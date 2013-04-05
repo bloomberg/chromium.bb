@@ -1169,10 +1169,8 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     // by the time we reach updateId
     ContainerNode::insertedInto(insertionPoint);
 
-#if ENABLE(FULLSCREEN_API)
     if (containsFullScreenElement() && parentElement() && !parentElement()->containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
-#endif
 
     if (Element* before = pseudoElement(BEFORE))
         before->insertedInto(insertionPoint);
@@ -1221,10 +1219,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 #if ENABLE(DIALOG_ELEMENT)
     document()->removeFromTopLayer(this);
 #endif
-#if ENABLE(FULLSCREEN_API)
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-#endif
 #if ENABLE(POINTER_LOCK)
     if (document()->page())
         document()->page()->pointerLockController()->elementRemoved(this);
@@ -2436,7 +2432,6 @@ bool Element::childShouldCreateRenderer(const NodeRenderingContext& childContext
 }
 #endif
 
-#if ENABLE(FULLSCREEN_API)
 void Element::webkitRequestFullscreen()
 {
     document()->requestFullScreenForElement(this, ALLOW_KEYBOARD_INPUT, Document::EnforceIFrameAllowFullScreenRequirement);
@@ -2470,7 +2465,6 @@ void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(boo
     while ((element = parentCrossingFrameBoundaries(element)))
         element->setContainsFullScreenElement(flag);
 }
-#endif    
 
 #if ENABLE(DIALOG_ELEMENT)
 bool Element::isInTopLayer() const

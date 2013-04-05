@@ -103,7 +103,6 @@ public:
     static bool fontLoadEventsEnabled() { return false; }
 #endif
 
-#if ENABLE(FULLSCREEN_API)
     // Mozilla version
     static bool webkitFullScreenAPIEnabled() { return isFullScreenAPIEnabled; }
     static void setWebkitFullScreenAPIEnabled(bool isEnabled) { isFullScreenAPIEnabled = isEnabled; }
@@ -118,7 +117,6 @@ public:
     static bool webkitFullscreenElementEnabled() { return isFullScreenAPIEnabled; }
     static bool webkitExitFullscreenEnabled() { return isFullScreenAPIEnabled; }
     static bool webkitRequestFullscreenEnabled() { return isFullScreenAPIEnabled; }
-#endif
 
 #if ENABLE(VIDEO)
     static bool audioEnabled();
@@ -352,9 +350,7 @@ private:
     static bool isQuotaEnabled;
 #endif
 
-#if ENABLE(FULLSCREEN_API)
     static bool isFullScreenAPIEnabled;
-#endif
 
 #if ENABLE(MEDIA_SOURCE)
     static bool isMediaSourceEnabled;

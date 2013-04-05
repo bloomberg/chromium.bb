@@ -140,10 +140,6 @@
 #endif
 #endif
 
-#if !defined(ENABLE_FULLSCREEN_API)
-#define ENABLE_FULLSCREEN_API 1
-#endif
-
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 #if !defined(ENABLE_GESTURE_EVENTS)
 #define ENABLE_GESTURE_EVENTS 1
@@ -198,10 +194,6 @@
 
 /* --------- Apple Windows port --------- */
 #if PLATFORM(WIN) && !OS(WINCE) && !PLATFORM(WIN_CAIRO)
-
-#if !defined(ENABLE_FULLSCREEN_API)
-#define ENABLE_FULLSCREEN_API 1
-#endif
 
 #if !defined(ENABLE_WEB_ARCHIVE)
 #define ENABLE_WEB_ARCHIVE 1
@@ -473,10 +465,6 @@
 
 #if !defined(ENABLE_FTPDIR)
 #define ENABLE_FTPDIR 1
-#endif
-
-#if !defined(ENABLE_FULLSCREEN_API)
-#define ENABLE_FULLSCREEN_API 0
 #endif
 
 #if !defined(ENABLE_GAMEPAD)

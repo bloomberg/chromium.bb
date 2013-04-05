@@ -60,10 +60,8 @@ public:
     bool isInCanvasSubtree() const { return m_isInCanvasSubtree; }
     void setIsInCanvasSubtree(bool value) { m_isInCanvasSubtree = value; }
 
-#if ENABLE(FULLSCREEN_API)
     bool containsFullScreenElement() { return m_containsFullScreenElement; }
     void setContainsFullScreenElement(bool value) { m_containsFullScreenElement = value; }
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
     bool isInTopLayer() const { return m_isInTopLayer; }
@@ -138,9 +136,7 @@ private:
     unsigned m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
     unsigned m_styleAffectedByEmpty : 1;
     unsigned m_isInCanvasSubtree : 1;
-#if ENABLE(FULLSCREEN_API)
     unsigned m_containsFullScreenElement : 1;
-#endif
 #if ENABLE(DIALOG_ELEMENT)
     unsigned m_isInTopLayer : 1;
 #endif
@@ -188,9 +184,7 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
     , m_styleAffectedByEmpty(false)
     , m_isInCanvasSubtree(false)
-#if ENABLE(FULLSCREEN_API)
     , m_containsFullScreenElement(false)
-#endif
 #if ENABLE(DIALOG_ELEMENT)
     , m_isInTopLayer(false)
 #endif

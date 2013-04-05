@@ -190,7 +190,6 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     }
 #endif
 
-#if ENABLE(FULLSCREEN_API)
     if (!fullscreenStyleSheet && element->document()->webkitIsFullScreen()) {
         String fullscreenRules = String(fullscreenUserAgentStyleSheet, sizeof(fullscreenUserAgentStyleSheet)) + RenderTheme::defaultTheme()->extraFullScreenStyleSheet();
         fullscreenStyleSheet = parseUASheet(fullscreenRules);
@@ -198,7 +197,6 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         defaultQuirksStyle->addRulesFromSheet(fullscreenStyleSheet, screenEval());
         changedDefaultStyle = true;
     }
-#endif
 
     if (!plugInsStyleSheet && (element->hasTagName(objectTag) || element->hasTagName(embedTag))) {
         String plugInsRules = String(plugInsUserAgentStyleSheet, sizeof(plugInsUserAgentStyleSheet)) + RenderTheme::themeForPage(element->document()->page())->extraPlugInsStyleSheet() + element->document()->page()->chrome()->client()->plugInExtraStyleSheet();

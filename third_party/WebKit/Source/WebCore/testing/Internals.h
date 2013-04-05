@@ -264,12 +264,10 @@ public:
     void setHeaderHeight(Document*, float);
     void setFooterHeight(Document*, float);
 
-#if ENABLE(FULLSCREEN_API)
     void webkitWillEnterFullScreenForElement(Document*, Element*);
     void webkitDidEnterFullScreenForElement(Document*, Element*);
     void webkitWillExitFullScreenForElement(Document*, Element*);
     void webkitDidExitFullScreenForElement(Document*, Element*);
-#endif
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);

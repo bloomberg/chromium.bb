@@ -297,10 +297,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 #endif
-#if ENABLE(FULLSCREEN_API)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
-#endif
 #if ENABLE(POINTER_LOCK)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockerror);
@@ -1046,7 +1044,6 @@ public:
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
     
-#if ENABLE(FULLSCREEN_API)
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
     bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
@@ -1082,7 +1079,6 @@ public:
     bool webkitFullscreenEnabled() const;
     Element* webkitFullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
     void webkitExitFullscreen();
-#endif
 
 #if ENABLE(POINTER_LOCK)
     void webkitExitPointerLock();
@@ -1283,12 +1279,10 @@ private:
 
     PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 
-#if ENABLE(FULLSCREEN_API)
     void clearFullscreenElementStack();
     void popFullscreenElementStack();
     void pushFullscreenElementStack(Element*);
     void addDocumentToFullScreenChangeEventQueue(Document*);
-#endif
 
     void setVisualUpdatesAllowed(ReadyState);
     void setVisualUpdatesAllowed(bool);
@@ -1505,7 +1499,6 @@ private:
 
     QualifiedName m_idAttributeName;
 
-#if ENABLE(FULLSCREEN_API)
     bool m_areKeysEnabledInFullScreen;
     RefPtr<Element> m_fullScreenElement;
     Vector<RefPtr<Element> > m_fullScreenElementStack;
@@ -1516,7 +1509,6 @@ private:
     bool m_isAnimatingFullScreen;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
     Vector<RefPtr<Element> > m_topLayerElements;

@@ -231,10 +231,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 #endif
-#if ENABLE(FULLSCREEN_API)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
-#endif
 
     bool hasAttribute(const QualifiedName&) const;
     const AtomicString& getAttribute(const QualifiedName&) const;
@@ -575,7 +573,6 @@ public:
     virtual void buildPendingResource() { };
 #endif
 
-#if ENABLE(FULLSCREEN_API)
     enum {
         ALLOW_KEYBOARD_INPUT = 1 << 0,
         LEGACY_MOZILLA_REQUEST = 1 << 1,
@@ -588,7 +585,6 @@ public:
 
     // W3C API
     void webkitRequestFullscreen();
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
     bool isInTopLayer() const;

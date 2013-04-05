@@ -377,10 +377,8 @@ public:
     virtual bool isVideo() const { return false; }
     virtual bool isWidget() const { return false; }
     virtual bool isCanvas() const { return false; }
-#if ENABLE(FULLSCREEN_API)
     virtual bool isRenderFullScreen() const { return false; }
     virtual bool isRenderFullScreenPlaceholder() const { return false; }
-#endif
 
     virtual bool isRenderGrid() const { return false; }
 
@@ -518,10 +516,8 @@ public:
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709. 
         return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread()
-#if ENABLE(FULLSCREEN_API)
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder()
-#endif
 #if ENABLE(MATHML)
             && !isRenderMathMLBlock()
 #endif

@@ -1040,12 +1040,10 @@ String RenderThemeWin::extraMediaControlsStyleSheet()
     return String(mediaControlsQuickTimeUserAgentStyleSheet, sizeof(mediaControlsQuickTimeUserAgentStyleSheet));
 }
 
-#if ENABLE(FULLSCREEN_API)
 String RenderThemeWin::extraFullScreenStyleSheet()
 {
     return String(fullscreenQuickTimeUserAgentStyleSheet, sizeof(fullscreenQuickTimeUserAgentStyleSheet));
 }
-#endif
 
 bool RenderThemeWin::supportsClosedCaptioning() const
 {

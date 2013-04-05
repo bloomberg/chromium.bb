@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(FULLSCREEN_API)
-
 #include "RenderFullScreen.h"
 
 #include "RenderLayer.h"
@@ -190,5 +188,3 @@ void RenderFullScreen::createPlaceholder(PassRefPtr<RenderStyle> style, const La
     } else
         m_placeholder->setStyle(style);
 }
-
-#endif

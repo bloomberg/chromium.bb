@@ -137,9 +137,7 @@ WebString WebElement::computeInheritedLanguage() const
 
 void WebElement::requestFullScreen()
 {
-#if ENABLE(FULLSCREEN_API)
     unwrap<Element>()->webkitRequestFullScreen(Element::ALLOW_KEYBOARD_INPUT);
-#endif
 }
 
 WebDocument WebElement::document() const

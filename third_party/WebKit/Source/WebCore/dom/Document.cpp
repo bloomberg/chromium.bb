@@ -135,6 +135,7 @@
 #include "QualifiedName.h"
 #include "RegisteredEventListener.h"
 #include "RenderArena.h"
+#include "RenderFullScreen.h"
 #include "RenderNamedFlowThread.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
@@ -217,10 +218,6 @@
 #include "MathMLElement.h"
 #include "MathMLElementFactory.h"
 #include "MathMLNames.h"
-#endif
-
-#if ENABLE(FULLSCREEN_API)
-#include "RenderFullScreen.h"
 #endif
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
@@ -465,12 +462,10 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
     , m_idAttributeName(idAttr)
-#if ENABLE(FULLSCREEN_API)
     , m_areKeysEnabledInFullScreen(0)
     , m_fullScreenRenderer(0)
     , m_fullScreenChangeDelayTimer(this, &Document::fullScreenChangeDelayTimerFired)
     , m_isAnimatingFullScreen(false)
-#endif
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_referrerPolicy(ReferrerPolicyDefault)
@@ -572,7 +567,6 @@ static void histogramMutationEventUsage(const unsigned short& listenerTypes)
     HistogramSupport::histogramEnumeration("DOMAPI.PerDocumentMutationEventUsage.DOMCharacterDataModified", static_cast<bool>(listenerTypes & Document::DOMCHARACTERDATAMODIFIED_LISTENER), 2);
 }
 
-#if ENABLE(FULLSCREEN_API)
 static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, const WebCore::QualifiedName& prefixedAttribute, const HTMLFrameOwnerElement* owner)
 {
     if (!owner)
@@ -583,7 +577,6 @@ static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, cons
     } while ((owner = owner->document()->ownerElement()));
     return true;
 }
-#endif
 
 Document::~Document()
 {
@@ -672,10 +665,8 @@ void Document::dispose()
     m_documentElement = 0;
     m_contextFeatures = ContextFeatures::defaultSwitch();
     m_userActionElements.documentDidRemoveLastRef();
-#if ENABLE(FULLSCREEN_API)
     m_fullScreenElement = 0;
     m_fullScreenElementStack.clear();
-#endif
 
     detachParser();
 
@@ -2092,10 +2083,8 @@ void Document::detach()
 
     stopActiveDOMObjects();
     m_eventQueue->close();
-#if ENABLE(FULLSCREEN_API)
     m_fullScreenChangeEventTargetQueue.clear();
     m_fullScreenErrorEventTargetQueue.clear();
-#endif
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     // FIXME: consider using ActiveDOMObject.
@@ -2122,10 +2111,8 @@ void Document::detach()
     // indicate destruction mode,  i.e. attached() but renderer == 0
     setRenderer(0);
     
-#if ENABLE(FULLSCREEN_API)
     if (m_fullScreenRenderer)
         setFullScreenRenderer(0);
-#endif
 
     m_hoverNode = 0;
     m_focusedNode = 0;
@@ -5041,7 +5028,6 @@ MediaCanStartListener* Document::takeAnyMediaCanStartListener()
     return listener;
 }
 
-#if ENABLE(FULLSCREEN_API)
 bool Document::fullScreenIsAllowedForElement(Element* element) const
 {
     ASSERT(element);
@@ -5528,7 +5514,6 @@ void Document::addDocumentToFullScreenChangeEventQueue(Document* doc)
         target = doc;
     m_fullScreenChangeEventTargetQueue.append(target);
 }
-#endif
 
 #if ENABLE(DIALOG_ELEMENT)
 void Document::addToTopLayer(Element* element)
@@ -6073,7 +6058,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_renderer, "renderer");
     info.addMember(m_weakFactory, "weakFactory");
     info.addMember(m_idAttributeName, "idAttributeName");
-#if ENABLE(FULLSCREEN_API)
     info.addMember(m_fullScreenElement, "fullScreenElement");
     info.addMember(m_fullScreenElementStack, "fullScreenElementStack");
     info.addMember(m_fullScreenRenderer, "fullScreenRenderer");
@@ -6081,7 +6065,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_fullScreenChangeEventTargetQueue, "fullScreenChangeEventTargetQueue");
     info.addMember(m_fullScreenErrorEventTargetQueue, "fullScreenErrorEventTargetQueue");
     info.addMember(m_savedPlaceholderRenderStyle, "savedPlaceholderRenderStyle");
-#endif
 #if ENABLE(DIALOG_ELEMENT)
     info.addMember(m_topLayerElements, "topLayerElements");
 #endif

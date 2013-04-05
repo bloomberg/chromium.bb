@@ -169,9 +169,7 @@ bool RuntimeEnabledFeatures::openDatabaseSyncEnabled()
 bool RuntimeEnabledFeatures::isQuotaEnabled = false;
 #endif
 
-#if ENABLE(FULLSCREEN_API)
 bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
-#endif
 
 #if ENABLE(MEDIA_SOURCE)
 bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;

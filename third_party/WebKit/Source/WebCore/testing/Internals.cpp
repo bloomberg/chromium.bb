@@ -1846,7 +1846,6 @@ void Internals::setFooterHeight(Document* document, float height)
     frameView->setFooterHeight(height);
 }
 
-#if ENABLE(FULLSCREEN_API)
 void Internals::webkitWillEnterFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
@@ -1874,7 +1873,6 @@ void Internals::webkitDidExitFullScreenForElement(Document* document, Element* e
         return;
     document->webkitDidExitFullScreenForElement(element);
 }
-#endif
 
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
 {

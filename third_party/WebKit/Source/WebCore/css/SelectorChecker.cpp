@@ -672,7 +672,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     break;
                 return true;
             }
-#if ENABLE(FULLSCREEN_API)
         case CSSSelector::PseudoFullScreen:
             // While a Document is in the fullscreen state, and the document's current fullscreen
             // element is an element in the document, the 'full-screen' pseudoclass applies to
@@ -695,7 +694,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             if (!element->document()->webkitIsFullScreen())
                 return false;
             return true;
-#endif
 #if ENABLE(IFRAME_SEAMLESS)
         case CSSSelector::PseudoSeamlessDocument:
             // While a document is rendered in a seamless iframe, the 'seamless-document' pseudoclass applies

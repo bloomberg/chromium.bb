@@ -43,7 +43,7 @@ static inline bool inTheSameScope(ShadowRoot* shadowRoot, EventTarget* target)
 
 static inline EventDispatchBehavior determineDispatchBehavior(Event* event, ShadowRoot* shadowRoot, EventTarget* target)
 {
-#if ENABLE(FULLSCREEN_API) && ENABLE(VIDEO)
+#if ENABLE(VIDEO)
     // Video-only full screen is a mode where we use the shadow DOM as an implementation
     // detail that should not be detectable by the web content.
     if (Element* element = target->toNode()->document()->webkitCurrentFullScreenElement()) {

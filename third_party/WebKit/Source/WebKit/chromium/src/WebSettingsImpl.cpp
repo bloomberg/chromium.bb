@@ -578,11 +578,7 @@ void WebSettingsImpl::setMinimumTimerInterval(double interval)
 
 void WebSettingsImpl::setFullScreenEnabled(bool enabled)
 {
-#if ENABLE(FULLSCREEN_API)
     m_settings->setFullScreenEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 void WebSettingsImpl::setAllowDisplayOfInsecureContent(bool enabled)

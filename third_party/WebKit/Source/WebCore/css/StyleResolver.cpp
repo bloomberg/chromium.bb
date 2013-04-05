@@ -704,10 +704,8 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
         return false;
 #endif
 
-#if ENABLE(FULLSCREEN_API)
     if (element == element->document()->webkitCurrentFullScreenElement() || state.element() == state.document()->webkitCurrentFullScreenElement())
         return false;
-#endif
     return true;
 }
 

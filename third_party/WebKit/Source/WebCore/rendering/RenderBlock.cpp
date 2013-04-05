@@ -815,11 +815,9 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
             // there is an anonymous container within this object that contains the beforeChild.
             RenderObject* beforeChildAnonymousContainer = beforeChildContainer;
             if (beforeChildAnonymousContainer->isAnonymousBlock()
-#if ENABLE(FULLSCREEN_API)
                 // Full screen renderers and full screen placeholders act as anonymous blocks, not tables:
                 || beforeChildAnonymousContainer->isRenderFullScreen()
                 || beforeChildAnonymousContainer->isRenderFullScreenPlaceholder()
-#endif
                 ) {
                 // Insert the child into the anonymous block box instead of here.
                 if (newChild->isInline() || beforeChild->parent()->firstChild() != beforeChild)

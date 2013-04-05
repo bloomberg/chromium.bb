@@ -383,7 +383,6 @@ String RenderThemeMac::extraMediaControlsStyleSheet()
     return String();
 }
 
-#if ENABLE(FULLSCREEN_API)
 String RenderThemeMac::extraFullScreenStyleSheet()
 {
     if (mediaControllerTheme() == MediaControllerThemeQuickTime)
@@ -391,7 +390,6 @@ String RenderThemeMac::extraFullScreenStyleSheet()
 
     return String();
 }
-#endif
 
 bool RenderThemeMac::hasOwnDisabledStateHandlingFor(ControlPart part) const
 {

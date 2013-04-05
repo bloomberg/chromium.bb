@@ -37,11 +37,8 @@
 #include "MediaPlayer.h"
 #include "Page.h"
 #include "PaintInfo.h"
-#include "RenderView.h"
-
-#if ENABLE(FULLSCREEN_API)
 #include "RenderFullScreen.h"
-#endif
+#include "RenderView.h"
 
 namespace WebCore {
 
@@ -295,7 +292,6 @@ void RenderVideo::acceleratedRenderingStateChanged()
 }
 #endif  // USE(ACCELERATED_COMPOSITING)
 
-#if ENABLE(FULLSCREEN_API)
 static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
 {
     RenderObject* parent = renderer->parent();
@@ -336,7 +332,6 @@ LayoutUnit RenderVideo::offsetHeight() const
         return block->offsetHeight();
     return RenderMedia::offsetHeight();
 }
-#endif
 
 } // namespace WebCore
 

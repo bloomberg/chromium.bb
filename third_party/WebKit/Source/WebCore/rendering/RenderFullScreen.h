@@ -25,8 +25,6 @@
 #ifndef RenderFullScreen_h
 #define RenderFullScreen_h
 
-#if ENABLE(FULLSCREEN_API)
-
 #include "RenderFlexibleBox.h"
 #include "StyleInheritedData.h"
 
@@ -64,7 +62,5 @@ inline RenderFullScreen* toRenderFullScreen(RenderObject* object)
 // This will catch anyone doing an unnecessary cast:
 void toRenderFullScreen(RenderFullScreen*);
 }
-
-#endif
 
 #endif

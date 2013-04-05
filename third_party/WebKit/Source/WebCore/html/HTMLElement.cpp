@@ -256,10 +256,8 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
         attributeNameToEventNameMap.set(ontouchmoveAttr.localName(), eventNames().touchmoveEvent);
         attributeNameToEventNameMap.set(ontouchendAttr.localName(), eventNames().touchendEvent);
         attributeNameToEventNameMap.set(ontouchcancelAttr.localName(), eventNames().touchcancelEvent);
-#if ENABLE(FULLSCREEN_API)
         attributeNameToEventNameMap.set(onwebkitfullscreenchangeAttr.localName(), eventNames().webkitfullscreenchangeEvent);
         attributeNameToEventNameMap.set(onwebkitfullscreenerrorAttr.localName(), eventNames().webkitfullscreenerrorEvent);
-#endif
         attributeNameToEventNameMap.set(onabortAttr.localName(), eventNames().abortEvent);
         attributeNameToEventNameMap.set(oncanplayAttr.localName(), eventNames().canplayEvent);
         attributeNameToEventNameMap.set(oncanplaythroughAttr.localName(), eventNames().canplaythroughEvent);

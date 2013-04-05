@@ -208,11 +208,9 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     if (m_node->isInShadowTree())
         return;
 
-#if ENABLE(FULLSCREEN_API)
     Document* document = m_node->document();
     if (document->webkitIsFullScreen() && document->webkitCurrentFullScreenElement() == m_node)
         return;
-#endif
 
 #if ENABLE(SVG)
     // Allow only svg root elements to be directly collected by a render flow thread.
@@ -273,13 +271,12 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     element->setRenderer(newRenderer);
     newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
 
-#if ENABLE(FULLSCREEN_API)
     if (document->webkitIsFullScreen() && document->webkitCurrentFullScreenElement() == element) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, document);
         if (!newRenderer)
             return;
     }
-#endif
+
     // Note: Adding newRenderer instead of renderer(). renderer() may be a child of newRenderer.
     parentRenderer->addChild(newRenderer, nextRenderer);
 }

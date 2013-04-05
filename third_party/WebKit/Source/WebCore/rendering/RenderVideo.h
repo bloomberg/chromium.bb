@@ -74,12 +74,10 @@ private:
     virtual LayoutUnit computeReplacedLogicalHeight() const;
     virtual LayoutUnit minimumReplacedHeight() const OVERRIDE;
 
-#if ENABLE(FULLSCREEN_API)
     virtual LayoutUnit offsetLeft() const;
     virtual LayoutUnit offsetTop() const;
     virtual LayoutUnit offsetWidth() const;
     virtual LayoutUnit offsetHeight() const;
-#endif
 
     void updatePlayer();
 

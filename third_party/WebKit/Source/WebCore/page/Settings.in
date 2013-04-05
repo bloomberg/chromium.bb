@@ -115,7 +115,7 @@ antialiased2dCanvasEnabled initial=true
 loadDeferringEnabled initial=true
 webAudioEnabled initial=false
 paginateDuringLayoutEnabled initial=false
-fullScreenEnabled initial=false, conditional=FULLSCREEN_API
+fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
 memoryInfoEnabled initial=false
 quantizedMemoryInfoEnabled initial=false
