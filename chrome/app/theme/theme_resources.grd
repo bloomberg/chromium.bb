@@ -674,6 +674,7 @@
       <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="common/favicon_sad_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="sadtab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" />
+      <structure type="chrome_scaled_image" name="IDR_SCREENSHOT_NOTIFICATION_ICON" file="common/notification_screenshot_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_SCRIPT_BUBBLE" file="common/favicon_extensions.png" />
       <if expr="pp_ifdef('enable_settings_app')">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_128" file="settings_app_icon_128.png" />

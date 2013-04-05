@@ -365,8 +365,8 @@ std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
   const ExtensionURLInfo url(notification().origin_url());
   const ExtensionService* service = profile()->GetExtensionService();
-  const extensions::Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
+  const extensions::Extension* extension = service ?
+      service->extensions()->GetExtensionOrAppByURL(url) : NULL;
   return extension ? extension->id() : std::string();
 }
 

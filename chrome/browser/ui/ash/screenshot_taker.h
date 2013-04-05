@@ -8,16 +8,49 @@
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
-#include "ui/compositor/layer.h"
 
+class Profile;
+
+namespace ash {
+namespace test {
+class ScreenshotTakerTest;
+}
+}
 namespace aura {
 class Window;
-}  // namespace aura
+}
+
+class ScreenshotTakerObserver {
+ public:
+  enum Result {
+    SCREENSHOT_SUCCESS = 0,
+    SCREENSHOT_GRABWINDOW_PARTIAL_FAILED,
+    SCREENSHOT_GRABWINDOW_FULL_FAILED,
+    SCREENSHOT_CREATE_DIR_FAILED,
+    SCREENSHOT_GET_DIR_FAILED,
+    SCREENSHOT_CHECK_DIR_FAILED,
+    SCREENSHOT_CREATE_FILE_FAILED,
+    SCREENSHOT_WRITE_FILE_FAILED,
+    SCREENSHOT_RESULT_COUNT
+  };
+
+  virtual void OnScreenshotCompleted(
+      Result screenshot_result,
+      const base::FilePath& screenshot_path) = 0;
+
+ protected:
+  virtual ~ScreenshotTakerObserver() {}
+};
 
 class ScreenshotTaker : public ash::ScreenshotDelegate {
  public:
-  ScreenshotTaker();
+  explicit ScreenshotTaker(Profile* profile);
+
   virtual ~ScreenshotTaker();
 
   // Overridden from ash::ScreenshotDelegate:
@@ -26,20 +59,30 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
                                            const gfx::Rect& rect) OVERRIDE;
   virtual bool CanTakeScreenshot() OVERRIDE;
 
- private:
-  // Flashes the screen to provide visual feedback that a screenshot has
-  // been taken.
-  void DisplayVisualFeedback(const gfx::Rect& rect);
+  void ShowNotification(
+      ScreenshotTakerObserver::Result screenshot_result,
+      const base::FilePath& screenshot_path);
 
-  // Closes the visual feedback layer.
-  void CloseVisualFeedbackLayer();
+  void AddObserver(ScreenshotTakerObserver* observer);
+  void RemoveObserver(ScreenshotTakerObserver* observer);
+  bool HasObserver(ScreenshotTakerObserver* observer) const;
+
+ private:
+  friend class ash::test::ScreenshotTakerTest;
+
+  void SetScreenshotDirectoryForTest(const base::FilePath& directory);
+  void SetScreenshotBasenameForTest(const std::string& basename);
+
+  Profile* profile_;
+
+  base::WeakPtrFactory<ScreenshotTaker> factory_;
 
   // The timestamp when the screenshot task was issued last time.
   base::Time last_screenshot_timestamp_;
 
-  // The flashing effect of the screen for the visual feedback when taking a
-  // screenshot.
-  scoped_ptr<ui::Layer> visual_feedback_layer_;
+  ObserverList<ScreenshotTakerObserver> observers_;
+  base::FilePath screenshot_directory_for_test_;
+  std::string screenshot_basename_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);
 };
