@@ -4066,8 +4066,6 @@
             'platform/graphics/opentype/OpenTypeUtilities.h',
             'platform/graphics/opentype/OpenTypeVerticalData.cpp',
             'platform/graphics/opentype/OpenTypeVerticalData.h',
-            'platform/graphics/skia/BitmapImageSingleFrameSkia.cpp',
-            'platform/graphics/skia/BitmapImageSingleFrameSkia.h',
             'platform/graphics/skia/FloatPointSkia.cpp',
             'platform/graphics/skia/FloatRectSkia.cpp',
             'platform/graphics/skia/FontCacheSkia.cpp',
