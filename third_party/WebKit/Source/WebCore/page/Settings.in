@@ -41,10 +41,6 @@ defaultFixedFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
 editingBehaviorType type=EditingBehaviorType, initial=editingBehaviorTypeForPlatform()
 maximumHTMLParserDOMTreeDepth type=unsigned, initial=defaultMaximumHTMLParserDOMTreeDepth
 
-# This setting only affects site icon image loading if loadsImagesAutomatically setting is false and this setting is true.
-# All other permutations still heed loadsImagesAutomatically setting.
-loadsSiteIconsIgnoringImageLoadingSetting initial=false
-
 caretBrowsingEnabled initial=false
 localStorageEnabled initial=false
 allowUniversalAccessFromFileURLs initial=true
