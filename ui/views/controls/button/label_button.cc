@@ -35,13 +35,14 @@ const char LabelButton::kViewClassName[] = "views/LabelButton";
 LabelButton::LabelButton(ButtonListener* listener, const string16& text)
     : CustomButton(listener),
       image_(new ImageView()),
-      label_(new Label(text)),
+      label_(new Label()),
       button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
       is_default_(false),
       style_(STYLE_TEXTBUTTON) {
   SetAnimationDuration(kHoverAnimationDurationMs);
+  SetText(text);
 
   AddChildView(image_);
   image_->set_interactive(false);
@@ -74,6 +75,7 @@ const string16& LabelButton::GetText() const {
 }
 
 void LabelButton::SetText(const string16& text) {
+  SetAccessibleName(text);
   label_->SetText(text);
   SetAccessibleName(text);
 }
