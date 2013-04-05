@@ -950,26 +950,6 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
-  // Swipe up yet again to show it.
-  end.set_y(start.y() + 100);
-  generator.GestureScrollSequence(end, start,
-      base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-
-  // Tap on the shelf itself. This should not change anything.
-  generator.GestureTapAt(start);
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-
-  // Now, tap on the desktop region (above the shelf). This should hide the
-  // shelf.
-  gfx::Point tap = start + gfx::Vector2d(0, -90);
-  generator.GestureTapAt(tap);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
-
   // Make the window fullscreen.
   widget->SetFullscreen(true);
   gfx::Rect bounds_fullscreen = window->bounds();
