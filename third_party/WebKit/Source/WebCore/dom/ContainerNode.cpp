@@ -41,7 +41,6 @@
 #include "MutationEvent.h"
 #include "NodeRenderStyle.h"
 #include "NodeTraversal.h"
-#include "ResourceLoadScheduler.h"
 #include "Page.h"
 #include "RenderBox.h"
 #include "RenderTheme.h"
@@ -728,7 +727,6 @@ void ContainerNode::suspendPostAttachCallbacks()
                 s_shouldReEnableMemoryCacheCallsAfterAttach = true;
             }
         }
-        resourceLoadScheduler()->suspendPendingRequests();
     }
     ++s_attachDepth;
 }
@@ -745,7 +743,6 @@ void ContainerNode::resumePostAttachCallbacks()
             if (Page* page = document()->page())
                 page->setMemoryCacheClientCallsEnabled(true);
         }
-        resourceLoadScheduler()->resumePendingRequests();
     }
     --s_attachDepth;
 }

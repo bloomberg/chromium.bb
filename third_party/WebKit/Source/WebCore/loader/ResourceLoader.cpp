@@ -43,7 +43,6 @@
 #include "ResourceBuffer.h"
 #include "ResourceError.h"
 #include "ResourceHandle.h"
-#include "ResourceLoadScheduler.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "SharedBuffer.h"
@@ -91,7 +90,6 @@ void ResourceLoader::releaseResources()
     m_reachedTerminalState = true;
 
     m_identifier = 0;
-    resourceLoadScheduler()->remove(this);
 
     if (m_handle) {
         // Clear out the ResourceHandle's client so that it doesn't try to call
@@ -246,9 +244,6 @@ void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceRes
     else
         InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
 
-    if (!redirectResponse.isNull()) {
-        resourceLoadScheduler()->crossOriginRedirectReceived(this, request.url());
-    }
     m_request = request;
 
     if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())

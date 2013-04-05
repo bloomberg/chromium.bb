@@ -2045,7 +2045,6 @@
             'loader/ProgressTracker.cpp',
             'loader/ResourceBuffer.cpp',
             'loader/ResourceLoadNotifier.cpp',
-            'loader/ResourceLoadScheduler.cpp',
             'loader/ResourceLoader.cpp',
             'loader/ResourceLoaderOptions.h',
             'loader/ResourceLoaderTypes.h',

@@ -56,6 +56,8 @@ public:
 
     virtual bool init(const ResourceRequest&);
 
+    void start();
+
     FrameLoader* frameLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
@@ -154,11 +156,6 @@ public:
 
 protected:
     ResourceLoader(Frame*, ResourceLoaderOptions);
-
-    friend class ResourceLoadScheduler; // for access to start()
-    // start() actually sends the load to the network (unless the load is being
-    // deferred) and should only be called by ResourceLoadScheduler or setDefersLoading().
-    void start();
 
     void didFinishLoadingOnePart(double finishTime);
 

@@ -48,7 +48,6 @@
 #include "Logging.h"
 #include "MemoryCache.h"
 #include "PingLoader.h"
-#include "ResourceLoadScheduler.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -805,8 +804,6 @@ void CachedResourceLoader::garbageCollectDocumentResources()
 void CachedResourceLoader::performPostLoadActions()
 {
     checkForPendingPreloads();
-
-    resourceLoadScheduler()->servePendingRequests();
 }
 
 void CachedResourceLoader::notifyLoadedFromMemoryCache(CachedResource* resource)

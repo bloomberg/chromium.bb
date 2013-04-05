@@ -41,7 +41,6 @@
 #include "PurgeableBuffer.h"
 #include "ResourceBuffer.h"
 #include "ResourceHandle.h"
-#include "ResourceLoadScheduler.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "SubresourceLoader.h"
@@ -353,13 +352,14 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
         m_fragmentIdentifierForRequest = String();
     }
 
-    m_loader = resourceLoadScheduler()->scheduleSubresourceLoad(cachedResourceLoader->frame(), this, request, request.priority(), options);
+    m_loader = SubresourceLoader::create(cachedResourceLoader->frame(), this, request, options);
 
     if (!m_loader) {
         failBeforeStarting();
         return;
     }
 
+    m_loader->start();
     m_status = Pending;
 }
 
