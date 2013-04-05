@@ -770,6 +770,7 @@ class AUTestStageTest(AbstractStageTest,
     self.StartPatcher(self.archive_mock)
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
+    self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '0.0.1')
     self.suite_config = self.build_config['hw_tests'][0]
