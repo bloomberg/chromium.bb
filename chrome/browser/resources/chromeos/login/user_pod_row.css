@@ -8,17 +8,24 @@
 podrow {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  -webkit-transition: width 180ms ease;
+  /* Temporarily disabled because animation interferes with updating screen's
+   size. */
+  /* -webkit-transition: width 180ms ease; */
   display: -webkit-box;
   max-height: 650px;
-  overflow: hidden;
-  padding: 23px 15px;
-  position: relative;
-  width: 1152px;
+  overflow: visible;
 }
 
 podrow[ncolumns='4'] {
-  width: 900px;
+  width: 880px;
+}
+
+podrow[ncolumns='5'] {
+  width: 1100px;
+}
+
+podrow[ncolumns='6'] {
+  width: 1152px;
 }
 
 /* Hide the pod row while images are loading. */

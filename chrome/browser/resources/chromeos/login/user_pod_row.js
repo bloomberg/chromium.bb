@@ -8,13 +8,6 @@
 
 cr.define('login', function() {
   /**
-   * Pod width. 170px Pod + 10px padding + 10px margin on both sides.
-   * @type {number}
-   * @const
-   */
-  var POD_WIDTH = 170 + 2 * (10 + 10);
-
-  /**
    * Number of displayed columns depending on user pod count.
    * @type {Array.<number>}
    * @const
@@ -983,6 +976,9 @@ cr.define('login', function() {
       this.removeEventListener('mouseout', this.deferredResizeListener_);
       this.columns = columns;
       this.rows = rows;
+      if (this.parentNode == Oobe.getInstance().currentScreen) {
+        Oobe.getInstance().updateScreenSize(this.parentNode);
+      }
     },
 
     /**
