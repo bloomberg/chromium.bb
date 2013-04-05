@@ -1177,11 +1177,6 @@
         'browser/tracing/tracing_ui.cc',
         'browser/tracing/tracing_ui.h',
       ],
-    }, { # OS!="android"
-      'dependencies': [
-        '../third_party/flac/flac.gyp:libflac',
-        '../third_party/speex/speex.gyp:libspeex',
-      ],
     }],
     ['OS=="mac"', {
       'sources': [
@@ -1300,6 +1295,11 @@
     ['input_speech==0', {
       'sources/': [
         ['exclude', '^browser/speech/'],
+      ],
+    }, {  # input_speech==1
+      'dependencies': [
+        '../third_party/flac/flac.gyp:libflac',
+        '../third_party/speex/speex.gyp:libspeex',
       ],
     }],
     ['linux_use_libgps==1', {
