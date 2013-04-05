@@ -75,7 +75,7 @@
               'CRASH=__debugbreak',
             ],
             'include_dirs': [
-              '../../JavaScriptCore/os-win32',
+              '../wtf/os-win32',
             ],
           }],
           ['OS=="mac"', {
