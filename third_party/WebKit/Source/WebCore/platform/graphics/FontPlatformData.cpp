@@ -48,8 +48,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 #endif
 #if USE(CG) && PLATFORM(WIN)
     , m_cgFont(0)
-#elif USE(CAIRO)
-    , m_scaledFont(hashTableDeletedFontValue())
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
@@ -73,8 +71,6 @@ FontPlatformData::FontPlatformData()
 #endif
 #if USE(CG) && PLATFORM(WIN)
     , m_cgFont(0)
-#elif USE(CAIRO)
-    , m_scaledFont(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
@@ -98,8 +94,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
 #endif
 #if USE(CG) && PLATFORM(WIN)
     , m_cgFont(0)
-#elif USE(CAIRO)
-    , m_scaledFont(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)

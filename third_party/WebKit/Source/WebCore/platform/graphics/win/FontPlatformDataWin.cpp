@@ -44,8 +44,6 @@ FontPlatformData::FontPlatformData(HFONT font, float size, bool bold, bool obliq
     , m_widthVariant(RegularWidth)
 #if USE(CG)
     , m_cgFont(0)
-#elif USE(CAIRO)
-    , m_scaledFont(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_syntheticBold(bold)

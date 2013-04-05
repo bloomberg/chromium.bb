@@ -28,8 +28,6 @@
 
 #if USE(CG)
 #include "GraphicsContextPlatformPrivateCG.h"
-#elif USE(CAIRO)
-#include "GraphicsContextPlatformPrivateCairo.h"
 #endif
 
 #include "AffineTransform.h"

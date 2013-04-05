@@ -193,13 +193,13 @@
 #endif /* PLATFORM(MAC) && !PLATFORM(IOS) */
 
 /* --------- Apple Windows port --------- */
-#if PLATFORM(WIN) && !OS(WINCE) && !PLATFORM(WIN_CAIRO)
+#if PLATFORM(WIN) && !OS(WINCE)
 
 #if !defined(ENABLE_WEB_ARCHIVE)
 #define ENABLE_WEB_ARCHIVE 1
 #endif
 
-#endif /* PLATFORM(WIN) && !OS(WINCE) && !PLATFORM(WIN_CAIRO) */
+#endif /* PLATFORM(WIN) && !OS(WINCE) */
 
 /* --------- WinCE port --------- */
 /* WinCE port is a specialization of PLATFORM(WIN). */
@@ -219,17 +219,6 @@
 #endif
 
 #endif /* PLATFORM(WIN) && OS(WINCE) */
-
-/* --------- Windows CAIRO port --------- */
-/* PLATFORM(WIN_CAIRO) is a specialization of PLATFORM(WIN). */
-/* PLATFORM(WIN) is always enabled when PLATFORM(WIN_CAIRO) is enabled. */
-#if PLATFORM(WIN_CAIRO)
-
-#if !defined(ENABLE_WEB_ARCHIVE)
-#define ENABLE_WEB_ARCHIVE 1
-#endif
-
-#endif /* PLATFORM(WIN_CAIRO) */
 
 /* --------- WX port (Mac OS and Windows) --------- */
 #if PLATFORM(WX)

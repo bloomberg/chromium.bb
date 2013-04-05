@@ -38,9 +38,6 @@
 #if USE(CG)
 typedef struct CGPattern* CGPatternRef;
 typedef CGPatternRef PlatformPatternPtr;
-#elif USE(CAIRO)
-#include <cairo.h>
-typedef cairo_pattern_t* PlatformPatternPtr;
 #elif USE(SKIA)
 class SkShader;
 typedef SkShader* PlatformPatternPtr;

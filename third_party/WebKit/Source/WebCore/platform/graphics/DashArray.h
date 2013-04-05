@@ -30,8 +30,6 @@
 
 #if USE(CG)
 typedef CGFloat DashArrayElement;
-#elif USE(CAIRO)
-typedef double DashArrayElement;
 #else
 typedef float DashArrayElement;
 #endif

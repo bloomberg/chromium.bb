@@ -42,8 +42,6 @@ QT_END_NAMESPACE
 typedef struct HBITMAP__* HBITMAP;
 #elif PLATFORM(CHROMIUM)
 #include "DragImageRef.h"
-#elif PLATFORM(GTK)
-typedef struct _cairo_surface cairo_surface_t;
 #endif
 
 //We need to #define YOffset as it needs to be shared with WebKit
@@ -63,8 +61,6 @@ namespace WebCore {
     typedef QPixmap* DragImageRef;
 #elif PLATFORM(WIN)
     typedef HBITMAP DragImageRef;
-#elif PLATFORM(GTK)
-    typedef cairo_surface_t* DragImageRef;
 #elif PLATFORM(EFL) || PLATFORM(BLACKBERRY)
     typedef void* DragImageRef;
 #endif

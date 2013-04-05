@@ -36,8 +36,6 @@ typedef struct CGImage* CGImageRef;
 QT_BEGIN_NAMESPACE
 class QPixmap;
 QT_END_NAMESPACE
-#elif USE(CAIRO)
-#include "NativeImageCairo.h"
 #elif USE(SKIA)
 #include "NativeImageSkia.h"
 namespace WebCore {
@@ -60,8 +58,6 @@ typedef QPixmap* NativeImagePtr;
 #elif PLATFORM(OPENVG)
 class TiledImageOpenVG;
 typedef TiledImageOpenVG* NativeImagePtr;
-#elif USE(CAIRO)
-typedef WebCore::NativeImageCairo* NativeImagePtr;
 #elif USE(SKIA)
 typedef WebCore::NativeImageSkia* NativeImagePtr;
 void reportMemoryUsage(const NativeImageSkia*, WTF::MemoryObjectInfo*);

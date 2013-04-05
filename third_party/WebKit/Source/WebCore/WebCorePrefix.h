@@ -134,10 +134,6 @@ _LIBCPP_END_NAMESPACE_STD
 
 #if !PLATFORM(WX)
 #include <CoreFoundation/CoreFoundation.h>
-#if PLATFORM(WIN_CAIRO)
-#include <ConditionalMacros.h>
-#include <windows.h>
-#else
 
 #if OS(WINDOWS)
 #if USE(CG)
@@ -161,7 +157,6 @@ _LIBCPP_END_NAMESPACE_STD
 #endif // !PLATFORM(IOS)
 #endif // OS(WINDOWS)
 
-#endif
 #endif // !PLATFORM(WX)
 
 #ifdef __OBJC__

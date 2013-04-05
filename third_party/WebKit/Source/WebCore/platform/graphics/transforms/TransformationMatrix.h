@@ -40,8 +40,6 @@ typedef struct _CoglMatrix CoglMatrix;
 #endif
 #if USE(CG)
 typedef struct CGAffineTransform CGAffineTransform;
-#elif USE(CAIRO)
-#include <cairo.h>
 #elif PLATFORM(OPENVG)
 #include "VGUtils.h"
 #elif PLATFORM(QT)
@@ -345,8 +343,6 @@ public:
 #if USE(CG)
     TransformationMatrix(const CGAffineTransform&);
     operator CGAffineTransform() const;
-#elif USE(CAIRO)
-    operator cairo_matrix_t() const;
 #elif PLATFORM(OPENVG)
     operator VGMatrix() const;
 #elif PLATFORM(QT)

@@ -47,9 +47,6 @@ QT_BEGIN_NAMESPACE
 class QGradient;
 QT_END_NAMESPACE
 typedef QGradient* PlatformGradient;
-#elif USE(CAIRO)
-typedef struct _cairo_pattern cairo_pattern_t;
-typedef cairo_pattern_t* PlatformGradient;
 #elif USE(SKIA)
 class SkShader;
 typedef class SkShader* PlatformGradient;
@@ -168,8 +165,6 @@ namespace WebCore {
 #if USE(CG)
         void paint(CGContextRef);
         void paint(GraphicsContext*);
-#elif USE(CAIRO)
-        PlatformGradient platformGradient(float globalAlpha);
 #endif
 
     private:
@@ -198,11 +193,6 @@ namespace WebCore {
         mutable unsigned m_cachedHash;
 
         PlatformGradient m_gradient;
-
-#if USE(CAIRO)
-        float m_platformGradientAlpha;
-#endif
-
     };
 
 } //namespace

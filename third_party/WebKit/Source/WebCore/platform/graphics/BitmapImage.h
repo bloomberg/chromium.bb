@@ -155,10 +155,6 @@ public:
     virtual bool getHBITMAPOfSize(HBITMAP, LPSIZE);
 #endif
 
-#if USE(CAIRO)
-    static PassRefPtr<BitmapImage> create(cairo_surface_t*);
-#endif
-
 #if PLATFORM(GTK)
     virtual GdkPixbuf* getGdkPixbuf();
 #endif
@@ -195,7 +191,7 @@ protected:
     virtual void drawFrameMatchingSourceSize(GraphicsContext*, const FloatRect& dstRect, const IntSize& srcSize, ColorSpace styleColorSpace, CompositeOperator);
 #endif
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode);
-#if USE(CG) || PLATFORM(CHROMIUM) || USE(CAIRO) || PLATFORM(BLACKBERRY)
+#if USE(CG) || PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode, RespectImageOrientationEnum) OVERRIDE;
 #endif
 

@@ -34,8 +34,6 @@
 
 #if USE(CG)
 #include <CoreGraphics/CGAffineTransform.h>
-#elif USE(CAIRO)
-#include <cairo.h>
 #elif PLATFORM(OPENVG)
 #include "VGUtils.h"
 #elif PLATFORM(QT)
@@ -170,8 +168,6 @@ public:
 
 #if USE(CG)
     operator CGAffineTransform() const;
-#elif USE(CAIRO)
-    operator cairo_matrix_t() const;
 #elif PLATFORM(OPENVG)
     operator VGMatrix() const;
 #elif PLATFORM(QT)

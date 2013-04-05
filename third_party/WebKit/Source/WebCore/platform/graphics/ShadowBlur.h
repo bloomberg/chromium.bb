@@ -70,7 +70,7 @@ public:
 
     ShadowType type() const { return m_type; }
 
-#if PLATFORM(QT) || USE(CAIRO)
+#if PLATFORM(QT)
     bool mustUseShadowBlur(GraphicsContext*) const;
 #endif
 

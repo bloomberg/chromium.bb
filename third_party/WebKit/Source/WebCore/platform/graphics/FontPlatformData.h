@@ -43,11 +43,6 @@
 #include "RefCountedGDIHandle.h"
 #endif
 
-#if USE(CAIRO)
-#include <wtf/HashFunctions.h>
-#include <cairo.h>
-#endif
-
 #if OS(DARWIN)
 OBJC_CLASS NSFont;
 
@@ -116,9 +111,6 @@ public:
     FontPlatformData(HFONT, CGFontRef, float size, bool syntheticBold, bool syntheticOblique, bool useGDI);
 #endif
 #endif
-#if USE(CAIRO)
-    FontPlatformData(cairo_font_face_t*, float size, bool bold, bool italic);
-#endif
 
     ~FontPlatformData();
 
@@ -157,17 +149,13 @@ public:
 
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
-#if USE(CAIRO)
-    cairo_scaled_font_t* scaledFont() const { return m_scaledFont; }
-#endif
-
 #if PLATFORM(CHROMIUM) && OS(DARWIN)
     HarfBuzzFace* harfBuzzFace();
 #endif
 
     unsigned hash() const
     {
-#if PLATFORM(WIN) && !USE(CAIRO)
+#if PLATFORM(WIN)
         return m_font ? m_font->hash() : 0;
 #elif OS(DARWIN)
 #if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
@@ -175,8 +163,6 @@ public:
 #endif
         uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isPrinterFont << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
-#elif USE(CAIRO)
-        return PtrHash<cairo_scaled_font_t*>::hash(m_scaledFont);
 #endif
     }
 
@@ -199,16 +185,14 @@ public:
 
     bool isHashTableDeletedValue() const
     {
-#if PLATFORM(WIN) && !USE(CAIRO)
+#if PLATFORM(WIN)
         return m_font.isHashTableDeletedValue();
 #elif OS(DARWIN)
         return m_font == hashTableDeletedFontValue();
-#elif USE(CAIRO)
-        return m_scaledFont == hashTableDeletedFontValue();
 #endif
     }
 
-#if PLATFORM(WIN) && (USE(CG) || USE(CAIRO))
+#if PLATFORM(WIN) && USE(CG)
     PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
 #endif
 
@@ -233,10 +217,6 @@ private:
     void platformDataInit(HFONT, float size, HDC, WCHAR* faceName);
 #endif
 
-#if USE(CAIRO)
-    static cairo_scaled_font_t* hashTableDeletedFontValue() { return reinterpret_cast<cairo_scaled_font_t*>(-1); }
-#endif
-
 public:
     bool m_syntheticBold;
     bool m_syntheticOblique;
@@ -258,10 +238,6 @@ private:
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
 #endif
-#endif
-
-#if USE(CAIRO)
-    cairo_scaled_font_t* m_scaledFont;
 #endif
 
 #if PLATFORM(CHROMIUM) && OS(DARWIN)

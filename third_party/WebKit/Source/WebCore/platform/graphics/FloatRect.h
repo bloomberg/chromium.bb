@@ -60,10 +60,6 @@ class FloatRect;
 struct SkRect;
 #endif
 
-#if USE(CAIRO)
-typedef struct _cairo_rectangle cairo_rectangle_t;
-#endif
-
 namespace WebCore {
 
 #if PLATFORM(OPENVG)
@@ -215,11 +211,6 @@ public:
 
 #if PLATFORM(OPENVG)
     operator VGRect() const;
-#endif
-
-#if USE(CAIRO)
-    FloatRect(const cairo_rectangle_t&);
-    operator cairo_rectangle_t() const;
 #endif
 
 private:

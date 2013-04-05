@@ -43,18 +43,11 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#if USE(CAIRO)
-#include <cairo.h>
-#endif
-
 namespace WebCore {
 
 class SimpleFontData;
 
-#if USE(CAIRO)
-// FIXME: Why does Cairo use such a huge struct instead of just an offset into an array?
-typedef cairo_glyph_t GlyphBufferGlyph;
-#elif OS(WINCE)
+#if OS(WINCE)
 typedef wchar_t GlyphBufferGlyph;
 #elif PLATFORM(QT)
 typedef quint32 GlyphBufferGlyph;
@@ -131,11 +124,7 @@ public:
     
     Glyph glyphAt(int index) const
     {
-#if USE(CAIRO)
-        return m_glyphs[index].index;
-#else
         return m_glyphs[index];
-#endif
     }
 
     float advanceAt(int index) const
@@ -156,14 +145,7 @@ public:
     void add(Glyph glyph, const SimpleFontData* font, float width, const FloatSize* offset = 0)
     {
         m_fontData.append(font);
-
-#if USE(CAIRO)
-        cairo_glyph_t cairoGlyph;
-        cairoGlyph.index = glyph;
-        m_glyphs.append(cairoGlyph);
-#else
         m_glyphs.append(glyph);
-#endif
 
 #if USE(CG) || (OS(DARWIN) && PLATFORM(CHROMIUM))
         CGSize advance = { width, 0 };
@@ -190,14 +172,7 @@ public:
     void add(Glyph glyph, const SimpleFontData* font, GlyphBufferAdvance advance)
     {
         m_fontData.append(font);
-#if USE(CAIRO)
-        cairo_glyph_t cairoGlyph;
-        cairoGlyph.index = glyph;
-        m_glyphs.append(cairoGlyph);
-#else
         m_glyphs.append(glyph);
-#endif
-
         m_advances.append(advance);
     }
 #endif

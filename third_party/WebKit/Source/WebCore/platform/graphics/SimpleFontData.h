@@ -53,10 +53,6 @@
 #include <usp10.h>
 #endif
 
-#if USE(CAIRO)
-#include <cairo.h>
-#endif
-
 #if PLATFORM(QT)
 #include <QRawFont>
 #endif
@@ -150,7 +146,7 @@ public:
     float adjustedSpaceWidth() const { return m_adjustedSpaceWidth; }
     void setSpaceWidth(float spaceWidth) { m_spaceWidth = spaceWidth; }
 
-#if USE(CG) || USE(CAIRO) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
     float syntheticBoldOffset() const { return m_syntheticBoldOffset; }
 #endif
 
@@ -304,7 +300,7 @@ private:
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
-#if USE(CG) || USE(CAIRO) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
     float m_syntheticBoldOffset;
 #endif
 
@@ -357,7 +353,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
         width = m_fontData->widthForSVGGlyph(glyph, m_platformData.size());
 #if ENABLE(OPENTYPE_VERTICAL)
     else if (m_verticalData)
-#if USE(CG) || USE(CAIRO) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
         width = m_verticalData->advanceHeight(this, glyph) + m_syntheticBoldOffset;
 #else
         width = m_verticalData->advanceHeight(this, glyph);

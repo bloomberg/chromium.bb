@@ -897,7 +897,7 @@ void ShadowBlur::endShadowLayer(GraphicsContext* context)
     ScratchBuffer::shared().scheduleScratchBufferPurge();
 }
 
-#if PLATFORM(QT) || USE(CAIRO)
+#if PLATFORM(QT)
 bool ShadowBlur::mustUseShadowBlur(GraphicsContext* context) const
 {
     // We can't avoid ShadowBlur, since the shadow has blur.

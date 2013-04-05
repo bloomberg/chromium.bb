@@ -43,11 +43,6 @@ typedef WebCore::PlatformPathOpenVG PlatformPath;
 #elif PLATFORM(QT)
 #include <qpainterpath.h>
 typedef QPainterPath PlatformPath;
-#elif USE(CAIRO)
-namespace WebCore {
-class CairoPath;
-}
-typedef WebCore::CairoPath PlatformPath;
 #elif USE(SKIA)
 class SkPath;
 typedef SkPath PlatformPath;

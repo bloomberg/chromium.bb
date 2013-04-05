@@ -40,13 +40,6 @@
 #include "NativeImageQt.h"
 #endif
 
-#if USE(CAIRO)
-#include "CairoUtilities.h"
-#include "RefPtrCairo.h"
-#include <cairo.h>
-#include <wtf/text/CString.h>
-#endif
-
 #if ENABLE(CSS_SHADERS)
 #include "CustomFilterCompiledProgram.h"
 #include "CustomFilterOperation.h"
@@ -376,40 +369,6 @@ void TextureMapperGL::drawNumber(int number, const Color& color, const FloatPoin
     static_cast<BitmapTextureGL*>(texture.get())->updateContentsNoSwizzle(bits, sourceRect, IntPoint::zero(), image.bytesPerLine());
     drawTexture(*texture, targetRect, modelViewMatrix, 1.0f, AllEdges);
 
-#elif USE(CAIRO)
-    CString counterString = String::number(number).ascii();
-    // cairo_text_extents() requires a cairo_t, so dimensions need to be guesstimated.
-    int width = counterString.length() * pointSize * 1.2;
-    int height = pointSize * 1.5;
-
-    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t* cr = cairo_create(surface);
-
-    float r, g, b, a;
-    color.getRGBA(r, g, b, a);
-    cairo_set_source_rgba(cr, b, g, r, a); // Since we won't swap R+B when uploading a texture, paint with the swapped R+B color.
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_fill(cr);
-
-    cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, pointSize);
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    cairo_move_to(cr, 2, pointSize);
-    cairo_show_text(cr, counterString.data());
-
-    IntSize size(width, height);
-    IntRect sourceRect(IntPoint::zero(), size);
-    IntRect targetRect(roundedIntPoint(targetPoint), size);
-
-    RefPtr<BitmapTexture> texture = acquireTextureFromPool(size);
-    const unsigned char* bits = cairo_image_surface_get_data(surface);
-    int stride = cairo_image_surface_get_stride(surface);
-    static_cast<BitmapTextureGL*>(texture.get())->updateContentsNoSwizzle(bits, sourceRect, IntPoint::zero(), stride);
-    drawTexture(*texture, targetRect, modelViewMatrix, 1.0f, AllEdges);
-
-    cairo_surface_destroy(surface);
-    cairo_destroy(cr);
-
 #else
     UNUSED_PARAM(number);
     UNUSED_PARAM(pointSize);
@@ -728,10 +687,6 @@ void BitmapTextureGL::updateContents(Image* image, const IntRect& targetRect, co
     QImage qImage = frameImage->toImage();
     imageData = reinterpret_cast<const char*>(qImage.constBits());
     bytesPerLine = qImage.bytesPerLine();
-#elif USE(CAIRO)
-    cairo_surface_t* surface = frameImage->surface();
-    imageData = reinterpret_cast<const char*>(cairo_image_surface_get_data(surface));
-    bytesPerLine = cairo_image_surface_get_stride(surface);
 #endif
 
     updateContents(imageData, targetRect, offset, bytesPerLine, updateContentsFlag);
