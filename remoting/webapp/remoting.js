@@ -34,6 +34,8 @@ function consentRequired_(authContinue) {
  * Entry point for app initialization.
  */
 remoting.init = function() {
+  migrateLocalToChromeStorage_();
+
   // TODO(jamiewalch): Remove this when we migrate to apps v2
   // (http://crbug.com/ 134213).
   remoting.initMockStorage();
@@ -354,5 +356,29 @@ function isWindowed_(callback) {
     chrome.tabs.getCurrent(tabCallback);
   } else {
     console.error('chome.tabs is not available.');
+  }
+}
+
+/**
+ * Migrate settings in window.localStorage to chrome.storage.local so that
+ * users of older web-apps that used the former do not lose their settings.
+ */
+function migrateLocalToChromeStorage_() {
+  // The OAuth2 class still uses window.localStorage, so don't migrate any of
+  // those settings.
+  var oauthSettings = [
+      'oauth2-refresh-token',
+      'oauth2-refresh-token-revokable',
+      'oauth2-access-token',
+      'oauth2-xsrf-token',
+      'remoting-email'
+  ];
+  for (var setting in window.localStorage) {
+    if (oauthSettings.indexOf(setting) == -1) {
+      var copy = {}
+      copy[setting] = window.localStorage.getItem(setting);
+      chrome.storage.local.set(copy);
+      window.localStorage.removeItem(setting);
+    }
   }
 }
