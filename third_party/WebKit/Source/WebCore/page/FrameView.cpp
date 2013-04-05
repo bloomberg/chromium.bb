@@ -973,24 +973,6 @@ bool FrameView::hasCompositedContent() const
     return false;
 }
 
-bool FrameView::hasCompositedContentIncludingDescendants() const
-{
-#if USE(ACCELERATED_COMPOSITING)
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
-        RenderView* renderView = frame->contentRenderer();
-        RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
-        if (compositor) {
-            if (compositor->inCompositingMode())
-                return true;
-
-            if (!RenderLayerCompositor::allowsIndependentlyCompositedFrames(this))
-                break;
-        }
-    }
-#endif
-    return false;
-}
-
 bool FrameView::hasCompositingAncestor() const
 {
 #if USE(ACCELERATED_COMPOSITING)
@@ -1480,13 +1462,9 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
 
 bool FrameView::useSlowRepaints(bool considerOverlap) const
 {
-    bool mustBeSlow = m_slowRepaintObjectCount > 0 || (platformWidget() && hasViewportConstrainedObjects());
+    bool mustBeSlow = m_slowRepaintObjectCount > 0;
 
-    // FIXME: WidgetMac.mm makes the assumption that useSlowRepaints ==
-    // m_contentIsOpaque, so don't take the fast path for composited layers
-    // if they are a platform widget in order to get painting correctness
-    // for transparent layers. See the comment in WidgetMac::paint.
-    if (contentsInCompositedLayer() && !platformWidget())
+    if (contentsInCompositedLayer())
         return mustBeSlow;
 
 #if PLATFORM(CHROMIUM)
@@ -1572,8 +1550,6 @@ void FrameView::addViewportConstrainedObject(RenderObject* object)
 
     if (!m_viewportConstrainedObjects->contains(object)) {
         m_viewportConstrainedObjects->add(object);
-        if (platformWidget())
-            updateCanBlitOnScrollRecursively();
 
         if (Page* page = m_frame->page()) {
             if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
@@ -1750,32 +1726,6 @@ void FrameView::setIsOverlapped(bool isOverlapped)
 
     m_isOverlapped = isOverlapped;
     updateCanBlitOnScrollRecursively();
-    
-#if USE(ACCELERATED_COMPOSITING)
-    if (hasCompositedContentIncludingDescendants()) {
-        // Overlap can affect compositing tests, so if it changes, we need to trigger
-        // a layer update in the parent document.
-        if (Frame* parentFrame = m_frame->tree()->parent()) {
-            if (RenderView* parentView = parentFrame->contentRenderer()) {
-                RenderLayerCompositor* compositor = parentView->compositor();
-                compositor->setCompositingLayersNeedRebuild();
-                compositor->scheduleCompositingLayerUpdate();
-            }
-        }
-
-        if (RenderLayerCompositor::allowsIndependentlyCompositedFrames(this)) {
-            // We also need to trigger reevaluation for this and all descendant frames,
-            // since a frame uses compositing if any ancestor is compositing.
-            for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
-                if (RenderView* view = frame->contentRenderer()) {
-                    RenderLayerCompositor* compositor = view->compositor();
-                    compositor->setCompositingLayersNeedRebuild();
-                    compositor->scheduleCompositingLayerUpdate();
-                }
-            }
-        }
-    }
-#endif
 }
 
 bool FrameView::isOverlappedIncludingAncestors() const
@@ -1949,13 +1899,6 @@ void FrameView::setViewportConstrainedObjectsNeedLayout()
     }
 }
 
-
-void FrameView::scrollPositionChangedViaPlatformWidget()
-{
-    repaintFixedElementsAfterScrolling();
-    updateFixedElementsAfterScrolling();
-    scrollPositionChanged();
-}
 
 void FrameView::scrollPositionChanged()
 {
@@ -3378,10 +3321,7 @@ void FrameView::paintControlTints()
     PlatformGraphicsContext* const noContext = 0;
     GraphicsContext context(noContext);
     context.setUpdatingControlTints(true);
-    if (platformWidget())
-        paintContents(&context, visibleContentRect());
-    else
-        paint(&context, frameRect());
+    paint(&context, frameRect());
 }
 
 bool FrameView::wasScrolledByUser() const
@@ -3976,11 +3916,6 @@ bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
     // We don't allow mouse wheeling to happen in a ScrollView that has had its scrollbars explicitly disabled.
     if (!canHaveScrollbars())
         return false;
-
-#if !PLATFORM(WX)
-    if (platformWidget())
-        return false;
-#endif
 
 #if ENABLE(THREADED_SCROLLING)
     if (Page* page = m_frame->page()) {

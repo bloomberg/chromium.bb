@@ -78,7 +78,7 @@ AccessibilityObject* AccessibilityScrollView::scrollBar(AccessibilityOrientation
 // In WebKit2, the ScrollView object will return the AX information (because there are no platform widgets).
 bool AccessibilityScrollView::isAttachment() const
 {
-    return m_scrollView && m_scrollView->platformWidget();
+    return false;
 }
 
 Widget* AccessibilityScrollView::widgetForAttachmentView() const

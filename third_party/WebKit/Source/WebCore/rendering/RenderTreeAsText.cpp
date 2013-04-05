@@ -479,23 +479,6 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         if (needsLayout)
             ts << ")";
     }
-
-#if PLATFORM(QT)
-    // Print attributes of embedded QWidgets. E.g. when the WebCore::Widget
-    // is invisible the QWidget should be invisible too.
-    if (o.isRenderPart()) {
-        const RenderPart* part = toRenderPart(const_cast<RenderObject*>(&o));
-        if (part->widget() && part->widget()->platformWidget()) {
-            QObject* wid = part->widget()->platformWidget();
-
-            ts << " [QT: ";
-            ts << "geometry: {" << wid->property("geometry").toRect() << "} ";
-            ts << "isHidden: " << !wid->property("isVisible").toBool() << " ";
-            ts << "isSelfVisible: " << part->widget()->isSelfVisible() << " ";
-            ts << "isParentVisible: " << part->widget()->isParentVisible() << " ] ";
-        }
-    }
-#endif
 }
 
 static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBox& run)

@@ -216,9 +216,6 @@ public:
     // to know if there is non-affine content, e.g. for drawing into an image.
     bool has3DContent() const;
     
-    // Most platforms connect compositing layer trees between iframes and their parent document.
-    // Some (currently just Mac) allow iframes to do their own compositing.
-    static bool allowsIndependentlyCompositedFrames(const FrameView*);
     bool shouldPropagateCompositingToEnclosingFrame() const;
 
     static RenderLayerCompositor* frameContentsCompositor(RenderPart*);

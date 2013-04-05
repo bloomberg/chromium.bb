@@ -190,9 +190,6 @@ public:
     virtual void setScrollPosition(const IntPoint&);
     void scrollBy(const IntSize& s) { return setScrollPosition(scrollPosition() + s); }
 
-    // This function scrolls by lines, pages or pixels.
-    bool scroll(ScrollDirection, ScrollGranularity);
-    
     // A logical scroll that just ends up calling the corresponding physical scroll() based off the document's writing mode.
     bool logicalScroll(ScrollLogicalDirection, ScrollGranularity);
 
@@ -401,7 +398,6 @@ public:
 private:
     NSScrollView<WebCoreFrameScrollView>* scrollView() const;
 #endif
-
 }; // class ScrollView
 
 inline ScrollView* toScrollView(Widget* widget)

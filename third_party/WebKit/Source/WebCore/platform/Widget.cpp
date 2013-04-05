@@ -33,14 +33,11 @@
 
 namespace WebCore {
 
-void Widget::init(PlatformWidget widget)
+void Widget::init()
 {
     m_parent = 0;
     m_selfVisible = false;
     m_parentVisible = false;
-    m_widget = widget;
-    if (m_widget)
-        retainPlatformWidget();
 }
 
 void Widget::setParent(ScrollView* view)

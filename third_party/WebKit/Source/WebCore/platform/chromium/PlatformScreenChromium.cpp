@@ -35,6 +35,7 @@
 #include "HostWindow.h"
 #include "ScrollView.h"
 #include "Widget.h"
+#include "PageClientChromium.h"
 #include <public/Platform.h>
 #include <public/WebScreenInfo.h>
 

@@ -303,11 +303,6 @@ namespace WebCore {
 
         virtual void registerForIconNotification(bool listen = true) = 0;
         
-#if PLATFORM(MAC)
-        // Allow an accessibility object to retrieve a Frame parent if there's no PlatformWidget.
-        virtual RemoteAXObjectRef accessibilityRemoteObject() = 0;
-        virtual NSCachedURLResponse* willCacheResponse(DocumentLoader*, unsigned long identifier, NSCachedURLResponse*) const = 0;
-#endif
 #if PLATFORM(WIN) && USE(CFNETWORK)
         // FIXME: Windows should use willCacheResponse - <https://bugs.webkit.org/show_bug.cgi?id=57257>.
         virtual bool shouldCacheResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const unsigned char* data, unsigned long long length) = 0;

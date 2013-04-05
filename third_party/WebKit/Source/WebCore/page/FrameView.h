@@ -139,7 +139,6 @@ public:
 #endif
 
     bool hasCompositedContent() const;
-    bool hasCompositedContentIncludingDescendants() const;
     bool hasCompositingAncestor() const;
     void enterCompositingMode();
     bool isEnclosedInCompositingLayer() const;
@@ -189,7 +188,6 @@ public:
 
     virtual void setFixedVisibleContentRect(const IntRect&) OVERRIDE;
     virtual void setScrollPosition(const IntPoint&) OVERRIDE;
-    void scrollPositionChangedViaPlatformWidget();
     virtual void repaintFixedElementsAfterScrolling();
     virtual void updateFixedElementsAfterScrolling();
     virtual bool shouldRubberBandInDirection(ScrollDirection) const;

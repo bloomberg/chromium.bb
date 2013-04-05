@@ -3769,7 +3769,6 @@
             'platform/chromium/PlatformThemeChromiumDefault.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.h',
             'platform/chromium/PlatformSpeechSynthesizerChromium.cpp',
-            'platform/chromium/PlatformWidget.h',
             'platform/chromium/PopupContainer.cpp',
             'platform/chromium/PopupContainer.h',
             'platform/chromium/PopupMenuChromium.cpp',

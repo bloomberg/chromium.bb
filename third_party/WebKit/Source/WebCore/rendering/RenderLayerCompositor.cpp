@@ -1629,50 +1629,15 @@ bool RenderLayerCompositor::has3DContent() const
     return layerHas3DContent(rootRenderLayer());
 }
 
-bool RenderLayerCompositor::allowsIndependentlyCompositedFrames(const FrameView* view)
-{
-#if PLATFORM(MAC)
-    // frames are only independently composited in Mac pre-WebKit2.
-    return view->platformWidget();
-#else
-    UNUSED_PARAM(view);
-#endif
-    return false;
-}
-
 bool RenderLayerCompositor::shouldPropagateCompositingToEnclosingFrame() const
 {
     // Parent document content needs to be able to render on top of a composited frame, so correct behavior
     // is to have the parent document become composited too. However, this can cause problems on platforms that
     // use native views for frames (like Mac), so disable that behavior on those platforms for now.
     HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement();
-    RenderObject* renderer = ownerElement ? ownerElement->renderer() : 0;
 
     // If we are the top-level frame, don't propagate.
-    if (!ownerElement)
-        return false;
-
-    if (!allowsIndependentlyCompositedFrames(m_renderView->frameView()))
-        return true;
-
-    if (!renderer || !renderer->isRenderPart())
-        return false;
-
-    // On Mac, only propagate compositing if the frame is overlapped in the parent
-    // document, or the parent is already compositing, or the main frame is scaled.
-    Page* page = this->page();
-    if (page && page->pageScaleFactor() != 1)
-        return true;
-    
-    RenderPart* frameRenderer = toRenderPart(renderer);
-    if (frameRenderer->widget()) {
-        ASSERT(frameRenderer->widget()->isFrameView());
-        FrameView* view = toFrameView(frameRenderer->widget());
-        if (view->isOverlappedIncludingAncestors() || view->hasCompositingAncestor())
-            return true;
-    }
-
-    return false;
+    return ownerElement;
 }
 
 bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
@@ -2245,9 +2210,7 @@ bool RenderLayerCompositor::requiresScrollLayer(RootLayerAttachment attachment) 
     if (m_renderView->frameView()->delegatesScrolling())
         return false;
 
-    // We need to handle our own scrolling if we're:
-    return !m_renderView->frameView()->platformWidget() // viewless (i.e. non-Mac, or Mac in WebKit2)
-        || attachment == RootLayerAttachedViaEnclosingFrame; // a composited frame on Mac
+    return true;
 }
 
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
@@ -2371,9 +2334,6 @@ bool RenderLayerCompositor::keepLayersPixelAligned() const
 
 static bool shouldCompositeOverflowControls(FrameView* view)
 {
-    if (view->platformWidget())
-        return false;
-
     if (Page* page = view->frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             if (scrollingCoordinator->coordinatesScrollingForFrameView(view))

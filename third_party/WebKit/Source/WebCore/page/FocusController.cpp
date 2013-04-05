@@ -640,10 +640,8 @@ void FocusController::setActive(bool active)
     m_isActive = active;
 
     if (FrameView* view = m_page->mainFrame()->view()) {
-        if (!view->platformWidget()) {
-            view->updateLayoutAndStyleIfNeededRecursive();
-            view->updateControlTints();
-        }
+        view->updateLayoutAndStyleIfNeededRecursive();
+        view->updateControlTints();
     }
 
     focusedOrMainFrame()->selection()->pageActivationChanged();

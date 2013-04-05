@@ -80,7 +80,7 @@ public:
     virtual bool isPluginViewBase() const { return true; }
 
 protected:
-    explicit PluginViewBase(PlatformWidget widget = 0) : Widget(widget) { }
+    PluginViewBase() : Widget() { }
 };
 
 inline PluginViewBase* toPluginViewBase(Widget* widget)

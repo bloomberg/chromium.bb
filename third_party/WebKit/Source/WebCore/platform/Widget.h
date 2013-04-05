@@ -28,13 +28,9 @@
 #define Widget_h
 
 #include "IntRect.h"
+#include "PageClientChromium.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
-
-#if PLATFORM(CHROMIUM)
-#include "PageClientChromium.h"
-#include "PlatformWidget.h"
-#endif
 
 #if PLATFORM(MAC)
 #include <wtf/RetainPtr.h>
@@ -45,57 +41,7 @@
 #include <qglobal.h>
 #endif
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSView;
-OBJC_CLASS NSWindow;
-typedef NSView *PlatformWidget;
-#endif
-
-#if PLATFORM(WIN)
-typedef struct HWND__* HWND;
-typedef HWND PlatformWidget;
-#endif
-
-#if PLATFORM(GTK)
-typedef struct _GtkWidget GtkWidget;
-typedef struct _GtkContainer GtkContainer;
-typedef GtkWidget* PlatformWidget;
-#endif
-
-#if PLATFORM(QT)
-QT_BEGIN_NAMESPACE
-class QObject;
-QT_END_NAMESPACE
-typedef QObject* PlatformWidget;
-#endif
-
-#if PLATFORM(BLACKBERRY)
-typedef void* PlatformWidget;
-#endif
-
-#if PLATFORM(EFL)
-#if USE(EO)
-typedef struct _Eo Evas_Object;
-#else
-typedef struct _Evas_Object Evas_Object;
-#endif
-typedef Evas_Object* PlatformWidget;
-#endif
-
-#if PLATFORM(QT)
-class QWebPageClient;
-typedef QWebPageClient* PlatformPageClient;
-#elif PLATFORM(BLACKBERRY)
-#include "PageClientBlackBerry.h"
-typedef PageClientBlackBerry* PlatformPageClient;
-#elif PLATFORM(EFL)
-class PageClientEfl;
-typedef PageClientEfl* PlatformPageClient;
-#elif PLATFORM(CHROMIUM)
 typedef WebCore::PageClientChromium* PlatformPageClient;
-#else
-typedef PlatformWidget PlatformPageClient;
-#endif
 
 namespace WebCore {
 
@@ -115,23 +61,12 @@ enum WidgetNotification { WillPaintFlattened, DidPaintFlattened };
 // (2) Scrollbars (Scrollbar)
 // (3) Plugins (PluginView)
 //
-// A widget may or may not be backed by a platform-specific object (e.g., HWND on Windows, NSView on Mac, QWidget on Qt).
-//
 // Widgets are connected in a hierarchy, with the restriction that plugins and scrollbars are always leaves of the
 // tree.  Only ScrollViews can have children (and therefore the Widget class has no concept of children).
-//
-// The rules right now for which widgets get platform-specific objects are as follows:
-// ScrollView - Mac
-// Scrollbar - Mac, Gtk
-// Plugin - Mac, Windows (windowed only), Qt (windowed only, widget is an HWND on windows), Gtk (windowed only)
-//
 class Widget : public RefCounted<Widget> {
 public:
-    explicit Widget(PlatformWidget = 0);
+    Widget();
     virtual ~Widget();
-
-    PlatformWidget platformWidget() const;
-    void setPlatformWidget(PlatformWidget);
 
     int x() const { return frameRect().x(); }
     int y() const { return frameRect().y(); }
@@ -241,10 +176,7 @@ public:
     virtual AXObjectCache* axObjectCache() const { return 0; }
     
 private:
-    void init(PlatformWidget); // Must be called by all Widget constructors to initialize cross-platform data.
-
-    void releasePlatformWidget();
-    void retainPlatformWidget();
+    void init(); // Must be called by all Widget constructors to initialize cross-platform data.
 
     // These methods are used to convert from the root widget to the containing window,
     // which has behavior that may differ between platforms (e.g. Mac uses flipped window coordinates).
@@ -256,11 +188,6 @@ private:
 
 private:
     ScrollView* m_parent;
-#if !PLATFORM(MAC)
-    PlatformWidget m_widget;
-#else
-    RetainPtr<NSView> m_widget;
-#endif
     bool m_selfVisible;
     bool m_parentVisible;
 
@@ -279,36 +206,6 @@ private:
 #endif
 
 };
-
-#if !PLATFORM(MAC)
-
-inline PlatformWidget Widget::platformWidget() const
-{
-    return m_widget;
-}
-
-inline void Widget::setPlatformWidget(PlatformWidget widget)
-{
-    if (widget != m_widget) {
-        releasePlatformWidget();
-        m_widget = widget;
-        retainPlatformWidget();
-    }
-}
-
-#endif
-
-#if !PLATFORM(GTK)
-
-inline void Widget::releasePlatformWidget()
-{
-}
-
-inline void Widget::retainPlatformWidget()
-{
-}
-
-#endif
 
 } // namespace WebCore
 

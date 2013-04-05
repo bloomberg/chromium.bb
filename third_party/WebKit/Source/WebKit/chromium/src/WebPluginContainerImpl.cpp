@@ -610,7 +610,7 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : WebCore::PluginViewBase(0)
+    : WebCore::PluginViewBase()
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)

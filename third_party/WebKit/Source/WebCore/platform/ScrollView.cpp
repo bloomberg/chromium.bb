@@ -72,8 +72,6 @@ void ScrollView::addChild(PassRefPtr<Widget> prpChild)
     ASSERT(child != this && !child->parent());
     child->setParent(this);
     m_children.add(prpChild);
-    if (child->platformWidget())
-        platformAddChild(child);
 }
 
 void ScrollView::removeChild(Widget* child)
@@ -81,8 +79,6 @@ void ScrollView::removeChild(Widget* child)
     ASSERT(child->parent() == this);
     child->setParent(0);
     m_children.remove(child);
-    if (child->platformWidget())
-        platformRemoveChild(child);
 }
 
 void ScrollView::setHasHorizontalScrollbar(bool hasBar)
@@ -151,19 +147,12 @@ void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode v
     if (!needsUpdate)
         return;
 
-    if (platformWidget())
-        platformSetScrollbarModes();
-    else
-        updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffset());
 }
 #endif
 
 void ScrollView::scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const
 {
-    if (platformWidget()) {
-        platformScrollbarModes(horizontalMode, verticalMode);
-        return;
-    }
     horizontalMode = m_horizontalScrollbarMode;
     verticalMode = m_verticalScrollbarMode;
 }
@@ -190,19 +179,11 @@ void ScrollView::setCanHaveScrollbars(bool canScroll)
 
 void ScrollView::setCanBlitOnScroll(bool b)
 {
-    if (platformWidget()) {
-        platformSetCanBlitOnScroll(b);
-        return;
-    }
-
     m_canBlitOnScroll = b;
 }
 
 bool ScrollView::canBlitOnScroll() const
 {
-    if (platformWidget())
-        return platformCanBlitOnScroll();
-
     return m_canBlitOnScroll;
 }
 
@@ -227,9 +208,6 @@ void ScrollView::setDelegatesScrolling(bool delegatesScrolling)
 
 IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
-    if (platformWidget())
-        return platformVisibleContentRect(scrollbarInclusion == IncludeScrollbars).size();
-
     if (!m_fixedVisibleContentRect.isEmpty())
         return m_fixedVisibleContentRect.size();
 
@@ -250,9 +228,6 @@ IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollb
 #if !PLATFORM(GTK)
 IntRect ScrollView::visibleContentRect(VisibleContentRectIncludesScrollbars scollbarInclusion) const
 {
-    if (platformWidget())
-        return platformVisibleContentRect(scollbarInclusion == IncludeScrollbars);
-
     if (!m_fixedVisibleContentRect.isEmpty())
         return m_fixedVisibleContentRect;
 
@@ -306,10 +281,7 @@ void ScrollView::setContentsSize(const IntSize& newSize)
     if (contentsSize() == newSize)
         return;
     m_contentsSize = newSize;
-    if (platformWidget())
-        platformSetContentsSize();
-    else
-        updateScrollbars(scrollOffset());
+    updateScrollbars(scrollOffset());
     updateOverhangAreas();
 }
 
@@ -403,11 +375,6 @@ void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
     if (prohibitsScrolling())
         return;
 
-    if (platformWidget()) {
-        platformSetScrollPosition(scrollPoint);
-        return;
-    }
-
 #if USE(TILED_BACKING_STORE)
     if (delegatesScrolling()) {
         hostWindow()->delegatedScrollRequested(scrollPoint);
@@ -421,14 +388,6 @@ void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
         return;
 
     updateScrollbars(IntSize(newScrollPosition.x(), newScrollPosition.y()));
-}
-
-bool ScrollView::scroll(ScrollDirection direction, ScrollGranularity granularity)
-{
-    if (platformWidget())
-        return platformScroll(direction, granularity);
-
-    return ScrollableArea::scroll(direction, granularity);
 }
 
 bool ScrollView::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity)
@@ -457,9 +416,6 @@ IntSize ScrollView::overhangAmount() const
 
 void ScrollView::windowResizerRectChanged()
 {
-    if (platformWidget())
-        return;
-
     updateScrollbars(scrollOffset());
 }
 
@@ -467,7 +423,7 @@ static const unsigned cMaxUpdateScrollbarsPass = 2;
 
 void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 {
-    if (m_inUpdateScrollbars || prohibitsScrolling() || platformWidget())
+    if (m_inUpdateScrollbars || prohibitsScrolling())
         return;
 
     // If we came in here with the view already needing a layout, then go ahead and do that
@@ -773,8 +729,6 @@ IntRect ScrollView::contentsToWindow(const IntRect& contentsRect) const
 
 IntRect ScrollView::contentsToScreen(const IntRect& rect) const
 {
-    if (platformWidget())
-        return platformContentsToScreen(rect);
     if (!hostWindow())
         return IntRect();
     return hostWindow()->rootViewToScreen(contentsToRootView(rect));
@@ -782,8 +736,6 @@ IntRect ScrollView::contentsToScreen(const IntRect& rect) const
 
 IntPoint ScrollView::screenToContents(const IntPoint& point) const
 {
-    if (platformWidget())
-        return platformScreenToContents(point);
     if (!hostWindow())
         return IntPoint();
     return rootViewToContents(hostWindow()->screenToRootView(point));
@@ -831,9 +783,7 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
 
     m_scrollbarsSuppressed = suppressed;
 
-    if (platformWidget())
-        platformSetScrollbarsSuppressed(repaintOnUnsuppress);
-    else if (repaintOnUnsuppress && !suppressed) {
+    if (repaintOnUnsuppress && !suppressed) {
         if (m_horizontalScrollbar)
             m_horizontalScrollbar->invalidate();
         if (m_verticalScrollbar)
@@ -846,9 +796,6 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
 
 Scrollbar* ScrollView::scrollbarAtPoint(const IntPoint& windowPoint)
 {
-    if (platformWidget())
-        return 0;
-
     IntPoint viewPoint = convertFromContainingWindow(windowPoint);
     if (m_horizontalScrollbar && m_horizontalScrollbar->shouldParticipateInHitTesting() && m_horizontalScrollbar->frameRect().contains(viewPoint))
         return m_horizontalScrollbar.get();
@@ -882,9 +829,6 @@ void ScrollView::setFrameRect(const IntRect& newRect)
 
 void ScrollView::frameRectsChanged()
 {
-    if (platformWidget())
-        return;
-
     HashSet<RefPtr<Widget> >::const_iterator end = m_children.end();
     for (HashSet<RefPtr<Widget> >::const_iterator current = m_children.begin(); current != end; ++current)
         (*current)->frameRectsChanged();
@@ -949,12 +893,6 @@ void ScrollView::repaintContentRectangle(const IntRect& rect)
         paintRect.intersect(visibleContentRect());
     if (paintRect.isEmpty())
         return;
-
-    if (platformWidget()) {
-        notifyPageThatContentAreaWillPaint();
-        platformRepaintContentRectangle(paintRect);
-        return;
-    }
 
     if (hostWindow())
         hostWindow()->invalidateContentsAndRootView(contentsToWindow(paintRect));
@@ -1051,11 +989,6 @@ void ScrollView::paintPanScrollIcon(GraphicsContext* context)
 
 void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
 {
-    if (platformWidget()) {
-        Widget::paint(context, rect);
-        return;
-    }
-
     if (context->paintingDisabled() && !context->updatingControlTints())
         return;
 
@@ -1291,15 +1224,7 @@ void ScrollView::hide()
 
 bool ScrollView::isOffscreen() const
 {
-    if (platformWidget())
-        return platformIsOffscreen();
-    
-    if (!isVisible())
-        return true;
-    
-    // FIXME: Add a HostWindow::isOffscreen method here.  Since only Mac implements this method
-    // currently, we can add the method when the other platforms decide to implement this concept.
-    return false;
+    return !isVisible();
 }
 
 
@@ -1327,11 +1252,6 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
 
     ScrollableArea::setScrollOrigin(origin);
 
-    if (platformWidget()) {
-        platformSetScrollOrigin(origin, updatePositionAtAll, updatePositionSynchronously);
-        return;
-    }
-    
     // Update if the scroll origin changes, since our position will be different if the content size did not change.
     if (updatePositionAtAll && updatePositionSynchronously)
         updateScrollbars(scrollOffset());
@@ -1344,18 +1264,6 @@ void ScrollView::platformInit()
 }
 
 void ScrollView::platformDestroy()
-{
-}
-
-#endif
-
-#if !PLATFORM(QT) && !PLATFORM(MAC)
-
-void ScrollView::platformAddChild(Widget*)
-{
-}
-
-void ScrollView::platformRemoveChild(Widget*)
 {
 }
 
