@@ -409,11 +409,7 @@ class CompositingIOSurfaceTransformerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CompositingIOSurfaceTransformerTest);
 };
 
-// TODO(miu): Enable ALL the tests after the initial change lands.  These were
-// started out DISABLED since unit tests executing on GPUs have been known to
-// sometimes cause messy flakiness problems.
-TEST_F(CompositingIOSurfaceTransformerTest,
-       DISABLED_ShaderProgramsCompileAndLink) {
+TEST_F(CompositingIOSurfaceTransformerTest, ShaderProgramsCompileAndLink) {
   // Attempt to use each program, binding its required uniform variables.
   EXPECT_NO_GL_ERROR(shader_program_cache()->UseBlitProgram());
   EXPECT_NO_GL_ERROR(shader_program_cache()->UseSolidWhiteProgram());
@@ -467,7 +463,7 @@ const struct TestParameters {
 
 }  // namespace
 
-TEST_F(CompositingIOSurfaceTransformerTest, DISABLED_ResizesTexturesCorrectly) {
+TEST_F(CompositingIOSurfaceTransformerTest, ResizesTexturesCorrectly) {
   for (size_t i = 0; i < arraysize(kTestParameters); ++i) {
     SCOPED_TRACE(::testing::Message() << "kTestParameters[" << i << ']');
 
@@ -497,7 +493,7 @@ TEST_F(CompositingIOSurfaceTransformerTest, DISABLED_ResizesTexturesCorrectly) {
   }
 }
 
-TEST_F(CompositingIOSurfaceTransformerTest, DISABLED_TransformsRGBToYV12) {
+TEST_F(CompositingIOSurfaceTransformerTest, TransformsRGBToYV12) {
   for (size_t i = 0; i < arraysize(kTestParameters); ++i) {
     SCOPED_TRACE(::testing::Message() << "kTestParameters[" << i << ']');
 
