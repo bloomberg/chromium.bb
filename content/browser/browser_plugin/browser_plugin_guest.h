@@ -195,9 +195,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();
 
-  // Kill the guest process.
-  void Terminate();
-
   // Overridden in tests.
   virtual void SetDamageBuffer(
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
@@ -376,10 +373,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 #if defined(OS_MACOSX)
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
-  void OnShowView(int route_id,
-                  WindowOpenDisposition disposition,
-                  const gfx::Rect& initial_bounds,
-                  bool user_gesture);
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   // Overriden in tests.
   virtual void OnTakeFocus(bool reverse);

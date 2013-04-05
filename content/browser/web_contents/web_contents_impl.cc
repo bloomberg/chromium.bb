@@ -1355,15 +1355,15 @@ void WebContentsImpl::CreateNewWindow(
   new_contents->Init(create_params);
 
   // Save the window for later if we're not suppressing the opener (since it
-  // will be shown immediately) and if it's not a guest (since we separately
-  // track when to show guests).
-  if (!params.opener_suppressed && !is_guest) {
-    WebContentsViewPort* new_view = new_contents->view_.get();
+  // will be shown immediately).
+  if (!params.opener_suppressed) {
+    if (!is_guest) {
+      WebContentsViewPort* new_view = new_contents->view_.get();
 
-    // TODO(brettw): It seems bogus that we have to call this function on the
-    // newly created object and give it one of its own member variables.
-    new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
-
+      // TODO(brettw): It seems bogus that we have to call this function on the
+      // newly created object and give it one of its own member variables.
+      new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
+    }
     // Save the created window associated with the route so we can show it
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, route_id);
@@ -1506,6 +1506,10 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
   pending_contents_.erase(route_id);
   registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     Source<WebContents>(new_contents));
+
+  // Don't initialize the guest WebContents immediately.
+  if (new_contents->GetRenderProcessHost()->IsGuest())
+    return new_contents;
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
       !new_contents->GetRenderViewHost()->GetView())

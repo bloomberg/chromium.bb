@@ -322,7 +322,8 @@ void BrowserPluginGuest::AddNewContents(WebContents* source,
                                         const gfx::Rect& initial_pos,
                                         bool user_gesture,
                                         bool* was_blocked) {
-  *was_blocked = false;
+  if (was_blocked)
+    *was_blocked = false;
   RequestNewWindowPermission(static_cast<WebContentsImpl*>(new_contents),
                              disposition, initial_pos, user_gesture);
 }
@@ -698,7 +699,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     // renderer process paints inside.
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
  #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
@@ -724,13 +724,6 @@ void BrowserPluginGuest::Attach(
     WebContentsViewGuest* new_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
-
-    // Reply to ViewHostMsg_ShowView to inform the renderer that the browser has
-    // processed the move.  The browser may have ignored the move, but it
-    // finished processing.  This is used because the renderer keeps a temporary
-    // cache of the widget position while these asynchronous operations are in
-    // progress.
-    Send(new ViewMsg_Move_ACK(web_contents()->GetRoutingID()));
   }
   // Once a new guest is attached to the DOM of the embedder page, then the
   // lifetime of the new guest is no longer managed by the opener guest.
@@ -1083,18 +1076,6 @@ void BrowserPluginGuest::OnShowPopup(
                                   params.allow_multiple_selection);
 }
 #endif
-
-void BrowserPluginGuest::OnShowView(int route_id,
-                                    WindowOpenDisposition disposition,
-                                    const  gfx::Rect& initial_bounds,
-                                    bool user_gesture) {
-  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(
-      web_contents()->GetRenderProcessHost()->GetID(), route_id);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
-  RequestNewWindowPermission(
-      web_contents, disposition, initial_bounds, user_gesture);
-}
 
 void BrowserPluginGuest::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_pos) {
