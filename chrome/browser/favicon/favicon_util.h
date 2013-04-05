@@ -36,7 +36,7 @@ class FaviconUtil {
   // a favicon of size favicon_size (in DIPs) at the desired ui scale factors.
   static gfx::Image SelectFaviconFramesFromPNGs(
       const std::vector<history::FaviconBitmapResult>& png_data,
-      const std::vector<ui::ScaleFactor> scale_factors,
+      const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size);
 
   // Takes a vector of bitmaps and returns the index of the image that will best

@@ -103,7 +103,7 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
 // static
 gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
       const std::vector<history::FaviconBitmapResult>& png_data,
-      const std::vector<ui::ScaleFactor> scale_factors,
+      const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size) {
   // Create image reps for as many scale factors as possible without resizing
   // the bitmap data or decoding it. FaviconHandler stores already resized
