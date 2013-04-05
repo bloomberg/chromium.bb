@@ -721,6 +721,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   friend class NativeComboboxViewsTest;
   friend class ScopedEvent;
 
+  class PostMousePressedProcessor;
+
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 

@@ -69,6 +69,26 @@ class TestingPageNavigator : public PageNavigator {
   GURL url_;
 };
 
+// Delay before allowing menu selection. When context menu is shown on mouse
+// press, we enforce a delay before a selection can be made. So for tests that
+// perform selection on context menu, we add this delay before going to the next
+// step. See comment on |kContextMenuSelectionHoldTimeMs| in menu_controller.cc
+// for more info. The delay here should be greater than
+// |kContextMenuSelectionHoldTimeMs|.
+#define STEP_3_WITH_SELECTION_DELAY(test_class)\
+  void Step3() {\
+    views::MenuItemView* menu = bb_view_->GetContextMenu();\
+    ASSERT_TRUE(menu && menu->GetSubmenu() && menu->GetSubmenu()->IsShowing());\
+    if (views::View::ShouldShowContextMenuOnMousePress()) {\
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,\
+          CreateEventTask(this, &test_class::Step3_1),\
+          base::TimeDelta::FromMilliseconds(250));\
+    } else {\
+      Step3_1();\
+    }\
+  }\
+  void Step3_1() {
+
 }  // namespace
 
 // Base class for event generating bookmark view tests. These test are intended
@@ -482,7 +502,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
 
-  void Step3() {
+  STEP_3_WITH_SELECTION_DELAY(BookmarkBarViewTest4)
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
     ASSERT_TRUE(menu != NULL);
@@ -1109,7 +1129,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
         CreateEventTask(this, &BookmarkBarViewTest12::Step3));
   }
 
-  void Step3() {
+  STEP_3_WITH_SELECTION_DELAY(BookmarkBarViewTest12)
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
     ASSERT_TRUE(menu && menu->GetSubmenu() && menu->GetSubmenu()->IsShowing());
@@ -1195,7 +1215,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
 
-  void Step3() {
+  STEP_3_WITH_SELECTION_DELAY(BookmarkBarViewTest13)
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
     ASSERT_TRUE(menu != NULL);
@@ -1322,7 +1342,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
 
-  void Step3() {
+  STEP_3_WITH_SELECTION_DELAY(BookmarkBarViewTest15)
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
     ASSERT_TRUE(menu != NULL);
@@ -1749,7 +1769,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
   }
 
   // Confirm that context menu shows and click REMOVE menu.
-  void Step3() {
+  STEP_3_WITH_SELECTION_DELAY(BookmarkBarViewTest21)
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
     ASSERT_TRUE(menu != NULL);
