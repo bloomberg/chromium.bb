@@ -851,7 +851,7 @@ class BuildPackagesStageTest(AbstractStageTest):
       with cros_build_lib_unittest.RunCommandMock() as rc:
         rc.SetDefaultCmdResult()
         with cros_test_lib.OutputCapturer():
-          with cros_test_lib.DisableLogger():
+          with cros_test_lib.LoggingCapturer():
             with osutils.TempDir(set_global=True) as tempdir:
               self.build_root = tempdir
               self.options.buildroot = tempdir

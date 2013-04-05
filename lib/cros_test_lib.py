@@ -8,7 +8,6 @@
 
 from __future__ import print_function
 import collections
-import contextlib
 import cStringIO
 import exceptions
 import logging
@@ -251,6 +250,54 @@ class EasyAttr(dict):
     return self.keys()
 
 
+class LogFilter(logging.Filter):
+  """A simple log filter that intercepts log messages and stores them."""
+
+  def __init__(self):
+    logging.Filter.__init__(self)
+    self.messages = cStringIO.StringIO()
+
+  def filter(self, record):
+    self.messages.write(record.getMessage() + '\n')
+    # Return False to prevent the message from being displayed.
+    return False
+
+
+class LoggingCapturer(object):
+  """Captures all messages emitted by the logging module."""
+
+  def __init__(self):
+    self._log_filter = LogFilter()
+
+  def __enter__(self):
+    self.StartCapturing()
+    return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    self.StopCapturing()
+
+  def StartCapturing(self):
+    """Begin capturing logging messages."""
+    logging.getLogger().addFilter(self._log_filter)
+
+  def StopCapturing(self):
+    """Stop capturing logging messages."""
+    logging.getLogger().removeFilter(self._log_filter)
+
+  @property
+  def messages(self):
+    return self._log_filter.messages.getvalue()
+
+  def LogsMatch(self, regex):
+    """Checks whether the logs match a given regex."""
+    match = re.search(regex, self.messages, re.MULTILINE)
+    return match is not None
+
+  def LogsContain(self, msg):
+    """Checks whether the logs contain a given string."""
+    return self.LogsMatch(re.escape(msg))
+
+
 class OutputCapturer(object):
   """Class with limited support for capturing test stdout/stderr output.
 
@@ -367,7 +414,6 @@ class OutputCapturer(object):
     return self._GetOutputLines(self.GetStderr(), include_empties)
 
 
-
 class TestCase(unittest.TestCase):
 
   __metaclass__ = StackedSetup
@@ -436,6 +482,24 @@ class TestCase(unittest.TestCase):
       if bad:
         raise AssertionError("\n".join(bad))
       return e
+
+
+class LoggingTestCase(TestCase):
+  """Base class for logging capturer test cases."""
+
+  def AssertLogsMatch(self, log_capturer, regex, inverted=False):
+    """Verifies a regex matches the logs."""
+    assert_msg = '%r not found in %r' % (regex, log_capturer.messages)
+    assert_fn = self.assertTrue
+    if inverted:
+      assert_msg = '%r found in %r' % (regex, log_capturer.messages)
+      assert_fn = self.assertFalse
+
+    assert_fn(log_capturer.LogsMatch(regex), msg=assert_msg)
+
+  def AssertLogsContain(self, log_capturer, msg, inverted=False):
+    """Verifies a message is contained in the logs."""
+    return self.AssertLogsMatch(log_capturer, re.escape(msg), inverted=inverted)
 
 
 class OutputTestCase(TestCase):
@@ -816,6 +880,10 @@ class MockOutputTestCase(MockTestCase, OutputTestCase):
   """Convenience class mixing Output and Mock."""
 
 
+class MockLoggingTestCase(MockTestCase, LoggingTestCase):
+  """Convenience class mixing Logging and Mock."""
+
+
 def FindTests(directory, module_namespace=''):
   """Find all *_unittest.py, and return their python namespaces.
 
@@ -832,20 +900,6 @@ def FindTests(directory, module_namespace=''):
   if module_namespace:
     module_namespace += '.'
   return [module_namespace + x[:-3].replace('/', '.') for x in results]
-
-
-@contextlib.contextmanager
-def DisableLogger(logger=None):
-  """Temporarily disable logging in the specified logger.
-
-  Arguments:
-    logger: Logger to disable logging in. By default, the cros_build_lib
-            logger is disabled.
-  """
-  if logger is None:
-    logger = cros_build_lib.logger
-  with mock.patch.multiple(logger, disabled=True):
-    yield
 
 
 def main(**kwds):
