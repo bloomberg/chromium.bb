@@ -461,6 +461,7 @@ bool ClipboardChromium::hasData()
     return m_dataObject->length() > 0;
 }
 
+#if ENABLE(DATA_TRANSFER_ITEMS)
 PassRefPtr<DataTransferItemList> ClipboardChromium::items()
 {
     // FIXME: According to the spec, we are supposed to return the same collection of items each
@@ -468,5 +469,6 @@ PassRefPtr<DataTransferItemList> ClipboardChromium::items()
     // able to tell, but we probably still want to fix this.
     return DataTransferItemListPolicyWrapper::create(this, m_dataObject);
 }
+#endif
 
 } // namespace WebCore

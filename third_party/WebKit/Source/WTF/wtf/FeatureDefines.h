@@ -357,6 +357,10 @@
 #define ENABLE_DATALIST_ELEMENT 0
 #endif
 
+#if !defined(ENABLE_DATA_TRANSFER_ITEMS)
+#define ENABLE_DATA_TRANSFER_ITEMS 0
+#endif
+
 #if !defined(ENABLE_DELETION_UI)
 #define ENABLE_DELETION_UI 0
 #endif
