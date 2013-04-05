@@ -1308,7 +1308,7 @@ idle_repaint(void *data)
 {
 	struct weston_output *output = data;
 
-	weston_output_finish_frame(output, weston_compositor_get_time());
+	output->start_repaint_loop(output);
 }
 
 WL_EXPORT void

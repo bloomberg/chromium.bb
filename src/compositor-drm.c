@@ -623,6 +623,26 @@ drm_output_repaint(struct weston_output *output_base,
 }
 
 static void
+drm_output_start_repaint_loop(struct weston_output *output_base)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *compositor = (struct drm_compositor *)
+		output_base->compositor;
+	uint32_t fb_id;
+
+	if (output->current)
+		fb_id = output->current->fb_id;
+	else
+		fb_id = output->original_crtc->buffer_id;
+
+	if (drmModePageFlip(compositor->drm.fd, output->crtc_id, fb_id,
+			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
+		weston_log("queueing pageflip failed: %m\n");
+		return;
+	}
+}
+
+static void
 vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	       void *data)
 {
@@ -649,11 +669,16 @@ page_flip_handler(int fd, unsigned int frame,
 	struct drm_output *output = (struct drm_output *) data;
 	uint32_t msecs;
 
-	output->page_flip_pending = 0;
+	/* We don't set page_flip_pending on start_repaint_loop, in that case
+	 * we just want to page flip to the current buffer to get an accurate
+	 * timestamp */
+	if (output->page_flip_pending) {
+		drm_output_release_fb(output, output->current);
+		output->current = output->next;
+		output->next = NULL;
+	}
 
-	drm_output_release_fb(output, output->current);
-	output->current = output->next;
-	output->next = NULL;
+	output->page_flip_pending = 0;
 
 	if (!output->vblank_pending) {
 		msecs = sec * 1000 + usec / 1000;
@@ -1618,6 +1643,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	output->base.origin = output->base.current;
+	output->base.start_repaint_loop = drm_output_start_repaint_loop;
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
 	output->base.assign_planes = drm_assign_planes;

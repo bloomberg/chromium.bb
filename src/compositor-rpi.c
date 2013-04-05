@@ -612,19 +612,26 @@ rpi_element_update(struct rpi_element *element,
 	return 0;
 }
 
+static uint64_t
+rpi_get_current_time(void)
+{
+	struct timeval tv;
+
+	/* XXX: use CLOCK_MONOTONIC instead? */
+	gettimeofday(&tv, NULL);
+	return (uint64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
 static void
 rpi_flippipe_update_complete(DISPMANX_UPDATE_HANDLE_T update, void *data)
 {
 	/* This function runs in a different thread. */
 	struct rpi_flippipe *flippipe = data;
-	struct timeval tv;
 	uint64_t time;
 	ssize_t ret;
 
 	/* manufacture flip completion timestamp */
-	/* XXX: use CLOCK_MONOTONIC instead? */
-	gettimeofday(&tv, NULL);
-	time = (uint64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	time = rpi_get_current_time();
 
 	ret = write(flippipe->writefd, &time, sizeof time);
 	if (ret != sizeof time)
@@ -885,6 +892,15 @@ rpi_output_destroy_old_elements(struct rpi_output *output)
 }
 
 static void
+rpi_output_start_repaint_loop(struct weston_output *output)
+{
+	uint64_t time;
+
+	time = rpi_get_current_time();
+	weston_output_finish_frame(output, time);
+}
+
+static void
 rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct rpi_output *output = to_rpi_output(base);
@@ -1029,6 +1045,7 @@ rpi_output_create(struct rpi_compositor *compositor)
 	output->egl_window.width = modeinfo.width;
 	output->egl_window.height = modeinfo.height;
 
+	output->base.start_repaint_loop = rpi_output_start_repaint_loop;
 	output->base.repaint = rpi_output_repaint;
 	output->base.destroy = rpi_output_destroy;
 	if (compositor->max_planes > 0)

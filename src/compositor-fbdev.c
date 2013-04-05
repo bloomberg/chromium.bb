@@ -123,6 +123,17 @@ to_fbdev_compositor(struct weston_compositor *base)
 }
 
 static void
+fbdev_output_start_repaint_loop(struct weston_output *output)
+{
+	uint32_t msec;
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	weston_output_finish_frame(output, msec);
+}
+
+static void
 fbdev_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct fbdev_output *output = to_fbdev_output(base);
@@ -200,12 +211,8 @@ static int
 finish_frame_handler(void *data)
 {
 	struct fbdev_output *output = data;
-	uint32_t msec;
-	struct timeval tv;
 
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	weston_output_finish_frame(&output->base, msec);
+	fbdev_output_start_repaint_loop(&output->base);
 
 	return 1;
 }
@@ -504,6 +511,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 		goto out_free;
 	}
 
+	output->base.start_repaint_loop = fbdev_output_start_repaint_loop;
 	output->base.repaint = fbdev_output_repaint;
 	output->base.destroy = fbdev_output_destroy;
 	output->base.assign_planes = NULL;

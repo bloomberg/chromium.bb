@@ -39,6 +39,7 @@
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "../shared/image-loader.h"
+#include "../shared/os-compatibility.h"
 
 struct wayland_compositor {
 	struct weston_compositor	 base;
@@ -49,6 +50,7 @@ struct wayland_compositor {
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
+		struct wl_shm *shm;
 
 		struct {
 			int32_t x, y, width, height;
@@ -68,6 +70,7 @@ struct wayland_compositor {
 struct wayland_output {
 	struct weston_output	base;
 	struct {
+		int 			 draw_initial_frame;
 		struct wl_surface	*surface;
 		struct wl_shell_surface	*shell_surface;
 		struct wl_egl_window	*egl_window;
@@ -125,6 +128,90 @@ frame_done(void *data, struct wl_callback *callback, uint32_t time)
 static const struct wl_callback_listener frame_listener = {
 	frame_done
 };
+
+static void
+buffer_release(void *data, struct wl_buffer *buffer)
+{
+	wl_buffer_destroy(buffer);
+}
+
+static const struct wl_buffer_listener buffer_listener = {
+	buffer_release
+};
+
+static void
+draw_initial_frame(struct wayland_output *output)
+{
+	struct wayland_compositor *c =
+		(struct wayland_compositor *) output->base.compositor;
+	struct wl_shm *shm = c->parent.shm;
+	struct wl_surface *surface = output->parent.surface;
+	struct wl_shm_pool *pool;
+	struct wl_buffer *buffer;
+
+	int width, height, stride;
+	int size;
+	int fd;
+	void *data;
+
+	width = output->mode.width + c->border.left + c->border.right;
+	height = output->mode.height + c->border.top + c->border.bottom;
+	stride = width * 4;
+	size = height * stride;
+
+	fd = os_create_anonymous_file(size);
+	if (fd < 0) {
+		perror("os_create_anonymous_file");
+		return;
+	}
+
+	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (data == MAP_FAILED) {
+		perror("mmap");
+		close(fd);
+		return;
+	}
+
+	pool = wl_shm_create_pool(shm, fd, size);
+
+	buffer = wl_shm_pool_create_buffer(pool, 0,
+					   width, height,
+					   stride,
+					   WL_SHM_FORMAT_ARGB8888);
+	wl_buffer_add_listener(buffer, &buffer_listener, buffer);
+	wl_shm_pool_destroy(pool);
+	close(fd);
+
+	memset(data, 0, size);
+
+	wl_surface_attach(surface, buffer, 0, 0);
+
+	/* We only need to damage some part, as its only transparant
+	 * pixels anyway. */
+	wl_surface_damage(surface, 0, 0, 1, 1);
+}
+
+static void
+wayland_output_start_repaint_loop(struct weston_output *output_base)
+{
+	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wl_callback *callback;
+
+	/* If this is the initial frame, we need to attach a buffer so that
+	 * the compositor can map the surface and include it in its render
+	 * loop. If the surface doesn't end up in the render loop, the frame
+	 * callback won't be invoked. The buffer is transparent and of the
+	 * same size as the future real output buffer. */
+	if (output->parent.draw_initial_frame) {
+		output->parent.draw_initial_frame = 0;
+
+		draw_initial_frame(output);
+	}
+
+	callback = wl_surface_frame(output->parent.surface);
+	wl_callback_add_listener(callback, &frame_listener, output);
+	wl_surface_commit(output->parent.surface);
+}
 
 static void
 wayland_output_repaint(struct weston_output *output_base,
@@ -204,6 +291,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 			output->parent.egl_window) < 0)
 		goto cleanup_window;
 
+	output->parent.draw_initial_frame = 1;
 	output->parent.shell_surface =
 		wl_shell_get_shell_surface(c->parent.shell,
 					   output->parent.surface);
@@ -212,6 +300,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	output->base.origin = output->base.current;
+	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;
 	output->base.assign_planes = NULL;
@@ -580,6 +669,9 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 					 &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		display_add_seat(c, name);
+	} else if (strcmp(interface, "wl_shm") == 0) {
+		c->parent.shm =
+			wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	}
 }
 
@@ -614,9 +706,14 @@ wayland_restore(struct weston_compositor *ec)
 static void
 wayland_destroy(struct weston_compositor *ec)
 {
+	struct wayland_compositor *c = (struct wayland_compositor *) ec;
+
 	ec->renderer->destroy(ec);
 
 	weston_compositor_shutdown(ec);
+
+	if (c->parent.shm)
+		wl_shm_destroy(c->parent.shm);
 
 	free(ec);
 }

@@ -326,6 +326,17 @@ x11_input_destroy(struct x11_compositor *compositor)
 }
 
 static void
+x11_output_start_repaint_loop(struct weston_output *output)
+{
+	uint32_t msec;
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	weston_output_finish_frame(output, msec);
+}
+
+static void
 x11_output_repaint_gl(struct weston_output *output_base,
 		      pixman_region32_t *damage)
 {
@@ -376,12 +387,8 @@ static int
 finish_frame_handler(void *data)
 {
 	struct x11_output *output = data;
-	uint32_t msec;
-	struct timeval tv;
-	
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	weston_output_finish_frame(&output->base, msec);
+
+	x11_output_start_repaint_loop(&output->base);
 
 	return 1;
 }
@@ -773,6 +780,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		x11_output_wait_for_map(c, output);
 
 	output->base.origin = output->base.current;
+	output->base.start_repaint_loop = x11_output_start_repaint_loop;
 	if (c->use_pixman)
 		output->base.repaint = x11_output_repaint_shm;
 	else

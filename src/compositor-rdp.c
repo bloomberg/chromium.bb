@@ -265,6 +265,16 @@ rdp_peer_refresh_region(pixman_region32_t *region, freerdp_peer *peer)
 	}
 }
 
+static void
+rdp_output_start_repaint_loop(struct weston_output *output)
+{
+	uint32_t msec;
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	weston_output_finish_frame(output, msec);
+}
 
 static void
 rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
@@ -302,13 +312,7 @@ rdp_output_destroy(struct weston_output *output_base)
 static int
 finish_frame_handler(void *data)
 {
-	struct weston_output *output = data;
-	uint32_t msec;
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	weston_output_finish_frame(output, msec);
+	rdp_output_start_repaint_loop(data);
 
 	return 1;
 }
@@ -461,6 +465,7 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 	output->finish_frame_timer = wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.origin = output->base.current;
+	output->base.start_repaint_loop = rdp_output_start_repaint_loop;
 	output->base.repaint = rdp_output_repaint;
 	output->base.destroy = rdp_output_destroy;
 	output->base.assign_planes = NULL;

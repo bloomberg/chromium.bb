@@ -43,16 +43,21 @@ struct headless_output {
 };
 
 
-static int
-finish_frame_handler(void *data)
+static void
+headless_output_start_repaint_loop(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	uint32_t msec;
 	struct timeval tv;
 
 	gettimeofday(&tv, NULL);
 	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	weston_output_finish_frame(output, msec);
+}
+
+static int
+finish_frame_handler(void *data)
+{
+	headless_output_start_repaint_loop(data);
 
 	return 1;
 }
@@ -119,6 +124,7 @@ headless_compositor_create_output(struct headless_compositor *c,
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.origin = output->base.current;
+	output->base.start_repaint_loop = headless_output_start_repaint_loop;
 	output->base.repaint = headless_output_repaint;
 	output->base.destroy = headless_output_destroy;
 	output->base.assign_planes = NULL;
