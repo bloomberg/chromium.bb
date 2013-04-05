@@ -898,6 +898,8 @@
         'browser/managed_mode/managed_user_service.h',
         'browser/managed_mode/managed_user_service_factory.cc',
         'browser/managed_mode/managed_user_service_factory.h',
+        'browser/managed_mode/scoped_extension_elevation.cc',
+        'browser/managed_mode/scoped_extension_elevation.h',
         'browser/media/audio_stream_indicator.cc',
         'browser/media/audio_stream_indicator.h',
         'browser/media/media_capture_devices_dispatcher.cc',

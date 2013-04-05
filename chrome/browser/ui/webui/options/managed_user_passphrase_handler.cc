@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_passphrase.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -67,9 +68,8 @@ void ManagedUserPassphraseHandler::GetLocalizedValues(
 }
 
 void ManagedUserPassphraseHandler::PassphraseDialogCallback(bool success) {
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  managed_user_service->SetElevated(true);
+  ManagedModeNavigationObserver::FromWebContents(
+      web_ui()->GetWebContents())->set_elevated(success);
   base::FundamentalValue unlock_success(success);
   web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
                                    unlock_success);
@@ -85,7 +85,8 @@ void ManagedUserPassphraseHandler::SetElevated(
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile);
   if (!elevated) {
-    managed_user_service->SetElevated(false);
+    ManagedModeNavigationObserver::FromWebContents(
+        web_ui()->GetWebContents())->set_elevated(false);
     return;
   }
   managed_user_service->RequestAuthorization(
@@ -116,10 +117,8 @@ void ManagedUserPassphraseHandler::ResetPassphrase(
 void ManagedUserPassphraseHandler::SetLocalPassphrase(
     const base::ListValue* args) {
   // Only change the passphrase if the custodian is authenticated.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  if (!managed_user_service->IsElevated())
+  if (!ManagedModeNavigationObserver::FromWebContents(
+      web_ui()->GetWebContents())->is_elevated())
     return;
 
   std::string passphrase;

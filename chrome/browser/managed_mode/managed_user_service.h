@@ -44,9 +44,6 @@ class ManagedUserService : public ProfileKeyedService,
 
   bool ProfileIsManaged() const;
 
-  // Deprecated. Use IsElevatedForWebContents() instead.
-  bool IsElevated() const;
-
   // Returns the elevation state for specific WebContents.
   bool IsElevatedForWebContents(const content::WebContents* web_contents) const;
 
@@ -90,10 +87,6 @@ class ManagedUserService : public ProfileKeyedService,
   void GetManualExceptionsForHost(const std::string& host,
                                   std::vector<GURL>* urls);
 
-  // Deprecated. Use the CanSkipPassphraseDialog() method which requires a
-  // WebContents parameter instead.
-  bool CanSkipPassphraseDialog();
-
   // Checks if the passphrase dialog can be skipped (the profile is already in
   // elevated state for the given WebContents or the passphrase is empty).
   bool CanSkipPassphraseDialog(const content::WebContents* web_contents) const;
@@ -101,16 +94,6 @@ class ManagedUserService : public ProfileKeyedService,
   // Handles the request to authorize as the custodian of the managed user.
   void RequestAuthorization(content::WebContents* web_contents,
                             const PassphraseCheckedCallback& callback);
-
-  // Handles the request to authorize as the custodian of the managed user.
-  // Also determines the active web contents to be passed to the passphrase
-  // dialog.
-  void RequestAuthorizationUsingActiveWebContents(
-      Browser* browser,
-      const PassphraseCheckedCallback& callback);
-
-  // Set the elevation state for the profile.
-  void SetElevated(bool is_elevated);
 
   // Add an elevation for a specific extension which allows the managed user to
   // install/uninstall this specific extension.
@@ -195,11 +178,6 @@ class ManagedUserService : public ProfileKeyedService,
 
   // Owns us via the ProfileKeyedService mechanism.
   Profile* profile_;
-
-  // If ManagedUserService is in an elevated state, a custodian user has
-  // authorized making changes (to install additional content packs, for
-  // example).
-  bool is_elevated_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

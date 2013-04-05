@@ -104,9 +104,7 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
                  io_url_filter_, base::Owned(url_map.release())));
 }
 
-ManagedUserService::ManagedUserService(Profile* profile)
-    : profile_(profile),
-      is_elevated_(false) {
+ManagedUserService::ManagedUserService(Profile* profile) : profile_(profile) {
 }
 
 ManagedUserService::~ManagedUserService() {
@@ -116,15 +114,11 @@ bool ManagedUserService::ProfileIsManaged() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
 }
 
-bool ManagedUserService::IsElevated() const {
-  return is_elevated_;
-}
-
 bool ManagedUserService::IsElevatedForWebContents(
     const content::WebContents* web_contents) const {
   const ManagedModeNavigationObserver* observer =
       ManagedModeNavigationObserver::FromWebContents(web_contents);
-  return observer->is_elevated();
+  return observer ? observer->is_elevated() : false;
 }
 
 bool ManagedUserService::IsPassphraseEmpty() const {
@@ -132,17 +126,10 @@ bool ManagedUserService::IsPassphraseEmpty() const {
   return pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
 }
 
-bool ManagedUserService::CanSkipPassphraseDialog() {
-  // If the profile is already elevated or there is no passphrase set, no
-  // authentication is needed.
-  return IsElevated() || IsPassphraseEmpty();
-}
-
 bool ManagedUserService::CanSkipPassphraseDialog(
     const content::WebContents* web_contents) const {
-  return IsElevated() ||
-      IsElevatedForWebContents(web_contents) ||
-      IsPassphraseEmpty();
+  return IsElevatedForWebContents(web_contents) ||
+         IsPassphraseEmpty();
 }
 
 void ManagedUserService::RequestAuthorization(
@@ -155,14 +142,6 @@ void ManagedUserService::RequestAuthorization(
 
   // Is deleted automatically when the dialog is closed.
   new ManagedUserPassphraseDialog(web_contents, callback);
-}
-
-void ManagedUserService::RequestAuthorizationUsingActiveWebContents(
-    Browser* browser,
-    const PassphraseCheckedCallback& callback) {
-  RequestAuthorization(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      callback);
 }
 
 // static
@@ -290,6 +269,15 @@ void ManagedUserService::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      // When an extension was installed or uninstalled, remove the temporary
+      // elevation.
+      const extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
+      RemoveElevationForExtension(extension->id());
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -299,9 +287,6 @@ bool ManagedUserService::ExtensionManagementPolicyImpl(
     const std::string& extension_id,
     string16* error) const {
   if (!ProfileIsManaged())
-    return true;
-
-  if (is_elevated_)
     return true;
 
   if (elevated_for_extensions_.count(extension_id))
@@ -424,12 +409,6 @@ void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
   }
 }
 
-// TODO(akuegel): Rename to SetElevatedForTesting when all callers are changed
-// to set elevation on the ManagedModeNavigationObserver.
-void ManagedUserService::SetElevated(bool is_elevated) {
-  is_elevated_ = is_elevated;
-}
-
 void ManagedUserService::AddElevationForExtension(
     const std::string& extension_id) {
   elevated_for_extensions_.insert(extension_id);
@@ -454,6 +433,10 @@ void ManagedUserService::Init() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(

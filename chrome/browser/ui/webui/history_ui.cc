@@ -28,6 +28,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -605,7 +606,7 @@ void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
   // Check if the managed user is authenticated.
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
-  if (!service->IsElevated())
+  if (!service->IsElevatedForWebContents(web_ui()->GetWebContents()))
     return;
 
   // Since editing a host can have side effects on other hosts, update all of
@@ -751,16 +752,20 @@ void BrowsingHistoryHandler::HandleSetElevated(const ListValue* elevated_arg) {
         base::Bind(&BrowsingHistoryHandler::PassphraseDialogCallback,
                    base::Unretained(this)));
   } else {
-    service->SetElevated(elevated);
+    ManagedModeNavigationObserver* observer =
+        ManagedModeNavigationObserver::FromWebContents(
+            web_ui()->GetWebContents());
+    observer->set_elevated(false);
     ManagedUserSetElevated();
   }
 }
 
 void BrowsingHistoryHandler::PassphraseDialogCallback(bool success) {
   if (success) {
-    ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-        Profile::FromWebUI(web_ui()));
-    service->SetElevated(true);
+    ManagedModeNavigationObserver* observer =
+        ManagedModeNavigationObserver::FromWebContents(
+            web_ui()->GetWebContents());
+    observer->set_elevated(true);
     ManagedUserSetElevated();
   }
 }
@@ -768,7 +773,8 @@ void BrowsingHistoryHandler::PassphraseDialogCallback(bool success) {
 void BrowsingHistoryHandler::ManagedUserSetElevated() {
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
-  base::FundamentalValue is_elevated(service->IsElevated());
+  base::FundamentalValue is_elevated(service->IsElevatedForWebContents(
+      web_ui()->GetWebContents()));
   web_ui()->CallJavascriptFunction("managedUserElevated", is_elevated);
 }
 

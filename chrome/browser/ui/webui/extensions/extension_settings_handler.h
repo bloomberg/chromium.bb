@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/requirements_checker.h"
+#include "chrome/browser/managed_mode/scoped_extension_elevation.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -136,6 +137,15 @@ class ExtensionSettingsHandler
   // If the authentication of the managed user was successful,
   // it gives this information back to the UI.
   void PassphraseDialogCallback(bool success);
+
+  // Generates a temporary elevation for a managed user which is bound to the
+  // life-time of the return value.
+  scoped_ptr<ScopedExtensionElevation> GetScopedElevation(
+      const std::string& extension_id);
+
+  // Verifies that the management policy allows the user to enable,
+  // disable or uninstall an extension.
+  bool CheckUserMayModifySettings(const extensions::Extension* extension);
 
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);

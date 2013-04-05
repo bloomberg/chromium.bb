@@ -16,4 +16,5 @@ ManagedUserSettingsTest::~ManagedUserSettingsTest() {
 void ManagedUserSettingsTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kManaged);
   command_line->AppendSwitch(switches::kEnableManagedUsers);
+  command_line->AppendSwitch(switches::kNoFirstRun);
 }

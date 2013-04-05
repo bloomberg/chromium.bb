@@ -188,7 +188,6 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   ManagedUserService managed_user_service(profile_.get());
   managed_user_service.Init();
-  managed_user_service.SetElevated(true);
   ManagedModeURLFilter* url_filter =
       managed_user_service.GetURLFilterForUIThread();
   ManagedModeURLFilterObserver observer(url_filter);
@@ -273,8 +272,10 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
 #endif
 
   // Disable the first content pack.
+  managed_user_service.AddElevationForExtension(extension->id());
   service_->DisableExtension(extension->id(),
                              extensions::Extension::DISABLE_USER_ACTION);
+  managed_user_service.RemoveElevationForExtension(extension->id());
   observer.Wait();
 
   site_lists = GetActiveSiteLists(&managed_user_service);

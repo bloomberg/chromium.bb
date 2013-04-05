@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -131,7 +132,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension->GetBasicInfo(enabled, extension_data);
 
   extension_data->SetBoolean("userModifiable",
-      management_policy_->UserMayModifySettings(extension, NULL));
+      CheckUserMayModifySettings(extension));
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -554,8 +555,10 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 void ExtensionSettingsHandler::PassphraseDialogCallback(bool success) {
   if (!success)
     return;
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ManagedUserServiceFactory::GetForProfile(profile)->SetElevated(true);
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(
+          web_ui()->GetWebContents());
+  observer->set_elevated(true);
   HandleRequestExtensionsData(NULL);
 }
 
@@ -570,9 +573,38 @@ void ExtensionSettingsHandler::ManagedUserSetElevated(const ListValue* args) {
         base::Bind(&ExtensionSettingsHandler::PassphraseDialogCallback,
                    base::Unretained(this)));
   } else {
-    service->SetElevated(false);
+    ManagedModeNavigationObserver* observer =
+        ManagedModeNavigationObserver::FromWebContents(
+            web_ui()->GetWebContents());
+    observer->set_elevated(false);
     HandleRequestExtensionsData(NULL);
   }
+}
+
+scoped_ptr<ScopedExtensionElevation>
+    ExtensionSettingsHandler::GetScopedElevation(
+        const std::string& extension_id) {
+  // web_ui() can be NULL in a unit_test.
+  if (web_ui() == NULL)
+    return scoped_ptr<ScopedExtensionElevation>(NULL);
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  scoped_ptr<ScopedExtensionElevation> elevation(
+      new ScopedExtensionElevation(service));
+  if (service->ProfileIsManaged() &&
+      service->IsElevatedForWebContents(web_ui()->GetWebContents())) {
+    elevation->AddExtension(extension_id);
+  }
+  return elevation.Pass();
+}
+
+bool ExtensionSettingsHandler::CheckUserMayModifySettings(
+    const Extension* extension) {
+  // Get managed user elevation for a specific extension id. The elevation will
+  // be removed automatically when |elevation| goes out of scope.
+  scoped_ptr<ScopedExtensionElevation> elevation =
+      GetScopedElevation(extension->id());
+  return management_policy_->UserMayModifySettings(extension, NULL);
 }
 
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
@@ -624,7 +656,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       ManagedUserServiceFactory::GetForProfile(profile);
 
   bool is_managed = service->ProfileIsManaged();
-  bool is_elevated = service->IsElevated();
+  bool is_elevated =
+      service->IsElevatedForWebContents(web_ui()->GetWebContents());
   bool developer_mode =
       (!is_managed || is_elevated) &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
@@ -734,8 +767,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
 
   const Extension* extension =
       extension_service_->GetInstalledExtension(extension_id);
-  if (!extension ||
-      !management_policy_->UserMayModifySettings(extension, NULL)) {
+  if (!extension || !CheckUserMayModifySettings(extension)) {
     LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
                << "made. Extension id: " << extension->id();
     return;
@@ -765,6 +797,10 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
       prefs->SetBrowserActionVisibility(extension, true);
     }
   } else {
+    // Get managed user elevation for a specific extension id. The elevation
+    // will be removed automatically when |elevation| goes out of scope.
+    scoped_ptr<ScopedExtensionElevation> elevation =
+        GetScopedElevation(extension_id);
     extension_service_->DisableExtension(
         extension_id, Extension::DISABLE_USER_ACTION);
   }
@@ -809,7 +845,7 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
   if (!extension)
     return;
 
-  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
+  if (!CheckUserMayModifySettings(extension)) {
     LOG(ERROR) << "Attempt to change allow file access of an extension that is "
                << "non-usermanagable was made. Extension id : "
                << extension->id();
@@ -828,7 +864,7 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
   if (!extension)
     return;
 
-  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
+  if (!CheckUserMayModifySettings(extension)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
                << "was made. Extension id : " << extension->id();
     return;

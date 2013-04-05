@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -41,20 +42,33 @@ void ManagedUserSettingsHandler::InitializeHandler() {
 }
 
 void ManagedUserSettingsHandler::InitializePage() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableManagedUsers)) {
-    PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-    base::FundamentalValue is_passphrase_set(!pref_service->GetString(
-        prefs::kManagedModeLocalPassphrase).empty());
-    web_ui()->CallJavascriptFunction(
-        "ManagedUserSettings.passphraseChanged",
-        is_passphrase_set);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableManagedUsers)) {
+    return;
+  }
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::FundamentalValue is_passphrase_set(!pref_service->GetString(
+      prefs::kManagedModeLocalPassphrase).empty());
+  web_ui()->CallJavascriptFunction(
+      "ManagedUserSettings.passphraseChanged",
+      is_passphrase_set);
+  if ((first_run::IsChromeFirstRun() &&
+       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoFirstRun)) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kResetLocalPassphrase)) {
+    ManagedModeNavigationObserver::FromWebContents(
+        web_ui()->GetWebContents())->set_elevated(true);
   }
 }
 
 void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
   start_time_ = base::TimeTicks::Now();
   content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
+  if (ManagedModeNavigationObserver::FromWebContents(
+      web_ui()->GetWebContents())->is_elevated()) {
+    web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
+                                     base::FundamentalValue(true));
+  }
 }
 
 void ManagedUserSettingsHandler::GetLocalizedValues(

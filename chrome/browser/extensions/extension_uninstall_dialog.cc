@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
@@ -150,13 +151,17 @@ void ExtensionUninstallDialog::Observe(
 bool ExtensionUninstallDialog::ShowAuthorizationDialog() {
   ManagedUserService* service =
       ManagedUserServiceFactory::GetForProfile(profile_);
-  if (service->ProfileIsManaged() && !service->CanSkipPassphraseDialog()) {
-    service->RequestAuthorizationUsingActiveWebContents(
-        browser_,
+  content::WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (service->ProfileIsManaged() &&
+      !service->CanSkipPassphraseDialog(web_contents)) {
+    service->RequestAuthorization(
+        web_contents,
         base::Bind(&ExtensionUninstallDialog::OnAuthorizationResult,
                    base::Unretained(this)));
     return true;
   }
+  service->AddElevationForExtension(extension_->id());
   return false;
 }
 
