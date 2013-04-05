@@ -99,10 +99,6 @@ public:
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
-    void attachToScrollingCoordinatorWithParent(RenderLayerBacking* parent);
-    void detachFromScrollingCoordinator();
-    uint64_t scrollLayerID() const { return m_scrollLayerID; }
-    
     bool hasMaskLayer() const { return m_maskLayer != 0; }
 
     GraphicsLayer* parentForSublayers() const;

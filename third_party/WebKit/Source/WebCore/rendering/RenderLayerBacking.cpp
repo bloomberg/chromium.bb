@@ -108,7 +108,6 @@ bool RenderLayerBacking::m_creatingPrimaryGraphicsLayer = false;
 
 RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
     : m_owningLayer(layer)
-    , m_scrollLayerID(0)
     , m_artificiallyInflatedBounds(false)
     , m_boundsConstrainedByClipping(false)
     , m_isMainFrameRenderViewLayer(false)
@@ -158,7 +157,6 @@ RenderLayerBacking::~RenderLayerBacking()
     updateBackgroundLayer(false);
     updateMaskLayer(false);
     updateScrollingLayers(false);
-    detachFromScrollingCoordinator();
     destroyGraphicsLayers();
 }
 
@@ -224,13 +222,6 @@ void RenderLayerBacking::adjustTiledBackingCoverage()
 
         if (frameView->verticalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
             tileCoverage |= TiledBacking::CoverageForVerticalScrolling;
-
-        if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-            // Ask our TiledBacking for large tiles unless the only reason we're main-thread-scrolling
-            // is a page overlay (find-in-page, the Web Inspector highlight mechanism, etc.).
-            if (scrollingCoordinator->mainThreadScrollingReasons() & ~ScrollingCoordinator::ForcedOnMainThread)
-                tileCoverage |= TiledBacking::CoverageForSlowScrolling;
-        }
     }
 
     tiledBacking()->setTileCoverage(tileCoverage);
@@ -1207,12 +1198,6 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
         }
     }
     
-    if (layerChanged) {
-        // This assumes that the background layer is only used for fixed backgrounds, which is currently a correct assumption.
-        if (renderer()->view())
-            compositor()->fixedRootBackgroundLayerChanged();
-    }
-    
     return layerChanged;
 }
 
@@ -1282,40 +1267,6 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
     }
 
     return layerChanged;
-}
-
-void RenderLayerBacking::attachToScrollingCoordinatorWithParent(RenderLayerBacking* parent)
-{
-    ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer);
-    if (!scrollingCoordinator)
-        return;
-
-    // FIXME: When we support overflow areas, we will have to refine this for overflow areas that are also
-    // positon:fixed.
-    ScrollingNodeType nodeType;
-    if (renderer()->style()->position() == FixedPosition)
-        nodeType = FixedNode;
-    else if (renderer()->style()->position() == StickyPosition)
-        nodeType = StickyNode;
-    else
-        nodeType = ScrollingNode;
-
-    ScrollingNodeID parentID = parent ? parent->scrollLayerID() : 0;
-    m_scrollLayerID = scrollingCoordinator->attachToStateTree(nodeType, m_scrollLayerID ? m_scrollLayerID : scrollingCoordinator->uniqueScrollLayerID(), parentID);
-}
-
-void RenderLayerBacking::detachFromScrollingCoordinator()
-{
-    // If m_scrollLayerID is 0, then this backing is not attached to the ScrollingCoordinator.
-    if (!m_scrollLayerID)
-        return;
-
-    ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer);
-    if (!scrollingCoordinator)
-        return;
-
-    scrollingCoordinator->detachFromStateTree(m_scrollLayerID);
-    m_scrollLayerID = 0;
 }
 
 GraphicsLayerPaintingPhase RenderLayerBacking::paintingPhaseForPrimaryLayer() const
@@ -1953,7 +1904,6 @@ float RenderLayerBacking::deviceScaleFactor() const
 
 void RenderLayerBacking::didCommitChangesForLayer(const GraphicsLayer* layer) const
 {
-    compositor()->didFlushChangesForLayer(m_owningLayer, layer);
 }
 
 bool RenderLayerBacking::getCurrentTransform(const GraphicsLayer* graphicsLayer, TransformationMatrix& transform) const

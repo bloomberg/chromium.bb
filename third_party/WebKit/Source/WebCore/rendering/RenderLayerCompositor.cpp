@@ -204,7 +204,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_reevaluateCompositingAfterLayout(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
-    , m_flushingLayers(false)
     , m_shouldFlushOnReattach(false)
     , m_forceCompositingMode(false)
     , m_inPostLayoutUpdate(false)
@@ -339,9 +338,6 @@ void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
 
     AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame()->animation());
 
-    ASSERT(!m_flushingLayers);
-    m_flushingLayers = true;
-
     if (GraphicsLayer* rootLayer = rootGraphicsLayer()) {
         FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
         if (frameView) {
@@ -350,27 +346,6 @@ void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
             rootLayer->flushCompositingState(visibleRect);
         }
     }
-    
-    ASSERT(m_flushingLayers);
-    m_flushingLayers = false;
-
-    if (!m_viewportConstrainedLayersNeedingUpdate.isEmpty()) {
-        HashSet<RenderLayer*>::const_iterator end = m_viewportConstrainedLayersNeedingUpdate.end();
-        for (HashSet<RenderLayer*>::const_iterator it = m_viewportConstrainedLayersNeedingUpdate.begin(); it != end; ++it)
-            registerOrUpdateViewportConstrainedLayer(*it);
-        
-        m_viewportConstrainedLayersNeedingUpdate.clear();
-    }
-}
-
-void RenderLayerCompositor::didFlushChangesForLayer(RenderLayer* layer, const GraphicsLayer* graphicsLayer)
-{
-    if (m_viewportConstrainedLayers.contains(layer))
-        m_viewportConstrainedLayersNeedingUpdate.add(layer);
-
-    RenderLayerBacking* backing = layer->backing();
-    if (backing->backgroundLayerPaintsFixedRootBackground() && graphicsLayer == backing->backgroundLayer())
-        fixedRootBackgroundLayerChanged();
 }
 
 void RenderLayerCompositor::didChangeVisibleRect()
@@ -414,20 +389,6 @@ void RenderLayerCompositor::layerTiledBackingUsageChanged(const GraphicsLayer*, 
         ASSERT(m_layersWithTiledBackingCount > 0);
         --m_layersWithTiledBackingCount;
     }
-}
-
-RenderLayerCompositor* RenderLayerCompositor::enclosingCompositorFlushingLayers() const
-{
-    if (!m_renderView->frameView())
-        return 0;
-
-    for (Frame* frame = m_renderView->frameView()->frame(); frame; frame = frame->tree()->parent()) {
-        RenderLayerCompositor* compositor = frame->contentRenderer() ? frame->contentRenderer()->compositor() : 0;
-        if (compositor->isFlushingLayers())
-            return compositor;
-    }
-    
-    return 0;
 }
 
 void RenderLayerCompositor::scheduleCompositingLayerUpdate()
@@ -625,7 +586,6 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
 
             // At this time, the ScrollingCooridnator only supports the top-level frame.
             if (layer->isRootLayer() && !m_renderView->document()->ownerElement()) {
-                layer->backing()->attachToScrollingCoordinatorWithParent(0);
                 if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                     scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
             }
@@ -1283,17 +1243,6 @@ void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 {
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer);
-}
-
-void RenderLayerCompositor::fixedRootBackgroundLayerChanged()
-{
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
-        RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
-        if (!renderViewBacking)
-            return;
-
-        scrollingCoordinator->updateScrollingNode(renderViewBacking->scrollLayerID(), scrollLayer(), fixedRootBackgroundLayer());
-    }
 }
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
@@ -2935,7 +2884,6 @@ void RenderLayerCompositor::updateViewportConstraintStatus(RenderLayer* layer)
 void RenderLayerCompositor::addViewportConstrainedLayer(RenderLayer* layer)
 {
     m_viewportConstrainedLayers.add(layer);
-    registerOrUpdateViewportConstrainedLayer(layer);
 }
 
 void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
@@ -2943,9 +2891,7 @@ void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
     if (!m_viewportConstrainedLayers.contains(layer))
         return;
 
-    unregisterViewportConstrainedLayer(layer);
     m_viewportConstrainedLayers.remove(layer);
-    m_viewportConstrainedLayersNeedingUpdate.remove(layer);
 }
 
 FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportConstraints(RenderLayer* layer) const
@@ -3007,65 +2953,6 @@ StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportCo
     return constraints;
 }
 
-static RenderLayerBacking* nearestScrollingCoordinatorAncestor(RenderLayer* layer)
-{
-    RenderLayer* ancestor = layer->parent();
-    while (ancestor) {
-        if (RenderLayerBacking* backing = ancestor->backing()) {
-            if (backing->scrollLayerID() && !ancestor->scrollsOverflow())
-                return backing;
-        }
-        ancestor = ancestor->parent();
-    }
-
-    return 0;
-}
-
-void RenderLayerCompositor::registerOrUpdateViewportConstrainedLayer(RenderLayer* layer)
-{
-    // FIXME: We should support sticky position here! And we should eventuall support fixed/sticky elements
-    // that are inside non-main frames once we get non-main frames scrolling with the ScrollingCoordinator.
-    if (m_renderView->document()->ownerElement())
-        return;
-
-    ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
-    if (!scrollingCoordinator)
-        return;
-
-    // FIXME: rename to supportsViewportConstrainedPositionLayers()?
-    if (!scrollingCoordinator->supportsFixedPositionLayers() || !layer->parent())
-        return;
-
-    ASSERT(m_viewportConstrainedLayers.contains(layer));
-    ASSERT(layer->isComposited());
-
-    RenderLayerBacking* backing = layer->backing();
-    if (!backing)
-        return;
-
-    ScrollingNodeID nodeID = backing->scrollLayerID();
-    RenderLayerBacking* parent = nearestScrollingCoordinatorAncestor(layer);
-    if (!parent)
-        return;
-
-    // Always call this even if the backing is already attached because the parent may have changed.
-    backing->attachToScrollingCoordinatorWithParent(parent);
-    nodeID = backing->scrollLayerID();
-
-    if (layer->renderer()->isStickyPositioned())
-        scrollingCoordinator->updateViewportConstrainedNode(nodeID, computeStickyViewportConstraints(layer), backing->graphicsLayer());
-    else
-        scrollingCoordinator->updateViewportConstrainedNode(nodeID, computeFixedViewportConstraints(layer), backing->graphicsLayer());
-}
-
-void RenderLayerCompositor::unregisterViewportConstrainedLayer(RenderLayer* layer)
-{
-    ASSERT(m_viewportConstrainedLayers.contains(layer));
-
-    if (RenderLayerBacking* backing = layer->backing())
-        backing->detachFromScrollingCoordinator();
-}
-
 void RenderLayerCompositor::windowScreenDidChange(PlatformDisplayID displayID)
 {
     if (m_layerUpdater)
@@ -3105,7 +2992,6 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     info.addMember(m_clipLayer, "clipLayer");
     info.addMember(m_scrollLayer, "scrollLayer");
     info.addMember(m_viewportConstrainedLayers, "viewportConstrainedLayers");
-    info.addMember(m_viewportConstrainedLayersNeedingUpdate, "viewportConstrainedLayersNeedingUpdate");
     info.addMember(m_overflowControlsHostLayer, "overflowControlsHostLayer");
     info.addMember(m_layerForHorizontalScrollbar, "layerForHorizontalScrollbar");
     info.addMember(m_layerForVerticalScrollbar, "layerForVerticalScrollbar");

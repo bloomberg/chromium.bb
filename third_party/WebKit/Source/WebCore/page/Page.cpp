@@ -249,17 +249,6 @@ ScrollingCoordinator* Page::scrollingCoordinator()
     return m_scrollingCoordinator.get();
 }
 
-String Page::scrollingStateTreeAsText()
-{
-    if (Document* document = m_mainFrame->document())
-        document->updateLayout();
-
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        return scrollingCoordinator->scrollingStateTreeAsText();
-
-    return String();
-}
-
 String Page::mainThreadScrollingReasonsAsText()
 {
     if (Document* document = m_mainFrame->document())
@@ -813,34 +802,6 @@ void Page::setShouldSuppressScrollbarAnimations(bool suppressAnimations)
     }
 
     m_suppressScrollbarAnimations = suppressAnimations;
-}
-
-bool Page::rubberBandsAtBottom()
-{
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        return scrollingCoordinator->rubberBandsAtBottom();
-
-    return false;
-}
-
-void Page::setRubberBandsAtBottom(bool rubberBandsAtBottom)
-{
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        scrollingCoordinator->setRubberBandsAtBottom(rubberBandsAtBottom);
-}
-
-bool Page::rubberBandsAtTop()
-{
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        return scrollingCoordinator->rubberBandsAtTop();
-
-    return false;
-}
-
-void Page::setRubberBandsAtTop(bool rubberBandsAtTop)
-{
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        scrollingCoordinator->setRubberBandsAtTop(rubberBandsAtTop);
 }
 
 void Page::setPagination(const Pagination& pagination)

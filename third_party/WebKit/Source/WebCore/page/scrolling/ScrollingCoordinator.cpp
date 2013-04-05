@@ -31,70 +31,303 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "GraphicsLayer.h"
+#include "GraphicsLayerChromium.h"
 #include "IntRect.h"
 #include "Page.h"
 #include "PlatformWheelEvent.h"
 #include "PluginViewBase.h"
 #include "Region.h"
+#include "RenderLayerBacking.h"
+#include "RenderLayerCompositor.h"
 #include "RenderView.h"
 #include "ScrollAnimator.h"
-#include <wtf/MainThread.h>
+#include "ScrollbarThemeComposite.h"
+#include "WebScrollbarImpl.h"
+#include "WebScrollbarThemeGeometryNative.h"
+#include <public/Platform.h>
+#include <public/WebCompositorSupport.h>
+#include <public/WebLayerPositionConstraint.h>
+#include <public/WebScrollbar.h>
+#include <public/WebScrollbarLayer.h>
+#include <public/WebScrollbarThemeGeometry.h>
+#include <public/WebScrollbarThemePainter.h>
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
+using WebKit::WebLayer;
+using WebKit::WebLayerPositionConstraint;
+using WebKit::WebRect;
+using WebKit::WebScrollbarLayer;
+using WebKit::WebVector;
 
-#if ENABLE(THREADED_SCROLLING)
-#include "ScrollingCoordinatorMac.h"
-#endif
-
-#if PLATFORM(CHROMIUM)
-#include "ScrollingCoordinatorChromium.h"
-#endif
-
-#if USE(COORDINATED_GRAPHICS)
-#include "ScrollingCoordinatorCoordinatedGraphics.h"
-#endif
-
-#if PLATFORM(BLACKBERRY)
-#include "ScrollingCoordinatorBlackBerry.h"
-#endif
 
 namespace WebCore {
 
+static WebLayer* scrollingWebLayerForGraphicsLayer(GraphicsLayer* layer)
+{
+    return layer->platformLayer();
+}
+
+WebLayer* ScrollingCoordinator::scrollingWebLayerForScrollableArea(ScrollableArea* scrollableArea)
+{
+    GraphicsLayer* graphicsLayer = scrollLayerForScrollableArea(scrollableArea);
+    return graphicsLayer ? scrollingWebLayerForGraphicsLayer(graphicsLayer) : 0;
+}
+
 PassRefPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 {
-#if USE(ACCELERATED_COMPOSITING) && ENABLE(THREADED_SCROLLING)
-    return adoptRef(new ScrollingCoordinatorMac(page));
-#endif
-
-#if PLATFORM(CHROMIUM)
-    return adoptRef(new ScrollingCoordinatorChromium(page));
-#endif
-
-#if USE(COORDINATED_GRAPHICS)
-    return adoptRef(new ScrollingCoordinatorCoordinatedGraphics(page));
-#endif
-
-#if PLATFORM(BLACKBERRY)
-    return adoptRef(new ScrollingCoordinatorBlackBerry(page));
-#endif
-
     return adoptRef(new ScrollingCoordinator(page));
 }
 
 ScrollingCoordinator::ScrollingCoordinator(Page* page)
     : m_page(page)
-    , m_updateMainFrameScrollPositionTimer(this, &ScrollingCoordinator::updateMainFrameScrollPositionTimerFired)
-    , m_scheduledUpdateIsProgrammaticScroll(false)
-    , m_scheduledScrollingLayerPositionAction(SyncScrollingLayerPosition)
-    , m_forceMainThreadScrollLayerPositionUpdates(false)
 {
 }
 
 ScrollingCoordinator::~ScrollingCoordinator()
 {
     ASSERT(!m_page);
+    for (ScrollbarMap::iterator it = m_horizontalScrollbars.begin(); it != m_horizontalScrollbars.end(); ++it)
+        GraphicsLayerChromium::unregisterContentsLayer(it->value->layer());
+    for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
+        GraphicsLayerChromium::unregisterContentsLayer(it->value->layer());
+
+}
+
+void ScrollingCoordinator::setNonFastScrollableRegion(const Region& region)
+{
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view())) {
+        Vector<IntRect> rects = region.rects();
+        WebVector<WebRect> webRects(rects.size());
+        for (size_t i = 0; i < rects.size(); ++i)
+            webRects[i] = rects[i];
+        scrollLayer->setNonFastScrollableRegion(webRects);
+    }
+}
+
+void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
+{
+    ASSERT(m_page);
+
+    // Compute the region of the page that we can't do fast scrolling for. This currently includes
+    // all scrollable areas, such as subframes, overflow divs and list boxes, whose composited
+    // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
+    // is not the main frame.
+    Region nonFastScrollableRegion = computeNonFastScrollableRegion(m_page->mainFrame(), IntPoint());
+    setNonFastScrollableRegion(nonFastScrollableRegion);
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    Vector<IntRect> touchEventTargetRects;
+    computeAbsoluteTouchEventTargetRects(m_page->mainFrame()->document(), touchEventTargetRects);
+    setTouchEventTargetRects(touchEventTargetRects);
+#endif
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(frameView))
+        scrollLayer->setBounds(frameView->contentsSize());
+}
+
+void ScrollingCoordinator::setLayerIsContainerForFixedPositionLayers(GraphicsLayer* layer, bool enable)
+{
+    if (WebLayer* scrollableLayer = scrollingWebLayerForGraphicsLayer(layer))
+        scrollableLayer->setIsContainerForFixedPositionLayers(enable);
+}
+
+static void clearPositionConstraintExceptForLayer(GraphicsLayer* layer, GraphicsLayer* except)
+{
+    if (layer && layer != except && scrollingWebLayerForGraphicsLayer(layer))
+        scrollingWebLayerForGraphicsLayer(layer)->setPositionConstraint(WebLayerPositionConstraint());
+}
+
+static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* layer)
+{
+    ASSERT(layer->isComposited());
+    do {
+        if (layer->renderer()->style()->position() == FixedPosition) {
+            const RenderObject* fixedPositionObject = layer->renderer();
+            bool fixedToRight = !fixedPositionObject->style()->right().isAuto();
+            bool fixedToBottom = !fixedPositionObject->style()->bottom().isAuto();
+            return WebLayerPositionConstraint::fixedPosition(fixedToRight, fixedToBottom);
+        }
+
+        layer = layer->parent();
+    } while (layer && !layer->isComposited());
+    return WebLayerPositionConstraint();
+}
+
+void ScrollingCoordinator::updateLayerPositionConstraint(RenderLayer* layer)
+{
+    ASSERT(layer->backing());
+    RenderLayerBacking* backing = layer->backing();
+    GraphicsLayer* mainLayer = backing->childForSuperlayers();
+
+    // Avoid unnecessary commits
+    clearPositionConstraintExceptForLayer(backing->ancestorClippingLayer(), mainLayer);
+    clearPositionConstraintExceptForLayer(backing->contentsContainmentLayer(), mainLayer);
+    clearPositionConstraintExceptForLayer(backing->graphicsLayer(), mainLayer);
+
+    if (WebLayer* scrollableLayer = scrollingWebLayerForGraphicsLayer(mainLayer))
+        scrollableLayer->setPositionConstraint(computePositionConstraint(layer));
+}
+
+void ScrollingCoordinator::willDestroyScrollableArea(ScrollableArea* scrollableArea)
+{
+    removeWebScrollbarLayer(scrollableArea, HorizontalScrollbar);
+    removeWebScrollbarLayer(scrollableArea, VerticalScrollbar);
+}
+
+void ScrollingCoordinator::removeWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
+{
+    ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
+    if (OwnPtr<WebScrollbarLayer> scrollbarLayer = scrollbars.take(scrollableArea))
+        GraphicsLayerChromium::unregisterContentsLayer(scrollbarLayer->layer());
+}
+
+static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
+{
+    // All Chromium scrollbar themes derive from ScrollbarThemeComposite.
+    ScrollbarThemeComposite* themeComposite = static_cast<ScrollbarThemeComposite*>(scrollbar->theme());
+    WebKit::WebScrollbarThemePainter painter(themeComposite, scrollbar);
+    OwnPtr<WebKit::WebScrollbarThemeGeometry> geometry(WebKit::WebScrollbarThemeGeometryNative::create(themeComposite));
+
+    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createScrollbarLayer(new WebKit::WebScrollbarImpl(scrollbar), painter, geometry.leakPtr()));
+    GraphicsLayerChromium::registerContentsLayer(scrollbarLayer->layer());
+    return scrollbarLayer.release();
+}
+
+static void detachScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer)
+{
+    ASSERT(scrollbarGraphicsLayer);
+
+    scrollbarGraphicsLayer->setContentsToPlatformLayer(0);
+    scrollbarGraphicsLayer->setDrawsContent(true);
+}
+
+static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScrollbarLayer* scrollbarLayer, WebLayer* scrollLayer)
+{
+    ASSERT(scrollbarGraphicsLayer);
+    ASSERT(scrollbarLayer);
+
+    if (!scrollLayer) {
+        detachScrollbarLayer(scrollbarGraphicsLayer);
+        return;
+    }
+    scrollbarLayer->setScrollLayer(scrollLayer);
+    scrollbarGraphicsLayer->setContentsToPlatformLayer(scrollbarLayer->layer());
+    scrollbarGraphicsLayer->setDrawsContent(false);
+}
+
+WebScrollbarLayer* ScrollingCoordinator::addWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, PassOwnPtr<WebKit::WebScrollbarLayer> scrollbarLayer)
+{
+    ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
+    return scrollbars.add(scrollableArea, scrollbarLayer).iterator->value.get();
+}
+
+WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
+{
+    ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
+    return scrollbars.get(scrollableArea);
+}
+
+void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
+{
+#if OS(DARWIN)
+    static const bool platformSupportsCoordinatedScrollbar = false;
+    static const bool platformSupportsMainFrameOnly = false; // Don't care.
+#elif OS(WINDOWS)
+    static const bool platformSupportsCoordinatedScrollbar = true;
+    static const bool platformSupportsMainFrameOnly = true;
+#else
+    static const bool platformSupportsCoordinatedScrollbar = true;
+    static const bool platformSupportsMainFrameOnly = false;
+#endif
+    if (!platformSupportsCoordinatedScrollbar)
+        return;
+
+    bool isMainFrame = (scrollableArea == static_cast<ScrollableArea*>(m_page->mainFrame()->view()));
+    if (!isMainFrame && platformSupportsMainFrameOnly)
+        return;
+
+    GraphicsLayer* scrollbarGraphicsLayer = orientation == HorizontalScrollbar ? horizontalScrollbarLayerForScrollableArea(scrollableArea) : verticalScrollbarLayerForScrollableArea(scrollableArea);
+    if (scrollbarGraphicsLayer) {
+        Scrollbar* scrollbar = orientation == HorizontalScrollbar ? scrollableArea->horizontalScrollbar() : scrollableArea->verticalScrollbar();
+        if (scrollbar->isCustomScrollbar()) {
+            detachScrollbarLayer(scrollbarGraphicsLayer);
+            return;
+        }
+
+        WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, orientation);
+        if (!scrollbarLayer)
+            scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation, createScrollbarLayer(scrollbar));
+
+        // Root layer non-overlay scrollbars should be marked opaque to disable
+        // blending.
+        bool isOpaqueScrollbar = !scrollbar->isOverlayScrollbar();
+        if (!scrollbarGraphicsLayer->contentsOpaque())
+            scrollbarGraphicsLayer->setContentsOpaque(isMainFrame && isOpaqueScrollbar);
+        scrollbarLayer->layer()->setOpaque(scrollbarGraphicsLayer->contentsOpaque());
+
+        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollingWebLayerForScrollableArea(scrollableArea));
+    } else
+        removeWebScrollbarLayer(scrollableArea, orientation);
+}
+
+void ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
+{
+    GraphicsLayerChromium* scrollLayer = static_cast<GraphicsLayerChromium*>(scrollLayerForScrollableArea(scrollableArea));
+    if (scrollLayer)
+        scrollLayer->setScrollableArea(scrollableArea);
+
+    WebLayer* webLayer = scrollingWebLayerForScrollableArea(scrollableArea);
+    if (webLayer) {
+        webLayer->setScrollable(true);
+        webLayer->setScrollPosition(IntPoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
+        webLayer->setMaxScrollPosition(IntSize(scrollableArea->scrollSize(HorizontalScrollbar), scrollableArea->scrollSize(VerticalScrollbar)));
+    }
+    if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, HorizontalScrollbar))
+        setupScrollbarLayer(horizontalScrollbarLayerForScrollableArea(scrollableArea), scrollbarLayer, webLayer);
+    if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, VerticalScrollbar))
+        setupScrollbarLayer(verticalScrollbarLayerForScrollableArea(scrollableArea), scrollbarLayer, webLayer);
+}
+
+void ScrollingCoordinator::setTouchEventTargetRects(const Vector<IntRect>& absoluteHitTestRects)
+{
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view())) {
+        WebVector<WebRect> webRects(absoluteHitTestRects.size());
+        for (size_t i = 0; i < absoluteHitTestRects.size(); ++i)
+            webRects[i] = absoluteHitTestRects[i];
+        scrollLayer->setTouchEventHandlerRegion(webRects);
+    }
+}
+
+void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
+{
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    // The rects are always evaluated and used in the main frame coordinates.
+    FrameView* frameView = m_page->mainFrame()->view();
+    Document* document = m_page->mainFrame()->document();
+
+    // Wait until after layout to update.
+    if (frameView->needsLayout() || !document)
+        return;
+
+    Vector<IntRect> touchEventTargetRects;
+    computeAbsoluteTouchEventTargetRects(document, touchEventTargetRects);
+    setTouchEventTargetRects(touchEventTargetRects);
+#endif
+}
+
+void ScrollingCoordinator::setWheelEventHandlerCount(unsigned count)
+{
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view()))
+        scrollLayer->setHaveWheelEventHandlers(count > 0);
+}
+
+void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView* frameView)
+{
+    UNUSED_PARAM(frameView);
+    setWheelEventHandlerCount(computeCurrentWheelEventHandlerCount());
+}
+
+void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons reasons)
+{
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view()))
+        scrollLayer->setShouldScrollOnMainThread(reasons);
 }
 
 void ScrollingCoordinator::pageDestroyed()
@@ -113,14 +346,10 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
         return false;
 
     // We currently only support composited mode.
-#if USE(ACCELERATED_COMPOSITING)
     RenderView* renderView = m_page->mainFrame()->contentRenderer();
     if (!renderView)
         return false;
     return renderView->usesCompositing();
-#else
-    return false;
-#endif
 }
 
 Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, const IntPoint& frameLocation) const
@@ -136,11 +365,9 @@ Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, 
     if (const FrameView::ScrollableAreaSet* scrollableAreas = frameView->scrollableAreas()) {
         for (FrameView::ScrollableAreaSet::const_iterator it = scrollableAreas->begin(), end = scrollableAreas->end(); it != end; ++it) {
             ScrollableArea* scrollableArea = *it;
-#if USE(ACCELERATED_COMPOSITING)
             // Composited scrollable areas can be scrolled off the main thread.
             if (scrollableArea->usesCompositedScrolling())
                 continue;
-#endif
             IntRect box = scrollableArea->scrollableAreaBoundingBox();
             box.moveBy(offset);
             nonFastScrollableRegion.unite(box);
@@ -280,7 +507,6 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
     updateShouldUpdateScrollLayerPositionOnMainThread();
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 GraphicsLayer* ScrollingCoordinator::scrollLayerForScrollableArea(ScrollableArea* scrollableArea)
 {
     return scrollableArea->layerForScrolling();
@@ -295,11 +521,9 @@ GraphicsLayer* ScrollingCoordinator::verticalScrollbarLayerForScrollableArea(Scr
 {
     return scrollableArea->layerForVerticalScrollbar();
 }
-#endif
 
 GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameView)
 {
-#if USE(ACCELERATED_COMPOSITING)
     Frame* frame = frameView->frame();
     if (!frame)
         return 0;
@@ -308,15 +532,10 @@ GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameVie
     if (!renderView)
         return 0;
     return renderView->compositor()->scrollLayer();
-#else
-    UNUSED_PARAM(frameView);
-    return 0;
-#endif
 }
 
 GraphicsLayer* ScrollingCoordinator::counterScrollingLayerForFrameView(FrameView* frameView)
 {
-#if USE(ACCELERATED_COMPOSITING)
     Frame* frame = frameView->frame();
     if (!frame)
         return 0;
@@ -325,10 +544,6 @@ GraphicsLayer* ScrollingCoordinator::counterScrollingLayerForFrameView(FrameView
     if (!renderView)
         return 0;
     return renderView->compositor()->fixedRootBackgroundLayer();
-#else
-    UNUSED_PARAM(frameView);
-    return 0;
-#endif
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
@@ -344,75 +559,7 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
     updateShouldUpdateScrollLayerPositionOnMainThread();
 }
 
-void ScrollingCoordinator::scheduleUpdateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll, SetOrSyncScrollingLayerPosition scrollingLayerPositionAction)
-{
-    if (m_updateMainFrameScrollPositionTimer.isActive()) {
-        if (m_scheduledUpdateIsProgrammaticScroll == programmaticScroll
-            && m_scheduledScrollingLayerPositionAction == scrollingLayerPositionAction) {
-            m_scheduledUpdateScrollPosition = scrollPosition;
-            return;
-        }
-    
-        // If the parameters don't match what was previosly scheduled, dispatch immediately.
-        m_updateMainFrameScrollPositionTimer.stop();
-        updateMainFrameScrollPosition(m_scheduledUpdateScrollPosition, m_scheduledUpdateIsProgrammaticScroll, m_scheduledScrollingLayerPositionAction);
-        updateMainFrameScrollPosition(scrollPosition, programmaticScroll, scrollingLayerPositionAction);
-        return;
-    }
-
-    m_scheduledUpdateScrollPosition = scrollPosition;
-    m_scheduledUpdateIsProgrammaticScroll = programmaticScroll;
-    m_scheduledScrollingLayerPositionAction = scrollingLayerPositionAction;
-    m_updateMainFrameScrollPositionTimer.startOneShot(0);
-}
-
-void ScrollingCoordinator::updateMainFrameScrollPositionTimerFired(Timer<ScrollingCoordinator>*)
-{
-    updateMainFrameScrollPosition(m_scheduledUpdateScrollPosition, m_scheduledUpdateIsProgrammaticScroll, m_scheduledScrollingLayerPositionAction);
-}
-
-void ScrollingCoordinator::updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll, SetOrSyncScrollingLayerPosition scrollingLayerPositionAction)
-{
-    ASSERT(isMainThread());
-
-    if (!m_page)
-        return;
-
-    FrameView* frameView = m_page->mainFrame()->view();
-    if (!frameView)
-        return;
-
-    bool oldProgrammaticScroll = frameView->inProgrammaticScroll();
-    frameView->setInProgrammaticScroll(programmaticScroll);
-
-    frameView->setConstrainsScrollingToContentEdge(false);
-    frameView->notifyScrollPositionChanged(scrollPosition);
-    frameView->setConstrainsScrollingToContentEdge(true);
-
-    frameView->setInProgrammaticScroll(oldProgrammaticScroll);
-
-#if USE(ACCELERATED_COMPOSITING)
-    if (GraphicsLayer* scrollLayer = scrollLayerForFrameView(frameView)) {
-        GraphicsLayer* counterScrollingLayer = counterScrollingLayerForFrameView(frameView);
-        if (programmaticScroll || scrollingLayerPositionAction == SetScrollingLayerPosition) {
-            scrollLayer->setPosition(-frameView->scrollPosition());
-            if (counterScrollingLayer)
-                counterScrollingLayer->setPosition(IntPoint(frameView->scrollOffsetForFixedPosition()));
-        } else {
-            scrollLayer->syncPosition(-frameView->scrollPosition());
-            if (counterScrollingLayer)
-                counterScrollingLayer->syncPosition(IntPoint(frameView->scrollOffsetForFixedPosition()));
-
-            LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
-            syncChildPositions(viewportRect);
-        }
-    }
-#else
-    UNUSED_PARAM(scrollingLayerPositionAction);
-#endif
-}
-
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if OS(DARWIN)
 void ScrollingCoordinator::handleWheelEventPhase(PlatformWheelEventPhase phase)
 {
     ASSERT(isMainThread());
@@ -434,7 +581,6 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
     if (!viewportConstrainedObjects)
         return false;
 
-#if USE(ACCELERATED_COMPOSITING)
     for (FrameView::ViewportConstrainedObjectSet::const_iterator it = viewportConstrainedObjects->begin(), end = viewportConstrainedObjects->end(); it != end; ++it) {
         RenderObject* viewportConstrainedObject = *it;
         if (!viewportConstrainedObject->isBoxModelObject() || !viewportConstrainedObject->hasLayer())
@@ -445,9 +591,6 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
             return true;
     }
     return false;
-#else
-    return viewportConstrainedObjects->size();
-#endif
 }
 
 MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() const
@@ -458,8 +601,6 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 
     MainThreadScrollingReasons mainThreadScrollingReasons = (MainThreadScrollingReasons)0;
 
-    if (m_forceMainThreadScrollLayerPositionUpdates)
-        mainThreadScrollingReasons |= ForcedOnMainThread;
     if (frameView->hasSlowRepaintObjects())
         mainThreadScrollingReasons |= HasSlowRepaintObjects;
     if (!supportsFixedPositionLayers() && frameView->hasViewportConstrainedObjects())
@@ -477,32 +618,10 @@ void ScrollingCoordinator::updateShouldUpdateScrollLayerPositionOnMainThread()
     setShouldUpdateScrollLayerPositionOnMainThread(mainThreadScrollingReasons());
 }
 
-void ScrollingCoordinator::setForceMainThreadScrollLayerPositionUpdates(bool forceMainThreadScrollLayerPositionUpdates)
-{
-    if (m_forceMainThreadScrollLayerPositionUpdates == forceMainThreadScrollLayerPositionUpdates)
-        return;
-
-    m_forceMainThreadScrollLayerPositionUpdates = forceMainThreadScrollLayerPositionUpdates;
-    updateShouldUpdateScrollLayerPositionOnMainThread();
-}
-
-ScrollingNodeID ScrollingCoordinator::uniqueScrollLayerID()
-{
-    static ScrollingNodeID uniqueScrollLayerID = 1;
-    return uniqueScrollLayerID++;
-}
-
-String ScrollingCoordinator::scrollingStateTreeAsText() const
-{
-    return String();
-}
-
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollingReasons reasons)
 {
     StringBuilder stringBuilder;
 
-    if (reasons & ScrollingCoordinator::ForcedOnMainThread)
-        stringBuilder.append("Forced on main thread, ");
     if (reasons & ScrollingCoordinator::HasSlowRepaintObjects)
         stringBuilder.append("Has slow repaint objects, ");
     if (reasons & ScrollingCoordinator::HasViewportConstrainedObjectsWithoutSupportingFixedLayers)

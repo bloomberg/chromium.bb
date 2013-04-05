@@ -1677,16 +1677,7 @@ String Internals::repaintRectsAsText(Document* document, ExceptionCode& ec) cons
 
 String Internals::scrollingStateTreeAsText(Document* document, ExceptionCode& ec) const
 {
-    if (!document || !document->frame()) {
-        ec = INVALID_ACCESS_ERR;
-        return String();
-    }
-
-    Page* page = document->page();
-    if (!page)
-        return String();
-
-    return page->scrollingStateTreeAsText();
+    return String();
 }
 
 String Internals::mainThreadScrollingReasons(Document* document, ExceptionCode& ec) const

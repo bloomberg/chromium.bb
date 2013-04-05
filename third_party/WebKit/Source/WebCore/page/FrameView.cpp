@@ -839,19 +839,6 @@ TiledBacking* FrameView::tiledBacking()
     return backing->graphicsLayer()->tiledBacking();
 }
 
-uint64_t FrameView::scrollLayerID() const
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return 0;
-
-    RenderLayerBacking* backing = renderView->layer()->backing();
-    if (!backing)
-        return 0;
-
-    return backing->scrollLayerID();
-}
-
 #if ENABLE(RUBBER_BANDING)
 GraphicsLayer* FrameView::layerForOverhangAreas() const
 {
@@ -1979,15 +1966,6 @@ bool FrameView::isRubberBandInProgress() const
 {
     if (scrollbarsSuppressed())
         return false;
-
-    // If the scrolling thread updates the scroll position for this FrameView, then we should return
-    // ScrollingCoordinator::isRubberBandInProgress().
-    if (Page* page = m_frame->page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
-            if (!scrollingCoordinator->shouldUpdateScrollLayerPositionOnMainThread())
-                return scrollingCoordinator->isRubberBandInProgress();
-        }
-    }
 
     // If the main thread updates the scroll position for this FrameView, we should return
     // ScrollAnimator::isRubberBandInProgress().

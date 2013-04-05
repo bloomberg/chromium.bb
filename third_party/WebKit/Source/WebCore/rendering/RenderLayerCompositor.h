@@ -129,13 +129,6 @@ public:
     void scheduleLayerFlush();
     void flushPendingLayerChanges(bool isFlushRoot = true);
     
-    // flushPendingLayerChanges() flushes the entire GraphicsLayer tree, which can cross frame boundaries.
-    // This call returns the rootmost compositor that is being flushed (including self).
-    RenderLayerCompositor* enclosingCompositorFlushingLayers() const;
-
-    // Called when the GraphicsLayer for the given RenderLayer has flushed changes inside of flushPendingLayerChanges().
-    void didFlushChangesForLayer(RenderLayer*, const GraphicsLayer*);
-
     // Called when something outside WebKit affects the visible rect (e.g. delegated scrolling). Might schedule a layer flush.
     void didChangeVisibleRect();
     
@@ -230,7 +223,6 @@ public:
     void rootFixedBackgroundsChanged();
 
     void scrollingLayerDidChange(RenderLayer*);
-    void fixedRootBackgroundLayerChanged();
 
     String layerTreeAsText(LayerTreeFlags);
 
@@ -339,8 +331,6 @@ private:
 
     void notifyIFramesOfCompositingChange();
 
-    bool isFlushingLayers() const { return m_flushingLayers; }
-    
     Page* page() const;
     TiledBacking* pageTiledBacking() const;
     
@@ -362,8 +352,6 @@ private:
     bool requiresCompositingForIndirectReason(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants, RenderLayer::IndirectCompositingReason&) const;
 
     void addViewportConstrainedLayer(RenderLayer*);
-    void registerOrUpdateViewportConstrainedLayer(RenderLayer*);
-    void unregisterViewportConstrainedLayer(RenderLayer*);
 
     FixedPositionViewportConstraints computeFixedViewportConstraints(RenderLayer*) const;
     StickyPositionViewportConstraints computeStickyViewportConstraints(RenderLayer*) const;
@@ -402,7 +390,6 @@ private:
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
-    bool m_flushingLayers;
     bool m_shouldFlushOnReattach;
     bool m_forceCompositingMode;
     bool m_inPostLayoutUpdate; // true when it's OK to trust layout information (e.g. layer sizes and positions)
