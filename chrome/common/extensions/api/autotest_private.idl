@@ -6,7 +6,27 @@
 // extension.
 [nodoc] namespace autotestPrivate {
 
-  callback LoginStatusCallback = void (DOMString status);
+  dictionary LoginStatusDict {
+    // Are we logged in?
+    boolean isLoggedIn;
+    // Is the logged-in user the owner?
+    boolean isOwner;
+    // Is the screen locked?
+    boolean isScreenLocked;
+
+    // Is the logged-in user a regular user?
+    boolean isRegularUser;
+    // Are we logged into the guest account?
+    boolean isGuest;
+    // Are we logged into kiosk-app mode?
+    boolean isKiosk;
+
+    DOMString email;
+    DOMString displayEmail;
+    // User image: 'file', 'profile' or a number.
+    DOMString userImage;
+  };
+  callback LoginStatusCallback = void (LoginStatusDict status);
 
   interface Functions {
     // Logout of a user session.
