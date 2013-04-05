@@ -61,13 +61,16 @@
             'action_name': 'ant_apk_<(test_suite_name)',
             'message': 'Building <(test_suite_name) test apk.',
             'inputs': [
+              '<(DEPTH)/build/android/gyp/util/build_utils.py',
+              '<(DEPTH)/build/android/gyp/ant.py',
               '<(generate_native_test_stamp)',
             ],
             'outputs': [
               '<(PRODUCT_DIR)/<(test_suite_name)_apk/<(test_suite_name)-debug.apk',
             ],
             'action': [
-              'ant', '-quiet',
+              'python', '<(DEPTH)/build/android/gyp/ant.py',
+              '-quiet',
               '-DPRODUCT_DIR=<(ant_build_out)',
               '-DANDROID_SDK=<(android_sdk)',
               '-DANDROID_SDK_ROOT=<(android_sdk_root)',

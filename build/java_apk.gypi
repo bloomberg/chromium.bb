@@ -267,6 +267,7 @@
             },
           ],
         }, {
+          # gyp_managed_install != 1
           'variables': {
             'apk_libraries_dir': '<(intermediate_dir)/libs/<(android_app_abi)',
             'package_input_paths': [ '<(strip_stamp)' ],
@@ -334,6 +335,8 @@
       ],
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-codegen.xml',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/ant.py',
         '<(android_manifest)',
         '>@(library_manifest_paths)'
         '>@(codegen_input_paths)',
@@ -343,7 +346,8 @@
         '<(codegen_stamp)',
       ],
       'action': [
-        'ant', '-quiet',
+        'python', '<(DEPTH)/build/android/gyp/ant.py',
+        '-quiet',
         '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
         '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
         '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
@@ -432,6 +436,8 @@
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
         '<(DEPTH)/build/android/ant/create-test-jar.js',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/ant.py',
         '<(compile_stamp)',
         '>@(proguard_flags_paths)',
       ],
@@ -439,7 +445,8 @@
         '<(obfuscate_stamp)',
       ],
       'action': [
-        'ant', '-quiet',
+        'python', '<(DEPTH)/build/android/gyp/ant.py',
+        '-quiet',
         '-DADDITIONAL_SRC_DIRS=>(additional_src_dirs)',
         '-DANDROID_SDK_JAR=<(android_sdk_jar)',
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
@@ -513,6 +520,8 @@
       'message': 'Packaging <(_target_name).',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package.xml',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/ant.py',
         '<(dex_path)',
         '<(codegen_stamp)',
         '<(obfuscate_stamp)',
@@ -530,7 +539,8 @@
         '<(final_apk_path)',
       ],
       'action': [
-        'ant', '-quiet',
+        'python', '<(DEPTH)/build/android/gyp/ant.py',
+        '-quiet',
         '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
         '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
         '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
@@ -556,7 +566,6 @@
         # (e.g. if a Java file is removed), the command will be re-run.
         # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
         '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
-
       ]
     },
   ],
