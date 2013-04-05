@@ -26,8 +26,6 @@
 #ifndef LevelDBDatabase_h
 #define LevelDBDatabase_h
 
-#if USE(LEVELDB)
-
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -86,7 +84,6 @@ private:
     const LevelDBComparator* m_comparator;
 };
 
-}
+} // namespace WebCore
 
-#endif
-#endif
+#endif // LevelDBDatabase_h

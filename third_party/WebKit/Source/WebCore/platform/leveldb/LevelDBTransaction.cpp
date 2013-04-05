@@ -26,8 +26,6 @@
 #include "config.h"
 #include "LevelDBTransaction.h"
 
-#if USE(LEVELDB)
-
 #include "LevelDBDatabase.h"
 #include "LevelDBSlice.h"
 #include "LevelDBWriteBatch.h"
@@ -534,5 +532,3 @@ bool LevelDBWriteOnlyTransaction::commit()
 }
 
 } // namespace WebCore
-
-#endif // USE(LEVELDB)

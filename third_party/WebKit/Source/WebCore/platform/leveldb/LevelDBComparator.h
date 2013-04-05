@@ -26,8 +26,6 @@
 #ifndef LevelDBComparator_h
 #define LevelDBComparator_h
 
-#if USE(LEVELDB)
-
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -43,7 +41,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // USE(LEVELDB)
 
 #endif // LevelDBComparator_h

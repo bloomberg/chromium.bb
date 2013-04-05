@@ -26,8 +26,6 @@
 #ifndef LevelDBWriteBatch_h
 #define LevelDBWriteBatch_h
 
-#if USE(LEVELDB)
-
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -57,8 +55,6 @@ private:
     OwnPtr<leveldb::WriteBatch> m_writeBatch;
 };
 
-}
-
-#endif // USE(LEVELDB)
+} // namespace WebCore
 
 #endif // LevelDBWriteBatch_h

@@ -133,7 +133,6 @@
       'ENABLE_WORKERS=1',
       'ENABLE_XHR_TIMEOUT=0',
       'ENABLE_XSLT=1',
-      'WTF_USE_LEVELDB=1',
       'WTF_USE_BUILTIN_UTF8_CODEC=1',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only

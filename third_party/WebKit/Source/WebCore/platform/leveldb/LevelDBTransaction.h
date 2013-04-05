@@ -26,8 +26,6 @@
 #ifndef LevelDBTransaction_h
 #define LevelDBTransaction_h
 
-#if USE(LEVELDB)
-
 #include "LevelDBComparator.h"
 #include "LevelDBDatabase.h"
 #include "LevelDBIterator.h"
@@ -187,8 +185,6 @@ private:
     bool m_finished;
 };
 
-}
-
-#endif // USE(LEVELDB)
+} // namespace WebCore
 
 #endif // LevelDBTransaction_h

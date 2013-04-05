@@ -26,8 +26,6 @@
 #include "config.h"
 #include "LevelDBWriteBatch.h"
 
-#if USE(LEVELDB)
-
 #include "LevelDBSlice.h"
 #include <leveldb/slice.h>
 #include <leveldb/write_batch.h>
@@ -68,6 +66,4 @@ void LevelDBWriteBatch::clear()
     m_writeBatch->Clear();
 }
 
-}
-
-#endif
+} // namespace WebCore

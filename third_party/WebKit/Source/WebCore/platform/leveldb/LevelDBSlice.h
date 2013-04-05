@@ -26,8 +26,6 @@
 #ifndef LevelDBSlice_h
 #define LevelDBSlice_h
 
-#if USE(LEVELDB)
-
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
@@ -62,7 +60,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(LEVELDB)
 
 #endif // LevelDBSlice_h

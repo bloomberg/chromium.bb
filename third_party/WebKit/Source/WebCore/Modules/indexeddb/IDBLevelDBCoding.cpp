@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBLevelDBCoding.h"
 
-#if USE(LEVELDB)
-
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
 #include "LevelDBSlice.h"
@@ -1803,5 +1801,3 @@ PassRefPtr<IDBKey> IndexDataKey::primaryKey() const
 
 } // namespace IDBLevelDBCoding
 } // namespace WebCore
-
-#endif // USE(LEVELDB)

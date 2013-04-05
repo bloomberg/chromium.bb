@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IDBLevelDBCoding.h"
 
-#if USE(LEVELDB)
-
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
 #include "LevelDBSlice.h"
@@ -743,5 +741,3 @@ TEST(IDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest)
 }
 
 } // namespace
-
-#endif // USE(LEVELDB)

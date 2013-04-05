@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if USE(LEVELDB)
-
 #include "FileSystem.h"
 #include "LevelDBComparator.h"
 #include "LevelDBDatabase.h"
@@ -203,5 +201,3 @@ TEST(LevelDBDatabaseTest, TransactionIterator)
 }
 
 } // namespace
-
-#endif // USE(LEVELDB)

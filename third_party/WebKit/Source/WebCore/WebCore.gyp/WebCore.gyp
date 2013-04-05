@@ -1392,6 +1392,7 @@
         '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(chromium_src_dir)/skia/skia.gyp:skia',
         '<(chromium_src_dir)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(chromium_src_dir)/third_party/libwebp/libwebp.gyp:libwebp',
         '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
         '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
@@ -1411,6 +1412,7 @@
         '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(chromium_src_dir)/skia/skia.gyp:skia',
         '<(chromium_src_dir)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(chromium_src_dir)/third_party/libwebp/libwebp.gyp:libwebp',
         '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
         '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
@@ -1605,14 +1607,6 @@
         ['OS=="win" and "WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
           'export_dependent_settings': [
             '<(chromium_src_dir)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-          ],
-        }],
-        ['"WTF_USE_LEVELDB=1" in feature_defines', {
-          'dependencies': [
-            '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-          ],
-          'export_dependent_settings': [
-            '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
           ],
         }],
       ],

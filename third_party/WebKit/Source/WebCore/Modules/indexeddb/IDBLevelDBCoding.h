@@ -26,8 +26,6 @@
 #ifndef IDBLevelDBCoding_h
 #define IDBLevelDBCoding_h
 
-#if USE(LEVELDB)
-
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
@@ -361,7 +359,5 @@ private:
 } // namespace IDBLevelDBCoding
 
 } // namespace WebCore
-
-#endif // USE(LEVELDB)
 
 #endif // IDBLevelDBCoding_h

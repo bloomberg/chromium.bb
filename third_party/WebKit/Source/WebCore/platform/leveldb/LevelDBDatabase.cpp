@@ -26,8 +26,6 @@
 #include "config.h"
 #include "LevelDBDatabase.h"
 
-#if USE(LEVELDB)
-
 #include "HistogramSupport.h"
 #include "LevelDBComparator.h"
 #include "LevelDBIterator.h"
@@ -379,6 +377,5 @@ const LevelDBComparator* LevelDBDatabase::comparator() const
     return m_comparator;
 }
 
-}
+} // namespace WebCore
 
-#endif
