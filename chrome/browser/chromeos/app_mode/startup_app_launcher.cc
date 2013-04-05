@@ -9,19 +9,16 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -29,7 +26,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -42,7 +38,6 @@ namespace chromeos {
 
 namespace {
 
-
 const char kOAuthRefreshToken[] = "refresh_token";
 const char kOAuthClientId[] = "client_id";
 const char kOAuthClientSecret[] = "client_secret";
@@ -52,13 +47,6 @@ const base::FilePath::CharType kOAuthFileName[] =
 
 // Application install splash screen minimum show time in milliseconds.
 const int kAppInstallSplashScreenMinTimeMS = 3000;
-
-// Initial delay that gives an app 30 seconds during which the main app window
-// must be created. If app fails to create the main window in this timeframe,
-// chrome will exit.
-// TODO(xiyuan): Find a nicer way to trace process lifetime management at
-// startup. This just fixes a race that happens on faster machines.
-const int kInitialEndKeepAliveDelayinSec = 30;
 
 bool IsAppInstalled(Profile* profile, const std::string& app_id) {
   return extensions::ExtensionSystem::Get(profile)->extension_service()->
@@ -217,16 +205,6 @@ void StartupAppLauncher::Observe(
 void StartupAppLauncher::Cleanup() {
   chromeos::CloseAppLaunchSplashScreen();
 
-  // Ends OpenAsh() keep alive since the session should either be bound with
-  // the just launched app on success or should be ended on failure.
-  // Invoking it via a PostNonNestableTask because Cleanup() could be called
-  // before main message loop starts.
-  BrowserThread::PostNonNestableDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&chrome::EndKeepAlive),
-      base::TimeDelta::FromSeconds(kInitialEndKeepAliveDelayinSec));
-
   delete this;
 }
 
@@ -270,24 +248,12 @@ void StartupAppLauncher::Launch() {
     return;
   }
 
-  // Set the app_id for the current instance of KioskAppUpdateService.
-  KioskAppUpdateService* update_service =
-      KioskAppUpdateServiceFactory::GetForProfile(profile_);
-  DCHECK(update_service);
-  if (update_service)
-    update_service->set_app_id(app_id_);
-
-  // If the device is not enterprise managed, set prefs to reboot after update.
-  if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    PrefService* local_state = g_browser_process->local_state();
-    local_state->SetBoolean(prefs::kRebootAfterUpdate, true);
-  }
-
   // Always open the app in a window.
   chrome::OpenApplication(chrome::AppLaunchParams(profile_,
                                                   extension,
                                                   extension_misc::LAUNCH_WINDOW,
                                                   NEW_WINDOW));
+  InitAppSession(profile_, app_id_);
   OnLaunchSuccess();
 }
 
