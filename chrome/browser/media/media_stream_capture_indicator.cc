@@ -274,7 +274,7 @@ void MediaStreamCaptureIndicator::CaptureDevicesOpened(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread,
+      base::Bind(&MediaStreamCaptureIndicator::AddCaptureDevices,
                  this, render_process_id, render_view_id, devices,
                  close_callback));
 }
@@ -288,19 +288,14 @@ void MediaStreamCaptureIndicator::CaptureDevicesClosed(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread,
+      base::Bind(&MediaStreamCaptureIndicator::RemoveCaptureDevices,
                  this, render_process_id, render_view_id, devices));
 }
 
 
 bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
-    int render_process_id, int render_view_id) const {
+    content::WebContents* web_contents) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* const web_contents =
-      LookUpByKnownAlias(render_process_id, render_view_id);
-  if (!web_contents)
-    return false;
 
   UsageMap::const_iterator it = usage_map_.find(web_contents);
   return (it != usage_map_.end() &&
@@ -308,35 +303,11 @@ bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
 }
 
 bool MediaStreamCaptureIndicator::IsBeingMirrored(
-    int render_process_id, int render_view_id) const {
+    content::WebContents* web_contents) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* const web_contents =
-      LookUpByKnownAlias(render_process_id, render_view_id);
-  if (!web_contents)
-    return false;
 
   UsageMap::const_iterator it = usage_map_.find(web_contents);
   return it != usage_map_.end() && it->second->IsMirroring();
-}
-
-void MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices,
-    const base::Closure& close_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  AddCaptureDevices(render_process_id, render_view_id, devices, close_callback);
-}
-
-void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  RemoveCaptureDevices(render_process_id, render_view_id, devices);
 }
 
 void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon() {

@@ -14,25 +14,21 @@
 namespace chrome {
 
 bool ShouldShowProjectingIndicator(content::WebContents* contents) {
-  int render_process_id = contents->GetRenderProcessHost()->GetID();
-  int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
-  return indicator->IsBeingMirrored(render_process_id, render_view_id);
+  return indicator->IsBeingMirrored(contents);
 }
 
 bool ShouldShowRecordingIndicator(content::WebContents* contents) {
-  int render_process_id = contents->GetRenderProcessHost()->GetID();
-  int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
   // The projecting indicator takes precedence over the recording indicator, but
   // if we are projecting and we don't handle the projecting case we want to
   // still show the recording indicator.
-  return indicator->IsCapturingUserMedia(render_process_id, render_view_id) ||
-         indicator->IsBeingMirrored(render_process_id, render_view_id);
+  return indicator->IsCapturingUserMedia(contents) ||
+         indicator->IsBeingMirrored(contents);
 }
 
 bool IsPlayingAudio(content::WebContents* contents) {

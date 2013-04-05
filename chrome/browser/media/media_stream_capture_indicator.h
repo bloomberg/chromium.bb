@@ -54,28 +54,19 @@ class MediaStreamCaptureIndicator
                             int render_view_id,
                             const content::MediaStreamDevices& devices);
 
-  // Returns true if the render view is capturing user media (e.g., webcam
-  // or microphone input).
-  bool IsCapturingUserMedia(int render_process_id, int render_view_id) const;
+  // Returns true if the |web_contents| is capturing user media (e.g., webcam or
+  // microphone input).
+  bool IsCapturingUserMedia(content::WebContents* web_contents) const;
 
-  // Returns true if the render view itself is being mirrored (e.g., a source of
-  // media for remote broadcast).
-  bool IsBeingMirrored(int render_process_id, int render_view_id) const;
+  // Returns true if the |web_contents| itself is being mirrored (e.g., a source
+  // of media for remote broadcast).
+  bool IsBeingMirrored(content::WebContents* web_contents) const;
 
  private:
   class WebContentsDeviceUsage;
 
   friend class base::RefCountedThreadSafe<MediaStreamCaptureIndicator>;
   virtual ~MediaStreamCaptureIndicator();
-
-  // Called by the public functions, executed on UI thread.
-  void DoDevicesOpenedOnUIThread(int render_process_id,
-                                 int render_view_id,
-                                 const content::MediaStreamDevices& devices,
-                                 const base::Closure& close_callback);
-  void DoDevicesClosedOnUIThread(int render_process_id,
-                                 int render_view_id,
-                                 const content::MediaStreamDevices& devices);
 
   // Following functions/variables are executed/accessed only on UI thread.
 
