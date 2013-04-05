@@ -23,6 +23,7 @@
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct BrowserPluginMsg_Attach_ACK_Params;
 struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
@@ -323,6 +324,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
+  void OnAttachACK(int instance_id,
+                   const BrowserPluginMsg_Attach_ACK_Params& ack_params);
   void OnBuffersSwapped(int instance_id,
                         const gfx::Size& size,
                         std::string mailbox_name,
@@ -392,7 +395,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
-  bool allocate_instance_id_sent_;
+  bool before_first_navigation_;
 
   // Each permission request item in the map is a pair of request id and
   // permission type.

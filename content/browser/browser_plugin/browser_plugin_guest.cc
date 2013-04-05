@@ -745,11 +745,17 @@ void BrowserPluginGuest::Attach(
         GetWebContents()->GetRenderViewHost())->Init();
   }
 
-  // Inform the embedder BrowserPlugin of the attached guest.
-  if (!name_.empty()) {
-    SendMessageToEmbedder(
-        new BrowserPluginMsg_UpdatedName(instance_id_, name_));
-  }
+  // Inform the embedder of the guest's information.
+  // We pull the partition information from the site's URL, which is of the form
+  // guest://site/{persist}?{partition_name}.
+  const GURL& site_url = GetWebContents()->GetSiteInstance()->GetSiteURL();
+  BrowserPluginMsg_Attach_ACK_Params ack_params;
+  ack_params.storage_partition_id = site_url.query();
+  ack_params.persist_storage =
+      site_url.path().find("persist") != std::string::npos;
+  ack_params.name = name_;
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
 }
 
 void BrowserPluginGuest::OnCompositorFrameACK(

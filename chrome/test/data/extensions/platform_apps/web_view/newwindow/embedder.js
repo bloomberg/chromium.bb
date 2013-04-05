@@ -16,12 +16,15 @@ embedder.setUp = function(config) {
 };
 
 /** @private */
-embedder.setUpGuest_ = function() {
+embedder.setUpGuest_ = function(partitionName) {
   document.querySelector('#webview-tag-container').innerHTML =
       '<webview style="width: 100px; height: 100px;"' +
       ' src="' + embedder.guestURL + '"' +
       '></webview>';
   var webview = document.querySelector('webview');
+  if (partitionName) {
+    webview.partition = partitionName;
+  }
   if (!webview) {
     chrome.test.fail('No <webview> element created');
   }
@@ -48,7 +51,8 @@ embedder.setUpFrameNameRequest_ = function(webview, testName) {
 };
 
 /** @private */
-embedder.requestFrameName_ = function(webview, testName, expectedFrameName) {
+embedder.requestFrameName_ =
+    function(webview, openerwebview, testName, expectedFrameName) {
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     if (data[0] == 'get-frame-name') {
@@ -58,6 +62,7 @@ embedder.requestFrameName_ = function(webview, testName, expectedFrameName) {
       var frameName = data[2];
       chrome.test.assertEq(expectedFrameName, frameName);
       chrome.test.assertEq(expectedFrameName, webview.name);
+      chrome.test.assertEq(openerwebview.partition, webview.partition);
       chrome.test.succeed();
     }
   };
@@ -76,9 +81,12 @@ embedder.assertCorrectEvent_ = function(e) {
 // The embedder has to initiate a post message so that the guest can get a
 // reference to embedder to send the reply back.
 
-var testNewWindow =
-    function(testName, webViewName, guestName, expectedFrameName) {
-  var webview = embedder.setUpGuest_();
+var testNewWindow = function(testName,
+                             webViewName,
+                             guestName,
+                             partitionName,
+                             expectedFrameName) {
+  var webview = embedder.setUpGuest_(partitionName);
 
   var onNewWindow = function(e) {
     chrome.test.log('Embedder notified on newwindow');
@@ -97,7 +105,8 @@ var testNewWindow =
         var newwebview = w.document.querySelector('webview');
         newwebview.name = webViewName;
         embedder.setUpFrameNameRequest_(newwebview, testName);
-        embedder.requestFrameName_(newwebview, testName, expectedFrameName);
+        embedder.requestFrameName_(
+            newwebview, webview, testName, expectedFrameName);
         try {
           e.window.attach(newwebview);
         } catch (e) {
@@ -117,25 +126,29 @@ embedder.tests.testNewWindowNameTakesPrecedence =
     function testNewWindowNameTakesPrecedence() {
   var webViewName = 'foo';
   var guestName = 'bar';
+  var partitionName = 'foobar';
   var expectedName = guestName;
   testNewWindow('testNewWindowNameTakesPrecedence',
-                webViewName, guestName, expectedName);
+                webViewName, guestName, partitionName, expectedName);
 };
 
 embedder.tests.testWebViewNameTakesPrecedence =
     function testWebViewNameTakesPrecedence() {
   var webViewName = 'foo';
   var guestName = '';
+  var partitionName = 'persist:foobar';
   var expectedName = webViewName;
   testNewWindow('testWebViewNameTakesPrecedence',
-                webViewName, guestName, expectedName);
+                webViewName, guestName, partitionName, expectedName);
 };
 
 embedder.tests.testNoName = function testNoName() {
   var webViewName = '';
   var guestName = '';
+  var partitionName = '';
   var expectedName = '';
-  testNewWindow('testNoName', webViewName, guestName, expectedName);
+  testNewWindow('testNoName',
+                webViewName, guestName, partitionName, expectedName);
 };
 
 onload = function() {

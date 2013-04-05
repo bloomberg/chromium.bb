@@ -141,7 +141,7 @@ BrowserPlugin::BrowserPlugin(
       plugin_focused_(false),
       visible_(true),
       size_changed_in_flight_(false),
-      allocate_instance_id_sent_(false),
+      before_first_navigation_(true),
       browser_plugin_manager_(render_view->browser_plugin_manager()),
       current_nav_entry_index_(0),
       nav_entry_count_(0),
@@ -174,6 +174,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
@@ -336,16 +337,16 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
   if (!HasGuest()) {
     // On initial navigation, we request an instance ID from the browser
     // process. We essentially ignore all subsequent calls to SetSrcAttribute
-    // until we receive an instance ID. |allocate_instance_id_sent_|
+    // until we receive an instance ID. |before_first_navigation_|
     // prevents BrowserPlugin from allocating more than one instance ID.
     // Upon receiving an instance ID from the browser process, we continue
     // the process of navigation by populating the
     // BrowserPluginHostMsg_CreateGuest_Params with the current state of
     // BrowserPlugin and sending a BrowserPluginHostMsg_CreateGuest to the
     // browser process in order to create a new guest.
-    if (!allocate_instance_id_sent_) {
+    if (before_first_navigation_) {
       browser_plugin_manager()->AllocateInstanceID(this);
-      allocate_instance_id_sent_ = true;
+      before_first_navigation_ = false;
     }
     return true;
   }
@@ -424,6 +425,7 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
 
 void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
   CHECK(instance_id != browser_plugin::kInstanceIDNone);
+  before_first_navigation_ = false;
   instance_id_ = instance_id;
   browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
 
@@ -458,6 +460,20 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
   DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
+}
+
+void BrowserPlugin::OnAttachACK(
+    int instance_id,
+    const BrowserPluginMsg_Attach_ACK_Params& params) {
+  // Update BrowserPlugin attributes to match the state of the guest.
+  if (!params.name.empty())
+    OnUpdatedName(instance_id, params.name);
+  if (!params.storage_partition_id.empty()) {
+    std::string partition_name =
+        (params.persist_storage ? browser_plugin::kPersistPrefix : "") +
+            params.storage_partition_id;
+    UpdateDOMAttribute(browser_plugin::kAttributePartition, partition_name);
+  }
 }
 
 void BrowserPlugin::OnBuffersSwapped(int instance_id,
@@ -850,7 +866,7 @@ bool BrowserPlugin::CanGoForward() const {
 }
 
 bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
-  if (allocate_instance_id_sent_) {
+  if (!before_first_navigation_) {
     *error_message = browser_plugin::kErrorAlreadyNavigated;
     return false;
   }
@@ -1245,6 +1261,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginMsg_AdvanceFocus::ID:
+    case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_BuffersSwapped::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:

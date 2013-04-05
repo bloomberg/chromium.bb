@@ -72,6 +72,12 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
                     resize_guest_params)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(BrowserPluginMsg_Attach_ACK_Params)
+  IPC_STRUCT_MEMBER(std::string, storage_partition_id)
+  IPC_STRUCT_MEMBER(bool, persist_storage)
+  IPC_STRUCT_MEMBER(std::string, name)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   // The current URL of the guest.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -298,6 +304,14 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
 IPC_MESSAGE_ROUTED2(BrowserPluginMsg_AllocateInstanceID_ACK,
                     int /* request_id */,
                     int /* instance_id */)
+
+
+// This message is sent in response to a completed attachment of a guest
+// to a BrowserPlugin. This message carries information about the guest
+// that is used to update the attributes of the browser plugin.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_Attach_ACK,
+                     int /* instance_id */,
+                     BrowserPluginMsg_Attach_ACK_Params /* params */)
 
 // Once the swapped out guest RenderView has been created in the embedder render
 // process, the browser process informs the embedder of its routing ID.
