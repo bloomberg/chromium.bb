@@ -22,14 +22,6 @@ html[dir=rtl] body.uber-frame > .page {
   display: none;
 }
 
-#lock-unlock-button {
-  float: right;
-}
-
-html[dir=rtl] #lock-unlock-button {
-  float: left;
-}
-
 #search-button {
   margin: 0;
 }
@@ -106,11 +98,11 @@ html[dir=rtl] #range-next {
   float: right;
 }
 
-#display-filter-controls label {
-  -webkit-margin-start: 6px;
+#display-filter-controls > * {
+  -webkit-margin-start: 8px;
 }
 
-#display-filter-controls label:not(:last-child) {
+#display-filter-controls > *:not(:last-child) {
   -webkit-border-end: 1px solid rgb(151, 156, 160);
   -webkit-margin-start: 0;
   padding: 0 6px 0 6px;
