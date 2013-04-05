@@ -261,6 +261,7 @@
                 'python', '<(DEPTH)/build/android/gyp/create_device_library_links.py',
                 '--apk=<(final_apk_path)',
                 '--libraries-json=<(ordered_libraries_file)',
+                '--libraries-dir=<(apk_libraries_dir)',
                 '--target-dir=<(device_library_dir)',
                 '--stamp=<(link_stamp)',
               ],
