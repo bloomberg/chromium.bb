@@ -108,8 +108,13 @@ class ImmersiveModeControllerAsh::WindowObserver : public aura::WindowObserver {
     using aura::client::kShowStateKey;
     if (key == kShowStateKey) {
       // Disable immersive mode when leaving the fullscreen state.
-      if (window->GetProperty(kShowStateKey) != ui::SHOW_STATE_FULLSCREEN)
-        controller_->SetEnabled(false);
+      ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
+          window->GetProperty(kShowStateKey));
+      if (controller_->IsEnabled() &&
+          show_state != ui::SHOW_STATE_FULLSCREEN &&
+          show_state != ui::SHOW_STATE_MINIMIZED) {
+        controller_->browser_view_->FullScreenStateChanged();
+      }
       return;
     }
     using ash::internal::kImmersiveModeKey;
