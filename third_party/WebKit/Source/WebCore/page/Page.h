@@ -177,9 +177,7 @@ public:
 
     Chrome* chrome() const { return m_chrome.get(); }
     DragCaretController* dragCaretController() const { return m_dragCaretController.get(); }
-#if ENABLE(DRAG_SUPPORT)
     DragController* dragController() const { return m_dragController.get(); }
-#endif
     FocusController* focusController() const { return m_focusController.get(); }
 #if ENABLE(CONTEXT_MENUS)
     ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
@@ -400,9 +398,7 @@ private:
     OwnPtr<Chrome> m_chrome;
     OwnPtr<DragCaretController> m_dragCaretController;
 
-#if ENABLE(DRAG_SUPPORT)
     OwnPtr<DragController> m_dragController;
-#endif
     OwnPtr<FocusController> m_focusController;
 #if ENABLE(CONTEXT_MENUS)
     OwnPtr<ContextMenuController> m_contextMenuController;

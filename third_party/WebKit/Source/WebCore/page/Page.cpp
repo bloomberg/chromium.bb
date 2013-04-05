@@ -119,9 +119,7 @@ float deviceScaleFactor(Frame* frame)
 Page::Page(PageClients& pageClients)
     : m_chrome(Chrome::create(this, pageClients.chromeClient))
     , m_dragCaretController(DragCaretController::create())
-#if ENABLE(DRAG_SUPPORT)
     , m_dragController(DragController::create(this, pageClients.dragClient))
-#endif
     , m_focusController(FocusController::create(this))
 #if ENABLE(CONTEXT_MENUS)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
@@ -1412,9 +1410,7 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_chrome, "chrome");
     info.addMember(m_dragCaretController, "dragCaretController");
 
-#if ENABLE(DRAG_SUPPORT)
     info.addMember(m_dragController, "dragController");
-#endif
     info.addMember(m_focusController, "focusController");
 #if ENABLE(CONTEXT_MENUS)
     info.addMember(m_contextMenuController, "contextMenuController");

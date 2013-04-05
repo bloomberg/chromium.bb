@@ -258,9 +258,7 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
             stopAutoscrollTimer();
             return;
         }
-#if ENABLE(DRAG_SUPPORT)
         eventHandler->updateSelectionForMouseDrag();
-#endif
         m_autoscrollRenderer->autoscroll(eventHandler->lastKnownMousePosition());
         break;
     }

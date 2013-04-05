@@ -548,7 +548,6 @@ public:
 };
 #endif // ENABLE(CONTEXT_MENUS)
 
-#if ENABLE(DRAG_SUPPORT)
 class EmptyDragClient : public DragClient {
     WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -561,7 +560,6 @@ public:
     virtual void startDrag(DragImageRef, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) { }
     virtual void dragControllerDestroyed() { }
 };
-#endif // ENABLE(DRAG_SUPPORT)
 
 class EmptyInspectorClient : public InspectorClient {
     WTF_MAKE_NONCOPYABLE(EmptyInspectorClient); WTF_MAKE_FAST_ALLOCATED;

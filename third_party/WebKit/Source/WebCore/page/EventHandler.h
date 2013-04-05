@@ -88,12 +88,10 @@ struct DragState;
 class PlatformGestureEvent;
 #endif
 
-#if ENABLE(DRAG_SUPPORT)
 extern const int LinkDragHysteresis;
 extern const int ImageDragHysteresis;
 extern const int TextDragHysteresis;
 extern const int GeneralDragHysteresis;
-#endif // ENABLE(DRAG_SUPPORT)
 
 enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
 enum CheckDragHysteresis { ShouldCheckDragHysteresis, DontCheckDragHysteresis };
@@ -107,9 +105,7 @@ public:
     void clear();
     void nodeWillBeRemoved(Node*);
 
-#if ENABLE(DRAG_SUPPORT)
     void updateSelectionForMouseDrag();
-#endif
 
     Node* mousePressNode() const;
     void setMousePressNode(PassRefPtr<Node>);
@@ -139,12 +135,10 @@ public:
 
     void setCapturingMouseEventsNode(PassRefPtr<Node>); // A caller is responsible for resetting capturing node to 0.
 
-#if ENABLE(DRAG_SUPPORT)
     bool updateDragAndDrop(const PlatformMouseEvent&, Clipboard*);
     void cancelDragAndDrop(const PlatformMouseEvent&, Clipboard*);
     bool performDragAndDrop(const PlatformMouseEvent&, Clipboard*);
     void updateDragStateAfterEditDragIfNeeded(Element* rootEditableElement);
-#endif
 
     void scheduleHoverStateUpdate();
 
@@ -219,9 +213,7 @@ public:
     bool handleTextInputEvent(const String& text, Event* underlyingEvent = 0, TextEventInputType = TextEventInputKeyboard);
     void defaultTextInputEventHandler(TextEvent*);
 
-#if ENABLE(DRAG_SUPPORT)
     void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
-#endif
 
     void focusDocumentView();
 
@@ -254,12 +246,10 @@ public:
     bool useHandCursor(Node*, bool isOverLink, bool shiftKey);
 
 private:
-#if ENABLE(DRAG_SUPPORT)
     static DragState& dragState();
     static const double TextDragDelay;
     
     PassRefPtr<Clipboard> createDraggingClipboard() const;
-#endif // ENABLE(DRAG_SUPPORT)
 
     bool eventActivatedView(const PlatformMouseEvent&) const;
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
@@ -273,9 +263,7 @@ private:
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventTripleClick(const MouseEventWithHitTestResults&);
-#if ENABLE(DRAG_SUPPORT)
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
-#endif
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 
     OptionalCursor selectCursor(const MouseEventWithHitTestResults&, Scrollbar*);
@@ -309,22 +297,18 @@ private:
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
     bool dispatchMouseEvent(const AtomicString& eventType, Node* target, bool cancelable, int clickCount, const PlatformMouseEvent&, bool setUnder);
-#if ENABLE(DRAG_SUPPORT)
     bool dispatchDragEvent(const AtomicString& eventType, Node* target, const PlatformMouseEvent&, Clipboard*);
 
     void freeClipboard();
 
     bool handleDrag(const MouseEventWithHitTestResults&, CheckDragHysteresis);
-#endif
     bool handleMouseUp(const MouseEventWithHitTestResults&);
-#if ENABLE(DRAG_SUPPORT)
     void clearDragState();
 
     bool dispatchDragSrcEvent(const AtomicString& eventType, const PlatformMouseEvent&);
 
     bool dragHysteresisExceeded(const FloatPoint&) const;
     bool dragHysteresisExceeded(const IntPoint&) const;
-#endif // ENABLE(DRAG_SUPPORT)
 
     bool passMousePressEventToSubframe(MouseEventWithHitTestResults&, Frame* subframe);
     bool passMouseMoveEventToSubframe(MouseEventWithHitTestResults&, Frame* subframe, HitTestResult* hoveredNode = 0);
@@ -345,20 +329,14 @@ private:
     void defaultTabEventHandler(KeyboardEvent*);
     void defaultArrowEventHandler(FocusDirection, KeyboardEvent*);
 
-#if ENABLE(DRAG_SUPPORT)
     DragSourceAction updateDragSourceActionsAllowed() const;
-#endif
 
     // The following are called at the beginning of handleMouseUp and handleDrag.  
     // If they return true it indicates that they have consumed the event.
     bool eventLoopHandleMouseUp(const MouseEventWithHitTestResults&);
-#if ENABLE(DRAG_SUPPORT)
     bool eventLoopHandleMouseDragged(const MouseEventWithHitTestResults&);
-#endif
 
-#if ENABLE(DRAG_SUPPORT)
     void updateSelectionForMouseDrag(const HitTestResult&);
-#endif
 
     void updateLastScrollbarUnderMouse(Scrollbar*, bool);
     
@@ -397,17 +375,13 @@ private:
     RefPtr<Node> m_mousePressNode;
 
     bool m_mouseDownMayStartSelect;
-#if ENABLE(DRAG_SUPPORT)
     bool m_mouseDownMayStartDrag;
     bool m_dragMayStartSelectionInstead;
-#endif
     bool m_mouseDownWasSingleClickInSelection;
     enum SelectionInitiationState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
     SelectionInitiationState m_selectionInitiationState;
 
-#if ENABLE(DRAG_SUPPORT)
     LayoutPoint m_dragStartPos;
-#endif
 
     bool m_panScrollButtonPressed;
 
@@ -439,10 +413,8 @@ private:
     int m_clickCount;
     RefPtr<Node> m_clickNode;
 
-#if ENABLE(DRAG_SUPPORT)
     RefPtr<Node> m_dragTarget;
     bool m_shouldOnlyFireDragOverEvent;
-#endif
     
     RefPtr<HTMLFrameSetElement> m_frameSetBeingResized;
 

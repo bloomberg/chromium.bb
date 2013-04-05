@@ -25,10 +25,10 @@
 
 #include "config.h"
 #include "DragData.h"
+
 #include "PlatformEvent.h"
 #include "PlatformKeyboardEvent.h"
 
-#if ENABLE(DRAG_SUPPORT)
 namespace WebCore {
 
 #if !PLATFORM(MAC)
@@ -81,5 +81,3 @@ String DragData::droppedFileSystemId() const
 
 } // namespace WebCore
 
-
-#endif // ENABLE(DRAG_SUPPORT)

@@ -68,10 +68,6 @@
 #define ENABLE_CSS_IMAGE_SET 1
 #endif
 
-#if !defined(ENABLE_DRAG_SUPPORT)
-#define ENABLE_DRAG_SUPPORT 0
-#endif
-
 #if !defined(ENABLE_GEOLOCATION)
 #define ENABLE_GEOLOCATION 1
 #endif
@@ -205,10 +201,6 @@
 /* WinCE port is a specialization of PLATFORM(WIN). */
 /* PLATFORM(WIN) is always enabled when building for the WinCE port. */
 #if PLATFORM(WIN) && OS(WINCE)
-
-#if !defined(ENABLE_DRAG_SUPPORT)
-#define ENABLE_DRAG_SUPPORT 0
-#endif
 
 #if !defined(ENABLE_FTPDIR)
 #define ENABLE_FTPDIR 0
@@ -418,10 +410,6 @@
 
 #if !defined(ENABLE_DRAGGABLE_REGION)
 #define ENABLE_DRAGGABLE_REGION 0
-#endif
-
-#if !defined(ENABLE_DRAG_SUPPORT)
-#define ENABLE_DRAG_SUPPORT 1
 #endif
 
 #if !defined(ENABLE_ENCRYPTED_MEDIA)

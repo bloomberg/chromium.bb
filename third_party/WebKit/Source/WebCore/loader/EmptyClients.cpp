@@ -52,10 +52,8 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
     pageClients.contextMenuClient = dummyContextMenuClient;
 #endif
 
-#if ENABLE(DRAG_SUPPORT)
     static DragClient* dummyDragClient = adoptPtr(new EmptyDragClient).leakPtr();
     pageClients.dragClient = dummyDragClient;
-#endif
 
     static EditorClient* dummyEditorClient = adoptPtr(new EmptyEditorClient).leakPtr();
     pageClients.editorClient = dummyEditorClient;
