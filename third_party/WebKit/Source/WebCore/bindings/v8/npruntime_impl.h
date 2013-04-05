@@ -31,11 +31,7 @@
 #ifndef npruntime_impl_h
 #define npruntime_impl_h
 
-#if PLATFORM(CHROMIUM)
 #include <bindings/npruntime.h>
-#else
-#include "npruntime_internal.h"
-#endif
 
 // This file exists to support WebCore, which expects to be able to call upon
 // portions of the NPRuntime implementation.

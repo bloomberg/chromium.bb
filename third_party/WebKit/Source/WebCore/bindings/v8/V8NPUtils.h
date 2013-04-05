@@ -30,12 +30,7 @@
 #ifndef V8NPUtils_h
 #define V8NPUtils_h
 
-#if PLATFORM(CHROMIUM)
 #include <bindings/npruntime.h>
-#else
-#include "npruntime_internal.h"
-#endif
-
 #include <v8.h>
 
 namespace WebCore {
