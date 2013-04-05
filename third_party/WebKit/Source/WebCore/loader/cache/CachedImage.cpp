@@ -346,14 +346,6 @@ inline void CachedImage::clearImage()
     m_image.clear();
 }
 
-size_t CachedImage::maximumDecodedImageSize()
-{
-    if (!m_loader || m_loader->reachedTerminalState())
-        return 0;
-    Settings* settings = m_loader->frameLoader()->frame()->settings();
-    return settings ? settings->maximumDecodedImageSize() : 0;
-}
-
 void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
 {
     m_data = data;
@@ -374,10 +366,7 @@ void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
     // network causes observers to repaint, which will force that chunk
     // to decode.
     if (sizeAvailable || allDataReceived) {
-        size_t maxDecodedImageSize = maximumDecodedImageSize();
-        IntSize s = m_image ? m_image->size() : IntSize();
-        size_t estimatedDecodedImageSize = s.width() * s.height() * 4; // no overflow check
-        if (!m_image || m_image->isNull() || (maxDecodedImageSize > 0 && estimatedDecodedImageSize > maxDecodedImageSize)) {
+        if (!m_image || m_image->isNull()) {
             error(errorOccurred() ? status() : DecodeError);
             if (inCache())
                 memoryCache()->remove(this);
