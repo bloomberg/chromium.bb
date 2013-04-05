@@ -103,9 +103,7 @@ namespace WebCore {
 
         virtual bool hasData();
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
         virtual PassRefPtr<DataTransferItemList> items();
-#endif
         Frame* frame() const { return m_frame; }
 
     private:

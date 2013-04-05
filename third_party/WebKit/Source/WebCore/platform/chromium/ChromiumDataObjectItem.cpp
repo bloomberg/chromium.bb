@@ -31,8 +31,6 @@
 #include "config.h"
 #include "ChromiumDataObjectItem.h"
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
-
 #include "Blob.h"
 #include "Clipboard.h"
 #include "ClipboardChromium.h"
@@ -187,4 +185,3 @@ bool ChromiumDataObjectItem::isFilename() const
 
 } // namespace WebCore
 
-#endif // ENABLE(DATA_TRANSFER_ITEMS)

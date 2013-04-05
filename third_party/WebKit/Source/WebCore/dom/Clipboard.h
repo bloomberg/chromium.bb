@@ -104,10 +104,8 @@ namespace WebCore {
         
         void setDragHasStarted() { m_dragStarted = true; }
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
         virtual PassRefPtr<DataTransferItemList> items() = 0;
-#endif
-        
+
     protected:
         Clipboard(ClipboardAccessPolicy, ClipboardType);
 
