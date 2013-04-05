@@ -32,7 +32,6 @@
 #include "FrameView.h"
 #include "Image.h"
 #include "Logging.h"
-#include "PublicSuffix.h"
 #include "SecurityOrigin.h"
 #include "SecurityOriginHash.h"
 #include "WebCoreMemoryInstrumentation.h"
