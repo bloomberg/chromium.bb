@@ -19,10 +19,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import parallel
 
-CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
-    "chrome/trunk/tools/build/masters/" +
-    "master.chromium.chromiumos" + "/" +
-    "master_chromiumos_cros_cfg.py")
+CHROMIUM_WATCHING_URL = ('http://src.chromium.org/chrome/trunk/tools/build/'
+    'masters/master.chromium.chromiumos/master_chromiumos_cros_cfg.py')
 
 # pylint: disable=W0212,R0904
 class CBuildBotTest(cros_test_lib.MoxTestCase):
