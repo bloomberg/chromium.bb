@@ -30,38 +30,13 @@
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#endif
-#if PLATFORM(GTK)
-#include <PasteboardHelper.h>
-#endif
 #include <wtf/Vector.h>
 
 // FIXME: This class is too high-level to be in the platform directory, since it
 // uses the DOM and makes calls to Editor. It should either be divested of its
 // knowledge of the frame and editor or moved into the editing directory.
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSAttributedString;
-OBJC_CLASS NSFileWrapper;
-OBJC_CLASS NSArray;
-#endif
-
-#if PLATFORM(WIN)
-#include <windows.h>
-typedef struct HWND__* HWND;
-#endif
-
 namespace WebCore {
-
-#if PLATFORM(MAC)
-extern const char* WebArchivePboardType;
-extern const char* WebSmartPastePboardType;
-extern const char* WebURLNamePboardType;
-extern const char* WebURLPboardType;
-extern const char* WebURLsWithTitlesPboardType;
-#endif
 
 class ArchiveResource;
 class Clipboard;
@@ -83,14 +58,6 @@ public:
         CannotSmartReplace
     };
 
-#if PLATFORM(MAC)
-    // This is required to support OS X services.
-    void writeSelectionForTypes(const Vector<String>& pasteboardTypes, bool canSmartCopyOrDelete, Frame*, ShouldSerializeSelectedTextForClipboard);
-    explicit Pasteboard(const String& pasteboardName);
-    static String getStringSelection(Frame*, ShouldSerializeSelectedTextForClipboard);
-    static PassRefPtr<SharedBuffer> getDataSelection(Frame*, const String& pasteboardType);
-#endif
-    
     static Pasteboard* generalPasteboard();
     void writeSelection(Range*, bool canSmartCopyOrDelete, Frame*, ShouldSerializeSelectedTextForClipboard = DefaultSelectedTextType);
     void writePlainText(const String&, SmartReplaceOption);
@@ -101,33 +68,14 @@ public:
     bool canSmartReplace();
     PassRefPtr<DocumentFragment> documentFragment(Frame*, PassRefPtr<Range>, bool allowPlainText, bool& chosePlainText);
     String plainText(Frame* = 0);
-    
-#if PLATFORM(QT) || PLATFORM(CHROMIUM) || PLATFORM(GTK)
+
     bool isSelectionMode() const;
     void setSelectionMode(bool);
-#else
-    bool isSelectionMode() const { return false; }
-    void setSelectionMode(bool) { }
-#endif
-
-#if PLATFORM(GTK)
-    ~Pasteboard();
-#endif
 
 private:
     Pasteboard();
 
-#if PLATFORM(MAC)
-    String m_pasteboardName;
-#endif
-
-#if PLATFORM(WIN)
-    HWND m_owner;
-#endif
-
-#if PLATFORM(QT) || PLATFORM(CHROMIUM)
     bool m_selectionMode;
-#endif
 
 };
 
