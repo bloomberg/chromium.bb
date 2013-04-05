@@ -44,8 +44,8 @@ const float kMaxHeightFactor = .80f;
 const float kMaxWidthFactor = .50f;
 
 // Callout arrow dimensions.
-const int kArrowWidth = 20;
-const int kArrowHeight = 10;
+const int kArrowWidth = 18;
+const int kArrowHeight = 9;
 
 class CalloutWidgetBackground : public views::Background {
  public:
