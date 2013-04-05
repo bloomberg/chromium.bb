@@ -29,13 +29,6 @@
 
 #include <wtf/Platform.h>
 #include <wtf/ExportMacros.h>
-// WTF cannot depend on JSC even if USE(JSC).
-#if USE(JSC) && !defined(BUILDING_WTF)
-#include "JSExportMacros.h"
-#elif PLATFORM(CHROMIUM)
-// Chromium doesn't have runtime/ in its include paths.
-#include "runtime/JSExportMacros.h"
-#endif
 
 #if OS(WINDOWS)
 

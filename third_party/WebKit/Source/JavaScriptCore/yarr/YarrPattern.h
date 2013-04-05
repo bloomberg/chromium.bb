@@ -313,7 +313,7 @@ struct TermChain {
 };
 
 struct YarrPattern {
-    JS_EXPORT_PRIVATE YarrPattern(const String& pattern, bool ignoreCase, bool multiline, const char** error);
+    YarrPattern(const String& pattern, bool ignoreCase, bool multiline, const char** error);
 
     void reset()
     {
