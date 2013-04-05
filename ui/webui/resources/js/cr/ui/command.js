@@ -262,6 +262,11 @@ cr.define('cr.ui', function() {
           // We do not want any other element to handle this.
           e.stopPropagation();
 
+          // When invoking a command via a shortcut, we have to manually check
+          // if it can be executed, since focus might not have been changed
+          // what would have updated the command's state.
+          command.canExecuteChange();
+
           command.execute();
           return;
         }
