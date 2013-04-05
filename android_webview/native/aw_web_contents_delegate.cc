@@ -4,9 +4,9 @@
 
 #include "android_webview/native/aw_web_contents_delegate.h"
 
+#include "android_webview/browser/aw_javascript_dialog_manager.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
-#include "android_webview/native/aw_javascript_dialog_manager.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"

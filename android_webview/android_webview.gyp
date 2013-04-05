@@ -110,6 +110,8 @@
         'browser/aw_download_manager_delegate.h',
         'browser/aw_http_auth_handler_base.cc',
         'browser/aw_http_auth_handler_base.h',
+        'browser/aw_javascript_dialog_manager.cc',
+        'browser/aw_javascript_dialog_manager.h',
         'browser/aw_login_delegate.cc',
         'browser/aw_login_delegate.h',
         'browser/aw_quota_manager_bridge.cc',

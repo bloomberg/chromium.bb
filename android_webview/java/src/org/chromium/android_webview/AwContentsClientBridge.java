@@ -67,9 +67,47 @@ public class AwContentsClientBridge {
         nativeProceedSslError(mNativeContentsClientBridge, proceed, id);
     }
 
+    @CalledByNative
+    private void handleJsAlert(String url, String message, int id) {
+        JsResultHandler handler = new JsResultHandler(this, id);
+        mClient.handleJsAlert(url, message, handler);
+    }
+
+    @CalledByNative
+    private void handleJsConfirm(String url, String message, int id) {
+        JsResultHandler handler = new JsResultHandler(this, id);
+        mClient.handleJsConfirm(url, message, handler);
+    }
+
+    @CalledByNative
+    private void handleJsPrompt(String url, String message, String defaultValue, int id) {
+        JsResultHandler handler = new JsResultHandler(this, id);
+        mClient.handleJsPrompt(url, message, defaultValue, handler);
+    }
+
+    @CalledByNative
+    private void handleJsBeforeUnload(String url, String message, int id) {
+        JsResultHandler handler = new JsResultHandler(this, id);
+        mClient.handleJsBeforeUnload(url, message, handler);
+    }
+
+    void confirmJsResult(int id, String prompt) {
+        if (mNativeContentsClientBridge == 0) return;
+        nativeConfirmJsResult(mNativeContentsClientBridge, id, prompt);
+    }
+
+    void cancelJsResult(int id) {
+        if (mNativeContentsClientBridge == 0) return;
+        nativeCancelJsResult(mNativeContentsClientBridge, id);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
     private native void nativeProceedSslError(int nativeAwContentsClientBridge, boolean proceed,
             int id);
+
+    private native void nativeConfirmJsResult(int nativeAwContentsClientBridge, int id,
+            String prompt);
+    private native void nativeCancelJsResult(int nativeAwContentsClientBridge, int id);
 }

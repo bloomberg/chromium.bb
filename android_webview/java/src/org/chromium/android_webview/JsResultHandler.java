@@ -3,20 +3,16 @@
 // found in the LICENSE file.
 
 package org.chromium.android_webview;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 
-@JNINamespace("android_webview")
-public class JsResultHandler implements JsResultReceiver, JsPromptResultReceiver {
-    private int mNativeDialogPointer;
+import org.chromium.base.ThreadUtils;
 
-    @CalledByNative
-    public static JsResultHandler create(int nativeDialogPointer) {
-        return new JsResultHandler(nativeDialogPointer);
-    }
+class JsResultHandler implements JsResultReceiver, JsPromptResultReceiver {
+    private AwContentsClientBridge mBridge;
+    private final int mId;
 
-    private JsResultHandler(int nativeDialogPointer) {
-        mNativeDialogPointer = nativeDialogPointer;
+    JsResultHandler(AwContentsClientBridge bridge, int id) {
+        mBridge = bridge;
+        mId = id;
     }
 
     @Override
@@ -25,15 +21,26 @@ public class JsResultHandler implements JsResultReceiver, JsPromptResultReceiver
     }
 
     @Override
-    public void confirm(String promptResult) {
-        nativeConfirmJsResult(mNativeDialogPointer, promptResult);
+    public void confirm(final String promptResult) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mBridge != null)
+                    mBridge.confirmJsResult(mId, promptResult);
+                mBridge = null;
+            }
+        });
     }
 
     @Override
     public void cancel() {
-        nativeCancelJsResult(mNativeDialogPointer);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mBridge != null)
+                    mBridge.cancelJsResult(mId);
+                mBridge = null;
+            }
+        });
     }
-
-    private native void nativeConfirmJsResult(int dialogPointer, String promptResult);
-    private native void nativeCancelJsResult(int dialogPointer);
 }

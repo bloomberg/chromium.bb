@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/id_map.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 namespace net {
 class X509Certificate;
@@ -39,14 +40,31 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                                      const base::Callback<void(bool)>& callback,
                                      bool* cancel_request) OVERRIDE;
 
+  virtual void RunJavaScriptDialog(
+      content::JavaScriptMessageType message_type,
+      const GURL& origin_url,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
+      OVERRIDE;
+  virtual void RunBeforeUnloadDialog(
+      const GURL& origin_url,
+      const string16& message_text,
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
+      OVERRIDE;
+
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);
+  void ConfirmJsResult(JNIEnv*, jobject, int id, jstring prompt);
+  void CancelJsResult(JNIEnv*, jobject, int id);
 
  private:
   JavaObjectWeakGlobalRef java_ref_;
 
   typedef const base::Callback<void(bool)> CertErrorCallback;
   IDMap<CertErrorCallback, IDMapOwnPointer> pending_cert_error_callbacks_;
+  IDMap<content::JavaScriptDialogManager::DialogClosedCallback, IDMapOwnPointer>
+      pending_js_dialog_callbacks_;
 };
 
 bool RegisterAwContentsClientBridge(JNIEnv* env);

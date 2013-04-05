@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_
-#define ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_JAVASCRIPT_DIALOG_MANAGER_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_JAVASCRIPT_DIALOG_MANAGER_H_
 
 #include "content/public/browser/javascript_dialog_manager.h"
 
@@ -38,4 +38,4 @@ class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_JAVASCRIPT_DIALOG_MANAGER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_JAVASCRIPT_DIALOG_MANAGER_H_

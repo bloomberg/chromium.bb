@@ -226,62 +226,6 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
 }
 
-void AwContents::RunJavaScriptDialog(
-    content::JavaScriptMessageType message_type,
-    const GURL& origin_url,
-    const string16& message_text,
-    const string16& default_prompt_text,
-    const ScopedJavaLocalRef<jobject>& js_result) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(
-      env, origin_url.spec()));
-  ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(
-      env, message_text));
-  switch (message_type) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
-      Java_AwContents_handleJsAlert(
-          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
-      break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
-      Java_AwContents_handleJsConfirm(
-          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
-      break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
-      ScopedJavaLocalRef<jstring> jdefault_value(
-          ConvertUTF16ToJavaString(env, default_prompt_text));
-      Java_AwContents_handleJsPrompt(
-          env, obj.obj(), jurl.obj(), jmessage.obj(),
-          jdefault_value.obj(), js_result.obj());
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
-void AwContents::RunBeforeUnloadDialog(
-    const GURL& origin_url,
-    const string16& message_text,
-    const ScopedJavaLocalRef<jobject>& js_result) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(
-      env, origin_url.spec()));
-  ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(
-      env, message_text));
-  Java_AwContents_handleJsBeforeUnload(
-          env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
-}
-
 void AwContents::PerformLongClick() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

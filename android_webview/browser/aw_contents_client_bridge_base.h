@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/supports_user_data.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 
 class GURL;
 
@@ -42,6 +43,19 @@ class AwContentsClientBridgeBase {
                                      const GURL& request_url,
                                      const base::Callback<void(bool)>& callback,
                                      bool* cancel_request) = 0;
+
+  virtual void RunJavaScriptDialog(
+      content::JavaScriptMessageType message_type,
+      const GURL& origin_url,
+      const string16& message_text,
+      const string16& default_prompt_text,
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
+      = 0;
+  virtual void RunBeforeUnloadDialog(
+      const GURL& origin_url,
+      const string16& message_text,
+      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
+      = 0;
 };
 
 }  // namespace android_webview

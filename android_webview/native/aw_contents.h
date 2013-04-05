@@ -18,7 +18,6 @@
 #include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 
 class SkBitmap;
 class TabContents;
@@ -63,18 +62,6 @@ class AwContents : public FindHelper::Listener,
   AwRenderViewHostExt* render_view_host_ext() {
     return render_view_host_ext_.get();
   }
-
-  void RunJavaScriptDialog(
-      content::JavaScriptMessageType message_type,
-      const GURL& origin_url,
-      const string16& message_text,
-      const string16& default_prompt_text,
-      const base::android::ScopedJavaLocalRef<jobject>& js_result);
-
-  void RunBeforeUnloadDialog(
-      const GURL& origin_url,
-      const string16& message_text,
-      const base::android::ScopedJavaLocalRef<jobject>& js_result);
 
   void PerformLongClick();
 
