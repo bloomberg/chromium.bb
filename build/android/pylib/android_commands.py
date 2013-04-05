@@ -682,10 +682,9 @@ class AndroidCommands(object):
         self.RunShellCommand(self._util_wrapper + ' ' + MD5SUM_DEVICE_PATH +
                              ' ' + device_path))
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
-    hashes_on_host = _ComputeFileListHash(
-        subprocess.Popen(
-            '%s_host %s' % (self._md5sum_path, local_path),
-            stdout=subprocess.PIPE, shell=True).stdout)
+    md5sum_output = cmd_helper.GetCmdOutput(
+        ['%s_host' % self._md5sum_path, local_path])
+    hashes_on_host = _ComputeFileListHash(md5sum_output)
     if hashes_on_device == hashes_on_host:
       return
 
