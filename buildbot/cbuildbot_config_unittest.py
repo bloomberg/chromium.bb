@@ -6,13 +6,10 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
-import logging
 import json
 import os
-import re
 import subprocess
 import sys
-import urllib2
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -173,41 +170,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
       if build_name.startswith('arm-') or config['arm']:
         self.assertTrue(config['vm_tests'] is None,
                         "ARM builder %s can't run vm tests!" % build_name)
-
-  def testImportantMattersToChrome(self):
-    # TODO(ferringb): Decorate this as a network test.
-    namefinder = re.compile(r" *params='([^' ]*)[ ']")
-    try:
-      req = urllib2.urlopen(CHROMIUM_WATCHING_URL, timeout=30)
-    except EnvironmentError:
-      logging.error('Could not fetch %r', CHROMIUM_WATCHING_URL, exc_info=True)
-      return
-
-    if req.getcode() != 200:
-      msg = 'Received error code %r for %r'
-      logging.error(msg, req.getcode(), CHROMIUM_WATCHING_URL)
-      return
-
-    watched_configs = []
-    for m in [namefinder.match(line) for line in req.read().splitlines()]:
-      if m:
-        watched_configs.append(m.group(1))
-
-    watched_boards = []
-    for config in watched_configs:
-      watched_boards.extend(cbuildbot_config.config[config]['boards'])
-
-    watched_boards = set(watched_boards)
-
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if (config['important'] and
-          config['chrome_rev'] == constants.CHROME_REV_LATEST and
-          config['overlays'] == constants.PUBLIC_OVERLAYS and
-          config['build_type'] == constants.CHROME_PFQ_TYPE):
-        boards = set(config['boards'])
-        self.assertTrue(boards.issubset(watched_boards),
-                        'Config %s: boards %r are not watched on Chromium' %
-                        (build_name, list(boards - watched_boards)))
 
   #TODO: Add test for compare functionality
   def testJSONDumpLoadable(self):
