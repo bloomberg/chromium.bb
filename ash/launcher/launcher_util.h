@@ -7,14 +7,6 @@
 
 #include "ash/ash_export.h"
 
-namespace aura {
-class Window;
-}
-
-namespace ui {
-class Event;
-}
-
 namespace ash {
 class LauncherModel;
 
@@ -22,12 +14,6 @@ namespace launcher {
 
 // Return the index of the browser item from a given |launcher_model|.
 ASH_EXPORT int GetBrowserItemIndex(const LauncherModel& launcher_model);
-
-// Move the |maybe_panel| to the root window where the |event| occured if
-// |maybe_panel| is of aura::client::WINDOW_TYPE_PANEL and it's not
-// in the same root window.
-ASH_EXPORT void MoveToEventRootIfPanel(aura::Window* maybe_panel,
-                                       const ui::Event& event);
 
 }  // namespace launcher
 }  // namespace ash

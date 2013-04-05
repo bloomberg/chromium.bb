@@ -22,6 +22,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/window_util.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace wm {
@@ -199,6 +201,20 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& work_area,
     }
     bounds->Offset(x_offset, y_offset);
   }
+}
+
+void MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
+  views::View* target = static_cast<views::View*>(event.target());
+  if (!target)
+    return;
+  aura::RootWindow* target_root =
+      target->GetWidget()->GetNativeView()->GetRootWindow();
+  if (!target_root || target_root == window->GetRootWindow())
+    return;
+  aura::Window* window_container =
+      ash::Shell::GetContainer(target_root, window->parent()->id());
+  // Move the window to the target launcher.
+  window_container->AddChild(window);
 }
 
 }  // namespace wm

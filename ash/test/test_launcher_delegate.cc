@@ -69,7 +69,8 @@ void TestLauncherDelegate::OnBrowserShortcutClicked(int event_flags) {
 void TestLauncherDelegate::ItemClicked(const ash::LauncherItem& item,
                                        const ui::Event& event) {
   aura::Window* window = GetWindowByID(item.id);
-  launcher::MoveToEventRootIfPanel(window, event);
+  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
+    ash::wm::MoveWindowToEventRoot(window, event);
   window->Show();
   ash::wm::ActivateWindow(window);
 }

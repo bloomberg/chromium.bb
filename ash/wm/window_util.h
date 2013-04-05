@@ -19,6 +19,7 @@ class Rect;
 }
 
 namespace ui {
+class Event;
 class Layer;
 }
 
@@ -123,6 +124,11 @@ ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
     int min_width,
     int min_height,
     gfx::Rect* bounds);
+
+// Move |window| to the root window where the |event| occured if it is not
+// already in the same root window.
+ASH_EXPORT void MoveWindowToEventRoot(aura::Window* window,
+                                      const ui::Event& event);
 
 }  // namespace wm
 }  // namespace ash
