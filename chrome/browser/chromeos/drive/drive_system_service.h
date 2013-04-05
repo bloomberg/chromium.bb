@@ -24,7 +24,6 @@ class FilePath;
 
 namespace google_apis {
 class DriveServiceInterface;
-class DriveUploader;
 }
 
 namespace drive {
@@ -74,7 +73,6 @@ class DriveSystemService : public ProfileKeyedService,
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DriveDownloadHandler* download_handler() { return download_handler_.get(); }
-  google_apis::DriveUploader* uploader() { return uploader_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
   EventLogger* event_logger() { return event_logger_.get(); }
 
@@ -141,7 +139,6 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<EventLogger> event_logger_;
   scoped_ptr<DriveCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
-  scoped_ptr<google_apis::DriveUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;

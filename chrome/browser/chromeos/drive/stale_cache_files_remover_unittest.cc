@@ -89,7 +89,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_.get(),
                                        fake_drive_service_.get(),
-                                       NULL,  // drive_uploader
                                        drive_webapps_registry_.get(),
                                        resource_metadata_.get(),
                                        blocking_task_runner_);

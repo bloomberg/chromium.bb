@@ -31,7 +31,6 @@ class SequencedTaskRunner;
 namespace google_apis {
 class AboutResource;
 class DriveServiceInterface;
-class DriveUploaderInterface;
 class ResourceEntry;
 }
 
@@ -59,7 +58,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
-                  google_apis::DriveUploaderInterface* uploader,
                   DriveWebAppsRegistry* webapps_registry,
                   DriveResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
@@ -436,9 +434,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // The cache owned by DriveSystemService.
   DriveCache* cache_;
-
-  // The uploader owned by DriveSystemService.
-  google_apis::DriveUploaderInterface* uploader_;
 
   // The document service owned by DriveSystemService.
   google_apis::DriveServiceInterface* drive_service_;

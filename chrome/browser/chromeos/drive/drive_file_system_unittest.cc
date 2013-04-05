@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -127,7 +126,6 @@ class DriveFileSystemTest : public testing::Test {
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
-    uploader_.reset(new google_apis::DriveUploader(fake_drive_service_.get()));
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
 
@@ -151,7 +149,6 @@ class DriveFileSystemTest : public testing::Test {
     file_system_.reset(new DriveFileSystem(profile_.get(),
                                            cache_.get(),
                                            fake_drive_service_.get(),
-                                           uploader_.get(),
                                            drive_webapps_registry_.get(),
                                            resource_metadata_.get(),
                                            blocking_task_runner_));
@@ -450,7 +447,6 @@ class DriveFileSystemTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<google_apis::DriveUploaderInterface> uploader_;
   scoped_ptr<DriveFileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;

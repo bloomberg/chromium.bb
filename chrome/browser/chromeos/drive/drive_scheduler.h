@@ -80,8 +80,7 @@ class DriveScheduler
   };
 
   DriveScheduler(Profile* profile,
-                 google_apis::DriveServiceInterface* drive_service,
-                 google_apis::DriveUploaderInterface* uploader);
+                 google_apis::DriveServiceInterface* drive_service);
   virtual ~DriveScheduler();
 
   // Initializes the object. This function should be called before any
@@ -400,7 +399,7 @@ class DriveScheduler
   std::list<QueueEntry*> queue_[NUM_QUEUES];
 
   google_apis::DriveServiceInterface* drive_service_;
-  google_apis::DriveUploaderInterface* uploader_;
+  scoped_ptr<google_apis::DriveUploaderInterface> uploader_;
 
   Profile* profile_;
 

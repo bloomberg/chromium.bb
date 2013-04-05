@@ -65,8 +65,7 @@ class DriveSchedulerTest : public testing::Test {
         "chromeos/drive/applist.json");
 
     scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        fake_drive_service_.get(),
-                                        NULL));
+                                        fake_drive_service_.get()));
 
     scheduler_->Initialize();
     scheduler_->SetDisableThrottling(true);

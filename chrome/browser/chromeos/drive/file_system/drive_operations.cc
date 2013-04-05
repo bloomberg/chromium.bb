@@ -30,7 +30,6 @@ void DriveOperations::Init(
     DriveFileSystemInterface* drive_file_system,
     DriveCache* cache,
     DriveResourceMetadata* metadata,
-    google_apis::DriveUploaderInterface* uploader,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

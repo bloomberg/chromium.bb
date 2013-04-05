@@ -65,7 +65,7 @@ class CreateDirectoryOperationTest
     ASSERT_EQ(DRIVE_FILE_OK, error);
 
     scheduler_.reset(
-        new DriveScheduler(profile_.get(), fake_drive_service_.get(), NULL));
+        new DriveScheduler(profile_.get(), fake_drive_service_.get()));
     scheduler_->Initialize();
 
     drive_web_apps_registry_.reset(new DriveWebAppsRegistry);

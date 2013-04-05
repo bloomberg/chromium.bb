@@ -24,7 +24,6 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_service.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -132,7 +131,6 @@ DriveSystemService::DriveSystemService(
                               DriveCache::GetCacheRootPath(profile),
                               blocking_task_runner_,
                               NULL /* free_disk_space_getter */));
-  uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
 
   // We can call DriveCache::GetCacheDirectoryPath safely even before the cache
@@ -146,7 +144,6 @@ DriveSystemService::DriveSystemService(
                      new DriveFileSystem(profile_,
                                          cache(),
                                          drive_service_.get(),
-                                         uploader(),
                                          webapps_registry(),
                                          resource_metadata_.get(),
                                          blocking_task_runner_));

@@ -27,7 +27,6 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -220,13 +219,11 @@ DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
     google_apis::DriveServiceInterface* drive_service,
-    google_apis::DriveUploaderInterface* uploader,
     DriveWebAppsRegistry* webapps_registry,
     DriveResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
-      uploader_(uploader),
       drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       resource_metadata_(resource_metadata),
@@ -234,7 +231,7 @@ DriveFileSystem::DriveFileSystem(
       last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      scheduler_(new DriveScheduler(profile, drive_service, uploader)),
+      scheduler_(new DriveScheduler(profile, drive_service)),
       polling_interval_sec_(kFastPollingIntervalInSec),
       push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -257,7 +254,6 @@ void DriveFileSystem::Initialize() {
                          this,  // DriveFileSystemInterface
                          cache_,
                          resource_metadata_,
-                         uploader_,
                          blocking_task_runner_,
                          this);  // OperationObserver
 

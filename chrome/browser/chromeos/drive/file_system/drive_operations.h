@@ -14,10 +14,6 @@ namespace base {
 class FilePath;
 }
 
-namespace google_apis {
-class DriveUploaderInterface;
-}
-
 namespace drive {
 
 class DriveCache;
@@ -44,7 +40,6 @@ class DriveOperations {
             DriveFileSystemInterface* drive_file_system,
             DriveCache* cache,
             DriveResourceMetadata* metadata,
-            google_apis::DriveUploaderInterface* uploader,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
             OperationObserver* observer);
 

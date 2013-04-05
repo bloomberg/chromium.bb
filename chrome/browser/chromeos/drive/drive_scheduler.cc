@@ -57,13 +57,12 @@ bool DriveScheduler::QueueEntry::Compare(
 
 DriveScheduler::DriveScheduler(
     Profile* profile,
-    google_apis::DriveServiceInterface* drive_service,
-    google_apis::DriveUploaderInterface* uploader)
+    google_apis::DriveServiceInterface* drive_service)
     : next_job_id_(0),
       throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
-      uploader_(uploader),
+      uploader_(new google_apis::DriveUploader(drive_service)),
       profile_(profile),
       initialized_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {

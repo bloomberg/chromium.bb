@@ -63,7 +63,6 @@ class SearchMetadataTest : public testing::Test {
     file_system_.reset(new DriveFileSystem(profile_.get(),
                                            drive_cache_.get(),
                                            fake_drive_service_.get(),
-                                           NULL,  // uploader
                                            drive_webapps_registry_.get(),
                                            resource_metadata_.get(),
                                            blocking_task_runner_));
