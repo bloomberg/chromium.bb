@@ -869,9 +869,6 @@ plugins/get-url-with-blank-target.html [ WontFix ]
 # on this one.
 fast/regex/slow.html [ WontFix ]
 
-# WebKit QT Build-specific tests
-platform/qt/view/fixed-layout-size.html [ WontFix ]
-
 # The issue is which global object to use as the implicit
 # receiver for cross-frame calls.  Currently, IE, Firefox and Chrome
 # agree and only Safari is doing it this way.
@@ -908,10 +905,6 @@ fast/js/reparsing-semicolon-insertion.html [ WontFix ]
 # Chrome uses its quota manager and doesn't respect the 5mb limit.
 storage/indexeddb/database-quota.html [ WontFix ]
 
-# WebKitShouldInvertColors isn't implemented, but it doesn't look like we
-# need to implement this.
-platform/win/inverted-colors/non-composited.html [ WontFix ]
-
 # JavaScriptCore bindings willfully have different behavior than V8 bindings
 plugins/npruntime/overrides-all-properties.html [ WontFix ]
 
@@ -920,9 +913,6 @@ fast/js/document-all-between-frames.html [ WontFix ]
 
 # Chromium doesn't use fullscreen-specific media controls
 media/video-controls-fullscreen-volume.html [ WontFix ]
-
-# Test fails because it's trying to load a plugin we don't have. We probably don't need to fix this.
-platform/gtk/plugins/invalidate-rect-with-null-npp-argument.html [ WontFix ]
 
 # Mac and Win does not have global selection.
 [ Mac Win ] editing/pasteboard/paste-global-selection.html [ WontFix ]
@@ -1101,9 +1091,6 @@ crbug.com/10435 [ Mac Win ] editing/selection/designmode-no-caret.html [ Failure
 # Issue 3273: TextInputController::firstRectForCharacterRange not returning
 # the correct values for bidi/rtl text.
 crbug.com/3273 editing/selection/move-left-right.html [ Failure ]
-crbug.com/3273 [ Mac ] platform/mac/editing/input/caret-primary-bidi.html [ Failure ]
-crbug.com/3273 [ Mac ] platform/mac/editing/input/firstrectforcharacterrange-plain.html [ Failure ]
-crbug.com/3273 [ Mac ] platform/mac/editing/input/range-for-empty-document.html [ Failure ]
 
 # These tests also use firstRectForCharacterRange, but they generate slightly
 # different values.
@@ -1112,10 +1099,6 @@ crbug.com/3273 editing/selection/5825350-2.html [ Failure ]
 crbug.com/3273 [ Mac ] editing/selection/mixed-editability-10.html [ Failure ]
 
 crbug.com/14832 editing/selection/user-drag-element-and-user-select-none.html [ Failure ]
-
-# Fails due to textInputController.setInputMethod not implemented for Mac.
-crbug.com/19665 [ Mac ] platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html [ Failure ]
-crbug.com/19665 [ Mac ] platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html [ Failure ]
 
 # Directionality of mixed-direction text in selected choice should
 # match that in the <select> option lists.
@@ -1371,8 +1354,6 @@ crbug.com/10295 [ Mac ] fast/dom/prototype-chain.html [ Failure ]
 # AccessibilityController and AccessibilityUIElement are only
 # partially finished - about half the tests can't run yet.
 
-crbug.com/10322 platform/mac/accessibility
-crbug.com/10322 platform/win/accessibility
 crbug.com/10322 accessibility/aria-activedescendant-crash.html [ Skip ]
 crbug.com/10322 accessibility/aria-combobox.html [ Skip ]
 crbug.com/10322 accessibility/aria-invalid.html [ Skip ]
@@ -1724,10 +1705,6 @@ crbug.com/25977 [ Win Debug ] http/tests/appcache/empty-manifest.html [ Pass Tim
 crbug.com/25977 [ XP Debug ] http/tests/appcache/main-resource-hash.html [ Pass Timeout ]
 crbug.com/25977 [ XP Debug ] http/tests/appcache/online-whitelist.html [ Pass Timeout ]
 
-# WebKit update 52323->52366
-crbug.com/30826 [ Win ] platform/win/fast/events/panScroll-imageMap-noHref-scroll.html [ Failure ]
-crbug.com/30826 [ Win Debug ] platform/win/fast/events/panScroll-event-fired.html [ Failure Pass Timeout ]
-
 webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-click-hyperlink.html [ Skip ]
 webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-event-fired.html [ Skip ]
 webkit.org/b/104991 [ Linux Mac ] platform/chromium-win/fast/events/panScroll-nested-divs.html [ Skip ]
@@ -1994,10 +1971,6 @@ webkit.org/b/91205 media/nodesFromRect-shadowContent.html [ Skip ]
 webkit.org/b/96470 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure ]
 webkit.org/b/96470 [ Win ] fast/text/international/vertical-text-metrics-test.html [ Failure ]
 
-# Added in Webkit r69707 without expected results.
-# Expected result file added in r83450. Still no match.
-crbug.com/143479 platform/gtk/accessibility/aria-table-hierarchy.html [ Failure ]
-
 # r69833, JSC/V8 Date parsing differences
 crbug.com/143476 fast/js/date-parse-test.html [ Failure ]
 
@@ -2009,17 +1982,6 @@ crbug.com/65877 [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failu
 crbug.com/65877 [ Win ] fast/text/international/text-combine-image-test.html [ Failure ]
 
 webkit.org/b/94410 [ Win ] fast/writing-mode/vertical-baseline-alignment.html [ ImageOnlyFailure ]
-
-# New test; was added in http://trac.webkit.org/changeset/68520
-webkit.org/b/46735 [ Win ] platform/win/plugins/window-geometry-initialized-before-set-window.html [ WontFix ]
-# Added in WebKit r70265
-webkit.org/b/48034 [ Win ] platform/win/plugins/npn-invalidate-rect-invalidates-window.html [ WontFix ]
-# Added in WK r71416, doesn't look like it's applicable to Chromium
-[ Win ] platform/win/plugins/window-region-is-set-to-clip-rect.html [ WontFix ]
-# Added in WK r71418, doesn't look like it's applicable to Chromium
-[ Win ] platform/win/plugins/draws-gradient.html [ WontFix ]
-# Doesn't look like it's applicable to Chromium
-[ Win ] platform/win/plugins/get-value-netscape-window.html [ WontFix ]
 
 # Added in WK r71424
 # We should probably just skip this test, everyone else has since
@@ -2074,7 +2036,6 @@ crbug.com/58212 [ Linux ] http/tests/appcache/main-resource-redirect.html [ Pass
 webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Pass Timeout ]
 webkit.org/b/91429 [ Linux ] fast/text/justification-padding-mid-word.html [ Failure Pass ]
 webkit.org/b/91429 [ Linux Mac ] http/tests/plugins/post-url-file.html [ Timeout ]
-webkit.org/b/91429 platform/gtk/fast/forms/menulist-typeahead-find.html [ Failure ]
 
 crbug.com/8729 [ Linux Mac ] http/tests/multipart/invalid-image-data.html [ ImageOnlyFailure Pass ]
 
@@ -2206,7 +2167,6 @@ code.google.com/p/v8/issues/detail?id=1168 fast/js/mozilla/strict/B.1.2.html [ F
 
 webkit.org/b/55117 fast/js/i18n-bindings-locale.html [ Failure ]
 
-crbug.com/74497 platform/win/plugins/windowless-paint-rect-coordinates.html [ Failure ]
 
 webkit.org/b/55300 [ Mac ] fast/images/support-broken-image-delegate.html [ Failure ]
 
@@ -2334,10 +2294,6 @@ webkit.org/b/106373 fast/backgrounds/gradient-background-leakage-hidpi.html [ Pa
 # Failure introduced by Chromium r83848.
 crbug.com/137938 [ Mac ] fast/url/ipv6.html [ Failure ]
 
-# New tests in r85961 and r86442
-webkit.org/b/60414 [ Win ] platform/win/plugins/visibility-hidden.html [ Failure ]
-webkit.org/b/60414 [ Win ] platform/win/plugins/iframe-inside-overflow.html [ Failure ]
-
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 crbug.com/82281 fast/xpath/xpath-other-nodeset-result-should-mark-its-nodeset.html [ Failure ]
 crbug.com/82281 fast/xpath/xpath-snapshot-result-should-mark-its-nodeset.html [ Failure ]
@@ -2367,9 +2323,6 @@ webkit.org/b/61169 [ Linux Win ] css3/images/optimize-contrast-canvas.html [ Ima
 webkit.org/b/61169 [ Linux Win ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 
 webkit.org/b/98906 platform/chromium/fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
-
-# New test added in r87324
-crbug.com/83994 [ Win ] platform/win/plugins/call-javascript-that-destroys-plugin.html [ Failure ]
 
 crbug.com/84032 [ Win ] fast/dom/object-plugin-hides-properties.html [ Pass Timeout ]
 
