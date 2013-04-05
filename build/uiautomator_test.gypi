@@ -25,7 +25,7 @@
       'action_name': 'dex_<(_target_name)',
       'message': 'Dexing <(_target_name) jar',
       'inputs': [
-        '<(DEPTH)/build/android/pylib/build_utils.py',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/dex.py',
         '>@(library_dexed_jars_paths)',
       ],
