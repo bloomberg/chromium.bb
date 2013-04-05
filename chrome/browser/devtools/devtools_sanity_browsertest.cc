@@ -491,13 +491,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-#if defined(OS_WIN)
-// Timing out on windows tryservers: http://crbug.com/219515
-#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#else
-#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenScriptIsRunning) {
+// Timing out on all platforms. http://crbug.com/226862
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
