@@ -8,11 +8,8 @@
 
     var vertices = createRegularPolygonVertices(400, 8); // 400x400 8 sided regular polygon
     var lineHeight = 40;
-    var hasSubpixelSupport;
 
     function init() {
-        var rect = document.getElementById("subpixel-test").getBoundingClientRect();
-        hasSubpixelSupport = rect.width != Math.floor(rect.width);
         createPolygonShapeInsideTestCaseExpected();
     }
 </script>
@@ -33,7 +30,6 @@
       This test requires the Ahem font. It creates a polygonal shape-inside and a matching
       filled SVG polygon. The content should just fill the shape with alternating black and
       empty rectangles on each line.</p>
-  <div id="subpixel-test" style="width: 4.5px; height: 5px;"></div>
 </body>
 
 </html>

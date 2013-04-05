@@ -14,7 +14,6 @@
     <div class="shorter box" style="-webkit-column-break-after: always;"></div>
     <div id="after-break" class="shorter box"></div>
     <div id="no-break" class="shorter box" style="-webkit-column-break-inside: avoid;"></div>
-    <div id="subPixelTest" style="width:10.5px"></div>
 </div>
 <pre id="console"></pre>
 <script>
@@ -35,9 +34,6 @@
             log("FAIL: '" + id + "' is at (" + Math.round(rect.left) + ", " + Math.round(rect.top) + ") instead of (" + expectedLeft + " ," + expectedTop + ")");
     }
 
-    var rect = document.getElementById('subPixelTest').getBoundingClientRect();
-    var hasSubpixelSupport = Math.round(rect.bottom) != rect.bottom;
-
-    testBoxPosition("break-before", 748, hasSubpixelSupport ? 220 : 218);
-    testBoxPosition("after-break", 748, hasSubpixelSupport ? 431 : 428);
+    testBoxPosition("break-before", 748, 220);
+    testBoxPosition("after-break", 748, 431);
 </script>
