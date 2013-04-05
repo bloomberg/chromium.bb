@@ -106,7 +106,10 @@ std::string DeviceInfo::MakeUserAgentForSyncApi(
 #elif defined(OS_CHROMEOS)
   user_agent += "CROS ";
 #elif defined(OS_ANDROID)
-  user_agent += "ANDROID ";
+  if (IsTabletUI())
+    user_agent += "ANDROID-TABLET ";
+  else
+    user_agent += "ANDROID-PHONE ";
 #elif defined(OS_LINUX)
   user_agent += "LINUX ";
 #elif defined(OS_FREEBSD)
