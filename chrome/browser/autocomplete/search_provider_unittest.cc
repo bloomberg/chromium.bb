@@ -224,6 +224,7 @@ void SearchProviderTest::SetUp() {
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   provider_ = new SearchProvider(this, &profile_);
+  provider_->kMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {

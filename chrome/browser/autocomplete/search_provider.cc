@@ -121,6 +121,8 @@ const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
 const int SearchProvider::kDefaultProviderURLFetcherID = 1;
 // static
 const int SearchProvider::kKeywordProviderURLFetcherID = 2;
+// static
+int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
@@ -562,9 +564,8 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
     return;
 
-  // To avoid flooding the suggest server, don't send a query until at least 100
-  // ms since the last query.
-  const int kMinimumTimeBetweenSuggestQueriesMs = 100;
+  // To avoid flooding the suggest server, don't send a query until at
+  // least 100 ms since the last query.
   base::TimeTicks next_suggest_time(time_suggest_request_sent_ +
       TimeDelta::FromMilliseconds(kMinimumTimeBetweenSuggestQueriesMs));
   base::TimeTicks now(base::TimeTicks::Now());

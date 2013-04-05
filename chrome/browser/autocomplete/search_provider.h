@@ -29,6 +29,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
+class SearchProviderTest;
 class TemplateURLService;
 
 namespace base {
@@ -52,6 +53,12 @@ class URLFetcher;
 class SearchProvider : public AutocompleteProvider,
                        public net::URLFetcherDelegate {
  public:
+  // ID used in creating URLFetcher for default provider's suggest results.
+  static const int kDefaultProviderURLFetcherID;
+
+  // ID used in creating URLFetcher for keyword provider's suggest results.
+  static const int kKeywordProviderURLFetcherID;
+
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
   // Marks the instant query as done. If |input_text| is non-empty this changes
@@ -84,18 +91,17 @@ class SearchProvider : public AutocompleteProvider,
     return field_trial_triggered_in_session_;
   }
 
-  // ID used in creating URLFetcher for default provider's suggest results.
-  static const int kDefaultProviderURLFetcherID;
-
-  // ID used in creating URLFetcher for keyword provider's suggest results.
-  static const int kKeywordProviderURLFetcherID;
-
  private:
+  friend class SearchProviderTest;
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
+
+  // The amount of time to wait before sending a new suggest request after
+  // the previous one.
+  static int kMinimumTimeBetweenSuggestQueriesMs;
 
   virtual ~SearchProvider();
 
