@@ -513,11 +513,11 @@
 }
 
 .event-bars .event-bar .header::before {
-    -webkit-mask-position: -4px -96px;
+    background-position: -4px -96px;
 }
 
 .event-bars .event-bar.expanded .header::before {
-    -webkit-mask-position: -20px -96px;
+    background-position: -20px -96px;
 }
 
 .image-preview-container {

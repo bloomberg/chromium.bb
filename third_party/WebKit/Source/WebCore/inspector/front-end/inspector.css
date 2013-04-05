@@ -1063,6 +1063,10 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     -webkit-user-select: none;
 }
 
+.console-message > .outline-disclosure li.parent::before {
+    top: 0;
+}
+
 .console-message .bubble {
     display: inline-block;
     height: 14px;
@@ -1158,7 +1162,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     display: none;
 }
 
-.console-error-level .console-message-text, .console-error-level .section .header .title {
+.console-error-level .console-message-text, .console-error-level .section > .header .title {
     color: red !important;
 }
 
@@ -1217,18 +1221,18 @@ ol.watch-expressions > li.hovered {
     margin: 0 0 0 12px !important;
 }
 
-.console-group-messages .section .header {
+.console-group-messages .section > .header {
     padding: 0 8px 0 0;
     background-image: none;
     border: none;
     min-height: 0;
 }
 
-.console-group-messages .section .header::before {
+.console-group-messages .section > .header::before {
     margin-left: -12px;
 }
 
-.console-group-messages .section .header .title {
+.console-group-messages .section > .header .title {
     color: #222;
     font-weight: normal;
     line-height: 13px;
@@ -1281,7 +1285,7 @@ ol.watch-expressions > li.hovered {
     position: static;
 }
 
-.console-formatted-object .section .header::before {
+.console-formatted-object .section > .header::before {
     margin-top: 0;
 }
 
@@ -1605,7 +1609,7 @@ iframe.panel.extension {
     border-top: 1px solid rgb(231, 231, 231);
 }
 
-.section .header {
+.section > .header {
     padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
@@ -1613,10 +1617,11 @@ iframe.panel.extension {
     -webkit-background-clip: padding;
 }
 
-.section .header::before {
+.section > .header::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 120px;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
     content: "a";
     color: transparent;
     text-shadow: none;
@@ -1628,31 +1633,30 @@ iframe.panel.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .section > .header::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 }
 
 .section > .header::before {
-    background-color: rgb(110, 110, 110);
-    -webkit-mask-position: -4px -96px;
+    background-position: -4px -96px;
 }
 
 .section.expanded > .header::before {
-    -webkit-mask-position: -20px -96px;
+    background-position: -20px -96px;
 }
 
-.section .header .title, .event-bar .header .title {
+.section > .header .title, .event-bar .header .title {
     font-weight: normal;
     word-wrap: break-word;
     white-space: normal;
     line-height: 18px;
 }
 
-.section .header .title.blank-title {
+.section > .header .title.blank-title {
     font-style: italic;
 }
 
-.section .header label, .event-bar .header label {
+.section > .header label, .event-bar .header label {
     display: none;
 }
 
@@ -1660,7 +1664,7 @@ iframe.panel.extension {
     display: inline;
 }
 
-.section .header .subtitle, .event-bar .header .subtitle {
+.section > .header .subtitle, .event-bar .header .subtitle {
     float: right;
     margin-left: 5px;
     max-width: 55%;
@@ -1668,7 +1672,7 @@ iframe.panel.extension {
     overflow: hidden;
 }
 
-.section .header .subtitle a {
+.section > .header .subtitle a {
     color: inherit;
 }
 
@@ -1715,8 +1719,9 @@ iframe.panel.extension {
 
 .properties-tree li.parent::before {
     -webkit-user-select: none;
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 120px;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
     content: "a";
     width: 8px;
     float: left;
@@ -1727,17 +1732,16 @@ iframe.panel.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .properties-tree li.parent::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 }
 
 .properties-tree li.parent::before {
-    background-color: rgb(110, 110, 110);
-    -webkit-mask-position: -4px -96px;
+    background-position: -4px -96px;
 }
 
 .properties-tree li.parent.expanded::before {
-    -webkit-mask-position: -20px -96px;
+    background-position: -20px -96px;
 }
 
 .properties-tree li .info {
