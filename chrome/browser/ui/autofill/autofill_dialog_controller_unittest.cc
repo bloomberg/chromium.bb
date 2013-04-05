@@ -25,6 +25,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 using testing::_;
 
 namespace autofill {
@@ -256,6 +260,11 @@ class AutofillDialogControllerTest : public testing::Test {
  private:
   void FinishedCallback(const FormStructure* form_structure,
                         const std::string& google_transaction_id) {}
+
+#if defined(OS_WIN)
+   // http://crbug.com/227221
+   ui::ScopedOleInitializer ole_initializer_;
+#endif
 
   // A bunch of threads are necessary for classes like TestWebContents and
   // URLRequestContextGetter not to fall over.
