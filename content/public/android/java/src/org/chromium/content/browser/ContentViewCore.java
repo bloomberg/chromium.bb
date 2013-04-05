@@ -1974,7 +1974,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             float viewportWidth, float viewportHeight,
             float controlsOffsetYCss, float contentOffsetYCss,
             float overdrawBottomHeightCss) {
-
+        TraceEvent.instant("ContentViewCore:updateFrameInfo");
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
         contentWidth = Math.max(contentWidth,
