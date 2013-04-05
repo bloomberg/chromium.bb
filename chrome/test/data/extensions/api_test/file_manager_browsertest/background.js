@@ -84,44 +84,61 @@ function waitAndAcceptDialog(callback) {
 // Checks that the files initially added by the C++ side are displayed, and
 // that a subsequently added file shows up.
 function testFileDisplay() {
-  getFileList(function(actualFilesBefore) {
-    chrome.test.assertEq(EXPECTED_FILES_BEFORE, actualFilesBefore);
-    chrome.test.sendMessage('initial check done', function(reply) {
-      chrome.test.assertEq('file added', reply);
-      waitForFileListChange(
+  waitForFileListChange(
+    0,
+    function(actualFilesBefore) {
+      chrome.test.assertEq(EXPECTED_FILES_BEFORE, actualFilesBefore);
+      chrome.test.sendMessage('initial check done', function(reply) {
+        chrome.test.assertEq('file added', reply);
+        waitForFileListChange(
           EXPECTED_FILES_BEFORE.length,
           chrome.test.callbackPass(function(actualFilesAfter) {
             chrome.test.assertEq(EXPECTED_FILES_AFTER, actualFilesAfter);
           }));
+      });
     });
-  });
 }
 
 // Injects the keyboard test code into the file manager tab and runs the
 // keyboard delete test.
 function doKeyboardTestWithConfirmation(code) {
-  chrome.tabs.executeScript(null, {file: 'fake_keypress.js'}, function(result) {
-    chrome.tabs.executeScript(null, {code: code}, function(result) {
-      chrome.test.assertFalse(!result[0]);
-      waitAndAcceptDialog(function() {
-        // Succeed here if anything happens; the C++ code checks what happened.
-        waitForFileListChange(EXPECTED_FILES_BEFORE.length,
-                              chrome.test.succeed);
+  // Wait until the file list is rendered.
+  waitForFileListChange(
+    0,
+    function(unused) {
+      // Once the file list is rendered, start the keyboard test.
+      chrome.tabs.executeScript(
+          null, {file: 'fake_keypress.js'}, function(result) {
+        chrome.tabs.executeScript(null, {code: code}, function(result) {
+          chrome.test.assertFalse(!result[0]);
+          waitAndAcceptDialog(function() {
+            // Succeed here if anything happens; the C++ code checks what
+            // happened.
+            waitForFileListChange(EXPECTED_FILES_BEFORE.length,
+                                  chrome.test.succeed);
+          });
+        });
       });
     });
-  });
 }
 
 // Injects the keyboard test code into the file manager tab and runs the
 // keyboard copy test.
 function doKeyboardTest(code) {
-  chrome.tabs.executeScript(null, {file: 'fake_keypress.js'}, function(result) {
-    chrome.tabs.executeScript(null, {code: code}, function(result) {
-      chrome.test.assertFalse(!result[0]);
-      // Succeed here if anything happens; the C++ code checks what happened.
-      waitForFileListChange(EXPECTED_FILES_BEFORE.length, chrome.test.succeed);
+  waitForFileListChange(
+    0,
+    function(unused) {
+      chrome.tabs.executeScript(
+          null, {file: 'fake_keypress.js'}, function(result) {
+        chrome.tabs.executeScript(null, {code: code}, function(result) {
+          chrome.test.assertFalse(!result[0]);
+          // Succeed here if anything happens; the C++ code checks what
+          // happened.
+          waitForFileListChange(EXPECTED_FILES_BEFORE.length,
+                                chrome.test.succeed);
+        });
+      });
     });
-  });
 }
 
 chrome.test.runTests([
