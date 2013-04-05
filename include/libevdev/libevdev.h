@@ -65,7 +65,7 @@ struct Evdev_ {
   struct timeval before_sync_time;
   struct timeval after_sync_time;
 };
-typedef struct Evdev_ Evdev, *EvdevPtr;
+typedef struct Evdev_ Evdev;
 
 int EvdevOpen(EvdevPtr, const char*);
 int EvdevClose(EvdevPtr);
