@@ -18,35 +18,30 @@ StuckButtonInhibitorFilterInterpreter::StuckButtonInhibitorFilterInterpreter(
   InitName();
 }
 
-Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpretImpl(
+void StuckButtonInhibitorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   HandleHardwareState(*hwstate);
   stime_t next_timeout = -1.0;
-  Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
-  ConsumeGestureList(result);
+  next_->SyncInterpret(hwstate, &next_timeout);
   HandleTimeouts(next_timeout, timeout);
-  return NULL;
 }
 
-Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimerImpl(
+void StuckButtonInhibitorFilterInterpreter::HandleTimerImpl(
     stime_t now, stime_t* timeout) {
   if (!next_expects_timer_) {
     if (!sent_buttons_down_) {
       Err("Bug: got callback, but no gesture to send.");
-      return NULL;
+      return;
     } else {
       Err("Mouse button seems stuck down. Sending button-up.");
-      result_ = Gesture(kGestureButtonsChange,
-                        now, now, 0, sent_buttons_down_);
+      ProduceGesture(Gesture(kGestureButtonsChange,
+                             now, now, 0, sent_buttons_down_));
       sent_buttons_down_ = 0;
-      return &result_;
     }
   }
   stime_t next_timeout = -1.0;
-  Gesture* result = next_->HandleTimer(now, &next_timeout);
-  ConsumeGestureList(result);
+  next_->HandleTimer(now, &next_timeout);
   HandleTimeouts(next_timeout, timeout);
-  return NULL;
 }
 
 void StuckButtonInhibitorFilterInterpreter::HandleHardwareState(

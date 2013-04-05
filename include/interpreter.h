@@ -38,23 +38,22 @@ class Interpreter {
   Interpreter(PropRegistry* prop_reg, Tracer* tracer, bool force_logging);
   virtual ~Interpreter();
 
-  // Called to interpret the current state and optionally produce 1
-  // resulting gesture. The passed |hwstate| may be modified.
+  // Called to interpret the current state.
+  // The passed |hwstate| may be modified.
   // If *timeout is set to >0.0, a timer will be setup to call
   // HandleTimer after *timeout time passes. An interpreter can only
   // have up to 1 outstanding timer, so if a timeout is requested by
   // setting *timeout and one already exists, the old one will be cancelled
   // and reused for this timeout.
-  virtual Gesture* SyncInterpret(HardwareState* hwstate,
-                                 stime_t* timeout);
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout);
 
-  // Called to handle a timeout and optionally produce 1 resulting gesture.
+  // Called to handle a timeout.
   // If *timeout is set to >0.0, a timer will be setup to call
   // HandleTimer after *timeout time passes. An interpreter can only
   // have up to 1 outstanding timer, so if a timeout is requested by
   // setting *timeout and one already exists, the old one will be cancelled
   // and reused for this timeout.
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual void HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
@@ -76,13 +75,9 @@ class Interpreter {
   void InitName();
   void Trace(const char* message, const char* name);
 
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                 stime_t* timeout) {
-    return NULL;
-  }
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout) {
-    return NULL;
-  }
+  virtual void SyncInterpretImpl(HardwareState* hwstate,
+                                 stime_t* timeout) {}
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {}
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops) {}
 
  private:

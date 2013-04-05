@@ -35,8 +35,7 @@ class SensorJumpFilterInterpreter : public FilterInterpreter,
   virtual ~SensorJumpFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
  private:
   // Whether or not this filter is enabled. If disabled, it behaves as a

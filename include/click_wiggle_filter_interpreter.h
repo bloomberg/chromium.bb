@@ -46,8 +46,7 @@ class ClickWiggleFilterInterpreter : public FilterInterpreter {
   virtual ~ClickWiggleFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
  private:
   void UpdateClickWiggle(const HardwareState& hwstate);

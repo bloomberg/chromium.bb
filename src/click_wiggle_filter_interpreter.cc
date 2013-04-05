@@ -28,7 +28,7 @@ ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
   InitName();
 }
 
-Gesture* ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {
   UpdateClickWiggle(*hwstate);
   SetWarpFlags(hwstate);
@@ -41,9 +41,7 @@ Gesture* ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     prev_pressure_[fs.tracking_id] = fs.pressure;
   }
 
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 void ClickWiggleFilterInterpreter::UpdateClickWiggle(

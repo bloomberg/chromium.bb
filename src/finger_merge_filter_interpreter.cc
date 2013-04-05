@@ -42,13 +42,11 @@ FingerMergeFilterInterpreter::FingerMergeFilterInterpreter(
   InitName();
 }
 
-Gesture* FingerMergeFilterInterpreter::SyncInterpretImpl(
-    HardwareState* hwstate, stime_t* timeout) {
+void FingerMergeFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                     stime_t* timeout) {
   if (finger_merge_filter_enable_.val_)
     UpdateFingerMergeState(*hwstate);
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 void FingerMergeFilterInterpreter::SetHardwarePropertiesImpl(

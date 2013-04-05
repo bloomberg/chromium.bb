@@ -23,11 +23,11 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
   InitName();
 }
 
-Gesture* MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                        stime_t* timeout) {
   if (!state_buffer_.Get(0)->fingers) {
     Err("Must call SetHardwareProperties() before interpreting anything.");
-    return NULL;
+    return;
   }
 
   // Record current HardwareState now.
@@ -54,13 +54,15 @@ Gesture* MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   else
     InterpretMultitouchEvent(&extra_result_);
 
-  if (extra_result_.type != kGestureTypeNull)
-    result_.next = &extra_result_;
-
   prev_gs_fingers_ = gs_fingers_;
   prev_gesture_type_ = current_gesture_type_;
   prev_result_ = result_;
-  return result_.type != kGestureTypeNull ? &result_ : NULL;
+
+  if (extra_result_.type != kGestureTypeNull)
+    ProduceGesture(extra_result_);
+
+  if (result_.type != kGestureTypeNull)
+    ProduceGesture(result_);
 }
 
 void MultitouchMouseInterpreter::SetHardwarePropertiesImpl(

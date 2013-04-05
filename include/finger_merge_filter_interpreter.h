@@ -30,8 +30,7 @@ class FingerMergeFilterInterpreter : public FilterInterpreter {
   virtual ~FingerMergeFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:

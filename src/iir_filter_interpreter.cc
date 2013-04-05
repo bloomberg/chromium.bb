@@ -45,7 +45,7 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
   InitName();
 }
 
-Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
   // Delete old entries from map
   short dead_ids[histories_.size()];
@@ -145,9 +145,7 @@ Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     *fs = *hist->NextOut();
     hist->Increment();
   }
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 void IirFilterInterpreter::SetHardwarePropertiesImpl(

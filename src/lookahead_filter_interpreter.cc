@@ -42,7 +42,7 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
   InitName();
 }
 
-Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                        stime_t* timeout) {
   // Push back into queue
   if (free_list_.Empty()) {
@@ -51,7 +51,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     Err("Dump of queue:");
     for (QState* it = queue_.Begin(); it != queue_.End(); it = it->next_)
       Err("Due: %f%s", it->due_, it->completed_ ? " (c)" : "");
-    return NULL;
+    return;
   }
   QState* node = free_list_.PopFront();
   node->set_state(*hwstate);
@@ -79,7 +79,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   UpdateInterpreterDue(interpreter_due_ < 0.0 ?
                        interpreter_due_ : interpreter_due_ + hwstate->timestamp,
                        hwstate->timestamp, timeout);
-  return HandleTimerImpl(hwstate->timestamp, timeout);
+  HandleTimerImpl(hwstate->timestamp, timeout);
 }
 
 // Interpolates the two hardware states into out.
@@ -400,8 +400,8 @@ void LookaheadFilterInterpreter::AttemptInterpolation() {
   queue_.InsertBefore(new_node, node);
 }
 
-Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
-                                                     stime_t* timeout) {
+void LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
+                                                 stime_t* timeout) {
   TapDownOccurringGesture(now);
   stime_t next_timeout = -1.0;
 
@@ -413,8 +413,7 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
       }
       next_timeout = -1.0;
       last_interpreted_time_ = now;
-      Gesture* gesture = next_->HandleTimer(now, &next_timeout);
-      ConsumeGestureList(gesture);
+      next_->HandleTimer(now, &next_timeout);
     } else {
       if (queue_.Empty())
         break;
@@ -442,8 +441,7 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
         node->state_.rel_wheel,
         node->state_.rel_hwheel,
       };
-      Gesture* gesture = next_->SyncInterpret(&hs_copy, &next_timeout);
-      ConsumeGestureList(gesture);
+      next_->SyncInterpret(&hs_copy, &next_timeout);
 
       // Clear previously completed nodes, but keep at least two nodes.
       while (queue_.size() > 2 && queue_.Head()->completed_)
@@ -456,8 +454,6 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
     UpdateInterpreterDue(next_timeout, now, timeout);
   }
   UpdateInterpreterDue(next_timeout, now, timeout);
-
-  return NULL;
 }
 
 void LookaheadFilterInterpreter::ConsumeGesture(const Gesture& gesture) {

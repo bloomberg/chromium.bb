@@ -41,8 +41,7 @@ class BoxFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   virtual ~BoxFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
  private:
   DoubleProperty box_width_;

@@ -17,7 +17,7 @@ T5R2CorrectingFilterInterpreter::T5R2CorrectingFilterInterpreter(
   InitName();
 }
 
-Gesture* T5R2CorrectingFilterInterpreter::SyncInterpretImpl(
+void T5R2CorrectingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   if (touch_cnt_correct_enabled_.val_ &&
@@ -27,9 +27,7 @@ Gesture* T5R2CorrectingFilterInterpreter::SyncInterpretImpl(
   }
   last_touch_cnt_ = hwstate->touch_cnt;
   last_finger_cnt_ = hwstate->finger_cnt;
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 };  // namespace gestures

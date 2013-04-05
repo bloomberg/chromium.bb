@@ -56,10 +56,7 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   virtual ~ScalingFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
-
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 

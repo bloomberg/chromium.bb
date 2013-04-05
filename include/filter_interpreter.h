@@ -36,9 +36,8 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
   void ConsumeGestureList(Gesture* gesture);
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
   scoped_ptr<Interpreter> next_;

@@ -73,8 +73,7 @@ class IirFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   virtual ~IirFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 

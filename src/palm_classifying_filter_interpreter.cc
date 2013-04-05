@@ -43,7 +43,7 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
   }
 }
 
-Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
+void PalmClassifyingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   FillOriginInfo(*hwstate);
@@ -52,11 +52,8 @@ Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
   UpdatePalmState(*hwstate);
   UpdatePalmFlags(hwstate);
   FillPrevInfo(*hwstate);
-  if (next_.get()) {
-    Gesture* result = next_->SyncInterpret(hwstate, timeout);
-    ConsumeGestureList(result);
-  }
-  return NULL;
+  if (next_.get())
+    next_->SyncInterpret(hwstate, timeout);
 }
 
 void PalmClassifyingFilterInterpreter::SetHardwarePropertiesImpl(

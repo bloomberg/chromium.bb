@@ -29,10 +29,9 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
   virtual ~FlingStopFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
   virtual void ConsumeGesture(const Gesture& gesture);
 
@@ -55,8 +54,6 @@ class FlingStopFilterInterpreter : public FilterInterpreter {
   short prev_touch_cnt_;
   // timestamp from previous input HardwareState.
   stime_t prev_timestamp_;
-  // timeout set by current sync interpret
-  stime_t next_timeout_;
   // Result to pass out.
   Gesture result_;
 

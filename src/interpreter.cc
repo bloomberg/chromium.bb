@@ -42,7 +42,7 @@ void Interpreter::Trace(const char* message, const char* name) {
     tracer_->Trace(message, name);
 }
 
-Gesture* Interpreter::SyncInterpret(HardwareState* hwstate,
+void Interpreter::SyncInterpret(HardwareState* hwstate,
                                     stime_t* timeout) {
   if (log_.get() && hwstate) {
     Trace("log: start: ", "LogHardwareState");
@@ -50,23 +50,21 @@ Gesture* Interpreter::SyncInterpret(HardwareState* hwstate,
     Trace("log: end: ", "LogHardwareState");
   }
   Trace("SyncInterpret: start: ", name());
-  Gesture* result = SyncInterpretImpl(hwstate, timeout);
+  SyncInterpretImpl(hwstate, timeout);
   Trace("SyncInterpret: end: ", name());
-  LogOutputs(result, timeout, "SyncLogOutputs");
-  return result;
+  LogOutputs(NULL, timeout, "SyncLogOutputs");
 }
 
-Gesture* Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
+void Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
   if (log_.get()) {
     Trace("log: start: ", "LogTimerCallback");
     log_->LogTimerCallback(now);
     Trace("log: end: ", "LogTimerCallback");
   }
   Trace("HandleTimer: start: ", name());
-  Gesture* result = HandleTimerImpl(now, timeout);
+  HandleTimerImpl(now, timeout);
   Trace("HandleTimer: end: ", name());
-  LogOutputs(result, timeout, "TimerLogOutputs");
-  return result;
+  LogOutputs(NULL, timeout, "TimerLogOutputs");
 }
 
 void Interpreter::ProduceGesture(const Gesture& gesture) {

@@ -81,8 +81,7 @@ class Cr48ProfileSensorFilterInterpreter : public FilterInterpreter {
   virtual ~Cr48ProfileSensorFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:

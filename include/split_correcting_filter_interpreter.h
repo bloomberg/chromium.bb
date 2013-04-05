@@ -56,8 +56,7 @@ class SplitCorrectingFilterInterpreter : public FilterInterpreter {
   void Enable() { enabled_.val_ = 1; }
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 

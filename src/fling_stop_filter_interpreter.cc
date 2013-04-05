@@ -21,9 +21,8 @@ FlingStopFilterInterpreter::FlingStopFilterInterpreter(PropRegistry* prop_reg,
   InitName();
 }
 
-
-Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
-                                                       stime_t* timeout) {
+void FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                   stime_t* timeout) {
   fingers_of_last_hwstate_.clear();
   for (int i = 0; i < hwstate->finger_cnt; i++)
     fingers_of_last_hwstate_.insert(hwstate->fingers[i].tracking_id);
@@ -44,11 +43,9 @@ Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       fling_stop_deadline_ = 0.0;
     }
   }
-  Gesture* result = next_->SyncInterpret(hwstate, &next_timeout);
-  ConsumeGestureList(result);
+  next_->SyncInterpret(hwstate, &next_timeout);
   *timeout = SetNextDeadlineAndReturnTimeoutVal(hwstate->timestamp,
                                                 next_timeout);
-  return NULL;
 }
 
 bool FlingStopFilterInterpreter::NeedsExtraTime(
@@ -123,7 +120,7 @@ stime_t FlingStopFilterInterpreter::SetNextDeadlineAndReturnTimeoutVal(
   return std::min(next_timeout, local_timeout);
 }
 
-Gesture* FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
+void FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
                                                      stime_t* timeout) {
   bool call_next = false;
   if (fling_stop_deadline_ > 0.0 && next_timer_deadline_ > 0.0)
@@ -135,7 +132,7 @@ Gesture* FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
     if (fling_stop_deadline_ > now) {
       Err("Spurious callback. now: %f, fs deadline: %f, next deadline: %f",
           now, fling_stop_deadline_, next_timer_deadline_);
-      return NULL;
+      return;
     }
     fling_stop_deadline_ = 0.0;
     ProduceGesture(Gesture(kGestureFling, prev_timestamp_,
@@ -144,19 +141,17 @@ Gesture* FlingStopFilterInterpreter::HandleTimerImpl(stime_t now,
     stime_t next_timeout = next_timer_deadline_ == 0.0 ? -1.0 :
         std::max(0.0, next_timer_deadline_ - now);
     *timeout = SetNextDeadlineAndReturnTimeoutVal(now, next_timeout);
-    return NULL;
+    return;
   }
   // Call next_
   if (next_timer_deadline_ > now) {
     Err("Spurious callback. now: %f, fs deadline: %f, next deadline: %f",
         now, fling_stop_deadline_, next_timer_deadline_);
-    return NULL;
+    return;
   }
   stime_t next_timeout = -1.0;
-  Gesture* result = next_->HandleTimer(now, &next_timeout);
-  ConsumeGestureList(result);
+  next_->HandleTimer(now, &next_timeout);
   *timeout = SetNextDeadlineAndReturnTimeoutVal(now, next_timeout);
-  return NULL;
 }
 
 }  // namespace gestures

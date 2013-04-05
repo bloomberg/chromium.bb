@@ -23,21 +23,12 @@ IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
   InitName();
 }
 
-Gesture* IntegralGestureFilterInterpreter::SyncInterpretImpl(
+void IntegralGestureFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (hwstate->finger_cnt == 0 && hwstate->touch_cnt == 0)
     hscroll_ordinal_remainder_ = vscroll_ordinal_remainder_ =
         hscroll_remainder_ = vscroll_remainder_ = 0.0;
-  Gesture* gs = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(gs);
-  return NULL;
-}
-
-Gesture* IntegralGestureFilterInterpreter::HandleTimerImpl(stime_t now,
-                                                           stime_t* timeout) {
-  Gesture* gs = next_->HandleTimer(now, timeout);
-  ConsumeGestureList(gs);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 namespace {

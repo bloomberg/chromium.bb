@@ -22,7 +22,7 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
   virtual ~MouseInterpreter() {};
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
  private:
   HardwareState prev_state_;

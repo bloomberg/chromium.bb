@@ -34,7 +34,7 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
   ClearHistory();
 }
 
-Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
+void Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
 
   if (is_semi_mt_device_) {
@@ -56,9 +56,7 @@ Gesture* Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
       ClearHistory();
     }
   }
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 void Cr48ProfileSensorFilterInterpreter::SetHardwarePropertiesImpl(

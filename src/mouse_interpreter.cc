@@ -13,7 +13,7 @@ MouseInterpreter::MouseInterpreter(PropRegistry* prop_reg, Tracer* tracer)
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
-Gesture* MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
   result_.type = kGestureTypeNull;
   InterpretMouseEvent(prev_state_, *hwstate, &result_);
@@ -22,7 +22,8 @@ Gesture* MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   // did not allocate any space for fingers.
   prev_state_.DeepCopy(*hwstate, 0);
 
-  return result_.type != kGestureTypeNull ? &result_ : NULL;
+  if (result_.type != kGestureTypeNull)
+    ProduceGesture(result_);
 }
 
 void InterpretMouseEvent(const HardwareState& prev_state,

@@ -355,11 +355,6 @@ class GestureInterpreterConsumer : public GestureConsumer {
   void ConsumeGesture(const Gesture& gesture) {
     AssertWithReturn(gesture.type != kGestureTypeNull);
     callback_(callback_data_, &gesture);
-    // Until the new API is fully adopted, gesture might still contain
-    // multiple list entries.
-    if (gesture.next) {
-      ConsumeGesture(*gesture.next);
-    }
   }
 
  private:
@@ -404,11 +399,7 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
     return;
   }
   stime_t timeout = -1.0;
-  Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
-  if (gs && callback_) {
-    for (Gesture* it = gs; it; it = it->next)
-      (*callback_)(callback_data_, it);
-  }
+  interpreter_->SyncInterpret(hwstate, &timeout);
   if (timer_provider_ && interpret_timer_) {
     if (timeout <= 0.0) {
       timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
@@ -439,10 +430,7 @@ void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
     Err("Filters are not composed yet!");
     return;
   }
-  Gesture* gs = interpreter_->HandleTimer(now, timeout);
-  if (gs && callback_)
-    for (Gesture* it = gs; it; it = it->next)
-      (*callback_)(callback_data_, it);
+  interpreter_->HandleTimer(now, timeout);
 }
 
 void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,

@@ -37,19 +37,10 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
   InitName();
 }
 
-Gesture* ScalingFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void ScalingFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {
   ScaleHardwareState(hwstate);
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
-}
-
-Gesture* ScalingFilterInterpreter::HandleTimerImpl(stime_t now,
-                                                   stime_t* timeout) {
-  Gesture* result = next_->HandleTimer(now, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 // Ignore the finger events with low pressure values especially for the SEMI_MT

@@ -110,9 +110,8 @@ abort_load:
   fclose(data_fd);
 }
 
-Gesture* NonLinearityFilterInterpreter::SyncInterpretImpl(
-                                                    HardwareState* hwstate,
-                                                    stime_t* timeout) {
+void NonLinearityFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                                      stime_t* timeout) {
   if (enabled_.val_ && err_.get() && hwstate->finger_cnt == 1) {
     FingerState* finger = &(hwstate->fingers[0]);
     if (finger) {
@@ -122,10 +121,7 @@ Gesture* NonLinearityFilterInterpreter::SyncInterpretImpl(
       finger->position_y -= error.y_error;
     }
   }
-
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 NonLinearityFilterInterpreter::Error

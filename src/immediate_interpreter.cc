@@ -741,11 +741,11 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
   }
 }
 
-Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
-                                                 stime_t* timeout) {
+void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                             stime_t* timeout) {
   if (!state_buffer_.Get(0)->fingers) {
     Err("Must call SetHardwareProperties() before Push().");
-    return 0;
+    return;
   }
 
   state_buffer_.PushState(*hwstate);
@@ -794,10 +794,9 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   prev_gesture_type_ = current_gesture_type_;
   if (result_.type != kGestureTypeNull)
     ProduceGesture(result_);
-  return NULL;
 }
 
-Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
+void ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
   result_.type = kGestureTypeNull;
   // Tap-to-click always aborts when real button(s) are being used, so we
   // don't need to worry about conflicts with these two types of callback.
@@ -809,7 +808,6 @@ Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
                    timeout);
   if (result_.type != kGestureTypeNull)
     ProduceGesture(result_);
-  return NULL;
 }
 
 void ImmediateInterpreter::FillOriginInfo(

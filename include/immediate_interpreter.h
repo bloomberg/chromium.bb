@@ -280,10 +280,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   virtual ~ImmediateInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
   void SetHardwarePropertiesImpl(const HardwareProperties& hw_props);
 

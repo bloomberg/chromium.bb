@@ -61,7 +61,7 @@ class NonLinearityFilterInterpreter : public FilterInterpreter {
                            Tracer* tracer);
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
  private:
   struct Error {

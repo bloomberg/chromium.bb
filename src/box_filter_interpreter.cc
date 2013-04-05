@@ -19,12 +19,11 @@ BoxFilterInterpreter::BoxFilterInterpreter(PropRegistry* prop_reg,
   InitName();
 }
 
-Gesture* BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+void BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
   if (box_width_.val_ == 0.0) {
-    Gesture* result = next_->SyncInterpret(hwstate, timeout);
-    ConsumeGestureList(result);
-    return NULL;
+    next_->SyncInterpret(hwstate, timeout);
+    return;
   }
   RemoveMissingIdsFromMap(&previous_output_, *hwstate);
 
@@ -61,9 +60,7 @@ Gesture* BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   for (size_t i = 0; i < hwstate->finger_cnt; i++)
     previous_output_[hwstate->fingers[i].tracking_id] = hwstate->fingers[i];
 
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
+  next_->SyncInterpret(hwstate, timeout);
 }
 
 }  // namespace gestures

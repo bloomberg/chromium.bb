@@ -31,11 +31,7 @@ class AccelFilterInterpreter : public FilterInterpreter {
                          Tracer* tracer);
   virtual ~AccelFilterInterpreter() {}
 
- protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
-
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout);
+  virtual void ConsumeGesture(const Gesture& gs);
 
  private:
   struct CurveSegment {
@@ -51,8 +47,6 @@ class AccelFilterInterpreter : public FilterInterpreter {
   };
 
   void ParseCurveString(const char* input, char* cache, CurveSegment* out_segs);
-
-  void ConsumeGesture(const Gesture& gs);
 
   static const size_t kMaxCurveSegs = 3;
   static const size_t kMaxCustomCurveSegs = 20;

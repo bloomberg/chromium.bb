@@ -36,8 +36,7 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   virtual ~PalmClassifyingFilterInterpreter() {}
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout);
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 

@@ -102,20 +102,6 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   }
 }
 
-Gesture* AccelFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
-                                                   stime_t* timeout) {
-  Gesture* result = next_->SyncInterpret(hwstate, timeout);
-  ConsumeGestureList(result);
-  return NULL;
-}
-
-Gesture* AccelFilterInterpreter::HandleTimerImpl(stime_t now,
-                                                 stime_t* timeout) {
-  Gesture* result = next_->HandleTimer(now, timeout);
-  ConsumeGestureList(result);
-  return NULL;
-}
-
 void AccelFilterInterpreter::ParseCurveString(const char* input,
                                               char* cache,
                                               CurveSegment* out_segs) {

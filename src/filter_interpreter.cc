@@ -8,13 +8,13 @@
 
 namespace gestures {
 
-Gesture* FilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
-                                              stime_t* timeout) {
-  return next_->SyncInterpret(hwstate, timeout);
+void FilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
+                                          stime_t* timeout) {
+  next_->SyncInterpret(hwstate, timeout);
 }
 
-Gesture* FilterInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
-  return next_->HandleTimer(now, timeout);
+void FilterInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
+  next_->HandleTimer(now, timeout);
 }
 
 void FilterInterpreter::SetHardwarePropertiesImpl(
@@ -29,15 +29,6 @@ void FilterInterpreter::SetGestureConsumer(GestureConsumer* consumer) {
 
 void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {
   ProduceGesture(gesture);
-}
-
-void FilterInterpreter::ConsumeGestureList(Gesture* gesture) {
-  if (gesture) {
-    Gesture* next = gesture->next;
-    gesture->next = NULL;
-    ConsumeGesture(*gesture);
-    ConsumeGestureList(next);
-  }
 }
 
 DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
