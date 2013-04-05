@@ -154,7 +154,6 @@ Page::Page(PageClients& pageClients)
     , m_didLoadUserStyleSheet(false)
     , m_userStyleSheetModificationTime(0)
     , m_group(0)
-    , m_debugger(0)
     , m_customHTMLTokenizerTimeDelay(-1)
     , m_customHTMLTokenizerChunkSize(-1)
     , m_canStartMedia(true)
@@ -1057,26 +1056,6 @@ void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
     }
 }
 
-void Page::setDebuggerForAllPages(JSC::Debugger* debugger)
-{
-    ASSERT(allPages);
-
-    HashSet<Page*>::iterator end = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it)
-        (*it)->setDebugger(debugger);
-}
-
-void Page::setDebugger(JSC::Debugger* debugger)
-{
-    if (m_debugger == debugger)
-        return;
-
-    m_debugger = debugger;
-
-    for (Frame* frame = m_mainFrame.get(); frame; frame = frame->tree()->traverseNext())
-        frame->script()->attachDebugger(m_debugger);
-}
-
 StorageNamespace* Page::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)
@@ -1511,7 +1490,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_seenPlugins, "seenPlugins");
     info.addMember(m_seenMediaEngines, "seenMediaEngines");
 
-    info.ignoreMember(m_debugger);
     info.ignoreMember(m_alternativeTextClient);
     info.ignoreMember(m_editorClient);
     info.ignoreMember(m_plugInClient);

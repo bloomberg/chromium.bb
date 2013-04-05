@@ -716,11 +716,6 @@ int ScriptController::contextDebugId(v8::Handle<v8::Context> context)
     return V8PerContextDebugData::contextDebugId(context);
 }
 
-void ScriptController::attachDebugger(void*)
-{
-    notImplemented();
-}
-
 void ScriptController::updateDocument()
 {
     // For an uninitialized main window shell, do not incur the cost of context initialization during FrameLoader::init().

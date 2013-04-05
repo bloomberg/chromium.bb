@@ -46,10 +46,6 @@
 #include <wtf/SchedulePair.h>
 #endif
 
-namespace JSC {
-class Debugger;
-}
-
 namespace WebCore {
 
 class AlternativeTextClient;
@@ -310,10 +306,6 @@ public:
     void storageBlockingStateChanged();
     void privateBrowsingStateChanged();
 
-    static void setDebuggerForAllPages(JSC::Debugger*);
-    void setDebugger(JSC::Debugger*);
-    JSC::Debugger* debugger() const { return m_debugger; }
-
     static void removeAllVisitedLinks();
 
     static void allVisitedStateChanged(PageGroup*);
@@ -474,8 +466,6 @@ private:
 
     OwnPtr<PageGroup> m_singlePageGroup;
     PageGroup* m_group;
-
-    JSC::Debugger* m_debugger;
 
     double m_customHTMLTokenizerTimeDelay;
     int m_customHTMLTokenizerChunkSize;
