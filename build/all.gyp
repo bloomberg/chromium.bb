@@ -289,6 +289,11 @@
             '../ui/app_list/app_list.gyp:app_list_unittests',
           ],
         }],
+        ['test_isolation_mode != "noop"', {
+          'dependencies': [
+            'chromium_swarm_tests',
+          ],
+        }],
       ],
     }, # target_name: chromium_builder_tests
     {
