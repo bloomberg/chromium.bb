@@ -26,7 +26,6 @@
 [
     Conditional=VIDEO_TRACK & WEBVTT_REGIONS,
     V8EnabledAtRuntime=webkitVideoTrack,
-    JSGenerateToNativeObject,
     Constructor()
 ] interface TextTrackRegion {
     readonly attribute TextTrack track;

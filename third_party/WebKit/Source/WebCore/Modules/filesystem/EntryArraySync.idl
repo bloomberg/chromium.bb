@@ -31,7 +31,6 @@
 [
     Conditional=FILE_SYSTEM,
     IndexedGetter,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface EntryArraySync {
     readonly attribute unsigned long length;

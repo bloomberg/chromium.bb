@@ -27,12 +27,9 @@
 
 [
     Conditional=WORKERS,
-    JSCustomConstructor,
     Constructor(in DOMString scriptUrl),
     CallWith=ScriptExecutionContext,
-    ConstructorRaisesException,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject
+    ConstructorRaisesException
 ] interface Worker : AbstractWorker {
 
     attribute EventListener onmessage;

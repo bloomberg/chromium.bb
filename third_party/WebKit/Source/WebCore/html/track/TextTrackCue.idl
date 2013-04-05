@@ -26,12 +26,9 @@
 [
     Conditional=VIDEO_TRACK,
     V8EnabledAtRuntime=webkitVideoTrack,
-    JSGenerateToNativeObject,
     Constructor(in double startTime, in double endTime, in DOMString text),
     CallWith=ScriptExecutionContext,
     EventTarget,
-    JSCustomMarkFunction,
-    JSCustomIsReachable,
     ImplementationLacksVTable
 ] interface TextTrackCue {
     readonly attribute TextTrack track;

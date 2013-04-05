@@ -40,7 +40,6 @@ typedef /*unrestricted*/ float GLclampf;
 
 [
     Conditional=WEBGL,
-    JSCustomMarkFunction,
     DoNotCheckConstants
 ] interface WebGLRenderingContext : CanvasRenderingContext {
 

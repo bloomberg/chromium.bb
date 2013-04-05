@@ -18,10 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    JSCustomMarkFunction,
-    JSGenerateToNativeObject
-] interface Attr : Node {
+interface Attr : Node {
 
     // DOM Level 1
 

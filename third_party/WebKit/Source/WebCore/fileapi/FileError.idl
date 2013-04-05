@@ -30,7 +30,6 @@
 
 [
     Conditional=BLOB|FILE_SYSTEM,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface FileError {
 #if !defined(LANGUAGE_OBJECTIVE_C)

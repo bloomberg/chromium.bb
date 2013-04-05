@@ -29,7 +29,6 @@
 [
     Conditional=SQL_DATABASE,
     OmitConstructor,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface SQLTransaction {
     [Custom] void executeSql(in DOMString sqlStatement,

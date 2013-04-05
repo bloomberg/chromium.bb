@@ -33,8 +33,7 @@
     Conditional=FILE_SYSTEM,
     ActiveDOMObject,
     CallWith=ScriptExecutionContext,
-    EventTarget,
-    JSNoStaticTables
+    EventTarget
 ] interface FileWriter {
     // ready states
     const unsigned short INIT = 0;

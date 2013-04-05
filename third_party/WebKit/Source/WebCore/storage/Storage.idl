@@ -25,7 +25,6 @@
 
 [
     NamedGetter,
-    JSGenerateIsReachable=ImplFrame,
     CustomDeleteProperty,
     CustomEnumerateProperty,
     V8CustomIndexedGetter,

@@ -24,7 +24,6 @@
  */
 
 [
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface IDBIndex {
     readonly attribute DOMString name;

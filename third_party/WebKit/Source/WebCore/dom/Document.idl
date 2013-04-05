@@ -19,9 +19,7 @@
  */
 
 [
-    CustomToJSObject,
-    JSGenerateToNativeObject,
-    JSInlineGetOwnPropertySlot
+    CustomToJSObject
 ] interface Document : Node {
 
     // DOM Level 1 Core

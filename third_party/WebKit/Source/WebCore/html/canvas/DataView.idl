@@ -26,8 +26,7 @@
 [
     CustomConstructor,
     ConstructorParameters=3,
-    CustomToJSObject,
-    JSNoStaticTables
+    CustomToJSObject
 ] interface DataView : ArrayBufferView {
     // All these methods raise an exception if they would read or write beyond the end of the view.
 
@@ -49,9 +48,9 @@
         raises (DOMException);
 
     // Use custom code to handle NaN case for JSC.
-    [JSCustom, StrictTypeChecking] float getFloat32(in unsigned long byteOffset, in [Optional] boolean littleEndian)
+    [StrictTypeChecking] float getFloat32(in unsigned long byteOffset, in [Optional] boolean littleEndian)
         raises (DOMException);
-    [JSCustom, StrictTypeChecking] double getFloat64(in unsigned long byteOffset, in [Optional] boolean littleEndian)
+    [StrictTypeChecking] double getFloat64(in unsigned long byteOffset, in [Optional] boolean littleEndian)
         raises (DOMException);
 
     // We have to use custom code because our code generator does not support uint8_t type.

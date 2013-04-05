@@ -25,8 +25,7 @@
 
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
-    Conditional=GEOLOCATION, 
-    JSGenerateIsReachable=ImplFrame,
+    Conditional=GEOLOCATION,
     OmitConstructor
 ] interface Geolocation {
     [Custom] void getCurrentPosition(in PositionCallback successCallback,

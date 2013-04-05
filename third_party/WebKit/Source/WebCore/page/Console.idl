@@ -27,7 +27,6 @@
  */
 
 [
-    JSGenerateIsReachable=ImplFrame,
     OmitConstructor
 ] interface Console {
 

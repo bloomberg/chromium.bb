@@ -31,7 +31,6 @@
 [
     CustomConstructor,
     ConstructorParameters=1,
-    JSCustomIsReachable,
     ImplementationLacksVTable
 ] interface MutationObserver {
     void observe(in Node target, in Dictionary options)

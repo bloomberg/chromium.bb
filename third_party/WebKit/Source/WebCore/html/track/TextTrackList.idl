@@ -28,8 +28,6 @@
     V8EnabledAtRuntime=webkitVideoTrack,
     IndexedGetter,
     EventTarget,
-    JSCustomMarkFunction,
-    JSCustomIsReachable,
     V8GenerateIsReachable=ImplOwnerRoot
 ] interface TextTrackList {
     readonly attribute unsigned long length;

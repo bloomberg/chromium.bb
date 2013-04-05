@@ -26,18 +26,13 @@
 
 [
     CheckSecurity,
-    JSCustomDefineOwnProperty,
     CustomDeleteProperty,
     CustomGetOwnPropertySlot,
     CustomEnumerateProperty,
-    JSCustomMarkFunction,
-    JSCustomToNativeObject,
     CustomPutFunction,
     EventTarget,
     ExtendsDOMGlobalObject,
-    JSGenerateToNativeObject,
     ReplaceableConstructor,
-    JSLegacyParent=JSDOMWindowBase,
     V8CustomToJSObject,
     V8NoWrapperCache,
     V8CustomIndexedGetter,
@@ -478,8 +473,8 @@
     [Conditional=MICRODATA] attribute HTMLPropertiesCollectionConstructor HTMLPropertiesCollection;
     attribute HTMLUnknownElementConstructor HTMLUnknownElement;
 
-    [JSCustomGetter, CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator
-    [JSCustomGetter] attribute HTMLOptionElementConstructorConstructor Option; // Usable with new operator
+    [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator
+    attribute HTMLOptionElementConstructorConstructor Option; // Usable with new operator
 
     [Conditional=ENCRYPTED_MEDIA, V8EnabledAtRuntime=encryptedMedia] attribute MediaKeyEventConstructor MediaKeyEvent;
     attribute [Conditional=ENCRYPTED_MEDIA_V2, V8EnabledAtRuntime=encryptedMedia] MediaKeysConstructor MediaKeys;
@@ -495,7 +490,7 @@
     [Conditional=VIDEO_TRACK & WEBVTT_REGIONS, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
     [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TrackEventConstructor TrackEvent;
 
-    [JSCustomGetter, Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
+    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
     [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLAudioElementConstructor HTMLAudioElement;
     [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLMediaElementConstructor HTMLMediaElement;
     [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLVideoElementConstructor HTMLVideoElement;
@@ -585,7 +580,7 @@
     attribute ClipboardConstructor Clipboard;
 
     [Conditional=WORKERS] attribute WorkerConstructor Worker; // Usable with the new operator
-    [Conditional=SHARED_WORKERS, JSCustomGetter, V8EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
+    [Conditional=SHARED_WORKERS, V8EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
 
     attribute FileConstructor File;
     attribute FileListConstructor FileList;

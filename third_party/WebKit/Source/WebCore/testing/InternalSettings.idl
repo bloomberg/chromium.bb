@@ -24,8 +24,7 @@
  */
 
 [
-    OmitConstructor,
-    JSGenerateToJSObject
+    OmitConstructor
 ] interface InternalSettings : InternalSettingsGenerated {
     void setMockScrollbarsEnabled(in boolean enabled) raises(DOMException);
     void setTouchEventEmulationEnabled(in boolean enabled) raises(DOMException);

@@ -19,8 +19,6 @@
  */
 
 [
-    JSGenerateToNativeObject,
-    JSCustomPushEventHandlerScope,
     V8CustomToJSObject,
     V8SkipVTableValidation
 ] interface HTMLElement : Element {

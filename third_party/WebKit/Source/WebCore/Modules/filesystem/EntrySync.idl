@@ -30,8 +30,7 @@
 
 [
     Conditional=FILE_SYSTEM,
-    CustomToJSObject,
-    JSNoStaticTables
+    CustomToJSObject
 ] interface EntrySync {
     readonly attribute boolean isFile;
     readonly attribute boolean isDirectory;

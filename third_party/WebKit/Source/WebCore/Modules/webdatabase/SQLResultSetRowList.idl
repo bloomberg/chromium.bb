@@ -29,7 +29,6 @@
 [
     Conditional=SQL_DATABASE,
     OmitConstructor,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;

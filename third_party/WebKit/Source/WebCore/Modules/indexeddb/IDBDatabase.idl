@@ -26,8 +26,7 @@
 
 [
     ActiveDOMObject,
-    EventTarget,
-    JSNoStaticTables
+    EventTarget
 ] interface IDBDatabase {
     readonly attribute DOMString name;
     readonly attribute IDBAny version;
@@ -37,7 +36,7 @@
     attribute EventListener onerror;
     attribute EventListener onversionchange;
 
-    [JSCustom] IDBObjectStore createObjectStore(in DOMString name, in [Optional] Dictionary options)
+    IDBObjectStore createObjectStore(in DOMString name, in [Optional] Dictionary options)
         raises (DOMException);
     void deleteObjectStore(in DOMString name)
         raises (DOMException);

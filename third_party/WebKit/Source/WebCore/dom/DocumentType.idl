@@ -17,9 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    JSGenerateToNativeObject
-] interface DocumentType : Node {
+interface DocumentType : Node {
 
     // DOM Level 1
 

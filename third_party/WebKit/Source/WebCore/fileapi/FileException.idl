@@ -31,7 +31,6 @@
 [
     Conditional=BLOB|FILE_SYSTEM,
     DoNotCheckConstants,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] exception FileException {
 

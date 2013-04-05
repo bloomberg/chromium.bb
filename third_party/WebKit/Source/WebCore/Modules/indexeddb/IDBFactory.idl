@@ -24,7 +24,6 @@
  */
 
 [
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface IDBFactory {
     [CallWith=ScriptExecutionContext, ImplementedAs=getDatabaseNames] IDBRequest webkitGetDatabaseNames()

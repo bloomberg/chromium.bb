@@ -30,7 +30,6 @@
 // This is based off of Mozilla's Selection interface
 // https://developer.mozilla.org/En/DOM/Selection
 [
-    JSGenerateIsReachable=ImplFrame,
     InterfaceName=Selection
 ] interface DOMSelection {
     readonly attribute Node anchorNode;

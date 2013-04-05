@@ -31,13 +31,9 @@
 
 [
     Conditional=SHARED_WORKERS,
-    JSCustomConstructor,
     Constructor(in DOMString scriptURL, in [Optional=DefaultIsNullString] DOMString name),
     CallWith=ScriptExecutionContext,
-    ConstructorRaisesException,
-    JSCustomMarkFunction,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject
+    ConstructorRaisesException
 ] interface SharedWorker : AbstractWorker {
     readonly attribute MessagePort port;
 };

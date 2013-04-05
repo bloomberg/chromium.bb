@@ -34,8 +34,7 @@
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,
-    EventTarget,
-    JSNoStaticTables
+    EventTarget
 ] interface FileReader {
     // ready states
     const unsigned short EMPTY = 0;

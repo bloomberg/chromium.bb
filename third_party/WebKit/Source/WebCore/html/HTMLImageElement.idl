@@ -19,7 +19,6 @@
  */
 
 [
-    JSGenerateToNativeObject,
     V8SkipVTableValidation
 ] interface HTMLImageElement : HTMLElement {
     [Reflect] attribute DOMString name;

@@ -29,8 +29,7 @@
 
 [
     ActiveDOMObject,
-    EventTarget,
-    JSNoStaticTables
+    EventTarget
 ] interface IDBRequest {
     readonly attribute IDBAny result
         getter raises (DOMException);

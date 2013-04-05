@@ -21,7 +21,6 @@
  */
 
 [
-    JSGenerateToNativeObject,
     Conditional=SVG,
     V8CustomToJSObject
 ] interface SVGElement : Element {

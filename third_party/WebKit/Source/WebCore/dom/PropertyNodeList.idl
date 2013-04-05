@@ -30,8 +30,7 @@
 
 [
     Conditional=MICRODATA,
-    IndexedGetter,
-    JSGenerateToJSObject
+    IndexedGetter
 ] interface PropertyNodeList : NodeList {
 
     sequence<MicroDataItemValue> getValues();

@@ -25,7 +25,6 @@
 
 [
     Conditional=VIDEO,
-    JSGenerateToNativeObject,
     ActiveDOMObject
 ] interface HTMLMediaElement : HTMLElement {
 

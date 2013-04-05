@@ -20,10 +20,6 @@
 
 // Introduced in DOM Level 2:
 [
-    JSCustomHeader,
-    JSCustomMarkFunction,
-    JSGenerateIsReachable,
-    JSCustomGetOwnPropertySlotAndDescriptor,
     CustomNamedSetter,
 #if defined(V8_BINDING) && V8_BINDING
     NamedGetter,
@@ -37,7 +33,7 @@
                  setter raises(DOMException);
 
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyValue(in [Optional=DefaultIsUndefined] DOMString propertyName);
-    [JSCustom] CSSValue           getPropertyCSSValue(in [Optional=DefaultIsUndefined] DOMString propertyName);
+    CSSValue           getPropertyCSSValue(in [Optional=DefaultIsUndefined] DOMString propertyName);
     [TreatReturnedNullStringAs=Null] DOMString          removeProperty(in [Optional=DefaultIsUndefined] DOMString propertyName)
         raises(DOMException);
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority(in [Optional=DefaultIsUndefined] DOMString propertyName);

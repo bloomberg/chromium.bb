@@ -25,7 +25,6 @@
 
 // Introduced in DOM Level 2:
 [
-    JSCustomIsReachable,
     IndexedGetter,
     V8DependentLifetime,
     V8SkipVTableValidation

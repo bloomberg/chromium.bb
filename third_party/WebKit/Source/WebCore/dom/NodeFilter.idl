@@ -20,8 +20,6 @@
 
 // Introduced in DOM Level 2:
 [
-    JSCustomMarkFunction,
-    JSCustomToNativeObject,
     ObjCProtocol,
     CPPPureInterface,
     ImplementationLacksVTable

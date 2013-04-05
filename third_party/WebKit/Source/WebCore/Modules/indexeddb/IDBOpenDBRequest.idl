@@ -24,9 +24,7 @@
  */
 
 [
-    EventTarget,
-    JSNoStaticTables,
-    JSGenerateToJSObject
+    EventTarget
 ] interface IDBOpenDBRequest : IDBRequest {
     attribute EventListener onblocked;
     attribute EventListener onupgradeneeded;

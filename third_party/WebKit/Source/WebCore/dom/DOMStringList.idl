@@ -25,8 +25,6 @@
 
 [
     IndexedGetter,
-    JSCustomToNativeObject,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface DOMStringList {
     readonly attribute unsigned long length;

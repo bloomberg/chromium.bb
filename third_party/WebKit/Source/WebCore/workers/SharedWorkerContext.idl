@@ -32,8 +32,6 @@
     Conditional=SHARED_WORKERS,
     ExtendsDOMGlobalObject,
     IsWorkerContext,
-    JSGenerateToNativeObject,
-    JSNoStaticTables,
     OmitConstructor
 ] interface SharedWorkerContext : WorkerContext {
 

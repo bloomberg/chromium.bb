@@ -23,9 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    JSNoStaticTables
-] interface IDBCursor {
+interface IDBCursor {
 
     readonly attribute DOMString direction;
     readonly attribute any key;

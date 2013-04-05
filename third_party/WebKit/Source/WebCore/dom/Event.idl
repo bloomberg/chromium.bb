@@ -22,7 +22,6 @@
 [
     CustomToJSObject,
     ConstructorTemplate=Event,
-    JSNoStaticTables,
     ObjCPolymorphic,
     V8SkipVTableValidation
 ] interface Event {

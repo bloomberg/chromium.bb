@@ -19,7 +19,6 @@
  */
 
 [
-    JSGenerateToNativeObject,
     NamedConstructor=Option(in [Optional=DefaultIsNullString] DOMString data, in [Optional=DefaultIsNullString] DOMString value, in [Optional=DefaultIsUndefined] boolean defaultSelected, in [Optional=DefaultIsUndefined] boolean selected),
     ConstructorRaisesException
 ] interface HTMLOptionElement : HTMLElement {

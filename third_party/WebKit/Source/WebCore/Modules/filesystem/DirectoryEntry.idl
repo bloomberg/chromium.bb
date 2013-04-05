@@ -29,10 +29,7 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject,
-    JSNoStaticTables
+    Conditional=FILE_SYSTEM
 ] interface DirectoryEntry : Entry {
     DirectoryReader createReader();
     void getFile(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, in [Optional] Dictionary options, in [Optional, Callback] EntryCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);

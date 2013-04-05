@@ -24,7 +24,6 @@
     CPPPureInterface,
     OmitConstructor,
     CustomToJSObject,
-    JSCustomToNativeObject,
     V8NoWrapperCache,
     EventTarget
 ] interface EventTarget {

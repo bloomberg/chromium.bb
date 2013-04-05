@@ -27,9 +27,6 @@
 [
     Conditional=BLOB,
     Constructor,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject,
-    JSNoStaticTables,
     InterfaceName=URL,
     ImplementationLacksVTable
 ] interface DOMURL {

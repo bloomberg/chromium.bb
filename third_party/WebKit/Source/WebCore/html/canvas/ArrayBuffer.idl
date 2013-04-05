@@ -24,10 +24,8 @@
  */
 
 [
-    JSGenerateIsReachable=Impl,
     CustomConstructor,
     ConstructorParameters=1,
-    JSNoStaticTables,
     ImplementationNamespace=WTF,
     ImplementationLacksVTable
 ] interface ArrayBuffer {

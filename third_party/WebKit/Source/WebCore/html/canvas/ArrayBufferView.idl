@@ -25,7 +25,6 @@
 
 [
     CustomToJSObject,
-    JSNoStaticTables,
     ImplementationNamespace=WTF
 ] interface ArrayBufferView {
     readonly attribute ArrayBuffer buffer;

@@ -25,7 +25,6 @@
 
 [
     Conditional=WEBGL,
-    JSGenerateIsReachable=ImplContext,
     OmitConstructor,
     DoNotCheckConstants
 ] interface WebGLCompressedTextureATC {

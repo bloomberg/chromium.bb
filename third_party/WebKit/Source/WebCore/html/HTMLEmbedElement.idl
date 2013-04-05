@@ -20,7 +20,6 @@
 
 [
     CustomNamedSetter,
-    JSCustomGetOwnPropertySlotAndDescriptor,
     CustomCall,
     V8CustomIndexedGetter,
     V8SkipVTableValidation

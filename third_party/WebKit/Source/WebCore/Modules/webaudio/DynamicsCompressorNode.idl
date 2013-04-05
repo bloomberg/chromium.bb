@@ -23,8 +23,7 @@
  */
 
 [
-    Conditional=WEB_AUDIO,
-    JSGenerateToJSObject
+    Conditional=WEB_AUDIO
 ] interface DynamicsCompressorNode : AudioNode {
     readonly attribute AudioParam threshold; // in Decibels
     readonly attribute AudioParam knee; // in Decibels

@@ -29,10 +29,7 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject,
-    JSNoStaticTables
+    Conditional=FILE_SYSTEM
 ] interface DirectoryEntrySync : EntrySync {
     DirectoryReaderSync createReader() raises (FileException);
     FileEntrySync getFile(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, in Dictionary flags) raises (FileException);

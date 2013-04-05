@@ -30,7 +30,6 @@
 
 [
     Conditional=FILE_SYSTEM,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface DirectoryReaderSync {
     EntryArraySync readEntries() raises (FileException);

@@ -28,8 +28,7 @@
 
 [
     Conditional=SQL_DATABASE,
-    OmitConstructor,
-    JSNoStaticTables
+    OmitConstructor
 ] interface Database {
     readonly attribute DOMString version;
     void changeVersion(in DOMString oldVersion, in DOMString newVersion, in [Callback, Optional] SQLTransactionCallback callback, in [Callback, Optional] SQLTransactionErrorCallback errorCallback, in [Callback, Optional] VoidCallback successCallback);

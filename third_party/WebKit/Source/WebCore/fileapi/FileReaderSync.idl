@@ -30,8 +30,7 @@
 
 [
     Conditional=BLOB,
-    Constructor,
-    JSNoStaticTables
+    Constructor
 ] interface FileReaderSync {
     [CallWith=ScriptExecutionContext] ArrayBuffer readAsArrayBuffer(in Blob blob)
         raises(FileException);

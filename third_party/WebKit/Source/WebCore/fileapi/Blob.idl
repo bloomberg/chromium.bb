@@ -29,9 +29,7 @@
  */
 
 [
-    JSGenerateIsReachable=Impl,
     CustomToJSObject,
-    JSNoStaticTables,
     CustomConstructor,
     ConstructorParameters=2
 ] interface Blob {

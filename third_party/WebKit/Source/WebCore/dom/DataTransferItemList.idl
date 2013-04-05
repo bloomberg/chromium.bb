@@ -30,7 +30,6 @@
 
 [
     IndexedGetter,
-    JSGenerateToNativeObject,
 #if defined(V8_BINDING) && V8_BINDING
     CustomDeleteProperty,
 #endif

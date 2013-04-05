@@ -20,9 +20,6 @@
 
 // Introduced in DOM Level 2:
 [
-    JSCustomHeader,
-    JSCustomMarkFunction,
-    JSGenerateIsReachable,
     CustomToJSObject,
     ObjCPolymorphic,
     V8DependentLifetime,

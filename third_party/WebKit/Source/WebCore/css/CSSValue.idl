@@ -20,8 +20,6 @@
 
 [
     CustomToJSObject,
-    JSCustomIsReachable,
-    JSCustomFinalize,
     ObjCPolymorphic,
     V8DependentLifetime,
     ImplementationLacksVTable

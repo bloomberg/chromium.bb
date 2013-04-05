@@ -19,7 +19,6 @@
  */
 
 [
-    JSGenerateToNativeObject,
     CustomIndexedSetter,
     NamedGetter,
     GenerateIsReachable=ImplOwnerNodeRoot,

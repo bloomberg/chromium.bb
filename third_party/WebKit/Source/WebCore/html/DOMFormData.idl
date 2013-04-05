@@ -31,8 +31,6 @@
 [
     CustomConstructor,
     ConstructorParameters=1,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject,
     InterfaceName=FormData,
     ImplementationLacksVTable
 ] interface DOMFormData {

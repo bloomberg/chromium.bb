@@ -27,7 +27,6 @@
     Conditional=VIDEO,
     Constructor,
     CallWith=ScriptExecutionContext,
-    JSGenerateToJSObject,
     EventTarget
 ] interface MediaController {
     readonly attribute TimeRanges buffered;

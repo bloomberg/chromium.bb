@@ -19,7 +19,6 @@
 */
 
 [
-    JSGenerateIsReachable=ImplFrame,
     NamedGetter,
     IndexedGetter,
     InterfaceName=PluginArray

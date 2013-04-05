@@ -18,7 +18,6 @@
  */
 
 [
-    JSCustomMarkFunction,
     ImplementationLacksVTable
 ] interface XPathResult {
     const unsigned short ANY_TYPE                       = 0;

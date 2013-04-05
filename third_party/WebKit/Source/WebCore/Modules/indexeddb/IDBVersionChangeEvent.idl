@@ -23,9 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    JSNoStaticTables
-] interface IDBVersionChangeEvent : Event {
+interface IDBVersionChangeEvent : Event {
     readonly attribute IDBAny oldVersion;
     readonly attribute IDBAny newVersion;
 };

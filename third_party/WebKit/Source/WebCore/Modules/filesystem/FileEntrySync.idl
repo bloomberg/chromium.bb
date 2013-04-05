@@ -29,10 +29,7 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
-    JSGenerateToNativeObject,
-    JSGenerateToJSObject,
-    JSNoStaticTables
+    Conditional=FILE_SYSTEM
 ] interface FileEntrySync : EntrySync {
     File file() raises (FileException);
     FileWriterSync createWriter() raises (FileException);

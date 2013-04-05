@@ -29,8 +29,6 @@
     ConstructorParameters=1,
     NumericIndexedGetter,
     CustomIndexedSetter,
-    JSGenerateToNativeObject,
-    JSNoStaticTables,
     CustomToJSObject,
     DoNotCheckConstants,
     TypedArray=float,

@@ -23,8 +23,7 @@
  */
 
 [
-    Conditional=WEB_AUDIO&VIDEO,
-    JSGenerateToJSObject
+    Conditional=WEB_AUDIO&VIDEO
 ] interface MediaElementAudioSourceNode : AudioSourceNode {
     readonly attribute HTMLMediaElement mediaElement;
 };

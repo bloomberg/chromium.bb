@@ -30,7 +30,6 @@
 
 [
     Conditional=MICRODATA,
-    JSGenerateToJSObject,
     IndexedGetter,
     NamedGetter
 ] interface HTMLPropertiesCollection : HTMLCollection {

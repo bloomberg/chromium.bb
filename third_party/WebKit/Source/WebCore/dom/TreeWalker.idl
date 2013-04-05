@@ -20,7 +20,6 @@
 
 // Introduced in DOM Level 2:
 [
-    JSCustomMarkFunction,
     ImplementationLacksVTable
 ] interface TreeWalker {
     readonly attribute Node root;

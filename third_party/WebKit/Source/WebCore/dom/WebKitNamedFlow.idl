@@ -29,7 +29,6 @@
 
 [
     EventTarget,
-    JSGenerateToJSObject,
     GenerateIsReachable=ImplOwnerNodeRoot
 ] interface WebKitNamedFlow {
     readonly attribute DOMString name;

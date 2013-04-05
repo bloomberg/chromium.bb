@@ -29,8 +29,7 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
-    JSNoStaticTables
+    Conditional=FILE_SYSTEM
 ] interface FileWriterSync {
     // synchronous write/modify methods
     void write(in Blob data) raises (FileException);

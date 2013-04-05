@@ -24,7 +24,6 @@
  */
 
 [
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface IDBKeyRange {
     [ImplementedAs=lowerValue,CallWith=ScriptExecutionContext] readonly attribute any lower;

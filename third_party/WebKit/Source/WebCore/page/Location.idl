@@ -30,14 +30,9 @@
 #if defined(V8_BINDING) && V8_BINDING
     CheckSecurity,
 #endif
-    JSCustomGetOwnPropertySlotAndDescriptor,
     CustomNamedSetter,
-    JSGenerateIsReachable=ImplFrame,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    JSCustomDefineOwnProperty,
-    JSCustomNamedGetterOnPrototype,
-    JSCustomDefineOwnPropertyOnPrototype,
     OmitConstructor
 ] interface Location {
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP

@@ -19,15 +19,8 @@
  */
 
 [
-    JSCustomHeader,
-    JSCustomMarkFunction,
-    JSCustomPushEventHandlerScope,
-    JSCustomIsReachable,
-    JSCustomFinalize,
     CustomToJSObject,
     EventTarget,
-    JSGenerateToNativeObject,
-    JSInlineGetOwnPropertySlot,
     ObjCPolymorphic,
     V8DependentLifetime
 ] interface Node

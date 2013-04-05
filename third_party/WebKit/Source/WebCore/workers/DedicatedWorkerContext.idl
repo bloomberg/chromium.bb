@@ -32,8 +32,6 @@
     Conditional=WORKERS,
     ExtendsDOMGlobalObject,
     IsWorkerContext,
-    JSGenerateToNativeObject,
-    JSNoStaticTables,
     OmitConstructor
 ] interface DedicatedWorkerContext : WorkerContext {
 

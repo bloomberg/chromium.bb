@@ -29,8 +29,7 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
-    JSNoStaticTables
+    Conditional=FILE_SYSTEM
 ] interface DOMFileSystemSync {
     readonly attribute DOMString name;
     readonly attribute DirectoryEntrySync root;

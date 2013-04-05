@@ -23,8 +23,7 @@
  */
 
 [
-    Conditional=WEB_AUDIO,
-    JSGenerateToJSObject
+    Conditional=WEB_AUDIO
 ] interface PannerNode : AudioNode {
     // Panning model
     const unsigned short EQUALPOWER = 0;

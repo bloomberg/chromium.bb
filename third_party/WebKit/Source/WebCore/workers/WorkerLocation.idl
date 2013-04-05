@@ -28,8 +28,6 @@
 
 [
     Conditional=WORKERS,
-    JSGenerateIsReachable=Impl,
-    JSNoStaticTables,
     ImplementationLacksVTable
 ] interface WorkerLocation {
     readonly attribute DOMString href;
