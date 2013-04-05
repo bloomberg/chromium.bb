@@ -68,18 +68,6 @@
     height: 24px;
 }
 
-#scripts-files {
-    max-width: 250px;
-}
-
-#scripts-files option.extension-script {
-    color: rgb(70, 134, 240);
-}
-
-#scripts-functions {
-    max-width: 150px;
-}
-
 #scripts-status-bar .status-bar-item img {
     margin-top: 2px;
 }

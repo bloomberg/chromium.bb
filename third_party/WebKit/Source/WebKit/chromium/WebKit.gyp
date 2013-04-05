@@ -52,13 +52,6 @@
         # If debug_devtools is set to 1, JavaScript files for DevTools are
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
-
-        # List of DevTools source files, ordered by dependencies. It is used both
-        # for copying them to resource dir, and for generating 'devtools.html' file.
-        'devtools_files': [
-            '<@(devtools_css_files)',
-            '<@(devtools_js_files)',
-        ],
     },
     'targets': [
         {
@@ -858,7 +851,6 @@
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector',
                     'files': [
-                        '<@(devtools_files)',
                         '<@(webinspector_files)',
                         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js',
                     ],
@@ -883,7 +875,6 @@
                     'destination': '<(PRODUCT_DIR)/resources/inspector/Images',
                     'files': [
                         '<@(webinspector_image_files)',
-                        '<@(devtools_image_files)',
                     ],
                 },
             ],
@@ -899,10 +890,9 @@
                 'inputs': [
                     '<@(_script_name)',
                     '<@(_input_page)',
-                    '<@(devtools_files)',
                 ],
                 'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools.html'],
-                'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_outputs)', '<@(debug_devtools)', '<@(devtools_files)'],
+                'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_outputs)', '<@(debug_devtools)'],
             }],
         },
         {
@@ -913,10 +903,10 @@
                 'script_name': 'scripts/generate_devtools_extension_api.py',
                 'inputs': [
                     '<@(_script_name)',
-                    '<@(devtools_extension_api_files)',
+                    '<@(webinspector_extension_api_files)',
                 ],
                 'outputs': ['<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js'],
-                'action': ['python', '<@(_script_name)', '<@(_outputs)', '<@(devtools_extension_api_files)'],
+                'action': ['python', '<@(_script_name)', '<@(_outputs)', '<@(webinspector_extension_api_files)'],
             }],
         },
         {
@@ -946,7 +936,7 @@
                         'script_name': 'scripts/generate_devtools_grd.py',
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
-                            '<(PRODUCT_DIR)/resources/inspector/DevTools.js',
+                            '<(PRODUCT_DIR)/resources/inspector/inspector.js',
                             '<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ResourcesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/NetworkPanel.js',
@@ -958,13 +948,12 @@
                             '<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js',
                             '<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/devTools.css',
+                            '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
                             '<@(webinspector_standalone_files)',
                         ],
                         'images': [
                             '<@(webinspector_image_files)',
-                            '<@(devtools_image_files)',
                         ],
                         'inputs': [
                             '<@(_script_name)',
@@ -973,7 +962,6 @@
                         ],
                         'search_path': [
                             '../../WebCore/inspector/front-end/Images',
-                            'src/js/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
                         'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
@@ -989,13 +977,11 @@
                         'script_name': 'scripts/generate_devtools_grd.py',
                         'input_pages': [
                             '<@(webinspector_files)',
-                            '<@(devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                         ],
                         'images': [
                             '<@(webinspector_image_files)',
-                            '<@(devtools_image_files)',
                         ],
                         'inputs': [
                             '<@(_script_name)',
@@ -1004,7 +990,6 @@
                         ],
                         'search_path': [
                             '../../WebCore/inspector/front-end/Images',
-                            'src/js/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
                         'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
@@ -1051,15 +1036,13 @@
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(webinspector_files)',
-                            '<@(devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js'
                         ],
                         'search_path': [
                             '../../WebCore/inspector/front-end',
-                            'src/js',
                             '<(SHARED_INTERMEDIATE_DIR)/webcore',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/DevTools.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                 },
@@ -1259,13 +1242,11 @@
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(webinspector_files)',
-                            '<@(devtools_files)'
                         ],
                         'search_path': [
                             '../../WebCore/inspector/front-end',
-                            'src/js',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devTools.css'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.css'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                     'copies': [{

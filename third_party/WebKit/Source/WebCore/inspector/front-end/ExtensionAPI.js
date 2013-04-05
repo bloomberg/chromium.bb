@@ -871,17 +871,6 @@ if (!extensionServer)
 return new InspectorExtensionAPI();
 }
 
-// Default implementation; platforms will override.
-function buildPlatformExtensionAPI(extensionInfo)
-{
-    function platformExtensionAPI(coreAPI)
-    {
-        window.webInspector = coreAPI;
-    }
-    return platformExtensionAPI.toString();
-}
-
-
 function buildExtensionAPIInjectedScript(extensionInfo)
 {
     return "(function(injectedScriptId){ " +

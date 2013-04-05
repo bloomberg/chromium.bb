@@ -43,19 +43,15 @@ def generate_include_tag(resource_path):
         assert resource_path
 
 
-def write_devtools_html(inspector_file, devtools_file, debug, debug_files):
+def write_devtools_html(inspector_file, devtools_file, debug):
     for line in inspector_file:
         if not debug and '<script ' in line:
             continue
         if not debug and '<link ' in line:
             continue
-        if '</head>' in line:
-            if debug:
-                for resource in debug_files:
-                    devtools_file.write(generate_include_tag(resource))
-            else:
-                devtools_file.write(generate_include_tag("devTools.css"))
-                devtools_file.write(generate_include_tag("DevTools.js"))
+        if '</head>' in line and not debug:
+            devtools_file.write(generate_include_tag("inspector.css"))
+            devtools_file.write(generate_include_tag("inspector.js"))
         devtools_file.write(line)
         if '<head>' in line:
             devtools_file.write(generate_include_tag("buildSystemOnly.js"))
@@ -64,8 +60,7 @@ def write_devtools_html(inspector_file, devtools_file, debug, debug_files):
 def main(argv):
 
     if len(argv) < 4:
-        print('usage: %s inspector_html devtools_html debug'
-              ' css_and_js_files_list' % argv[0])
+        print('usage: %s inspector_html devtools_html debug' % argv[0])
         return 1
 
     # The first argument is ignored. We put 'webkit.gyp' in the inputs list
@@ -77,7 +72,7 @@ def main(argv):
     inspector_html = open(inspector_html_name, 'r')
     devtools_html = open(devtools_html_name, 'w')
 
-    write_devtools_html(inspector_html, devtools_html, debug, argv[4:])
+    write_devtools_html(inspector_html, devtools_html, debug)
 
     devtools_html.close()
     inspector_html.close()

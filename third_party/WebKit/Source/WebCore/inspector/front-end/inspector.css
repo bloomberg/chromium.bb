@@ -86,23 +86,46 @@ body.inactive #toolbar {
     border-bottom: 1px solid rgb(64%, 64%, 64%);
 }
 
-body.undocked.platform-mac-leopard #toolbar,
-body.undocked.platform-mac-snowleopard #toolbar {
-    background: transparent;
-}
-
 body.dock-to-bottom #toolbar {
     padding-top: 0;
     border-top: 1px solid rgb(100, 100, 100);
-    cursor: ns-resize;
+    cursor: default;
 }
 
-body.dock-to-bottom.port-qt #toolbar {
-    cursor: auto;
+body.dock-to-bottom.platform-mac #toolbar {
+    border-top-color: white;
 }
 
 body.dock-to-bottom.inactive #toolbar {
     border-top: 1px solid rgb(64%, 64%, 64%);
+}
+
+body.platform-windows #toolbar, body.platform-windows.inactive #toolbar {
+    background-image: none;
+}
+
+body.undocked.platform-mac-leopard #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(175, 175, 175)), to(rgb(151, 151, 151))) !important;
+}
+
+body.undocked.platform-mac-leopard.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(221, 221, 221)), to(rgb(207, 207, 207))) !important;
+}
+
+body.undocked.platform-mac-snowleopard #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(189, 189, 189)), to(rgb(167, 167, 167))) !important;
+}
+
+body.undocked.platform-mac-snowleopard.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(228, 228, 228)), to(rgb(216, 216, 216))) !important;
+}
+
+body.undocked.platform-mac-mountain-lion #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
+}
+
+body.undocked.platform-mac-mountain-lion.inactive #toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
 }
 
 .toolbar-item {
@@ -577,10 +600,6 @@ body.undocked .toolbar-item.close-left, body.undocked .toolbar-item.close-right 
     display: none;
 }
 
-body.dock-to-bottom.port-qt .toolbar-item.close-left, body.dock-to-bottom.port-qt .toolbar-item.close-right {
-    display: none;
-}
-
 body.platform-mac .toolbar-item.close-right {
     display: none;
 }
@@ -652,7 +671,7 @@ body.drawer-visible #main-panels {
     height: 23px;
     overflow: hidden;
     z-index: 12;
-    background-image: -webkit-linear-gradient(rgb(253,253,253), rgb(230,230,230) 75%, rgb(230,230,230));
+    background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-top: 1px solid rgb(202, 202, 202);
     display: -webkit-flex;
 }
@@ -880,8 +899,7 @@ button.status-bar-item.settings-status-bar-item:active {
     -webkit-mask-position: -160px -24px;
 }
 
-body.remote .dock-status-bar-item,
-body.port-qt .dock-status-bar-item {
+body.remote .dock-status-bar-item {
     display: none;
 }
 
@@ -1982,12 +2000,10 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 
 .scope-bar li.selected {
     background: rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) inset, 0 -1px 1px rgba(255, 255, 255, 0.25) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .scope-bar li:active {
     background: rgba(0, 0, 0, 0.5);
-    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) inset, 0 -1px 1px rgba(255, 255, 255, 0.25) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 

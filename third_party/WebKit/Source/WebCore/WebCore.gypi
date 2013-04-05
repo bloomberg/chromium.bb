@@ -4903,6 +4903,8 @@
             'inspector/front-end/DebuggerModel.js',
             'inspector/front-end/DebuggerScriptMapping.js',
             'inspector/front-end/DefaultTextEditor.js',
+            'inspector/front-end/DevToolsExtensionAPI.js',
+            'inspector/front-end/Tests.js',
             'inspector/front-end/Dialog.js',
             'inspector/front-end/DOMAgent.js',
             'inspector/front-end/DOMBreakpointsSidebarPane.js',
@@ -5171,6 +5173,7 @@
             'inspector/front-end/AuditRules.js',
             'inspector/front-end/AuditsPanel.js',
         ],
+
         'webinspector_codemirror_js_files': [
             'inspector/front-end/CodeMirrorTextEditor.js',
             'inspector/front-end/cm/codemirror.js',
@@ -5330,6 +5333,12 @@
             'inspector/front-end/Images/warningMediumIcon.png',
             'inspector/front-end/Images/warningsErrors.png'
         ],
+
+        'webinspector_extension_api_files': [
+            'inspector/front-end/ExtensionAPI.js',
+            'inspector/front-end/DevToolsExtensionAPI.js'
+        ],
+
         'webcore_derived_source_files': [
           # Additional .cpp files for HashTools.h
           '<(SHARED_INTERMEDIATE_DIR)/WebCore/ColorData.cpp',

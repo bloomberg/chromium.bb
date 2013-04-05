@@ -85,9 +85,6 @@ def main(argv):
     input_order_file_name = argv[1]
     with open(input_order_file_name, 'r') as order_html:
         extractor = OrderedJSFilesExtractor(order_html.read())
-    extractor.ordered_js_files.append('DevTools.js')
-    extractor.ordered_js_files.append('DevToolsExtensionAPI.js')
-    extractor.ordered_js_files.append('Tests.js')
 
     expander = PathExpander(argv[2:])
     output = StringIO()

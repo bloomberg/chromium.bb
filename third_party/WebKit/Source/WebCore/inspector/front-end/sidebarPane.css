@@ -95,6 +95,7 @@
     -webkit-mask-size: 320px 120px;
     float: left;
     width: 11px;
+    height: 11px;
     margin-right: 2px;
     content: "a";
     color: transparent;

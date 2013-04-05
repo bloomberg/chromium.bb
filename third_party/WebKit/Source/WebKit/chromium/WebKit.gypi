@@ -30,27 +30,6 @@
 
 {
     'variables': {
-        # List of DevTools source files, ordered by dependencies. It is used both
-        # for copying them to resource dir, and for generating 'devtools.html' file.
-        'devtools_js_files': [
-            'src/js/DevTools.js',
-            'src/js/DevToolsExtensionAPI.js',
-            'src/js/Tests.js',
-        ],
-        'devtools_css_files': [
-            'src/js/devTools.css',
-        ],
-        'devtools_extension_api_files': [
-            '../../WebCore/inspector/front-end/ExtensionAPI.js',
-            'src/js/DevToolsExtensionAPI.js'
-        ],
-        'devtools_image_files': [
-            'src/js/Images/segmentChromium.png',
-            'src/js/Images/segmentHoverChromium.png',
-            'src/js/Images/segmentHoverEndChromium.png',
-            'src/js/Images/segmentSelectedChromium.png',
-            'src/js/Images/segmentSelectedEndChromium.png',
-        ],
         'webkit_unittest_files': [
             'tests/AnimationTranslationUtilTest.cpp',
             'tests/ArenaTestHelpers.h',

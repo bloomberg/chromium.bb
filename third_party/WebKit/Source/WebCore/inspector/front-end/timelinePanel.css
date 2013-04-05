@@ -150,6 +150,10 @@
     color: rgb(65, 65, 65);
 }
 
+.timeline-category-statusbar-item input {
+    vertical-align: middle;
+}
+
 .timeline-category-statusbar-item .timeline-category-checkbox {
     width: 10px;
     height: 11px;

@@ -2,6 +2,7 @@
     position: relative;
     border: 1px solid #aaa;
     font-size: 11px;
+    line-height: 120%;
 }
 
 .data-grid .highlight {
