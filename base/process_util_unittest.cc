@@ -543,9 +543,6 @@ TEST_F(ProcessUtilTest, LaunchAsUser) {
 // The following code tests the system implementation of malloc() thus no need
 // to test it under AddressSanitizer.
 TEST_F(ProcessUtilTest, MacMallocFailureDoesNotTerminate) {
-  // Install the OOM killer.
-  base::EnableTerminationOnOutOfMemory();
-
   // Test that ENOMEM doesn't crash via CrMallocErrorBreak two ways: the exit
   // code and lack of the error string. The number of bytes is one less than
   // MALLOC_ABSOLUTE_MAX_SIZE, more than which the system early-returns NULL and
@@ -553,7 +550,11 @@ TEST_F(ProcessUtilTest, MacMallocFailureDoesNotTerminate) {
   // EnableTerminationOnOutOfMemory() for more information.
   void* buf = NULL;
   ASSERT_EXIT(
-      buf = malloc(std::numeric_limits<size_t>::max() - (2 * PAGE_SIZE) - 1),
+      {
+        base::EnableTerminationOnOutOfMemory();
+
+        buf = malloc(std::numeric_limits<size_t>::max() - (2 * PAGE_SIZE) - 1);
+      },
       testing::KilledBySignal(SIGTRAP),
       "\\*\\*\\* error: can't allocate region.*"
           "(Terminating process due to a potential for future heap "
