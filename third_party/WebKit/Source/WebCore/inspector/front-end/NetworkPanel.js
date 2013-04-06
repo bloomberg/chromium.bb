@@ -2435,9 +2435,9 @@ WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
     if (aInitiator.type > bInitiator.type)
         return 1;
 
-    if (aInitiator.url < bInitiator.url)
+    if (aInitiator.source < bInitiator.source)
         return -1;
-    if (aInitiator.url > bInitiator.url)
+    if (aInitiator.source > bInitiator.source)
         return 1;
 
     if (aInitiator.lineNumber < bInitiator.lineNumber)
