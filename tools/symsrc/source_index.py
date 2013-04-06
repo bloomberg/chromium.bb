@@ -35,8 +35,21 @@ import tempfile
 # from repositories listed here will be source indexed.  Second, it allows us
 # to map from one SVN URL to another, so we can map to external SVN servers.
 REPO_MAP = {
-  "svn://chrome-svn/chrome": "http://src.chromium.org/svn",
-  "svn://chrome-svn.corp.google.com/chrome": "http://src.chromium.org/svn",
+  "svn://chrome-svn/blink": "http://src.chromium.org/blink",
+  "svn://chrome-svn/chrome": "http://src.chromium.org/chrome",
+  "svn://chrome-svn/multivm": "http://src.chromium.org/multivm",
+  "svn://chrome-svn/native_client": "http://src.chromium.org/native_client",
+  "svn://chrome-svn.corp.google.com/blink": "http://src.chromium.org/blink",
+  "svn://chrome-svn.corp.google.com/chrome": "http://src.chromium.org/chrome",
+  "svn://chrome-svn.corp.google.com/multivm": "http://src.chromium.org/multivm",
+  "svn://chrome-svn.corp.google.com/native_client":
+      "http://src.chromium.org/native_client",
+  "svn://svn-mirror.golo.chromium.org/blink": "http://src.chromium.org/blink",
+  "svn://svn-mirror.golo.chromium.org/chrome": "http://src.chromium.org/chrome",
+  "svn://svn-mirror.golo.chromium.org/multivm":
+      "http://src.chromium.org/multivm",
+  "svn://svn-mirror.golo.chromium.org/native_client":
+      "http://src.chromium.org/native_client",
   "http://v8.googlecode.com/svn": None,
   "http://google-breakpad.googlecode.com/svn": None,
   "http://googletest.googlecode.com/svn": None,
