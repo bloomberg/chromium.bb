@@ -1202,6 +1202,8 @@ void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
 }
 
 void AutofillDialogControllerImpl::OnCancel() {
+  HidePopup();
+
   // If the submit was successful, |callback_| will have already been |.Run()|
   // and nullified. If this is the case, no further actions are required. If
   // Autocheckout has an error, it's possible that the dialog will be submitted
@@ -1219,6 +1221,7 @@ void AutofillDialogControllerImpl::OnCancel() {
 }
 
 void AutofillDialogControllerImpl::OnAccept() {
+  HidePopup();
   SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
