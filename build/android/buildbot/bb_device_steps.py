@@ -272,10 +272,9 @@ def MainTestWrapper(options):
   RunCmd(['build/android/device_status_check.py'])
 
   # Provision devices
-  if options.auto_reconnect:
-    buildbot_report.PrintNamedStep('provision_devices')
-    target = options.factory_properties.get('target', 'Debug')
-    RunCmd(['build/android/provision_devices.py', '-t', target])
+  buildbot_report.PrintNamedStep('provision_devices')
+  target = options.factory_properties.get('target', 'Debug')
+  RunCmd(['build/android/provision_devices.py', '-t', target])
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
