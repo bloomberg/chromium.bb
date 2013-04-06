@@ -31,6 +31,8 @@
 #ifndef DOMWindowQuota_h
 #define DOMWindowQuota_h
 
+#if ENABLE(QUOTA)
+
 #include "DOMWindowProperty.h"
 #include "Supplementable.h"
 
@@ -54,5 +56,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(QUOTA)
 
 #endif // DOMWindowQuota_h

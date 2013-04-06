@@ -31,6 +31,8 @@
 #ifndef StorageErrorCallback_h
 #define StorageErrorCallback_h
 
+#if ENABLE(QUOTA)
+
 #include "ScriptExecutionContext.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
@@ -64,5 +66,7 @@ public:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(QUOTA)
 
 #endif // StorageErrorCallback_h

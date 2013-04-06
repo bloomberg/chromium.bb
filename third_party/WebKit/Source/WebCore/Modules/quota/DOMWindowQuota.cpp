@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DOMWindowQuota.h"
 
+#if ENABLE(QUOTA)
+
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Frame.h"
@@ -80,3 +82,5 @@ StorageInfo* DOMWindowQuota::webkitStorageInfo() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(QUOTA)

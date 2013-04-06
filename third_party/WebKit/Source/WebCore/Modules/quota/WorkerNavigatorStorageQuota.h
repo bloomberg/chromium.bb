@@ -31,6 +31,8 @@
 #ifndef WorkerNavigatorStorageQuota_h
 #define WorkerNavigatorStorageQuota_h
 
+#if ENABLE(QUOTA)
+
 #include "DOMWindowProperty.h"
 #include "Supplementable.h"
 #include "WorkerNavigator.h"
@@ -59,5 +61,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(QUOTA)
 
 #endif // WorkerNavigatorStorageQuota_h
