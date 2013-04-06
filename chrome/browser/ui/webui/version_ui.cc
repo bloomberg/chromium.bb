@@ -50,7 +50,7 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddLocalizedString("os_name", IDS_ABOUT_VERSION_OS);
   html_source->AddLocalizedString("platform", IDS_PLATFORM_LABEL);
   html_source->AddString("os_type", version_info.OSType());
-  html_source->AddString("webkit_version", webkit_glue::GetWebKitVersion());
+  html_source->AddString("blink_version", webkit_glue::GetWebKitVersion());
   html_source->AddString("js_engine", "V8");
   html_source->AddString("js_version", v8::V8::GetVersion());
 
