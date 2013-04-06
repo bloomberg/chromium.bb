@@ -95,6 +95,7 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     : surface_order_(surface_order),
       nsgl_context_(nsgl_context),
       cgl_context_(cgl_context),
+      is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()) {
 }
 
