@@ -32,7 +32,6 @@
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "webkit/fileapi/media/device_media_async_file_util.h"
-#include "webkit/fileapi/media/device_media_file_util.h"
 #endif
 
 namespace fileapi {
@@ -50,12 +49,6 @@ IsolatedMountPointProvider::IsolatedMountPointProvider(
   // initialization list.
   device_media_async_file_util_.reset(
       DeviceMediaAsyncFileUtil::Create(profile_path_));
-  if (!device_media_async_file_util_.get()) {
-    // DeviceMediaAsyncFileUtil is not supported.
-    // Fallback to AsyncFileUtilAdapter.
-    device_media_file_util_adapter_.reset(
-        new AsyncFileUtilAdapter(new DeviceMediaFileUtil(profile_path_)));
-  }
 #endif
 }
 
@@ -90,12 +83,6 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
       return dragged_file_util_->sync_file_util();
     case kFileSystemTypeNativeMedia:
       return native_media_file_util_->sync_file_util();
-    case kFileSystemTypeDeviceMedia:
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-      if (device_media_file_util_adapter_.get())
-        return device_media_file_util_adapter_->sync_file_util();
-      return NULL;
-#endif
     default:
       NOTREACHED();
   }
@@ -113,9 +100,7 @@ AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
       return native_media_file_util_.get();
     case kFileSystemTypeDeviceMedia:
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-      if (device_media_async_file_util_.get())
-        return device_media_async_file_util_.get();
-      return device_media_file_util_adapter_.get();
+      return device_media_async_file_util_.get();
 #endif
     default:
       NOTREACHED();

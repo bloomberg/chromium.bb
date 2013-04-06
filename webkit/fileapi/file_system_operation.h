@@ -131,7 +131,7 @@ class FileSystemOperation {
                                bool recursive,
                                const StatusCallback& callback) = 0;
 
-  // Copes a file or directory from |src_path| to |dest_path|. If
+  // Copies a file or directory from |src_path| to |dest_path|. If
   // |src_path| is a directory, the contents of |src_path| are copied to
   // |dest_path| recursively. A new file or directory is created at
   // |dest_path| as needed.

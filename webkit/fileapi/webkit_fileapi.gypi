@@ -138,10 +138,7 @@
     'webkit_fileapi_media_sources': [
       '../fileapi/media/device_media_async_file_util.cc',
       '../fileapi/media/device_media_async_file_util.h',
-      '../fileapi/media/device_media_file_util.cc',
-      '../fileapi/media/device_media_file_util.h',
       '../fileapi/media/mtp_device_async_delegate.h',
-      '../fileapi/media/mtp_device_delegate.h',
       '../fileapi/media/mtp_device_map_service.cc',
       '../fileapi/media/mtp_device_map_service.h',
     ],

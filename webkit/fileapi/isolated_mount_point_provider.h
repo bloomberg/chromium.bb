@@ -78,10 +78,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
-
-  //  TODO(kmadhusu): Remove |device_media_file_util_adapter_| after
-  //  fixing crbug.com/154835.
-  scoped_ptr<AsyncFileUtilAdapter> device_media_file_util_adapter_;
 #endif
 };
 

@@ -14,11 +14,4 @@
 #define SUPPORT_MTP_DEVICE_FILESYSTEM
 #endif
 
-// Use asynchronous MTP device delegate API.
-// TODO(kmadhusu): remove this define and make this default.
-// Note that OS_LINUX implies OS_CHROMEOS
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-#define USE_MTP_DEVICE_ASYNC_DELEGATE
-#endif
-
 #endif  // WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_FILE_SYSTEM_CONFIG_H_

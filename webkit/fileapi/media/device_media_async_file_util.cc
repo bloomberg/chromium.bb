@@ -15,7 +15,6 @@
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
-#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
 
 namespace fileapi {
@@ -69,12 +68,8 @@ DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 // static
 DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
     const base::FilePath& profile_path) {
-#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
   DCHECK(!profile_path.empty());
   return new DeviceMediaAsyncFileUtil(profile_path);
-#else
-  return NULL;
-#endif
 }
 
 bool DeviceMediaAsyncFileUtil::CreateOrOpen(

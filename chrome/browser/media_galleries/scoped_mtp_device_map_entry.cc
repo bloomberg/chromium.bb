@@ -34,25 +34,19 @@ scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
   return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
-#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
 void OnDeviceAsyncDelegateDestroyed(
     const base::FilePath::StringType& device_location) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::MTPDeviceMapService::GetInstance()->RemoveAsyncDelegate(
       device_location);
 }
-#endif
 
 void RemoveDeviceDelegate(const base::FilePath::StringType& device_location) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&OnDeviceAsyncDelegateDestroyed, device_location));
-#else
-  fileapi::MTPDeviceMapService::GetInstance()->RemoveDelegate(device_location);
-#endif
 }
 
 #endif
@@ -68,7 +62,6 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
 
 void ScopedMTPDeviceMapEntry::Init() {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
   CreateMTPDeviceAsyncDelegateCallback callback =
       base::Bind(&ScopedMTPDeviceMapEntry::OnMTPDeviceAsyncDelegateCreated,
                  this);
@@ -78,17 +71,6 @@ void ScopedMTPDeviceMapEntry::Init() {
       base::Bind(&CreateMTPDeviceAsyncDelegate,
                  device_location_,
                  callback));
-#else
-  CreateMTPDeviceDelegateCallback callback =
-      base::Bind(&ScopedMTPDeviceMapEntry::OnMTPDeviceDelegateCreated, this);
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner =
-      GetSequencedTaskRunner();
-  media_task_runner->PostTask(FROM_HERE,
-                              base::Bind(&CreateMTPDeviceDelegate,
-                                         device_location_,
-                                         media_task_runner,
-                                         callback));
-#endif
 #endif
 }
 
@@ -99,23 +81,12 @@ ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
 #endif
 }
 
-void ScopedMTPDeviceMapEntry::OnMTPDeviceDelegateCreated(
-    fileapi::MTPDeviceDelegate* delegate) {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  DCHECK(IsMediaTaskRunnerThread());
-  fileapi::MTPDeviceMapService::GetInstance()->AddDelegate(device_location_,
-                                                           delegate);
-#endif
-}
-
 void ScopedMTPDeviceMapEntry::OnMTPDeviceAsyncDelegateCreated(
     fileapi::MTPDeviceAsyncDelegate* delegate) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::MTPDeviceMapService::GetInstance()->AddAsyncDelegate(
       device_location_, delegate);
-#endif
 #endif
 }
 

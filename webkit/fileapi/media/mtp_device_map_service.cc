@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
-#include "webkit/fileapi/media/mtp_device_delegate.h"
 
 namespace fileapi {
 
@@ -65,48 +64,6 @@ MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
   return (it != async_delegate_map_.end()) ? it->second : NULL;
 }
 
-
-/////////////////////////////////////////////////////////////////////////////
-//  Following methods are used to manage synchronous MTPDeviceDelegate     //
-//  objects.                                                               //
-//  TODO(kmadhusu): Remove the synchronous interfaces after fixing         //
-//  crbug.com/154835                                                       //
-/////////////////////////////////////////////////////////////////////////////
-void MTPDeviceMapService::AddDelegate(
-    const base::FilePath::StringType& device_location,
-    MTPDeviceDelegate* delegate) {
-  DCHECK(delegate);
-  DCHECK(!device_location.empty());
-  base::AutoLock lock(lock_);
-  if (ContainsKey(sync_delegate_map_, device_location))
-    return;
-
-  sync_delegate_map_[device_location] = delegate;
-}
-
-void MTPDeviceMapService::RemoveDelegate(
-    const base::FilePath::StringType& device_location) {
-  base::AutoLock lock(lock_);
-  SyncDelegateMap::iterator it = sync_delegate_map_.find(device_location);
-  DCHECK(it != sync_delegate_map_.end());
-  it->second->CancelPendingTasksAndDeleteDelegate();
-  sync_delegate_map_.erase(it);
-}
-
-MTPDeviceDelegate* MTPDeviceMapService::GetMTPDeviceDelegate(
-    const std::string& filesystem_id) {
-  base::FilePath device_path;
-  if (!IsolatedContext::GetInstance()->GetRegisteredPath(filesystem_id,
-                                                         &device_path)) {
-    return NULL;
-  }
-
-  const base::FilePath::StringType& device_location = device_path.value();
-  DCHECK(!device_location.empty());
-  base::AutoLock lock(lock_);
-  SyncDelegateMap::const_iterator it = sync_delegate_map_.find(device_location);
-  return (it != sync_delegate_map_.end()) ? it->second : NULL;
-}
 
 MTPDeviceMapService::MTPDeviceMapService() {
 }
