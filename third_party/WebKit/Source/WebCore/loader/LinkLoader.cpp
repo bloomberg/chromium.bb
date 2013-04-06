@@ -162,8 +162,15 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
 
 #if ENABLE(LINK_PRERENDER)
     if (relAttribute.m_isLinkPrerender) {
-        ASSERT(!m_prerenderHandle);
-        m_prerenderHandle = document->prerenderer()->render(this, href);
+        if (!m_prerenderHandle) {
+            m_prerenderHandle = document->prerenderer()->render(this, href);
+        } else if (m_prerenderHandle->url() != href) {
+            m_prerenderHandle->cancel();
+            m_prerenderHandle = document->prerenderer()->render(this, href);
+        }
+    } else if (m_prerenderHandle) {
+        m_prerenderHandle->cancel();
+        m_prerenderHandle = 0;
     }
 #endif
     return true;

@@ -7,9 +7,7 @@
           item.appendChild(document.createTextNode(message));
           document.getElementById("console").appendChild(item);
       }
-
     </script>
-
   </head>
   <body>
     <ul id=console>
@@ -26,6 +24,18 @@
           link.parentElement.removeChild(link);
       }
 
+      function mutateTarget()
+      {
+          var link = document.getElementById('theprerender');
+          link.href = "http://mutated.com/";
+      }
+
+      function mutateRel()
+      {
+          var link = document.getElementById('theprerender');
+          link.rel = "something-else";
+      }
+
       prerender.addEventListener('webkitprerenderstart', function() { log("webkitprerenderstart"); }, false);
       prerender.addEventListener('webkitprerenderstop', function() { log("webkitprerenderstop"); }, false);
       prerender.addEventListener('webkitprerenderload', function() { log("webkitprerenderload"); }, false);
@@ -33,4 +43,3 @@
     </script>
   </body>
 </html>
-

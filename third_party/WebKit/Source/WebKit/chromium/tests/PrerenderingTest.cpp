@@ -457,4 +457,45 @@ TEST_F(PrerenderingTest, FastRemoveElement)
     EXPECT_EQ(0u, consoleLength());
 }
 
+TEST_F(PrerenderingTest, MutateTarget)
+{
+    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+
+    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+    EXPECT_FALSE(webPrerender.isNull());
+    EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
+
+    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+    EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
+    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+
+    // Change the href of this prerender, make sure this is treated as a remove and add.
+    executeScript("mutateTarget()");
+    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
+
+    WebPrerender mutatedPrerender = prerendererClient()->releaseWebPrerender();
+    EXPECT_EQ(toWebURL("http://mutated.com/"), mutatedPrerender.url());
+    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+    EXPECT_EQ(1u, prerenderingSupport()->addCount(mutatedPrerender));
+    EXPECT_EQ(3u, prerenderingSupport()->totalCount());
+}
+
+TEST_F(PrerenderingTest, MutateRel)
+{
+    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+
+    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+    EXPECT_FALSE(webPrerender.isNull());
+    EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
+
+    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+    EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
+    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+
+    // Change the rel of this prerender, make sure this is treated as a remove.
+    executeScript("mutateRel()");
+    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
+    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+}
+
 } // namespace
