@@ -31,8 +31,6 @@
 #ifndef StorageQuotaCallback_h
 #define StorageQuotaCallback_h
 
-#if ENABLE(QUOTA)
-
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -44,7 +42,5 @@ public:
 };
 
 } // namespace
-
-#endif // ENABLE(QUOTA)
 
 #endif // StorageQuotaCallback_h

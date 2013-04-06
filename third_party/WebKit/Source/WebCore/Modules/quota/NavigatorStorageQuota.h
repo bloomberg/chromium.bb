@@ -31,8 +31,6 @@
 #ifndef NavigatorStorageQuota_h
 #define NavigatorStorageQuota_h
 
-#if ENABLE(QUOTA)
-
 #include "DOMWindowProperty.h"
 #include "Supplementable.h"
 
@@ -61,7 +59,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)
 
 #endif // NavigatorStorageQuota_h

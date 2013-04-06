@@ -31,8 +31,6 @@
 #ifndef StorageQuota_h
 #define StorageQuota_h
 
-#if ENABLE(QUOTA)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -67,7 +65,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)
 
 #endif // StorageQuota_h

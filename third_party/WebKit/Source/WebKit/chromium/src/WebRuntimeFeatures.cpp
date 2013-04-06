@@ -317,18 +317,12 @@ bool WebRuntimeFeatures::isJavaScriptI18NAPIEnabled()
 
 void WebRuntimeFeatures::enableQuota(bool enable)
 {
-#if ENABLE(QUOTA)
     RuntimeEnabledFeatures::setQuotaEnabled(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isQuotaEnabled()
 {
-#if ENABLE(QUOTA)
     return RuntimeEnabledFeatures::quotaEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableMediaStream(bool enable)

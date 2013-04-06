@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(QUOTA)
-
 #include "StorageErrorCallback.h"
 
 #include "DOMCoreException.h"
@@ -54,5 +52,3 @@ void StorageErrorCallback::CallbackTask::performTask(ScriptExecutionContext*)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)

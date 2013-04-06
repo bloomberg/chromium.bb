@@ -419,10 +419,6 @@
 #define ENABLE_PROXIMITY_EVENTS 0
 #endif
 
-#if !defined(ENABLE_QUOTA)
-#define ENABLE_QUOTA 0
-#endif
-
 #if !defined(ENABLE_REPAINT_THROTTLING)
 #define ENABLE_REPAINT_THROTTLING 0
 #endif

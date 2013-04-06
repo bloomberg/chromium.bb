@@ -204,10 +204,8 @@ public:
     static bool webkitGetGamepadsEnabled() { return isGamepadEnabled; }
 #endif
 
-#if ENABLE(QUOTA)
     static bool quotaEnabled() { return isQuotaEnabled; }
     static void setQuotaEnabled(bool isEnabled) { isQuotaEnabled = isEnabled; }
-#endif
 
     static bool mediaSourceEnabled() { return isMediaSourceEnabled; }
     static void setMediaSourceEnabled(bool isEnabled) { isMediaSourceEnabled = isEnabled; }
@@ -331,9 +329,7 @@ private:
     static bool isGamepadEnabled;
 #endif
 
-#if ENABLE(QUOTA)
     static bool isQuotaEnabled;
-#endif
 
     static bool isFullScreenAPIEnabled;
 

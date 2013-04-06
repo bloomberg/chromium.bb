@@ -31,8 +31,6 @@
 #ifndef StorageInfo_h
 #define StorageInfo_h
 
-#if ENABLE(QUOTA)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
@@ -73,7 +71,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)
 
 #endif // StorageInfo_h

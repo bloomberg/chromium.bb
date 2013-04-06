@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(QUOTA)
-
 #include "StorageInfo.h"
 
 #include "Document.h"
@@ -92,5 +90,3 @@ StorageQuota* StorageInfo::getStorageQuota(int storageType)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)
