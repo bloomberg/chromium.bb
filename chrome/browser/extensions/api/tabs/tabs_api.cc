@@ -672,7 +672,8 @@ bool WindowsCreateFunction::RunImpl() {
     TabStripModel* target_tab_strip = new_window->tab_strip_model();
     target_tab_strip->InsertWebContentsAt(urls.size(), contents,
                                           TabStripModel::ADD_NONE);
-  } else if (urls.empty()) {
+  } else if (urls.empty() && window_type != Browser::TYPE_POPUP) {
+    // Don't create a new tab when it is intended to create an empty popup.
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(new_window, 0);

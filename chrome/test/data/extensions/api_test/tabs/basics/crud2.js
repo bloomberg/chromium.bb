@@ -136,5 +136,20 @@ chrome.test.runTests([
         assertEq(window.id, tab.windowId);
       }));
     }));
+  },
+
+  // An empty popup window does not contain any tabs and the number of tabs
+  // before and after creation should be the same.
+  function testOpenEmptyPopup() {
+    chrome.tabs.query({}, pass(function(tabs) {
+      var tabsCountBefore = tabs.length;
+      chrome.windows.create({type: 'popup'}, pass(function(window) {
+        assertEq(window.tabs.length, 0);
+        chrome.tabs.query({}, pass(function(tabs) {
+          assertEq(tabsCountBefore, tabs.length);
+        }));
+      }));
+    }));
   }
+
 ]);
