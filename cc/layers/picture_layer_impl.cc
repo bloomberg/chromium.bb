@@ -418,11 +418,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
-  if (!DrawsContent()) {
-    ResetRasterScale();
-    return;
-  }
-
   // If there is an active tree version of this layer, get a copy of its
   // tiles.  This needs to be done last, after setting invalidation and the
   // pile.
@@ -431,12 +426,19 @@ void PictureLayerImpl::SyncFromActiveLayer() {
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
+  // UpdateLCDTextStatus() depends on LCD text status always being synced.
+  is_using_lcd_text_ = other->is_using_lcd_text_;
+
+  if (!DrawsContent()) {
+    ResetRasterScale();
+    return;
+  }
+
   raster_page_scale_ = other->raster_page_scale_;
   raster_device_scale_ = other->raster_device_scale_;
   raster_source_scale_ = other->raster_source_scale_;
   raster_contents_scale_ = other->raster_contents_scale_;
   low_res_raster_contents_scale_ = other->low_res_raster_contents_scale_;
-  is_using_lcd_text_ = other->is_using_lcd_text_;
 
   // Add synthetic invalidations for any recordings that were dropped.  As
   // tiles are updated to point to this new pile, this will force the dropping
