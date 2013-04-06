@@ -181,9 +181,7 @@ Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
  * @private
  */
 Gallery.prototype.initListeners_ = function() {
-  if (!util.TEST_HARNESS)
-    this.document_.oncontextmenu = function(e) { e.preventDefault(); };
-
+  this.document_.oncontextmenu = function(e) { e.preventDefault(); };
   this.keyDownBound_ = this.onKeyDown_.bind(this);
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
 

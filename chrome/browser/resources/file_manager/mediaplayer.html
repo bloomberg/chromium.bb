@@ -15,13 +15,17 @@
   <link rel="stylesheet" type="text/css" href="css/media_controls.css">
   <link rel="stylesheet" type="text/css" href="css/audio_player.css">
 
-  <script src="js/media/mediaplayer_scripts.js"></script>
+  <!-- Don't load mediaplayer_scripts.js when flattening is disabled -->
+  <if expr="0"><!-- </if>
+    <script src="js/media/mediaplayer_scripts.js"></script>
+  <if expr="0"> --></if>
 
   <if expr="0">
-    <!-- This file has not been flattened, load individual scripts.
-         Keep the list in sync with mediaplayer_scripts.js. -->
-    <script src="../../../../ui/webui/resources/js/cr.js"></script>
-    <script src="../../../../ui/webui/resources/js/cr/event_target.js"></script>
+    <!-- This section is used when the file manager is loaded with
+         'filemgr-ext-path' command-line flag. -->
+    <!-- Keep the list in sync with mediaplayer_scripts.js. -->
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/cr/event_target.js"></script>
     <script src="js/util.js"></script>
     <script src="js/file_type.js"></script>
     <script src="js/volume_manager.js"></script>

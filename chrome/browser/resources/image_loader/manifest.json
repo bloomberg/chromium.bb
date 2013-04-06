@@ -16,5 +16,6 @@
   "background": {
     "scripts": [ "image_loader.js" ],
     "persistent": false
-  }
+  },
+  "web_accessible_resources": ["client.js"]
 }

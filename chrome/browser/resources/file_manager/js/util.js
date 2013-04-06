@@ -537,14 +537,6 @@ util.readFileBytes = function(file, begin, end, callback, onError) {
   fileReader.readAsArrayBuffer(file.slice(begin, end));
 };
 
-if (!Blob.prototype.slice) {
-  /**
-   * This code might run in the test harness on older versions of Chrome where
-   * Blob.slice is still called Blob.webkitSlice.
-   */
-  Blob.prototype.slice = Blob.prototype.webkitSlice;
-}
-
 /**
  * Write a blob to a file.
  * Truncates the file first, so the previous content is fully overwritten.
@@ -603,10 +595,6 @@ util.applyTransform = function(element, transform) {
 util.makeFilesystemUrl = function(path) {
   path = path.split('/').map(encodeURIComponent).join('/');
   var prefix = 'external';
-  if (chrome.fileBrowserPrivate.mocked) {
-    prefix = (chrome.fileBrowserPrivate.FS_TYPE == window.TEMPORARY) ?
-        'temporary' : 'persistent';
-  }
   return 'filesystem:' + document.location.origin + '/' + prefix + path;
 };
 
@@ -916,10 +904,8 @@ util.platform = {
     if (util.platform.v2())
       return;
 
-    // For the old style app we show the menu only in the test harness mode.
-    if (!util.TEST_HARNESS)
-      document.addEventListener('contextmenu',
-          function(e) { e.preventDefault() });
+    document.addEventListener('contextmenu',
+        function(e) { e.preventDefault() });
   },
 
   /**
@@ -941,30 +927,6 @@ util.platform = {
       params.type = 'popup';
       chrome.windows.create(params);
     }
-  }
-};
-
-/**
- * Load Javascript resources dynamically.
- * @param {Array.<string>} urls Array of script urls.
- * @param {function} onload Completion callback.
- */
-util.loadScripts = function(urls, onload) {
-  var countdown = urls.length;
-  if (!countdown) {
-    onload();
-    return;
-  }
-  var done = function() {
-    if (--countdown == 0)
-      onload();
-  };
-  while (urls.length) {
-    var script = document.createElement('script');
-    script.src = urls.shift();
-    document.head.appendChild(script);
-    script.onload = done;
-    script.onerror = done;
   }
 };
 
@@ -1034,18 +996,11 @@ util.__defineGetter__('storage', function() {
 
 /**
  * Attach page load handler.
- * Loads mock chrome.* APIs is the real ones are not present.
  * @param {function} handler Application-specific load handler.
  */
 util.addPageLoadHandler = function(handler) {
   document.addEventListener('DOMContentLoaded', function() {
-    if (chrome.fileBrowserPrivate) {
-      handler();
-    } else {
-      util.TEST_HARNESS = true;
-      util.loadScripts(['js/mock_chrome.js', 'js/file_copy_manager.js'],
-          handler);
-    }
+    handler();
     util.platform.suppressContextMenu();
   });
 };

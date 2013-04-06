@@ -14,12 +14,16 @@
   <link rel="stylesheet" type="text/css" href="css/media_controls.css">
   <link rel="stylesheet" type="text/css" href="css/video_player.css">
 
-  <script src="js/media/video_player_scripts.js"></script>
+  <!-- Don't load video_player_scripts.js when flattening is disabled -->
+  <if expr="0"><!-- </if>
+    <script src="js/media/video_player_scripts.js"></script>
+  <if expr="0"> --></if>
 
   <if expr="0">
-    <!-- This file has not been flattened, load individual scripts.
-         Keep the list in sync with video_player_scripts.js. -->
-    <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
+    <!-- This section is used when the file manager is loaded with
+         'filemgr-ext-path' command-line flag. -->
+    <!-- Keep the list in sync with video_player_scripts.js. -->
+    <script src="chrome://resources/js/load_time_data.js"></script>
 
     <script src="js/util.js"></script>
     <script src="js/file_type.js"></script>

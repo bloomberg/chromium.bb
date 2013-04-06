@@ -396,11 +396,6 @@ chrome.app.runtime.onLaunched.addListener(launch);
 chrome.app.runtime.onRestarted.addListener(restart);
 
 function addExecuteHandler() {
-  if (!chrome.fileBrowserHandler) {
-    console.log('Running outside Chrome OS, loading mock API implementations.');
-    util.loadScripts(['js/mock_chrome.js'], addExecuteHandler);
-    return;
-  }
   chrome.fileBrowserHandler.onExecute.addListener(executeFileBrowserTask);
 }
 

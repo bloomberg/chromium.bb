@@ -46,9 +46,6 @@ metrics.convertName_ = function(name) {
  * @private
  */
 metrics.call_ = function(name, args) {
-  if (!chrome.metricsPrivate)
-    return;  // Mock object not loaded yet, ignore.
-
   try {
     chrome.metricsPrivate[name].apply(chrome.metricsPrivate, args);
   } catch (e) {
