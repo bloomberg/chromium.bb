@@ -327,10 +327,6 @@ namespace WebCore {
         static bool gAVFoundationEnabled;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(QT) && USE(QTKIT))
-        static bool gQTKitEnabled;
-#endif
-        
         static bool gMockScrollbarsEnabled;
         static bool gUsesOverlayScrollbars;
 
