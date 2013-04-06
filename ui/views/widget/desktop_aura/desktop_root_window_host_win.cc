@@ -12,6 +12,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method_win.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
@@ -112,7 +113,9 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
-  message_handler_->Init(parent_hwnd, params.bounds);
+
+  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(params.bounds);
+  message_handler_->Init(parent_hwnd, pixel_bounds);
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
@@ -210,7 +213,8 @@ void DesktopRootWindowHostWin::ShowWindowWithState(
 
 void DesktopRootWindowHostWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  message_handler_->ShowMaximizedWithBounds(restored_bounds);
+  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(restored_bounds);
+  message_handler_->ShowMaximizedWithBounds(pixel_bounds);
 }
 
 bool DesktopRootWindowHostWin::IsVisible() const {
@@ -218,29 +222,35 @@ bool DesktopRootWindowHostWin::IsVisible() const {
 }
 
 void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
-  message_handler_->SetSize(size);
+  gfx::Size size_in_pixels = ui::win::DIPToScreenSize(size);
+  message_handler_->SetSize(size_in_pixels);
 }
 
 void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
-  message_handler_->CenterWindow(size);
+  gfx::Size size_in_pixels = ui::win::DIPToScreenSize(size);
+  message_handler_->CenterWindow(size_in_pixels);
 }
 
 void DesktopRootWindowHostWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   message_handler_->GetWindowPlacement(bounds, show_state);
+  *bounds = ui::win::ScreenToDIPRect(*bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetWindowBoundsInScreen() const {
-  return message_handler_->GetWindowBoundsInScreen();
+  gfx::Rect pixel_bounds = message_handler_->GetWindowBoundsInScreen();
+  return ui::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
-  return message_handler_->GetClientAreaBoundsInScreen();
+  gfx::Rect pixel_bounds = message_handler_->GetClientAreaBoundsInScreen();
+  return ui::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
-  return message_handler_->GetRestoredBounds();
+  gfx::Rect pixel_bounds = message_handler_->GetRestoredBounds();
+  return ui::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
@@ -249,7 +259,8 @@ gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
   GetMonitorInfo(MonitorFromWindow(message_handler_->hwnd(),
                                    MONITOR_DEFAULTTONEAREST),
                  &monitor_info);
-  return gfx::Rect(monitor_info.rcWork);
+  gfx::Rect pixel_bounds = gfx::Rect(monitor_info.rcWork);
+  return ui::win::ScreenToDIPRect(pixel_bounds);
 }
 
 void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
@@ -397,10 +408,14 @@ void DesktopRootWindowHostWin::Hide() {
 void DesktopRootWindowHostWin::ToggleFullScreen() {
 }
 
+// GetBounds and SetBounds work in pixel coordinates, whereas other get/set
+// methods work in DIP.
+
 gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   // Match the logic in HWNDMessageHandler::ClientAreaSizeChanged().
-  gfx::Rect bounds(WidgetSizeIsClientSize() ? GetClientAreaBoundsInScreen()
-                                            : GetWindowBoundsInScreen());
+  gfx::Rect bounds(WidgetSizeIsClientSize() ?
+      message_handler_->GetClientAreaBoundsInScreen() :
+      message_handler_->GetWindowBoundsInScreen());
   gfx::Rect without_expansion(bounds.x() - window_expansion_.x(),
                               bounds.y() - window_expansion_.y(),
                               bounds.width() - window_expansion_.width(),
@@ -710,8 +725,9 @@ void DesktopRootWindowHostWin::HandleClientSizeChanged(
   if (root_window_host_delegate_)
     root_window_host_delegate_->OnHostResized(new_size);
   // TODO(beng): replace with a layout manager??
-  content_window_->SetBounds(gfx::Rect(without_expansion));
-  native_widget_delegate_->OnNativeWidgetSizeChanged(new_size);
+  gfx::Size dip_size = ui::win::ScreenToDIPSize(without_expansion);
+  content_window_->SetBounds(gfx::Rect(dip_size));
+  native_widget_delegate_->OnNativeWidgetSizeChanged(dip_size);
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {
