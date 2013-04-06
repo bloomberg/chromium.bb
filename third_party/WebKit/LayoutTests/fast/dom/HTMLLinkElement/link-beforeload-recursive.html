@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/link-load-utilities.js" media="all"></script>
+
+<div><link id=thelink rel=stylesheet></div>
+
+<script>
+if (window.testRunner) {
+    testRunner.dumpResourceResponseMIMETypes();
+}
+
+var theLink = document.getElementById("thelink");
+
+var beforeloadRecurseCount = 5;
+
+function linkBeforeLoadHandler() {
+    log("Entering linkBeforeLoadHandler().");
+    if (--beforeloadRecurseCount > 1) {
+        var newHrefAttr = theLink.getAttribute("href") + "#" + beforeloadRecurseCount;
+        theLink.setAttribute("href", newHrefAttr);
+    } else if (beforeloadRecurseCount == 1) {
+        theLink.setAttribute("href", "resources/stylesheet-pre-pass.css");
+    }
+    log("Exiting linkBeforeLoadHandler().");
+    return true;
+}
+
+function runTest() {
+    theLink.addEventListener("beforeload", linkBeforeLoadHandler);
+
+    theLink.setAttribute("href", "resources/stylesheet-pre-fail.css");
+
+    <!-- Remove the element from the document and clean garbage, which will cause a crash -->
+    <!-- if the recursive beforeload calls caused extra client registration in the loader. -->
+    theLink.parentNode.removeChild(theLink);
+    theLink = null;
+    window.GCController.collect();
+    setTimeout('testFinished()', 0);
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>This tests that a beforeload event can mutate the firing link element. This test passes if it does
+not crash and the link element only loads its final (innermost) style sheet
+<pre id="console"></pre>
+</body>
+</html>

@@ -1,0 +1,14 @@
+stylesheet-pre-pass.css has MIME type text/css
+This tests that a beforeload event can mutate the firing link element. This test passes if it does not crash and the link element only loads its final (innermost) style sheet
+
+Entering linkBeforeLoadHandler().
+Entering linkBeforeLoadHandler().
+Entering linkBeforeLoadHandler().
+Entering linkBeforeLoadHandler().
+Entering linkBeforeLoadHandler().
+Exiting linkBeforeLoadHandler().
+Exiting linkBeforeLoadHandler().
+Exiting linkBeforeLoadHandler().
+Exiting linkBeforeLoadHandler().
+Exiting linkBeforeLoadHandler().
+
