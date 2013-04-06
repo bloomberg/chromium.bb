@@ -765,6 +765,9 @@ void GpuMemoryManager::AssignSurfacesAllocations() {
 
     allocation.renderer_allocation.bytes_limit_when_visible =
         client_state->bytes_allocation_when_visible_;
+    // Use a more conservative memory allocation policy on Mac because the
+    // platform is unstable when under memory pressure.
+    // http://crbug.com/141377
     allocation.renderer_allocation.priority_cutoff_when_visible =
 #if defined(OS_MACOSX)
         GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
