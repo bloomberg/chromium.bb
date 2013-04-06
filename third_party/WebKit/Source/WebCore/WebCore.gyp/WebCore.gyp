@@ -2094,7 +2094,7 @@
         ['include', 'bindings/v8/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(atk|cf|cg|mac|opentype|svg|win)/'],
+        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
         ['exclude', 'Modules/filesystem/LocalFileSystem\\.cpp$'],
         ['exclude', 'Modules/indexeddb/IDBFactoryBackendInterface\\.cpp$'],
