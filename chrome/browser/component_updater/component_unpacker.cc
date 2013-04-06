@@ -59,7 +59,7 @@ class CRXValidator {
     }
 
     const size_t kBufSize = 8 * 1024;
-    scoped_array<uint8> buf(new uint8[kBufSize]);
+    scoped_ptr<uint8[]> buf(new uint8[kBufSize]);
     while ((len = fread(buf.get(), 1, kBufSize, crx_file)) > 0)
       verifier.VerifyUpdate(buf.get(), len);
 

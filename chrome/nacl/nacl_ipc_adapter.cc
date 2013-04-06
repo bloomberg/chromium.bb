@@ -130,7 +130,7 @@ class NaClIPCAdapter::RewrittenMessage
   friend class base::RefCounted<RewrittenMessage>;
   ~RewrittenMessage() {}
 
-  scoped_array<char> data_;
+  scoped_ptr<char[]> data_;
   size_t data_len_;
 
   // Offset into data where the next read will happen. This will be equal to

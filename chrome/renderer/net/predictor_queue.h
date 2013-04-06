@@ -70,7 +70,7 @@ class DnsQueue {
  private:
   bool Validate();  // Checks that all internal data is valid.
 
-  const scoped_array<char> buffer_;  // Circular buffer, plus extra char ('\0').
+  const scoped_ptr<char[]> buffer_;  // Circular buffer, plus extra char ('\0').
   const BufferSize buffer_size_;  // Size one smaller than allocated space.
   const BufferSize buffer_sentinel_;  // Index of extra '\0' at end of buffer_.
 

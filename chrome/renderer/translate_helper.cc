@@ -480,7 +480,7 @@ bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
 
   v8::Local<v8::String> v8_str = v->ToString();
   int length = v8_str->Utf8Length() + 1;
-  scoped_array<char> str(new char[length]);
+  scoped_ptr<char[]> str(new char[length]);
   v8_str->WriteUtf8(str.get(), length);
   *value = str.get();
   return true;

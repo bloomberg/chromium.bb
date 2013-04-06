@@ -42,7 +42,7 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   virtual ~MockPrinterPage();
 
   uint32 source_size_;
-  scoped_array<uint8> source_data_;
+  scoped_ptr<uint8[]> source_data_;
   printing::Image image_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinterPage);

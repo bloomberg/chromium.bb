@@ -133,7 +133,7 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   // hack will have to do. Note that the situation with this hack in place is
   // no worse than it was when we weren't initializing GTK at all.
   int argc = 1;
-  scoped_array<char*> argv(new char*[2]);
+  scoped_ptr<char*[]> argv(new char*[2]);
   argv[0] = strdup(command_line.argv()[0].c_str());
   argv[1] = NULL;
   char **argv_pointer = argv.get();

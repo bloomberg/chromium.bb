@@ -283,7 +283,7 @@ int RunChromeDriver() {
 
   std::vector<std::string> args;
   MakeMongooseOptions(port, root, http_threads, enable_keep_alive, &args);
-  scoped_array<const char*> options(new const char*[args.size() + 1]);
+  scoped_ptr<const char*[]> options(new const char*[args.size() + 1]);
   for (size_t i = 0; i < args.size(); ++i) {
     options[i] = args[i].c_str();
   }

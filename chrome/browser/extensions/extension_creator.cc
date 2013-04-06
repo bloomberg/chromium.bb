@@ -215,7 +215,7 @@ bool ExtensionCreator::SignZip(const base::FilePath& zip_path,
       crypto::SignatureCreator::Create(private_key));
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
   size_t buffer_size = 1 << 16;
-  scoped_array<uint8> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
   int bytes_read = -1;
   while ((bytes_read = fread(buffer.get(), 1, buffer_size,
        zip_handle.get())) > 0) {
@@ -267,7 +267,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
   }
 
   size_t buffer_size = 1 << 16;
-  scoped_array<uint8> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
   size_t bytes_read = 0;
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
   while ((bytes_read = fread(buffer.get(), 1, buffer_size,
