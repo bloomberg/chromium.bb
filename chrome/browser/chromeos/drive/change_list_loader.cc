@@ -356,6 +356,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterGetAbout(
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
     DCHECK(about_resource);
     remote_changestamp = about_resource->largest_change_id();
+    last_known_remote_changestamp_ = remote_changestamp;
   }
 
   const DirectoryFetchInfo directory_fetch_info(directory_resource_id,
@@ -736,7 +737,10 @@ void ChangeListLoader::ScheduleRun(
 
   // If the directory's changestamp is up-to-date, just schedule to run the
   // callback, as there is no need to fetch the directory.
-  if (directory_fetch_info.changestamp() >= last_known_remote_changestamp_) {
+  // Note that |last_known_remote_changestamp_| is 0 when it is not received
+  // yet. In that case we conservatively assume that we need to fetch.
+  if (last_known_remote_changestamp_ > 0 &&
+      directory_fetch_info.changestamp() >= last_known_remote_changestamp_) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_FILE_OK));
@@ -747,8 +751,21 @@ void ChangeListLoader::ScheduleRun(
   // can check that the directory is being fetched.
   pending_load_callback_[resource_id].push_back(
       base::Bind(&util::EmptyFileOperationCallback));
+
+  // Start fetching the directory content, and mark it with the changestamp
+  // |last_known_remote_changestamp_|. To be precise, instead we need to call
+  // GetAboutResource() to get the latest changestamp. However,
+  // - It is costly to do GetAboutResource HTTP request every time.
+  // - The chance using an old value is small; it only happens when LoadIfNeeded
+  //   is called during one GetAboutResource roundtrip time of a feed fetching.
+  // - Even if the value is old, it just marks the directory as older. It may
+  //   trigger one future unnecessary re-fetch, but it'll never lose data, etc.
+  DirectoryFetchInfo new_directory_fetch_info(
+      directory_fetch_info.resource_id(),
+      std::max(directory_fetch_info.changestamp(),
+               last_known_remote_changestamp_));
   DoLoadDirectoryFromServer(
-      directory_fetch_info,
+      new_directory_fetch_info,
       base::Bind(&ChangeListLoader::OnDirectoryLoadComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
