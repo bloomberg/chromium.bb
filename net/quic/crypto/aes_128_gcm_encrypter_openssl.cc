@@ -22,6 +22,9 @@ const size_t kAuthTagSize = 16;
 
 }  // namespace
 
+Aes128GcmEncrypter::Aes128GcmEncrypter() {
+}
+
 // static
 bool Aes128GcmEncrypter::IsSupported() {
   return true;

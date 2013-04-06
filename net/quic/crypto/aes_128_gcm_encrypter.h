@@ -24,6 +24,7 @@ class Aes128GcmEncrypterPeer;
 // of the nonce is four bytes.
 class NET_EXPORT_PRIVATE Aes128GcmEncrypter : public QuicEncrypter {
  public:
+  Aes128GcmEncrypter();
   virtual ~Aes128GcmEncrypter() {}
 
   // Returns true if the underlying crypto library supports AES GCM.
