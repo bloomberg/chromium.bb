@@ -178,6 +178,9 @@ const char kBackgroundPermissionNeeded[] =
     "permission.";
 const char kBackgroundRequiredForPlatformApps[] =
     "Packaged apps must have a background page or background scripts.";
+const char kCannotAccessChromeUrl[] = "Cannot access a chrome:// URL";
+const char kCannotAccessExtensionUrl[] =
+    "Cannot access a chrome-extension:// URL of different extension";
 const char kCannotAccessPage[] =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";

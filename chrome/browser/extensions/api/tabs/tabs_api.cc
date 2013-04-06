@@ -2107,15 +2107,10 @@ void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
     if (!Execute(data))
       SendResponse(false);
   } else {
-#if defined(OS_POSIX)
     // TODO(viettrungluu): bug: there's no particular reason the path should be
     // UTF-8, in which case this may fail.
     error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        resource_.relative_path().value());
-#elif defined(OS_WIN)
-    error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        WideToUTF8(resource_.relative_path().value()));
-#endif  // OS_WIN
+        resource_.relative_path().AsUTF8Unsafe());
     SendResponse(false);
   }
 }

@@ -178,6 +178,8 @@ namespace extension_manifest_errors {
   extern const char kAppsNotEnabled[];
   extern const char kBackgroundPermissionNeeded[];
   extern const char kBackgroundRequiredForPlatformApps[];
+  extern const char kCannotAccessChromeUrl[];
+  extern const char kCannotAccessExtensionUrl[];
   extern const char kCannotAccessPage[];
   extern const char kCannotChangeExtensionID[];
   extern const char kCannotClaimAllHostsInExtent[];

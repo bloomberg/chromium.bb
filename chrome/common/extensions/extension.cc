@@ -746,6 +746,8 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
       switches::kExtensionsOnChromeURLs)) {
     if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
         !CanExecuteScriptEverywhere()) {
+      if (error)
+        *error = errors::kCannotAccessChromeUrl;
       return false;
     }
   }
@@ -754,6 +756,8 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
       top_frame_url.GetOrigin() !=
           GetBaseURLFromExtensionId(id()).GetOrigin() &&
       !CanExecuteScriptEverywhere()) {
+    if (error)
+      *error = errors::kCannotAccessExtensionUrl;
     return false;
   }
 
@@ -767,23 +771,24 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
     }
   }
 
-  // If a script is specified, use its matches.
-  if (script)
-    return script->MatchesURL(document_url);
+  bool can_access = false;
 
-  // Otherwise, see if this extension has permission to execute script
-  // programmatically on pages.
-  if (runtime_data_.GetActivePermissions()->HasExplicitAccessToOrigin(
-          document_url)) {
-    return true;
+  if (script) {
+    // If a script is specified, use its matches.
+    can_access = script->MatchesURL(document_url);
+  } else {
+    // Otherwise, see if this extension has permission to execute script
+    // programmatically on pages.
+    can_access = runtime_data_.GetActivePermissions()->
+        HasExplicitAccessToOrigin(document_url);
   }
 
-  if (error) {
+  if (!can_access && error) {
     *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
                                             document_url.spec());
   }
 
-  return false;
+  return can_access;
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
