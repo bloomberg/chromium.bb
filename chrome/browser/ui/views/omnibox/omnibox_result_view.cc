@@ -159,11 +159,15 @@ SkColor OmniboxResultView::GetColor(
   static bool initialized = false;
   static SkColor colors[NUM_STATES][NUM_KINDS];
   if (!initialized) {
-    colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
     colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
         ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+    colors[NORMAL][TEXT] = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldDefaultColor);
     colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
+    colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+    colors[SELECTED][TEXT] = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionColor);
     colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     CommonInitColors(theme, colors);
