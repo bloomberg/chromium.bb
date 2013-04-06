@@ -190,9 +190,7 @@ Settings::Settings(Page* page)
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     , m_hiddenPageDOMTimerThrottlingEnabled(false)
 #endif
-#if ENABLE(PAGE_VISIBILITY_API)
     , m_hiddenPageCSSAnimationSuspensionEnabled(false)
-#endif
 {
     // A Frame may not have been created yet, so we initialize the AtomicString
     // hash before trying to use it.
@@ -596,7 +594,6 @@ void Settings::setHiddenPageDOMTimerThrottlingEnabled(bool flag)
 }
 #endif
 
-#if ENABLE(PAGE_VISIBILITY_API)
 void Settings::setHiddenPageCSSAnimationSuspensionEnabled(bool flag)
 {
     if (m_hiddenPageCSSAnimationSuspensionEnabled == flag)
@@ -604,6 +601,5 @@ void Settings::setHiddenPageCSSAnimationSuspensionEnabled(bool flag)
     m_hiddenPageCSSAnimationSuspensionEnabled = flag;
     m_page->hiddenPageCSSAnimationSuspensionStateChanged();
 }
-#endif
 
 } // namespace WebCore

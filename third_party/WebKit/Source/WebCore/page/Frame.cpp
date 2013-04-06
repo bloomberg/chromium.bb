@@ -643,7 +643,6 @@ void Frame::clearTimers()
     clearTimers(m_view.get(), document());
 }
 
-#if ENABLE(PAGE_VISIBILITY_API)
 void Frame::dispatchVisibilityStateChangeEvent()
 {
     if (m_doc)
@@ -656,7 +655,6 @@ void Frame::dispatchVisibilityStateChangeEvent()
     for (size_t i = 0; i < childFrames.size(); ++i)
         childFrames[i]->dispatchVisibilityStateChangeEvent();
 }
-#endif
 
 void Frame::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

@@ -300,9 +300,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockerror);
 #endif
-#if ENABLE(PAGE_VISIBILITY_API)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
-#endif
     DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
 
     void setViewportArguments(const ViewportArguments& viewportArguments) { m_viewportArguments = viewportArguments; }
@@ -405,11 +403,9 @@ public:
 
     virtual KURL baseURI() const;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     String webkitVisibilityState() const;
     bool webkitHidden() const;
     void dispatchVisibilityStateChangeEvent();
-#endif
 
     DOMSecurityPolicy* securityPolicy();
 
@@ -1264,9 +1260,7 @@ private:
     template <typename CharacterType>
     void displayBufferModifiedByEncodingInternal(CharacterType*, unsigned) const;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     PageVisibilityState visibilityState() const;
-#endif
 
     PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 

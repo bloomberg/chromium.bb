@@ -161,9 +161,7 @@ Page::Page(PageClients& pageClients)
     , m_isEditable(false)
     , m_isOnscreen(true)
     , m_isInWindow(true)
-#if ENABLE(PAGE_VISIBILITY_API)
     , m_visibilityState(PageVisibilityStateVisible)
-#endif
     , m_layoutMilestones(0)
     , m_isCountingRelevantRepaintedObjects(false)
 #ifndef NDEBUG
@@ -1136,17 +1134,14 @@ void Page::checkSubframeCountConsistency() const
 }
 #endif
 
-#if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
 void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitialState)
 {
-#if ENABLE(PAGE_VISIBILITY_API)
     if (m_visibilityState == visibilityState)
         return;
     m_visibilityState = visibilityState;
 
     if (!isInitialState && m_mainFrame)
         m_mainFrame->dispatchVisibilityStateChangeEvent();
-#endif
 
     if (visibilityState == WebCore::PageVisibilityStateHidden) {
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
@@ -1163,18 +1158,12 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         if (m_settings->hiddenPageCSSAnimationSuspensionEnabled())
             mainFrame()->animation()->resumeAnimations();
     }
-#if !ENABLE(PAGE_VISIBILITY_API)
-    UNUSED_PARAM(isInitialState);
-#endif
 }
-#endif // ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
 
-#if ENABLE(PAGE_VISIBILITY_API)
 PageVisibilityState Page::visibilityState() const
 {
     return m_visibilityState;
 }
-#endif
 
 void Page::addLayoutMilestones(LayoutMilestones milestones)
 {
@@ -1364,16 +1353,13 @@ void Page::resetSeenMediaEngines()
 void Page::hiddenPageDOMTimerThrottlingStateChanged()
 {
     if (m_settings->hiddenPageDOMTimerThrottlingEnabled()) {
-#if ENABLE(PAGE_VISIBILITY_API)
         if (m_visibilityState == WebCore::PageVisibilityStateHidden)
             setTimerAlignmentInterval(Settings::hiddenPageDOMTimerAlignmentInterval());
-#endif
     } else
         setTimerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval());
 }
 #endif
 
-#if (ENABLE_PAGE_VISIBILITY_API)
 void Page::hiddenPageCSSAnimationSuspensionStateChanged()
 {
     if (m_visibilityState == WebCore::PageVisibilityStateHidden) {
@@ -1383,7 +1369,6 @@ void Page::hiddenPageCSSAnimationSuspensionStateChanged()
             mainFrame()->animation()->resumeAnimations();
     }
 }
-#endif
 
 void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

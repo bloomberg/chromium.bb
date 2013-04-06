@@ -44,10 +44,8 @@ void NavigatorVibration::vibrate(Navigator* navigator, unsigned time, ExceptionC
     if (!navigator->frame()->page())
         return;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     if (navigator->frame()->page()->visibilityState() == PageVisibilityStateHidden)
         return;
-#endif
 
     if (!Vibration::isActive(navigator->frame()->page())) {
         ec = NOT_SUPPORTED_ERR;
@@ -62,10 +60,8 @@ void NavigatorVibration::vibrate(Navigator* navigator, const VibrationPattern& p
     if (!navigator->frame()->page())
         return;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     if (navigator->frame()->page()->visibilityState() == PageVisibilityStateHidden)
         return;
-#endif
 
     if (!Vibration::isActive(navigator->frame()->page())) {
         ec = NOT_SUPPORTED_ERR;

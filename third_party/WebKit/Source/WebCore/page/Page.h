@@ -322,12 +322,8 @@ public:
     void setEditable(bool isEditable) { m_isEditable = isEditable; }
     bool isEditable() { return m_isEditable; }
 
-#if ENABLE(PAGE_VISIBILITY_API)
     PageVisibilityState visibilityState() const;
-#endif
-#if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     void setVisibilityState(PageVisibilityState, bool);
-#endif
 
     void addLayoutMilestones(LayoutMilestones);
     LayoutMilestones layoutMilestones() const { return m_layoutMilestones; }
@@ -362,9 +358,7 @@ public:
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     void hiddenPageDOMTimerThrottlingStateChanged();
 #endif
-#if ENABLE(PAGE_VISIBILITY_API)
     void hiddenPageCSSAnimationSuspensionStateChanged();
-#endif
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -468,9 +462,7 @@ private:
     bool m_isOnscreen;
     bool m_isInWindow;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     PageVisibilityState m_visibilityState;
-#endif
 
     LayoutMilestones m_layoutMilestones;
 

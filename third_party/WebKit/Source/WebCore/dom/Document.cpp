@@ -1626,7 +1626,6 @@ void Document::removeTitle(Element* titleElement)
         updateTitle(StringWithDirection());
 }
 
-#if ENABLE(PAGE_VISIBILITY_API)
 PageVisibilityState Document::visibilityState() const
 {
     // The visibility of the document is inherited from the visibility of the
@@ -1652,7 +1651,6 @@ void Document::dispatchVisibilityStateChangeEvent()
 {
     dispatchEvent(Event::create(eventNames().webkitvisibilitychangeEvent, false, false));
 }
-#endif
 
 DOMSecurityPolicy* Document::securityPolicy()
 {

@@ -506,10 +506,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
     m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
 
-#if ENABLE(PAGE_VISIBILITY_API)
     if (m_client)
         setVisibilityState(m_client->visibilityState(), true);
-#endif
 
     m_inspectorSettingsMap = adoptPtr(new SettingsMap);
 }
@@ -4213,13 +4211,11 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
     if (!page())
         return;
 
-#if ENABLE(PAGE_VISIBILITY_API)
     ASSERT(visibilityState == WebPageVisibilityStateVisible
            || visibilityState == WebPageVisibilityStateHidden
            || visibilityState == WebPageVisibilityStatePrerender
            || visibilityState == WebPageVisibilityStatePreview);
     m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
-#endif
 
 #if USE(ACCELERATED_COMPOSITING)
     if (m_layerTreeView) {
