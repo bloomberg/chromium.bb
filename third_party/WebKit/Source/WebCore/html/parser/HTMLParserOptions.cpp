@@ -40,7 +40,6 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     pluginsEnabled = frame && frame->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin);
 
     Settings* settings = document ? document->settings() : 0;
-    usePreHTML5ParserQuirks = settings && settings->usePreHTML5ParserQuirks();
 #if ENABLE(THREADED_HTML_PARSER)
     // We force the main-thread parser for about:blank, javascript: and data: urls for compatibility
     // with historical synchronous loading/parsing behavior of those schemes.

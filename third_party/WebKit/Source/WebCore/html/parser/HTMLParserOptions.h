@@ -34,7 +34,6 @@ class HTMLParserOptions {
 public:
     bool scriptEnabled;
     bool pluginsEnabled;
-    bool usePreHTML5ParserQuirks;
     bool useThreading;
     unsigned maximumDOMTreeDepth;
 

@@ -2137,11 +2137,9 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
             setInsertionMode(m_originalInsertionMode);
 
             if (m_parser->tokenizer()) {
-                // This token will not have been created by the tokenizer if a
-                // self-closing script tag was encountered and pre-HTML5 parser
-                // quirks are enabled. We must set the tokenizer's state to
+                // We must set the tokenizer's state to
                 // DataState explicitly if the tokenizer didn't have a chance to.
-                ASSERT(m_parser->tokenizer()->state() == HTMLTokenizer::DataState || m_options.usePreHTML5ParserQuirks || m_options.useThreading);
+                ASSERT(m_parser->tokenizer()->state() == HTMLTokenizer::DataState || m_options.useThreading);
                 m_parser->tokenizer()->setState(HTMLTokenizer::DataState);
             }
             return;
@@ -2630,8 +2628,6 @@ bool HTMLTreeBuilder::processStartTagForInHead(AtomicHTMLToken* token)
     }
     if (token->name() == scriptTag) {
         processScriptStartTag(token);
-        if (m_options.usePreHTML5ParserQuirks && token->selfClosing())
-            processFakeEndTag(scriptTag);
         return true;
     }
     if (token->name() == templateTag) {
