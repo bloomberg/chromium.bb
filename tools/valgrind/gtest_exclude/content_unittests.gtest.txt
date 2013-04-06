@@ -1,2 +1,5 @@
 # http://crbug.com/163314
 IndexedDBTest.*
+
+# http://crbug.com/227278
+WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
