@@ -8,10 +8,6 @@
 #include <iterator>
 #include <string>
 
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
@@ -105,18 +101,6 @@ namespace extensions {
 //
 
 PermissionSet::PermissionSet() {}
-
-PermissionSet::PermissionSet(
-    const extensions::Extension* extension,
-    const APIPermissionSet& apis,
-    const URLPatternSet& explicit_hosts)
-    : apis_(apis) {
-  DCHECK(extension);
-  AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
-  InitImplicitExtensionPermissions(extension);
-  InitImplicitPermissions();
-  InitEffectiveHosts();
-}
 
 PermissionSet::PermissionSet(
     const APIPermissionSet& apis,
@@ -523,27 +507,6 @@ void PermissionSet::InitImplicitPermissions() {
   // The fileBrowserHandler permission implies the internal version as well.
   if (apis_.find(APIPermission::kFileBrowserHandler) != apis_.end())
     apis_.insert(APIPermission::kFileBrowserHandlerInternal);
-}
-
-void PermissionSet::InitImplicitExtensionPermissions(
-    const extensions::Extension* extension) {
-  // Add the implied permissions.
-  if (extensions::PluginInfo::HasPlugins(extension))
-    apis_.insert(APIPermission::kPlugin);
-
-  if (!ManifestURL::GetDevToolsPage(extension).is_empty())
-    apis_.insert(APIPermission::kDevtools);
-
-  // Add the scriptable hosts.
-  for (extensions::UserScriptList::const_iterator content_script =
-           ContentScriptsInfo::GetContentScripts(extension).begin();
-       content_script != ContentScriptsInfo::GetContentScripts(extension).end();
-       ++content_script) {
-    URLPatternSet::const_iterator pattern =
-        content_script->url_patterns().begin();
-    for (; pattern != content_script->url_patterns().end(); ++pattern)
-      scriptable_hosts_.AddPattern(*pattern);
-  }
 }
 
 void PermissionSet::InitEffectiveHosts() {

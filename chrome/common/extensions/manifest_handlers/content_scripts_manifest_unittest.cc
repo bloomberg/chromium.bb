@@ -24,7 +24,7 @@ class ContentScriptsManifestTest : public ExtensionManifestTest {
   }
 };
 
-TEST_F(ContentScriptsManifestTest, ContentScriptMatchPattern) {
+TEST_F(ContentScriptsManifestTest, MatchPattern) {
   Testcase testcases[] = {
     // chrome:// urls are not allowed.
     Testcase("content_script_chrome_url_invalid.json",
@@ -48,16 +48,28 @@ TEST_F(ContentScriptsManifestTest, ContentScriptMatchPattern) {
   LoadAndExpectSuccess("ports_in_content_scripts.json");
 }
 
-TEST_F(ContentScriptsManifestTest, ContentScriptsOnChromeUrlsWithFlag) {
+TEST_F(ContentScriptsManifestTest, OnChromeUrlsWithFlag) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
-  std::string error;
-  scoped_refptr<extensions::Extension> extension =
+  scoped_refptr<Extension> extension =
     LoadAndExpectSuccess("content_script_chrome_url_invalid.json");
-  EXPECT_EQ("", error);
   const GURL newtab_url("chrome://newtab/");
   EXPECT_TRUE(ContentScriptsInfo::ExtensionHasScriptAtURL(extension,
                                                           newtab_url));
+}
+
+TEST_F(ContentScriptsManifestTest, ScriptableHosts) {
+  // TODO(yoz): Test GetScriptableHosts.
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("content_script_yahoo.json");
+  URLPatternSet scriptable_hosts =
+      ContentScriptsInfo::GetScriptableHosts(extension);
+
+  URLPatternSet expected;
+  expected.AddPattern(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://yahoo.com/*"));
+
+  EXPECT_EQ(expected, scriptable_hosts);
 }
 
 }  // namespace extensions

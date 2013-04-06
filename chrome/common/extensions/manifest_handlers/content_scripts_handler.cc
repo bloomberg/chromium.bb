@@ -17,6 +17,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -348,6 +349,23 @@ bool ContentScriptsInfo::ExtensionHasScriptAtURL(const Extension* extension,
   return false;
 }
 
+// static
+URLPatternSet ContentScriptsInfo::GetScriptableHosts(
+    const Extension* extension) {
+  const UserScriptList& content_scripts = GetContentScripts(extension);
+  URLPatternSet scriptable_hosts;
+  for (UserScriptList::const_iterator content_script =
+           content_scripts.begin();
+       content_script != content_scripts.end();
+       ++content_script) {
+    URLPatternSet::const_iterator pattern =
+        content_script->url_patterns().begin();
+    for (; pattern != content_script->url_patterns().end(); ++pattern)
+      scriptable_hosts.AddPattern(*pattern);
+  }
+  return scriptable_hosts;
+}
+
 ContentScriptsHandler::ContentScriptsHandler() {
 }
 
@@ -414,13 +432,13 @@ bool ContentScriptsHandler::Validate(
     symlink_policy = ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT;
   }
 
-  const extensions::UserScriptList& content_scripts =
-      extensions::ContentScriptsInfo::GetContentScripts(extension);
+  const UserScriptList& content_scripts =
+      ContentScriptsInfo::GetContentScripts(extension);
   for (size_t i = 0; i < content_scripts.size(); ++i) {
-    const extensions::UserScript& script = content_scripts[i];
+    const UserScript& script = content_scripts[i];
 
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const extensions::UserScript::File& js_script = script.js_scripts()[j];
+      const UserScript::File& js_script = script.js_scripts()[j];
       const base::FilePath& path = ExtensionResource::GetFilePath(
           js_script.extension_root(), js_script.relative_path(),
           symlink_policy);
@@ -430,7 +448,7 @@ bool ContentScriptsHandler::Validate(
     }
 
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const extensions::UserScript::File& css_script = script.css_scripts()[j];
+      const UserScript::File& css_script = script.css_scripts()[j];
       const base::FilePath& path = ExtensionResource::GetFilePath(
           css_script.extension_root(), css_script.relative_path(),
           symlink_policy);

@@ -41,6 +41,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -1228,12 +1229,14 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
+  URLPatternSet scriptable_hosts = ContentScriptsInfo::GetScriptableHosts(this);
+
   finished_parsing_manifest_ = true;
 
   runtime_data_.SetActivePermissions(new PermissionSet(
-      this, *initial_api_permissions_, host_permissions));
+      *initial_api_permissions_, host_permissions, scriptable_hosts));
   required_permission_set_ = new PermissionSet(
-      this, *initial_api_permissions_, host_permissions);
+      *initial_api_permissions_, host_permissions, scriptable_hosts);
   optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
   initial_api_permissions_.reset();

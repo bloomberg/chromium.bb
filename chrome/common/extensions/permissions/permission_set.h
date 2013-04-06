@@ -32,15 +32,10 @@ class PermissionSet
   // Creates an empty permission set (e.g. default permissions).
   PermissionSet();
 
-  // Creates a new permission set based on the |extension| manifest data, and
-  // the api and host permissions (|apis| and |hosts|). The effective hosts
-  // of the newly created permission set will be inferred from the |extension|
-  // manifest, |apis| and |hosts|.
-  PermissionSet(const extensions::Extension* extension,
-                const APIPermissionSet& apis,
-                const URLPatternSet& explicit_hosts);
-
-  // Creates a new permission set based on the specified data.
+  // Creates a new permission set based on the specified data: the API
+  // permissions, host permissions, and scriptable hosts. The effective hosts
+  // of the newly created permission set will be inferred from the given
+  // host permissions.
   PermissionSet(const APIPermissionSet& apis,
                 const URLPatternSet& explicit_hosts,
                 const URLPatternSet& scriptable_hosts);
@@ -163,9 +158,6 @@ class PermissionSet
       const URLPatternSet& host_patterns,
       bool include_rcd,
       bool exclude_file_scheme);
-
-  // Initializes the set based on |extension|'s manifest data.
-  void InitImplicitExtensionPermissions(const extensions::Extension* extension);
 
   // Adds permissions implied independently of other context.
   void InitImplicitPermissions();

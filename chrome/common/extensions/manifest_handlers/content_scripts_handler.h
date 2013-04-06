@@ -13,6 +13,8 @@
 
 namespace extensions {
 
+class URLPatternSet;
+
 struct ContentScriptsInfo : public Extension::ManifestData {
   ContentScriptsInfo();
   virtual ~ContentScriptsInfo();
@@ -23,6 +25,9 @@ struct ContentScriptsInfo : public Extension::ManifestData {
   // Returns the content scripts for the extension (if the extension has
   // no content scripts, this returns an empty list).
   static const UserScriptList& GetContentScripts(const Extension* extension);
+
+  // Returns the list of hosts that this extension can run content scripts on.
+  static URLPatternSet GetScriptableHosts(const Extension* extension);
 
   // Returns true if the extension has a content script declared at |url|.
   static bool ExtensionHasScriptAtURL(const Extension* extension,
