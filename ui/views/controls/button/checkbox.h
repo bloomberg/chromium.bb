@@ -18,7 +18,8 @@ class VIEWS_EXPORT CheckboxNativeThemeBorder
     : public TextButtonNativeThemeBorder {
  public:
   explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate)
-      : TextButtonNativeThemeBorder(delegate) {}
+      : TextButtonNativeThemeBorder(delegate),
+        use_custom_insets_(false) {}
   virtual ~CheckboxNativeThemeBorder() {}
 
   // The insets apply to the whole view (checkbox + text), not just the square
