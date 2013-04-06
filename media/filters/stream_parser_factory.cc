@@ -4,9 +4,11 @@
 
 #include "media/filters/stream_parser_factory.h"
 
+#include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/webm/webm_stream_parser.h"
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
@@ -42,10 +44,12 @@ struct SupportedTypeInfo {
 };
 
 static const CodecInfo kVP8CodecInfo = { "vp8", CodecInfo::VIDEO, NULL };
+static const CodecInfo kVP9CodecInfo = { "vp9", CodecInfo::VIDEO, NULL };
 static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL };
 
 static const CodecInfo* kVideoWebMCodecs[] = {
   &kVP8CodecInfo,
+  &kVP9CodecInfo,
   &kVorbisCodecInfo,
   NULL
 };
@@ -205,11 +209,19 @@ static bool IsSupported(const std::string& type,
           return false;
         }
 
+        const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
         switch (codec_type) {
           case CodecInfo::AUDIO:
             *has_audio = true;
             break;
           case CodecInfo::VIDEO:
+            // TODO(tomfinegan): Remove this check (or negate it, if we just
+            // negate the flag) when VP9 is enabled by default.
+            if (MatchPattern(codec_id, kVP9CodecInfo.pattern) &&
+                !cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
+              return false;
+            }
+
             *has_video = true;
             break;
           default:

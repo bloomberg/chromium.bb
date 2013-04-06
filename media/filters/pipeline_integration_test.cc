@@ -21,6 +21,7 @@ static const char kClearKeySystem[] = "org.w3.clearkey";
 static const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
 
 static const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
+static const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
 static const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
 static const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
 static const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
@@ -51,6 +52,7 @@ static const int k640WebMFileDurationMs = 2763;
 static const int k640IsoFileDurationMs = 2737;
 static const int k640IsoCencFileDurationMs = 2736;
 static const int k1280IsoFileDurationMs = 2736;
+static const int kVP9WebMFileDurationMs = 2736;
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
 // They do not exercise the Decrypting{Audio|Video}Decoder path.
@@ -454,6 +456,28 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   source.Abort();
   Stop();
 }
+
+// TODO(tomfinegan): Enable this test when the VP9 bitstream is finalized, and
+// http://crbug.com/173333 is fixed.
+TEST_F(PipelineIntegrationTest,
+       DISABLED_BasicPlayback_MediaSource_VideoOnly_VP9_WebM) {
+  MockMediaSource source("bear-vp9.webm", kWebMVP9, 19324);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kVP9WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
+
 
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,

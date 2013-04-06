@@ -39,6 +39,9 @@ bool WebMVideoClient::InitializeConfig(
   if (codec_id == "V_VP8") {
     video_codec = kCodecVP8;
     profile = VP8PROFILE_MAIN;
+  } else if (codec_id == "V_VP9") {
+    video_codec = kCodecVP9;
+    profile = VP9PROFILE_MAIN;
   } else {
     MEDIA_LOG(log_cb_) << "Unsupported video codec_id " << codec_id;
     return false;
