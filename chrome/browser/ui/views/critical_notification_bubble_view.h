@@ -15,7 +15,7 @@ class Accelerator;
 
 namespace views {
 class Label;
-class NativeTextButton;
+class LabelButton;
 }
 
 class CriticalNotificationBubbleView : public views::BubbleDelegateView,
@@ -55,8 +55,8 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
 
   // The headline and buttons on the bubble.
   views::Label* headline_;
-  views::NativeTextButton* restart_button_;
-  views::NativeTextButton* dismiss_button_;
+  views::LabelButton* restart_button_;
+  views::LabelButton* dismiss_button_;
 
   // A timer to refresh the bubble to show new countdown value.
   base::RepeatingTimer<CriticalNotificationBubbleView> refresh_timer_;

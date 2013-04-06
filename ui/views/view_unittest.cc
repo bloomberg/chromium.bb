@@ -1847,34 +1847,6 @@ TEST_F(ButtonDropDownTest, RegularClickTest) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// View hierarchy / Visibility changes
-////////////////////////////////////////////////////////////////////////////////
-/*
-TEST_F(ViewTest, ChangeVisibility) {
-#if defined(OS_LINUX)
-  // Make CRITICAL messages fatal
-  // TODO(oshima): we probably should enable this for entire tests on linux.
-  g_log_set_always_fatal(G_LOG_LEVEL_CRITICAL);
-#endif
-  scoped_ptr<Widget> window(CreateWidget());
-  window->Init(NULL, gfx::Rect(0, 0, 500, 300));
-  View* root_view = window->GetRootView();
-  NativeTextButton* native = new NativeTextButton(NULL, ASCIIToUTF16("Native"));
-
-  root_view->SetContentsView(native);
-  native->SetVisible(true);
-
-  root_view->RemoveChildView(native);
-  native->SetVisible(false);
-  // Change visibility to true with no widget.
-  native->SetVisible(true);
-
-  root_view->SetContentsView(native);
-  native->SetVisible(true);
-}
-*/
-
-////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy
 ////////////////////////////////////////////////////////////////////////////////
 class TestNativeViewHierarchy : public View {

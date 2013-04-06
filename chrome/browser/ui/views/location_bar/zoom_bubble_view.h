@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 
 class FullscreenController;

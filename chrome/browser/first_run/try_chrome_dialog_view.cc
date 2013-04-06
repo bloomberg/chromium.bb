@@ -21,8 +21,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
@@ -229,8 +229,9 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     layout->AddView(kill_chrome_);
   }
 
-  views::Button* accept_button = new views::NativeTextButton(
+  views::LabelButton* accept_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_OK));
+  accept_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   accept_button->set_tag(BT_OK_BUTTON);
 
   views::Separator* separator = NULL;
@@ -257,8 +258,9 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     if (dont_bug_me_button) {
       // The dialog needs a "Don't bug me" as a button or as a radio button,
       // this the button case.
-      views::Button* cancel_button = new views::NativeTextButton(
+      views::LabelButton* cancel_button = new views::LabelButton(
           this, l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
+      cancel_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       cancel_button->set_tag(BT_CLOSE_BUTTON);
       layout->AddView(cancel_button);
     }

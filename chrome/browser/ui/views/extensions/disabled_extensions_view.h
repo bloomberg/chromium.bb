@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_DISABLED_EXTENSIONS_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_DISABLED_EXTENSIONS_VIEW_H_
 
+#include "chrome/common/extensions/extension_set.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
-#include "chrome/common/extensions/extension_set.h"
 
 class Browser;
 
 namespace views {
 class Label;
+class LabelButton;
 class Link;
-class NativeTextButton;
 }
 
 // This is the class that implements the UI for the bubble showing which
@@ -75,8 +75,8 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
   // The headline, labels and buttons on the bubble.
   views::Label* headline_;
   views::Link* learn_more_;
-  views::NativeTextButton* settings_button_;
-  views::NativeTextButton* dismiss_button_;
+  views::LabelButton* settings_button_;
+  views::LabelButton* dismiss_button_;
   views::Label* recourse_;
 
   // Offset (in pixels) of the Learn More link relative to the top left corner

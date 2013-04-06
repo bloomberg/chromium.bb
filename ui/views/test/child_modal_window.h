@@ -10,7 +10,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
-class NativeTextButton;
+class LabelButton;
 class NativeViewHost;
 class Textfield;
 class View;
@@ -52,7 +52,7 @@ class ChildModalParent : public WidgetDelegateView,
 
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.
-  NativeTextButton* button_;
+  LabelButton* button_;
 
   // The text field to indicate the keyboard focus.
   Textfield* textfield_;

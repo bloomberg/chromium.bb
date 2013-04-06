@@ -8,7 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/corewm/window_modality_controller.h"
@@ -108,7 +108,7 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 ChildModalParent::ChildModalParent(gfx::NativeView context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new NativeTextButton(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new LabelButton(
           this, ASCIIToUTF16("Show/Hide Child Modal Window")))),
       textfield_(new Textfield),
       host_(new NativeViewHost),

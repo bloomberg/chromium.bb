@@ -24,7 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -282,11 +282,13 @@ void DisabledExtensionsView::Init() {
   // the layout manager.
   AddChildView(learn_more_);
 
-  settings_button_ = new views::NativeTextButton(this,
+  settings_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_SETTINGS));
+  settings_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(settings_button_);
-  dismiss_button_ = new views::NativeTextButton(this,
+  dismiss_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_DISMISS));
+  dismiss_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(dismiss_button_);
 
   content::RecordAction(

@@ -26,9 +26,9 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -402,8 +402,9 @@ void ContentSettingBubbleContents::Init() {
   manage_link_->set_listener(this);
   layout->AddView(manage_link_);
 
-  close_button_ = new views::NativeTextButton(
+  close_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
+  close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(close_button_);
 }
 

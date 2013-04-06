@@ -9,7 +9,7 @@
 #include "ui/views/controls/button/button.h"
 
 namespace views {
-class TextButton;
+class LabelButton;
 }
 
 namespace content {
@@ -64,10 +64,10 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
   bool chose_to_reinstall_;
 
   // Button that takes the user to the Chrome download page.
-  views::TextButton* reinstall_button_;
+  views::LabelButton* reinstall_button_;
 
   // Button for the user to be reminded later about the outdated upgrade.
-  views::TextButton* later_button_;
+  views::LabelButton* later_button_;
 
   // The PageNavigator to use for opening the Download Chrome URL.
   content::PageNavigator* navigator_;

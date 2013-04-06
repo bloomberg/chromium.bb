@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -39,10 +39,9 @@ const int kIconHorizontalOffset = 27;
 const int kIconVerticalOffset = -7;
 
 // This is the SpeechRecognitionBubble content and views bubble delegate.
-class SpeechRecognitionBubbleView
-    : public views::BubbleDelegateView,
-      public views::ButtonListener,
-      public views::LinkListener {
+class SpeechRecognitionBubbleView : public views::BubbleDelegateView,
+                                    public views::ButtonListener,
+                                    public views::LinkListener {
  public:
   SpeechRecognitionBubbleView(SpeechRecognitionBubbleDelegate* delegate,
                               views::View* anchor_view,
@@ -83,8 +82,8 @@ class SpeechRecognitionBubbleView
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* message_;
-  views::TextButton* try_again_;
-  views::TextButton* cancel_;
+  views::LabelButton* try_again_;
+  views::LabelButton* cancel_;
   views::Link* mic_settings_;
   SpeechRecognitionBubbleBase::DisplayMode display_mode_;
   const int kIconLayoutMinWidth;
@@ -157,12 +156,13 @@ void SpeechRecognitionBubbleView::Init() {
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
-  cancel_ = new views::NativeTextButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  cancel_ = new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  cancel_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(cancel_);
 
-  try_again_ = new views::NativeTextButton(
+  try_again_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN));
+  try_again_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(try_again_);
 
   mic_settings_ = new views::Link(

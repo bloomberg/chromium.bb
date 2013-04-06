@@ -31,9 +31,9 @@ class SimpleMenuModel;
 }
 
 namespace views {
+class LabelButton;
 class MenuButton;
 class MenuRunner;
-class TextButton;
 class RadioButton;
 }
 
@@ -112,7 +112,7 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
   RadioGroup radio_group_;
   views::Link* custom_link_;
   views::Link* manage_link_;
-  views::TextButton* close_button_;
+  views::LabelButton* close_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;
 

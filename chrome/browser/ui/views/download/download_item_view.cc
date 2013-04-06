@@ -38,7 +38,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -1044,14 +1044,14 @@ void DownloadItemView::ShowWarningDialog() {
   body_state_ = NORMAL;
   drop_down_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = new views::NativeTextButton(
+    save_button_ = new views::LabelButton(
         this, model_.GetWarningConfirmButtonText());
-    save_button_->set_ignore_minimum_size(true);
+    save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(save_button_);
   }
-  discard_button_ = new views::NativeTextButton(
+  discard_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-  discard_button_->set_ignore_minimum_size(true);
+  discard_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(discard_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

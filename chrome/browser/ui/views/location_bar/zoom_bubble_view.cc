@@ -19,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -201,9 +202,10 @@ void ZoomBubbleView::Init() {
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   AddChildView(label_);
 
-  views::NativeTextButton* set_default_button = new views::NativeTextButton(
+  views::LabelButton* set_default_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
-  set_default_button->set_alignment(views::TextButtonBase::ALIGN_CENTER);
+  set_default_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  set_default_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   AddChildView(set_default_button);
 
   StartTimerIfNecessary();

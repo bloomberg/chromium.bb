@@ -28,8 +28,8 @@ class ThrobAnimation;
 namespace views {
 class Checkbox;
 class Label;
+class LabelButton;
 class RadioButton;
-class TextButton;
 }
 
 // ChromeToMobileBubbleView is a bubble view for the Chrome To Mobile service.
@@ -93,8 +93,8 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   base::FilePath snapshot_path_;
 
   views::Checkbox* send_copy_;
-  views::TextButton* send_;
-  views::TextButton* cancel_;
+  views::LabelButton* send_;
+  views::LabelButton* cancel_;
 
   // An animation used to cycle through the "Sending..." status messages.
   scoped_ptr<ui::ThrobAnimation> progress_animation_;

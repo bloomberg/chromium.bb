@@ -24,7 +24,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -175,9 +175,10 @@ void PasswordGenerationBubbleView::Init() {
                                             regenerate_button_);
   AddChildView(textfield_wrapper_);
 
-  accept_button_ = new views::NativeTextButton(
+  accept_button_ = new views::LabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_BUTTON_TEXT));
+  accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(accept_button_);
 }
 

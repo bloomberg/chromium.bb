@@ -14,6 +14,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
@@ -103,8 +104,9 @@ void NetworkProfileBubbleView::Init() {
   learn_more->set_listener(this);
   layout->AddView(learn_more);
 
-  views::NativeTextButton* ok_button = new views::NativeTextButton(
+  views::LabelButton* ok_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_OK));
+  ok_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   ok_button->SetIsDefault(true);
   layout->AddView(ok_button);
 }

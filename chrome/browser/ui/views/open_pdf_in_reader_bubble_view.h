@@ -12,7 +12,7 @@
 class OpenPDFInReaderPromptDelegate;
 
 namespace views {
-class TextButton;
+class LabelButton;
 }
 
 class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
@@ -39,7 +39,7 @@ class OpenPDFInReaderBubbleView : public views::BubbleDelegateView,
   OpenPDFInReaderPromptDelegate* model_;
 
   views::Link* open_in_reader_link_;
-  views::TextButton* close_button_;
+  views::LabelButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenPDFInReaderBubbleView);
 };

@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
@@ -166,7 +167,7 @@ void ChromeToMobileBubbleView::SnapshotGenerated(const base::FilePath& path,
 
 void ChromeToMobileBubbleView::OnSendComplete(bool success) {
   progress_animation_->Stop();
-  send_->set_alignment(views::TextButtonBase::ALIGN_CENTER);
+  send_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
   if (success) {
     send_->SetText(l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SENT));
@@ -276,11 +277,12 @@ void ChromeToMobileBubbleView::Init() {
       new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_listener(this);
 
-  send_ = new views::NativeTextButton(
+  send_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SEND));
+  send_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   send_->SetIsDefault(true);
-  cancel_ = new views::NativeTextButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  cancel_ = new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  cancel_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, kButtonColumnSetId);
   layout->AddView(learn_more);
@@ -346,7 +348,7 @@ void ChromeToMobileBubbleView::Send() {
   // Update the view's contents to show the "Sending..." progress animation.
   cancel_->SetEnabled(false);
   send_->SetEnabled(false);
-  send_->set_alignment(views::TextButtonBase::ALIGN_LEFT);
+  send_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   progress_animation_.reset(new ui::ThrobAnimation(this));
   progress_animation_->SetDuration(kProgressThrobDurationMS);
   progress_animation_->StartThrobbing(-1);

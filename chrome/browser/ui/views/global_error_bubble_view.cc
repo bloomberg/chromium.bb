@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -87,15 +87,17 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
-  scoped_ptr<views::TextButton> accept_button(
-      new views::NativeTextButton(this, accept_string));
+  scoped_ptr<views::LabelButton> accept_button(
+      new views::LabelButton(this, accept_string));
+  accept_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
   string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
-  scoped_ptr<views::TextButton> cancel_button;
+  scoped_ptr<views::LabelButton> cancel_button;
   if (!cancel_string.empty()) {
-    cancel_button.reset(new views::NativeTextButton(this, cancel_string));
+    cancel_button.reset(new views::LabelButton(this, cancel_string));
+    cancel_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     cancel_button->set_tag(TAG_CANCEL_BUTTON);
   }
 

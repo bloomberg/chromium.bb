@@ -9,8 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -104,7 +104,7 @@ class PaneView : public View, public FocusTraversable {
     focus_search_ = focus_search;
   }
 
-  // Overridden from View:
+  // Overridden from views::View:
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE {
     if (focus_search_)
       return this;
@@ -112,8 +112,8 @@ class PaneView : public View, public FocusTraversable {
       return NULL;
   }
 
-  // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch() OVERRIDE {
+  // Overridden from views::FocusTraversable:
+  virtual views::FocusSearch* GetFocusSearch() OVERRIDE {
     return focus_search_;
   }
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE {
@@ -359,8 +359,8 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Click me"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  NativeTextButton* button = new NativeTextButton(NULL,
+                                                  ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->set_id(kFruitButtonID);
   left_container_->AddChildView(button);
@@ -455,22 +455,19 @@ void FocusTraversalTest::InitContentView() {
 
   y = 250;
   int width = 60;
-  button = new LabelButton(NULL, ASCIIToUTF16("OK"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("OK"));
   button->set_id(kOKButtonID);
   button->SetIsDefault(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
-  button = new LabelButton(NULL, ASCIIToUTF16("Cancel"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Cancel"));
   button->set_id(kCancelButtonID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
-  button = new LabelButton(NULL, ASCIIToUTF16("Help"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Help"));
   button->set_id(kHelpButtonID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
@@ -523,8 +520,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 10, 100, 20);
   text_field->set_id(kSearchTextfieldID);
 
-  button = new LabelButton(NULL, ASCIIToUTF16("Search"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->set_id(kSearchButtonID);
@@ -547,13 +543,11 @@ void FocusTraversalTest::InitContentView() {
   contents->set_focusable(true);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(kThumbnailContainerID);
-  button = new LabelButton(NULL, ASCIIToUTF16("Star"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->set_id(kThumbnailStarID);
-  button = new LabelButton(NULL, ASCIIToUTF16("SuperStar"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button = new NativeTextButton(NULL, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->set_id(kThumbnailSuperStarID);

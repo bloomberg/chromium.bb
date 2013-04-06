@@ -17,7 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
@@ -32,6 +32,7 @@
 // FullscreenExitView ----------------------------------------------------------
 
 namespace {
+
 // Space between the site info label and the buttons / link.
 const int kMiddlePaddingPx = 30;
 
@@ -43,22 +44,27 @@ class ButtonView : public views::View {
   // Returns an empty size when the view is not visible.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  views::NativeTextButton* accept_button() const { return accept_button_; }
-  views::NativeTextButton* deny_button() const { return deny_button_; }
+  views::LabelButton* accept_button() const { return accept_button_; }
+  views::LabelButton* deny_button() const { return deny_button_; }
 
  private:
-  views::NativeTextButton* accept_button_;
-  views::NativeTextButton* deny_button_;
+  views::LabelButton* accept_button_;
+  views::LabelButton* deny_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(ButtonView);
 };
 
 ButtonView::ButtonView(views::ButtonListener* listener,
-                       int between_button_spacing) : accept_button_(NULL),
-                                                     deny_button_(NULL) {
-  accept_button_ = new views::NativeTextButton(listener);
+                       int between_button_spacing)
+    : accept_button_(NULL),
+      deny_button_(NULL) {
+  accept_button_ = new views::LabelButton(listener, string16());
+  accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   accept_button_->set_focusable(false);
   AddChildView(accept_button_);
 
-  deny_button_ = new views::NativeTextButton(listener);
+  deny_button_ = new views::LabelButton(listener, string16());
+  deny_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   deny_button_->set_focusable(false);
   AddChildView(deny_button_);
 
@@ -212,7 +218,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
     mouse_lock_exit_instruction_->SetVisible(false);
     button_view_->SetVisible(true);
     button_view_->deny_button()->SetText(bubble_->GetCurrentDenyButtonText());
-    button_view_->deny_button()->ClearMaxTextSize();
+    button_view_->deny_button()->set_min_size(gfx::Size());
   } else {
     bool link_visible = true;
     string16 accelerator;

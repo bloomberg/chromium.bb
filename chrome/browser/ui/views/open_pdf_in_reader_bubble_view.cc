@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
@@ -57,8 +57,8 @@ void OpenPDFInReaderBubbleView::Init() {
                   GridLayout::FILL, GridLayout::FILL);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  close_button_ = new views::NativeTextButton(this,
-                                              model_->GetCancelButtonText());
+  close_button_ = new views::LabelButton(this, model_->GetCancelButtonText());
+  close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(close_button_);
 }

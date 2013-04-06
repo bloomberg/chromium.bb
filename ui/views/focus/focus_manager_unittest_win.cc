@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/events/event.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/widget.h"
@@ -70,8 +70,8 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   // Simulate an activate, otherwise the deactivate isn't going to do anything.
   SimulateActivateWindow();
 
-  NativeTextButton* button = new NativeTextButton(NULL,
-                                                  ASCIIToUTF16("Press me"));
+  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Press me"));
+  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
   View* view = new View();
   view->set_focusable(true);
 

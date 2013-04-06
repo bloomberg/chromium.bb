@@ -26,7 +26,7 @@ class RenderViewHost;
 namespace views {
 class ImageButton;
 class Label;
-class TextButton;
+class LabelButton;
 }
 
 class PasswordManager;
@@ -74,7 +74,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
 
   // Subviews
   views::Label* title_label_;
-  views::TextButton* accept_button_;
+  views::LabelButton* accept_button_;
   views::Textfield* textfield_;
   views::ImageButton* regenerate_button_;
   views::View* textfield_wrapper_;
