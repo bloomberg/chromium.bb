@@ -75,7 +75,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   virtual ~DownloadControllerAndroidImpl();
 
   // DownloadControllerAndroid implementation.
-  virtual void CreateGETDownload(RenderViewHost* source,
+  virtual void CreateGETDownload(int render_process_id, int render_view_id,
                                  int request_id) OVERRIDE;
   virtual void OnPostDownloadStarted(DownloadItem* download_item) OVERRIDE;
 

@@ -79,10 +79,8 @@ void DownloadControllerAndroidImpl::Init(JNIEnv* env, jobject obj) {
 }
 
 void DownloadControllerAndroidImpl::CreateGETDownload(
-    RenderViewHost* render_view_host,
-    int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int render_process_id = render_view_host->GetProcess()->GetID();
+    int render_process_id, int render_view_id, int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GlobalRequestID global_id(render_process_id, request_id);
 
   // We are yielding the UI thread and render_view_host may go away by
@@ -91,14 +89,12 @@ void DownloadControllerAndroidImpl::CreateGETDownload(
   GetDownloadInfoCB cb = base::Bind(
         &DownloadControllerAndroidImpl::StartAndroidDownload,
         base::Unretained(this), render_process_id,
-        render_view_host->GetRoutingID());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &DownloadControllerAndroidImpl::PrepareDownloadInfo,
-          base::Unretained(this), global_id,
-          base::Bind(&DownloadControllerAndroidImpl::StartDownloadOnUIThread,
-                     base::Unretained(this), cb)));
+        render_view_id);
+
+  PrepareDownloadInfo(
+      global_id,
+      base::Bind(&DownloadControllerAndroidImpl::StartDownloadOnUIThread,
+                 base::Unretained(this), cb));
 }
 
 void DownloadControllerAndroidImpl::PrepareDownloadInfo(

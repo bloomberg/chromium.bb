@@ -61,6 +61,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/intercept_download_resource_throttle.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
@@ -330,6 +331,11 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id,
         request->method()));
+#if defined(OS_ANDROID)
+    throttles->push_back(
+        new chrome::InterceptDownloadResourceThrottle(
+            request, child_id, route_id, request_id));
+#endif
   }
 
   // If this isn't a new request, we've seen this before and added the standard

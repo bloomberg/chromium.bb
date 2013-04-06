@@ -95,6 +95,8 @@
         'browser/android/infobar_stubs.cc',
         'browser/android/intent_helper.cc',
         'browser/android/intent_helper.h',
+        'browser/android/intercept_download_resource_throttle.cc',
+        'browser/android/intercept_download_resource_throttle.h',
         'browser/android/provider/blocking_ui_thread_async_request.cc',
         'browser/android/provider/blocking_ui_thread_async_request.h',
         'browser/android/provider/bookmark_model_observer_task.cc',

@@ -9,8 +9,6 @@
 
 namespace content {
 class DownloadItem;
-class RenderViewHost;
-class WebContents;
 
 // Interface to request GET downloads and send notifications for POST
 // downloads.
@@ -21,7 +19,8 @@ class CONTENT_EXPORT DownloadControllerAndroid {
 
   // Starts a new download request with Android. Should be called on the
   // UI thread.
-  virtual void CreateGETDownload(RenderViewHost* source, int request_id) = 0;
+  virtual void CreateGETDownload(int render_process_id, int render_view_id,
+                                 int request_id) = 0;
 
   // Should be called when a POST download is started. Notifies the embedding
   // app about the download. Should be called on the UI thread.
