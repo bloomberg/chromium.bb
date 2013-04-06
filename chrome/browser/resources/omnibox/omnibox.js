@@ -145,7 +145,12 @@ cr.define('omniboxDebug', function() {
     new PresentationInfoRecord(
         'Template URL', '', 'template_url', false, ''),
     new PresentationInfoRecord(
-        'Associated Keyword', '', 'associated_keyword', false, ''),
+        'Associated Keyword', '', 'associated_keyword', false,
+        'If non-empty, a "press tab to search" hint will be shown and will ' +
+        'engage this keyword.'),
+    new PresentationInfoRecord(
+        'Keyword', '', 'keyword', false,
+        'The keyword of the search engine to be used.'),
     new PresentationInfoRecord(
         'Additional Info', '', 'additional_info', false,
         'Provider-specific information about the result.')
