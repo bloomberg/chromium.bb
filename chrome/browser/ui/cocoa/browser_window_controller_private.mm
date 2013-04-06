@@ -862,7 +862,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (browser_window_controller::InstantUIState)currentInstantUIState {
-  if (!browser_->search_model()->mode().is_search_suggestions())
+  if (!browser_->search_model()->mode().is_search())
     return browser_window_controller::kInstantUINone;
 
   // If the search suggestions are already being displayed in the overlay

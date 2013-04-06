@@ -489,3 +489,15 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_TRUE([[contentView hitTest:point]
       isDescendantOf:[controller() tabContentArea]]);
 }
+
+// Verify that |currentInstantUIState| returns the correct value for search
+// results mode.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, InstantSearchResultsMode) {
+  chrome::EnableInstantExtendedAPIForTesting();
+  SearchMode mode(SearchMode::MODE_SEARCH_RESULTS, SearchMode::ORIGIN_SEARCH);
+  browser()->search_model()->SetMode(mode);
+  browser()->search_model()->SetTopBarsVisible(false);
+  EXPECT_TRUE(browser()->search_model()->mode().is_search_results());
+  EXPECT_EQ(browser_window_controller::kInstantUIFullPageResults,
+            [controller() currentInstantUIState]);
+}
