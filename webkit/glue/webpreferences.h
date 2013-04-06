@@ -63,7 +63,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool images_enabled;
   bool plugins_enabled;
   bool dom_paste_enabled;
-  bool developer_extras_enabled;
   typedef std::vector<std::pair<std::string, std::string> >
       WebInspectorPreferences;
   WebInspectorPreferences inspector_settings;

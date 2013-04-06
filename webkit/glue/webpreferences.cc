@@ -46,7 +46,6 @@ WebPreferences::WebPreferences()
       images_enabled(true),
       plugins_enabled(true),
       dom_paste_enabled(false),  // enables execCommand("paste")
-      developer_extras_enabled(false),  // Requires extra work by embedder
       site_specific_quirks_enabled(false),
       shrinks_standalone_images_to_fit(true),
       uses_universal_detector(false),  // Disabled: page cycler regression
@@ -283,7 +282,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setImagesEnabled(images_enabled);
   settings->setPluginsEnabled(plugins_enabled);
   settings->setDOMPasteAllowed(dom_paste_enabled);
-  settings->setDeveloperExtrasEnabled(developer_extras_enabled);
   settings->setNeedsSiteSpecificQuirks(site_specific_quirks_enabled);
   settings->setShrinksStandaloneImagesToFit(shrinks_standalone_images_to_fit);
   settings->setUsesEncodingDetector(uses_universal_detector);

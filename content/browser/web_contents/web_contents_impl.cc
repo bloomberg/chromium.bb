@@ -399,7 +399,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  prefs.developer_extras_enabled = true;
   prefs.javascript_enabled =
       !command_line.HasSwitch(switches::kDisableJavaScript);
   prefs.web_security_enabled =
