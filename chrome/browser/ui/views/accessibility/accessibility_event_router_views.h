@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accessibility/accessibility_types.h"
@@ -40,18 +41,6 @@ class View;
 // of accessibility events when a window is being created or initialized.
 class AccessibilityEventRouterViews : public content::NotificationObserver {
  public:
-  // Internal information about a particular view to override the
-  // information we get directly from the view.
-  struct ViewInfo {
-    ViewInfo() : ignore(false) {}
-
-    // If nonempty, will use this name instead of the view's label.
-    std::string name;
-
-    // If true, will ignore this widget and not send accessibility events.
-    bool ignore;
-  };
-
   // Get the single instance of this class.
   static AccessibilityEventRouterViews* GetInstance();
 
@@ -81,11 +70,16 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
   AccessibilityEventRouterViews();
   virtual ~AccessibilityEventRouterViews();
 
+  // Call DispatchAccessibilityNotification using a view storage id.
+  static void DispatchNotificationOnViewStorageId(
+      int view_storage_id,
+      chrome::NotificationType type);
+
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.
   void DispatchAccessibilityNotification(
       views::View* view,
-      int type);
+      chrome::NotificationType type);
 
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
@@ -163,6 +157,8 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
   // Notification registrar so we can clear most_recent_profile_ when a
   // profile is destroyed.
   content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRouterViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_ACCESSIBILITY_EVENT_ROUTER_VIEWS_H_

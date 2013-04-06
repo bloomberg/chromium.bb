@@ -65,6 +65,8 @@ class AccessibilityWindowDelegate : public views::WidgetDelegate {
 
  private:
   views::View* contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityWindowDelegate);
 };
 
 class ViewWithNameAndRole : public views::View {
@@ -81,9 +83,12 @@ class ViewWithNameAndRole : public views::View {
     state->role = role_;
   }
 
+  void set_name(const string16& name) { name_ = name; }
+
  private:
   string16 name_;
   ui::AccessibilityTypes::Role role_;
+  DISALLOW_COPY_AND_ASSIGN(ViewWithNameAndRole);
 };
 
 class AccessibilityEventRouterViewsTest
@@ -126,11 +131,26 @@ class AccessibilityEventRouterViewsTest
 #if defined(USE_AURA)
     context = aura_test_helper_->root_window();
 #endif
-
-    return views::Widget::CreateWindowWithContextAndBounds(
+    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
         new AccessibilityWindowDelegate(contents),
         context,
         gfx::Rect(0, 0, 500, 500));
+
+    // Create a profile and associate it with this window.
+    widget->SetNativeWindowProperty(Profile::kProfileKey, &profile_);
+
+    return widget;
+  }
+
+  void EnableAccessibilityAndListenToFocusNotifications() {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
+                   content::NotificationService::AllSources());
+
+    // Switch on accessibility event notifications.
+    ExtensionAccessibilityEventRouter* accessibility_event_router =
+        ExtensionAccessibilityEventRouter::GetInstance();
+    accessibility_event_router->SetAccessibilityEnabled(true);
   }
 
  protected:
@@ -151,6 +171,8 @@ class AccessibilityEventRouterViewsTest
   int focus_event_count_;
   std::string last_control_name_;
   std::string last_control_context_;
+  content::NotificationRegistrar registrar_;
+  TestingProfile profile_;
 #if defined(OS_WIN)
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
@@ -185,20 +207,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   // Set focus to the first button initially.
   button1->RequestFocus();
 
-  // Start listening to ACCESSIBILITY_CONTROL_FOCUSED notifications.
-  content::NotificationRegistrar registrar;
-  registrar.Add(this,
-                chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                content::NotificationService::AllSources());
-
-  // Switch on accessibility event notifications.
-  ExtensionAccessibilityEventRouter* accessibility_event_router =
-      ExtensionAccessibilityEventRouter::GetInstance();
-  accessibility_event_router->SetAccessibilityEnabled(true);
-
-  // Create a profile and associate it with this window.
-  TestingProfile profile;
-  window->SetNativeWindowProperty(Profile::kProfileKey, &profile);
+  EnableAccessibilityAndListenToFocusNotifications();
 
   // Change the accessible name of button3.
   button3->SetAccessibleName(ASCIIToUTF16(kButton3NewASCII));
@@ -208,16 +217,19 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   views::FocusManager* focus_manager = contents->GetWidget()->GetFocusManager();
   focus_event_count_ = 0;
   focus_manager->AdvanceFocus(false);
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, focus_event_count_);
   EXPECT_EQ(kButton2ASCII, last_control_name_);
 
   // Advance to button 3. Expect the new accessible name we assigned.
   focus_manager->AdvanceFocus(false);
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, focus_event_count_);
   EXPECT_EQ(kButton3NewASCII, last_control_name_);
 
   // Advance to button 1 and check the notification.
   focus_manager->AdvanceFocus(false);
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(3, focus_event_count_);
   EXPECT_EQ(kButton1ASCII, last_control_name_);
 
@@ -239,24 +251,13 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
 
-  // Start listening to ACCESSIBILITY_CONTROL_FOCUSED notifications.
-  content::NotificationRegistrar registrar;
-  registrar.Add(this,
-                chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                content::NotificationService::AllSources());
-
-  // Switch on accessibility event notifications.
-  ExtensionAccessibilityEventRouter* accessibility_event_router =
-      ExtensionAccessibilityEventRouter::GetInstance();
-  accessibility_event_router->SetAccessibilityEnabled(true);
-
-  // Create a profile and associate it with this window.
-  TestingProfile profile;
-  window->SetNativeWindowProperty(Profile::kProfileKey, &profile);
+  EnableAccessibilityAndListenToFocusNotifications();
 
   // Set focus to the button.
   focus_event_count_ = 0;
   button->RequestFocus();
+
+  MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
   EXPECT_EQ(1, focus_event_count_);
@@ -283,29 +284,94 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
 
-  // Start listening to ACCESSIBILITY_CONTROL_FOCUSED notifications.
-  content::NotificationRegistrar registrar;
-  registrar.Add(this,
-                chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                content::NotificationService::AllSources());
-
-  // Switch on accessibility event notifications.
-  ExtensionAccessibilityEventRouter* accessibility_event_router =
-      ExtensionAccessibilityEventRouter::GetInstance();
-  accessibility_event_router->SetAccessibilityEnabled(true);
-
-  // Create a profile and associate it with this window.
-  TestingProfile profile;
-  window->SetNativeWindowProperty(Profile::kProfileKey, &profile);
+  EnableAccessibilityAndListenToFocusNotifications();
 
   // Set focus to the button.
   focus_event_count_ = 0;
   button->RequestFocus();
 
+  MessageLoop::current()->RunUntilIdle();
+
   // Test that we got the event with the expected name and context.
   EXPECT_EQ(1, focus_event_count_);
   EXPECT_EQ(kButtonNameASCII, last_control_name_);
   EXPECT_EQ(kAlertTextASCII, last_control_context_);
+
+  window->CloseNow();
+}
+
+TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
+  const char kContentsNameASCII[] = "Contents";
+  const char kOldNameASCII[] = "OldName";
+  const char kNewNameASCII[] = "NewName";
+
+  // Create a toolbar with a button.
+  views::View* contents = new ViewWithNameAndRole(
+      ASCIIToUTF16(kContentsNameASCII),
+      ui::AccessibilityTypes::ROLE_CLIENT);
+  ViewWithNameAndRole* child = new ViewWithNameAndRole(
+      ASCIIToUTF16(kOldNameASCII),
+      ui::AccessibilityTypes::ROLE_PUSHBUTTON);
+  child->set_focusable(true);
+  contents->AddChildView(child);
+
+  // Put the view in a window.
+  views::Widget* window = CreateWindowWithContents(contents);
+
+  EnableAccessibilityAndListenToFocusNotifications();
+
+  // Set focus to the child view.
+  focus_event_count_ = 0;
+  child->RequestFocus();
+
+  // Change the child's name after the focus notification.
+  child->set_name(ASCIIToUTF16(kNewNameASCII));
+
+  // We shouldn't get the notification right away.
+  EXPECT_EQ(0, focus_event_count_);
+
+  // Process anything in the event loop. Now we should get the notification,
+  // and it should give us the new control name, not the old one.
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, focus_event_count_);
+  EXPECT_EQ(kNewNameASCII, last_control_name_);
+
+  window->CloseNow();
+}
+
+TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
+  const char kContentsNameASCII[] = "Contents";
+  const char kNameASCII[] = "OldName";
+
+  // Create a toolbar with a button.
+  views::View* contents = new ViewWithNameAndRole(
+      ASCIIToUTF16(kContentsNameASCII),
+      ui::AccessibilityTypes::ROLE_CLIENT);
+  ViewWithNameAndRole* child = new ViewWithNameAndRole(
+      ASCIIToUTF16(kNameASCII),
+      ui::AccessibilityTypes::ROLE_PUSHBUTTON);
+  child->set_focusable(true);
+  contents->AddChildView(child);
+
+  // Put the view in a window.
+  views::Widget* window = CreateWindowWithContents(contents);
+
+  EnableAccessibilityAndListenToFocusNotifications();
+
+  // Set focus to the child view.
+  focus_event_count_ = 0;
+  child->RequestFocus();
+
+  // Delete the child!
+  delete child;
+
+  // We shouldn't get the notification right away.
+  EXPECT_EQ(0, focus_event_count_);
+
+  // Process anything in the event loop. We shouldn't get a notification
+  // because the view is no longer valid, and this shouldn't crash.
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(0, focus_event_count_);
 
   window->CloseNow();
 }
