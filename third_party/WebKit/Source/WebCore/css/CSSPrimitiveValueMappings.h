@@ -2162,9 +2162,7 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPosition e)
             m_value.ident = CSSValueFixed;
             break;
         case StickyPosition:
-#if ENABLE(CSS_STICKY_POSITION)
             m_value.ident = CSSValueWebkitSticky;
-#endif
             break;
     }
 }
@@ -2180,10 +2178,8 @@ template<> inline CSSPrimitiveValue::operator EPosition() const
             return AbsolutePosition;
         case CSSValueFixed:
             return FixedPosition;
-#if ENABLE(CSS_STICKY_POSITION)
         case CSSValueWebkitSticky:
             return StickyPosition;
-#endif
     }
 
     ASSERT_NOT_REACHED();

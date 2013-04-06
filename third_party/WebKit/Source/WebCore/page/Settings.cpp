@@ -173,9 +173,7 @@ Settings::Settings(Page* page)
     , m_usesPageCache(false)
     , m_fontRenderingMode(0)
     , m_isCSSCustomFilterEnabled(false)
-#if ENABLE(CSS_STICKY_POSITION)
     , m_cssStickyPositionEnabled(true)
-#endif
 #if ENABLE(CSS_VARIABLES)
     , m_cssVariablesEnabled(false)
 #endif
