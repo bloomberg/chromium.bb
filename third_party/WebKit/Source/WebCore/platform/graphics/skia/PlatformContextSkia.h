@@ -48,7 +48,6 @@
 namespace WebCore {
 
 enum CompositeOperator;
-class Texture;
 
 // This class holds the platform-specific state for GraphicsContext. We put
 // most of our Skia wrappers on this class. In theory, a lot of this stuff could

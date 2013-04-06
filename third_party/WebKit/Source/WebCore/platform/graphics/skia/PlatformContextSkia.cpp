@@ -38,8 +38,6 @@
 #include "ImageBuffer.h"
 #include "NativeImageSkia.h"
 #include "SkiaUtils.h"
-#include "Texture.h"
-#include "TilingData.h"
 
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"

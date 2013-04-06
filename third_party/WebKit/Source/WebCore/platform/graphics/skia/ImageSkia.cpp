@@ -44,7 +44,6 @@
 #include "SkRect.h"
 #include "SkShader.h"
 #include "SkiaUtils.h"
-#include "Texture.h"
 #include <wtf/text/WTFString.h>
 
 #include "skia/ext/image_operations.h"
