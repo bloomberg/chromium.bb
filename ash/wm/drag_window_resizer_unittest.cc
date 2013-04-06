@@ -77,6 +77,11 @@ class DragWindowResizerTest : public test::AshTestBase {
     SetDefaultParentByPrimaryRootWindow(transient_parent_.get());
     transient_parent_->AddTransientChild(transient_child_);
     transient_parent_->set_id(5);
+
+    panel_window_.reset(new aura::Window(&delegate6_));
+    panel_window_->SetType(aura::client::WINDOW_TYPE_PANEL);
+    panel_window_->Init(ui::LAYER_NOT_DRAWN);
+    SetDefaultParentByPrimaryRootWindow(panel_window_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -84,6 +89,7 @@ class DragWindowResizerTest : public test::AshTestBase {
     always_on_top_window_.reset();
     system_modal_window_.reset();
     transient_parent_.reset();
+    panel_window_.reset();
     AshTestBase::TearDown();
   }
 
@@ -114,10 +120,12 @@ class DragWindowResizerTest : public test::AshTestBase {
   aura::test::TestWindowDelegate delegate3_;
   aura::test::TestWindowDelegate delegate4_;
   aura::test::TestWindowDelegate delegate5_;
+  aura::test::TestWindowDelegate delegate6_;
 
   scoped_ptr<aura::Window> window_;
   scoped_ptr<aura::Window> always_on_top_window_;
   scoped_ptr<aura::Window> system_modal_window_;
+  scoped_ptr<aura::Window> panel_window_;
   aura::Window* transient_child_;
   scoped_ptr<aura::Window> transient_parent_;
 
@@ -467,6 +475,21 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // The parent of transient window can be moved across display.
   {
     aura::Window* window = transient_parent_.get();
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_TRUE(event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                                         gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
+  }
+
+  // Panel window can be moved across display.
+  {
+    aura::Window* window = panel_window_.get();
     window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                               Shell::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.

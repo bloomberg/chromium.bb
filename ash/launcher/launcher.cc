@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_navigator.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -93,7 +94,9 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 void Launcher::UpdateIconPositionForWindow(aura::Window* window) {
   launcher_view_->UpdatePanelIconPosition(
       delegate_->GetIDByWindow(window),
-      window->bounds().CenterPoint());
+      ash::ScreenAsh::ConvertRectFromScreen(
+          shelf_widget()->GetNativeView(),
+          window->GetBoundsInScreen()).CenterPoint());
 }
 
 void Launcher::ActivateLauncherItem(int index) {

@@ -57,19 +57,23 @@ DragWindowResizer::~DragWindowResizer() {
 }
 
 // static
-DragWindowResizer* DragWindowResizer::Create(WindowResizer* window_resizer,
+DragWindowResizer* DragWindowResizer::Create(WindowResizer* next_window_resizer,
                                              aura::Window* window,
                                              const gfx::Point& location,
                                              int window_component) {
   Details details(window, location, window_component);
   return details.is_resizable ?
-      new DragWindowResizer(window_resizer, details) : NULL;
+      new DragWindowResizer(next_window_resizer, details) : NULL;
 }
 
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   bool destroyed = false;
   destroyed_ = &destroyed;
-  window_resizer_->Drag(location, event_flags);
+  next_window_resizer_->Drag(location, event_flags);
+
+  // TODO(flackr): Refactor the way WindowResizer calls into other window
+  // resizers to avoid the awkward pattern here for checking if
+  // next_window_resizer_ destroys the resizer object.
   if (destroyed)
     return;
   destroyed_ = NULL;
@@ -88,7 +92,7 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DragWindowResizer::CompleteDrag(int event_flags) {
-  window_resizer_->CompleteDrag(event_flags);
+  next_window_resizer_->CompleteDrag(event_flags);
 
   GetTarget()->layer()->SetOpacity(details_.initial_opacity);
   drag_window_controller_.reset();
@@ -111,19 +115,19 @@ void DragWindowResizer::CompleteDrag(int event_flags) {
 }
 
 void DragWindowResizer::RevertDrag() {
-  window_resizer_->RevertDrag();
+  next_window_resizer_->RevertDrag();
 
   drag_window_controller_.reset();
   GetTarget()->layer()->SetOpacity(details_.initial_opacity);
 }
 
 aura::Window* DragWindowResizer::GetTarget() {
-  return window_resizer_->GetTarget();
+  return next_window_resizer_->GetTarget();
 }
 
-DragWindowResizer::DragWindowResizer(WindowResizer* window_resizer,
+DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
                                      const Details& details)
-    : window_resizer_(window_resizer),
+    : next_window_resizer_(next_window_resizer),
       details_(details),
       destroyed_(NULL) {
   // The pointer should be confined in one display during resizing a window
@@ -187,7 +191,8 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return (details_.window_component == HTCAPTION) &&
       !GetTarget()->transient_parent() &&
-      (GetTarget()->type() == aura::client::WINDOW_TYPE_NORMAL);
+      (GetTarget()->type() == aura::client::WINDOW_TYPE_NORMAL ||
+       GetTarget()->type() == aura::client::WINDOW_TYPE_PANEL);
 }
 
 }  // namespace internal

@@ -18,6 +18,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -42,10 +43,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
     return scoped_ptr<WindowResizer>();
 
   WindowResizer* window_resizer = NULL;
-  if (window->type() == aura::client::WINDOW_TYPE_PANEL) {
-    window_resizer = PanelWindowResizer::Create(
-        window, point_in_parent, window_component);
-  } else if (window->parent() &&
+  if (window->parent() &&
       window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
     // is set by tab dragging code.
@@ -63,6 +61,10 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
   }
   if (window_resizer) {
     window_resizer = internal::DragWindowResizer::Create(
+        window_resizer, window, point_in_parent, window_component);
+  }
+  if (window_resizer && window->type() == aura::client::WINDOW_TYPE_PANEL) {
+    window_resizer = PanelWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component);
   }
   return make_scoped_ptr<WindowResizer>(window_resizer);
@@ -357,6 +359,8 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // out of a maximized window, it's already in the normal show state when this
   // is called, so it does not matter.
   if (wm::IsWindowNormal(window()) &&
+      (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
+       !window()->GetProperty(kPanelAttachedKey)) &&
       (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)) {
     if (!GetRestoreBoundsInScreen(window())) {
       gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(

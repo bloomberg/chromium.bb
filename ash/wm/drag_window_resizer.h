@@ -22,9 +22,9 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   virtual ~DragWindowResizer();
 
   // Creates a new DragWindowResizer. The caller takes ownership of the
-  // returned object. The ownership of |window_resizer| is taken by the
+  // returned object. The ownership of |next_window_resizer| is taken by the
   // returned object. Returns NULL if not resizable.
-  static DragWindowResizer* Create(WindowResizer* window_resizer,
+  static DragWindowResizer* Create(WindowResizer* next_window_resizer,
                                    aura::Window* window,
                                    const gfx::Point& location,
                                    int window_component);
@@ -43,9 +43,9 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
 
   // Creates DragWindowResizer that adds the ability of dragging windows across
-  // displays to |window_resizer|. This object takes the ownership of
-  // |window_resizer|.
-  explicit DragWindowResizer(WindowResizer* window_resizer,
+  // displays to |next_window_resizer|. This object takes the ownership of
+  // |next_window_resizer|.
+  explicit DragWindowResizer(WindowResizer* next_window_resizer,
                              const Details& details);
 
   // Updates the bounds of the phantom window for window dragging. Set true on
@@ -55,7 +55,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp();
 
-  scoped_ptr<WindowResizer> window_resizer_;
+  scoped_ptr<WindowResizer> next_window_resizer_;
 
   // Shows a semi-transparent image of the window being dragged.
   scoped_ptr<DragWindowController> drag_window_controller_;

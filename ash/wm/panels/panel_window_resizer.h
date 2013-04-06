@@ -10,13 +10,10 @@
 
 namespace gfx {
 class Rect;
+class Point;
 }
 
 namespace ash {
-
-namespace internal {
-class PanelLayoutManager;
-}
 
 // PanelWindowResizer is used by ToplevelWindowEventFilter to handle dragging,
 // moving or resizing panel window. These can be attached and detached from the
@@ -26,17 +23,12 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   virtual ~PanelWindowResizer();
 
   // Creates a new PanelWindowResizer. The caller takes ownership of the
+  // returned object. The ownership of |next_window_resizer| is taken by the
   // returned object. Returns NULL if not resizable.
-  static PanelWindowResizer* Create(aura::Window* window,
+  static PanelWindowResizer* Create(WindowResizer* next_window_resizer,
+                                    aura::Window* window,
                                     const gfx::Point& location,
                                     int window_component);
-
-  // Returns true if the drag will result in changing the window in anyway.
-  bool is_resizable() const { return details_.is_resizable; }
-
-  bool changed_size() const {
-    return !(details_.bounds_change & kBoundsChange_Repositions);
-  }
 
   // WindowResizer overides:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
@@ -49,11 +41,16 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   }
 
  private:
-  explicit PanelWindowResizer(const Details& details);
+  // Creates PanelWindowResizer that adds the ability to attach / detach panel
+  // windows as well as reparenting them to the panel layer while dragging to
+  // |next_window_resizer|. This object takes ownership of
+  // |next_window_resizer|.
+  PanelWindowResizer(WindowResizer* next_window_resizer,
+                     const Details& details);
 
   // Checks if the provided window bounds should attach to the launcher. If true
-  // the bounds are modified to snap the window to the launcher.
-  bool AttachToLauncher(gfx::Rect* bounds);
+  // the offset gives the necessary adjustment to snap to the launcher.
+  bool AttachToLauncher(const gfx::Rect& bounds, gfx::Point* offset);
 
   // Tracks the panel's initial position and attachment at the start of a drag
   // and informs the PanelLayoutManager that a drag has started if necessary.
@@ -68,11 +65,12 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
   const Details details_;
 
+  // Wraps a window resizer and adds panel detaching / reattaching and snapping
+  // to launcher behavior during drags.
+  scoped_ptr<WindowResizer> next_window_resizer_;
+
   // Panel container window.
   aura::Window* panel_container_;
-
-  // Weak pointer, owned by panel container.
-  internal::PanelLayoutManager* panel_layout_manager_;
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
@@ -82,6 +80,10 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
   // True if the window should attach to the launcher after releasing.
   bool should_attach_;
+
+  // If non-NULL the destructor sets this to true. Used to determine if this has
+  // been deleted.
+  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizer);
 };
