@@ -436,30 +436,9 @@
 /* FIXME: This should go away since we're only building chromium now */
 #define WTF_PLATFORM_CHROMIUM 1
 
-/* PLATFORM(IOS) */
-/* FIXME: this is sometimes used as an OS switch and sometimes for higher-level things */
-#if (defined(TARGET_OS_EMBEDDED) && TARGET_OS_EMBEDDED) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-#define WTF_PLATFORM_IOS 1
-#endif
-
-/* PLATFORM(IOS_SIMULATOR) */
-#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR
-#define WTF_PLATFORM_IOS 1
-#define WTF_PLATFORM_IOS_SIMULATOR 1
-#endif
-
 /* Graphics engines */
 
-/* USE(CG) and PLATFORM(CI) */
-#if PLATFORM(MAC) || PLATFORM(IOS)
-#define WTF_USE_CG 1
-#endif
-#if PLATFORM(MAC) || PLATFORM(IOS) || (PLATFORM(WIN) && USE(CG))
-#define WTF_USE_CA 1
-#endif
-
 /* USE(SKIA) for Win/Linux/Mac/Android */
-#if PLATFORM(CHROMIUM)
 #if OS(DARWIN)
 #define WTF_USE_SKIA 1
 #define WTF_USE_ICCJPEG 1
@@ -474,63 +453,18 @@
 #define WTF_USE_ICCJPEG 1
 #define WTF_USE_QCMSLIB 1
 #endif
-#endif
-
-#if PLATFORM(BLACKBERRY)
-#define WTF_USE_SKIA 1
-#define WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION 1
-#define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_DITHERING 1
-#define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_FANCY_UPSAMPLING 1
-#endif
 
 /* On Windows, use QueryPerformanceCounter by default */
 #if OS(WINDOWS)
 #define WTF_USE_QUERY_PERFORMANCE_COUNTER  1
 #endif
 
-#if OS(WINCE) && !PLATFORM(QT)
-#define NOSHLWAPI      /* shlwapi.h not available on WinCe */
-
-/* MSDN documentation says these functions are provided with uspce.lib.  But we cannot find this file. */
-#define __usp10__      /* disable "usp10.h" */
-
-#define _INC_ASSERT    /* disable "assert.h" */
-#define assert(x)
-
-#endif  /* OS(WINCE) && !PLATFORM(QT) */
-
-#if OS(WINCE) && !PLATFORM(QT)
-#define WTF_USE_WCHAR_UNICODE 1
-#elif PLATFORM(GTK)
-/* The GTK+ Unicode backend is configurable */
-#else
 #define WTF_USE_ICU_UNICODE 1
-#endif
 
-#if PLATFORM(MAC) && !PLATFORM(IOS)
-#if CPU(X86_64)
-#define WTF_USE_PLUGIN_HOST_PROCESS 1
-#endif
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-#define WTF_USE_SCROLLBAR_PAINTER 1
-#define HAVE_XPC 1
-#endif
-#define WTF_USE_CF 1
-#define HAVE_READLINE 1
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-#define HAVE_LAYER_HOSTING_IN_WINDOW_SERVER 1
-#endif
-#define WTF_USE_APPKIT 1
-#define WTF_USE_SECURITY_FRAMEWORK 1
-#endif /* PLATFORM(MAC) && !PLATFORM(IOS) */
-
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
+#if OS(DARWIN)
 #define WTF_USE_CF 1
 #define WTF_USE_WK_SCROLLBAR_PAINTER 1
-#endif
 
-#if PLATFORM(CHROMIUM)
-#if OS(DARWIN)
 /* We can't override the global operator new and delete on OS(DARWIN) because
  * some object are allocated by WebKit and deallocated by the embedder. */
 #define ENABLE_GLOBAL_FASTMALLOC_NEW 0
@@ -538,59 +472,12 @@
 /* On non-OS(DARWIN), the "system malloc" is actually TCMalloc anyway, so there's
  * no need to use WebKit's copy of TCMalloc. */
 #define USE_SYSTEM_MALLOC 1
-#endif /* OS(DARWIN) */
-#endif /* PLATFORM(CHROMIUM) */
 
-#if PLATFORM(IOS)
-#define DONT_FINALIZE_ON_MAIN_THREAD 1
-#endif
-
-#if PLATFORM(QT) && OS(DARWIN)
-#define WTF_USE_CF 1
-#endif
-
-#if OS(DARWIN) && !PLATFORM(GTK) && !PLATFORM(QT)
 #define ENABLE_PURGEABLE_MEMORY 1
-#endif
-
-#if PLATFORM(IOS)
-#define HAVE_READLINE 1
-#define WTF_USE_APPKIT 0
-#define WTF_USE_CF 1
-#define WTF_USE_CFNETWORK 1
-#define WTF_USE_NETWORK_CFDATA_ARRAY_CALLBACK 1
-#define WTF_USE_SECURITY_FRAMEWORK 0
-#define WTF_USE_WEB_THREAD 1
-#endif /* PLATFORM(IOS) */
-
-#if PLATFORM(WIN) && !OS(WINCE)
-#define WTF_USE_CF 1
-#endif
-
-#if PLATFORM(WIN) && !OS(WINCE)
-#define WTF_USE_CFNETWORK 1
-#endif
-
-#if USE(CFNETWORK) || PLATFORM(MAC) || PLATFORM(IOS)
-#define WTF_USE_CFURLCACHE 1
-#endif
-
-#if PLATFORM(WX)
-#if !CPU(PPC)
-#if !defined(ENABLE_ASSEMBLER)
-#define ENABLE_ASSEMBLER 1
-#endif
-#define ENABLE_JIT 1
-#endif
-#define ENABLE_GLOBAL_FASTMALLOC_NEW 0
-#define ENABLE_LLINT 0
-#if OS(DARWIN)
-#define WTF_USE_CF 1
-#endif
-#endif
+#endif /* OS(DARWIN) */
 
 #if !defined(HAVE_ACCESSIBILITY)
-#if PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || PLATFORM(GTK) || (PLATFORM(CHROMIUM) && !OS(ANDROID))
+#if !OS(ANDROID)
 #define HAVE_ACCESSIBILITY 1
 #endif
 #endif /* !defined(HAVE_ACCESSIBILITY) */
@@ -606,7 +493,7 @@
 #define WTF_USE_PTHREADS 1
 #endif /* OS(UNIX) */
 
-#if OS(UNIX) && !OS(ANDROID) && !OS(QNX)
+#if OS(UNIX) && !OS(ANDROID)
 #define HAVE_LANGINFO_H 1
 #endif
 
@@ -638,35 +525,21 @@
 #define HAVE_SYS_TIMEB_H 1
 #define WTF_USE_ACCELERATE 1
 
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
-
 #define HAVE_DISPATCH_H 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
 
-#if !PLATFORM(IOS)
 #define HAVE_HOSTED_CORE_ANIMATION 1
 #define HAVE_MADV_FREE_REUSE 1
-#endif /* !PLATFORM(IOS) */
-
-#endif /* PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060 */
 
 #endif /* OS(DARWIN) */
 
-#if OS(WINDOWS) && !OS(WINCE)
+#if OS(WINDOWS)
 #define HAVE_SYS_TIMEB_H 1
 #define HAVE_ALIGNED_MALLOC 1
 #define HAVE_ISDEBUGGERPRESENT 1
-#endif
-
-#if OS(WINDOWS)
 #define HAVE_VIRTUALALLOC 1
 #define WTF_USE_OS_RANDOMNESS 1
-#endif
-
-#if OS(QNX)
-#define HAVE_MADV_FREE_REUSE 1
-#define HAVE_MADV_FREE 1
 #endif
 
 /* ENABLE macro defaults */
@@ -675,14 +548,6 @@
 
 /* Include feature macros */
 #include <wtf/FeatureDefines.h>
-
-#if PLATFORM(QT)
-/* We must not customize the global operator new and delete for the Qt port. */
-#define ENABLE_GLOBAL_FASTMALLOC_NEW 0
-#if !OS(UNIX)
-#define USE_SYSTEM_MALLOC 1
-#endif
-#endif
 
 #if !defined(ENABLE_GLOBAL_FASTMALLOC_NEW)
 #define ENABLE_GLOBAL_FASTMALLOC_NEW 1
@@ -732,168 +597,6 @@
 #define ENABLE_JIT 1
 #endif
 
-/* If possible, try to enable a disassembler. This is optional. We proceed in two
-   steps: first we try to find some disassembler that we can use, and then we
-   decide if the high-level disassembler API can be enabled. */
-#if !defined(WTF_USE_UDIS86) && ENABLE(JIT) && (PLATFORM(MAC) || (PLATFORM(QT) && OS(LINUX))) \
-    && (CPU(X86) || CPU(X86_64))
-#define WTF_USE_UDIS86 1
-#endif
-
-#if !defined(ENABLE_DISASSEMBLER) && USE(UDIS86)
-#define ENABLE_DISASSEMBLER 1
-#endif
-
-/* On the GTK+ port we take an extra precaution for LLINT support:
- * We disable it on x86 builds if the build target doesn't support SSE2
- * instructions (LLINT requires SSE2 on this platform). */
-#if !defined(ENABLE_LLINT) && PLATFORM(GTK) && CPU(X86) && COMPILER(GCC) \
-    && !defined(__SSE2__)
-#define ENABLE_LLINT 0
-#endif
-
-/* On some of the platforms where we have a JIT, we want to also have the 
-   low-level interpreter. */
-#if !defined(ENABLE_LLINT) \
-    && ENABLE(JIT) \
-    && (OS(DARWIN) || OS(LINUX)) \
-    && (PLATFORM(MAC) || PLATFORM(IOS) || PLATFORM(GTK) || PLATFORM(QT)) \
-    && (CPU(X86) || CPU(X86_64) || CPU(ARM_THUMB2) || CPU(ARM_TRADITIONAL) || CPU(MIPS))
-#define ENABLE_LLINT 1
-#endif
-
-#if !defined(ENABLE_DFG_JIT) && ENABLE(JIT) && !COMPILER(MSVC)
-/* Enable the DFG JIT on X86 and X86_64.  Only tested on Mac and GNU/Linux. */
-#if (CPU(X86) || CPU(X86_64)) && (OS(DARWIN) || OS(LINUX))
-#define ENABLE_DFG_JIT 1
-#endif
-/* Enable the DFG JIT on ARMv7.  Only tested on iOS and Qt Linux. */
-#if CPU(ARM_THUMB2) && (PLATFORM(IOS) || PLATFORM(BLACKBERRY) || PLATFORM(QT))
-#define ENABLE_DFG_JIT 1
-#endif
-/* Enable the DFG JIT on ARM. */
-#if CPU(ARM_TRADITIONAL)
-#define ENABLE_DFG_JIT 1
-#endif
-/* Enable the DFG JIT on MIPS. */
-#if CPU(MIPS)
-#define ENABLE_DFG_JIT 1
-#endif
-#endif
-
-/* If the jit is not available, enable the LLInt C Loop: */
-#if !ENABLE(JIT)
-#undef ENABLE_LLINT        /* Undef so that we can redefine it. */
-#undef ENABLE_LLINT_C_LOOP /* Undef so that we can redefine it. */
-#undef ENABLE_DFG_JIT      /* Undef so that we can redefine it. */
-#define ENABLE_LLINT 1
-#define ENABLE_LLINT_C_LOOP 1
-#define ENABLE_DFG_JIT 0
-#endif
-
-/* Do a sanity check to make sure that we at least have one execution engine in
-   use: */
-#if !(ENABLE(JIT) || ENABLE(LLINT))
-#error You have to have at least one execution model enabled to build JSC
-#endif
-
-/* Profiling of types and values used by JIT code. DFG_JIT depends on it, but you
-   can enable it manually with DFG turned off if you want to use it as a standalone
-   profiler. In that case, you probably want to also enable VERBOSE_VALUE_PROFILE
-   below. */
-#if !defined(ENABLE_VALUE_PROFILER) && ENABLE(DFG_JIT)
-#define ENABLE_VALUE_PROFILER 1
-#endif
-
-#if !defined(ENABLE_VERBOSE_VALUE_PROFILE) && ENABLE(VALUE_PROFILER)
-#define ENABLE_VERBOSE_VALUE_PROFILE 0
-#endif
-
-#if !defined(ENABLE_SIMPLE_HEAP_PROFILING)
-#define ENABLE_SIMPLE_HEAP_PROFILING 0
-#endif
-
-/* Counts uses of write barriers using sampling counters. Be sure to also
-   set ENABLE_SAMPLING_COUNTERS to 1. */
-#if !defined(ENABLE_WRITE_BARRIER_PROFILING)
-#define ENABLE_WRITE_BARRIER_PROFILING 0
-#endif
-
-/* Enable verification that that register allocations are not made within generated control flow.
-   Turned on for debug builds. */
-#if !defined(ENABLE_DFG_REGISTER_ALLOCATION_VALIDATION) && ENABLE(DFG_JIT)
-#if !defined(NDEBUG)
-#define ENABLE_DFG_REGISTER_ALLOCATION_VALIDATION 1
-#else
-#define ENABLE_DFG_REGISTER_ALLOCATION_VALIDATION 0
-#endif
-#endif
-
-/* Configure the JIT */
-#if CPU(X86) && COMPILER(MSVC)
-#define JSC_HOST_CALL __fastcall
-#elif CPU(X86) && COMPILER(GCC)
-#define JSC_HOST_CALL __attribute__ ((fastcall))
-#else
-#define JSC_HOST_CALL
-#endif
-
-/* Configure the interpreter */
-#if COMPILER(GCC) || (COMPILER(RVCT) && defined(__GNUC__))
-#define HAVE_COMPUTED_GOTO 1
-#endif
-
-/* Determine if we need to enable Computed Goto Opcodes or not: */
-#if HAVE(COMPUTED_GOTO) && ENABLE(LLINT)
-#define ENABLE_COMPUTED_GOTO_OPCODES 1
-#endif
-
-/* Regular Expression Tracing - Set to 1 to trace RegExp's in jsc.  Results dumped at exit */
-#define ENABLE_REGEXP_TRACING 0
-
-/* Yet Another Regex Runtime - turned on by default for JIT enabled ports. */
-#if !defined(ENABLE_YARR_JIT) && (ENABLE(JIT) || ENABLE(LLINT_C_LOOP)) && !PLATFORM(CHROMIUM) && !(OS(QNX) && PLATFORM(QT))
-#define ENABLE_YARR_JIT 1
-
-/* Setting this flag compares JIT results with interpreter results. */
-#define ENABLE_YARR_JIT_DEBUG 0
-#endif
-
-/* If either the JIT or the RegExp JIT is enabled, then the Assembler must be
-   enabled as well: */
-#if ENABLE(JIT) || ENABLE(YARR_JIT)
-#if defined(ENABLE_ASSEMBLER) && !ENABLE_ASSEMBLER
-#error "Cannot enable the JIT or RegExp JIT without enabling the Assembler"
-#else
-#undef ENABLE_ASSEMBLER
-#define ENABLE_ASSEMBLER 1
-#endif
-#endif
-
-/* Pick which allocator to use; we only need an executable allocator if the assembler is compiled in.
-   On x86-64 we use a single fixed mmap, on other platforms we mmap on demand. */
-#if ENABLE(ASSEMBLER)
-#if CPU(X86_64) && !OS(WINDOWS) || PLATFORM(IOS)
-#define ENABLE_EXECUTABLE_ALLOCATOR_FIXED 1
-#else
-#define ENABLE_EXECUTABLE_ALLOCATOR_DEMAND 1
-#endif
-#endif
-
-/* Use the QXmlStreamReader implementation for XMLDocumentParser */
-/* Use the QXmlQuery implementation for XSLTProcessor */
-#if PLATFORM(QT)
-#if !USE(LIBXML2)
-#define WTF_USE_QXMLSTREAM 1
-#define WTF_USE_QXMLQUERY 1
-#endif
-#endif
-
-/* Accelerated compositing */
-#if PLATFORM(MAC) || PLATFORM(IOS) || PLATFORM(QT) || (PLATFORM(WIN) && !OS(WINCE))
-#define WTF_USE_ACCELERATED_COMPOSITING 1
-#endif
-
 /* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
    https://bugs.webkit.org/show_bug.cgi?id=112830 */
 #if USE(CG)
@@ -902,35 +605,6 @@
 
 #if ENABLE(WEBGL) && !defined(WTF_USE_3D_GRAPHICS)
 #define WTF_USE_3D_GRAPHICS 1
-#endif
-
-/* Qt always uses Texture Mapper */
-#if PLATFORM(QT)
-#define WTF_USE_TEXTURE_MAPPER 1
-#endif
-
-#if USE(TEXTURE_MAPPER) && USE(3D_GRAPHICS) && !defined(WTF_USE_TEXTURE_MAPPER_GL)
-#define WTF_USE_TEXTURE_MAPPER_GL 1
-#endif
-
-/* Compositing on the UI-process in WebKit2 */
-#if USE(3D_GRAPHICS) && PLATFORM(QT)
-#define WTF_USE_COORDINATED_GRAPHICS 1
-#endif
-
-#if PLATFORM(MAC) || PLATFORM(IOS)
-#define WTF_USE_PROTECTION_SPACE_AUTH_CALLBACK 1
-#endif
-
-/* Set up a define for a common error that is intended to cause a build error -- thus the space after Error. */
-#define WTF_PLATFORM_CFNETWORK Error USE_macro_should_be_used_with_CFNETWORK
-
-#if PLATFORM(WIN)
-#define WTF_USE_CROSS_PLATFORM_CONTEXT_MENUS 1
-#endif
-
-#if PLATFORM(MAC) && HAVE(ACCESSIBILITY)
-#define WTF_USE_ACCESSIBILITY_CONTEXT_MENUS 1
 #endif
 
 #if CPU(ARM_THUMB2)
@@ -982,56 +656,12 @@
 #define ENABLE_GC_VALIDATION 1
 #endif
 
-#if PLATFORM(MAC) && !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-#define WTF_USE_AVFOUNDATION 1
-#endif
-
-#if (PLATFORM(IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000) || (PLATFORM(MAC) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080)
-#define WTF_USE_COREMEDIA 1
-#endif
-
-#if PLATFORM(MAC) && !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-#define HAVE_AVFOUNDATION_TEXT_TRACK_SUPPORT 1
-#endif
-
-#if PLATFORM(MAC) && !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-#define HAVE_MEDIA_ACCESSIBILITY_FRAMEWORK 1
-#endif
-
-#if PLATFORM(MAC) || PLATFORM(GTK) || (PLATFORM(WIN) && !OS(WINCE)) || PLATFORM(BLACKBERRY)
-#define WTF_USE_REQUEST_ANIMATION_FRAME_TIMER 1
-#endif
-
-#if PLATFORM(MAC) || PLATFORM(BLACKBERRY)
-#define WTF_USE_REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR 1
-#endif
-
-#if PLATFORM(MAC) && (PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)
-#define HAVE_INVERTED_WHEEL_EVENTS 1
-#endif
-
-#if PLATFORM(MAC)
-#define WTF_USE_COREAUDIO 1
-#endif
-
-#if !defined(WTF_USE_V8) && PLATFORM(CHROMIUM)
+#if !defined(WTF_USE_V8)
 #define WTF_USE_V8 1
 #endif
 
-/* Not using V8 implies using JSC and vice versa */
-#if !USE(V8)
-#define WTF_USE_JSC 1
-#endif
-
-#if !defined(WTF_USE_ZLIB) && !PLATFORM(QT)
+#if !defined(WTF_USE_ZLIB)
 #define WTF_USE_ZLIB 1
-#endif
-
-#if PLATFORM(QT)
-#include <qglobal.h>
-#if defined(QT_OPENGL_ES_2) && !defined(WTF_USE_OPENGL_ES_2)
-#define WTF_USE_OPENGL_ES_2 1
-#endif
 #endif
 
 #endif /* WTF_Platform_h */
