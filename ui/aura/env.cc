@@ -82,7 +82,7 @@ void Env::RootWindowActivated(RootWindow* root_window) {
 // Env, private:
 
 void Env::Init() {
-#if !defined(USE_X11)
+#if !defined(USE_X11) && !defined(USE_MESSAGEPUMP_LINUX)
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)

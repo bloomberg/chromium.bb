@@ -26,11 +26,17 @@
 
             # Whether or not we are building the Ash shell.
             'use_ash%': 0,
+
+            # Whether or not we are using the embedded messagepump.
+            'use_messagepump_linux%': 0,
           },
           # Copy conditionally-set variables out one scope.
           'chromeos%': '<(chromeos)',
           'use_aura%': '<(use_aura)',
           'use_ash%': '<(use_ash)',
+
+          # Whether or not we are using the /dev/input/event* message pump.
+          'use_messagepump_linux%': '<(use_messagepump_linux)',
 
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
@@ -91,6 +97,7 @@
         'chromeos%': '<(chromeos)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
+        'use_messagepump_linux%': '<(use_messagepump_linux)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -171,6 +178,7 @@
       'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
+      'use_messagepump_linux%': '<(use_messagepump_linux)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -423,13 +431,18 @@
           'use_nss%': 0,
         }],
 
-        # Flags to use X11 on non-Mac POSIX platforms
-        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
-          'use_glib%': 0,
+        # Flags to use X11 on non-Mac POSIX platforms.
+        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or use_messagepump_linux==1', {
           'use_x11%': 0,
         }, {
-          'use_glib%': 1,
           'use_x11%': 1,
+        }],
+
+        # Flags to use glib on non-Mac POSIX platforms.
+        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
+          'use_glib%': 0,
+        }, {
+          'use_glib%': 1,
         }],
 
         # We always use skia text rendering in Aura on Windows, since GDI
@@ -675,6 +688,7 @@
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
     'use_glib%': '<(use_glib)',
+    'use_messagepump_linux%': '<(use_messagepump_linux)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
@@ -1746,6 +1760,9 @@
       }],
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
+      }],
+      ['use_messagepump_linux==1', {
+        'defines': ['USE_MESSAGEPUMP_LINUX=1'],
       }],
       ['use_default_render_theme==1', {
         'defines': ['USE_DEFAULT_RENDER_THEME=1'],

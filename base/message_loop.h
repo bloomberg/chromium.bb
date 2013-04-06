@@ -34,6 +34,8 @@
 
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
 #include "base/message_pump_aurax11.h"
+#elif defined(USE_MESSAGEPUMP_LINUX) && !defined(OS_NACL)
+#include "base/message_pump_linux.h"
 #else
 #include "base/message_pump_gtk.h"
 #endif
@@ -573,6 +575,7 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   // events to the Java message loop.
   void Start();
 #elif !defined(OS_MACOSX)
+
   // Please see message_pump_win/message_pump_glib for definitions of these
   // methods.
   void AddObserver(Observer* observer);
@@ -588,6 +591,9 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  protected:
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
   friend class base::MessagePumpAuraX11;
+#endif
+#if defined(USE_MESSAGEPUMP_LINUX) && !defined(OS_NACL)
+  friend class base::MessagePumpLinux;
 #endif
 
   // TODO(rvargas): Make this platform independent.

@@ -741,6 +741,11 @@
             'message_pump_glib_unittest.cc',
           ]
         }],
+        ['use_messagepump_linux == 1', {
+          'sources!': [
+            'message_pump_glib_unittest.cc',
+          ]
+        }],
         # This is needed to trigger the dll copy step on windows.
         # TODO(mark): This should not be necessary.
         ['OS == "win"', {

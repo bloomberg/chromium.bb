@@ -35,13 +35,13 @@ class MockDispatcher : public MessageLoop::Dispatcher {
 
   int num_key_events_dispatched() { return num_key_events_dispatched_; }
 
-#if defined(OS_WIN) || defined(USE_X11)
+#if defined(OS_WIN) || defined(USE_X11) || defined(USE_MESSAGEPUMP_LINUX)
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
     return !ui::IsNoopEvent(event);
   }
-#endif  //  defined(OS_WIN) || defined(USE_X11)
+#endif
 
  private:
   int num_key_events_dispatched_;
