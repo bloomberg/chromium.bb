@@ -10,6 +10,7 @@
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
 #include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
+#include "chrome/renderer/pepper/pepper_pdf_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -92,6 +93,16 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
               host_, instance, params.pp_resource(), description, charset));
         }
         break;
+      }
+    }
+  }
+
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+      ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
+      case PpapiHostMsg_PDF_Create::ID: {
+        return scoped_ptr<ResourceHost>(new PepperPDFHost(
+            host_, instance, params.pp_resource()));
       }
     }
   }

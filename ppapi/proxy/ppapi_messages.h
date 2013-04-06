@@ -41,6 +41,7 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
@@ -85,6 +86,8 @@ IPC_ENUM_TRAITS(PP_PrintOrientation_Dev)
 IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
 IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS(PP_PrivateFontCharset)
+IPC_ENUM_TRAITS(PP_ResourceImage)
+IPC_ENUM_TRAITS(PP_ResourceString)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_TrueTypeFontFamily_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
@@ -1130,21 +1133,6 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Stop,
                      uint32 /* plugin_dispatcher_id */)
 
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-// PPB_PDF
-IPC_SYNC_MESSAGE_ROUTED3_1(
-    PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
-    PP_Instance /* instance */,
-    ppapi::proxy::SerializedFontDescription /* description */,
-    int32_t /* charset */,
-    ppapi::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(
-    PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile,
-    ppapi::HostResource /* font_file */,
-    uint32_t /* table */,
-    std::string /* result */)
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-
 // PPB_Testing.
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBTesting_ReadImageData,
@@ -1753,7 +1741,7 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Create)
 
 // Requests the localized string for the given ID.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_GetLocalizedString,
-                     int /* string_id */)
+                     PP_ResourceString /* string_id */)
 // Reply for PpapiHostMsg_PDF_GetLocalizedString containing the localized
 // string.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_PDF_GetLocalizedStringReply,
@@ -1784,15 +1772,18 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
 
 // Requests a resource image for the plugin at a particular scale.
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PDF_GetResourceImage,
-                     int /* image_id */,
+                     PP_ResourceImage /* image_id */,
                      float /* scale */)
 // Reply for PpapiHostMsg_PDF_GetResourceImage containing the host resource id
 // of the image and a string (representing a PP_ImageDataDesc) containing the
 // properties of the image. Also carries a shared memory handle pointing to the
-// memory containg the image.
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
+// memory containg the image. On linux, the handle is transmitted in this
+// message as |fd|. This is due to the unfortunate way that ImageHandles are
+// defined for use with PPB_ImageData.
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_PDF_GetResourceImageReply,
                      ppapi::HostResource /* resource_id */,
-                     std::string /* image_data_desc */)
+                     std::string /* image_data_desc */,
+                     int /* fd */)
 
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)

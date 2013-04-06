@@ -164,8 +164,9 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
 
   HostResource resource;
   std::string image_data_desc;
+  int fd;
   if (!UnpackMessage<PpapiPluginMsg_PDF_GetResourceImageReply>(
-      reply, &resource, &image_data_desc)) {
+      reply, &resource, &image_data_desc, &fd)) {
     return 0;
   }
 
@@ -176,19 +177,18 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
   PP_ImageDataDesc desc;
   memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
 
-  base::SharedMemoryHandle handle;
-  if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
-    return 0;
-  // We always succeed after this point (on non-android platforms, so we don't
-  // have to worry about leaking |handle|.
-
 #if defined(OS_ANDROID)
   // This is compiled into android for tests only.
   return 0;
 #elif defined(OS_WIN) || defined(OS_MACOSX)
+  base::SharedMemoryHandle handle;
+  if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
+    return 0;
   return (new ImageData(resource, desc, handle))->GetReference();
+#elif defined(OS_LINUX)
+  return (new ImageData(resource, desc, fd))->GetReference();
 #else
-  return (new ImageData(resource, desc, handle.fd))->GetReference();
+#error Not implemented.
 #endif
 }
 

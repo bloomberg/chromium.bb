@@ -117,6 +117,7 @@ struct PPPDecryptor_Buffer {
   base::SharedMemoryHandle handle;
 };
 
+// TODO(raymes): Make ImageHandle compatible with SerializedHandle.
 #if defined(OS_WIN)
 typedef HANDLE ImageHandle;
 #elif defined(OS_MACOSX) || defined(OS_ANDROID)

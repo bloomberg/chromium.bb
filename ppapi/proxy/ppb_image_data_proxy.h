@@ -17,6 +17,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/resource.h"
@@ -31,9 +32,10 @@ class SerializedHandle;
 
 // The proxied image data resource. Unlike most resources, this needs to be
 // public in the header since a number of other resources need to access it.
-class ImageData : public ppapi::Resource,
-                  public ppapi::thunk::PPB_ImageData_API,
-                  public ppapi::PPB_ImageData_Shared {
+class PPAPI_PROXY_EXPORT ImageData
+    : public ppapi::Resource,
+      public NON_EXPORTED_BASE(ppapi::thunk::PPB_ImageData_API),
+      public ppapi::PPB_ImageData_Shared {
  public:
 #if !defined(OS_NACL)
   ImageData(const ppapi::HostResource& resource,

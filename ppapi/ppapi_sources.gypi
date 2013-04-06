@@ -495,6 +495,8 @@
       'tests/test_flash_message_loop.h',
       'tests/test_net_address_private.cc',
       'tests/test_net_address_private.h',
+      'tests/test_pdf.cc',
+      'tests/test_pdf.h',
       'tests/test_resource_array.cc',
       'tests/test_resource_array.h',
       'tests/test_struct_sizes.c',
