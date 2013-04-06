@@ -1457,6 +1457,7 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'decoder_func': 'DoFinish',
+    'defer_reads': True,
   },
   'Flush': {
     'impl_func': False,

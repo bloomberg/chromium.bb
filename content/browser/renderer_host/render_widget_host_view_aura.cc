@@ -771,6 +771,14 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
 
+// On Windows while resizing, the the resize locks makes us mis-paint a white
+// vertical strip (including the non-client area) if the content composition is
+// lagging the UI composition. So here we disable the throttling so that the UI
+// bits can draw ahead of the content thereby reducing the amount of whiteout.
+// Because this causes the content to be drawn at wrong sizes while resizing
+// we compensate by blocking the UI thread in Compositor::Draw() by issuing a
+// FinishAllRendering() if we are resizing.
+#if !defined (OS_WIN)
       bool defer_compositor_lock =
          can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
          can_lock_compositor_ == NO_PENDING_COMMIT;
@@ -780,6 +788,7 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 
       resize_locks_.push_back(make_linked_ptr(
           new ResizeLock(root_window, rect.size(), defer_compositor_lock)));
+#endif
     }
   }
   window_->SetBounds(rect);

@@ -359,6 +359,8 @@ class COMPOSITOR_EXPORT Compositor
   int last_started_frame_;
   int last_ended_frame_;
 
+  bool next_draw_is_resize_;
+
   bool disable_schedule_composite_;
 
   CompositorLock* compositor_lock_;

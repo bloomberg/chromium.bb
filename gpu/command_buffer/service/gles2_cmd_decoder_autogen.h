@@ -739,6 +739,8 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
 
 error::Error GLES2DecoderImpl::HandleFinish(
     uint32 immediate_data_size, const gles2::cmds::Finish& c) {
+  if (ShouldDeferReads())
+    return error::kDeferCommandUntilLater;
   DoFinish();
   return error::kNoError;
 }
