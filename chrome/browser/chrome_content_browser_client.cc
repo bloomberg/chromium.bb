@@ -16,6 +16,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -568,7 +569,7 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   if (site.SchemeIs(chrome::kGuestScheme))
     partition_id = site.spec();
 
-  DCHECK(IsValidStoragePartitionId(browser_context,partition_id));
+  DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
   return partition_id;
 }
 
@@ -1725,6 +1726,13 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     if (extension && !extensions::BackgroundInfo::AllowJSAccess(extension))
       *no_javascript_access = true;
   }
+
+  // No new browser window (popup or tab) in app mode.
+  if (container_type == WINDOW_CONTAINER_TYPE_NORMAL &&
+      chrome::IsRunningInForcedAppMode()) {
+    return false;
+  }
+
   return true;
 }
 
