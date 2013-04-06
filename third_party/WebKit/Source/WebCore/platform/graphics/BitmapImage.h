@@ -105,7 +105,7 @@ class BitmapImage : public Image {
     friend class GeneratorGeneratedImage;
     friend class GraphicsContext;
 public:
-    static PassRefPtr<BitmapImage> create(NativeImagePtr nativeImage, ImageObserver* observer = 0)
+    static PassRefPtr<BitmapImage> create(PassNativeImagePtr nativeImage, ImageObserver* observer = 0)
     {
         return adoptRef(new BitmapImage(nativeImage, observer));
     }
@@ -159,7 +159,7 @@ public:
     virtual GdkPixbuf* getGdkPixbuf();
 #endif
 
-    virtual NativeImagePtr nativeImageForCurrentFrame();
+    virtual PassNativeImagePtr nativeImageForCurrentFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
 
     ImageOrientation currentFrameOrientation();
@@ -180,7 +180,7 @@ protected:
       Certain     // The repetition count is known to be correct.
     };
 
-    BitmapImage(NativeImagePtr, ImageObserver* = 0);
+    BitmapImage(PassNativeImagePtr, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
 #if PLATFORM(WIN)
@@ -193,7 +193,7 @@ protected:
 
     size_t currentFrame() const { return m_currentFrame; }
     virtual size_t frameCount();
-    NativeImagePtr frameAtIndex(size_t);
+    PassNativeImagePtr frameAtIndex(size_t);
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);
     bool frameHasAlphaAtIndex(size_t);

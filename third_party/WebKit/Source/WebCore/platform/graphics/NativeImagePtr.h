@@ -45,13 +45,16 @@ class MemoryObjectInfo;
 
 namespace WebCore {
 
+// FIXME: NativeImagePtr and PassNativeImagePtr should be smart
+// pointers (see SVGImage::nativeImageForCurrentFrame()).
 #if USE(CG)
 typedef CGImageRef NativeImagePtr;
 #elif PLATFORM(OPENVG)
 class TiledImageOpenVG;
 typedef TiledImageOpenVG* NativeImagePtr;
 #elif USE(SKIA)
-typedef WebCore::NativeImageSkia* NativeImagePtr;
+typedef RefPtr<NativeImageSkia> NativeImagePtr;
+typedef PassRefPtr<NativeImageSkia> PassNativeImagePtr;
 void reportMemoryUsage(const NativeImageSkia*, WTF::MemoryObjectInfo*);
 #elif OS(WINCE)
 typedef RefPtr<SharedBitmap> NativeImagePtr;

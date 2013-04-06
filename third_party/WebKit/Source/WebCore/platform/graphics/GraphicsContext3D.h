@@ -816,8 +816,8 @@ public:
         // needs to lock the resources or relevant data if needed and returns true upon success
         bool extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
-        OwnPtr<NativeImageSkia> m_nativeImage;
-        NativeImageSkia* m_skiaImage;
+        RefPtr<NativeImageSkia> m_nativeImage;
+        RefPtr<NativeImageSkia> m_skiaImage;
         Image* m_image;
         ImageHtmlDomSource m_imageHtmlDomSource;
         bool m_extractSucceeded;

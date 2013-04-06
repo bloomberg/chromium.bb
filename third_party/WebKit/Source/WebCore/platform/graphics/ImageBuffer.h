@@ -131,9 +131,6 @@ namespace WebCore {
         void reportMemoryUsage(MemoryObjectInfo*) const;
 
     private:
-#if USE(CG)
-        NativeImagePtr copyNativeImage(BackingStoreCopy = CopyBackingStore) const;
-#endif
         void clip(GraphicsContext*, const FloatRect&) const;
 
         void draw(GraphicsContext*, ColorSpace, const FloatRect& destRect, const FloatRect& srcRect = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
