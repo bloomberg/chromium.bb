@@ -16,6 +16,7 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/win/hwnd_util.h"
 
 namespace message_center {
 
@@ -45,6 +46,14 @@ NotificationBubbleWrapperWin::NotificationBubbleWrapperWin(
       tray_->GetBubbleWindowContainer(), NULL, this, &init_params);
 
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
+
+  // Remove the bubbles for Notifications and Notification Center from taskbar
+  // and alt-tab rotation.
+  HWND hwnd = views::HWNDForWidget(bubble_widget_);
+  LONG_PTR ex_styles = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+  ex_styles |= WS_EX_TOOLWINDOW;
+  ::SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
+
   bubble_widget_->AddObserver(this);
   bubble_widget_->StackAtTop();
   bubble_widget_->SetAlwaysOnTop(true);
