@@ -12,6 +12,7 @@
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
     'libpeer_target_type%': 'static_library',
+    'libpeer_allocator_shim%': 0,
   },
   'target_defaults': {
     'defines': [
@@ -743,6 +744,21 @@
             '<(libjingle_source)/talk/session/tunnel/tunnelsessionclient.h',
           ],
           'conditions': [
+            ['libpeer_allocator_shim==1 and '
+             'libpeer_target_type=="shared_library" and '
+             'component!="shared_library"', {
+              'sources': [
+                'overrides/allocator_shim/allocator_stub.cc',
+              ],
+              'sources/': [
+                # |allocator_stub.cc| will include this file directly to ensure
+                # that the stub code gets included with whatever depends on
+                # peerconnectionfactory, also includes the stub code.  If we
+                # don't do that, the linker is free to discard the stub code
+                # since it by itself does not have any dependencies.
+                ['exclude', '<(libjingle_source)/talk/app/webrtc/peerconnectionfactory.cc'],
+              ],
+            }],
             ['enabled_libjingle_device_manager==1', {
               'sources!': [
                 '<(libjingle_source)/talk/media/devices/dummydevicemanager.cc',
@@ -845,6 +861,13 @@
             '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle_webrtc',
           ],
           'conditions': [
+            ['libpeer_allocator_shim==1 and '
+             'libpeer_target_type=="shared_library" and '
+             'component!="shared_library"', {
+              'sources': [
+                'overrides/allocator_shim/allocator_proxy.cc',
+              ],
+            }],
             ['"<(libpeer_target_type)"=="shared_library"', {
               # Used to control symbol export/import.
               'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
