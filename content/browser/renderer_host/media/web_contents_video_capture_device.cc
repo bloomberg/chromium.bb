@@ -517,8 +517,9 @@ void CaptureOracle::DidCaptureFrame(
     bool success) {
   base::AutoLock guard(lock_);
 
-  TRACE_EVENT_ASYNC_END1("mirroring", "Capture", frame.get(),
-                         "success", success);
+  TRACE_EVENT_ASYNC_END2("mirroring", "Capture", frame.get(),
+                         "success", success,
+                         "timestamp", timestamp.ToInternalValue());
 
   if (!consumer_ || !is_started_)
     return;  // Capture is stopped.
