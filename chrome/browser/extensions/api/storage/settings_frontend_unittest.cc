@@ -260,8 +260,17 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
       ValueStore::DEFAULTS, "WontError", *megabyte)->HasError());
 }
 
+#if defined(OS_WIN)
+// See: http://crbug.com/227296
+#define MAYBE_UnlimitedStorageForLocalButNotSync \
+    DISABLED_UnlimitedStorageForLocalButNotSync
+#else
+#define MAYBE_UnlimitedStorageForLocalButNotSync \
+    UnlimitedStorageForLocalButNotSync
+#endif
+
 TEST_F(ExtensionSettingsFrontendTest,
-       UnlimitedStorageForLocalButNotSync) {
+       MAYBE_UnlimitedStorageForLocalButNotSync) {
   const std::string id = "ext";
   std::set<std::string> permissions;
   permissions.insert("unlimitedStorage");
