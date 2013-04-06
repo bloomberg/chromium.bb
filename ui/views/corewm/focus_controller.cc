@@ -327,7 +327,8 @@ void FocusController::WindowLostFocusFromDispositionChange(
   if (window == active_window_) {
     aura::Window* next_activatable = rules_->GetNextActivatableWindow(window);
     SetActiveWindow(next_activatable);
-    SetFocusedWindow(next_activatable);
+    if (!(active_window_ && active_window_->Contains(focused_window_)))
+      SetFocusedWindow(next_activatable);
   } else if (window->Contains(focused_window_)) {
     // Active window isn't changing, but focused window might be.
     SetFocusedWindow(rules_->GetFocusableWindow(next));

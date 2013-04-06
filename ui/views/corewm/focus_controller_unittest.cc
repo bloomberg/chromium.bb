@@ -277,6 +277,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void FocusRulesOverride() = 0;
   virtual void ActivationRulesOverride() = 0;
   virtual void ShiftFocusOnActivation() {}
+  virtual void ShiftFocusOnActivationDueToHide() {}
   virtual void NoShiftActiveOnActivation() {}
   virtual void NoFocusChangeOnClickOnCaptureWindow() {}
 
@@ -500,6 +501,32 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(2, GetFocusedWindowId());
     ActivateWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
+  }
+  virtual void ShiftFocusOnActivationDueToHide() {
+    // Similar to ShiftFocusOnActivation except the activation change is
+    // triggered by hiding the active window.
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    // Removes window 3 as candidate for next activatable window.
+    root_window()->GetChildById(3)->Hide();
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    aura::Window* target = root_window()->GetChildById(2);
+    aura::client::ActivationClient* client =
+        aura::client::GetActivationClient(root_window());
+
+    scoped_ptr<FocusShiftingActivationObserver> observer(
+        new FocusShiftingActivationObserver(target));
+    observer->set_shift_focus_to(target->GetChildById(21));
+    client->AddObserver(observer.get());
+
+    // Hide the active window.
+    root_window()->GetChildById(1)->Hide();
+
+    EXPECT_EQ(21, GetFocusedWindowId());
+
+    client->RemoveObserver(observer.get());
   }
   virtual void NoShiftActiveOnActivation() OVERRIDE {
     // When a window is activated, we need to prevent any change to activation
@@ -911,6 +938,7 @@ TARGET_FOCUS_TESTS(ActivationRulesOverride);
 // - Verifies that attempts to change focus or activation from a focus or
 //   activation change observer are ignored.
 DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivation);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivationDueToHide);
 DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation);
 
 // Clicking on a window which has capture should not result in a focus change.
