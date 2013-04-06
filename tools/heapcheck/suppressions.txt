@@ -1814,3 +1814,18 @@
   fun:chromeos::input_method::Initialize
   fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
 }
+{
+   bug_227271a
+   Heapcheck:Leak
+   ...
+   fun:ScreenshotTaker::ShowNotification
+}
+{
+   bug_227271b
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:base::FilePath::Append
+   fun:base::FilePath::AppendASCII
+   fun:ScreenshotTaker::HandleTakePartialScreenshot
+   fun:ash::test::ScreenshotTakerTest_TakeScreenshot_Test::TestBody
+}
