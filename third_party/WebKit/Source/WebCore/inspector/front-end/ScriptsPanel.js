@@ -1270,17 +1270,17 @@ WebInspector.ScriptsPanel.prototype = {
             var group1 = new WebInspector.SidebarPaneStack();
             group1.show(this.sidebarPaneView.firstElement());
             group1.element.id = "scripts-sidebar-stack-pane";
-            group1.addPane(this.sidebarPanes.watchExpressions);
             group1.addPane(this.sidebarPanes.callstack);
-            group1.addPane(this.sidebarPanes.scopechain);
+            group1.addPane(this.sidebarPanes.jsBreakpoints);
+            group1.addPane(this.sidebarPanes.domBreakpoints);
+            group1.addPane(this.sidebarPanes.xhrBreakpoints);
+            group1.addPane(this.sidebarPanes.eventListenerBreakpoints);
+            group1.addPane(this.sidebarPanes.workerList);
 
             var group2 = new WebInspector.SidebarTabbedPane();
             group2.show(this.sidebarPaneView.secondElement());
-            group2.addPane(this.sidebarPanes.jsBreakpoints);
-            group2.addPane(this.sidebarPanes.domBreakpoints);
-            group2.addPane(this.sidebarPanes.xhrBreakpoints);
-            group2.addPane(this.sidebarPanes.eventListenerBreakpoints);
-            group2.addPane(this.sidebarPanes.workerList);
+            group2.addPane(this.sidebarPanes.scopechain);
+            group2.addPane(this.sidebarPanes.watchExpressions);
 
             this.sidebarPaneView.firstElement().appendChild(this.debugToolbar);
         }
