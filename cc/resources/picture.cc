@@ -65,7 +65,7 @@ void Picture::CloneForDrawing(int num_threads) {
   TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
 
   DCHECK(picture_);
-  scoped_array<SkPicture> clones(new SkPicture[num_threads]);
+  scoped_ptr<SkPicture[]> clones(new SkPicture[num_threads]);
   picture_->clone(&clones[0], num_threads);
 
   clones_.clear();

@@ -2033,7 +2033,7 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
            GL_FRAMEBUFFER_COMPLETE);
   }
 
-  scoped_array<uint8_t> src_pixels(
+  scoped_ptr<uint8_t[]> src_pixels(
       new uint8_t[rect.width() * rect.height() * 4]);
   GLC(context_,
       context_->readPixels(rect.x(),

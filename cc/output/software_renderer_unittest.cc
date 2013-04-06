@@ -112,7 +112,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   list.push_back(root_render_pass.PassAs<RenderPass>());
   renderer()->DrawFrame(&list);
 
-  scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() *
+  scoped_ptr<SkColor[]> pixels(new SkColor[DeviceViewportSize().width() *
       DeviceViewportSize().height()]);
   renderer()->GetFramebufferPixels(pixels.get(), outer_rect);
 
@@ -147,8 +147,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   SkColor yellow = SK_ColorYELLOW;
   SkColor cyan = SK_ColorCYAN;
-  scoped_array<SkColor> yellow_pixels(new SkColor[outer_pixels]);
-  scoped_array<SkColor> cyan_pixels(new SkColor[inner_pixels]);
+  scoped_ptr<SkColor[]> yellow_pixels(new SkColor[outer_pixels]);
+  scoped_ptr<SkColor[]> cyan_pixels(new SkColor[inner_pixels]);
   for (int i = 0; i < outer_pixels; i++)
     yellow_pixels[i] = yellow;
   for (int i = 0; i < inner_pixels; i++)
@@ -198,7 +198,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   list.push_back(root_render_pass.PassAs<RenderPass>());
   renderer()->DrawFrame(&list);
 
-  scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() *
+  scoped_ptr<SkColor[]> pixels(new SkColor[DeviceViewportSize().width() *
       DeviceViewportSize().height()]);
   renderer()->GetFramebufferPixels(pixels.get(), outer_rect);
 
@@ -216,7 +216,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   InitializeRenderer();
 
   RenderPassList list;
-  scoped_array<SkColor> pixels(new SkColor[viewport_pixels]);
+  scoped_ptr<SkColor[]> pixels(new SkColor[viewport_pixels]);
 
   // Draw a fullscreen green quad in a first frame.
   RenderPass::Id root_clear_pass_id(1, 0);

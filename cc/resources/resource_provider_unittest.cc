@@ -55,7 +55,7 @@ struct Texture {
   gfx::Size size;
   WGC3Denum format;
   WGC3Denum filter;
-  scoped_array<uint8_t> data;
+  scoped_ptr<uint8_t[]> data;
 };
 
 // Shared data between multiple ResourceProviderContext. This contains mailbox

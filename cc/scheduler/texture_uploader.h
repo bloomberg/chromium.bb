@@ -112,7 +112,7 @@ class CC_EXPORT TextureUploader {
 
   bool use_map_tex_sub_image_;
   size_t sub_image_size_;
-  scoped_array<uint8> sub_image_;
+  scoped_ptr<uint8[]> sub_image_;
 
   bool use_shallow_flush_;
   size_t num_texture_uploads_since_last_flush_;
