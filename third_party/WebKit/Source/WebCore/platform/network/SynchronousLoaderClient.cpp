@@ -30,10 +30,6 @@
 #include "ResourceHandle.h"
 #include "ResourceRequest.h"
 
-#if USE(CFNETWORK)
-#include <CFNetwork/CFURLConnectionPriv.h>
-#endif
-
 namespace WebCore {
 
 SynchronousLoaderClient::~SynchronousLoaderClient()
@@ -58,22 +54,6 @@ bool SynchronousLoaderClient::shouldUseCredentialStorage(ResourceHandle*)
     return m_allowStoredCredentials;
 }
 
-#if USE(PROTECTION_SPACE_AUTH_CALLBACK)
-bool SynchronousLoaderClient::canAuthenticateAgainstProtectionSpace(ResourceHandle*, const ProtectionSpace&)
-{
-    // FIXME: We should ask FrameLoaderClient. <http://webkit.org/b/65196>
-    return true;
-}
-#endif
-
-#if USE(CFNETWORK)
-void SynchronousLoaderClient::didReceiveAuthenticationChallenge(ResourceHandle* handle, const AuthenticationChallenge& challenge)
-{
-    // FIXME: The user should be asked for credentials, as in async case.
-    CFURLConnectionUseCredential(handle->connection(), 0, challenge.cfURLAuthChallengeRef());
-}
-#endif
-
 void SynchronousLoaderClient::didReceiveResponse(ResourceHandle*, const ResourceResponse& response)
 {
     m_response = response;
@@ -96,13 +76,5 @@ void SynchronousLoaderClient::didFail(ResourceHandle*, const ResourceError& erro
     m_error = error;
     m_isDone = true;
 }
-
-#if USE(CFNETWORK)
-ResourceError SynchronousLoaderClient::platformBadResponseError()
-{
-    RetainPtr<CFErrorRef> cfError(AdoptCF, CFErrorCreate(kCFAllocatorDefault, kCFErrorDomainCFNetwork, kCFURLErrorBadServerResponse, 0));
-    return cfError.get();
-}
-#endif
 
 }

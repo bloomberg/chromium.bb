@@ -61,9 +61,6 @@ private:
     virtual void didReceiveData(ResourceHandle*, const char*, int, int /*encodedDataLength*/) OVERRIDE;
     virtual void didFinishLoading(ResourceHandle*, double /*finishTime*/) OVERRIDE;
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
-#if USE(PROTECTION_SPACE_AUTH_CALLBACK)
-    virtual bool canAuthenticateAgainstProtectionSpace(ResourceHandle*, const ProtectionSpace&) OVERRIDE;
-#endif
 
     ResourceError platformBadResponseError();
 

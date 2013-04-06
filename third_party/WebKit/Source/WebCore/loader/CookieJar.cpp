@@ -30,6 +30,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "NetworkingContext.h"
+#include "NetworkStorageSession.h"
 #include "PlatformCookieJar.h"
 
 #if PLATFORM(BLACKBERRY)

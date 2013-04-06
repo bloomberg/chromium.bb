@@ -20,67 +20,21 @@
 #ifndef NetworkingContext_h
 #define NetworkingContext_h
 
-#include "NetworkStorageSession.h"
 #include <wtf/RefCounted.h>
-#include <wtf/RetainPtr.h>
 
-#if PLATFORM(MAC)
-#include <wtf/SchedulePair.h>
-#endif
-
-#if PLATFORM(CHROMIUM)
 namespace WebKit {
 class WebCookieJar;
 }
-#endif
-
-#if PLATFORM(MAC)
-OBJC_CLASS NSOperationQueue;
-#endif
-
-#if USE(SOUP)
-typedef struct _SoupSession SoupSession;
-#endif
 
 namespace WebCore {
-
-class ResourceError;
-class ResourceRequest;
 
 class NetworkingContext : public RefCounted<NetworkingContext> {
 public:
     virtual ~NetworkingContext() { }
 
     virtual bool isValid() const { return true; }
-
     virtual bool shouldClearReferrerOnHTTPSToHTTPRedirect() const = 0;
-
-#if PLATFORM(CHROMIUM)
-    // FIXME: Wrap WebCookieJar into a NetworkStorageSession to make the code cross-platform.
     virtual WebKit::WebCookieJar* cookieJar() const = 0;
-#endif
-
-#if PLATFORM(MAC)
-    virtual bool needsSiteSpecificQuirks() const = 0;
-    virtual bool localFileContentSniffingEnabled() const = 0; // FIXME: Reconcile with ResourceHandle::forceContentSniffing().
-    virtual SchedulePairHashSet* scheduledRunLoopPairs() const { return 0; }
-    virtual RetainPtr<CFDataRef> sourceApplicationAuditData() const = 0;
-    virtual ResourceError blockedError(const ResourceRequest&) const = 0;
-#endif
-
-#if PLATFORM(MAC) || USE(CFNETWORK) || USE(SOUP)
-    virtual NetworkStorageSession& storageSession() const = 0;
-#endif
-
-#if PLATFORM(WIN)
-    virtual String userAgent() const = 0;
-    virtual String referrer() const = 0;
-    virtual ResourceError blockedError(const ResourceRequest&) const = 0;
-#endif
-
-#if USE(SOUP)
-    virtual uint64_t initiatingPageID() const = 0;
-#endif
 
 protected:
     NetworkingContext() { }

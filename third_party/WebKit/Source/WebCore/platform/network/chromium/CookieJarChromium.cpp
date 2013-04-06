@@ -33,6 +33,7 @@
 
 #include "Cookie.h"
 #include "NetworkingContext.h"
+#include "NetworkStorageSession.h"
 #include <public/Platform.h>
 #include <public/WebCookie.h>
 #include <public/WebCookieJar.h>

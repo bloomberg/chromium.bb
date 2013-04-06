@@ -1691,7 +1691,6 @@
         ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
         ['exclude', 'platform/image-encoders/JPEGImageEncoder\\.(cpp|h)$'],
         ['exclude', 'platform/image-encoders/PNGImageEncoder\\.(cpp|h)$'],
-        ['exclude', 'platform/network/ResourceHandle\\.cpp$'],
         ['exclude', 'platform/sql/SQLiteFileSystem\\.cpp$'],
         ['exclude', 'platform/text/LocaleToScriptMappingICU\\.cpp$'],
         ['exclude', 'platform/text/TextEncodingDetectorNone\\.cpp$'],
