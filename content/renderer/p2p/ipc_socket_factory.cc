@@ -16,6 +16,10 @@ namespace content {
 
 namespace {
 
+// TODO(sergeyu): Try adjusting these parameters to achieve optimal performance.
+const int kMaxPendingPackets = 8;
+const int kWritableSignalThreshold = 0;
+
 // IpcPacketSocket implements talk_base::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
 // on the thread it was created.
@@ -47,6 +51,7 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
   virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
                                        P2PSocketClient* client) OVERRIDE;
+  virtual void OnSendComplete() OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnDataReceived(const net::IPEndPoint& address,
                               const std::vector<char>& data) OVERRIDE;
@@ -83,6 +88,14 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   // Current state of the object.
   InternalState state_;
 
+  // Number which have been sent to the browser, but for which we haven't
+  // received response.
+  int send_packets_pending_;
+
+  // Set to true once EWOULDBLOCK was returned from Send(). Indicates that the
+  // caller expects SignalWritable notification.
+  bool writable_signal_expected_;
+
   // Current error code. Valid when state_ == IS_ERROR.
   int error_;
 
@@ -93,6 +106,8 @@ IpcPacketSocket::IpcPacketSocket()
     : type_(P2P_SOCKET_UDP),
       message_loop_(MessageLoop::current()),
       state_(IS_UNINITIALIZED),
+      send_packets_pending_(0),
+      writable_signal_expected_(false),
       error_(0) {
 }
 
@@ -180,15 +195,22 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
       break;
   }
 
+  if (send_packets_pending_ > kMaxPendingPackets) {
+    writable_signal_expected_ = true;
+    error_ = EWOULDBLOCK;
+    return -1;
+  }
+
   const char* data_char = reinterpret_cast<const char*>(data);
   std::vector<char> data_vector(data_char, data_char + data_size);
 
   net::IPEndPoint address_chrome;
   if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
-    // Just drop the packet if we failed to convert the address.
-    return 0;
+    NOTREACHED();
+    return -1;
   }
 
+  ++send_packets_pending_;
   client_->Send(address_chrome, data_vector);
 
   // Fake successful send. The caller ignores result anyway.
@@ -238,9 +260,6 @@ int IpcPacketSocket::GetOption(talk_base::Socket::Option opt, int* value) {
 
 int IpcPacketSocket::SetOption(talk_base::Socket::Option opt, int value) {
   // We don't support socket options for IPC sockets.
-  //
-  // TODO(sergeyu): Make sure we set proper socket options on the
-  // browser side.
   return -1;
 }
 
@@ -285,6 +304,22 @@ void IpcPacketSocket::OnIncomingTcpConnection(
   }
   socket->InitAcceptedTcp(client, local_address_, remote_address);
   SignalNewConnection(this, socket.release());
+}
+
+void IpcPacketSocket::OnSendComplete() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
+  --send_packets_pending_;
+  DCHECK_GE(send_packets_pending_, 0);
+
+  if (writable_signal_expected_ &&
+      send_packets_pending_ <= kWritableSignalThreshold) {
+    // TODO(sergeyu): Uncomment this line once SignalWritable is added in
+    // talk_base::AsyncPacketSocket.
+    //
+    // SignalWritable(this);
+    writable_signal_expected_ = false;
+  }
 }
 
 void IpcPacketSocket::OnError() {

@@ -63,6 +63,7 @@ bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(P2PMsg_GetHostAddressResult, OnGetHostAddressResult)
     IPC_MESSAGE_HANDLER(P2PMsg_OnSocketCreated, OnSocketCreated)
     IPC_MESSAGE_HANDLER(P2PMsg_OnIncomingTcpConnection, OnIncomingTcpConnection)
+    IPC_MESSAGE_HANDLER(P2PMsg_OnSendComplete, OnSendComplete)
     IPC_MESSAGE_HANDLER(P2PMsg_OnError, OnError)
     IPC_MESSAGE_HANDLER(P2PMsg_OnDataReceived, OnDataReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -149,6 +150,13 @@ void P2PSocketDispatcher::OnIncomingTcpConnection(
   P2PSocketClient* client = GetClient(socket_id);
   if (client) {
     client->OnIncomingTcpConnection(address);
+  }
+}
+
+void P2PSocketDispatcher::OnSendComplete(int socket_id) {
+  P2PSocketClient* client = GetClient(socket_id);
+  if (client) {
+    client->OnSendComplete();
   }
 }
 

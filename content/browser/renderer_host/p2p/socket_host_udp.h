@@ -48,20 +48,20 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   };
 
   void OnError();
-  void DoRead();
-  void DoSend(const PendingPacket& packet);
-  void DidCompleteRead(int result);
 
-  // Callbacks for RecvFrom() and SendTo().
+  void DoRead();
   void OnRecv(int result);
+  void HandleReadResult(int result);
+
+  void DoSend(const PendingPacket& packet);
   void OnSend(int result);
+  void HandleSendResult(int result);
 
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint recv_address_;
 
   std::deque<PendingPacket> send_queue_;
-  int send_queue_bytes_;
   bool send_pending_;
 
   // Set of peer for which we have received STUN binding request or

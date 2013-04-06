@@ -134,6 +134,19 @@ void P2PSocketClient::DeliverOnIncomingTcpConnection(
   }
 }
 
+void P2PSocketClient::OnSendComplete() {
+  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
+
+  delegate_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketClient::DeliverOnSendComplete, this));
+}
+
+void P2PSocketClient::DeliverOnSendComplete() {
+  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  if (delegate_)
+    delegate_->OnSendComplete();
+}
+
 void P2PSocketClient::OnError() {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   state_ = STATE_ERROR;

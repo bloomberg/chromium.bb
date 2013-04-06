@@ -51,6 +51,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHost {
   void OnPacket(std::vector<char>& data);
 
   void DoWrite();
+  void HandleWriteResult(int result);
 
   // Callbacks for Connect(), Read() and Write().
   void OnConnected(int result);
@@ -61,6 +62,8 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHost {
 
   scoped_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
+
+  std::queue<scoped_refptr<net::DrainableIOBuffer> > write_queue_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
   bool connected_;

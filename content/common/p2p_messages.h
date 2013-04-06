@@ -35,6 +35,9 @@ IPC_MESSAGE_CONTROL2(P2PMsg_OnSocketCreated,
                      int /* socket_id */,
                      net::IPEndPoint /* socket_address */)
 
+IPC_MESSAGE_CONTROL1(P2PMsg_OnSendComplete,
+                     int /* socket_id */)
+
 IPC_MESSAGE_CONTROL1(P2PMsg_OnError,
                      int /* socket_id */)
 

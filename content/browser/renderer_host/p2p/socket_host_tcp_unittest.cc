@@ -62,6 +62,11 @@ class P2PSocketHostTcpTest : public testing::Test {
 // Verify that we can send STUN message and that they are formatted
 // properly.
 TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
+  EXPECT_CALL(sender_, Send(
+      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+      .Times(3)
+      .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
+
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_, packet1);
@@ -88,6 +93,11 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
 // Verify that we can receive STUN messages from the socket, and that
 // the messages are parsed properly.
 TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
+  EXPECT_CALL(sender_, Send(
+      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+      .Times(3)
+      .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
+
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_, packet1);
@@ -152,6 +162,9 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   received_data.append(IntToSize(request_packet.size()));
   received_data.append(request_packet.begin(), request_packet.end());
 
+  EXPECT_CALL(sender_, Send(
+      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   EXPECT_CALL(sender_, Send(MatchPacketMessage(request_packet)))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_->AppendInputData(&received_data[0], received_data.size());

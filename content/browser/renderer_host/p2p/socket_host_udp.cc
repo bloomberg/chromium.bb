@@ -42,7 +42,6 @@ P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender, int id)
     : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
-      send_queue_bytes_(0),
       send_pending_(false) {
 }
 
@@ -102,18 +101,18 @@ void P2PSocketHostUdp::DoRead() {
                                           base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       return;
-    DidCompleteRead(result);
+    HandleReadResult(result);
   } while (state_ == STATE_OPEN);
 }
 
 void P2PSocketHostUdp::OnRecv(int result) {
-  DidCompleteRead(result);
+  HandleReadResult(result);
   if (state_ == STATE_OPEN) {
     DoRead();
   }
 }
 
-void P2PSocketHostUdp::DidCompleteRead(int result) {
+void P2PSocketHostUdp::HandleReadResult(int result) {
   DCHECK_EQ(state_, STATE_OPEN);
 
   if (result > 0) {
@@ -159,13 +158,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (send_pending_) {
-    if (send_queue_bytes_ + static_cast<int>(data.size()) >
-        kMaxSendBufferSize) {
-      LOG(WARNING) << "Send buffer is full. Dropping a packet.";
-      return;
-    }
     send_queue_.push_back(PendingPacket(to, data));
-    send_queue_bytes_ += data.size();
   } else {
     PendingPacket packet(to, data);
     DoSend(packet);
@@ -188,12 +181,8 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
 
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
-  } else if (IsTransientError(result)) {
-    LOG(INFO) << "sendto() has failed twice returning a "
-        " transient error. Dropping the packet.";
-  } else if (result < 0) {
-    LOG(ERROR) << "Error when sending data in UDP socket: " << result;
-    OnError();
+  } else {
+    HandleSendResult(result);
   }
 }
 
@@ -203,16 +192,24 @@ void P2PSocketHostUdp::OnSend(int result) {
 
   send_pending_ = false;
 
-  if (result < 0 && !IsTransientError(result)) {
-    OnError();
-    return;
-  }
+  HandleSendResult(result);
 
   // Send next packets if we have them waiting in the buffer.
-  while (!send_queue_.empty() && !send_pending_) {
+  while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
     DoSend(send_queue_.front());
-    send_queue_bytes_ -= send_queue_.front().size;
     send_queue_.pop_front();
+  }
+}
+
+void P2PSocketHostUdp::HandleSendResult(int result) {
+  if (result > 0) {
+    message_sender_->Send(new P2PMsg_OnSendComplete(id_));
+  } else if (IsTransientError(result)) {
+    LOG(INFO) << "sendto() has failed twice returning a "
+        " transient error. Dropping the packet.";
+  } else if (result < 0) {
+    LOG(ERROR) << "Error when sending data in UDP socket: " << result;
+    OnError();
   }
 }
 

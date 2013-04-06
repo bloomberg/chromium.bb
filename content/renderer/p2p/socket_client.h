@@ -27,7 +27,8 @@ class P2PSocketDispatcher;
 // thread which is specified in Init().
 class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
  public:
-  // Delegate is called on the the same thread on the delegate thread.
+  // Delegate is called on the the same thread on which P2PSocketCLient is
+  // created.
   class Delegate {
    public:
     virtual ~Delegate() { }
@@ -35,6 +36,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
     virtual void OnOpen(const net::IPEndPoint& address) = 0;
     virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
                                          P2PSocketClient* client) = 0;
+    virtual void OnSendComplete() = 0;
     virtual void OnError() = 0;
     virtual void OnDataReceived(const net::IPEndPoint& address,
                                 const std::vector<char>& data) = 0;
@@ -80,6 +82,8 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   // Message handlers that run on IPC thread.
   void OnSocketCreated(const net::IPEndPoint& address);
   void OnIncomingTcpConnection(const net::IPEndPoint& address);
+  void OnSendComplete(int packet_id);
+  void OnSendComplete();
   void OnError();
   void OnDataReceived(const net::IPEndPoint& address,
                       const std::vector<char>& data);
@@ -89,6 +93,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   void DeliverOnIncomingTcpConnection(
       const net::IPEndPoint& address,
       scoped_refptr<P2PSocketClient> new_client);
+  void DeliverOnSendComplete();
   void DeliverOnError();
   void DeliverOnDataReceived(const net::IPEndPoint& address,
                              const std::vector<char>& data);
