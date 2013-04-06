@@ -402,32 +402,6 @@ void Chrome::setToolTip(const HitTestResult& result)
     TextDirection toolTipDirection;
     String toolTip = result.spellingToolTip(toolTipDirection);
 
-    // Next priority is a toolTip from a URL beneath the mouse (if preference is set to show those).
-    if (toolTip.isEmpty() && m_page->settings()->showsURLsInToolTips()) {
-        if (Node* node = result.innerNonSharedNode()) {
-            // Get tooltip representing form action, if relevant
-            if (node->hasTagName(inputTag)) {
-                HTMLInputElement* input = static_cast<HTMLInputElement*>(node);
-                if (input->isSubmitButton())
-                    if (HTMLFormElement* form = input->form()) {
-                        toolTip = form->action();
-                        if (form->renderer())
-                            toolTipDirection = form->renderer()->style()->direction();
-                        else
-                            toolTipDirection = LTR;
-                    }
-            }
-        }
-
-        // Get tooltip representing link's URL
-        if (toolTip.isEmpty()) {
-            // FIXME: Need to pass this URL through userVisibleString once that's in WebCore
-            toolTip = result.absoluteLinkURL().string();
-            // URL always display as LTR.
-            toolTipDirection = LTR;
-        }
-    }
-
     // Next we'll consider a tooltip for element with "title" attribute
     if (toolTip.isEmpty())
         toolTip = result.title(toolTipDirection);

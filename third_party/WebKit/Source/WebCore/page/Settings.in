@@ -65,7 +65,6 @@ treatsAnyTextCSSLinkAsStylesheet initial=false
 needsLeopardMailQuirks initial=false
 shrinksStandaloneImagesToFit initial=true
 pageCacheSupportsPlugins initial=false
-showsURLsInToolTips initial=false
 showsToolTipOverTruncatedText initial=false
 forceFTPDirectoryListings initial=false
 javaScriptExperimentsEnabled initial=false
