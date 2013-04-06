@@ -96,59 +96,59 @@ TEST_F(ImageFamilyTest, Get) {
   // Get on an empty family.
   gfx::ImageFamily empty_family;
   EXPECT_TRUE(empty_family.empty());
-  EXPECT_FALSE(empty_family.Get(32, 32));
-  EXPECT_FALSE(empty_family.Get(0, 32));
-  EXPECT_FALSE(empty_family.Get(32, 0));
+  EXPECT_FALSE(empty_family.GetBest(32, 32));
+  EXPECT_FALSE(empty_family.GetBest(0, 32));
+  EXPECT_FALSE(empty_family.GetBest(32, 0));
 
   // Get various aspect ratios and sizes on the sample family.
 
   // 0x0 (expect the smallest square image).
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 0), 16, 16);
-  // Get(0, N) or Get(N, 0) should be treated the same as Get(0, 0).
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 16), 16, 16);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 64), 16, 16);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(16, 0), 16, 16);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(64, 0), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 0), 16, 16);
+  // GetBest(0, N) or GetBest(N, 0) should be treated the same as GetBest(0, 0).
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 16), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 64), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(16, 0), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(64, 0), 16, 16);
 
   // Thinner than thinnest image.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(2, 12), 3, 12);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(2, 13), 12, 48);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(10, 60), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(2, 12), 3, 12);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(2, 13), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(10, 60), 12, 48);
 
   // Between two images' aspect ratio.
   // Note: Testing the boundary around 1:2 and 2:1, half way to 1:4 and 4:1.
   // Ties are broken by favouring the thinner aspect ratio.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(63, 32), 64, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(64, 32), 64, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(65, 32), 256, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 63), 64, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 64), 12, 48);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 65), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(63, 32), 64, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(64, 32), 64, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(65, 32), 256, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 63), 64, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 64), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 65), 12, 48);
 
   // Exact match aspect ratio.
   // Exact match size.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 32), 32, 32);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 32), 32, 32);
   // Slightly smaller.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(31, 31), 32, 32);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(31, 31), 32, 32);
   // Much smaller.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(17, 17), 32, 32);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(17, 17), 32, 32);
   // Exact match size.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(16, 16), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(16, 16), 16, 16);
   // Smaller than any image.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(3, 3), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(3, 3), 16, 16);
   // Larger than any image.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(512, 512), 64, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(512, 512), 64, 64);
   // 1:4 aspect ratio.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(16, 64), 12, 48);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(2, 8), 3, 12);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(16, 64), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(2, 8), 3, 12);
   // 4:1 aspect ratio.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(64, 16), 256, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(260, 65), 512, 128);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(64, 16), 256, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(260, 65), 512, 128);
 
   // Wider than widest image.
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(255, 51), 256, 64);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(260, 52), 512, 128);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(654, 129), 512, 128);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(255, 51), 256, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(260, 52), 512, 128);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(654, 129), 512, 128);
 }
 
 // Test adding and looking up images with 0 width and height.
@@ -160,18 +160,18 @@ TEST_F(ImageFamilyTest, ZeroWidthAndHeight) {
   image_family_.Add(gt::CreateImageSkia(32, 0));
   image_family_.Add(gt::CreateImageSkia(0, 32));
 
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 0), 0, 0);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(1, 1), 16, 16);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 32), 32, 32);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 0), 0, 0);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(1, 1), 16, 16);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 32), 32, 32);
 
-  // Get(0, N) or Get(N, 0) should be treated the same as Get(0, 0).
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 1), 0, 0);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(0, 32), 0, 0);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(1, 0), 0, 0);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 0), 0, 0);
+  // GetBest(0, N) or GetBest(N, 0) should be treated the same as GetBest(0, 0).
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 1), 0, 0);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(0, 32), 0, 0);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(1, 0), 0, 0);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 0), 0, 0);
 
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(1, 32), 12, 48);
-  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.Get(32, 1), 256, 64);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(1, 32), 12, 48);
+  EXPECT_IMAGE_NON_NULL_AND_SIZE(image_family_.GetBest(32, 1), 256, 64);
 }
 
 }  // namespace

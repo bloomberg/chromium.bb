@@ -39,7 +39,7 @@ void ImageFamily::Add(const gfx::ImageSkia& image_skia) {
   Add(gfx::Image(image_skia));
 }
 
-const gfx::Image* ImageFamily::Get(int width, int height) const {
+const gfx::Image* ImageFamily::GetBest(int width, int height) const {
   if (map_.empty())
     return NULL;
 

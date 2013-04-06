@@ -109,7 +109,7 @@ class UI_EXPORT ImageFamily {
   // returns the smallest image with both its width and height bigger or equal
   // to the requested size. If none exists, returns the largest image of that
   // aspect ratio. If there are no images in the family, returns NULL.
-  const gfx::Image* Get(int width, int height) const;
+  const gfx::Image* GetBest(int width, int height) const;
 
  private:
   // An <aspect ratio, DIP width> pair.
