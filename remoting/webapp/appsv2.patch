@@ -21,7 +21,7 @@ diff --git a/remoting/webapp/host_controller.js b/remoting/webapp/host_controlle
 index 83c9844..98f63c3 100644
 --- a/host_controller.js
 +++ b/host_controller.js
-@@ -351,7 +351,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
+@@ -356,7 +356,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
      onDone(hostId);
    };
    try {
@@ -34,7 +34,7 @@ diff --git a/remoting/webapp/main.html b/remoting/webapp/main.html
 index 061caeb..f61e532 100644
 --- a/main.html
 +++ b/main.html
-@@ -34,6 +34,7 @@ found in the LICENSE file.
+@@ -35,6 +35,7 @@ found in the LICENSE file.
      <script src="host_settings.js"></script>
      <script src="host_setup_dialog.js"></script>
      <script src="host_table_entry.js"></script>
@@ -108,7 +108,16 @@ diff --git a/remoting/webapp/remoting.js b/remoting/webapp/remoting.js
 index f89072a..2fadd83 100644
 --- a/remoting.js
 +++ b/remoting.js
-@@ -43,10 +43,7 @@ remoting.init = function() {
+@@ -34,8 +34,6 @@ function consentRequired_(authContinue) {
+  * Entry point for app initialization.
+  */
+ remoting.init = function() {
+-  migrateLocalToChromeStorage_();
+-
+   // TODO(jamiewalch): Remove this when we migrate to apps v2
+   // (http://crbug.com/ 134213).
+   remoting.initMockStorage();
+@@ -45,10 +45,7 @@ remoting.init = function() {
    // Create global objects.
    remoting.settings = new remoting.Settings();
    remoting.oauth2 = new remoting.OAuth2();
@@ -120,7 +129,7 @@ index f89072a..2fadd83 100644
    remoting.stats = new remoting.ConnectionStats(
        document.getElementById('statistics'));
    remoting.formatIq = new remoting.FormatIq();
-@@ -131,9 +128,6 @@ remoting.initHomeScreenUi = function () {
+@@ -133,9 +130,6 @@ remoting.initHomeScreenUi = function () {
    document.getElementById('share-button').disabled =
        !remoting.hostController.isPluginSupported();
    remoting.setMode(remoting.AppMode.HOME);
