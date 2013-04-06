@@ -33,7 +33,7 @@ class SpellCheckHostMetrics {
 
   // Collects the number of words in the custom dictionary, which is
   // to be uploaded via UMA.
-  void RecordCustomWordCountStats(size_t count);
+  static void RecordCustomWordCountStats(size_t count);
 
   // Collects status of spellchecking enabling state, which is
   // to be uploaded via UMA

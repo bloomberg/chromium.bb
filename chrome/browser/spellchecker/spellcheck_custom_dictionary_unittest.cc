@@ -6,9 +6,13 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/spellcheck_common.h"
@@ -22,6 +26,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::HistogramBase;
+using base::HistogramSamples;
+using base::StatisticsRecorder;
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
 
@@ -62,6 +69,8 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile_.get(), &BuildSpellcheckService);
+
+    StatisticsRecorder::Initialize();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -1073,4 +1082,46 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
   // number of words already.
   EXPECT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
             server_custom_dictionary->GetWords().size());
+}
+
+TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
+  // Record a baseline.
+  SpellCheckHostMetrics::RecordCustomWordCountStats(123);
+
+  HistogramBase* histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> baseline = histogram->SnapshotSamples();
+
+  // Load the dictionary which should be empty.
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  WordList loaded_custom_words = LoadDictionaryFile(path);
+  EXPECT_EQ(0u, loaded_custom_words.size());
+
+  // We expect there to be an entry with 0.
+  histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
+
+  samples->Subtract(*baseline);
+  EXPECT_EQ(0,samples->sum());
+
+  SpellcheckCustomDictionary::Change change;
+  change.AddWord("bar");
+  change.AddWord("foo");
+  UpdateDictionaryFile(change, path);
+
+  // Load the dictionary again and it should have 2 entries.
+  loaded_custom_words = LoadDictionaryFile(path);
+  EXPECT_EQ(2u, loaded_custom_words.size());
+
+  histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples2 = histogram->SnapshotSamples();
+
+  samples2->Subtract(*baseline);
+  EXPECT_EQ(2,samples2->sum());
 }

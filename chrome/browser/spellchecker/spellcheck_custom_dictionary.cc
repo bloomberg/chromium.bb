@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -409,6 +410,7 @@ WordList SpellcheckCustomDictionary::LoadDictionaryFile(
   LoadDictionaryFileReliably(words, path);
   if (!words.empty() && VALID_CHANGE != SanitizeWordsToAdd(WordList(), words))
     SaveDictionaryFileReliably(words, path);
+  SpellCheckHostMetrics::RecordCustomWordCountStats(words.size());
   return words;
 }
 
@@ -452,7 +454,6 @@ void SpellcheckCustomDictionary::OnLoaded(WordList custom_words) {
   FOR_EACH_OBSERVER(Observer, observers_, OnCustomDictionaryLoaded());
 }
 
-// TODO(rlp): record metrics on custom word size
 void SpellcheckCustomDictionary::Apply(
     const SpellcheckCustomDictionary::Change& dictionary_change) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

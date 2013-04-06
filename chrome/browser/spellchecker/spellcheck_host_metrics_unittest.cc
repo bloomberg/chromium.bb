@@ -67,14 +67,14 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
 }
 
 TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
-  metrics()->RecordCustomWordCountStats(123);
+  SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
   HistogramBase* histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
   ASSERT_TRUE(histogram != NULL);
   scoped_ptr<HistogramSamples> baseline = histogram->SnapshotSamples();
 
-  metrics()->RecordCustomWordCountStats(23);
+  SpellCheckHostMetrics::RecordCustomWordCountStats(23);
   histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
   ASSERT_TRUE(histogram != NULL);

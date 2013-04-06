@@ -28,6 +28,7 @@ SpellCheckHostMetrics::SpellCheckHostMetrics()
 SpellCheckHostMetrics::~SpellCheckHostMetrics() {
 }
 
+// static
 void SpellCheckHostMetrics::RecordCustomWordCountStats(size_t count) {
   UMA_HISTOGRAM_COUNTS("SpellCheck.CustomWords", count);
 }
