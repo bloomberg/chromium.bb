@@ -6,36 +6,46 @@
 
 namespace message_center {
 
+// Exported values /////////////////////////////////////////////////////////////
+
+// Square image sizes in pixels.
+const int kNotificationButtonIconSize = 16;
 const int kNotificationIconSize = 80;
 const int kNotificationPreferredImageSize = kNotificationWidth;
-const int kNotificationButtonIconSize = 16;
 const int kSettingsIconSize = 16;
 
+// Within a notification ///////////////////////////////////////////////////////
+
+// Pixel dimensions (H = horizontal, V = vertical).
 const int kControlButtonSize = 29;
-
+const int kNotificationWidth = 360;
 const int kIconToTextPadding = 16;
-
 const int kTextTopPadding = 6;
 
-const int kNotificationWidth = 360;
+// Text sizes
+const int kTitleFontSize = 14;
+const int kMessageFontSize = 12;
 
-const int kNotificationMaximumImageHeight = kNotificationWidth;
-
-const size_t kNotificationMaximumItems = 8;
-
-const int kAutocloseHighPriorityDelaySeconds = 25;
-const int kAutocloseDefaultDelaySeconds = 8;
-
-const int kMarginBetweenItems = 10;
-
-const SkColor kBackgroundColor = SkColorSetRGB(255, 255, 255);
-
+// Colors.
+const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);
 const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(230, 230, 230);
-
 const SkColor kRegularTextColor = SkColorSetRGB(68, 68, 68);
 
-const int kTitleFontSize = 14;
+// Limits.
+const int kNotificationMaximumImageHeight = kNotificationWidth;
+const size_t kNotificationMaximumItems = 8;
 
-const int kMessageFontSize = 12;
+// Timing.
+const int kAutocloseDefaultDelaySeconds = 8;
+const int kAutocloseHighPriorityDelaySeconds = 25;
+
+// Around notifications ////////////////////////////////////////////////////////
+
+// Pixel dimensions (H = horizontal, V = vertical).
+const int kMarginBetweenItems = 10;
+
+// Colors.
+const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
+const SkColor kBackgroundDarkColor = SkColorSetRGB(0xe7, 0xe7, 0xe7);
 
 }  // namespace message_center

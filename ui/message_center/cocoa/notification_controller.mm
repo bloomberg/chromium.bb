@@ -60,7 +60,7 @@
   scoped_nsobject<NSBox> rootView([[NSBox alloc] initWithFrame:rootFrame]);
   [self configureCustomBox:rootView];
   [rootView setFillColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kBackgroundColor)];
+      message_center::kNotificationBackgroundColor)];
   [self setView:rootView];
 
   [rootView addSubview:[self createImageView]];

@@ -21,10 +21,6 @@ namespace message_center {
 
 const SkColor MessageBubbleBase::kBackgroundColor =
     SkColorSetRGB(0xfe, 0xfe, 0xfe);
-const SkColor MessageBubbleBase::kHeaderBackgroundColorLight =
-    SkColorSetRGB(0xf1, 0xf1, 0xf1);
-const SkColor MessageBubbleBase::kHeaderBackgroundColorDark =
-    SkColorSetRGB(0xe7, 0xe7, 0xe7);
 
 MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center)
     : message_center_(message_center),
@@ -78,7 +74,7 @@ views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
       anchor_alignment,
       kNotificationWidth,
       kNotificationWidth);
-  init_params.arrow_color = kHeaderBackgroundColorDark;
+  init_params.arrow_color = kBackgroundDarkColor;
   return init_params;
 }
 

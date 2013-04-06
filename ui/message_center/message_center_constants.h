@@ -11,45 +11,49 @@
 
 namespace message_center {
 
+// Exported values /////////////////////////////////////////////////////////////
+
+// Square image sizes in pixels.
+MESSAGE_CENTER_EXPORT extern const int kNotificationButtonIconSize;
 MESSAGE_CENTER_EXPORT extern const int kNotificationIconSize;
 MESSAGE_CENTER_EXPORT extern const int kNotificationPreferredImageSize;
-MESSAGE_CENTER_EXPORT extern const int kNotificationButtonIconSize;
 MESSAGE_CENTER_EXPORT extern const int kSettingsIconSize;
 
-// The square size of the control buttons (close, expand, etc.).
-extern const int kControlButtonSize;
+// Within a notification ///////////////////////////////////////////////////////
 
-// The amount of spacing between the icon and the title/message.
-extern const int kIconToTextPadding;
+// Pixel dimensions (H = horizontal, V = vertical).
+extern const int kControlButtonSize;  // Square size of close & expand buttons.
+extern const int kNotificationWidth;  // H size of the whole card.
+extern const int kIconToTextPadding;  // H space between icon & title/message.
+extern const int kTextTopPadding;     // V space between text elements.
 
-// The amount of vertical space between text elements.
-extern const int kTextTopPadding;
+// Text sizes
+extern const int kTitleFontSize;    // For title only.
+extern const int kMessageFontSize;  // For everything but title.
 
-extern const int kNotificationWidth;
+// Colors.
+extern const SkColor kNotificationBackgroundColor; // Background of the card.
+extern const SkColor kLegacyIconBackgroundColor;   // Used behind icons smaller
+                                                   // than the icon view.
+extern const SkColor kRegularTextColor;            // Title, message, ...
 
-extern const int kNotificationMaximumImageHeight;
-extern const size_t kNotificationMaximumItems;
+// Limits.
+extern const int kNotificationMaximumImageHeight;  // For image notifications.
+extern const size_t kNotificationMaximumItems;     // For list notifications.
 
-extern const int kAutocloseHighPriorityDelaySeconds;
+// Timing.
 extern const int kAutocloseDefaultDelaySeconds;
+extern const int kAutocloseHighPriorityDelaySeconds;
 
-extern const int kMarginBetweenItems;
+// Around notifications ////////////////////////////////////////////////////////
 
-// The background color of the notification view.
-extern const SkColor kBackgroundColor;
+// Pixel dimensions (H = horizontal, V = vertical).
+extern const int kMarginBetweenItems; // H & V space around & between
+                                      // notifications.
 
-// The background color used behind icons that are not large enough to fill
-// the bounds of the icon view.
-extern const SkColor kLegacyIconBackgroundColor;
-
-// The color of normal text elements in a notification.
-extern const SkColor kRegularTextColor;
-
-// The font size of the title.
-extern const int kTitleFontSize;
-
-// The font size of the message.
-extern const int kMessageFontSize;
+// Colors.
+extern const SkColor kBackgroundLightColor;  // Behind notifications, gradient
+extern const SkColor kBackgroundDarkColor;   // from light to dark.
 
 }  // namespace message_center
 

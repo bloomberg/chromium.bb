@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
 #include "ui/gfx/insets.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
@@ -26,8 +27,8 @@ const int kWebNotificationButtonWidth = 32;
 const int kWebNotificationIconSize = 40;
 
 // An abstract class that forms the basis of a view for a notification entry.
-class MessageView : public views::SlideOutView,
-                    public views::ButtonListener {
+class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
+                                          public views::ButtonListener {
  public:
   MessageView(const Notification& notification,
               NotificationChangeObserver* observer,

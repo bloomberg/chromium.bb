@@ -55,8 +55,6 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
   views::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
   static const SkColor kBackgroundColor;
-  static const SkColor kHeaderBackgroundColorLight;
-  static const SkColor kHeaderBackgroundColorDark;
 
  protected:
   views::TrayBubbleView::InitParams GetDefaultInitParams(

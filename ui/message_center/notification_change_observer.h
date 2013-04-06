@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 

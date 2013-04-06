@@ -54,6 +54,8 @@
         'views/message_bubble_base.h',
         'views/message_center_bubble.cc',
         'views/message_center_bubble.h',
+        'views/message_center_view.cc',
+        'views/message_center_view.h',
         'views/message_popup_bubble.cc',
         'views/message_popup_bubble.h',
         'views/message_popup_collection.cc',
@@ -88,7 +90,7 @@
           ],
         }],
       ],
-    },
+    },  # target_name: message_center
     {
       'target_name': 'message_center_unittests',
       'type': 'executable',
@@ -107,6 +109,7 @@
         'cocoa/popup_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'notification_list_unittest.cc',
+        'test/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -114,7 +117,18 @@
             '../ui.gyp:ui_test_support',
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            # Compositor is needed by message_center_view_unittest.cc.
+            '../compositor/compositor.gyp:compositor',
+            '../compositor/compositor.gyp:compositor_test_support',
+            '../views/views.gyp:views',
+          ],
+          'sources': [
+            'views/message_center_view_unittest.cc',
+          ],
+        }],
       ],
-    },
+    },  # target_name: message_center_unittests
   ],
 }

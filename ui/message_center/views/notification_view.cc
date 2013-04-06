@@ -57,7 +57,7 @@ const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
 // Static.
 views::Background* MakeBackground(
-    SkColor color = message_center::kBackgroundColor) {
+    SkColor color = message_center::kNotificationBackgroundColor) {
   return views::Background::CreateSolidBackground(color);
 }
 

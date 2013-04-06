@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 
 namespace views {
@@ -21,7 +22,7 @@ class NotificationChangeObserver;
 // list). Future notification types may be handled by other classes, in which
 // case instances of those classes would be returned by the Create() factory
 // method below.
-class NotificationView : public MessageView {
+class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
  public:
   // Creates appropriate MessageViews for notifications. Those currently are
   // always NotificationView or MessageSimpleView instances but in the future
@@ -42,11 +43,12 @@ class NotificationView : public MessageView {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
- private:
+ protected:
   NotificationView(const Notification& notification,
                    NotificationChangeObserver* observer,
                    bool expanded);
 
+ private:
   // Truncate the very long text if we should. See crbug.com/222151 for the
   // details.
   string16 MaybeTruncateText(const string16& text, size_t limit);

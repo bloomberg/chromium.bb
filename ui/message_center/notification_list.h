@@ -24,7 +24,7 @@ class DictionaryValue;
 namespace message_center {
 
 // Comparers used to auto-sort the lists of Notifications.
-struct ComparePriorityTimestampSerial {
+struct MESSAGE_CENTER_EXPORT ComparePriorityTimestampSerial {
   bool operator()(Notification* n1, Notification* n2);
 };
 
