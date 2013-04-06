@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::make_pair;
@@ -27,19 +28,18 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
   IntegralGestureFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())
-      return NULL;
+      return;
     return_value_ = return_values_.front();
     return_values_.pop_front();
     if (return_value_.type == kGestureTypeNull)
-      return NULL;
-    return &return_value_;
+      return;
+    ProduceGesture(return_value_);
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     EXPECT_TRUE(false);
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops) {
@@ -57,6 +57,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
   IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
@@ -94,7 +95,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   ASSERT_EQ(arraysize(expected_types), arraysize(expected_y));
 
   for (size_t i = 0; i < arraysize(expected_x); i++) {
-    Gesture* out = interpreter.SyncInterpret(&hs, NULL);
+    Gesture* out = wrapper.SyncInterpret(&hs, NULL);
     if (out)
       EXPECT_EQ(expected_types[i], out->type) << "i = " << i;
     if (out == NULL) {
@@ -118,6 +119,7 @@ TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
   IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
@@ -135,12 +137,12 @@ TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   };
 
   size_t iter = 0;
-  Gesture* out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  Gesture* out = wrapper.SyncInterpret(&hs[iter++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
-  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  out = wrapper.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  out = wrapper.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
 }
 
@@ -150,6 +152,7 @@ TEST(IntegralGestureFilterInterpreterTest, ZeroGestureTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
   IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
@@ -163,9 +166,9 @@ TEST(IntegralGestureFilterInterpreterTest, ZeroGestureTest) {
   };
 
   size_t iter = 0;
-  Gesture* out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  Gesture* out = wrapper.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  out = wrapper.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
 }
 
@@ -183,6 +186,7 @@ TEST(IntegralGestureFilterInterpreterTest, SetHwpropsTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
   IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
   interpreter.SetHardwareProperties(hwprops);
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
 }

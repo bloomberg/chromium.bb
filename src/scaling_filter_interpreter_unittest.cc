@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/scaling_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::make_pair;
@@ -27,7 +28,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   ScalingFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (!expected_coordinates_.empty()) {
       vector<pair<float, float> >& expected = expected_coordinates_.front();
       for (unsigned short i = 0; i < hwstate->finger_cnt; i++) {
@@ -74,17 +75,16 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       expected_touch_cnt_.pop_front();
     }
     if (return_values_.empty())
-      return NULL;
+      return;
     return_value_ = return_values_.front();
     return_values_.pop_front();
     if (return_value_.type == kGestureTypeNull)
-      return NULL;
-    return &return_value_;
+      return;
+    ProduceGesture(return_value_);
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     EXPECT_TRUE(false);
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
@@ -126,6 +126,7 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       new ScalingFilterInterpreterTestInterpreter;
   ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL,
                                        GESTURES_DEVCLASS_TOUCHPAD);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   HardwareProperties initial_hwprops = {
     133, 728, 10279, 5822,  // left, top, right, bottom
@@ -220,19 +221,19 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
                                                      GESTURES_FLING_START));
   base_interpreter->return_values_.push_back(Gesture());  // Null type
 
-  Gesture* out = interpreter.SyncInterpret(&hs[0], NULL);
+  Gesture* out = wrapper.SyncInterpret(&hs[0], NULL);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  out = interpreter.SyncInterpret(&hs[1], NULL);
+  out = wrapper.SyncInterpret(&hs[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeMove, out->type);
   EXPECT_FLOAT_EQ(-4.0 * 133.0 / 25.4, out->details.move.dx);
   EXPECT_FLOAT_EQ(2.8 * 133.0 / 25.4, out->details.move.dy);
-  out = interpreter.SyncInterpret(&hs[2], NULL);
+  out = wrapper.SyncInterpret(&hs[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_FLOAT_EQ(4.1 * 133.0 / 25.4, out->details.scroll.dx);
   EXPECT_FLOAT_EQ(-10.3 * 133.0 / 25.4, out->details.scroll.dy);
-  out = interpreter.SyncInterpret(&hs[3], NULL);
+  out = wrapper.SyncInterpret(&hs[3], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeFling, out->type);
   EXPECT_FLOAT_EQ(201.8 * 133.0 / 25.4, out->details.fling.vx);
@@ -253,15 +254,15 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   interpreter.pressure_threshold_.val_ = kPressureThreshold;
   base_interpreter->expected_finger_cnt_.push_back(0);
   base_interpreter->expected_touch_cnt_.push_back(1);
-  out = interpreter.SyncInterpret(&hs2[0], NULL);
+  out = wrapper.SyncInterpret(&hs2[0], NULL);
 
   base_interpreter->expected_pressures_.push_back(
       fs2[1].pressure * kPressureScale + kPressureTranslate);
-  out = interpreter.SyncInterpret(&hs2[1], NULL);
+  out = wrapper.SyncInterpret(&hs2[1], NULL);
 
   base_interpreter->expected_finger_cnt_.push_back(0);
   base_interpreter->expected_touch_cnt_.push_back(0);
-  out = interpreter.SyncInterpret(&hs2[2], NULL);
+  out = wrapper.SyncInterpret(&hs2[2], NULL);
 }
 
 static void RunTouchMajorAndMinorTest(

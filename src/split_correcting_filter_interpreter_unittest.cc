@@ -26,7 +26,7 @@ class SplitCorrectingFilterInterpreterTestInterpreter :
         iteration_(0),
         expect_warp_on_one_finger_only_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expect_finger_ids_) {
       EXPECT_EQ(hwstate->finger_cnt, hwstate->touch_cnt);
       EXPECT_EQ(hwstate->finger_cnt, expected_ids_.size());
@@ -45,10 +45,9 @@ class SplitCorrectingFilterInterpreterTestInterpreter :
       }
     }
     iteration_++;
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) { return NULL; }
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {}
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
 

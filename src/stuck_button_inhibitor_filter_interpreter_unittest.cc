@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::make_pair;
@@ -30,22 +31,22 @@ class StuckButtonInhibitorFilterInterpreterTestInterpreter :
         called_(false),
         set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
-    return HandleTimer(0.0, timeout);
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    HandleTimer(0.0, timeout);
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     called_ = true;
     if (return_values_.empty())
-      return NULL;
+      return;
     pair<Gesture, stime_t> val = return_values_.front();
     return_values_.pop_front();
     if (val.second >= 0.0)
       *timeout = val.second;
     return_value_ = val.first;
     if (return_value_.type == kGestureTypeNull)
-      return NULL;
-    return &return_value_;
+      return;
+    ProduceGesture(return_value_);
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
@@ -82,6 +83,7 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
   StuckButtonInhibitorFilterInterpreterTestInterpreter* base_interpreter =
       new StuckButtonInhibitorFilterInterpreterTestInterpreter;
   StuckButtonInhibitorFilterInterpreter interpreter(base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -170,9 +172,9 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
     stime_t timeout = -1.0;
     Gesture* result = NULL;
     if (rec.now_ < 0.0) {
-      result = interpreter.SyncInterpret(&rec.hs_, &timeout);
+      result = wrapper.SyncInterpret(&rec.hs_, &timeout);
     } else {
-      result = interpreter.HandleTimer(rec.now_, &timeout);
+      result = wrapper.HandleTimer(rec.now_, &timeout);
     }
     if (!result)
       result = &null;

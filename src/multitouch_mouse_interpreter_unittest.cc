@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/multitouch_mouse_interpreter.h"
+#include "gestures/include/util.h"
 
 namespace gestures {
 
@@ -13,6 +14,7 @@ class MultitouchMouseInterpreterTest : public ::testing::Test {};
 
 TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   MultitouchMouseInterpreter mi(NULL, NULL);
+  TestInterpreterWrapper wrapper(&mi);
   Gesture* gs;
 
   HardwareProperties hwprops = {
@@ -47,10 +49,10 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   mi.scroll_manager_.horizontal_scroll_snap_slope_.val_ = 0;
   mi.scroll_manager_.vertical_scroll_snap_slope_.val_ = 100;
 
-  gs = mi.SyncInterpret(&hwstates[0], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[0], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 
-  gs = mi.SyncInterpret(&hwstates[1], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(9, gs->details.move.dx);
@@ -58,7 +60,7 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(200000, gs->start_time);
   EXPECT_EQ(210000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[2], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
   EXPECT_EQ(1, gs->details.buttons.down);
@@ -66,7 +68,7 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(210000, gs->start_time);
   EXPECT_EQ(220000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[3], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[3], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
   EXPECT_EQ(0, gs->details.buttons.down);
@@ -74,7 +76,7 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(220000, gs->start_time);
   EXPECT_EQ(230000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[4], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[4], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_EQ(6, gs->details.scroll.dx);

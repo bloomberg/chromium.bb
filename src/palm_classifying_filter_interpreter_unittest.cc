@@ -28,16 +28,14 @@ class PalmClassifyingFilterInterpreterTestInterpreter : public Interpreter {
       : Interpreter(NULL, NULL, false),
         expected_flags_(0) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (hwstate->finger_cnt > 0) {
       EXPECT_EQ(expected_flags_, hwstate->fingers[0].flags);
     }
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     EXPECT_TRUE(false);
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};

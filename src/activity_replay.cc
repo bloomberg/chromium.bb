@@ -532,6 +532,8 @@ bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
 
 // Replay the log and verify the output in a strict way.
 void ActivityReplay::Replay(Interpreter* interpreter) {
+  TestInterpreterWrapper wrapper(interpreter);
+
   bool pending_gs_flag = false;
   interpreter->SetHardwareProperties(hwprops_);
   stime_t last_timeout_req = -1.0;
@@ -545,7 +547,7 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
         HardwareState hs = entry->details.hwstate;
         for (size_t i = 0; i < hs.finger_cnt; i++)
           Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
-        Gesture* next_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
+        Gesture* next_gs = wrapper.SyncInterpret(&hs, &last_timeout_req);
         if (next_gs) {
           EXPECT_FALSE(pending_gs_flag) <<
               "Unexpected gestures:" << endl <<
@@ -559,7 +561,7 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
       }
       case ActivityLog::kTimerCallback: {
         last_timeout_req = -1.0;
-        Gesture* next_gs = interpreter->HandleTimer(entry->details.timestamp,
+        Gesture* next_gs = wrapper.HandleTimer(entry->details.timestamp,
                                                     &last_timeout_req);
         if (next_gs) {
           EXPECT_FALSE(pending_gs_flag) <<

@@ -28,16 +28,14 @@ class BoxFilterInterpreterTestInterpreter : public Interpreter {
       : Interpreter(NULL, NULL, false),
         handle_timer_called_(false), set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     EXPECT_NE(static_cast<HardwareState*>(NULL), hwstate);
     EXPECT_EQ(1, hwstate->finger_cnt);
     prev_ = hwstate->fingers[0];
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     handle_timer_called_ = true;
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {

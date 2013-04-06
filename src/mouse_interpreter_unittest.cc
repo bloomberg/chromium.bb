@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/mouse_interpreter.h"
+#include "gestures/include/util.h"
 
 namespace gestures {
 
@@ -13,6 +14,7 @@ class MouseInterpreterTest : public ::testing::Test {};
 
 TEST(MouseInterpreterTest, SimpleTest) {
   MouseInterpreter mi(NULL, NULL);
+  TestInterpreterWrapper wrapper(&mi);
   Gesture* gs;
 
   HardwareState hwstates[] = {
@@ -23,10 +25,10 @@ TEST(MouseInterpreterTest, SimpleTest) {
     { 240000, 0, 0, 0, NULL, 0, 0, -3, 4 },
   };
 
-  gs = mi.SyncInterpret(&hwstates[0], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[0], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 
-  gs = mi.SyncInterpret(&hwstates[1], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(9, gs->details.move.dx);
@@ -34,7 +36,7 @@ TEST(MouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(200000, gs->start_time);
   EXPECT_EQ(210000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[2], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
   EXPECT_EQ(1, gs->details.buttons.down);
@@ -42,7 +44,7 @@ TEST(MouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(210000, gs->start_time);
   EXPECT_EQ(220000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[3], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[3], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
   EXPECT_EQ(0, gs->details.buttons.down);
@@ -50,7 +52,7 @@ TEST(MouseInterpreterTest, SimpleTest) {
   EXPECT_EQ(220000, gs->start_time);
   EXPECT_EQ(230000, gs->end_time);
 
-  gs = mi.SyncInterpret(&hwstates[4], NULL);
+  gs = wrapper.SyncInterpret(&hwstates[4], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_EQ(-4, gs->details.scroll.dx);

@@ -23,19 +23,17 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
         set_hwprops_called_(false), expect_warp_(true),
         expected_fingers_(-1) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expected_fingers_ >= 0)
       EXPECT_EQ(expected_fingers_, hwstate->finger_cnt);
     if (hwstate->finger_cnt > 0 && expect_warp_) {
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_X);
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_Y);
     }
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     EXPECT_TRUE(false);
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {

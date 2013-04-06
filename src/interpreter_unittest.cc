@@ -11,6 +11,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/util.h"
 
 using std::string;
 
@@ -49,7 +50,7 @@ class InterpreterTestInterpreter : public Interpreter {
   char* expected_interpreter_name_;
 
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout) {
     interpret_call_count_++;
     EXPECT_STREQ(expected_interpreter_name_, name());
     EXPECT_NE(0, bool_prop_.val_);
@@ -66,12 +67,12 @@ class InterpreterTestInterpreter : public Interpreter {
       for (size_t i = 0; i < expected_hwstate_->finger_cnt; i++)
         EXPECT_TRUE(expected_hwstate_->fingers[i] == hwstate->fingers[i]);
     *timeout = 0.01;
-    return &return_value_;
+    ProduceGesture(return_value_);
   }
 
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout) {
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {
     handle_timer_call_count_++;
-    return &return_value_;
+    ProduceGesture(return_value_);
   }
 
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hw_props) {
@@ -101,6 +102,8 @@ TEST(InterpreterTest, SimpleTest) {
   PropRegistry prop_reg;
   InterpreterTestInterpreter* base_interpreter =
       new InterpreterTestInterpreter(&prop_reg);
+  TestInterpreterWrapper wrapper(base_interpreter);
+
   base_interpreter->bool_prop_.val_ = 1;
   base_interpreter->double_prop_.val_ = 1;
   base_interpreter->int_prop_.val_ = 1;
@@ -142,12 +145,12 @@ TEST(InterpreterTest, SimpleTest) {
 
   stime_t timeout = -1.0;
   base_interpreter->expected_hwstate_ = &hardware_state;
-  Gesture* result = base_interpreter->SyncInterpret(&hardware_state, &timeout);
+  Gesture* result = wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_TRUE(base_interpreter->return_value_ == *result);
   ASSERT_GT(timeout, 0);
   stime_t now = hardware_state.timestamp + timeout;
   timeout = -1.0;
-  result = base_interpreter->HandleTimer(now, &timeout);
+  result = wrapper.HandleTimer(now, &timeout);
   EXPECT_TRUE(base_interpreter->return_value_ == *result);
   ASSERT_LT(timeout, 0);
   EXPECT_EQ(1, base_interpreter->interpret_call_count_);
@@ -181,15 +184,11 @@ class InterpreterResetLogTestInterpreter : public Interpreter {
     log_.reset(new ActivityLog(NULL));
   }
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout) {
-    return NULL;
-  }
+  virtual void SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout) {}
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hw_props) {
   }
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout) {
-    return NULL;
-  }
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {}
 };
 
 TEST(InterpreterTest, ResetLogTest) {

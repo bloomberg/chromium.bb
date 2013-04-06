@@ -12,6 +12,7 @@
 
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::make_pair;
@@ -26,17 +27,17 @@ class AccelFilterInterpreterTestInterpreter : public Interpreter {
  public:
   AccelFilterInterpreterTestInterpreter() : Interpreter(NULL, NULL, false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())
-      return NULL;
+      return;
     return_value_ = return_values_.front();
     return_values_.pop_front();
     if (return_value_.type == kGestureTypeNull)
-      return NULL;
-    return &return_value_;
+      return;
+    ProduceGesture(return_value_);
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     return SyncInterpret(NULL, NULL);
   }
 
@@ -49,9 +50,11 @@ class AccelFilterInterpreterTestInterpreter : public Interpreter {
 TEST(AccelFilterInterpreterTest, SimpleTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
-  interpreter.scroll_x_out_scale_.val_ =
-      interpreter.scroll_y_out_scale_.val_ = 1.0;
+  AccelFilterInterpreter accel_interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper interpreter(&accel_interpreter);
+
+  accel_interpreter.scroll_x_out_scale_.val_ =
+      accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   float last_move_dx = 0.0;
   float last_move_dy = 0.0;
@@ -61,8 +64,8 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   float last_fling_vy = 0.0;
 
   for (int i = 1; i <= 5; ++i) {
-    interpreter.pointer_sensitivity_.val_ = i;
-    interpreter.scroll_sensitivity_.val_ = i;
+    accel_interpreter.pointer_sensitivity_.val_ = i;
+    accel_interpreter.scroll_sensitivity_.val_ = i;
 
     base_interpreter->return_values_.push_back(Gesture());  // Null type
     base_interpreter->return_values_.push_back(Gesture(kGestureMove,
@@ -133,9 +136,10 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
 TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
-  interpreter.scroll_x_out_scale_.val_ =
-      interpreter.scroll_y_out_scale_.val_ = 1.0;
+  AccelFilterInterpreter accel_interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper interpreter(&accel_interpreter);
+  accel_interpreter.scroll_x_out_scale_.val_ =
+      accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   base_interpreter->return_values_.push_back(Gesture(kGestureMove,
                                                      1,  // start time
@@ -162,23 +166,24 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_GT(fabsf(out->details.scroll.dx), 2);
   float orig_x_scroll = out->details.scroll.dx;
-  interpreter.scroll_x_out_scale_.val_ = 2.0;
+  accel_interpreter.scroll_x_out_scale_.val_ = 2.0;
   out = interpreter.SyncInterpret(NULL, NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
-  EXPECT_FLOAT_EQ(orig_x_scroll * interpreter.scroll_x_out_scale_.val_,
+  EXPECT_FLOAT_EQ(orig_x_scroll * accel_interpreter.scroll_x_out_scale_.val_,
                   out->details.scroll.dx);
 }
 
 TEST(AccelFilterInterpreterTest, TimingTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
-  interpreter.scroll_x_out_scale_.val_ =
-      interpreter.scroll_y_out_scale_.val_ = 1.0;
+  AccelFilterInterpreter accel_interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper interpreter(&accel_interpreter);
+  accel_interpreter.scroll_x_out_scale_.val_ =
+      accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
 
-  interpreter.pointer_sensitivity_.val_ = 3;  // standard sensitivity
-  interpreter.scroll_sensitivity_.val_ = 3;  // standard sensitivity
+  accel_interpreter.pointer_sensitivity_.val_ = 3;  // standard sensitivity
+  accel_interpreter.scroll_sensitivity_.val_ = 3;  // standard sensitivity
 
   float last_dx = 0.0;
   float last_dy = 0.0;
@@ -236,14 +241,15 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
 TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
-  interpreter.scroll_x_out_scale_.val_ =
-      interpreter.scroll_y_out_scale_.val_ = 1.0;
+  AccelFilterInterpreter accel_interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper interpreter(&accel_interpreter);
+  accel_interpreter.scroll_x_out_scale_.val_ =
+      accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
 
-  interpreter.pointer_sensitivity_.val_ = 0;  // custom sensitivity
-  interpreter.scroll_sensitivity_.val_ = 0;  // custom sensitivity
-  interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
-  interpreter.custom_scroll_str_.val_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
+  accel_interpreter.pointer_sensitivity_.val_ = 0;  // custom sensitivity
+  accel_interpreter.scroll_sensitivity_.val_ = 0;  // custom sensitivity
+  accel_interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
+  accel_interpreter.custom_scroll_str_.val_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
 
   float move_in[]  = { 1.0, 2.5, 3.5, 5.0 };
   float move_out[] = { 0.5, 2.0, 3.0, 3.0 };

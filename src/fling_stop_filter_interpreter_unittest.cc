@@ -5,8 +5,9 @@
 #include <base/logging.h>
 #include <gtest/gtest.h>
 
-#include "gestures/include/gestures.h"
 #include "gestures/include/fling_stop_filter_interpreter.h"
+#include "gestures/include/gestures.h"
+#include "gestures/include/util.h"
 
 namespace gestures {
 
@@ -21,16 +22,14 @@ class FlingStopFilterInterpreterTestInterpreter : public Interpreter {
         sync_interpret_called_(false), handle_timer_called_(true),
         next_timeout_(-1) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     sync_interpret_called_ = true;
     *timeout = next_timeout_;
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     handle_timer_called_ = true;
     *timeout = next_timeout_;
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
@@ -59,6 +58,7 @@ TEST(FlingStopFilterInterpreterTest, SimpleTest) {
   FlingStopFilterInterpreterTestInterpreter* base_interpreter =
       new FlingStopFilterInterpreterTestInterpreter;
   FlingStopFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   const stime_t kTO = interpreter.fling_stop_timeout_.val_ = 0.03;
   const stime_t kED= interpreter.fling_stop_extra_delay_.val_ = 0.055;
@@ -112,7 +112,6 @@ TEST(FlingStopFilterInterpreterTest, SimpleTest) {
     stime_t timeout = -1.0;
 
     Gesture* ret = NULL;
-
     if (input.touch_cnt >= 0) {
       FingerState fs[5];
       memset(fs, 0, sizeof(fs));
@@ -121,26 +120,27 @@ TEST(FlingStopFilterInterpreterTest, SimpleTest) {
         input.now, 0, touch_cnt, touch_cnt, fs, 0, 0, 0, 0
       };
 
-      ret = interpreter.SyncInterpret(&hs, &timeout);
+      ret = wrapper.SyncInterpret(&hs, &timeout);
 
       EXPECT_EQ(input.expected_call_next,
-                base_interpreter->sync_interpret_called_);
-      EXPECT_FALSE(base_interpreter->handle_timer_called_);
+                base_interpreter->sync_interpret_called_) << "i=" << i;
+      EXPECT_FALSE(base_interpreter->handle_timer_called_) << "i=" << i;
     } else {
-      ret = interpreter.HandleTimer(input.now, &timeout);
+      ret = wrapper.HandleTimer(input.now, &timeout);
 
       EXPECT_EQ(input.expected_call_next,
-                base_interpreter->handle_timer_called_);
-      EXPECT_FALSE(base_interpreter->sync_interpret_called_);
+                base_interpreter->handle_timer_called_) << "i=" << i;
+      EXPECT_FALSE(base_interpreter->sync_interpret_called_) << "i=" << i;
     }
     EXPECT_FLOAT_EQ(input.expected_local_deadline,
-                    interpreter.fling_stop_deadline_);
+                    interpreter.fling_stop_deadline_) << "i=" << i;
     EXPECT_FLOAT_EQ(input.expected_next_deadline,
-                    interpreter.next_timer_deadline_);
-    EXPECT_FLOAT_EQ(input.expected_timeout, timeout);
+                    interpreter.next_timer_deadline_) << "i=" << i;
+    EXPECT_FLOAT_EQ(input.expected_timeout, timeout) << "i=" << i;
     EXPECT_EQ(input.expected_fling_stop_out,
               ret && ret->type == kGestureTypeFling &&
-              ret->details.fling.fling_state == GESTURES_FLING_TAP_DOWN);
+              ret->details.fling.fling_state == GESTURES_FLING_TAP_DOWN)
+        << "i=" << i;
   }
 }
 

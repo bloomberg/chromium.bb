@@ -24,15 +24,11 @@ class LoggingFilterInterpreterResetLogTestInterpreter : public Interpreter {
   LoggingFilterInterpreterResetLogTestInterpreter()
       : Interpreter(NULL, NULL, false) {}
  protected:
-  virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
-                                     stime_t* timeout) {
-    return NULL;
-  }
+  virtual void SyncInterpretImpl(HardwareState* hwstate,
+                                     stime_t* timeout) {}
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hw_props) {
   }
-  virtual Gesture* HandleTimerImpl(stime_t now, stime_t* timeout) {
-    return NULL;
-  }
+  virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {}
 };
 
 TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {

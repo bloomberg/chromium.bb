@@ -131,4 +131,35 @@ void CombineButtonsGestures(Gesture* gesture, const Gesture* addend) {
   if (!gesture->details.buttons.down && !gesture->details.buttons.up)
     *gesture = Gesture();
 }
+
+TestInterpreterWrapper::TestInterpreterWrapper(Interpreter* interpreter)
+    : interpreter_(interpreter) {
+  if (interpreter_)
+    interpreter_->SetGestureConsumer(this);
+  gesture_.type = kGestureTypeNull;
+}
+
+Gesture* TestInterpreterWrapper::SyncInterpret(HardwareState* state,
+                                           stime_t* timeout) {
+  gesture_ = Gesture();
+  interpreter_->SyncInterpret(state, timeout);
+  if (gesture_.type == kGestureTypeNull)
+    return NULL;
+  return &gesture_;
+}
+
+Gesture* TestInterpreterWrapper::HandleTimer(stime_t now, stime_t* timeout) {
+  gesture_.type = kGestureTypeNull;
+  interpreter_->HandleTimer(now, timeout);
+  if (gesture_.type == kGestureTypeNull)
+    return NULL;
+  return &gesture_;
+}
+
+void TestInterpreterWrapper::ConsumeGesture(const Gesture& gesture) {
+  Assert(gesture_.type == kGestureTypeNull);
+  gesture_ = gesture;
+}
+
+
 }  // namespace gestures

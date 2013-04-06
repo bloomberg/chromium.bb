@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::make_pair;
@@ -27,7 +28,7 @@ class T5R2CorrectingFilterInterpreterTestInterpreter : public Interpreter {
   T5R2CorrectingFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expected_hardware_state_) {
       EXPECT_EQ(expected_hardware_state_->timestamp, hwstate->timestamp);
       EXPECT_EQ(expected_hardware_state_->buttons_down, hwstate->buttons_down);
@@ -36,17 +37,16 @@ class T5R2CorrectingFilterInterpreterTestInterpreter : public Interpreter {
       EXPECT_EQ(expected_hardware_state_->fingers, hwstate->fingers);
     }
     if (return_values_.empty())
-      return NULL;
+      return;
     return_value_ = return_values_.front();
     return_values_.pop_front();
     if (return_value_.type == kGestureTypeNull)
-      return NULL;
-    return &return_value_;
+      return;
+    ProduceGesture(return_value_);
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     EXPECT_TRUE(false);
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
@@ -89,6 +89,7 @@ struct HardwareStateAndExpectations {
 TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
   T5R2CorrectingFilterInterpreterTestInterpreter* base_interpreter = NULL;
   scoped_ptr<T5R2CorrectingFilterInterpreter> interpreter;
+  TestInterpreterWrapper wrapper(interpreter.get());
 
   HardwareProperties hwprops = {
     0, 0, 10, 10,  // left, top, right, bottom
@@ -131,6 +132,7 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
           new T5R2CorrectingFilterInterpreterTestInterpreter;
       interpreter.reset(
           new T5R2CorrectingFilterInterpreter(NULL, base_interpreter, NULL));
+      wrapper = TestInterpreterWrapper(interpreter.get());
       base_interpreter->expected_hwprops_ = hwprops;
       interpreter->SetHardwareProperties(hwprops);
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);
@@ -140,7 +142,7 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
       expected_hs.touch_cnt = 0;
     base_interpreter->expected_hardware_state_ = &expected_hs;
     stime_t timeout = -1.0;
-    EXPECT_EQ(NULL, interpreter->SyncInterpret(&hse[i].hs, &timeout));
+    EXPECT_EQ(NULL, wrapper.SyncInterpret(&hse[i].hs, &timeout));
     base_interpreter->expected_hardware_state_ = NULL;
     EXPECT_LT(timeout, 0.0);
   }

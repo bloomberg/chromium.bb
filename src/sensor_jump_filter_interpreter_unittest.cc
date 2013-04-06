@@ -30,18 +30,16 @@ class SensorJumpFilterInterpreterTestInterpreter : public Interpreter {
         set_hwprops_called_(false),
         expected_finger_cnt_(-1) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expected_finger_cnt_ >= 0) {
       EXPECT_NE(static_cast<HardwareState*>(NULL), hwstate);
       EXPECT_EQ(1, hwstate->finger_cnt);
       prev_ = hwstate->fingers[0];
     }
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {
     handle_timer_called_ = true;
-    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {

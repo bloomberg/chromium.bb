@@ -26,7 +26,7 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
         : Interpreter(NULL, NULL, false), sync_interpret_cnt_(0) {
   }
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     sync_interpret_cnt_++;
 
     if (!expected_coordinates_.empty()) {
@@ -63,10 +63,9 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
       }
       expected_tracking_id_.pop_front();
     }
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) { return NULL; }
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {}
 
   int sync_interpret_cnt_;
   deque<vector<FingerPosition> > expected_coordinates_;

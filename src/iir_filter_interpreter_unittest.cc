@@ -21,7 +21,7 @@ class IirFilterInterpreterTestInterpreter : public Interpreter {
     prev_.position_y = 0.0;
   }
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+  virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (sync_interpret_cnt_) {
       EXPECT_GT(hwstate->fingers[0].position_x, prev_.position_x);
       EXPECT_GT(hwstate->fingers[0].position_y, prev_.position_y);
@@ -29,10 +29,9 @@ class IirFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_EQ(1, hwstate->finger_cnt);
     prev_ = hwstate->fingers[0];
     sync_interpret_cnt_++;
-    return NULL;
   }
 
-  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) { return NULL; }
+  virtual void HandleTimer(stime_t now, stime_t* timeout) {}
 
   FingerState prev_;
   size_t sync_interpret_cnt_;

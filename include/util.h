@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "gestures/include/gestures.h"
+#include "gestures/include/interpreter.h"
 
 namespace gestures {
 
@@ -55,6 +56,21 @@ inline float DegToRad(float degrees) {
 // Priority is given to button events first, then *gesture.
 // Also, |gesture| comes earlier in time than |addend|.
 void CombineGestures(Gesture* gesture, const Gesture* addend);
+
+// A wrapper to mimick the old interpreter API that is still used in
+// unit tests.
+class TestInterpreterWrapper : public GestureConsumer {
+ public:
+  TestInterpreterWrapper(Interpreter* interpreter);
+
+  Gesture* SyncInterpret(HardwareState* state, stime_t* timeout);
+  Gesture* HandleTimer(stime_t now, stime_t* timeout);
+  virtual void ConsumeGesture(const Gesture& gs);
+
+ private:
+  Interpreter* interpreter_;
+  Gesture gesture_;
+};
 
 }  // namespace gestures
 

@@ -10,6 +10,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/immediate_interpreter.h"
+#include "gestures/include/util.h"
 
 namespace gestures {
 
@@ -20,6 +21,7 @@ class ImmediateInterpreterTest : public ::testing::Test {};
 
 TEST(ImmediateInterpreterTest, MoveDownTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -54,13 +56,13 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   };
 
   // Should fail w/o hardware props set
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
@@ -68,7 +70,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   EXPECT_EQ(200000, gs->start_time);
   EXPECT_EQ(210000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(10, gs->details.move.dx);
@@ -77,13 +79,14 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   EXPECT_EQ(220000, gs->end_time);
 
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[3], NULL));
+            wrapper.SyncInterpret(&hardware_states[3], NULL));
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[4], NULL));
+            wrapper.SyncInterpret(&hardware_states[4], NULL));
 }
 
 TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -121,13 +124,13 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
   };
 
   // Should fail w/o hardware props set
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
@@ -135,7 +138,7 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
   EXPECT_EQ(200000, gs->start_time);
   EXPECT_EQ(210000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
@@ -144,13 +147,14 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
   EXPECT_EQ(220000, gs->end_time);
 
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[3], NULL));
+            wrapper.SyncInterpret(&hardware_states[3], NULL));
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[4], NULL));
+            wrapper.SyncInterpret(&hardware_states[4], NULL));
 }
 
 TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -189,9 +193,9 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -199,7 +203,7 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
   EXPECT_DOUBLE_EQ(0.200000, gs->start_time);
   EXPECT_DOUBLE_EQ(0.250000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -210,6 +214,7 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
 
 void ScrollUpTest(float pressure_a, float pressure_b) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -251,9 +256,9 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -261,7 +266,7 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
   EXPECT_DOUBLE_EQ(0.200000, gs->start_time);
   EXPECT_DOUBLE_EQ(0.250000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -282,6 +287,7 @@ TEST(ImmediateInterpreterTest, FatFingerScrollUpTest) {
 // Such a tap would be unrealistic to come from a human.
 TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -326,21 +332,21 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   ii.tap_enable_.val_ = 1;
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[3], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[3], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeFling, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[4], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[4], NULL);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
   stime_t timeout = -1.0;
-  gs = ii.SyncInterpret(&hardware_states[5], &timeout);
+  gs = wrapper.SyncInterpret(&hardware_states[5], &timeout);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
   // If it were a tap, timeout would be > 0, but this shouldn't be a tap,
   // so timeout should be negative still.
@@ -351,6 +357,7 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
 // scrolls have a fling as least as fast the second to last scroll.
 TEST(ImmediateInterpreterTest, FlingTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -419,40 +426,40 @@ TEST(ImmediateInterpreterTest, FlingTest) {
   size_t idx = 0;
 
   // Consistent movement
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeFling, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.fling.vx);
   EXPECT_FLOAT_EQ(10 / 0.01, gs->details.fling.vy);
 
   // Increasing speed movement
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs) << gs->String();
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs) << gs->String();
 
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeFling, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.fling.vx);
@@ -463,6 +470,7 @@ TEST(ImmediateInterpreterTest, FlingTest) {
 // can be evaluated multiple times when they start moving.
 TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -507,14 +515,14 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
   size_t idx = 0;
 
   // Consistent movement
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
 
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 }
@@ -522,6 +530,7 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
 // Tests that after a scroll is happening, if a finger lets go, scrolling stops.
 TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -570,18 +579,18 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
   size_t idx = 0;
 
   // Consistent movement
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   if (gs) {
     LOG(INFO)<< "gs:" << gs->String() << "i=" << idx;
     EXPECT_NE(kGestureTypeScroll, gs->type);
@@ -594,6 +603,7 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
 // stuck in move mode. This tests that it does switch to scroll mode.
 TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -638,13 +648,13 @@ TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
   size_t idx = 0;
 
   // Consistent movement
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[idx++], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 
-  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 }
@@ -814,7 +824,8 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
     HardwareState hs = { inputs[i].now,0,finger_cnt,finger_cnt,fs,0,0,0,0 };
 
     stime_t timeout = -1.0;
-    Gesture* gs = ii->SyncInterpret(&hs, &timeout);
+    TestInterpreterWrapper wrapper(ii.get());
+    Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     switch (inputs[i].expectation) {
       case kAnything:
         // Anything goes
@@ -957,7 +968,8 @@ TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
     HardwareState hs = { inputs[i].now, 0, 2, 2, fs, 0, 0, 0, 0 };
 
     stime_t timeout = -1.0;
-    Gesture* gs = ii->SyncInterpret(&hs, &timeout);
+    TestInterpreterWrapper wrapper(ii.get());
+    Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (gs) {
       EXPECT_EQ(kGestureTypeScroll, gs->type);
       EXPECT_LE(gs->details.scroll.dy, 0.0);
@@ -1057,7 +1069,8 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
       ii->SetHardwareProperties(hwprops);
     }
-    Gesture* gs = ii->SyncInterpret(&hse.hs, NULL);
+    TestInterpreterWrapper wrapper(ii.get());
+    Gesture* gs = wrapper.SyncInterpret(&hse.hs, NULL);
     if (hse.dx == 0.0 && hse.dy == 0.0) {
       EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
       continue;
@@ -1113,18 +1126,19 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
     ii->SetHardwareProperties(hwprops);
     for (size_t i = 0; i < 4; i++) {
       HardwareState hs = { kTO + 0.01 * i, 0, 2, 2, finger_states, 0, 0, 0, 0 };
+      TestInterpreterWrapper wrapper(ii.get());
       if (i == 0) {
         hs.timestamp -= kTO;
-        Gesture* gs = ii->SyncInterpret(&hs, NULL);
+        Gesture* gs = wrapper.SyncInterpret(&hs, NULL);
         EXPECT_EQ(static_cast<Gesture*>(NULL), gs);
         hs.timestamp += kTO;
-        gs = ii->SyncInterpret(&hs, NULL);
+        gs = wrapper.SyncInterpret(&hs, NULL);
         if (gs && gs->type == kGestureTypeMove) {
           EXPECT_FLOAT_EQ(0.0, gs->details.move.dx);
           EXPECT_FLOAT_EQ(0.0, gs->details.move.dy);
         }
       } else {
-        Gesture* gs = ii->SyncInterpret(&hs, NULL);
+        Gesture* gs = wrapper.SyncInterpret(&hs, NULL);
         ASSERT_NE(static_cast<Gesture*>(NULL), gs);
         EXPECT_EQ(kGestureTypeMove, gs->type);
         EXPECT_FLOAT_EQ(dx, gs->details.move.dx);
@@ -1137,6 +1151,7 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
 
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1177,7 +1192,7 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ii.tap_enable_.val_ = 0;
 
   for (size_t i = 0; i < arraysize(hardware_states); i++) {
-    Gesture* gs = ii.SyncInterpret(&hardware_states[i], NULL);
+    Gesture* gs = wrapper.SyncInterpret(&hardware_states[i], NULL);
     if (!gs)
       continue;
     EXPECT_EQ(kGestureTypeMove, gs->type) << "i=" << i;
@@ -1188,6 +1203,7 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
 
 TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1229,13 +1245,14 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
   ii.tap_enable_.val_ = 0;
 
   for (size_t i = 0; i < arraysize(hardware_states); i++) {
-    Gesture* gs = ii.SyncInterpret(&hardware_states[i], NULL);
+    Gesture* gs = wrapper.SyncInterpret(&hardware_states[i], NULL);
     EXPECT_TRUE(!gs || gs->type == kGestureTypeScroll);
   }
 }
 
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1270,12 +1287,13 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     200000, 0, 5, 5, &finger_states[0], 0, 0, 0, 0
   };
   // This used to cause a crash:
-  Gesture* gs = ii.SyncInterpret(&hardware_state, NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_state, NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 }
 
 TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1342,7 +1360,7 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   ASSERT_EQ(arraysize(expected_gs), arraysize(hardware_state));
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
-    Gesture* gs = ii.SyncInterpret(&hardware_state[i], NULL);
+    Gesture* gs = wrapper.SyncInterpret(&hardware_state[i], NULL);
     if (expected_gs[i] == kGestureTypeNull) {
       EXPECT_EQ(static_cast<Gesture*>(NULL), gs) << "gs:" << gs->String();
     } else {
@@ -1355,6 +1373,7 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
 
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1393,7 +1412,7 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
-    Gesture* result = ii.SyncInterpret(&hardware_state[i], NULL);
+    Gesture* result = wrapper.SyncInterpret(&hardware_state[i], NULL);
     switch (i) {
       case 0:
       case 2:
@@ -1410,6 +1429,7 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
 
 TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1517,6 +1537,7 @@ set<short, kMaxGesturingFingers> MkSet(short id1, short id2, short id3) {
 
 TEST(ImmediateInterpreterTest, TapRecordTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   TapRecord tr(&ii);
   EXPECT_FALSE(tr.TapComplete());
   // two finger IDs:
@@ -1640,6 +1661,7 @@ const unsigned kBR = GESTURES_BUTTON_RIGHT;
 
 TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   scoped_ptr<ImmediateInterpreter> ii;
+  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2033,6 +2055,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       // Reset imm interpreter
       LOG(INFO) << "Resetting imm interpreter, i = " << i;
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
+      wrapper = TestInterpreterWrapper(ii.get());
       ii->SetHardwareProperties(hwprops);
       ii->drag_lock_enable_.val_ = 1;
       ii->motion_tap_prevent_timeout_.val_ = 0;
@@ -2154,7 +2177,8 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
         (fs[1].tracking_id == -1 ? 1 : 2);
     HardwareState hs = { input.now, 0, finger_cnt, finger_cnt, fs, 0, 0, 0, 0 };
     stime_t timeout = -1;
-    Gesture* gs = ii->SyncInterpret(&hs, &timeout);
+    TestInterpreterWrapper wrapper(ii.get());
+    Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (finger_cnt > 0) {
       // Expect no timeout
       EXPECT_LT(timeout, 0);
@@ -2172,6 +2196,7 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
 // Does two tap gestures, one with keyboard interference.
 TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   scoped_ptr<ImmediateInterpreter> ii;
+  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2209,6 +2234,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   };
   for (size_t test = 0; test != kMaxTests; test++) {
     ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
+    wrapper = TestInterpreterWrapper(ii.get());
     ii->SetHardwareProperties(hwprops);
     ii->motion_tap_prevent_timeout_.val_ = 0;
     ii->tap_enable_.val_ = 1;
@@ -2244,6 +2270,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
 
 TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
   scoped_ptr<ImmediateInterpreter> ii;
+  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2335,6 +2362,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         // Reset imm interpreter
         LOG(INFO) << "Resetting imm interpreter, i = " << i;
         ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
+        wrapper = TestInterpreterWrapper(ii.get());
         ii->SetHardwareProperties(hwprops);
         ii->drag_lock_enable_.val_ = 1;
         ii->motion_tap_prevent_timeout_.val_ = 0;
@@ -2399,6 +2427,7 @@ struct ClickTestHardwareStateAndExpectations {
 
 TEST(ImmediateInterpreterTest, ClickTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2466,9 +2495,9 @@ TEST(ImmediateInterpreterTest, ClickTest) {
   for (size_t i = 0; i < arraysize(records); ++i) {
     Gesture* result = NULL;
     if (records[i].timeout < 0.0)
-      result = ii.SyncInterpret(&records[i].hs, NULL);
+      result = wrapper.SyncInterpret(&records[i].hs, NULL);
     else
-      result = ii.HandleTimer(records[i].timeout, NULL);
+      result = wrapper.HandleTimer(records[i].timeout, NULL);
     if (records[i].expected_down == 0 && records[i].expected_up == 0) {
       EXPECT_EQ(static_cast<Gesture*>(NULL), result) << "i=" << i;
     } else {
@@ -2618,12 +2647,13 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
         { 0, 0, 0, 0, 41.444939, 0, 57.525326, 43.700001, 131, 0 } } }
   };
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   ii.SetHardwareProperties(hwprops);
   for (size_t i = 0; i < arraysize(records); i++) {
     // Make the hwstate point to the fingers
     HardwareState* hs = &records[i].hs;
     hs->fingers = records[i].fs;
-    Gesture* gs_out = ii.SyncInterpret(hs, NULL);
+    Gesture* gs_out = wrapper.SyncInterpret(hs, NULL);
     if (!gs_out || gs_out->type != kGestureTypeButtonsChange) {
       // We got no output buttons gesture. Make sure we expected that
       EXPECT_EQ(0, records[i].out_buttons_down);
@@ -2640,6 +2670,7 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
 
 TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2682,10 +2713,10 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
   // One finger moves, change_timeout_ is not applied.
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
@@ -2694,7 +2725,7 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
   EXPECT_EQ(0.12, gs->end_time);
 
   // One finger moves, change_timeout_ does not block the gesture.
-  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[2], NULL);
   EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(10, gs->details.move.dx);
@@ -2703,19 +2734,19 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
   EXPECT_EQ(0.16, gs->end_time);
 
   // No finger.
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[3], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[3], NULL));
 
   // Start with 2 fingers.
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[4], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[4], NULL));
   // One finger leaves, finger_leave_time_ recorded.
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[5], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[5], NULL));
   EXPECT_EQ(ii.finger_leave_time_, 1.10);
   // One finger moves, change_timeout_ blocks the gesture.
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[6], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[6], NULL));
 
   // One finger moves, finger_leave_time_ + change_timeout_
   // has been passed.
-  gs = ii.SyncInterpret(&hardware_states[7], NULL);
+  gs = wrapper.SyncInterpret(&hardware_states[7], NULL);
   EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(10, gs->details.move.dx);
@@ -2723,7 +2754,7 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
   EXPECT_EQ(1.12, gs->start_time);
   EXPECT_EQ(1.16, gs->end_time);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[8], NULL));
+  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[8], NULL));
 }
 
 // Tests that fingers that have been present a while, but are stationary,
@@ -2742,6 +2773,7 @@ struct PinchTestInput {
 
 TEST(ImmediateInterpreterTest, DISABLED_PinchTests) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   ii.pinch_enable_.val_ = 1;
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2857,7 +2889,7 @@ TEST(ImmediateInterpreterTest, DISABLED_PinchTests) {
   ii.SetHardwareProperties(hwprops);
 
   for (size_t idx = 0; idx < arraysize(input_states); ++idx) {
-    Gesture* gs = ii.SyncInterpret(&input_states[idx].hs, NULL);
+    Gesture* gs = wrapper.SyncInterpret(&input_states[idx].hs, NULL);
     // assert pinch detected
     if (input_states[idx].expected_result == kPinch) {
       ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
@@ -3022,7 +3054,8 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     };
     HardwareState hs = { input.now, 0, 2, 2, fs, 0, 0, 0, 0 };
     stime_t timeout = -1;
-    Gesture* gs = ii->SyncInterpret(&hs, &timeout);
+    TestInterpreterWrapper wrapper(ii.get());
+    Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (input.expected_gesture != kAny) {
       EXPECT_NE(static_cast<Gesture*>(NULL), gs) << "i=" << i;
       if (gs)
@@ -3033,6 +3066,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
 
 TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties old_hwprops = {
     0,  // left edge
@@ -3077,7 +3111,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
 
   // The finger will not change the tap_to_click_state_ at all.
   for (size_t idx = 0; idx < arraysize(old_hardware_states); ++idx) {
-    ii.SyncInterpret(&old_hardware_states[idx], NULL);
+    wrapper.SyncInterpret(&old_hardware_states[idx], NULL);
     EXPECT_EQ(kIdl, ii.tap_to_click_state_);
   }
 
@@ -3121,7 +3155,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
   // With new active area, the finger changes the tap_to_click_state_ to
   // FirstTapBegan.
   for (size_t idx = 0; idx < arraysize(new_hardware_states); ++idx) {
-    ii.SyncInterpret(&new_hardware_states[idx], NULL);
+    wrapper.SyncInterpret(&new_hardware_states[idx], NULL);
     EXPECT_EQ(ii.kTtcFirstTapBegan, ii.tap_to_click_state_);
   }
 }
@@ -3129,6 +3163,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
 TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
   ii.pinch_enable_.val_ = 1;
+  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3180,7 +3215,7 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
 
   Gesture *gesture;
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
-    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+    gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
   EXPECT_EQ(gesture->type, kGestureTypePinch);
 
   // For a semi_mt device, replay the same inputs should not generate
@@ -3188,13 +3223,14 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   hwprops.support_semi_mt = 1;
   ii.SetHardwareProperties(hwprops);
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
-    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+    gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
   if (gesture)
     EXPECT_NE(gesture->type, kGestureTypePinch);
 }
 
 TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3245,7 +3281,7 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
 
   Gesture *gesture;
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
-    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+    gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
 
   ASSERT_NE(gesture, static_cast<Gesture*>(NULL));
   EXPECT_EQ(gesture->type, kGestureTypeButtonsChange);
@@ -3255,6 +3291,7 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
 // to compute fling.
 TEST(ImmediateInterpreterTest, FlingDepthTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -3350,6 +3387,7 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
 
 TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3405,7 +3443,7 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
   ii.SetHardwareProperties(hwprops);
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
-    Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
+    Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx], NULL);
     if (gs != NULL) {
       if (idx == 2)
         EXPECT_EQ(kGestureTypeScroll, gs->type);
@@ -3419,6 +3457,7 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
 
 TEST(ImmediateInterpreterTest, BasicButtonTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
+  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3456,7 +3495,7 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
   ii.SetHardwareProperties(hwprops);
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
-    Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
+    Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx], NULL);
     if (idx < 2 || idx == 4 || idx == 7) {
       EXPECT_EQ(NULL, gs);
     } else {
