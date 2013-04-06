@@ -43,7 +43,6 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
   return make_scoped_refptr(new Tile(&tile_manager_,
                                      pile_.get(),
                                      tile_size_,
-                                     GL_RGBA,
                                      rect,
                                      gfx::Rect(),
                                      1,

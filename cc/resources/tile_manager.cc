@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "cc/debug/devtools_instrumentation.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
@@ -545,8 +544,6 @@ void TileManager::AssignGpuMemoryToTiles() {
           bytes_that_exceeded_memory_budget_in_now_bin += tile_bytes;
       FreeResourcesForTile(tile);
       tile->drawing_info().set_rasterize_on_demand();
-      tile->drawing_info().set_contents_swizzled(
-          !PlatformColor::SameComponentOrder(tile->format_));
       continue;
     }
     tile->drawing_info().set_use_resource();
@@ -760,8 +757,9 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
     Tile* tile) {
   ManagedTileState& managed_tile_state = tile->managed_state();
   DCHECK(managed_tile_state.can_use_gpu_memory);
-  scoped_ptr<ResourcePool::Resource> resource =
-      resource_pool_->AcquireResource(tile->tile_size_.size(), tile->format_);
+  scoped_ptr<ResourcePool::Resource> resource = resource_pool_->AcquireResource(
+      tile->tile_size_.size(),
+      tile->drawing_info().resource_format_);
   resource_pool_->resource_provider()->AcquirePixelBuffer(resource->id());
 
   tile->drawing_info().resource_is_being_initialized_ = true;
@@ -850,11 +848,6 @@ void TileManager::OnRasterTaskCompleted(
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
-    // The component order may be bgra if we're uploading bgra pixels to rgba
-    // texture. Mark contents as swizzled if image component order is
-    // different than texture format.
-    tile->drawing_info().contents_swizzled_ =
-        !PlatformColor::SameComponentOrder(tile->format_);
 
     // Tile resources can't be freed until upload has completed.
     tile->drawing_info().can_be_freed_ = false;

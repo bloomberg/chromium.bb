@@ -25,7 +25,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   Tile(TileManager* tile_manager,
        PicturePileImpl* picture_pile,
        gfx::Size tile_size,
-       GLenum format,
        gfx::Rect content_rect,
        gfx::Rect opaque_rect,
        float contents_scale,
@@ -75,7 +74,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   const ManagedTileState& managed_state() const { return managed_state_; }
 
   inline size_t bytes_consumed_if_allocated() const {
-    DCHECK(format_ == GL_RGBA);
     return 4 * tile_size_.width() * tile_size_.height();
   }
 
@@ -87,7 +85,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   TileManager* tile_manager_;
   scoped_refptr<PicturePileImpl> picture_pile_;
   gfx::Rect tile_size_;
-  GLenum format_;
   gfx::Rect content_rect_;
   float contents_scale_;
   gfx::Rect opaque_rect_;

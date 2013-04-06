@@ -28,7 +28,7 @@ ManagedTileState::DrawingInfo::DrawingInfo()
     : mode_(RESOURCE_MODE),
       resource_is_being_initialized_(false),
       can_be_freed_(true),
-      contents_swizzled_(false) {
+      resource_format_(GL_RGBA) {
 }
 
 ManagedTileState::DrawingInfo::~DrawingInfo() {

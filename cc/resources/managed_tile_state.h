@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
@@ -51,7 +52,7 @@ class CC_EXPORT ManagedTileState {
       }
 
       bool contents_swizzled() const {
-        return contents_swizzled_;
+        return !PlatformColor::SameComponentOrder(resource_format_);
       }
 
       bool requires_resource() const {
@@ -84,17 +85,13 @@ class CC_EXPORT ManagedTileState {
         mode_ = PICTURE_PILE_MODE;
       }
 
-      void set_contents_swizzled(bool contents_swizzled) {
-        contents_swizzled_ = contents_swizzled;
-      }
-
       Mode mode_;
       SkColor solid_color_;
 
       scoped_ptr<ResourcePool::Resource> resource_;
       bool resource_is_being_initialized_;
       bool can_be_freed_;
-      bool contents_swizzled_;
+      GLenum resource_format_;
   };
 
 

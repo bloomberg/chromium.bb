@@ -6,6 +6,7 @@
 #define CC_RESOURCES_PLATFORM_COLOR_H_
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
