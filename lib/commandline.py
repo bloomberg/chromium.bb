@@ -28,6 +28,56 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
+CHECKOUT_TYPE_UNKNOWN = 'unknown'
+CHECKOUT_TYPE_GCLIENT = 'gclient'
+CHECKOUT_TYPE_REPO = 'repo'
+CHECKOUT_TYPE_SUBMODULE = 'submodule'
+
+
+CheckoutInfo = collections.namedtuple(
+    'CheckoutInfo', ['type', 'root', 'chrome_src_dir'])
+
+
+def DetermineCheckout(cwd):
+  """Gather information on the checkout we are in.
+
+  Returns:
+    A CheckoutInfo object with these attributes:
+      type: The type of checkout.  Valid values are CHECKOUT_TYPE_*.
+      root: The root of the checkout.
+      chrome_src_dir: If the checkout is a Chrome checkout, the path to the
+        Chrome src/ directory.
+  """
+  debug_msg = 'Looking for %s checkout root.'
+  logging.debug(debug_msg, 'repo')
+
+  # Determine checkout checkout_type and root.
+  checkout_type = CHECKOUT_TYPE_UNKNOWN
+  root = git.FindRepoCheckoutRoot(cwd)
+  checkout_type = CHECKOUT_TYPE_REPO if root else checkout_type
+  if root is None:
+    logging.debug(debug_msg, 'gclient')
+    root = gclient.FindGclientCheckoutRoot(cwd)
+    checkout_type = CHECKOUT_TYPE_GCLIENT if root else checkout_type
+  if root is None:
+    logging.debug(debug_msg, 'git submodule')
+    chrome_url = '%s/%s.git' % (
+        constants.PUBLIC_GOB_URL, constants.CHROMIUM_SRC_PROJECT)
+    root = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
+    checkout_type = CHECKOUT_TYPE_SUBMODULE if root else checkout_type
+  if root is None:
+    checkout_type = CHECKOUT_TYPE_UNKNOWN
+
+  # Determine the chrome src directory.
+  chrome_src_dir = None
+  if checkout_type == CHECKOUT_TYPE_GCLIENT:
+    chrome_src_dir = os.path.join(root, 'src')
+  elif checkout_type == CHECKOUT_TYPE_SUBMODULE:
+    chrome_src_dir = root
+
+  return CheckoutInfo(checkout_type, root, chrome_src_dir)
+
+
 def AbsolutePath(_option, _opt, value):
   """Expand paths and make them absolute."""
   return osutils.ExpandPath(value)
@@ -204,22 +254,17 @@ class BaseParser(object):
 
   @classmethod
   def FindCacheDir(cls, _parser, _opts):
-    debug_msg = 'Cache dir lookup: looking for %s checkout root.'
-    logging.debug(debug_msg, 'repo')
-    path = git.FindRepoCheckoutRoot(os.getcwd())
-    path = os.path.join(path, cls.REPO_CACHE_DIR) if path else path
-    if path is None:
-      logging.debug(debug_msg, 'gclient')
-      path = gclient.FindGclientCheckoutRoot(os.getcwd())
-      path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
-    if path is None:
-      logging.debug(debug_msg, 'git submodule')
-      chrome_url = '%s/%s.git' % (
-          constants.PUBLIC_GOB_URL, constants.CHROMIUM_SRC_PROJECT)
-      path = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
-      path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
-    if path is None:
+    logging.debug('Cache dir lookup.')
+    checkout = DetermineCheckout(os.getcwd())
+    path = None
+    if checkout.type == CHECKOUT_TYPE_REPO:
+      path = os.path.join(checkout.root, cls.REPO_CACHE_DIR)
+    elif checkout.type in (CHECKOUT_TYPE_GCLIENT, CHECKOUT_TYPE_SUBMODULE):
+      path = os.path.join(checkout.root, cls.CHROME_CACHE_DIR)
+    elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
+    else:
+      raise AssertionError('Unexpected type %s' % checkout.type)
 
     return path
 

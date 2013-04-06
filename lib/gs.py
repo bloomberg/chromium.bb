@@ -321,9 +321,10 @@ class GSContext(object):
       kwargs['headers'] = headers
     return self._DoCommand(cmd, **kwargs)
 
-  def LS(self, path):
+  def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path."""
-    return self._DoCommand(['ls', '--', path], redirect_stdout=True)
+    kwargs['redirect_stdout'] = True
+    return self._DoCommand(['ls', '--', path], **kwargs)
 
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.

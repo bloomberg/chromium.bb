@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
+import argparse
 import collections
 import contextlib
 import json
@@ -12,8 +12,8 @@ import os
 from chromite import cros
 from chromite.lib import cache
 from chromite.lib import chrome_util
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import stats
@@ -22,6 +22,10 @@ from chromite.buildbot import constants
 
 
 COMMAND_NAME = 'chrome-sdk'
+
+
+class SDKError(Exception):
+  """Raised by SDKFetcher."""
 
 
 class SDKFetcher(object):
@@ -72,7 +76,8 @@ class SDKFetcher(object):
   def _GetMetadata(self, version):
     """Return metadata (in the form of a dict) for a given version."""
     raw_json = None
-    version_base = os.path.join(self.gs_base, version)
+    full_version = self.GetFullVersion(version)
+    version_base = os.path.join(self.gs_base, full_version)
     with self.misc_cache.Lookup(
         (self.board, version, constants.METADATA_JSON)) as ref:
       if ref.Exists(lock=True):
@@ -84,28 +89,38 @@ class SDKFetcher(object):
 
     return json.loads(raw_json)
 
-  def _GetChromeLKGM(self):
-    """Get ChromeOS LKGM checked into the Chrome tree."""
-    gclient_root = gclient.FindGclientCheckoutRoot(os.getcwd())
-    if gclient_root is not None:
-      version = osutils.ReadFile(os.path.join(
-          gclient_root, constants.PATH_TO_CHROME_LKGM))
-      real_path = self.gs_ctx.LS(os.path.join(
-          self.gs_base, 'R??-%s' % version)).output.splitlines()[0]
-      if not real_path.startswith(self.gs_base):
-        raise AssertionError('%s does not start with %s'
-                             % (real_path, self.gs_base))
-      real_path = real_path[len(self.gs_base) + 1:]
-      full_version = real_path.partition('/')[0]
-      if not full_version.endswith(version):
-        raise AssertionError('%s does not end with %s'
-                             % (full_version, version))
-      return full_version
-    return None
+  def _GetChromeLKGM(self, chrome_src_dir):
+    """Get ChromeOS LKGM checked into the Chrome tree.
+
+    Returns:
+      Version number in format '3929.0.0'.
+    """
+    version = osutils.ReadFile(os.path.join(
+        chrome_src_dir, constants.PATH_TO_CHROME_LKGM))
+    return version
+
+  def _GetRepoCheckoutVersion(self, repo_root):
+    """Get the version specified in chromeos_version.sh.
+
+    Returns:
+      Version number in format '3929.0.0'.
+    """
+    chromeos_version_sh = os.path.join(repo_root, constants.VERSION_FILE)
+    sourced_env = osutils.SourceEnvironment(
+        chromeos_version_sh, ['CHROMEOS_VERSION_STRING'],
+        env={'CHROMEOS_OFFICIAL': '1'})
+    return sourced_env['CHROMEOS_VERSION_STRING']
 
   def _GetNewestManifestVersion(self):
+    """Gets the latest uploaded SDK version.
+
+    Returns:
+      Version number in the format '3929.0.0'.
+    """
     version_file = '%s/LATEST-master' % self.gs_base
-    return self.gs_ctx.Cat(version_file).output
+    full_version = self.gs_ctx.Cat(version_file).output
+    assert full_version.startswith('R')
+    return full_version.split('-')[1]
 
   def GetDefaultVersion(self):
     """Get the default SDK version to use.
@@ -121,7 +136,11 @@ class SDKFetcher(object):
 
     with self.misc_cache.Lookup((self.board, 'latest')) as ref:
       if ref.Exists(lock=True):
-        return osutils.ReadFile(ref.path).strip()
+        version = osutils.ReadFile(ref.path).strip()
+        # Deal with the old version format.
+        if version.startswith('R'):
+          version = version.split('-')[1]
+        return version
       else:
         return self.UpdateDefaultVersion()
 
@@ -131,12 +150,68 @@ class SDKFetcher(object):
       ref.AssignText(version)
 
   def UpdateDefaultVersion(self):
-    """Update the version that we default to using."""
-    target = self._GetChromeLKGM()
-    if target is None:
+    """Update the version that we default to using.
+
+    Returns:
+      Version number in the format '3929.0.0'.
+    """
+    checkout = commandline.DetermineCheckout(os.getcwd())
+    if checkout.chrome_src_dir:
+      target = self._GetChromeLKGM(checkout.chrome_src_dir)
+    elif checkout.type == commandline.CHECKOUT_TYPE_REPO:
+      target = self._GetRepoCheckoutVersion(checkout.root)
+    else:
       target = self._GetNewestManifestVersion()
     self._SetDefaultVersion(target)
     return target
+
+  def GetFullVersion(self, version):
+    """Add the release branch to a ChromeOS platform version.
+
+    Arguments:
+      version: A ChromeOS platform number of the form XXXX.XX.XX, i.e.,
+        3918.0.0.
+
+    Returns:
+      The version with release branch prepended.  I.e., R28-3918.0.0.
+    """
+    def DebugGsLs(*args, **kwargs):
+      kwargs.setdefault('retries', 0)
+      kwargs.setdefault('debug_level', logging.DEBUG)
+      kwargs.setdefault('error_code_ok', True)
+      return self.gs_ctx.LS(*args, **kwargs)
+
+    assert not version.startswith('R')
+
+    with self.misc_cache.Lookup(('full-version', version)) as ref:
+      if ref.Exists(lock=True):
+        return osutils.ReadFile(ref.path).strip()
+      else:
+        # First, assume crbug.com/230190 has been fixed, and we can just use
+        # the bare version.  The 'ls' we do here is a relatively cheap check
+        # compared to the pattern matching we do below.
+        # TODO(rcui): Rename this function to VerifyVersion()
+        lines = DebugGsLs(
+            os.path.join(self.gs_base, version) + '/').output.splitlines()
+        full_version = version
+        if not lines:
+          # TODO(rcui): Remove this code when crbug.com/230190 is fixed.
+          lines = DebugGsLs(os.path.join(
+              self.gs_base, 'R*-%s' % version) + '/').output.splitlines()
+          if not lines:
+            raise SDKError('Invalid version %s' % version)
+          real_path = lines[0]
+          if not real_path.startswith(self.gs_base):
+            raise AssertionError('%s does not start with %s'
+                                 % (real_path, self.gs_base))
+          real_path = real_path[len(self.gs_base) + 1:]
+          full_version = real_path.partition('/')[0]
+          if not full_version.endswith(version):
+            raise AssertionError('%s does not end with %s'
+                                 % (full_version, version))
+
+        ref.AssignText(full_version)
+        return full_version
 
   @contextlib.contextmanager
   def Prepare(self, components, version=None):
@@ -166,7 +241,6 @@ class SDKFetcher(object):
 
     key_map = {}
     fetch_urls = {}
-    version_base = os.path.join(self.gs_base, version)
 
     metadata = self._GetMetadata(version)
     # Fetch toolchains from separate location.
@@ -177,6 +251,8 @@ class SDKFetcher(object):
           metadata['toolchain-url'] % {'target': tc_tuple})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
 
+    full_version = self.GetFullVersion(version)
+    version_base = os.path.join(self.gs_base, full_version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
       for key, url in fetch_urls.iteritems():
@@ -232,6 +308,13 @@ class ChromeSDKCommand(cros.CrosCommand):
     else:
       return stats.StatsUploader.UPLOAD_TIMEOUT
 
+  @staticmethod
+  def ValidateVersion(version):
+    if version.startswith('R') or len(version.split('.')) != 3:
+      raise argparse.ArgumentTypeError(
+          '--version should be in the format 3912.0.0')
+    return version
+
   @classmethod
   def AddParser(cls, parser):
     super(ChromeSDKCommand, cls).AddParser(parser)
@@ -263,13 +346,10 @@ class ChromeSDKCommand(cros.CrosCommand):
              'is built against.  The version shown in the SDK shell prompt '
              'will then have an asterisk prepended to it.')
     parser.add_argument(
-        '--update', action='store_true', default=False,
-        help='Force download of latest SDK version for the board.')
-    parser.add_argument(
-        '--version', default=None,
-        help='Specify version of SDK to use.  Defaults to determining version '
-             'based on the type of checkout (Chrome or ChromeOS) you are '
-             'executing from.')
+        '--version', default=None, type=cls.ValidateVersion,
+        help="Specify version of SDK to use, in the format '3912.0.0'.  "
+             "Defaults to determining version based on the type of checkout "
+             "(Chrome or ChromeOS) you are executing from.")
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
@@ -394,7 +474,8 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     # PS1 sets the command line prompt and xterm window caption.
     env['PS1'] = self._CreatePS1(
-        self.board, sdk_ctx.version, chroot=options.chroot)
+        self.board, self.sdk.GetFullVersion(sdk_ctx.version),
+        chroot=options.chroot)
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
@@ -441,6 +522,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     # because running with '--rcfile' causes bash to ignore bash special
     # variables passed through subprocess.Popen, such as PS1.  So we set them
     # here.
+    #
     # Having a wrapper rc file will also allow us to inject bash functions into
     # the environment, not just variables.
     with osutils.TempDir() as tempdir:
@@ -470,7 +552,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     self.sdk = SDKFetcher(self.options.cache_dir, self.options.board)
 
     prepare_version = self.options.version
-    if self.options.update:
+    if not prepare_version:
       prepare_version = self.sdk.UpdateDefaultVersion()
 
     components = [self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR]

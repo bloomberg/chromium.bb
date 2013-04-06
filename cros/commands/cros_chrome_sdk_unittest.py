@@ -6,7 +6,6 @@
 
 """This module tests the cros image command."""
 
-import copy
 import mock
 import os
 import shutil
@@ -19,11 +18,13 @@ from chromite.cros.commands import init_unittest
 from chromite.lib import cache
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 
+# pylint: disable=W0212
 
 class MockChromeSDKCommand(init_unittest.MockCommand):
   """Mock out the build command."""
@@ -82,8 +83,8 @@ class SDKFetcherMock(partial_mock.PartialMock):
   """Provides mocking functionality for SDKFetcher."""
 
   TARGET = 'chromite.cros.commands.cros_chrome_sdk.SDKFetcher'
-  ATTRS = ('__init__', '_GetChromeLKGM', '_GetNewestManifestVersion',
-           '_UpdateTarball', '_GetMetadata')
+  ATTRS = ('__init__', 'GetFullVersion', '_GetMetadata', '_UpdateTarball',
+           'UpdateDefaultVersion')
 
   FAKE_METADATA = """
 {
@@ -98,7 +99,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
 }"""
 
   BOARD = 'x86-alex'
-  VERSION = 'R25-3543.2.0'
+  VERSION = 'XXXX.X.X'
 
   def __init__(self, gs_mock=None):
     """Initializes the mock.
@@ -123,11 +124,8 @@ class SDKFetcherMock(partial_mock.PartialMock):
                            'dir under /tmp')
 
   @_DependencyMockCtx
-  def _GetChromeLKGM(self, _inst, *_args, **_kwargs):
-    return None
-
-  @_DependencyMockCtx
-  def _GetNewestManifestVersion(self, _inst, *_args, **_kwargs):
+  def UpdateDefaultVersion(self, inst, *_args, **_kwargs):
+    inst._SetDefaultVersion(self.VERSION)
     return self.VERSION
 
   @_DependencyMockCtx
@@ -136,6 +134,10 @@ class SDKFetcherMock(partial_mock.PartialMock):
                            side_effect=_GSCopyMock):
       with mock.patch.object(cache, 'Untar'):
         return self.backup['_UpdateTarball'](inst, *args, **kwargs)
+
+  @_DependencyMockCtx
+  def GetFullVersion(self, _inst, version):
+    return 'R26-%s' % version
 
   @_DependencyMockCtx
   def _GetMetadata(self, inst, *args, **kwargs):
@@ -168,7 +170,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.cmd_mock.UnMockAttr('Run')
 
     self.PatchObject(osutils, 'SourceEnvironment',
-                     autospec=True, return_value=copy.copy(self.FAKE_ENV))
+                     autospec=True, return_value=self.FAKE_ENV)
 
   @property
   def cache(self):
@@ -195,13 +197,12 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
 class VersionTest(cros_test_lib.MockTempDirTestCase):
   """Tests the determination of which SDK version to use."""
 
-  PARTIAL_VERSION = '3543.2.0'
-  VERSION = 'RXX-%s' % PARTIAL_VERSION
-  ENV_VERSION = 'RYY-%s' % PARTIAL_VERSION
+  VERSION = '3543.2.0'
+  FULL_VERSION = 'R55-%s' % VERSION
   BOARD = 'lumpy'
 
   VERSION_BASE = ("gs://chromeos-image-archive/%s-release/%s"
-                  % (BOARD, VERSION))
+                  % (BOARD, FULL_VERSION))
   FAKE_LS = """\
 %(base)s/UPLOADED
 %(base)s/au-generator.zip
@@ -209,29 +210,67 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
 %(base)s/bootloader.tar.xz
 """ % {'base': VERSION_BASE}
 
+  LS_ERROR = 'CommandException: One or more URIs matched no objects.'
+
   def setUp(self):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.gs_mock.SetDefaultCmdResult()
     self.sdk_mock = self.StartPatcher(SDKFetcherMock(gs_mock=self.gs_mock))
-    self.sdk_mock.UnMockAttr('_GetChromeLKGM')
 
     os.environ.pop(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV, None)
     self.sdk = cros_chrome_sdk.SDKFetcher(
         os.path.join(self.tempdir, 'cache'), self.BOARD)
 
+  def testFullVersion(self):
+    """Test full version calculation."""
+    def RaiseException(*_args, **_kwargs):
+      raise Exception('boom')
+
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('ls .*/%s' % self.VERSION),
+        error=self.LS_ERROR, returncode=1)
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('ls .*-%s' % self.VERSION),
+        output=self.FAKE_LS)
+    self.assertEquals(
+        self.FULL_VERSION,
+        self.sdk.GetFullVersion(self.VERSION))
+    # Test that we access the cache on the next call, rather than checking GS.
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('ls .*/%s' % self.VERSION),
+        side_effect=RaiseException)
+    self.assertEquals(
+        self.FULL_VERSION,
+        self.sdk.GetFullVersion(self.VERSION))
+
+  def testBareVersion(self):
+    """Codepath where crbug.com/230190 has been fixed."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(partial_mock.ListRegex('ls .*/%s' % self.VERSION),
+                              output='results')
+    self.assertEquals(self.VERSION, self.sdk.GetFullVersion(self.VERSION))
+
+  def testBadVersion(self):
+    """We raise an exception for a bad version."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('ls .*'),
+        output='', error=self.LS_ERROR, returncode=1)
+    self.assertRaises(cros_chrome_sdk.SDKError, self.sdk.GetFullVersion,
+                      self.VERSION)
+
   def testChromeVersion(self):
     """We pick up the right LKGM version from the Chrome tree."""
     gclient_root = os.path.join(self.tempdir, 'gclient_root')
+    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
     self.PatchObject(gclient, 'FindGclientCheckoutRoot',
                      return_value=gclient_root)
 
-    self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('ls .*-%s' % self.PARTIAL_VERSION),
-        output=self.FAKE_LS)
-
-    lkgm_file = os.path.join(gclient_root, constants.PATH_TO_CHROME_LKGM)
+    lkgm_file = os.path.join(gclient_root, 'src', constants.PATH_TO_CHROME_LKGM)
     osutils.Touch(lkgm_file, makedirs=True)
-    osutils.WriteFile(lkgm_file, self.PARTIAL_VERSION)
+    osutils.WriteFile(lkgm_file, self.VERSION)
+    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
     self.sdk.UpdateDefaultVersion()
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
@@ -240,14 +279,16 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
 
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
-    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.ENV_VERSION
+    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.VERSION
+    self.assertNotEquals(self.VERSION, self.sdk_mock.VERSION)
     self.assertEquals(self.sdk.GetDefaultVersion(), self.sdk_mock.VERSION)
 
   def testDefaultEnvGoodBoard(self):
     """We use the version in the environment if board matches."""
-    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.ENV_VERSION
+    sdk_version_env = cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV
+    os.environ[sdk_version_env] = self.VERSION
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
-    self.assertEquals(self.sdk.GetDefaultVersion(), self.ENV_VERSION)
+    self.assertEquals(self.sdk.GetDefaultVersion(), self.VERSION)
 
 
 if __name__ == '__main__':
