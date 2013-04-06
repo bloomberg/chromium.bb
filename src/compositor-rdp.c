@@ -36,6 +36,7 @@
 #include <freerdp/codec/color.h>
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/nsc.h>
+#include <winpr/input.h>
 
 #include "compositor.h"
 #include "pixman-renderer.h"
@@ -608,9 +609,10 @@ xf_peer_capabilities(freerdp_peer* client)
 	return TRUE;
 }
 
+
 struct rdp_to_xkb_keyboard_layout {
-	UINT32	rdpLayoutCode;
-	char 	*xkbLayout;
+	UINT32 rdpLayoutCode;
+	char *xkbLayout;
 };
 
 /* picked from http://technet.microsoft.com/en-us/library/cc766503(WS.10).aspx */
@@ -626,14 +628,14 @@ static struct rdp_to_xkb_keyboard_layout rdp_keyboards[] = {
 
 /* taken from 2.2.7.1.6 Input Capability Set (TS_INPUT_CAPABILITYSET) */
 static char *rdp_keyboard_types[] = {
-	"",		/* 0: unused */
-	"", 	/* 1: IBM PC/XT or compatible (83-key) keyboard */
-	"", 	/* 2: Olivetti "ICO" (102-key) keyboard */
-	"", 	/* 3: IBM PC/AT (84-key) or similar keyboard */
+	"",	/* 0: unused */
+	"", /* 1: IBM PC/XT or compatible (83-key) keyboard */
+	"", /* 2: Olivetti "ICO" (102-key) keyboard */
+	"", /* 3: IBM PC/AT (84-key) or similar keyboard */
 	"pc102",/* 4: IBM enhanced (101- or 102-key) keyboard */
-	"", 	/* 5: Nokia 1050 and similar keyboards */
-	"",		/* 6: Nokia 9140 and similar keyboards */
-	""		/* 7: Japanese keyboard */
+	"", /* 5: Nokia 1050 and similar keyboards */
+	"",	/* 6: Nokia 9140 and similar keyboards */
+	""	/* 7: Japanese keyboard */
 };
 
 static BOOL
@@ -647,7 +649,6 @@ xf_peer_post_connect(freerdp_peer* client)
 	struct xkb_rule_names xkbRuleNames;
 	struct xkb_keymap *keymap;
 	int i;
-
 
 	peerCtx = (RdpPeerContext *)client->context;
 	c = peerCtx->rdpCompositor;
@@ -783,9 +784,22 @@ xf_input_synchronize_event(rdpInput *input, UINT32 flags)
 	pixman_region32_fini(&damage);
 }
 
+extern DWORD KEYCODE_TO_VKCODE_EVDEV[];
+static uint32_t vk_to_keycode[256];
+static void
+init_vk_translator(void)
+{
+	int i;
+
+	memset(vk_to_keycode, 0, sizeof(vk_to_keycode));
+	for(i = 0; i < 256; i++)
+		vk_to_keycode[KEYCODE_TO_VKCODE_EVDEV[i] & 0xff] = i-8;
+}
+
 static void
 xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 {
+	uint32_t scan_code, vk_code, full_code;
 	enum wl_keyboard_key_state keyState;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	int notify = 0;
@@ -798,9 +812,24 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 		notify = 1;
 	}
 
-	if(notify)
+	if(notify) {
+		full_code = code;
+		if(flags & KBD_FLAGS_EXTENDED)
+			full_code |= KBD_FLAGS_EXTENDED;
+
+		vk_code = GetVirtualKeyCodeFromVirtualScanCode(full_code, 4);
+		if(vk_code > 0xff) {
+			weston_log("invalid vk_code %x", vk_code);
+			return;
+		}
+		scan_code = vk_to_keycode[vk_code];
+
+
+		/*weston_log("code=%x ext=%d vk_code=%x scan_code=%x\n", code, (flags & KBD_FLAGS_EXTENDED) ? 1 : 0,
+				vk_code, scan_code);*/
 		notify_key(&peerContext->item.seat, weston_compositor_get_time(),
-					code, keyState,	STATE_UPDATE_AUTOMATIC);
+					scan_code, keyState, STATE_UPDATE_AUTOMATIC);
+	}
 }
 
 static void
@@ -991,6 +1020,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	freerdp_get_version(&major, &minor, &revision);
 	weston_log("using FreeRDP version %d.%d.%d\n", major, minor, revision);
+	init_vk_translator();
 
 	const struct weston_option rdp_options[] = {
 		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
