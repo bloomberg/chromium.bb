@@ -52,6 +52,9 @@ class GardeningHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer
 
 
 class GardeningHTTPRequestHandler(ReflectionHandler):
+    REVISION_LIMIT = 100
+    BLINK_SVN_URL = 'http://src.chromium.org/blink/trunk'
+
     STATIC_FILE_NAMES = frozenset()
 
     STATIC_FILE_EXTENSIONS = ('.js', '.css', '.html', '.gif', '.png', '.ico')
@@ -76,6 +79,9 @@ class GardeningHTTPRequestHandler(ReflectionHandler):
         process.stdin.write(input_string)
         output, error = process.communicate()
         return (process.returncode, output, error)
+
+    def svnlog(self):
+        self._serve_xml(self.server.tool.executive.run_command(['svn', 'log', '--xml', '--limit', self.REVISION_LIMIT, self.BLINK_SVN_URL]))
 
     def rebaselineall(self):
         command = ['rebaseline-json']

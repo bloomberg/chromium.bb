@@ -142,3 +142,10 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             if not headers_only:
                 shutil.copyfileobj(static_file, self.wfile)
+
+    def _serve_xml(self, xml):
+        self.send_response(200)
+        self._send_access_control_header()
+        self.send_header("Content-type", "text/xml")
+        self.end_headers()
+        self.wfile.write(xml)

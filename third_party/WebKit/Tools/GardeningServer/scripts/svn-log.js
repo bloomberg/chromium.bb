@@ -97,27 +97,8 @@ trac.changesetURL = function(revision)
 
 trac.recentCommitData = function(path, limit, callback)
 {
-    var lastCommitURL = config.kSvnLogURL + '?' + $.param({
-        'url': config.kBlinkSvnURL,
-        'range': 'HEAD',
-    });
-
-    net.get(lastCommitURL, function(commitData) {
-        // FIXME: Factor this function out!
-        var lastCommitData = parseCommitData(commitData);
-        if (!lastCommitData.length)
-            throw new Error("svn-log did not return last commit data");
-        var lastCommit = Number(lastCommitData[0].revision);
-        var earlierCommit = lastCommit - config.kNumberOfRecentCommits;
-        var url = config.kSvnLogURL + '?' + $.param({
-            'url': config.kBlinkSvnURL,
-            'range': lastCommit + ':' + earlierCommit,
-        });
-
-        net.get(url, function(commitData) {
-            callback(parseCommitData(commitData));
-        });
-
+    net.get('/svnlog', function(commitData) {
+        callback(parseCommitData(commitData));
     });
 };
 

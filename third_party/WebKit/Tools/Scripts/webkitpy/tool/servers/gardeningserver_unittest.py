@@ -82,6 +82,10 @@ class TestGardeningHTTPRequestHandler(GardeningHTTPRequestHandler):
         print json.dumps(json_object)
         print "== End JSON Response =="
 
+    def _serve_xml(self, xml):
+        print "== Begin XML Response =="
+        print xml
+        print "== End XML Response =="
 
 class GardeningServerTest(unittest.TestCase):
     def _post_to_path(self, path, body=None, expected_stderr=None, expected_stdout=None, server=None):
@@ -89,6 +93,11 @@ class GardeningServerTest(unittest.TestCase):
         handler.path = path
         handler.body = body
         OutputCapture().assert_outputs(self, handler.do_POST, expected_stderr=expected_stderr, expected_stdout=expected_stdout)
+
+    def test_svnlog(self):
+        expected_stderr = ''
+        expected_stdout = '== Begin XML Response ==\nMOCK output of child process\n== End XML Response ==\n'
+        self._post_to_path('/svnlog', expected_stderr=expected_stderr, expected_stdout=expected_stdout)
 
     def disabled_test_rollout(self):
         expected_stderr = "MOCK run_command: ['echo', 'rollout', '--force-clean', '--non-interactive', '2314', 'MOCK rollout reason'], cwd=/mock-checkout\n"

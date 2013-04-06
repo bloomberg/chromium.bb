@@ -25,282 +25,97 @@
 
 (function () {
 
-module("trac");
+module("svn-log");
 
 var kExampleCommitDataXML =
-    '<?xml version="1.0"?>\n\n' +
-    '<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">\n\n' +
-    '  \n\n' +
-    '\n\n' +
-    '  <channel>\n\n' +
-    '    <title>Revisions of /trunk</title>\n\n' +
-    '    <link>http://trac.webkit.org/log/trunk?rev=92362</link>\n\n' +
-    '    <description>Trac Log - Revisions of /trunk</description>\n\n' +
-    '    <language>en-US</language>\n\n' +
-    '    <generator>Trac 0.11.7</generator>\n\n' +
-    '    <image>\n\n' +
-    '      <title>WebKit</title>\n\n' +
-    '      <url>http://trac.webkit.org/chrome/site/icon.png</url>\n\n' +
-    '      <link>http://trac.webkit.org/log/trunk?rev=92362</link>\n\n' +
-    '    </image>\n\n' +
-    '    <item>\n\n' +
-    '          <author>macpherson@chromium.org</author>\n\n' +
-    '      <pubDate>Thu, 04 Aug 2011 02:09:19 GMT</pubDate>\n\n' +
-    '      <title>Revision 92342: Support cast between CSSPrimitiveValue and EBoxSizing, use in ...</title>\n\n' +
-    '      <link>http://trac.webkit.org/changeset/92342/trunk</link>\n\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92342/trunk</guid>\n\n' +
-    '      <description>&lt;p&gt;\n\n' +
-    'Support cast between CSSPrimitiveValue and EBoxSizing, use in CSSStyleSelector.\n\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=65657"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=65657&lt;/a&gt;\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    'Reviewed by Simon Fraser.\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    'No new tests / refactoring only.\n\n' +
-    '&lt;/p&gt;\n\n' +
-    '&lt;p&gt;\n\n' +
-    '* css/CSSPrimitiveValueMappings.h:\n\n' +
-    '(WebCore::CSSPrimitiveValue::CSSPrimitiveValue):\n\n' +
-    'Implement cast from EBoxSizing.\n' +
-    '(WebCore::CSSPrimitiveValue::operator EBoxSizing):\n' +
-    'Implement cast to EBoxSizing.\n' +
-    '* css/CSSStyleSelector.cpp:\n' +
-    '(WebCore::CSSStyleSelector::applyProperty):\n' +
-    'Use appropriate macro to simplify code using cast.\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item><item>\n' +
-    '          <author>commit-queue@webkit.org</author>\n' +
-    '      <pubDate>Thu, 04 Aug 2011 02:01:31 GMT</pubDate>\n' +
-    '      <title>Revision 92341: Implement EventSender.scalePageBy() ...</title>\n' +
-    '      <link>http://trac.webkit.org/changeset/92341/trunk</link>\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92341/trunk</guid>\n' +
-    '      <description>&lt;p&gt;\n' +
-    'Implement EventSender.scalePageBy()\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=58013"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=58013&lt;/a&gt;\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Patch by Kentaro Hara &amp;lt;&lt;a class="mail-link" href="mailto:haraken@google.com"&gt;&lt;span class="icon"&gt; &lt;/span&gt;haraken@google.com&lt;/a&gt;&amp;gt; on 2011-08-03\n' +
-    'Reviewed by Darin Fisher.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Implemented EventSender.scalePageBy(f, x, y), which scales a page by a factor of f\n' +
-    'and then sets a scroll position to (x, y). Enabled the tests that had been waiting\n' +
-    'for the implementation of EventSender.scalePageBy(f, x, y).\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Source/WebKit/chromium:\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Tests: compositing/scaling/tiled-layer-recursion.html\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;blockquote&gt;\n' +
-    '&lt;p&gt;\n' +
-    'fast/repaint/scale-page-shrink.html\n' +
-    'fast/dom/Element/scale-page-client-rects.html\n' +
-    'fast/dom/Range/scale-page-client-rects.html\n' +
-    'fast/events/scroll-in-scaled-page-with-overflow-hidden.html\n' +
-    'fast/dom/Element/scale-page-bounding-client-rect.html\n' +
-    'fast/dom/Range/scale-page-bounding-client-rect.html\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;/blockquote&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* public/WebView.h:\n' +
-    '* src/WebViewImpl.cpp:\n' +
-    '(WebKit::WebViewImpl::scalePage): A wrapper method for scalePage() in WebCore.\n' +
-    '* src/WebViewImpl.h:\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Tools:\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Tests: compositing/scaling/tiled-layer-recursion.html\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;blockquote&gt;\n' +
-    '&lt;p&gt;\n' +
-    'fast/repaint/scale-page-shrink.html\n' +
-    'fast/dom/Element/scale-page-client-rects.html\n' +
-    'fast/dom/Range/scale-page-client-rects.html\n' +
-    'fast/events/scroll-in-scaled-page-with-overflow-hidden.html\n' +
-    'fast/dom/Element/scale-page-bounding-client-rect.html\n' +
-    'fast/dom/Range/scale-page-bounding-client-rect.html\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;/blockquote&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* DumpRenderTree/chromium/EventSender.cpp:\n' +
-    '(EventSender::EventSender): Added bindings for scalePageBy().\n' +
-    '(EventSender::scalePageBy): A wrapper method for scalePage() in WebView.\n' +
-    '* DumpRenderTree/chromium/EventSender.h:\n' +
-    '* DumpRenderTree/chromium/TestShell.cpp:\n' +
-    '(TestShell::resetTestController): Resets the scale factor to 1.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'LayoutTests:\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* platform/chromium-linux/compositing/scaling/tiled-layer-recursion-expected.png: Added.\n' +
-    '* platform/chromium-linux/fast/repaint/scale-page-shrink-expected.png: Added.\n' +
-    '* platform/chromium-linux/fast/repaint/scale-page-shrink-expected.txt: Added.\n' +
-    '* platform/chromium-mac/fast/dom/Element/scale-page-bounding-client-rect-expected.txt: Removed.\n' +
-    '* platform/chromium-mac/fast/dom/Range/scale-page-bounding-client-rect-expected.txt: Removed.\n' +
-    '* platform/chromium-win/fast/dom/Element/scale-page-bounding-client-rect-expected.txt: Removed.\n' +
-    '* platform/chromium-win/fast/dom/Element/scale-page-client-rects-expected.txt: Removed.\n' +
-    '* platform/chromium-win/fast/dom/Range/scale-page-bounding-client-rect-expected.txt: Removed.\n' +
-    '* platform/chromium-win/fast/dom/Range/scale-page-client-rects-expected.txt: Removed.\n' +
-    '* platform/chromium/test_expectations.txt: Enabled one test. Enabled two tests for chromium-linux.\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item><item>\n' +
-    '          <author>rniwa@webkit.org</author>\n' +
-    '      <pubDate>Thu, 04 Aug 2011 01:41:29 GMT</pubDate>\n' +
-    '      <title>Revision 92338: Revert an erroneous rebaseline from r92315.\n' +
-    '* ...</title>\n' +
-    '      <link>http://trac.webkit.org/changeset/92338/trunk</link>\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92338/trunk</guid>\n' +
-    '      <description>&lt;p&gt;\n' +
-    'Revert an erroneous rebaseline from &lt;a class="changeset" href="http://trac.webkit.org/changeset/92315" title="Remove LegacyDefaultOptionalArguments flag from navigator IDL files ..."&gt;r92315&lt;/a&gt;.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* fast/dom/navigator-detached-no-crash-expected.txt:\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item><item>\n' +
-    '          <author>noam.rosenthal@nokia.com</author>\n' +
-    '      <pubDate>Thu, 04 Aug 2011 00:22:21 GMT</pubDate>\n' +
-    '      <title>Revision 92337: [Qt][Texmap][REGRESSION] http://webkit.org/blog-files/transform-style.html ...</title>\n' +
-    '      <link>http://trac.webkit.org/changeset/92337/trunk</link>\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92337/trunk</guid>\n' +
-    '      <description>&lt;p&gt;\n' +
-    '[Qt][Texmap][REGRESSION] &lt;a class="ext-link" href="http://webkit.org/blog-files/transform-style.html"&gt;&lt;span class="icon"&gt; &lt;/span&gt;http://webkit.org/blog-files/transform-style.html&lt;/a&gt; doesn\'t show composited content\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=65629"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=65629&lt;/a&gt;\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Reviewed by Benjamin Poulain.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Some non-ES2 initialization was wrongfully #ifdefed in CPU(X86) and thus compiled-out.\n' +
-    'When put it in the correct #ifdef, composited layers which require an intermediate buffer\n' +
-    'work again.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'No new tests. Existing opacity tests in LayoutTests/compositing test this.\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* platform/graphics/opengl/TextureMapperGL.cpp:\n' +
-    '(WebCore::BitmapTextureGL::bind):\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item><item>\n' +
-    '          <author>commit-queue@webkit.org</author>\n' +
-    '      <pubDate>Wed, 03 Aug 2011 04:26:52 GMT</pubDate>\n' +
-    '      <title>Revision 92259: Unreviewed, rolling out r92256.\n' +
-    'http://trac.webkit.org/changeset/92256 ...</title>\n' +
-    '      <link>http://trac.webkit.org/changeset/92259/trunk</link>\n' +
-    '      <guid isPermaLink="false">http://trac.webkit.org/changeset/92259/trunk</guid>\n' +
-    '      <description>&lt;p&gt;\n' +
-    'Unreviewed, rolling out &lt;a class="changeset" href="http://trac.webkit.org/changeset/92256" title="Make EventDispatchMediator RefCounted. ..."&gt;r92256&lt;/a&gt;.\n' +
-    '&lt;a class="ext-link" href="http://trac.webkit.org/changeset/92256"&gt;&lt;span class="icon"&gt; &lt;/span&gt;http://trac.webkit.org/changeset/92256&lt;/a&gt;\n' +
-    '&lt;a class="ext-link" href="https://bugs.webkit.org/show_bug.cgi?id=65593"&gt;&lt;span class="icon"&gt; &lt;/span&gt;https://bugs.webkit.org/show_bug.cgi?id=65593&lt;/a&gt;\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Causing tons of crashes on the chromium win bots (Requested by\n' +
-    'jamesr on #webkit).\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    'Patch by Sheriff Bot &amp;lt;&lt;a class="mail-link" href="mailto:webkit.review.bot@gmail.com"&gt;&lt;span class="icon"&gt; &lt;/span&gt;webkit.review.bot@gmail.com&lt;/a&gt;&amp;gt; on 2011-08-02\n' +
-    '&lt;/p&gt;\n' +
-    '&lt;p&gt;\n' +
-    '* dom/Event.cpp:\n' +
-    '* dom/Event.h:\n' +
-    '* dom/EventDispatcher.cpp:\n' +
-    '(WebCore::EventDispatcher::dispatchEvent):\n' +
-    '* dom/EventDispatcher.h:\n' +
-    '* dom/KeyboardEvent.cpp:\n' +
-    '* dom/KeyboardEvent.h:\n' +
-    '* dom/MouseEvent.cpp:\n' +
-    '* dom/MouseEvent.h:\n' +
-    '* dom/Node.cpp:\n' +
-    '(WebCore::Node::dispatchEvent):\n' +
-    '(WebCore::Node::dispatchKeyEvent):\n' +
-    '(WebCore::Node::dispatchMouseEvent):\n' +
-    '(WebCore::Node::dispatchWheelEvent):\n' +
-    '* dom/WheelEvent.cpp:\n' +
-    '* dom/WheelEvent.h:\n' +
-    '&lt;/p&gt;\n' +
-    '</description>\n' +
-    '      <category>Log</category>\n' +
-    '    </item>\n' +
-    ' </channel>\n' +
-    '</rss>\n'
+    '<?xml version="1.0"?>\n' +
+    '<log>\n' +
+    '<logentry\n' +
+    '   revision="147744">\n' +
+    '<author>tkent@chromium.org</author>\n' +
+    '<date>2013-04-06T13:00:08.314281Z</date>\n' +
+    '<msg>Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."\n' +
+    '\n' +
+    '&gt; Remove the ENABLE_QUOTA compile-time flag.\n' +
+    '&gt; \n' +
+    '&gt; This patch drops the ~20 occurances of \'#IFDEF ENABLE(QUOTA)\' from the\n' +
+    '&gt; codebase. It shouldn\'t effect any web-visible behavior, as the interesting\n' +
+    '&gt; bits are still hidden away behind the runtime flag, whose behavior\n' +
+    '&gt; is untouched by this patch.\n' +
+    '&gt; \n' +
+    '&gt; R=eseidel@chromium.org,kinuko@chromium.org\n' +
+    '&gt; \n' +
+    '&gt; Review URL: https://codereview.chromium.org/13529033\n' +
+    '\n' +
+    'TBR=mkwst@chromium.org\n' +
+    'Review URL: https://codereview.chromium.org/13462004</msg>\n' +
+    '</logentry>\n' +
+    '<logentry\n' +
+    '   revision="147743">\n' +
+    '<author>tkent@chromium.org</author>\n' +
+    '<date>2013-04-06T12:48:59.078499Z</date>\n' +
+    '<msg>Update test expectations.\n' +
+    '\n' +
+    'BUG=227354,227357</msg>\n' +
+    '</logentry>\n' +
+    '<logentry\n' +
+    '   revision="147742">\n' +
+    '<author>gavinp@chromium.org</author>\n' +
+    '<date>2013-04-06T12:40:34.111299Z</date>\n' +
+    '<msg>Guard &lt;link&gt; beforeload against recursion.\n' +
+    '\n' +
+    'The beforeload event on a link element can recurse if it mutates its\n' +
+    'firing link element. Now guard against this, only allowing the\n' +
+    'innermost (last!) change to run. This prevents multiple client\n' +
+    'registration and stops the crash in the bug report (which is\n' +
+    'reproduced in the test).\n' +
+    '\n' +
+    'BUG=174920\n' +
+    '\n' +
+    'Committed: https://src.chromium.org/viewvc/blink?view=rev&amp;revision=147738\n' +
+    '\n' +
+    'Review URL: https://codereview.chromium.org/13725004</msg>\n' +
+    '</logentry>\n' +
+    '</log>';
 
 var kExampleCommitDataList = [{
-    "revision": 92342,
-    "title": "Revision 92342: Support cast between CSSPrimitiveValue and EBoxSizing, use in ...",
-    "time": "Thu, 04 Aug 2011 02:09:19 GMT",
-    "summary": "Support cast between CSSPrimitiveValue and EBoxSizing, use in CSSStyleSelector.",
-    "author": "macpherson@chromium.org",
-    "reviewer": "Simon Fraser",
-    "bugID": 65657,
-    "revertedRevision": undefined
-}, {
-    "revision": 92341,
-    "title": "Revision 92341: Implement EventSender.scalePageBy() ...",
-    "time": "Thu, 04 Aug 2011 02:01:31 GMT",
-    "summary": "Implement EventSender.scalePageBy()",
-    "author": "Kentaro Hara",
-    "reviewer": "Darin Fisher",
-    "bugID": 58013,
-    "revertedRevision": undefined
-}, {
-    "revision": 92338,
-    "title": "Revision 92338: Revert an erroneous rebaseline from r92315.\n* ...",
-    "time": "Thu, 04 Aug 2011 01:41:29 GMT",
-    "summary": "Revert an erroneous rebaseline from r92315.",
-    "author": "rniwa@webkit.org",
-    "reviewer": null,
+    "revision": "147744",
+    "title": "Revert 147740 \\"Remove the ENABLE_QUOTA compile-time flag.\\"",
+    "time": "2013-04-06T13:00:08.314281Z",
+    "summary": "Revert 147740 \\"Remove the ENABLE_QUOTA compile-time flag.\\"",
+    "author": "tkent@chromium.org",
+    "reviewer": "eseidel@chromium",
     "bugID": NaN,
     "revertedRevision": undefined
-}, {
-    "revision": 92337,
-    "title": "Revision 92337: [Qt][Texmap][REGRESSION] http://webkit.org/blog-files/transform-style.html ...",
-    "time": "Thu, 04 Aug 2011 00:22:21 GMT",
-    "summary": "[Qt][Texmap][REGRESSION]  http://webkit.org/blog-files/transform-style.html doesn't show composited content",
-    "author": "noam.rosenthal@nokia.com",
-    "reviewer": "Benjamin Poulain",
-    "bugID": 65629,
-    "revertedRevision": undefined
-}, {
-    "revision": 92259,
-    "title": "Revision 92259: Unreviewed, rolling out r92256.\nhttp://trac.webkit.org/changeset/92256 ...",
-    "time": "Wed, 03 Aug 2011 04:26:52 GMT",
-    "summary": "Unreviewed, rolling out r92256.",
-    "author": "Sheriff Bot",
+  }, {
+    "revision": "147743",
+    "title": "Update test expectations.",
+    "time": "2013-04-06T12:48:59.078499Z",
+    "summary": "Update test expectations.",
+    "author": "tkent@chromium.org",
     "reviewer": null,
-    "bugID": 65593,
-    "revertedRevision": 92256
-}];
+    "bugID": 227354,
+    "revertedRevision": undefined
+  }, {
+    "revision": "147742",
+    "title": "Guard <link> beforeload against recursion.",
+    "time": "2013-04-06T12:40:34.111299Z",
+    "summary": "Guard <link> beforeload against recursion.",
+    "author": "gavinp@chromium.org",
+    "reviewer": null,
+    "bugID": 174920,
+    "revertedRevision": undefined
+  }];
 
 test("changesetURL", 1, function() {
-    equals(trac.changesetURL(1234), "http://trac.webkit.org/changeset/1234");
-});
-
-test("logURL", 4, function() {
-    equals(trac.logURL('trunk', 1234, 1236, false, false), "http://trac.webkit.org/log/trunk?rev=1236&stop_rev=1234&limit=4");
-    equals(trac.logURL('trunk', 1234, 1234, true, false), "http://trac.webkit.org/log/trunk?rev=1234&stop_rev=1234&limit=2&verbose=on");
-    equals(trac.logURL('trunk', 1236, 1236, false, true), "http://trac.webkit.org/log/trunk?rev=1236&stop_rev=1236&limit=2&format=rss");
-    equals(trac.logURL('trunk', 1234, 1236, true, true), "http://trac.webkit.org/log/trunk?rev=1236&stop_rev=1234&limit=4&verbose=on&format=rss");
+    equals(trac.changesetURL(1234), "http://src.chromium.org/viewvc/blink?view=rev&revision=1234");
 });
 
 test("recentCommitData", 3, function() {
     var simulator = new NetworkSimulator();
     simulator.get = function(url, callback)
     {
-        equals(url, 'http://trac.webkit.org/log/trunk?verbose=on&format=rss&limit=10');
+        equals(url, '/svnlog');
         simulator.scheduleCallback(function() {
             var parser = new DOMParser();
             var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
@@ -310,29 +125,6 @@ test("recentCommitData", 3, function() {
 
     simulator.runTest(function() {
         trac.recentCommitData('trunk', 10, function(commitDataList) {
-            $.each(commitDataList, function(index, commitData) {
-                // Including the entire message makes the deepEqual below to unwieldy.
-                delete commitData.message;
-            });
-            deepEqual(commitDataList, kExampleCommitDataList);
-        });
-    });
-});
-
-test("commitDataForRevisionRange", 3, function() {
-    var simulator = new NetworkSimulator();
-    simulator.get = function(url, callback)
-    {
-        equals(url, 'http://trac.webkit.org/log/trunk?rev=12365&stop_rev=12345&limit=22&verbose=on&format=rss');
-        simulator.scheduleCallback(function() {
-            var parser = new DOMParser();
-            var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
-            callback(responseDOM);
-        });
-    };
-
-    simulator.runTest(function() {
-        trac.commitDataForRevisionRange('trunk', 12345, 12365, function(commitDataList) {
             $.each(commitDataList, function(index, commitData) {
                 // Including the entire message makes the deepEqual below to unwieldy.
                 delete commitData.message;
