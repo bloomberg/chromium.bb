@@ -36,7 +36,6 @@
 #include "Page.h"
 #include "PluginViewBase.h"
 #include "RenderEmbeddedObject.h"
-#include "RenderSnapshottedPlugIn.h"
 #include "RenderWidget.h"
 #include "Settings.h"
 #include "Widget.h"
@@ -200,12 +199,6 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     if (r && r->isEmbeddedObject()) {
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator()) {
             toRenderEmbeddedObject(r)->handleUnavailablePluginIndicatorEvent(event);
-            return;
-        }
-
-        if (r->isSnapshottedPlugIn() && displayState() < Restarting) {
-            toRenderSnapshottedPlugIn(r)->handleEvent(event);
-            HTMLFrameOwnerElement::defaultEventHandler(event);
             return;
         }
 

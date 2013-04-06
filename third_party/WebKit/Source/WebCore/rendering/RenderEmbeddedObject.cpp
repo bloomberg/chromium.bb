@@ -147,45 +147,13 @@ void RenderEmbeddedObject::setUnavailablePluginIndicatorIsPressed(bool pressed)
     repaint();
 }
 
-void RenderEmbeddedObject::paintSnapshotImage(PaintInfo& paintInfo, const LayoutPoint& paintOffset, Image* image)
-{
-    LayoutUnit cWidth = contentWidth();
-    LayoutUnit cHeight = contentHeight();
-    if (!cWidth || !cHeight)
-        return;
-
-    GraphicsContext* context = paintInfo.context;
-    LayoutSize contentSize(cWidth, cHeight);
-    LayoutPoint contentLocation = location() + paintOffset;
-    contentLocation.move(borderLeft() + paddingLeft(), borderTop() + paddingTop());
-
-    LayoutRect rect(contentLocation, contentSize);
-    IntRect alignedRect = pixelSnappedIntRect(rect);
-    if (alignedRect.width() <= 0 || alignedRect.height() <= 0)
-        return;
-
-    bool useLowQualityScaling = shouldPaintAtLowQuality(context, image, image, alignedRect.size());
-    context->drawImage(image, style()->colorSpace(), alignedRect, CompositeSourceOver, shouldRespectImageOrientation(), useLowQualityScaling);
-}
-
 void RenderEmbeddedObject::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     Element* element = toElement(node());
     if (!element || !element->isPluginElement())
         return;
 
-    HTMLPlugInElement* plugInElement = toHTMLPlugInElement(element);
-    if (plugInElement->displayState() > HTMLPlugInElement::DisplayingSnapshot) {
-        RenderPart::paintContents(paintInfo, paintOffset);
-        return;
-    }
-
-    if (!plugInElement->isPlugInImageElement())
-        return;
-
-    Image* snapshot = toHTMLPlugInImageElement(plugInElement)->snapshotImage();
-    if (snapshot)
-        paintSnapshotImage(paintInfo, paintOffset, snapshot);
+    RenderPart::paintContents(paintInfo, paintOffset);
 }
 
 void RenderEmbeddedObject::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -472,9 +440,6 @@ bool RenderEmbeddedObject::canHaveChildren() const
     if (toElement(node())->isMediaElement())
         return true;
 #endif
-
-    if (isSnapshottedPlugIn())
-        return true;
 
     return false;
 }

@@ -74,16 +74,10 @@ public:
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
 
-    void userDidClickSnapshot(PassRefPtr<MouseEvent>);
-    void updateSnapshotInfo();
-    Image* snapshotImage() const { return m_snapshotImage.get(); }
-
     // Plug-in URL might not be the same as url() with overriding parameters.
     void subframeLoaderWillCreatePlugIn(const KURL& plugInURL);
     void subframeLoaderDidCreatePlugIn(const Widget*);
     
-    void setIsPrimarySnapshottedPlugIn(bool);
-
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document*, bool createdByParser, PreferPlugInsForImagesOption);
 
@@ -108,8 +102,6 @@ protected:
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
-    void restartSnapshottedPlugIn();
-
 private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
     virtual bool willRecalcStyle(StyleChange);
@@ -121,10 +113,6 @@ private:
     void updateWidgetIfNecessary();
     virtual bool useFallbackContent() const { return false; }
 
-    virtual void updateSnapshot(PassRefPtr<Image>) OVERRIDE;
-    virtual void dispatchPendingMouseClick() OVERRIDE;
-    void simulatedMouseClickTimerFired(DeferrableOneShotTimer<HTMLPlugInImageElement>*);
-
     void swapRendererTimerFired(Timer<HTMLPlugInImageElement>*);
 
     void restartSimilarPlugIns();
@@ -135,10 +123,6 @@ private:
     bool m_shouldPreferPlugInsForImages;
     bool m_needsDocumentActivationCallbacks;
     RefPtr<RenderStyle> m_customStyleForPageCache;
-    RefPtr<MouseEvent> m_pendingClickEventFromSnapshot;
-    DeferrableOneShotTimer<HTMLPlugInImageElement> m_simulatedMouseClickTimer;
-    Timer<HTMLPlugInImageElement> m_swapRendererTimer;
-    RefPtr<Image> m_snapshotImage;
     bool m_createdDuringUserGesture;
 };
 
