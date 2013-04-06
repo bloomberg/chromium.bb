@@ -234,7 +234,6 @@ class COMPOSITOR_EXPORT Layer
   // cc::Layer.
   static gfx::Transform ConvertTransformToCCTransform(
       const gfx::Transform& transform,
-      const gfx::Rect& bounds,
       float device_scale_factor);
 
   // See description in View for details
@@ -369,6 +368,7 @@ class COMPOSITOR_EXPORT Layer
   void CreateWebLayer();
   void RecomputeCCTransformFromTransform(const gfx::Transform& transform);
   void RecomputeDrawsContentAndUVRect();
+  void RecomputePosition();
 
   // Set all filters which got applied to the layer.
   void SetLayerFilters();

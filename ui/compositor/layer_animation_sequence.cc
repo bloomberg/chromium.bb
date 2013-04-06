@@ -183,18 +183,7 @@ bool LayerAnimationSequence::HasConflictingProperty(
   std::set_intersection(properties_.begin(), properties_.end(),
                         other.begin(), other.end(),
                         ii);
-  if (intersection.size() > 0)
-    return true;
-
-  if (properties_.find(LayerAnimationElement::TRANSFORM) != properties_.end() &&
-      other.find(LayerAnimationElement::BOUNDS) != other.end())
-    return true;
-
-  if (properties_.find(LayerAnimationElement::BOUNDS) != properties_.end() &&
-      other.find(LayerAnimationElement::TRANSFORM) != other.end())
-    return true;
-
-  return false;
+  return (intersection.size() > 0);
 }
 
 bool LayerAnimationSequence::IsFirstElementThreaded() const {
