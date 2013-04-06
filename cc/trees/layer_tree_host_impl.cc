@@ -112,6 +112,9 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
 
     layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
     layer_tree_host_impl_->Animate(base::TimeTicks::Now(), base::Time::Now());
+    layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
+    bool start_ready_animations = true;
+    layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
     layer_tree_host_impl_->BeginNextFrame();
   }
 
@@ -675,7 +678,11 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   return draw_frame;
 }
 
-void LayerTreeHostImpl::SetBackgroundTickingEnabled(bool enabled) {
+void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
+    bool should_background_tick) {
+  bool enabled = should_background_tick &&
+                 !animation_registrar_->active_animation_controllers().empty();
+
   // Lazily create the time_source adapter so that we can vary the interval for
   // testing.
   if (!time_source_client_adapter_) {
@@ -1042,7 +1049,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         DidDrawDamagedArea();
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
-  UpdateAnimationState();
 }
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
@@ -1247,10 +1253,6 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     return;
 
   renderer_->SetVisible(visible);
-
-  SetBackgroundTickingEnabled(
-      !visible_ &&
-      !animation_registrar_->active_animation_controllers().empty());
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(
@@ -1822,12 +1824,9 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
     (*iter).second->Animate(monotonic_seconds);
 
   client_->SetNeedsRedrawOnImplThread();
-  SetBackgroundTickingEnabled(
-      !visible_ &&
-      !animation_registrar_->active_animation_controllers().empty());
 }
 
-void LayerTreeHostImpl::UpdateAnimationState() {
+void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty() ||
       !active_tree_->root_layer())
@@ -1841,7 +1840,7 @@ void LayerTreeHostImpl::UpdateAnimationState() {
   for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
        iter != copy.end();
        ++iter)
-    (*iter).second->UpdateState(events.get());
+    (*iter).second->UpdateState(start_ready_animations, events.get());
 
   if (!events->empty()) {
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass(),

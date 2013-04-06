@@ -199,4 +199,8 @@ void Scheduler::ProcessScheduledActions() {
   client_->DidAnticipatedDrawTimeChange(frame_rate_controller_->NextTickTime());
 }
 
+bool Scheduler::WillDrawIfNeeded() const {
+  return !state_machine_.DrawSuspendedUntilCommit();
+}
+
 }  // namespace cc

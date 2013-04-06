@@ -1077,5 +1077,61 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw) {
   state.DidLeaveVSync();
 }
 
+TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
+  SchedulerSettings default_scheduler_settings;
+  SchedulerStateMachine state(default_scheduler_settings);
+
+  state.SetCanDraw(true);
+  state.SetVisible(true);
+  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+
+  state.SetCanDraw(false);
+  state.SetVisible(true);
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  state.SetCanDraw(true);
+  state.SetVisible(false);
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  state.SetCanDraw(false);
+  state.SetVisible(false);
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  state.SetCanDraw(true);
+  state.SetVisible(true);
+  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+}
+
+TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
+  SchedulerSettings default_scheduler_settings;
+  SchedulerStateMachine state(default_scheduler_settings);
+  state.SetCanBeginFrame(true);
+  state.SetCanDraw(true);
+  state.SetVisible(true);
+  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+
+  state.SetMainThreadNeedsLayerTextures();
+  EXPECT_EQ(
+      SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
+      state.NextAction());
+  state.UpdateState(state.NextAction());
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+
+  state.UpdateState(state.NextAction());
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  state.BeginFrameComplete();
+  EXPECT_TRUE(state.DrawSuspendedUntilCommit());
+
+  EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
+
+  state.UpdateState(state.NextAction());
+  EXPECT_FALSE(state.DrawSuspendedUntilCommit());
+}
+
 }  // namespace
 }  // namespace cc

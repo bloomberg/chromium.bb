@@ -174,15 +174,21 @@ void LayerAnimationController::AccumulatePropertyUpdates(
   }
 }
 
-void LayerAnimationController::UpdateState(AnimationEventsVector* events) {
+void LayerAnimationController::UpdateState(bool start_ready_animations,
+                                           AnimationEventsVector* events) {
   if (!HasActiveObserver())
     return;
 
-  PromoteStartedAnimations(last_tick_time_, events);
+  if (start_ready_animations)
+    PromoteStartedAnimations(last_tick_time_, events);
+
   MarkFinishedAnimations(last_tick_time_);
   MarkAnimationsForDeletion(last_tick_time_, events);
-  StartAnimationsWaitingForTargetAvailability(last_tick_time_);
-  PromoteStartedAnimations(last_tick_time_, events);
+
+  if (start_ready_animations) {
+    StartAnimationsWaitingForTargetAvailability(last_tick_time_);
+    PromoteStartedAnimations(last_tick_time_, events);
+  }
 
   AccumulatePropertyUpdates(last_tick_time_, events);
 

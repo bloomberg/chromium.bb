@@ -53,7 +53,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}
   virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE {}
-  virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
+  virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool have_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
@@ -84,6 +84,8 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
       scoped_refptr<cc::ContextProvider> offscreen_context_provider,
       base::TimeTicks frame_begin_time);
   void DidSwapFrame();
+
+  bool ShouldComposite() const;
 
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;

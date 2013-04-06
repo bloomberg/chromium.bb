@@ -52,7 +52,9 @@ class CC_EXPORT LayerAnimationController
   void Animate(double monotonic_time);
   void AccumulatePropertyUpdates(double monotonic_time,
                                  AnimationEventsVector* events);
-  void UpdateState(AnimationEventsVector* events);
+
+  void UpdateState(bool start_ready_animations,
+                   AnimationEventsVector* events);
 
   // Returns the active animation in the given group, animating the given
   // property, if such an animation exists.

@@ -144,11 +144,14 @@ class CC_EXPORT SchedulerStateMachine {
   // Exposed for testing purposes.
   void SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(int num_draws);
 
+  // False if drawing is not being prevented, true if drawing won't happen
+  // for some reason, such as not being visible.
+  bool DrawSuspendedUntilCommit() const;
+
   std::string ToString();
 
  protected:
   bool ShouldDrawForced() const;
-  bool DrawSuspendedUntilCommit() const;
   bool ScheduledToDraw() const;
   bool ShouldDraw() const;
   bool ShouldAttemptTreeActivation() const;

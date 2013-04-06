@@ -151,8 +151,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->AnimateLayers(this, monotonic_time);
   }
 
-  virtual void UpdateAnimationState() OVERRIDE {
-    LayerTreeHostImpl::UpdateAnimationState();
+  virtual void UpdateAnimationState(bool start_ready_animations) OVERRIDE {
+    LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     AnimationRegistrar::AnimationControllerMap::const_iterator iter =
         active_animation_controllers().begin();
@@ -346,10 +346,12 @@ void LayerTreeTest::PostAddAnimationToMainThread(
                  base::Unretained(layer_to_receive_animation)));
 }
 
-void LayerTreeTest::PostAddInstantAnimationToMainThread() {
+void LayerTreeTest::PostAddInstantAnimationToMainThread(
+    Layer* layer_to_receive_animation) {
   proxy()->MainThread()->PostTask(
       base::Bind(&LayerTreeTest::DispatchAddInstantAnimation,
-                 main_thread_weak_ptr_));
+                 main_thread_weak_ptr_,
+                 base::Unretained(layer_to_receive_animation)));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -446,11 +448,12 @@ void LayerTreeTest::RealEndTest() {
   MessageLoop::current()->Quit();
 }
 
-void LayerTreeTest::DispatchAddInstantAnimation() {
+void LayerTreeTest::DispatchAddInstantAnimation(
+    Layer* layer_to_receive_animation) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
-  if (layer_tree_host_.get() && layer_tree_host_->root_layer()) {
-    AddOpacityTransitionToLayer(layer_tree_host_->root_layer(),
+  if (layer_to_receive_animation) {
+    AddOpacityTransitionToLayer(layer_to_receive_animation,
                                 0,
                                 0,
                                 0.5,
@@ -461,8 +464,13 @@ void LayerTreeTest::DispatchAddInstantAnimation() {
 void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
-  if (layer_to_receive_animation)
-    AddOpacityTransitionToLayer(layer_to_receive_animation, 10, 0, 0.5, true);
+  if (layer_to_receive_animation) {
+    AddOpacityTransitionToLayer(layer_to_receive_animation,
+                                0.000001,
+                                0,
+                                0.5,
+                                true);
+  }
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {
@@ -514,7 +522,9 @@ void LayerTreeTest::DispatchComposite() {
   }
 
   schedule_when_set_visible_true_ = false;
-  layer_tree_host_->Composite(base::TimeTicks::Now());
+  base::TimeTicks now = base::TimeTicks::Now();
+  layer_tree_host_->UpdateAnimations(now);
+  layer_tree_host_->Composite(now);
 }
 
 void LayerTreeTest::RunTest(bool threaded) {

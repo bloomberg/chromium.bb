@@ -259,6 +259,11 @@ void SingleThreadProxy::Stop() {
   layer_tree_host_ = NULL;
 }
 
+void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
+  DCHECK(Proxy::IsImplThread());
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(!ShouldComposite());
+}
+
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   layer_tree_host_->ScheduleComposite();
 }
@@ -384,6 +389,12 @@ bool SingleThreadProxy::CommitAndComposite(base::TimeTicks frame_begin_time) {
   return result;
 }
 
+bool SingleThreadProxy::ShouldComposite() const {
+  DCHECK(Proxy::IsImplThread());
+  return layer_tree_host_impl_->visible() &&
+         layer_tree_host_impl_->CanDraw();
+}
+
 bool SingleThreadProxy::DoComposite(
     scoped_refptr<cc::ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time) {
@@ -395,23 +406,26 @@ bool SingleThreadProxy::DoComposite(
     layer_tree_host_impl_->resource_provider()->
         set_offscreen_context_provider(offscreen_context_provider);
 
-    if (!layer_tree_host_impl_->visible())
+    // We guard PrepareToDraw() with CanDraw() because it always returns a valid
+    // frame, so can only be used when such a frame is possible. Since
+    // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
+    // CanDraw() as well.
+    if (!ShouldComposite()) {
+      layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
       return false;
+    }
 
     layer_tree_host_impl_->Animate(base::TimeTicks::Now(), base::Time::Now());
-
-    // We guard prepareToDraw() with canDraw() because it always returns a valid
-    // frame, so can only be used when such a frame is possible. Since
-    // drawLayers() depends on the result of prepareToDraw(), it is guarded on
-    // canDraw() as well.
-    if (!layer_tree_host_impl_->CanDraw())
-      return false;
+    layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 
     LayerTreeHostImpl::FrameData frame;
     layer_tree_host_impl_->PrepareToDraw(&frame);
     layer_tree_host_impl_->DrawLayers(&frame, frame_begin_time);
     layer_tree_host_impl_->DidDrawAllLayers(frame);
     output_surface_lost_ = layer_tree_host_impl_->IsContextLost();
+
+    bool start_ready_animations = true;
+    layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
     layer_tree_host_impl_->BeginNextFrame();
   }

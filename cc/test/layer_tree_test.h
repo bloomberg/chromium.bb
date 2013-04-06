@@ -105,7 +105,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void EndTestAfterDelay(int delay_milliseconds);
 
   void PostAddAnimationToMainThread(Layer* layer_to_receive_animation);
-  void PostAddInstantAnimationToMainThread();
+  void PostAddInstantAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostSetNeedsCommitToMainThread();
   void PostAcquireLayerTextures();
   void PostSetNeedsRedrawToMainThread();
@@ -123,8 +123,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   void RealEndTest();
 
-  void DispatchAddInstantAnimation();
-  void DispatchAddAnimation(Layer* layer_to_receive_animation);
+  virtual void DispatchAddInstantAnimation(Layer* layer_to_receive_animation);
+  virtual void DispatchAddAnimation(Layer* layer_to_receive_animation);
   void DispatchSetNeedsCommit();
   void DispatchAcquireLayerTextures();
   void DispatchSetNeedsRedraw();

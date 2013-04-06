@@ -96,6 +96,8 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
 
+  bool WillDrawIfNeeded() const;
+
   void SetTimebaseAndInterval(base::TimeTicks timebase,
                               base::TimeDelta interval);
 

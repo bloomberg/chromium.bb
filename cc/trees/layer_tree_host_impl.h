@@ -140,6 +140,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual void CommitComplete();
   virtual void Animate(base::TimeTicks monotonic_time,
                        base::Time wall_clock_time);
+  virtual void UpdateAnimationState(bool start_ready_animations);
+  void UpdateBackgroundAnimateTicking(bool should_background_tick);
 
   void ManageTiles();
   void SetAnticipatedDrawTime(base::TimeTicks time);
@@ -356,7 +358,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time,
                              base::Time wall_clock_time);
-  virtual void UpdateAnimationState();
 
   // Virtual for testing.
   virtual base::TimeDelta LowFrequencyAnimationInterval() const;
@@ -389,7 +390,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   // only be called from PrepareToDraw, as DidDrawAllLayers must be called
   // if this helper function is called.
   bool CalculateRenderPasses(FrameData* frame);
-  void SetBackgroundTickingEnabled(bool enabled);
 
   void SendDidLoseOutputSurfaceRecursive(LayerImpl* current);
   void ClearRenderSurfaces();

@@ -1040,7 +1040,8 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
        iter != copy.end();
        ++iter) {
     (*iter).second->Animate(monotonic_time);
-    (*iter).second->UpdateState(NULL);
+    bool start_ready_animations = true;
+    (*iter).second->UpdateState(start_ready_animations, NULL);
   }
 }
 

@@ -348,6 +348,8 @@ void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "ThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
   scheduler_on_impl_thread_->SetCanDraw(can_draw);
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !scheduler_on_impl_thread_->WillDrawIfNeeded());
 }
 
 void ThreadProxy::OnHasPendingTreeStateChanged(bool has_pending_tree) {
@@ -811,6 +813,9 @@ void ThreadProxy::ScheduledActionCommit() {
   layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
   layer_tree_host_impl_->CommitComplete();
 
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !scheduler_on_impl_thread_->WillDrawIfNeeded());
+
   next_frame_is_newly_committed_frame_on_impl_thread_ = true;
 
   if (layer_tree_host_->settings().impl_side_painting &&
@@ -876,29 +881,41 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
 
   layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its
-  // request completes, and we signal completion here. If canDraw() is false, we
+  // request completes, and we signal completion here. If CanDraw() is false, we
   // will indicate success=false to the caller, but we must still signal
   // completion to avoid deadlock.
 
-  // We guard prepareToDraw() with canDraw() because it always returns a valid
+  // We guard PrepareToDraw() with CanDraw() because it always returns a valid
   // frame, so can only be used when such a frame is possible. Since
-  // drawLayers() depends on the result of prepareToDraw(), it is guarded on
-  // canDraw() as well.
+  // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
+  // CanDraw() as well.
 
   LayerTreeHostImpl::FrameData frame;
-  bool draw_frame =
-      layer_tree_host_impl_->CanDraw() &&
-      (layer_tree_host_impl_->PrepareToDraw(&frame) || forced_draw);
+  bool draw_frame = false;
+  bool start_ready_animations = true;
+
+  if (layer_tree_host_impl_->CanDraw()) {
+    // Do not start animations if we skip drawing the frame to avoid
+    // checkerboarding.
+    if (layer_tree_host_impl_->PrepareToDraw(&frame) || forced_draw)
+      draw_frame = true;
+    else
+      start_ready_animations = false;
+  }
+
   if (draw_frame) {
     layer_tree_host_impl_->DrawLayers(
         &frame,
         scheduler_on_impl_thread_->LastVSyncTime());
-    result.did_draw= true;
+    result.did_draw = true;
   }
   layer_tree_host_impl_->DidDrawAllLayers(frame);
+
+  layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
   // Check for tree activation.
   if (completion_event_for_commit_held_on_tree_activation_ &&
