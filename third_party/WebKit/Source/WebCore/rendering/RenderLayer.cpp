@@ -5999,12 +5999,19 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
         return;
 
     updateOrRemoveFilterClients();
-    if (isComposited() && !renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter)) {
-        // During an accelerated animation, both WebKit and the compositor animate properties.
-        // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
+    // During an accelerated animation, both WebKit and the compositor animate properties.
+    // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
+    bool shouldUpdateFilters = isComposited() && !renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
+    if (shouldUpdateFilters)
         backing()->updateFilters(renderer()->style());
-    }
     updateOrRemoveFilterEffectRenderer();
+    // FIXME: Accelerated SVG reference filters still rely on FilterEffectRenderer to build the filter graph.
+    // Thus, we have to call updateFilters again, after we have a FilterEffectRenderer.
+    // FilterEffectRenderer is intended to render software filters and shouldn't be needed for accelerated filters.
+    // We should extract the SVG graph building functionality out of FilterEffectRenderer, and it should happen in RenderLayer::computeFilterOperations.
+    // https://bugs.webkit.org/show_bug.cgi?id=114051
+    if (shouldUpdateFilters && newStyle->filter().hasReferenceFilter())
+        backing()->updateFilters(renderer()->style());
 }
 #endif
 
@@ -6274,6 +6281,9 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
         // for loading CSS shader files.
         if (RenderLayerFilterInfo* filterInfo = this->filterInfo())
             filterInfo->setRenderer(0);
+
+        // FIXME: Accelerated SVG reference filters shouldn't rely on FilterEffectRenderer to build the filter graph.
+        // https://bugs.webkit.org/show_bug.cgi?id=114051
 
         // Early-return only if we *don't* have reference filters.
         // For reference filters, we still want the FilterEffect graph built
