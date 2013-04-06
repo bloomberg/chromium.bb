@@ -15,7 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "sync/base/sync_export.h"
@@ -34,7 +34,9 @@ namespace syncer {
 
 class BackoffDelayProvider;
 
-class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
+class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
+    : public SyncScheduler,
+      public base::NonThreadSafe {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of |syncer| and |delay_provider|.
@@ -107,8 +109,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            SaveNudgeWhileTypeThrottled);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, DropPoll);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinuePoll);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueConfiguration);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            SaveConfigurationWhileThrottled);
@@ -116,10 +116,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
                            SaveNudgeWhileThrottled);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            ContinueCanaryJobConfig);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-      ContinueNudgeWhileExponentialBackOff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, GetInitialBackoffDelay);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
                            ServerConnectionChangeDuringBackoff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
@@ -129,9 +126,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
     enum Mode {
       // Uninitialized state, should not be set in practice.
       UNKNOWN = -1,
-      // A wait interval whose duration has been affected by exponential
-      // backoff.
-      // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
+      // We enter a series of increasingly longer WaitIntervals if we experience
+      // repeated transient failures.  We retry at the end of each interval.
       EXPONENTIAL_BACKOFF,
       // A server-initiated throttled interval.  We do not allow any syncing
       // during such an interval.
@@ -144,38 +140,28 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
     static const char* GetModeString(Mode mode);
 
     Mode mode;
-
-    // This bool is set to true if we have observed a nudge during this
-    // interval and mode == EXPONENTIAL_BACKOFF.
-    bool had_nudge;
     base::TimeDelta length;
-    base::OneShotTimer<SyncSchedulerImpl> timer;
-
-    // Configure jobs are saved only when backing off or throttling. So we
-    // expose the pointer here (does not own, similar to pending_nudge).
-    SyncSessionJob* pending_configure_job;
   };
 
   static const char* GetModeString(Mode mode);
 
   static const char* GetDecisionString(JobProcessDecision decision);
 
-  // Helper to cancel any existing delayed task and replace it with a new one.
-  // It will not post any tasks if the scheduler is in a "stopped" state.
-  void PostDelayedTask(const tracked_objects::Location& from_here,
-                       const char* name,
-                       const base::Closure& task,
-                       base::TimeDelta delay);
+  // Invoke the syncer to perform a non-POLL job.
+  bool DoSyncSessionJobImpl(scoped_ptr<SyncSessionJob> job,
+                            JobPriority priority);
 
-  // Invoke the Syncer to perform a non-poll job.
-  bool DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
-                        JobPriority priority);
+  // Invoke the syncer to perform a nudge job.
+  void DoNudgeSyncSessionJob(JobPriority priority);
+
+  // Invoke the syncer to perform a configuration job.
+  bool DoConfigurationSyncSessionJob(JobPriority priority);
 
   // Returns whether or not it's safe to run a poll job at this time.
   bool ShouldPoll();
 
   // Invoke the Syncer to perform a poll job.
-  void DoPollSyncSessionJob(scoped_ptr<SyncSessionJob> job);
+  void DoPollSyncSessionJob();
 
   // Called after the Syncer has performed the sync represented by |job|, to
   // reset our state.  |exited_prematurely| is true if the Syncer did not
@@ -193,7 +179,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   void AdjustPolling(const SyncSessionJob* old_job);
 
   // Helper to restart waiting with |wait_interval_|'s timer.
-  void RestartWaiting(scoped_ptr<SyncSessionJob> job);
+  void RestartWaiting();
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
   void HandleContinuationError(scoped_ptr<SyncSessionJob> old_job,
@@ -202,10 +188,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   // Decide whether we should CONTINUE, SAVE or DROP the job.
   JobProcessDecision DecideOnJob(const SyncSessionJob& job,
                                  JobPriority priority);
-
-  // If DecideOnJob decides that |job| should be SAVEd, this function will
-  // carry out the task of actually "saving" (or coalescing) the job.
-  void HandleSaveJobDecision(scoped_ptr<SyncSessionJob> job);
 
   // Decide on whether to CONTINUE, SAVE or DROP the job when we are in
   // backoff mode.
@@ -235,22 +217,12 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   // Helper to signal listeners about changed retry time
   void NotifyRetryTime(base::Time retry_time);
 
-  // Callback to change backoff state. |to_be_canary| in both cases is the job
-  // that should be granted canary privileges. Note: it is possible that the
-  // job that gets scheduled when this callback is scheduled is different from
-  // the job that will actually get executed, because other jobs may have been
-  // scheduled while we were waiting for the callback.
-  void DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary);
-  void Unthrottle(scoped_ptr<SyncSessionJob> to_be_canary);
+  // Looks for pending work and, if it finds any, run this work at "canary"
+  // priority.
+  void TryCanaryJob();
 
-  // Returns a pending job that has potential to run given the state of the
-  // scheduler, if it exists. Useful whenever an event occurs that may
-  // change conditions that permit a job to run, such as re-establishing
-  // network connection, auth refresh, mode changes etc. Note that the returned
-  // job may have been scheduled to run at a later time, or may have been
-  // unscheduled.  In the former case, this will result in abandoning the old
-  // job and effectively cancelling it.
-  scoped_ptr<SyncSessionJob> TakePendingJobForCurrentMode();
+  // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
+  void Unthrottle();
 
   // Called when the root cause of the current connection error is fixed.
   void OnServerConnectionErrorFixed();
@@ -283,10 +255,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   // Used for logging.
   const std::string name_;
 
-  // The message loop this object is on.  Almost all methods have to
-  // be called on this thread.
-  base::MessageLoop* const sync_loop_;
-
   // Set in Start(), unset in Stop().
   bool started_;
 
@@ -304,27 +272,21 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   // The mode of operation.
   Mode mode_;
 
-  // Tracks (does not own) in-flight nudges (scheduled or unscheduled),
-  // so we can coalesce. NULL if there is no pending nudge.
-  SyncSessionJob* pending_nudge_;
-
-  // There are certain situations where we want to remember a nudge, but
-  // there is no well defined moment in time in the future when that nudge
-  // should run, e.g. if it requires a mode switch or updated auth credentials.
-  // This member will own NUDGE jobs in those cases, until an external event
-  // (mode switch or fixed auth) occurs to trigger a retry.  Should be treated
-  // as opaque / not interacted with (i.e. we could build a wrapper to
-  // hide the type, but that's probably overkill).
-  scoped_ptr<SyncSessionJob> unscheduled_nudge_storage_;
-
   // Current wait state.  Null if we're not in backoff and not throttled.
   scoped_ptr<WaitInterval> wait_interval_;
 
   scoped_ptr<BackoffDelayProvider> delay_provider_;
 
-  // We allow at most one PostedTask to be pending at one time.  This is it.
-  // We will cancel this task before starting a new one.
-  base::CancelableClosure pending_wakeup_;
+  // The event that will wake us up.
+  base::OneShotTimer<SyncSchedulerImpl> pending_wakeup_timer_;
+
+  // Pending configure job storage.  Note that
+  // (mode_ != CONFIGURATION_MODE) \implies !pending_configure_job_.
+  scoped_ptr<SyncSessionJob> pending_configure_job_;
+
+  // Pending nudge job storage.  These jobs can exist in CONFIGURATION_MODE, but
+  // they will be run only in NORMAL_MODE.
+  scoped_ptr<SyncSessionJob> pending_nudge_job_;
 
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;

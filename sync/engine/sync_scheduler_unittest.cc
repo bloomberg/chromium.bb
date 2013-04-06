@@ -72,6 +72,14 @@ void PumpLoop() {
   RunLoop();
 }
 
+void PumpLoopFor(base::TimeDelta time) {
+  // Allow the loop to run for the specified amount of time.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          base::Bind(&QuitLoopNow),
+                                          time);
+  RunLoop();
+}
+
 ModelSafeRoutingInfo TypesToRoutingInfo(ModelTypeSet types) {
   ModelSafeRoutingInfo routes;
   for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
@@ -975,21 +983,20 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0].source().updates_source);
 
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-                      RecordSyncShare(&r)));
+  // Wait a while (10x poll interval) so a few poll jobs will be attempted.
+  PumpLoopFor(poll * 10);
 
-  // We schedule a nudge with enough delay (10X poll interval) that at least
-  // one or two polls would have taken place.  The nudge should succeed.
+  // Try (and fail) to schedule a nudge.
   scheduler()->ScheduleNudgeAsync(
-      poll * 10, NUDGE_SOURCE_LOCAL, types, FROM_HERE);
-  RunLoop();
+      base::TimeDelta::FromMilliseconds(1),
+      NUDGE_SOURCE_LOCAL,
+      types,
+      FROM_HERE);
 
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
-  ASSERT_EQ(2U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[1].source().updates_source);
+
+  ASSERT_EQ(1U, r.snapshots.size());
 
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
 

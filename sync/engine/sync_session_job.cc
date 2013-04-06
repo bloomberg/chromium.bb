@@ -18,8 +18,7 @@ SyncSessionJob::SyncSessionJob(
     : purpose_(purpose),
       source_info_(source_info),
       scheduled_start_(start),
-      config_params_(config_params),
-      finished_(NOT_FINISHED) {
+      config_params_(config_params) {
 }
 
 #define ENUM_CASE(x) case x: return #x; break;
@@ -36,15 +35,9 @@ const char* SyncSessionJob::GetPurposeString(SyncSessionJob::Purpose purpose) {
 #undef ENUM_CASE
 
 bool SyncSessionJob::Finish(bool early_exit, sessions::SyncSession* session) {
-  DCHECK_EQ(finished_, NOT_FINISHED);
-  // Did we run through all SyncerSteps from start_step() to end_step()
-  // until the SyncSession returned !HasMoreToSync()?
-  // Note: if not, it's possible the scheduler hasn't started with
-  // SyncShare yet, it's possible there is still more to sync in the session,
-  // and it's also possible the job quit part way through due to a premature
-  // exit condition (such as shutdown).
-  finished_ = early_exit ? EARLY_EXIT : FINISHED;
-
+  // Did we quit part-way through due to premature exit condition, like
+  // shutdown?  Note that this branch will not be hit for other kinds
+  // of early return scenarios, like certain kinds of transient errors.
   if (early_exit)
     return false;
 
@@ -73,12 +66,6 @@ bool SyncSessionJob::Finish(bool early_exit, sessions::SyncSession* session) {
   if (!config_params_.ready_task.is_null())
     config_params_.ready_task.Run();
   return true;
-}
-
-scoped_ptr<SyncSessionJob> SyncSessionJob::Clone() const {
-  return scoped_ptr<SyncSessionJob>(new SyncSessionJob(
-      purpose_, scheduled_start_, source_info_,
-      config_params_));
 }
 
 void SyncSessionJob::CoalesceSources(const sessions::SyncSourceInfo& source) {

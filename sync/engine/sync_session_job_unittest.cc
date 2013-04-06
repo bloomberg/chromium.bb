@@ -120,64 +120,6 @@ class SyncSessionJobTest : public testing::Test {
   bool config_params_callback_invoked_;
 };
 
-TEST_F(SyncSessionJobTest, Clone) {
-  SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      MakeSourceInfo(), ConfigurationParams());
-
-  scoped_ptr<SyncSession> session1 = MakeSession().Pass();
-  sessions::test_util::SimulateSuccess(session1.get(),
-                                       job1.start_step(),
-                                       job1.end_step());
-  job1.Finish(false, session1.get());
-  ModelSafeRoutingInfo new_routes;
-  new_routes[AUTOFILL] = GROUP_PASSIVE;
-  context()->set_routing_info(new_routes);
-  scoped_ptr<SyncSessionJob> clone1 = job1.Clone();
-
-  ExpectClones(&job1, clone1.get());
-
-  context()->set_routing_info(routes());
-  scoped_ptr<SyncSession> session2 = MakeSession().Pass();
-  sessions::test_util::SimulateSuccess(session2.get(),
-                                       clone1->start_step(),
-                                       clone1->end_step());
-  clone1->Finish(false, session2.get());
-  scoped_ptr<SyncSessionJob> clone2 = clone1->Clone();
-
-  ExpectClones(clone1.get(), clone2.get());
-
-  clone1.reset();
-  ExpectClones(&job1, clone2.get());
-}
-
-TEST_F(SyncSessionJobTest, CloneAfterEarlyExit) {
-  scoped_ptr<SyncSession> session = MakeSession().Pass();
-  SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      MakeSourceInfo(), ConfigurationParams());
-  job1.Finish(true, session.get());
-  scoped_ptr<SyncSessionJob> job2 = job1.Clone();
-  ExpectClones(&job1, job2.get());
-}
-
-// Tests interaction between Finish and sync cycle success / failure.
-TEST_F(SyncSessionJobTest, Finish) {
-  SyncSessionJob job1(SyncSessionJob::NUDGE, TimeTicks::Now(),
-      MakeSourceInfo(), ConfigurationParams());
-
-  scoped_ptr<SyncSession> session1 = MakeSession().Pass();
-  sessions::test_util::SimulateSuccess(session1.get(),
-                                       job1.start_step(),
-                                       job1.end_step());
-  EXPECT_TRUE(job1.Finish(false /* early_exit */, session1.get()));
-
-  scoped_ptr<SyncSessionJob> job2 = job1.Clone();
-  scoped_ptr<SyncSession> session2 = MakeSession().Pass();
-  sessions::test_util::SimulateConnectionFailure(session2.get(),
-                                                 job2->start_step(),
-                                                 job2->end_step());
-  EXPECT_FALSE(job2->Finish(false, session2.get()));
-}
-
 TEST_F(SyncSessionJobTest, FinishCallsReadyTask) {
   ConfigurationParams params;
   params.ready_task = base::Bind(

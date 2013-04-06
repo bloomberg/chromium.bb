@@ -37,10 +37,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
                  const ConfigurationParams& config_params);
   ~SyncSessionJob();
 
-  // Returns a new clone of the job, with a cloned SyncSession ready to be
-  // retried / rescheduled.
-  scoped_ptr<SyncSessionJob> Clone() const;
-
   // Overwrite the sync update source with the most recent and merge the
   // type/state map.
   void CoalesceSources(const sessions::SyncSourceInfo& source);
@@ -75,14 +71,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   ConfigurationParams config_params() const;
 
  private:
-  // A SyncSessionJob can be in one of these three states, controlled by the
-  // Finish() function, see method comments.
-  enum FinishedState {
-    NOT_FINISHED,  // Finish has not been called.
-    EARLY_EXIT,    // Finish was called but the job was "preempted",
-    FINISHED       // Indicates a "clean" finish operation.
-  };
-
   const Purpose purpose_;
   sessions::SyncSourceInfo source_info_;
 
@@ -91,11 +79,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // Only used for purpose_ == CONFIGURATION.  This, and different Finish() and
   // Succeeded() behavior may be arguments to subclass in the future.
   const ConfigurationParams config_params_;
-
-  // Set to true if Finish() was called, false otherwise. True implies that
-  // a SyncShare operation took place with |session_| and it cycled through
-  // all requisite steps given |purpose_| without being preempted.
-  FinishedState finished_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionJob);
 };

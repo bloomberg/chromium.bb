@@ -88,10 +88,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
        TimeDelta::FromSeconds(1)));
   }
 
-  void SetWaitIntervalHadNudge(bool had_nudge) {
-    scheduler_->wait_interval_->had_nudge = had_nudge;
-  }
-
   SyncSchedulerImpl::JobProcessDecision DecideOnJob(
       const SyncSessionJob& job,
       SyncSchedulerImpl::JobPriority priority) {
@@ -233,22 +229,10 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileThrottled) {
   EXPECT_EQ(decision, SyncSchedulerImpl::SAVE);
 }
 
-TEST_F(SyncSchedulerWhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
-  InitializeSyncerOnNormalMode();
-  SetMode(SyncScheduler::NORMAL_MODE);
-  SetWaitIntervalToExponentialBackoff();
-
-  SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::NUDGE);
-
-  EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
-}
-
 TEST_F(SyncSchedulerWhiteboxTest, DropNudgeWhileExponentialBackOff) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncScheduler::NORMAL_MODE);
   SetWaitIntervalToExponentialBackoff();
-  SetWaitIntervalHadNudge(true);
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
       SyncSessionJob::NUDGE);
