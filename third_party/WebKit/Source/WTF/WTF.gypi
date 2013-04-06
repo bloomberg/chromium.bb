@@ -200,8 +200,6 @@
             'wtf/RandomNumber.cpp',
             'wtf/RandomNumberSeed.h',
             'wtf/RefCountedLeakCounter.cpp',
-            'wtf/RunLoopTimer.h',
-            'wtf/RunLoopTimerCF.cpp',
             'wtf/SHA1.cpp',
             'wtf/SHA1.h',
             'wtf/SchedulePairCF.cpp',
