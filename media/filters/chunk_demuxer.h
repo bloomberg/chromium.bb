@@ -21,6 +21,7 @@ namespace media {
 
 class ChunkDemuxerStream;
 class FFmpegURLProtocol;
+class SourceState;
 
 // Demuxer implementation that allows chunks of media data to be passed
 // from JavaScript to the media stack.
@@ -129,8 +130,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // false if any can not.
   bool CanEndOfStream_Locked() const;
 
-  // StreamParser callbacks.
-  void OnStreamParserInitDone(bool success, base::TimeDelta duration);
+  // SourceState callbacks.
+  void OnSourceInitDone(bool success, base::TimeDelta duration);
   bool OnNewConfigs(bool has_audio, bool has_video,
                     const AudioDecoderConfig& audio_config,
                     const VideoDecoderConfig& video_config);
@@ -141,7 +142,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                  int init_data_size);
   void OnNewMediaSegment(const std::string& source_id,
                          base::TimeDelta start_timestamp);
-  void OnEndOfMediaSegment(const std::string& source_id);
 
   // Computes the intersection between the video & audio
   // buffered ranges.
@@ -197,16 +197,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // the actual duration instead of a user specified value.
   double user_specified_duration_;
 
-  typedef std::map<std::string, StreamParser*> StreamParserMap;
-  StreamParserMap stream_parser_map_;
-
-  // Contains state belonging to a source id.
-  struct SourceInfo {
-    base::TimeDelta timestamp_offset;
-    bool can_update_offset;
-  };
-  typedef std::map<std::string, SourceInfo> SourceInfoMap;
-  SourceInfoMap source_info_map_;
+  typedef std::map<std::string, SourceState*> SourceStateMap;
+  SourceStateMap source_state_map_;
 
   // Used to ensure that (1) config data matches the type and codec provided in
   // AddId(), (2) only 1 audio and 1 video sources are added, and (3) ids may be
