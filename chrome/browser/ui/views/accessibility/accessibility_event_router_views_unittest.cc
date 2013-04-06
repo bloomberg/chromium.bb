@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -189,14 +189,17 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Create a contents view with 3 buttons.
   views::View* contents = new views::View();
-  views::NativeTextButton* button1 = new views::NativeTextButton(
+  views::LabelButton* button1 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton1ASCII));
+  button1->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   contents->AddChildView(button1);
-  views::NativeTextButton* button2 = new views::NativeTextButton(
+  views::LabelButton* button2 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton2ASCII));
+  button2->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   contents->AddChildView(button2);
-  views::NativeTextButton* button3 = new views::NativeTextButton(
+  views::LabelButton* button3 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton3ASCII));
+  button3->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   contents->AddChildView(button3);
 
   // Put the view in a window.
@@ -244,8 +247,9 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   views::View* contents = new ViewWithNameAndRole(
       ASCIIToUTF16(kToolbarNameASCII),
       ui::AccessibilityTypes::ROLE_TOOLBAR);
-  views::NativeTextButton* button = new views::NativeTextButton(
+  views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonNameASCII));
+  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   contents->AddChildView(button);
 
   // Put the view in a window.
@@ -277,8 +281,9 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
       ui::AccessibilityTypes::ROLE_ALERT);
   views::Label* label = new views::Label(ASCIIToUTF16(kAlertTextASCII));
   contents->AddChildView(label);
-  views::NativeTextButton* button = new views::NativeTextButton(
+  views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonNameASCII));
+  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   contents->AddChildView(button);
 
   // Put the view in a window.
