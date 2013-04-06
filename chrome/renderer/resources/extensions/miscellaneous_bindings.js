@@ -106,23 +106,21 @@
   function handleSendRequestError(isSendMessage, responseCallbackPreserved,
                                   sourceExtensionId, targetExtensionId) {
     var errorMsg;
-    var eventName = (isSendMessage  ?
-        "chrome.runtime.onMessage" : "chrome.extension.onRequest");
+    var eventName = isSendMessage ? "runtime.onMessage" : "extension.onRequest";
     if (isSendMessage && !responseCallbackPreserved) {
       errorMsg =
-          "The " + eventName + " listener must return true if you want to" +
-          " send a response after the listener returns ";
+          "The chrome." + eventName + " listener must return true if you " +
+          "want to send a response after the listener returns ";
     } else {
       errorMsg =
-          "Cannot send a response more than once per " + eventName +
+          "Cannot send a response more than once per chrome." + eventName +
           " listener per document";
     }
-    errorMsg += " (message was sent by extension " + sourceExtensionId;
+    errorMsg += "(message was sent by extension " + sourceExtensionId;
     if (sourceExtensionId != targetExtensionId)
       errorMsg += " for extension " + targetExtensionId;
     errorMsg += ").";
-    lastError.set(errorMsg, chrome);
-    console.error("Could not send response: " + errorMsg);
+    lastError.set(eventName, errorMsg, null, chrome);
   }
 
   // Helper function for dispatchOnConnect
@@ -230,10 +228,8 @@
     if (port) {
       // Update the renderer's port bookkeeping, without notifying the browser.
       CloseChannel(portId, false);
-      if (errorMessage) {
-        lastError.set(errorMessage, chrome);
-        console.error("Port error: " + errorMessage);
-      }
+      if (errorMessage)
+        lastError.set('Port', errorMessage, null, chrome);
       try {
         port.onDisconnect.dispatch(port);
       } finally {

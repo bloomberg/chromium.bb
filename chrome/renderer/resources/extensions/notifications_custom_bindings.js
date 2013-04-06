@@ -95,7 +95,7 @@ function replaceNotificationOptionURLs(notification_details, callback) {
   });
 }
 
-function genHandle(failure_function) {
+function genHandle(name, failure_function) {
   return function(id, input_notification_details, callback) {
     // TODO(dewittj): Remove this hack. This is used as a way to deep
     // copy a complex JSON object.
@@ -109,14 +109,18 @@ function genHandle(failure_function) {
             that.definition.parameters);
         return;
       }
-      lastError.run('Unable to download all specified images.',
+      lastError.run(name,
+                    'Unable to download all specified images.',
+                    null,
                     failure_function, [callback, id])
     });
   };
 }
 
-var handleCreate = genHandle(function(callback, id) { callback(id); });
-var handleUpdate = genHandle(function(callback, id) { callback(false); });
+var handleCreate = genHandle('notifications.create',
+                             function(callback, id) { callback(id); });
+var handleUpdate = genHandle('notifications.update',
+                             function(callback, id) { callback(false); });
 
 var notificationsCustomHook = function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;

@@ -42,7 +42,9 @@ chromeHidden.handleResponse = function(requestId, name,
     if (!success) {
       if (!error)
         error = "Unknown error.";
-      forEach(chromesForLastError, function(i, c) {lastError.set(error, c)});
+      forEach(chromesForLastError, function(i, c) {
+        lastError.set(name, error, request.stack, c)
+      });
     }
 
     if (request.customCallback) {
@@ -75,6 +77,20 @@ chromeHidden.handleResponse = function(requestId, name,
     forEach(chromesForLastError, function(i, c) {lastError.clear(c)});
   }
 };
+
+function getExtensionStackTrace(call_name) {
+  var stack = new Error().stack.split('\n');
+
+  // Remove stack frames before and after that weren't associated with the
+  // extension.
+  var id = chrome.runtime.id;
+  while (stack.length > 0 && stack[0].indexOf(id) == -1)
+    stack.shift();
+  while (stack.length > 0 && stack[stack.length - 1].indexOf(id) == -1)
+    stack.pop();
+
+  return stack.join('\n');
+}
 
 function prepareRequest(args, argSchemas) {
   var request = {};
@@ -111,6 +127,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   if (!optArgs)
     optArgs = {};
   var request = prepareRequest(args, argSchemas);
+  request.stack = getExtensionStackTrace();
   if (optArgs.customCallback) {
     request.customCallback = optArgs.customCallback;
   }

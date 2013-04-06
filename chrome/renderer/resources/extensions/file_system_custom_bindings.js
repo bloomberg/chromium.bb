@@ -47,11 +47,15 @@ binding.registerCustomHook(function(bindingsAPI) {
             entryIdManager.registerEntry(id, fileEntry);
             callback(fileEntry);
           }, function(fileError) {
-            lastError.run('Error getting fileEntry, code: ' + fileError.code,
+            lastError.run('fileSystem.' + functionName,
+                          'Error getting fileEntry, code: ' + fileError.code,
+                          request.stack,
                           callback);
           });
         } catch (e) {
-          lastError.run('Error in event handler for onLaunched: ' + e.stack,
+          lastError.run('fileSystem.' + functionName,
+                        'Error in event handler for onLaunched: ' + e.stack,
+                        request.stack,
                         callback);
         }
       }

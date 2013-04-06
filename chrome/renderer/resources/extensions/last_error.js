@@ -16,12 +16,19 @@ var GetGlobal = requireNative('sendRequest').GetGlobal;
 //     the chrome object to try to prevent bugs here.
 
 /**
- * Sets the last error on |targetChrome| to |message|.
+ * Sets the last error for |name| on |targetChrome| to |message| with an
+ * optional |stack|.
  */
-function set(message, targetChrome) {
+function set(name, message, stack, targetChrome) {
   DCHECK(targetChrome != undefined);
   clear(targetChrome);  // in case somebody has set a sneaky getter/setter
-  var errorObject = { 'message': message };
+
+  var errorMessage = name + ': ' + message;
+  if (stack != null && stack != '')
+    errorMessage += '\n' + stack;
+  console.error(errorMessage);
+
+  var errorObject = { message: message };
   if (GetAvailability('extension').is_available)
     targetChrome.extension.lastError = errorObject;
   targetChrome.runtime.lastError = errorObject;
@@ -38,14 +45,14 @@ function clear(targetChrome) {
 };
 
 /**
- * Runs |callback(args)| with last error set to |message|.
+ * Runs |callback(args)| with last error args as in set().
  *
  * The target chrome object is the global object's of the callback, so this
  * method won't work if the real callback has been wrapped (etc).
  */
-function run(message, callback, args) {
+function run(name, message, stack, callback, args) {
   var targetChrome = GetGlobal(callback).chrome;
-  set(message, targetChrome);
+  set(name, message, stack, targetChrome);
   try {
     callback.apply(undefined, args);
   } finally {
