@@ -1830,6 +1830,29 @@
    fun:ash::test::ScreenshotTakerTest_TakeScreenshot_Test::TestBody
 }
 {
+   bug_227271c
+   Heapcheck:Leak
+   ...
+   fun:gfx::internal::ImageSkiaStorage::FindRepresentation
+   fun:gfx::ImageSkia::GetRepresentation
+   fun:gfx::Canvas::GetImageRepToPaint
+   fun:gfx::Canvas::GetImageRepToPaint
+   fun:gfx::Canvas::DrawImageInt
+   fun:gfx::Canvas::DrawImageInt
+   fun:views::ImageView::OnPaint
+   fun:views::View::PaintCommon
+   fun:views::View::Paint
+   fun:views::View::PaintChildren
+   fun:views::View::PaintCommon
+   fun:views::View::OnPaintLayer
+   fun:ui::Layer::PaintContents
+   fun:cc::ContentLayerPainter::Paint
+   fun:cc::ContentLayerUpdater::PaintContents
+   fun:cc::BitmapContentLayerUpdater::PrepareToUpdate
+   fun:cc::TiledLayer::UpdateTileTextures
+   fun:cc::TiledLayer::UpdateTiles
+}
+{
    bug_227301a
    Heapcheck:Leak
    fun:base::internal::WeakReferenceOwner::GetRef
