@@ -31,8 +31,6 @@
 #ifndef DataTransferItemList_h
 #define DataTransferItemList_h
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
-
 #include "DataTransferItem.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
@@ -57,7 +55,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(DATA_TRANSFER_ITEMS)
 
 #endif // DataTransferItemList_h

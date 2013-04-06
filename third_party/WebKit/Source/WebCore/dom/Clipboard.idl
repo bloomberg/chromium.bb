@@ -41,6 +41,6 @@
     [Custom] void setDragImage(in HTMLImageElement image, in long x, in long y)
         raises(DOMException);
 
-    [Conditional=DATA_TRANSFER_ITEMS, V8EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
+    [V8EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
 };
 

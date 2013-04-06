@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DataTransferItem.h"
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
-
 namespace WebCore {
 
 const char DataTransferItem::kindString[] = "string";
@@ -40,4 +38,3 @@ const char DataTransferItem::kindFile[] = "file";
 
 } // namespace WebCore
 
-#endif // ENABLE(DATA_TRANSFER_ITEMS)

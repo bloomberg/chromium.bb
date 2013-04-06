@@ -31,8 +31,6 @@
 #ifndef ChromiumDataObjectItem_h 
 #define ChromiumDataObjectItem_h
 
-#if ENABLE(DATA_TRANSFER_ITEMS)
-
 #include "File.h"
 #include "KURL.h"
 #include "SharedBuffer.h"
@@ -91,7 +89,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(DATA_TRANSFER_ITEMS)
 
 #endif // ChromiumDataObjectItem_h
