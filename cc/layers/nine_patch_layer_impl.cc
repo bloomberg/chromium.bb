@@ -38,8 +38,6 @@ void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetLayout(image_bounds_, image_aperture_);
 }
 
-void NinePatchLayerImpl::WillDraw(ResourceProvider* resource_provider) {}
-
 static gfx::RectF NormalizedRect(float x,
                                  float y,
                                  float width,
@@ -261,8 +259,6 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
-
-void NinePatchLayerImpl::DidDraw(ResourceProvider* resource_provider) {}
 
 void NinePatchLayerImpl::DidLoseOutputSurface() {
   resource_id_ = 0;
