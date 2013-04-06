@@ -137,15 +137,6 @@ void BuildInputs(const DetailInput* input_template,
   }
 }
 
-// Uses |group| to fill in the |initial_value| for all inputs in |all_inputs|
-// (an out-param).
-void FillInputFromFormGroup(FormGroup* group, DetailInputs* inputs) {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].initial_value = group->GetInfo((*inputs)[j].type, app_locale);
-  }
-}
-
 // Initializes |form_group| from user-entered data.
 void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
                               FormGroup* form_group) {
@@ -1006,7 +997,6 @@ std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     const DetailInput* input,
-    DialogSection section,
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
     const string16& field_contents,
@@ -1025,7 +1015,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   }
 
   std::vector<string16> popup_values, popup_labels, popup_icons;
-  if (section == SECTION_CC) {
+  if (IsCreditCardType(input->type)) {
     GetManager()->GetCreditCardSuggestions(input->type,
                                            field_contents,
                                            &popup_values,
@@ -1033,12 +1023,10 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                                            &popup_icons,
                                            &popup_guids_);
   } else {
-    // TODO(estade): add field types from email section?
-    const DetailInputs& inputs = RequestedFieldsForSection(section);
     std::vector<AutofillFieldType> field_types;
-    field_types.reserve(inputs.size());
-    for (DetailInputs::const_iterator iter = inputs.begin();
-         iter != inputs.end(); ++iter) {
+    field_types.push_back(EMAIL_ADDRESS);
+    for (DetailInputs::const_iterator iter = requested_shipping_fields_.begin();
+         iter != requested_shipping_fields_.end(); ++iter) {
       field_types.push_back(iter->type);
     }
     GetManager()->GetProfileSuggestions(input->type,
@@ -1067,7 +1055,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                           popup_labels,
                           popup_icons,
                           popup_ids);
-  section_showing_popup_ = section;
+  input_showing_popup_ = input;
 }
 
 void AutofillDialogControllerImpl::FocusMoved() {
@@ -1265,16 +1253,26 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
                                                        int identifier) {
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
 
-  FormGroup* form_group = section_showing_popup_ == SECTION_CC ?
-      static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(pair.first)) :
-      // TODO(estade): need to use the variant, |pair.second|.
-      static_cast<FormGroup*>(GetManager()->GetProfileByGUID(pair.first));
-  DCHECK(form_group);
+  scoped_ptr<DataModelWrapper> wrapper;
+  if (IsCreditCardType(input_showing_popup_->type)) {
+    wrapper.reset(new AutofillCreditCardWrapper(
+        GetManager()->GetCreditCardByGUID(pair.first)));
+  } else {
+    wrapper.reset(new AutofillProfileWrapper(
+        GetManager()->GetProfileByGUID(pair.first), pair.second));
+  }
 
-  FillInputFromFormGroup(
-      form_group,
-      MutableRequestedFieldsForSection(section_showing_popup_));
-  view_->UpdateSection(section_showing_popup_);
+  // TODO(estade): use isherman's method of looping.
+  static const DialogSection sections[] = { SECTION_EMAIL,
+                                            SECTION_CC,
+                                            SECTION_CC_BILLING,
+                                            SECTION_BILLING,
+                                            SECTION_SHIPPING };
+  for (size_t i = 0; i < arraysize(sections); ++i) {
+    DialogSection section = sections[i];
+    wrapper->FillInputs(MutableRequestedFieldsForSection(section));
+    view_->UpdateSection(section);
+  }
 
   metric_logger_.LogDialogPopupEvent(
       dialog_type_, AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
@@ -1560,7 +1558,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
-      section_showing_popup_(SECTION_BILLING),
+      input_showing_popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       metric_logger_(metric_logger),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
@@ -1843,6 +1841,7 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
 void AutofillDialogControllerImpl::HidePopup() {
   if (popup_controller_)
     popup_controller_->Hide();
+  input_showing_popup_ = NULL;
 }
 
 void AutofillDialogControllerImpl::LoadRiskFingerprintData() {

@@ -1319,7 +1319,6 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
     decorated = iter->second;
     if (decorated == ancestor) {
       controller_->UserEditedOrActivatedInput(iter->first,
-                                              group->section,
                                               GetWidget()->GetNativeView(),
                                               textfield->GetBoundsInScreen(),
                                               textfield->text(),

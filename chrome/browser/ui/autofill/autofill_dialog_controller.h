@@ -136,7 +136,6 @@ class AutofillDialogController {
   // (by focusing and then clicking it). |was_edit| is true when the function
   // was called in response to the user editing the text field.
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
-                                          DialogSection section,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,

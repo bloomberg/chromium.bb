@@ -130,7 +130,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual std::vector<AutofillFieldType> InputsAreValid(
       const DetailOutputMap& inputs, ValidationType validation_type) OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
-                                          DialogSection section,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,
@@ -465,9 +464,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // they're manually filling the dialog).
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 
-  // The section for which |popup_controller_| is currently showing a popup
+  // The input for which |popup_controller_| is currently showing a popup
   // (if any).
-  DialogSection section_showing_popup_;
+  const DetailInput* input_showing_popup_;
 
   scoped_ptr<AutofillDialogView> view_;
 

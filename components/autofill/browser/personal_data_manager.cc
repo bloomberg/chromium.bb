@@ -621,6 +621,11 @@ void PersonalDataManager::GetCreditCardSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
+  values->clear();
+  labels->clear();
+  icons->clear();
+  guid_pairs->clear();
+
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards().begin();
        iter != credit_cards().end(); ++iter) {
     CreditCard* credit_card = *iter;
