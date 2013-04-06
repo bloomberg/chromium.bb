@@ -84,9 +84,7 @@ class CloseListener : public WebSocketListener {
 
 class WebSocketTest : public testing::Test {
  public:
-  WebSocketTest()
-      : context_getter_(
-            new net::TestURLRequestContextGetter(loop_.message_loop_proxy())) {}
+  WebSocketTest() {}
   virtual ~WebSocketTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -101,8 +99,7 @@ class WebSocketTest : public testing::Test {
   scoped_ptr<WebSocket> CreateWebSocket(const GURL& url,
                                         WebSocketListener* listener) {
     int error;
-    scoped_ptr<WebSocket> sock(new WebSocket(
-        context_getter_, url, listener));
+    scoped_ptr<WebSocket> sock(new WebSocket(url, listener));
     base::RunLoop run_loop;
     sock->Connect(base::Bind(&OnConnectFinished, &run_loop, &error));
     loop_.PostDelayedTask(
@@ -134,14 +131,13 @@ class WebSocketTest : public testing::Test {
 
   MessageLoopForIO loop_;
   TestHttpServer server_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 };
 
 }  // namespace
 
 TEST_F(WebSocketTest, CreateDestroy) {
   CloseListener listener(NULL);
-  WebSocket sock(context_getter_, GURL("http://ok"), &listener);
+  WebSocket sock(GURL("ws://127.0.0.1:2222"), &listener);
 }
 
 TEST_F(WebSocketTest, Connect) {

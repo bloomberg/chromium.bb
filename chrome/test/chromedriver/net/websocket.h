@@ -8,30 +8,27 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
-#include "net/base/net_errors.h"
-#include "net/socket_stream/socket_stream.h"
+#include "net/socket/tcp_client_socket.h"
 #include "net/websockets/websocket_frame_parser.h"
 
 namespace net {
-class URLRequestContextGetter;
-class WebSocketJob;
-}  // namespace net
+class DrainableIOBuffer;
+class IOBufferWithSize;
+}
 
 class WebSocketListener;
 
 // A text-only, non-thread safe WebSocket. Must be created and used on a single
 // thread. Intended particularly for use with net::HttpServer.
-class WebSocket : public net::SocketStream::Delegate {
+class WebSocket {
  public:
-  WebSocket(net::URLRequestContextGetter* context_getter,
-            const GURL& url,
-            WebSocketListener* listener);
+  // |url| must be an IP v4/v6 literal, not a host name.
+  WebSocket(const GURL& url, WebSocketListener* listener);
   virtual ~WebSocket();
 
   // Initializes the WebSocket connection. Invokes the given callback with
@@ -41,29 +38,45 @@ class WebSocket : public net::SocketStream::Delegate {
   // Sends the given message and returns true on success.
   bool Send(const std::string& message);
 
-  // Overridden from net::SocketStream::Delegate:
-  virtual void OnConnected(net::SocketStream* socket,
-                           int max_pending_send_allowed) OVERRIDE;
-  virtual void OnSentData(net::SocketStream* socket,
-                          int amount_sent) OVERRIDE;
-  virtual void OnReceivedData(net::SocketStream* socket,
-                              const char* data,
-                              int len) OVERRIDE;
-  virtual void OnClose(net::SocketStream* socket) OVERRIDE;
-
  private:
-  void OnConnectFinished(net::Error error);
+  enum State {
+    INITIALIZED,
+    CONNECTING,
+    OPEN,
+    CLOSED
+  };
+
+  void OnSocketConnect(int code);
+
+  void Write(const std::string& data);
+  void OnWrite(int code);
+  void ContinueWritingIfNecessary();
+
+  void Read();
+  void OnRead(int code);
+  void OnReadDuringHandshake(const char* data, int len);
+  void OnReadDuringOpen(const char* data, int len);
+
+  void InvokeConnectCallback(int code);
+  void Close(int code);
 
   base::ThreadChecker thread_checker_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+
   GURL url_;
-  scoped_refptr<net::WebSocketJob> web_socket_;
   WebSocketListener* listener_;
+  State state_;
+  scoped_ptr<net::TCPClientSocket> socket_;
+
   net::CompletionCallback connect_callback_;
   std::string sec_key_;
+  std::string handshake_response_;
+
+  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+  std::string pending_write_;
+
+  scoped_refptr<net::IOBufferWithSize> read_buffer_;
   net::WebSocketFrameParser parser_;
   std::string next_message_;
-  bool connected_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };

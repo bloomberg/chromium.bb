@@ -108,7 +108,7 @@ void SyncWebSocketImpl::Core::ConnectOnIO(
     base::AutoLock lock(lock_);
     received_queue_.clear();
   }
-  socket_.reset(new WebSocket(context_getter_, url, this));
+  socket_.reset(new WebSocket(url, this));
   socket_->Connect(base::Bind(
       &SyncWebSocketImpl::Core::OnConnectCompletedOnIO,
       this, success, event));
