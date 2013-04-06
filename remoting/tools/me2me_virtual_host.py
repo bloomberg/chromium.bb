@@ -316,6 +316,14 @@ class Desktop:
       xvfb = "Xvfb"
       self.server_supports_exact_resize = False
 
+    # Disable the Composite extension iff the X session is the default
+    # Unity-2D, since it uses Metacity which fails to generate DAMAGE
+    # notifications correctly. See crbug.com/166468.
+    x_session = choose_x_session();
+    if (len(x_session) == 2 and
+        x_session[1] == "/usr/bin/gnome-session --session=ubuntu-2d"):
+      extra_x_args.extend(["-extension", "Composite"])
+
     logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
     self.x_proc = subprocess.Popen(
@@ -509,7 +517,7 @@ def choose_x_session():
       else:
         # Use the session wrapper by itself, and let the system choose a
         # session.
-        return session_wrapper
+        return [session_wrapper]
   return None
 
 
