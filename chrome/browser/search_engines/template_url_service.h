@@ -335,7 +335,6 @@ class TemplateURLService : public WebDataServiceConsumer,
                                            const string16& term);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, BuildQueryTerms);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, TestManagedDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
                            UpdateKeywordSearchTermsForURL);
@@ -464,14 +463,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);
-
-  // Adds each of the query terms in the specified url whose key and value are
-  // non-empty to query_terms. If a query key appears multiple times, the value
-  // is set to an empty string. Returns true if there is at least one key that
-  // does not occur multiple times.
-  static bool BuildQueryTerms(
-      const GURL& url,
-      std::map<std::string, std::string>* query_terms);
 
   // Invoked when the Google base URL has changed. Updates the mapping for all
   // TemplateURLs that have a replacement term of {google:baseURL} or

@@ -1910,38 +1910,6 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
                    history::SOURCE_BROWSED, false);
 }
 
-// static
-bool TemplateURLService::BuildQueryTerms(const GURL& url,
-                                         QueryTerms* query_terms) {
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key, value;
-  size_t valid_term_count = 0;
-  while (url_parse::ExtractQueryKeyValue(url.spec().c_str(), &query, &key,
-                                         &value)) {
-    if (key.is_nonempty() && value.is_nonempty()) {
-      std::string key_string = url.spec().substr(key.begin, key.len);
-      std::string value_string = url.spec().substr(value.begin, value.len);
-      QueryTerms::iterator query_terms_iterator =
-          query_terms->find(key_string);
-      if (query_terms_iterator != query_terms->end()) {
-        if (!query_terms_iterator->second.empty() &&
-            query_terms_iterator->second != value_string) {
-          // The term occurs in multiple places with different values. Treat
-          // this as if the term doesn't occur by setting the value to an empty
-          // string.
-          (*query_terms)[key_string] = std::string();
-          DCHECK(valid_term_count > 0);
-          valid_term_count--;
-        }
-      } else {
-        valid_term_count++;
-        (*query_terms)[key_string] = value_string;
-      }
-    }
-  }
-  return (valid_term_count > 0);
-}
-
 void TemplateURLService::GoogleBaseURLChanged(const GURL& old_base_url) {
   bool something_changed = false;
   for (TemplateURLVector::iterator i(template_urls_.begin());

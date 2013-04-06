@@ -922,52 +922,6 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   AssertEquals(*cloned_url, *model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLServiceTest, BuildQueryTerms) {
-  struct TestData {
-    const std::string url;
-    const bool result;
-    // Keys and values are a semicolon separated list of expected values in the
-    // map.
-    const std::string keys;
-    const std::string values;
-  } data[] = {
-    // No query should return false.
-    { "http://blah/", false, "", "" },
-
-    // Query with empty key should return false.
-    { "http://blah/foo?=y", false, "", "" },
-
-    // Query with key occurring multiple times should return false.
-    { "http://blah/foo?x=y&x=z", false, "", "" },
-
-    { "http://blah/foo?x=y", true, "x", "y" },
-    { "http://blah/foo?x=y&y=z", true, "x;y", "y;z" },
-
-    // Key occurring multiple times should get an empty string.
-    { "http://blah/foo?x=y&x=z&y=z", true, "x;y", ";z" },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    TemplateURLService::QueryTerms terms;
-    ASSERT_EQ(data[i].result,
-              TemplateURLService::BuildQueryTerms(GURL(data[i].url), &terms));
-    if (data[i].result) {
-      std::vector<std::string> keys;
-      std::vector<std::string> values;
-      base::SplitString(data[i].keys, ';', &keys);
-      base::SplitString(data[i].values, ';', &values);
-      ASSERT_TRUE(keys.size() == values.size());
-      ASSERT_EQ(keys.size(), terms.size());
-      for (size_t j = 0; j < keys.size(); ++j) {
-        TemplateURLService::QueryTerms::iterator term_iterator =
-            terms.find(keys[j]);
-        ASSERT_TRUE(term_iterator != terms.end());
-        ASSERT_EQ(values[j], term_iterator->second);
-      }
-    }
-  }
-}
-
 TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
   struct TestData {
     const std::string url;
