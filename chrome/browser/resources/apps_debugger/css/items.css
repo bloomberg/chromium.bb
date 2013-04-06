@@ -12,7 +12,7 @@ html {
 
 hr {
   color: rgb(115, 111, 110);
-  margin: 10px 0 10px;
+  margin: 15px 0;
 }
 
 /* Contents */
@@ -22,18 +22,18 @@ hr {
   max-width: 800px;
 }
 
-#no-extensions-message {
+#no-extensions-message,
+#no-apps-message {
   font-weight: bold;
 }
 
-.empty-extension-list {
+.empty-item-list {
   height: 3em;
 }
 
 #developer-controls {
-  bottom: 15px;
+  margin-top: 15px;
   max-width: 750px;
-  top: 15px;
 }
 
 #search {
@@ -44,18 +44,21 @@ html[dir='rtl'] #search {
   float: left;
 }
 
-#no-extensions {
+#no-extensions,
+#no-apps {
   margin: 10px 10px;
 }
 
 .loading #no-extensions,
-#extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
-.empty-extension-list {
+.loading #no-apps,
+#extension-settings-list:not(.empty-item-list) ~ #no-extensions,
+#app-settings-list:not(.empty-item-list) ~ #no-apps,
+.empty-item-list {
   display: none;
 }
 
 .extension-list-item-wrapper {
-  margin: 23px 0;
+  margin: 30px 0;
 }
 
 .extension-list-item {
@@ -112,7 +115,7 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .active-views {
-  margin: 4px;
+  margin-top: 15px;
 }
 
 .site-link {
@@ -130,14 +133,9 @@ html[dir='rtl'] .enable-control {
 
 .file-access-control,
 .incognito-control {
+  left: 0;
   position: relative;
-  right: 0.5em;
-}
-
-html[dir='rtl'] .file-access-control,
-html[dir='rtl'] .incognito-control {
-  left: 0.5em;
-  right: auto;
+  right: 0;
 }
 
 .enable-checkbox-text {
@@ -164,6 +162,10 @@ html[dir='rtl'] .incognito-control {
   word-wrap: break-word;
 }
 
+.load-path {
+  margin-top: 15px;
+}
+
 .terminated-reload-link {
   -webkit-margin-end: 2.5em;
   padding-top: 7px;
@@ -177,6 +179,14 @@ html[dir='rtl'] .incognito-control {
 
 .install-warnings a {
   -webkit-margin-start: 0;
+}
+
+#tabs {
+  background: none;
+}
+
+#tab-panels {
+  box-shadow: none;
 }
 
 /* Overlays */
@@ -228,6 +238,10 @@ html[dir='rtl'] #extension-settings .trash {
 
 .may-not-disable .optional-controls .optional-controls-disableable {
   display: none;
+}
+
+.optional-controls {
+  margin-top: 15px;
 }
 
 a {

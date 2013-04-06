@@ -19,6 +19,8 @@ cr.define('apps_dev_tool', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      cr.ui.decorate('tabbox', cr.ui.TabBox);
+
       // Set up the three buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
           this.handleLoadUnpackedItem_.bind(this));

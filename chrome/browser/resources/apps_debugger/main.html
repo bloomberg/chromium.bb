@@ -5,7 +5,6 @@
 Copyright (c) 2012 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
-
 -->
   <head>
     <meta charset="utf-8">
@@ -13,6 +12,7 @@ found in the LICENSE file.
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/chrome_shared.css">
     <link rel="stylesheet" href="css/pack_item_overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/alert_overlay.css">
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/tabs.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/trash.css">
     <link rel="stylesheet" href="../uber/uber_shared.css">
@@ -24,27 +24,46 @@ found in the LICENSE file.
       <include src="pack_item_overlay.html">
       <include src="../../../../ui/webui/resources/html/alert_overlay.html">
     </div>
-    <hr>
     <div class="page" id="extension-settings">
+      <hr>
       <h1 i18n-content="appsDevtoolTitle"></h1>
-      <div id="developer-controls">
-        <hr>
-        <button id="load-unpacked"
-            i18n-content="appsDevtoolLoadUnpackedButton"></button>
-        <button id="pack-item"
-            i18n-content="appsDevtoolPackButton"></button>
-        <button id = "update-items-now"
-            i18n-content="appsDevtoolUpdateButton"></button>
-        <input id="search" type="text"
-            i18n-values=".placeholder:appsDevtoolSearch" spellcheck="false">
-        <hr>
-      </div>
-      <div id="items"></div>
-      <div id="extension-settings-list" class="empty-extension-list"></div>
-      <div id="no-extensions">
-        <span id="no-extensions-message"
-            i18n-content="appsDevtoolNoItems"></span>
-      </div>
+      <tabbox id="tab-box">
+        <tabs id="tabs">
+          <tab i18n-content="appsDevtoolApps"></tab>
+          <tab i18n-content="appsDevtoolExtensions"></tab>
+        </tabs>
+        <div id="developer-controls">
+          <button id="load-unpacked"
+              i18n-content="appsDevtoolLoadUnpackedButton"></button>
+          <button id="pack-item"
+              i18n-content="appsDevtoolPackButton"></button>
+          <button id= "update-items-now"
+              i18n-content="appsDevtoolUpdateButton"></button>
+          <input id="search" type="text"
+              i18n-values=".placeholder:appsDevtoolSearch" spellcheck="false">
+          <hr>
+        </div>
+        <tabpanels id="tab-panels">
+          <!-- Apps Tab -->
+          <tabpanel id="apps-tab">
+            <div id="app-settings-list" class="empty-extension-list">
+            </div>
+            <div id="no-apps">
+              <span id="no-apps-message"
+                  i18n-content="appsDevtoolNoApps"></span>
+            </div>
+          </tabpanel>
+          <!-- Extensions Tab -->
+          <tabpanel id="extensions-tab">
+            <div id="extension-settings-list" class="empty-extension-list">
+            </div>
+            <div id="no-extensions">
+              <span id="no-extensions-message"
+                  i18n-content="appsDevtoolNoExtensions"></span>
+            </div>
+          </tabpanel>
+        </tabpanels>
+      </tabbox>
     </div>
     <div id="template-collection" hidden>
       <div class="extension-list-item-wrapper">

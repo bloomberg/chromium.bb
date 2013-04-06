@@ -818,9 +818,12 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
     dict->SetString(id, l10n_util::GetStringUTF16(idr))
   SET_STRING("extensionSettings", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
-  SET_STRING("appsDevtoolNoItems",
-             IDS_APPS_DEVTOOL_NONE_INSTALLED);
   SET_STRING("appsDevtoolSearch", IDS_APPS_DEVTOOL_SEARCH);
+  SET_STRING("appsDevtoolNoApps", IDS_APPS_DEVTOOL_NO_APPS_INSTALLED);
+  SET_STRING("appsDevtoolApps", IDS_APPS_DEVTOOL_APPS_INSTALLED);
+  SET_STRING("appsDevtoolExtensions", IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED);
+  SET_STRING("appsDevtoolNoExtensions",
+             IDS_EXTENSIONS_NONE_INSTALLED);
   SET_STRING("appsDevtoolTitle", IDS_APPS_DEVTOOL_TITLE);
   SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
   SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);

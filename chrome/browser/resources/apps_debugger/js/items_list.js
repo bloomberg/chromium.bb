@@ -5,18 +5,14 @@
 cr.define('apps_dev_tool', function() {
   'use strict';
 
-  /**
-   * Creates a new list of items.
-   * @param {Object=} opt_propertyBag Optional properties.
-   * @constructor
-   */
-  var ItemsList = cr.ui.define('div');
-
   // The list of all apps & extensions.
   var completeList = [];
 
   // The list of all apps.
   var appList = [];
+
+  // The list of all extensions.
+  var extensionList = [];
 
   /** const*/ var AppsDevTool = apps_dev_tool.AppsDevTool;
 
@@ -56,14 +52,10 @@ cr.define('apps_dev_tool', function() {
    * Refreshes the app.
    */
   function reloadAppDisplay() {
-    var itemsDiv = $('items');
-
-    // Empty the current content.
-    itemsDiv.textContent = '';
-
-    ItemsList.prototype.data_ = appList;
-    var itemsList = $('extension-settings-list');
-    ItemsList.decorate(itemsList);
+    var extensions = new ItemsList($('extension-settings-list'), extensionList);
+    var apps = new ItemsList($('app-settings-list'), appList);
+    extensions.showItemNodes();
+    apps.showItemNodes();
   }
 
   /**
@@ -71,47 +63,57 @@ cr.define('apps_dev_tool', function() {
    * @param {string} filter Curent string in the search box.
    */
   function rebuildAppList(filter) {
-    if (!filter) {
-      appList = completeList;
-      return;
-    }
-
     appList = [];
+    extensionList = [];
+
     for (var i = 0; i < completeList.length; i++) {
       var item = completeList[i];
-      if (item.name.toLowerCase().search(filter) < 0)
+      if (filter && item.name.toLowerCase().search(filter) < 0)
         continue;
-
-      appList.push(item);
+      if (item.isApp)
+        appList.push(item);
+      else
+        extensionList.push(item);
     }
   }
 
+  /**
+   * Create item nodes from the metadata.
+   * @constructor
+   */
+  function ItemsList(itemsTabNode, items) {
+    this.items_ = items;
+    this.itemsTabNode_ = itemsTabNode;
+    assert(this.itemsTabNode_);
+  }
+
   ItemsList.prototype = {
-    __proto__: HTMLDivElement.prototype,
 
     /**
-     * |data_| holds the metadata of all the apps and extensions.
+     * |items_| holds the metadata of all apps / extensions.
      * @type {!Array.<!Object>}
      * @private
      */
-    data_: [],
+    items_: [],
 
     /**
-     * @override
+     * |itemsTabNode_| html element holding the items tab.
+     * @type {!HTMLElement}
+     * @private
      */
-    decorate: function() {
-      this.textContent = '';
-      this.showItemNodes_();
-    },
+    itemsTabNode_: null,
 
     /**
      * Creates all items from scratch.
-     * @private
      */
-    showItemNodes_: function() {
-      // Iterate over the item data and add each item to the list.
-      this.classList.toggle('empty-extension-list', this.data_.length == 0);
-      this.data_.forEach(this.createNode_, this);
+    showItemNodes: function() {
+      this.itemsTabNode_.textContent = '';
+      // Iterate over the items and add each item to the list.
+      this.itemsTabNode_.classList.toggle('empty-item-list',
+                                          this.items_.length == 0);
+      for (var i = 0; i < this.items_.length; ++i) {
+        this.createNode_(this.items_[i]);
+      }
     },
 
     /**
@@ -219,7 +221,7 @@ cr.define('apps_dev_tool', function() {
 
       this.setActiveViews_(item, node);
 
-      this.appendChild(node);
+      this.itemsTabNode_.appendChild(node);
     },
 
     /**
