@@ -46,9 +46,7 @@
     <equals arg1="build.target" arg2="debug" />
   </condition>
 
-
-  <!-- Set the output directory for the final apk to the ${apks.dir}. -->
-  <property name="out.final.file" location="${APKS_DIR}/${APK_NAME}.apk" />
+  <property name="out.final.file" location="${FINAL_APK_PATH}" />
 
   <!-- Disables automatic signing. -->
   <property name="build.is.signing.debug" value="false"/>
