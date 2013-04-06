@@ -14091,9 +14091,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Restore All Tabs
         </message>
         <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for bookmarking the current page in the bookmark menu.">
-          Bookmark This Page...
-        </message>
         <message name="IDS_BOOKMARK_ALL_TABS_MAC" desc="The Mac menu item for bookmarking all tabs in the current window.">
           Bookmark All Tabs...
         </message>

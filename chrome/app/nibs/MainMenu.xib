@@ -1016,7 +1016,7 @@
 								</object>
 								<object class="NSMenuItem" id="399860348">
 									<reference key="NSMenu" ref="891828782"/>
-									<string key="NSTitle">^IDS_BOOKMARK_CURRENT_PAGE_MAC</string>
+									<string key="NSTitle">^IDS_BOOKMARK_THIS_PAGE</string>
 									<string key="NSKeyEquiv">d</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
