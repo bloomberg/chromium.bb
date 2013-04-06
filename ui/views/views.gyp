@@ -411,6 +411,8 @@
         'widget/widget_aura_utils.h',
         'widget/widget_delegate.cc',
         'widget/widget_delegate.h',
+        'widget/widget_deletion_observer.cc',
+        'widget/widget_deletion_observer.h',
         'widget/widget_hwnd_utils.cc',
         'widget/widget_hwnd_utils.h',
         'widget/widget_message_filter.cc',

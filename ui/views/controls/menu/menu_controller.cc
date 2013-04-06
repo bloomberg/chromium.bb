@@ -57,6 +57,11 @@ namespace views {
 
 namespace {
 
+// When showing context menu on mouse down, the user might accidentally select
+// the menu item on the subsequent mouse up. To prevent this, we add the
+// following delay before the user is able to select an item.
+static int context_menu_selection_hold_time_ms = 200;
+
 // The spacing offset for the bubble tip.
 const int kBubbleTipSizeLeftRight = 12;
 const int kBubbleTipSizeTopBottom = 11;
@@ -286,6 +291,13 @@ MenuItemView* MenuController::Run(Widget* parent,
   possible_drag_ = false;
   drag_in_progress_ = false;
   closing_event_time_ = base::TimeDelta();
+  menu_start_time_ = base::TimeTicks::Now();
+
+  // If we are shown on mouse press, we will eat the subsequent mouse down and
+  // the parent widget will not be able to reset its state (it might have mouse
+  // capture from the mouse down). So we clear its state here.
+  if (parent && parent->GetRootView())
+    parent->GetRootView()->SetMouseHandler(NULL);
 
   bool nested_menu = showing_;
   if (showing_) {
@@ -496,7 +508,11 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
     if (!part.menu->NonIconChildViewsCount() &&
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
-      Accept(part.menu, event.flags());
+      int64 time_since_menu_start =
+          (base::TimeTicks::Now() - menu_start_time_).InMilliseconds();
+      if (!state_.context_menu || !View::ShouldShowContextMenuOnMousePress() ||
+          time_since_menu_start > context_menu_selection_hold_time_ms)
+        Accept(part.menu, event.flags());
       return;
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
@@ -730,6 +746,11 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(owner_, widget);
   owner_->RemoveObserver(this);
   owner_ = NULL;
+}
+
+// static
+void MenuController::TurnOffContextMenuSelectionHoldForTest() {
+  context_menu_selection_hold_time_ms = -1;
 }
 
 void MenuController::SetSelection(MenuItemView* menu_item,
@@ -1093,7 +1114,8 @@ MenuController::MenuController(ui::NativeTheme* theme,
       delegate_(delegate),
       message_loop_depth_(0),
       menu_config_(theme),
-      closing_event_time_(base::TimeDelta()) {
+      closing_event_time_(base::TimeDelta()),
+      menu_start_time_(base::TimeTicks()) {
   active_instance_ = this;
 }
 

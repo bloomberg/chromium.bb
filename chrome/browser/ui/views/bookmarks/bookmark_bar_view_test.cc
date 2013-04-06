@@ -112,6 +112,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   virtual void SetUp() OVERRIDE {
+    views::MenuController::TurnOffContextMenuSelectionHoldForTest();
     BookmarkBarView::DisableAnimationsForTesting(true);
 
     profile_.reset(new TestingProfile());

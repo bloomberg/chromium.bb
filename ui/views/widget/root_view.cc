@@ -18,6 +18,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_deletion_observer.h"
 
 namespace views {
 namespace internal {
@@ -433,7 +434,12 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
       mouse_pressed_event.set_flags(event.flags() & ~ui::EF_IS_DOUBLE_CLICK);
 
     drag_info_.Reset();
-    DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
+    {
+      WidgetDeletionObserver widget_deletion_observer(widget_);
+      DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
+      if (!widget_deletion_observer.IsWidgetAlive())
+        return mouse_pressed_event.handled();
+    }
 
     // The view could have removed itself from the tree when handling
     // OnMousePressed().  In this case, the removal notification will have

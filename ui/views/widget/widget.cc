@@ -26,6 +26,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 
@@ -1151,17 +1152,23 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
   ScopedEvent scoped(this, *event);
   View* root_view = GetRootView();
   switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_PRESSED: {
       last_mouse_event_was_move_ = false;
+
+      // We may get deleted by the time we return from OnMousePressed. So we
+      // use an observer to make sure we are still alive.
+      WidgetDeletionObserver widget_deletion_observer(this);
       // Make sure we're still visible before we attempt capture as the mouse
       // press processing may have made the window hide (as happens with menus).
-      if (root_view && root_view->OnMousePressed(*event) && IsVisible()) {
+      if (root_view && root_view->OnMousePressed(*event) &&
+          widget_deletion_observer.IsWidgetAlive() && IsVisible()) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasCapture())
           native_widget_->SetCapture();
         event->SetHandled();
       }
       return;
+    }
     case ui::ET_MOUSE_RELEASED:
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;

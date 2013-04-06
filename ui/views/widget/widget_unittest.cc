@@ -1715,5 +1715,40 @@ TEST_F(WidgetTest, SetTopLevelCorrectly) {
   EXPECT_TRUE(delegate->is_top_level());
 }
 
+// A scumbag View that deletes its owning widget OnMousePressed.
+class WidgetDeleterView : public View {
+ public:
+  WidgetDeleterView() : View() {}
+
+  // Overridden from View.
+  bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    delete GetWidget();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WidgetDeleterView);
+};
+
+TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
+  Widget* widget = new Widget;
+  Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+
+  widget->SetContentsView(new WidgetDeleterView);
+
+  widget->SetSize(gfx::Size(100, 100));
+  widget->Show();
+
+  gfx::Point click_location(45, 15);
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+  widget->OnMouseEvent(&press);
+
+  // Yay we did not crash!
+}
+
 }  // namespace
 }  // namespace views
