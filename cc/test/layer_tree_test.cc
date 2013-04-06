@@ -535,6 +535,8 @@ void LayerTreeTest::RunTest(bool threaded) {
 
   main_ccthread_ = cc::ThreadImpl::CreateForCurrentThread();
 
+  // Spend less time waiting for vsync because the output is mocked out.
+  settings_.refresh_rate = 200.0;
   InitializeSettings(&settings_);
 
   main_ccthread_->PostTask(

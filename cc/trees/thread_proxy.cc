@@ -1073,8 +1073,9 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
   DCHECK(IsImplThread());
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
   const base::TimeDelta display_refresh_interval =
-      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                        60);
+      base::TimeDelta::FromMicroseconds(
+          base::Time::kMicrosecondsPerSecond /
+          layer_tree_host_->settings().refresh_rate);
   scoped_ptr<FrameRateController> frame_rate_controller;
   if (render_vsync_enabled_) {
     if (render_vsync_notification_enabled_) {

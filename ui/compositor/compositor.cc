@@ -41,7 +41,7 @@
 namespace {
 
 const double kDefaultRefreshRate = 60.0;
-const double kTestRefreshRate = 100.0;
+const double kTestRefreshRate = 200.0;
 
 enum SwapType {
   DRAW_SWAP,
