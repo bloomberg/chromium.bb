@@ -73,6 +73,8 @@ class AbstractRolloutPrepCommandTest(unittest.TestCase):
 
 
 class DownloadCommandsTest(CommandsTest):
+    maxDiff = None
+
     def _default_options(self):
         options = MockOptions()
         options.build = True
@@ -158,7 +160,7 @@ Updating bug 50000
     def test_land_cowboy(self):
         expected_logs = """MOCK run_and_throw_if_fail: ['mock-prepare-ChangeLog', '--email=MOCK email', '--merge-base=None', 'MockFile1'], cwd=/mock-checkout
 MOCK run_and_throw_if_fail: ['mock-check-webkit-style', '--git-commit', 'MOCK git commit', '--diff-files', 'MockFile1', '--filter', '-changelog'], cwd=/mock-checkout
-MOCK run_command: ['ruby', '-I', '/mock-checkout/Websites/bugs.webkit.org/PrettyPatch', '/mock-checkout/Tools/Scripts/webkitruby/PrettyPatch/prettify.rb'], cwd=None, input=Patch1
+MOCK run_command: ['ruby', '-I', '/mock-checkout/Tools/Scripts/webkitruby/PrettyPatch', '/mock-checkout/Tools/Scripts/webkitruby/PrettyPatch/prettify.rb'], cwd=None, input=Patch1
 MOCK: user.open_url: file://...
 Was that diff correct?
 Building WebKit
