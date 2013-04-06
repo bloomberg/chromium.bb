@@ -164,7 +164,6 @@ Page::Page(PageClients& pageClients)
 #if ENABLE(PAGE_VISIBILITY_API)
     , m_visibilityState(PageVisibilityStateVisible)
 #endif
-    , m_displayID(0)
     , m_layoutMilestones(0)
     , m_isCountingRelevantRepaintedObjects(false)
 #ifndef NDEBUG
@@ -860,16 +859,6 @@ void Page::setIsInWindow(bool isInWindow)
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         if (FrameView* frameView = frame->view())
             frameView->setIsInWindow(isInWindow);
-    }
-}
-
-void Page::windowScreenDidChange(PlatformDisplayID displayID)
-{
-    m_displayID = displayID;
-    
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (frame->document())
-            frame->document()->windowScreenDidChange(displayID);
     }
 }
 

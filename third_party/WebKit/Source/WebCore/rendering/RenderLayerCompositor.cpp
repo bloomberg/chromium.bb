@@ -203,7 +203,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_reevaluateCompositingAfterLayout(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
-    , m_shouldFlushOnReattach(false)
     , m_forceCompositingMode(false)
     , m_inPostLayoutUpdate(false)
     , m_isTrackingRepaints(false)
@@ -300,31 +299,6 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
         m_compositingLayersNeedRebuild = needRebuild;
 }
 
-void RenderLayerCompositor::customPositionForVisibleRectComputation(const GraphicsLayer* graphicsLayer, FloatPoint& position) const
-{
-    if (graphicsLayer != m_scrollLayer.get())
-        return;
-
-    FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
-    if (!frameView)
-        return;
-
-    FloatPoint scrollPosition = -position;
-    scrollPosition = frameView->constrainScrollPositionForOverhang(roundedIntPoint(scrollPosition));
-    position = -scrollPosition;
-}
-
-void RenderLayerCompositor::scheduleLayerFlush()
-{
-    if (Page* page = this->page())
-        page->chrome()->client()->scheduleCompositingLayerFlush();
-}
-
-void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
-{
-    // FIXME: Delete this.
-}
-
 void RenderLayerCompositor::didChangeVisibleRect()
 {
     GraphicsLayer* rootLayer = rootGraphicsLayer();
@@ -336,26 +310,10 @@ void RenderLayerCompositor::didChangeVisibleRect()
         return;
 
     IntRect visibleRect = m_clipLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
-    if (rootLayer->visibleRectChangeRequiresFlush(visibleRect))
-        scheduleLayerFlush();
-}
-
-void RenderLayerCompositor::notifyFlushBeforeDisplayRefresh(const GraphicsLayer*)
-{
-    if (!m_layerUpdater) {
-        PlatformDisplayID displayID = 0;
+    if (rootLayer->visibleRectChangeRequiresFlush(visibleRect)) {
         if (Page* page = this->page())
-            displayID = page->displayID();
-
-        m_layerUpdater = adoptPtr(new GraphicsLayerUpdater(this, displayID));
+            page->chrome()->client()->scheduleCompositingLayerFlush();
     }
-    
-    m_layerUpdater->scheduleUpdate();
-}
-
-void RenderLayerCompositor::flushLayers(GraphicsLayerUpdater*)
-{
-    flushPendingLayerChanges(true); // FIXME: deal with iframes
 }
 
 void RenderLayerCompositor::scheduleCompositingLayerUpdate()
@@ -1218,8 +1176,6 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 
     if (!m_rootContentLayer)
         return String();
-
-    flushPendingLayerChanges(true);
 
     LayerTreeAsTextBehavior layerTreeBehavior = LayerTreeAsTextBehaviorNormal;
     if (flags & LayerTreeFlagsIncludeDebugInfo)
@@ -2646,8 +2602,6 @@ void RenderLayerCompositor::destroyRootLayer()
     }
     ASSERT(!m_scrollLayer);
     m_rootContentLayer = nullptr;
-
-    m_layerUpdater = nullptr;
 }
 
 void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
@@ -2678,11 +2632,6 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
 
     m_rootLayerAttachment = attachment;
     rootLayerAttachmentChanged();
-    
-    if (m_shouldFlushOnReattach) {
-        flushPendingLayerChanges(true);
-        m_shouldFlushOnReattach = false;
-    }
 }
 
 void RenderLayerCompositor::detachRootLayer()
@@ -2908,12 +2857,6 @@ StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportCo
     return constraints;
 }
 
-void RenderLayerCompositor::windowScreenDidChange(PlatformDisplayID displayID)
-{
-    if (m_layerUpdater)
-        m_layerUpdater->screenDidChange(displayID);
-}
-
 ScrollingCoordinator* RenderLayerCompositor::scrollingCoordinator() const
 {
     if (Page* page = this->page())
@@ -2959,7 +2902,6 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     info.addMember(m_layerForHeader, "layerForHeader");
     info.addMember(m_layerForFooter, "layerForFooter");
 #endif
-    info.addMember(m_layerUpdater, "layerUpdater");
 }
 
 } // namespace WebCore

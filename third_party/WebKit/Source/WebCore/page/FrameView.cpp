@@ -907,28 +907,6 @@ void FrameView::setFooterHeight(int footerHeight)
     m_footerHeight = footerHeight;
 }
 
-bool FrameView::flushCompositingStateForThisFrame(Frame* rootFrameForFlush)
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return true; // We don't want to keep trying to update layers if we have no renderer.
-
-    ASSERT(m_frame->view() == this);
-
-    // If we sync compositing layers when a layout is pending, we may cause painting of compositing
-    // layer content to occur before layout has happened, which will cause paintContents() to bail.
-    if (needsLayout())
-        return false;
-
-    // If we sync compositing layers and allow the repaint to be deferred, there is time for a
-    // visible flash to occur. Instead, stop the deferred repaint timer and repaint immediately.
-    flushDeferredRepaints();
-
-    renderView->compositor()->flushPendingLayerChanges(rootFrameForFlush == m_frame);
-
-    return true;
-}
-
 void FrameView::setNeedsOneShotDrawingSynchronization()
 {
     Page* page = frame() ? frame()->page() : 0;
@@ -985,21 +963,6 @@ bool FrameView::isEnclosedInCompositingLayer() const
     return false;
 }
     
-bool FrameView::flushCompositingStateIncludingSubframes()
-{
-#if USE(ACCELERATED_COMPOSITING)
-    bool allFramesFlushed = flushCompositingStateForThisFrame(m_frame.get());
-    
-    for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->traverseNext(m_frame.get())) {
-        bool flushed = child->view()->flushCompositingStateForThisFrame(m_frame.get());
-        allFramesFlushed &= flushed;
-    }
-    return allFramesFlushed;
-#else // USE(ACCELERATED_COMPOSITING)
-    return true;
-#endif
-}
-
 bool FrameView::isSoftwareRenderable() const
 {
 #if USE(ACCELERATED_COMPOSITING)
@@ -3327,11 +3290,6 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         sCurrentPaintTimeStamp = currentTime();
 
     FontCachePurgePreventer fontCachePurgePreventer;
-
-#if USE(ACCELERATED_COMPOSITING)
-    if (!p->paintingDisabled() && !document->printing())
-        flushCompositingStateForThisFrame(m_frame.get());
-#endif
 
     PaintBehavior oldPaintBehavior = m_paintBehavior;
     

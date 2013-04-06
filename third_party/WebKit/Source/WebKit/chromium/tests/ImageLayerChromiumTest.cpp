@@ -39,7 +39,6 @@ namespace {
 class MockGraphicsLayerClient : public GraphicsLayerClient {
   public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) { }
-    virtual void notifyFlushRequired(const GraphicsLayer*) { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) { }
 };
 

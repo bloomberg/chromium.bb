@@ -2008,17 +2008,6 @@ void RenderLayerBacking::notifyAnimationStarted(const GraphicsLayer*, double tim
     renderer()->animation()->notifyAnimationStarted(renderer(), time);
 }
 
-void RenderLayerBacking::notifyFlushRequired(const GraphicsLayer*)
-{
-    if (!renderer()->documentBeingDestroyed())
-        compositor()->scheduleLayerFlush();
-}
-
-void RenderLayerBacking::notifyFlushBeforeDisplayRefresh(const GraphicsLayer* layer)
-{
-    compositor()->notifyFlushBeforeDisplayRefresh(layer);
-}
-
 // This is used for the 'freeze' API, for testing only.
 void RenderLayerBacking::suspendAnimations(double time)
 {

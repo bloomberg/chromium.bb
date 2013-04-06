@@ -29,7 +29,6 @@
 #include "ChromeClient.h"
 #include "Frame.h"
 #include "GraphicsLayerClient.h"
-#include "GraphicsLayerUpdater.h"
 #include "RenderLayer.h"
 #include <wtf/HashMap.h>
 
@@ -37,7 +36,6 @@ namespace WebCore {
 
 class FixedPositionViewportConstraints;
 class GraphicsLayer;
-class GraphicsLayerUpdater;
 class RenderEmbeddedObject;
 class RenderPart;
 class ScrollingCoordinator;
@@ -90,7 +88,7 @@ typedef unsigned CompositingReasons;
 // 
 // There is one RenderLayerCompositor per RenderView.
 
-class RenderLayerCompositor : public GraphicsLayerClient, public GraphicsLayerUpdaterClient {
+class RenderLayerCompositor : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit RenderLayerCompositor(RenderView*);
@@ -122,11 +120,6 @@ public:
     // to be composited. Defaults to true.
     void setCompositingConsultsOverlap(bool b) { m_compositingConsultsOverlap = b; }
     bool compositingConsultsOverlap() const { return m_compositingConsultsOverlap; }
-    
-    // GraphicsLayers buffer state, which gets pushed to the underlying platform layers
-    // at specific times.
-    void scheduleLayerFlush();
-    void flushPendingLayerChanges(bool isFlushRoot = true);
     
     // Called when something outside WebKit affects the visible rect (e.g. delegated scrolling). Might schedule a layer flush.
     void didChangeVisibleRect();
@@ -228,14 +221,11 @@ public:
     virtual float deviceScaleFactor() const OVERRIDE;
     virtual float pageScaleFactor() const OVERRIDE;
     virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
-    virtual void notifyFlushBeforeDisplayRefresh(const GraphicsLayer*) OVERRIDE;
 
     bool keepLayersPixelAligned() const;
     bool acceleratedDrawingEnabled() const { return m_acceleratedDrawingEnabled; }
 
     void deviceOrPageScaleFactorChanged();
-
-    void windowScreenDidChange(PlatformDisplayID);
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
@@ -267,14 +257,9 @@ private:
 
     // GraphicsLayerClient implementation
     virtual void notifyAnimationStarted(const GraphicsLayer*, double) OVERRIDE { }
-    virtual void notifyFlushRequired(const GraphicsLayer*) OVERRIDE { scheduleLayerFlush(); }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) OVERRIDE;
 
     virtual bool isTrackingRepaints() const OVERRIDE;
-    
-    // GraphicsLayerUpdaterClient implementation
-    virtual void flushLayers(GraphicsLayerUpdater*) OVERRIDE;
-    virtual void customPositionForVisibleRectComputation(const GraphicsLayer*, FloatPoint&) const OVERRIDE;
     
     // Whether the given RL needs a compositing layer.
     bool needsToBeComposited(const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason* = 0) const;
@@ -384,7 +369,6 @@ private:
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
-    bool m_shouldFlushOnReattach;
     bool m_forceCompositingMode;
     bool m_inPostLayoutUpdate; // true when it's OK to trust layout information (e.g. layer sizes and positions)
 
@@ -414,8 +398,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHeader;
     OwnPtr<GraphicsLayer> m_layerForFooter;
 #endif
-
-    OwnPtr<GraphicsLayerUpdater> m_layerUpdater; // Updates tiled layer visible area periodically while animations are running.
 
 #if !LOG_DISABLED
     int m_rootLayerUpdateCount;

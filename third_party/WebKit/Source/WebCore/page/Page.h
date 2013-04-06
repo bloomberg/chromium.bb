@@ -283,8 +283,6 @@ public:
     void setIsInWindow(bool);
     bool isInWindow() const { return m_isInWindow; }
 
-    void windowScreenDidChange(PlatformDisplayID);
-
     void suspendScriptedAnimations();
     void resumeScriptedAnimations();
     bool scriptedAnimationsSuspended() const { return m_scriptedAnimationsSuspended; }
@@ -330,8 +328,6 @@ public:
 #if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     void setVisibilityState(PageVisibilityState, bool);
 #endif
-
-    PlatformDisplayID displayID() const { return m_displayID; }
 
     void addLayoutMilestones(LayoutMilestones);
     LayoutMilestones layoutMilestones() const { return m_layoutMilestones; }
@@ -475,7 +471,6 @@ private:
 #if ENABLE(PAGE_VISIBILITY_API)
     PageVisibilityState m_visibilityState;
 #endif
-    PlatformDisplayID m_displayID;
 
     LayoutMilestones m_layoutMilestones;
 

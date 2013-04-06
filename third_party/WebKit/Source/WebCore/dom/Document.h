@@ -941,8 +941,6 @@ public:
     virtual void suspendScriptedAnimationControllerCallbacks();
     virtual void resumeScriptedAnimationControllerCallbacks();
     
-    void windowScreenDidChange(PlatformDisplayID);
-
     virtual void finishedParsing();
 
     bool inPageCache() const { return m_inPageCache; }

@@ -59,18 +59,8 @@ class GraphicsLayerClient {
 public:
     virtual ~GraphicsLayerClient() {}
 
-    virtual bool shouldUseTiledBacking(const GraphicsLayer*) const { return false; }
-    virtual void tiledBackingUsageChanged(const GraphicsLayer*, bool /*usingTiledBacking*/) { }
-    
     // Callback for when hardware-accelerated animation started.
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) = 0;
-
-    // Notification that a layer property changed that requires a subsequent call to flushCompositingState()
-    // to appear on the screen.
-    virtual void notifyFlushRequired(const GraphicsLayer*) = 0;
-    
-    // Notification that this layer requires a flush before the next display refresh.
-    virtual void notifyFlushBeforeDisplayRefresh(const GraphicsLayer*) { }
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) = 0;
     virtual void didCommitChangesForLayer(const GraphicsLayer*) const { }
@@ -78,10 +68,6 @@ public:
     // Provides current transform (taking transform-origin and animations into account). Input matrix has been
     // initialized to identity already. Returns false if the layer has no transform.
     virtual bool getCurrentTransform(const GraphicsLayer*, TransformationMatrix&) const { return false; }
-
-    // Allows the client to modify a layer position used during the visibleRect calculation, for example to ignore
-    // scroll overhang.
-    virtual void customPositionForVisibleRectComputation(const GraphicsLayer*, FloatPoint&) const { }
 
     // Multiplier for backing store size, related to high DPI.
     virtual float deviceScaleFactor() const { return 1; }

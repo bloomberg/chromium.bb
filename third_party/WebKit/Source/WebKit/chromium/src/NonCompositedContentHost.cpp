@@ -144,11 +144,6 @@ void NonCompositedContentHost::notifyAnimationStarted(const WebCore::GraphicsLay
     // Intentionally left empty since we don't support animations on the non-composited content.
 }
 
-void NonCompositedContentHost::notifyFlushRequired(const WebCore::GraphicsLayer*)
-{
-    m_webView->scheduleCompositingLayerSync();
-}
-
 void NonCompositedContentHost::paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext& context, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& clipRect)
 {
     context.translate(-m_layerAdjust);

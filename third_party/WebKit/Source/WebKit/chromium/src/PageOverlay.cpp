@@ -77,8 +77,6 @@ public:
 
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) { }
 
-    virtual void notifyFlushRequired(const GraphicsLayer*) { }
-
     virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
     {
         gc.save();
