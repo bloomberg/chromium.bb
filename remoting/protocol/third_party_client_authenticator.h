@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "googleurl/src/gurl.h"
 #include "remoting/protocol/third_party_authenticator_base.h"
 
 class GURL;
@@ -49,15 +50,14 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
     // The request is canceled if the TokenFetcher is destroyed.
     virtual void FetchThirdPartyToken(
         const GURL& token_url,
-        const std::string& host_public_key,
         const std::string& scope,
         const TokenFetchedCallback& token_fetched_callback) = 0;
   };
 
   // Creates a third-party client authenticator for the host with the given
   // |host_public_key|. |token_fetcher| is used to get the authentication token.
-  ThirdPartyClientAuthenticator(const std::string& host_public_key,
-                                scoped_ptr<TokenFetcher> token_fetcher);
+  explicit ThirdPartyClientAuthenticator(
+      scoped_ptr<TokenFetcher> token_fetcher);
   virtual ~ThirdPartyClientAuthenticator();
 
  protected:
@@ -72,7 +72,6 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
                                 const std::string& third_party_token,
                                 const std::string& shared_secret);
 
-  std::string host_public_key_;
   std::string token_;
   scoped_ptr<TokenFetcher> token_fetcher_;
 

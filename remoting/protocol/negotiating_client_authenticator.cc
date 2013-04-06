@@ -21,10 +21,12 @@ namespace protocol {
 NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
     const std::string& authentication_tag,
     const FetchSecretCallback& fetch_secret_callback,
+    scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher,
     const std::vector<AuthenticationMethod>& methods)
     : NegotiatingAuthenticatorBase(MESSAGE_READY),
       authentication_tag_(authentication_tag),
       fetch_secret_callback_(fetch_secret_callback),
+      token_fetcher_(token_fetcher.Pass()),
       method_set_by_host_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(!methods.empty());
@@ -97,9 +99,20 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
 void NegotiatingClientAuthenticator::CreateAuthenticator(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
-  fetch_secret_callback_.Run(base::Bind(
-      &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
-      weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback));
+  DCHECK(current_method_.is_valid());
+  if (current_method_.type() == AuthenticationMethod::THIRD_PARTY) {
+    // |ThirdPartyClientAuthenticator| takes ownership of |token_fetcher_|.
+    // The authentication method negotiation logic should guarantee that only
+    // one |ThirdPartyClientAuthenticator| will need to be created per session.
+    DCHECK(token_fetcher_);
+    current_authenticator_.reset(new ThirdPartyClientAuthenticator(
+        token_fetcher_.Pass()));
+    resume_callback.Run();
+  } else {
+    fetch_secret_callback_.Run(base::Bind(
+        &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
+        weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback));
+  }
 }
 
 void NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret(

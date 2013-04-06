@@ -1910,6 +1910,8 @@
         'client/plugin/pepper_plugin_thread_delegate.h',
         'client/plugin/pepper_port_allocator.cc',
         'client/plugin/pepper_port_allocator.h',
+        'client/plugin/pepper_token_fetcher.cc',
+        'client/plugin/pepper_token_fetcher.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_util.cc',

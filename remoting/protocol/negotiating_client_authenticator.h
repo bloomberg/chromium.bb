@@ -14,6 +14,7 @@
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
+#include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace remoting {
 namespace protocol {
@@ -29,6 +30,7 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   NegotiatingClientAuthenticator(
       const std::string& authentication_tag,
       const FetchSecretCallback& fetch_secret_callback,
+      scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_,
       const std::vector<AuthenticationMethod>& methods);
 
   virtual ~NegotiatingClientAuthenticator();
@@ -53,8 +55,16 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
       const base::Closure& resume_callback,
       const std::string& shared_secret);
 
+  // Used for both authenticators.
   std::string authentication_tag_;
+
+  // Used for shared secret authenticators.
   FetchSecretCallback fetch_secret_callback_;
+
+  // Used for third party authenticators.
+  scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_;
+
+  // Internal NegotiatingClientAuthenticator data.
   bool method_set_by_host_;
   base::WeakPtrFactory<NegotiatingClientAuthenticator> weak_factory_;
 

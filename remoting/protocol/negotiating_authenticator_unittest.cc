@@ -61,7 +61,8 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
     }
     client_.reset(new NegotiatingClientAuthenticator(
         kTestHostId, base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
-                                client_secret), methods));
+                                client_secret),
+        scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher>(), methods));
   }
 
   static void FetchSecret(

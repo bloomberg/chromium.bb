@@ -19,10 +19,8 @@ namespace remoting {
 namespace protocol {
 
 ThirdPartyClientAuthenticator::ThirdPartyClientAuthenticator(
-    const std::string& host_public_key,
     scoped_ptr<TokenFetcher> token_fetcher)
     : ThirdPartyAuthenticatorBase(WAITING_MESSAGE),
-      host_public_key_(host_public_key),
       token_fetcher_(token_fetcher.Pass()) {
 }
 
@@ -48,7 +46,7 @@ void ThirdPartyClientAuthenticator::ProcessTokenMessage(
 
   // |token_fetcher_| is owned, so Unretained() is safe here.
   token_fetcher_->FetchThirdPartyToken(
-      GURL(token_url), host_public_key_, token_scope, base::Bind(
+      GURL(token_url), token_scope, base::Bind(
           &ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched,
           base::Unretained(this), resume_callback));
 }

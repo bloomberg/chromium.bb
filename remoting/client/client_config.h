@@ -24,6 +24,7 @@ struct ClientConfig {
   std::string host_public_key;
 
   protocol::FetchSecretCallback fetch_secret_callback;
+
   std::vector<protocol::AuthenticationMethod> authentication_methods;
   std::string authentication_tag;
 };

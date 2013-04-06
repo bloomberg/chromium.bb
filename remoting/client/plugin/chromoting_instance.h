@@ -40,6 +40,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace base {
 class DictionaryValue;
@@ -57,6 +58,7 @@ class ChromotingStats;
 class ClientContext;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
+class PepperTokenFetcher;
 class PepperView;
 class PepperXmppProxy;
 class RectangleUpdateDecoder;
@@ -108,6 +110,8 @@ class ChromotingInstance :
   virtual void OnConnectionReady(bool ready) OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
+  virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
+  GetTokenFetcher(const std::string& host_public_key) OVERRIDE;
 
   // protocol::ClipboardStub interface.
   virtual void InjectClipboardEvent(
@@ -147,6 +151,13 @@ class ChromotingInstance :
   static bool LogToUI(int severity, const char* file, int line,
                       size_t message_start, const std::string& str);
 
+  // Requests the webapp to fetch a third-party token.
+  void FetchThirdPartyToken(
+      const GURL& token_url,
+      const std::string& host_public_key,
+      const std::string& scope,
+      const base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 
@@ -170,6 +181,8 @@ class ChromotingInstance :
   void PauseVideo(bool pause);
   void PauseAudio(bool pause);
   void OnPinFetched(const std::string& pin);
+  void OnThirdPartyTokenFetched(const std::string& token,
+                                const std::string& shared_secret);
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,
@@ -226,6 +239,8 @@ class ChromotingInstance :
   // PIN Fetcher.
   bool use_async_pin_dialog_;
   protocol::SecretFetchedCallback secret_fetched_callback_;
+
+  base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher_;
 
   base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 

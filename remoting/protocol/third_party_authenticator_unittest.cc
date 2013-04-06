@@ -41,7 +41,6 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
    public:
     virtual void FetchThirdPartyToken(
         const GURL& token_url,
-        const std::string& host_public_key,
         const std::string& scope,
         const TokenFetchedCallback& token_fetched_callback) OVERRIDE {
      ASSERT_EQ(token_url.spec(), kTokenUrl);
@@ -113,8 +112,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher>
         token_fetcher(new FakeTokenFetcher());
     token_fetcher_ = static_cast<FakeTokenFetcher*>(token_fetcher.get());
-    client_.reset(new ThirdPartyClientAuthenticator(
-        host_public_key_, token_fetcher.Pass()));
+    client_.reset(new ThirdPartyClientAuthenticator(token_fetcher.Pass()));
   }
 
   FakeTokenFetcher* token_fetcher_;
