@@ -252,9 +252,6 @@ namespace WebCore {
         void setTimeWithoutMouseMovementBeforeHidingControls(double time) { m_timeWithoutMouseMovementBeforeHidingControls = time; }
         double timeWithoutMouseMovementBeforeHidingControls() const { return m_timeWithoutMouseMovementBeforeHidingControls; }
 
-        bool hiddenPageCSSAnimationSuspensionEnabled() const { return m_hiddenPageCSSAnimationSuspensionEnabled; }
-        void setHiddenPageCSSAnimationSuspensionEnabled(bool);
-
     private:
         explicit Settings(Page*);
 
@@ -314,8 +311,6 @@ namespace WebCore {
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
         bool m_hiddenPageDOMTimerThrottlingEnabled : 1;
 #endif
-
-        bool m_hiddenPageCSSAnimationSuspensionEnabled : 1;
 
         static double gDefaultMinDOMTimerInterval;
         static double gDefaultDOMTimerAlignmentInterval;

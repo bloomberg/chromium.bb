@@ -358,7 +358,6 @@ public:
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     void hiddenPageDOMTimerThrottlingStateChanged();
 #endif
-    void hiddenPageCSSAnimationSuspensionStateChanged();
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 

@@ -1143,21 +1143,15 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     if (!isInitialState && m_mainFrame)
         m_mainFrame->dispatchVisibilityStateChangeEvent();
 
-    if (visibilityState == WebCore::PageVisibilityStateHidden) {
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
+    if (visibilityState == WebCore::PageVisibilityStateHidden) {
         if (m_settings->hiddenPageDOMTimerThrottlingEnabled())
             setTimerAlignmentInterval(Settings::hiddenPageDOMTimerAlignmentInterval());
-#endif
-        if (m_settings->hiddenPageCSSAnimationSuspensionEnabled())
-            mainFrame()->animation()->suspendAnimations();
     } else {
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
         if (m_settings->hiddenPageDOMTimerThrottlingEnabled())
             setTimerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval());
-#endif
-        if (m_settings->hiddenPageCSSAnimationSuspensionEnabled())
-            mainFrame()->animation()->resumeAnimations();
     }
+#endif
 }
 
 PageVisibilityState Page::visibilityState() const
@@ -1359,16 +1353,6 @@ void Page::hiddenPageDOMTimerThrottlingStateChanged()
         setTimerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval());
 }
 #endif
-
-void Page::hiddenPageCSSAnimationSuspensionStateChanged()
-{
-    if (m_visibilityState == WebCore::PageVisibilityStateHidden) {
-        if (m_settings->hiddenPageCSSAnimationSuspensionEnabled())
-            mainFrame()->animation()->suspendAnimations();
-        else
-            mainFrame()->animation()->resumeAnimations();
-    }
-}
 
 void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
