@@ -270,58 +270,6 @@ void HTMLPlugInImageElement::updateWidgetCallback(Node* n, unsigned)
     static_cast<HTMLPlugInImageElement*>(n)->updateWidgetIfNecessary();
 }
 
-void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
-{
-    Document* doc = document();
-
-    RefPtr<Element> shadowContainer = HTMLDivElement::create(doc);
-    shadowContainer->setPseudo(AtomicString("-webkit-snapshotted-plugin-content", AtomicString::ConstructFromLiteral));
-
-    RefPtr<Element> container = HTMLDivElement::create(doc);
-    container->setAttribute(classAttr, AtomicString("snapshot-container", AtomicString::ConstructFromLiteral));
-
-    RefPtr<Element> overlay = HTMLDivElement::create(doc);
-    overlay->setAttribute(classAttr, AtomicString("snapshot-overlay", AtomicString::ConstructFromLiteral));
-    container->appendChild(overlay, ASSERT_NO_EXCEPTION);
-
-    RefPtr<Element> label = HTMLDivElement::create(doc);
-    label->setAttribute(classAttr, AtomicString("snapshot-label", AtomicString::ConstructFromLiteral));
-
-    String titleText = snapshottedPlugInLabelTitle();
-    String subtitleText = snapshottedPlugInLabelSubtitle();
-    if (document()->page()) {
-        String clientTitleText = document()->page()->chrome()->client()->plugInStartLabelTitle();
-        if (!clientTitleText.isEmpty())
-            titleText = clientTitleText;
-        String clientSubtitleText = document()->page()->chrome()->client()->plugInStartLabelSubtitle();
-        if (!clientSubtitleText.isEmpty())
-            subtitleText = clientSubtitleText;
-    }
-
-    RefPtr<Element> title = HTMLDivElement::create(doc);
-    title->setAttribute(classAttr, AtomicString("snapshot-title", AtomicString::ConstructFromLiteral));
-    title->appendChild(doc->createTextNode(titleText), ASSERT_NO_EXCEPTION);
-    label->appendChild(title, ASSERT_NO_EXCEPTION);
-
-    RefPtr<Element> subTitle = HTMLDivElement::create(doc);
-    subTitle->setAttribute(classAttr, AtomicString("snapshot-subtitle", AtomicString::ConstructFromLiteral));
-    subTitle->appendChild(doc->createTextNode(subtitleText), ASSERT_NO_EXCEPTION);
-    label->appendChild(subTitle, ASSERT_NO_EXCEPTION);
-
-    container->appendChild(label, ASSERT_NO_EXCEPTION);
-
-    // Make this into a button for accessibility clients.
-    String combinedText = titleText;
-    if (!combinedText.isEmpty() && !subtitleText.isEmpty())
-        combinedText.append(" ");
-    combinedText.append(subtitleText);
-    container->setAttribute(aria_labelAttr, combinedText);
-    container->setAttribute(roleAttr, "button");
-
-    shadowContainer->appendChild(container, ASSERT_NO_EXCEPTION);
-    root->appendChild(shadowContainer, ASSERT_NO_EXCEPTION);
-}
-
 void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)
 {
     LOG(Plugins, "%p Plug-in URL: %s", this, m_url.utf8().data());

@@ -201,8 +201,6 @@ namespace WebCore {
     String textTrackNoLabelText();
 #endif
 
-    String snapshottedPlugInLabelTitle();
-    String snapshottedPlugInLabelSubtitle();
 } // namespace WebCore
 
 #endif // LocalizedStrings_h

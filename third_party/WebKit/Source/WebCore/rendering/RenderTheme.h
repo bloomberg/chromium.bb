@@ -47,7 +47,6 @@ class RenderMeter;
 #if ENABLE(PROGRESS_ELEMENT)
 class RenderProgress;
 #endif
-class RenderSnapshottedPlugIn;
 
 class RenderTheme : public RefCounted<RenderTheme> {
 protected:
@@ -86,10 +85,9 @@ public:
     // RenderThemeMac.cpp for Mac OS X.
 
     // These methods return the theme's extra style sheets rules, to let each platform
-    // adjust the default CSS rules in html.css, quirks.css, mediaControls.css, or plugIns.css
+    // adjust the default CSS rules in html.css, quirks.css or mediaControls.css.
     virtual String extraDefaultStyleSheet() { return String(); }
     virtual String extraQuirksStyleSheet() { return String(); }
-    virtual String extraPlugInsStyleSheet() { return String(); }
 #if ENABLE(VIDEO)
     virtual String extraMediaControlsStyleSheet() { return String(); }
 #endif
@@ -341,8 +339,6 @@ protected:
     virtual bool paintMediaTimeRemaining(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaFullScreenVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaFullScreenVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-
-    virtual bool paintSnapshottedPluginOverlay(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
 
 public:
     // Methods for state querying

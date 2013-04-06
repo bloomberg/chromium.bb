@@ -344,7 +344,6 @@ public:
 #if ENABLE(METER_ELEMENT)
     virtual bool isMeter() const { return false; }
 #endif
-    virtual bool isSnapshottedPlugIn() const { return false; }
 #if ENABLE(PROGRESS_ELEMENT)
     virtual bool isProgress() const { return false; }
 #endif

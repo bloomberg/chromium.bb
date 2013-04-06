@@ -43,7 +43,6 @@ public:
     static StyleSheetContents* mathMLStyleSheet;
     static StyleSheetContents* mediaControlsStyleSheet;
     static StyleSheetContents* fullscreenStyleSheet;
-    static StyleSheetContents* plugInsStyleSheet;
 
     static void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
     static void loadFullDefaultStyle();

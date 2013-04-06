@@ -106,8 +106,6 @@ private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
     virtual bool willRecalcStyle(StyleChange);
 
-    void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
-
     virtual void finishParsingChildren();
 
     void updateWidgetIfNecessary();
