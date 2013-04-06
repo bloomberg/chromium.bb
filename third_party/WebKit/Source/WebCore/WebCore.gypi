@@ -4182,7 +4182,6 @@
             'platform/network/ProxyServer.cpp',
             'platform/network/ResourceErrorBase.cpp',
             'platform/network/ResourceHandleClient.cpp',
-            'platform/network/ResourceHandleInternal.h',
             'platform/network/ResourceLoadTiming.cpp',
             'platform/network/ResourceRequestBase.cpp',
             'platform/network/ResourceResponseBase.cpp',
