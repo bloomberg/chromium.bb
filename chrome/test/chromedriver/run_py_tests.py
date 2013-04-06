@@ -23,7 +23,6 @@ from common import unittest_util
 from common import util
 
 import chromedriver
-from continuous_archive import CHROME_26_REVISION
 from webelement import WebElement
 import webserver
 
@@ -60,7 +59,7 @@ _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
         'ChromeDriverTest.testAlert',
     ]
 )
-_DESKTOP_NEGATIVE_FILTER[CHROME_26_REVISION] = (
+_DESKTOP_NEGATIVE_FILTER['26'] = (
     _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
 )
 
@@ -593,8 +592,8 @@ if __name__ == '__main__':
   parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
-      '', '--chrome-revision', default='HEAD',
-      help='Revision of chrome. Default is HEAD.')
+      '', '--chrome-version', default='HEAD',
+      help='Version of chrome. Default is \'HEAD\'.')
   parser.add_option(
       '', '--filter', type='string', default='*',
       help=('Filter for specifying what tests to run, "*" will run all. E.g., '
@@ -623,7 +622,7 @@ if __name__ == '__main__':
     if _ANDROID_PACKAGE:
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE]
     else:
-      negative_filter = _DESKTOP_NEGATIVE_FILTER[options.chrome_revision]
+      negative_filter = _DESKTOP_NEGATIVE_FILTER[options.chrome_version]
     options.filter = '*-' + ':__main__.'.join([''] + negative_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(

@@ -65,55 +65,41 @@ def _Run(java_tests_src_dir, test_filter,
 
   Args:
     java_tests_src_dir: the java test source code directory.
-    test_filter: the filter to use when choosing tests to run. Format is
-        ClassName#testMethod.
+    test_filter: the filter to use when choosing tests to run. Format is same
+        as Google C++ Test format.
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
     android_package: name of Chrome's Android package.
 
   Returns:
     A list of |TestResult|s.
-
-  Raises:
-    RuntimeError: Raised if test_filter is invalid.
   """
   test_dir = util.MakeTempDir()
   keystore_path = ('java', 'client', 'test', 'keystore')
   required_dirs = [keystore_path[:-1],
                    ('javascript',),
-                   ('third_party', 'closure', 'goog')]
+                   ('third_party', 'closure', 'goog'),
+                   ('third_party', 'js')]
   for required_dir in required_dirs:
     os.makedirs(os.path.join(test_dir, *required_dir))
 
   test_jar = 'test-standalone.jar'
   shutil.copyfile(os.path.join(java_tests_src_dir, 'keystore'),
                   os.path.join(test_dir, *keystore_path))
-  shutil.copytree(os.path.join(java_tests_src_dir, 'common'),
-                  os.path.join(test_dir, 'common'))
+  util.Unzip(os.path.join(java_tests_src_dir, 'common.zip'), test_dir)
   shutil.copyfile(os.path.join(java_tests_src_dir, test_jar),
                   os.path.join(test_dir, test_jar))
 
   sys_props = ['selenium.browser=chrome',
-               'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path),
-               'java.library.path=' + test_dir]
+               'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path)]
   if chrome_path is not None:
     sys_props += ['webdriver.chrome.binary=' + os.path.abspath(chrome_path)]
   if android_package is not None:
     sys_props += ['webdriver.chrome.android_package=' + android_package]
-  if test_filter and test_filter != '*':
-    classes = []
-    methods = []
-    cases = test_filter.split(',')
-    for case in cases:
-      parts = case.split('#')
-      if len(parts) > 2:
-        raise RuntimeError('Filter should be of form: SomeClass#testMethod')
-      elif len(parts) == 2:
-        methods += [parts[1]]
-      if parts:
-        classes += [parts[0]]
-    sys_props += ['only_run=' + ','.join(classes)]
-    sys_props += ['method=' + ','.join(methods)]
+  if test_filter:
+    # Test jar actually takes a regex. Convert from glob.
+    test_filter = test_filter.replace('*', '.*')
+    sys_props += ['filter=' + test_filter]
 
   return _RunAntTest(
       test_dir, 'org.openqa.selenium.chrome.ChromeDriverTests',
@@ -138,15 +124,10 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props):
     def _SystemPropToXml(prop):
       key, value = prop.split('=')
       return '<sysproperty key="%s" value="%s"/>' % (key, value)
-    jvmarg = ''
-    if util.IsMac():
-      # In Mac, the chromedriver library is a 32-bit build. So run 32-bit java.
-      jvmarg = '<jvmarg value="-d32"/>'
     return '\n'.join([
         '<project>',
         '  <target name="test">',
         '    <junit %s>' % ' '.join(junit_props),
-        '      ' + jvmarg,
         '      <formatter type="xml"/>',
         '      <classpath>',
         '        <pathelement location="%s"/>' % class_path,
@@ -221,15 +202,15 @@ def main():
       '', '--chrome', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
-      '', '--chrome-revision', default='HEAD',
-      help='Revision of chrome. Default is HEAD.')
+      '', '--chrome-version', default='HEAD',
+      help='Version of chrome. Default is \'HEAD\'.')
   parser.add_option(
       '', '--android-package', type='string', default=None,
       help='Name of Chrome\'s Android package')
   parser.add_option(
       '', '--filter', type='string', default=None,
       help='Filter for specifying what tests to run, "*" will run all. E.g., '
-           'AppCacheTest,ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
+           '*testShouldReturnTitleOfPageIfSet')
   options, args = parser.parse_args()
 
   if options.chromedriver is None or not os.path.exists(options.chromedriver):
@@ -237,19 +218,19 @@ def main():
                  'Please run "%s --help" for help' % __file__)
 
   if options.android_package is not None:
-    if options.chrome_revision != 'HEAD':
-      parser.error('Android does not support the --chrome-revision argument.')
+    if options.chrome_version != 'HEAD':
+      parser.error('Android does not support the --chrome-version argument.')
     environment = test_environment.AndroidTestEnvironment()
   else:
     environment = test_environment.DesktopTestEnvironment(
-        options.chrome_revision)
+        options.chrome_version)
 
   try:
     environment.GlobalSetUp()
     # Run passed tests when filter is not provided.
     test_filter = options.filter
     if test_filter is None:
-      test_filter = ','.join(environment.GetPassedJavaTests())
+      test_filter = environment.GetPassedJavaTestFilter()
 
     java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                       'chromedriver', 'third_party',
