@@ -59,7 +59,7 @@ const wchar_t kDaemonIpcSecurityDescriptor[] =
 const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 
 // The default screen dimensions for an RDP session.
-const int kDefaultRdpScreenWidth = 1024;
+const int kDefaultRdpScreenWidth = 1280;
 const int kDefaultRdpScreenHeight = 768;
 
 // RDC 6.1 (W2K8) supports dimensions of up to 4096x2048.
