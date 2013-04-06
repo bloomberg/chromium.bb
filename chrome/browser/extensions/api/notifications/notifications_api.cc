@@ -112,10 +112,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
 }  // namespace
 
 bool NotificationsApiFunction::IsNotificationsApiAvailable() {
-  // TODO(miket): remove/change this check when we leave dev.
-  if (chrome::VersionInfo::CHANNEL_DEV < Feature::GetCurrentChannel())
-    return false;
-
   // We need to check this explicitly rather than letting
   // _permission_features.json enforce it, because we're sharing the
   // chrome.notifications permissions namespace with WebKit notifications.
