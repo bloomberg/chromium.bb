@@ -62,8 +62,12 @@ def Dispatch(options):
     all_tests = _FilterTests(all_enabled)
 
   # Run tests.
+  # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer
+  # files are pushed to the devices for content_browsertests: crbug.com/138275
+  setup_timeout = 20 * 60  # 20 minutes
   test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices,
                                         all_tests, options.build_type,
+                                        setup_timeout=setup_timeout,
                                         test_timeout=None)
   report_results.LogFull(
       results=test_results,
