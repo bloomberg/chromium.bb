@@ -113,10 +113,6 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'webkit/data/dom_storage/webcore_test_database.localstorage',
         'third_party/hyphen/hyph_en_US.dic',
         ]
-  elif test_suite_basename == 'media_unittests':
-    return [
-        'media/test/data',
-        ]
   elif test_suite_basename == 'cc_perftests':
     return [
       'cc/test/data',
@@ -127,9 +123,75 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     ]
   elif test_suite_basename == 'content_browsertests':
     return [
-      'content/test/data',
+        'content/test/data/content-disposition-inline.html',
+        'content/test/data/title1.html',
+        'content/test/data/post_message2.html',
+        'content/test/data/content-sniffer-test0.html.mock-http-headers',
+        'content/test/data/content-sniffer-test1.html.mock-http-headers',
+        'content/test/data/speech',
+        'content/test/data/page404.html.mock-http-headers',
+        'content/test/data/content-sniffer-test3.html',
+        'content/test/data/post_message.html',
+        'content/test/data/remove_frame_on_unload.html',
+        'content/test/data/cross-origin-redirect-blocked.html',
+        'content/test/data/prerender',
+        'content/test/data/device_orientation',
+        'content/test/data/content-disposition-empty.html',
+        'content/test/data/workers',
+        'content/test/data/content-sniffer-test3.html.mock-http-headers',
+        'content/test/data/content-sniffer-test0.html',
+        'content/test/data/browser_plugin_title_change.html',
+        'content/test/data/android',
+        'content/test/data/page404.html',
+        'content/test/data/dynamic2.html',
+        'content/test/data/browser_plugin_embedder.html',
+        'content/test/data/indexeddb',
+        'content/test/data/content-disposition-inline.html.mock-http-headers',
+        'content/test/data/nosniff-test.html',
+        'content/test/data/title3.html',
+        'content/test/data/browser_plugin_post_message_guest.html',
+        'content/test/data/content-disposition-empty.html.mock-http-headers',
+        'content/test/data/session_history',
+        'content/test/data/browser_plugin_naming_guest.html',
+        'content/test/data/overscroll_navigation.html',
+        'content/test/data/simple_database.html',
+        'content/test/data/gtk_key_bindings_test_gtkrc',
+        'content/test/data/browser_plugin_embedder_guest_unresponsive.html',
+        'content/test/data/sync_xmlhttprequest.html',
+        'content/test/data/content-sniffer-test3-frame.txt.mock-http-headers',
+        'content/test/data/frame_tree',
+        'content/test/data/browser_plugin_naming_embedder.html',
+        'content/test/data/content-sniffer-test2.html.mock-http-headers',
+        'content/test/data/sync_xmlhttprequest_disallowed.html',
+        'content/test/data/rwh_simple.html',
+        'content/test/data/title2.html',
+        'content/test/data/webkit',
+        'content/test/data/content-sniffer-test1.html',
+        'content/test/data/download',
+        'content/test/data/rwhv_compositing_static.html',
+        'content/test/data/content-sniffer-test2.html',
+        'content/test/data/simple_page.html',
+        'content/test/data/google.mht',
+        'content/test/data/site_per_process_main.html',
+        'content/test/data/gpu',
+        'content/test/data/onunload_cookie.html',
+        'content/test/data/textinput',
+        'content/test/data/navigate_opener.html',
+        'content/test/data/dom_storage',
+        'content/test/data/sync_xmlhttprequest_during_unload.html',
+        'content/test/data/browser_plugin_dragging.html',
+        'content/test/data/fileapi',
+        'content/test/data/npapi',
+        'content/test/data/nosniff-test.html.mock-http-headers',
+        'content/test/data/accessibility',
+        'content/test/data/dynamic1.html',
+        'content/test/data/browser_plugin_focus_child.html',
+        'content/test/data/rwhv_compositing_animation.html',
+        'content/test/data/click-noreferrer-links.html',
+        'content/test/data/browser_plugin_focus.html',
     ]
   return []
+
 
 def _GetOptionalDataFilesForTestSuite(test_suite_basename):
   """Returns a list of data files/dirs that are pushed if present.
@@ -143,14 +205,20 @@ def _GetOptionalDataFilesForTestSuite(test_suite_basename):
   if test_suite_basename == 'content_browsertests':
     # See http://crbug.com/105104 for why these are needed.
     return [
-      'third_party/WebKit/LayoutTests/fast/events',
-      'third_party/WebKit/LayoutTests/fast/files',
-      'third_party/WebKit/LayoutTests/fast/filesystem',
-      'third_party/WebKit/LayoutTests/fast/js/resources',
-      'third_party/WebKit/LayoutTests/fast/workers',
-      'third_party/WebKit/LayoutTests/http/tests',
-      'third_party/WebKit/LayoutTests/media',
-      'third_party/WebKit/LayoutTests/storage/indexeddb',
+        'third_party/WebKit/LayoutTests/fast/events',
+        'third_party/WebKit/LayoutTests/fast/files',
+        'third_party/WebKit/LayoutTests/fast/filesystem',
+        'third_party/WebKit/LayoutTests/fast/js/resources',
+        'third_party/WebKit/LayoutTests/fast/workers',
+        'third_party/WebKit/LayoutTests/http/tests',
+        'third_party/WebKit/LayoutTests/storage/indexeddb',
+        'content/test/data/layout_tests/LayoutTests/fast/events',
+        'content/test/data/layout_tests/LayoutTests/fast/files',
+        'content/test/data/layout_tests/LayoutTests/fast/filesystem',
+        'content/test/data/layout_tests/LayoutTests/fast/js/resources',
+        'content/test/data/layout_tests/LayoutTests/fast/workers',
+        'content/test/data/layout_tests/LayoutTests/http/tests',
+        'content/test/data/layout_tests/LayoutTests/storage/indexeddb',
     ]
   return []
 
