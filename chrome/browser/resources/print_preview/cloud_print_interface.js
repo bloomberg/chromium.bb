@@ -120,7 +120,8 @@ cr.define('cloudprint', function() {
     search: function(isRecent) {
       var params = [
         new HttpParam('connection_status', 'ALL'),
-        new HttpParam('client', 'chrome')
+        new HttpParam('client', 'chrome'),
+        new HttpParam('use_cdd', 'true'),
       ];
       if (isRecent) {
         params.push(new HttpParam('q', '^recent'));
@@ -149,7 +150,7 @@ cr.define('cloudprint', function() {
         new HttpParam('printerid', destination.id),
         new HttpParam('contentType', 'dataUrl'),
         new HttpParam('title', printTicketStore.getDocumentTitle()),
-        new HttpParam('capabilities',
+        new HttpParam('ticket',
                       this.createPrintTicket_(destination, printTicketStore)),
         new HttpParam('content', 'data:application/pdf;base64,' + data),
         new HttpParam('tag',
@@ -165,7 +166,10 @@ cr.define('cloudprint', function() {
      * @param {string} printerId ID of the printer to lookup.
      */
     printer: function(printerId) {
-      var params = [new HttpParam('printerid', printerId)];
+      var params = [
+        new HttpParam('printerid', printerId),
+        new HttpParam('use_cdd', 'true')
+      ];
       this.sendRequest_('GET', 'printer', params,
                         this.onPrinterDone_.bind(this, printerId));
     },
@@ -202,53 +206,8 @@ cr.define('cloudprint', function() {
       assert(destination.capabilities,
              'Trying to create a Google Cloud Print print ticket for a ' +
                  'destination with no print capabilities');
-
-      var ticketItems = [];
-
-      if (destination.capabilities.collateCapability) {
-        var collateCap = destination.capabilities.collateCapability;
-        var ticketItem = {
-          'name': collateCap.id,
-          'type': collateCap.type,
-          'options': [{'name': printTicketStore.isCollateEnabled() ?
-              collateCap.collateOption : collateCap.noCollateOption}]
-        };
-        ticketItems.push(ticketItem);
-      }
-
-      if (destination.capabilities.colorCapability) {
-        var colorCap = destination.capabilities.colorCapability;
-        var ticketItem = {
-          'name': colorCap.id,
-          'type': colorCap.type,
-          'options': [{'name': printTicketStore.isColorEnabled() ?
-              colorCap.colorOption : colorCap.bwOption}]
-        };
-        ticketItems.push(ticketItem);
-      }
-
-      if (destination.capabilities.copiesCapability) {
-        var copiesCap = destination.capabilities.copiesCapability;
-        var ticketItem = {
-          'name': copiesCap.id,
-          'type': copiesCap.type,
-          'value': printTicketStore.getCopies()
-        };
-        ticketItems.push(ticketItem);
-      }
-
-      if (destination.capabilities.duplexCapability) {
-        var duplexCap = destination.capabilities.duplexCapability;
-        var ticketItem = {
-          'name': duplexCap.id,
-          'type': duplexCap.type,
-          'options': [{'name': printTicketStore.isDuplexEnabled() ?
-              duplexCap.longEdgeOption : duplexCap.simplexOption}]
-        };
-        ticketItems.push(ticketItem);
-      }
-
-      return JSON.stringify({'capabilities': ticketItems});
+      return JSON.stringify(
+          destination.capabilities.createCjt(printTicketStore));
     },
 
     /**
