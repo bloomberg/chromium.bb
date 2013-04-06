@@ -54,6 +54,17 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
     virtual const std::string& token_scope() const = 0;
   };
 
+  class TokenValidatorFactory {
+   public:
+    virtual ~TokenValidatorFactory() {}
+
+    // Creates a TokenValidator. |local_jid| and |remote_jid| are used to create
+    // a token scope that is restricted to the current connection's JIDs.
+    virtual scoped_ptr<TokenValidator> CreateTokenValidator(
+        const std::string& local_jid,
+        const std::string& remote_jid) = 0;
+  };
+
   // Creates a third-party host authenticator. |local_cert| and |key_pair| are
   // used by the underlying V2Authenticator to create the SSL channels.
   // |token_validator| contains the token parameters to be sent to the client
@@ -78,6 +89,8 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_ptr<TokenValidator> token_validator_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThirdPartyHostAuthenticator);
 };
 
 }  // namespace protocol

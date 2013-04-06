@@ -64,6 +64,10 @@ class PolicyWatcher {
   // The name of the policy for requiring curtain-mode.
   static const char kHostRequireCurtainPolicyName[];
 
+  // The names of the policies for token authentication URLs.
+  static const char kHostTokenUrlPolicyName[];
+  static const char kHostTokenValidationUrlPolicyName[];
+
   // The name of the policy for overriding policies, for use in testing.
   static const char kHostDebugOverridePoliciesName[];
 

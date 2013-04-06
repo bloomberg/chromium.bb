@@ -21,15 +21,36 @@ namespace protocol {
 
 NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
     const std::string& local_cert,
-    scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& shared_secret_hash,
-    AuthenticationMethod::HashFunction hash_function)
+    scoped_refptr<RsaKeyPair> key_pair)
     : NegotiatingAuthenticatorBase(WAITING_MESSAGE),
       local_cert_(local_cert),
-      local_key_pair_(key_pair),
-      shared_secret_hash_(shared_secret_hash) {
+      local_key_pair_(key_pair) {
+}
 
-  AddMethod(AuthenticationMethod::Spake2(hash_function));
+// static
+scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
+    const std::string& local_cert,
+    scoped_refptr<RsaKeyPair> key_pair,
+    const std::string& shared_secret_hash,
+    AuthenticationMethod::HashFunction hash_function) {
+  scoped_ptr<NegotiatingHostAuthenticator> result(
+      new NegotiatingHostAuthenticator(local_cert, key_pair));
+  result->shared_secret_hash_ = shared_secret_hash;
+  result->AddMethod(AuthenticationMethod::Spake2(hash_function));
+  return scoped_ptr<Authenticator>(result.Pass());
+}
+
+// static
+scoped_ptr<Authenticator>
+NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
+    const std::string& local_cert,
+    scoped_refptr<RsaKeyPair> key_pair,
+    scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator) {
+  scoped_ptr<NegotiatingHostAuthenticator> result(
+      new NegotiatingHostAuthenticator(local_cert, key_pair));
+  result->token_validator_ = token_validator.Pass();
+  result->AddMethod(AuthenticationMethod::ThirdParty());
+  return scoped_ptr<Authenticator>(result.Pass());
 }
 
 NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {
@@ -55,7 +76,6 @@ void NegotiatingHostAuthenticator::ProcessMessage(
   // then select the first known method from the supported-methods attribute.
   if (!method.is_valid() ||
       std::find(methods_.begin(), methods_.end(), method) == methods_.end()) {
-
     method = AuthenticationMethod::Invalid();
 
     std::string supported_methods_attr =
@@ -126,9 +146,21 @@ scoped_ptr<buzz::XmlElement> NegotiatingHostAuthenticator::GetNextMessage() {
 void NegotiatingHostAuthenticator::CreateAuthenticator(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
-  current_authenticator_ = V2Authenticator::CreateForHost(
-      local_cert_, local_key_pair_, shared_secret_hash_,
-      preferred_initial_state);
+  DCHECK(current_method_.is_valid());
+
+  if (current_method_.type() == AuthenticationMethod::THIRD_PARTY) {
+    // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
+    // The authentication method negotiation logic should guarantee that only
+    // one |ThirdPartyHostAuthenticator| will need to be created per session.
+    DCHECK(token_validator_);
+    current_authenticator_.reset(new ThirdPartyHostAuthenticator(
+        local_cert_, local_key_pair_, token_validator_.Pass()));
+  } else {
+    current_authenticator_ = V2Authenticator::CreateForHost(
+        local_cert_, local_key_pair_, shared_secret_hash_,
+        preferred_initial_state);
+  }
+
   resume_callback.Run();
 }
 

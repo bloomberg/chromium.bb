@@ -27,8 +27,8 @@ scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  return scoped_ptr<Authenticator>(new NegotiatingHostAuthenticator(
-      local_cert_, key_pair_, shared_secret_, AuthenticationMethod::NONE));
+  return NegotiatingHostAuthenticator::CreateWithSharedSecret(
+      local_cert_, key_pair_, shared_secret_, AuthenticationMethod::NONE);
 }
 
 }  // namespace protocol

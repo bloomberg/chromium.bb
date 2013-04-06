@@ -34,6 +34,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/util.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_host.h"
@@ -63,6 +64,7 @@
 #include "remoting/host/service_urls.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
+#include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -204,6 +206,8 @@ class HostProcess
   bool OnNatPolicyUpdate(bool nat_traversal_enabled);
   bool OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
+  bool OnHostTokenUrlPolicyUpdate(const GURL& token_url,
+                                  const GURL& token_validation_url);
 
   void StartHost();
 
@@ -267,6 +271,8 @@ class HostProcess
   scoped_ptr<CurtainMode> curtain_;
   scoped_ptr<CurtainingHostObserver> curtaining_host_observer_;
   bool curtain_required_;
+  GURL token_url_;
+  GURL token_validation_url_;
 
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
@@ -476,10 +482,29 @@ void HostProcess::CreateAuthenticatorFactory() {
     ShutdownHost(kInitializationFailed);
     return;
   }
+  scoped_ptr<protocol::AuthenticatorFactory> factory;
 
-  scoped_ptr<protocol::AuthenticatorFactory> factory(
-      new protocol::Me2MeHostAuthenticatorFactory(
-          local_certificate, key_pair_, host_secret_hash_));
+  if (token_url_.is_empty() && token_validation_url_.is_empty()) {
+    factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
+        local_certificate, key_pair_, host_secret_hash_);
+  } else if (token_url_.is_valid() && token_validation_url_.is_valid()) {
+    scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory>
+        token_validator_factory(new TokenValidatorFactoryImpl(
+            token_url_, token_validation_url_, key_pair_,
+            context_->url_request_context_getter()));
+    factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
+        local_certificate, key_pair_, token_validator_factory.Pass());
+  } else {
+    // TODO(rmsousa): If the policy is bad the host should not go online. It
+    // should keep running, but not connected, until the policies are fixed.
+    // Having it show up as online and then reject all clients is misleading.
+    LOG(ERROR) << "One of the third-party token URLs is empty or invalid. "
+               << "Host will reject all clients until policies are corrected. "
+               << "TokenUrl: " << token_url_ << ", "
+               << "TokenValidationUrl: " << token_validation_url_;
+    factory = protocol::Me2MeHostAuthenticatorFactory::CreateRejecting();
+  }
+
 #if defined(OS_POSIX)
   // On Linux and Mac, perform a PAM authorization step after authentication.
   factory.reset(new PamAuthorizationFactory(factory.Pass()));
@@ -718,6 +743,16 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
           &bool_value)) {
     restart_required |= OnCurtainPolicyUpdate(bool_value);
   }
+  std::string token_url_string, token_validation_url_string;
+  if (policies->GetString(
+          policy_hack::PolicyWatcher::kHostTokenUrlPolicyName,
+          &token_url_string) &&
+      policies->GetString(
+          policy_hack::PolicyWatcher::kHostTokenValidationUrlPolicyName,
+          &token_validation_url_string)) {
+    restart_required |= OnHostTokenUrlPolicyUpdate(
+        GURL(token_url_string), GURL(token_validation_url_string));
+  }
 
   if (state_ == HOST_INITIALIZING) {
     StartHost();
@@ -838,6 +873,26 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
     talkgadget_prefix_ = talkgadget_prefix;
     return true;
   }
+  return false;
+}
+
+bool HostProcess::OnHostTokenUrlPolicyUpdate(
+    const GURL& token_url,
+    const GURL& token_validation_url) {
+  // Returns true if the host has to be restarted after this policy update.
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (token_url_ != token_url ||
+      token_validation_url_ != token_validation_url) {
+    LOG(INFO) << "Policy sets third-party token URLs: "
+              << "TokenUrl: " << token_url << ", "
+              << "TokenValidationUrl: " << token_validation_url;
+
+    token_url_ = token_url;
+    token_validation_url_ = token_validation_url;
+    return true;
+  }
+
   return false;
 }
 

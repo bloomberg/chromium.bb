@@ -92,6 +92,12 @@ const char PolicyWatcher::kHostTalkGadgetPrefixPolicyName[] =
 const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
     "RemoteAccessHostRequireCurtain";
 
+const char PolicyWatcher::kHostTokenUrlPolicyName[] =
+    "RemoteAccessHostTokenUrl";
+
+const char PolicyWatcher::kHostTokenValidationUrlPolicyName[] =
+    "RemoteAccessHostTokenValidationUrl";
+
 const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
     "RemoteAccessHostDebugOverridePolicies";
 
@@ -106,11 +112,13 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetBoolean(kHostRequireTwoFactorPolicyName, false);
   default_values_->SetBoolean(kHostRequireCurtainPolicyName, false);
   default_values_->SetBoolean(kHostMatchUsernamePolicyName, false);
-  default_values_->SetString(kHostDomainPolicyName, "");
+  default_values_->SetString(kHostDomainPolicyName, std::string());
   default_values_->SetString(kHostTalkGadgetPrefixPolicyName,
                                kDefaultHostTalkGadgetPrefix);
+  default_values_->SetString(kHostTokenUrlPolicyName, std::string());
+  default_values_->SetString(kHostTokenValidationUrlPolicyName, std::string());
 #if !defined(NDEBUG)
-  default_values_->SetString(kHostDebugOverridePoliciesName, "");
+  default_values_->SetString(kHostDebugOverridePoliciesName, std::string());
 #endif
 
   // Initialize the fall-back values to use for unreadable policies.

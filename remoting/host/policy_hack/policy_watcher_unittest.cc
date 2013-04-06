@@ -122,6 +122,8 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                    kDefaultHostTalkGadgetPrefix);
     dict.SetBoolean(PolicyWatcher::kHostRequireCurtainPolicyName, false);
+    dict.SetString(PolicyWatcher::kHostTokenUrlPolicyName, "");
+    dict.SetString(PolicyWatcher::kHostTokenValidationUrlPolicyName, "");
 #if !defined(NDEBUG)
     dict.SetString(PolicyWatcher::kHostDebugOverridePoliciesName, "");
 #endif

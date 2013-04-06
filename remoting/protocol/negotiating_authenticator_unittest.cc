@@ -49,8 +49,8 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       bool client_hmac_only) {
     std::string host_secret_hash = AuthenticationMethod::ApplyHashFunction(
         hash_function, kTestHostId, host_secret);
-    host_.reset(new NegotiatingHostAuthenticator(
-        host_cert_, key_pair_, host_secret_hash, hash_function));
+    host_ = NegotiatingHostAuthenticator::CreateWithSharedSecret(
+        host_cert_, key_pair_, host_secret_hash, hash_function);
 
     std::vector<AuthenticationMethod> methods;
     methods.push_back(AuthenticationMethod::Spake2(

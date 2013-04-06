@@ -58,13 +58,43 @@ class RejectingAuthenticator : public Authenticator {
 
 }  // namespace
 
-Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory(
+// static
+scoped_ptr<AuthenticatorFactory>
+Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const SharedSecretHash& shared_secret_hash)
-    : local_cert_(local_cert),
-      key_pair_(key_pair),
-      shared_secret_hash_(shared_secret_hash) {
+    const SharedSecretHash& shared_secret_hash) {
+  scoped_ptr<Me2MeHostAuthenticatorFactory> result(
+      new Me2MeHostAuthenticatorFactory());
+  result->local_cert_ = local_cert;
+  result->key_pair_ = key_pair;
+  result->shared_secret_hash_ = shared_secret_hash;
+  return scoped_ptr<AuthenticatorFactory>(result.Pass());
+}
+
+
+// static
+scoped_ptr<AuthenticatorFactory>
+Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
+    const std::string& local_cert,
+    scoped_refptr<RsaKeyPair> key_pair,
+    scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
+        token_validator_factory) {
+  scoped_ptr<Me2MeHostAuthenticatorFactory> result(
+      new Me2MeHostAuthenticatorFactory());
+  result->local_cert_ = local_cert;
+  result->key_pair_ = key_pair;
+  result->token_validator_factory_ = token_validator_factory.Pass();
+  return scoped_ptr<AuthenticatorFactory>(result.Pass());
+}
+
+// static
+scoped_ptr<AuthenticatorFactory>
+    Me2MeHostAuthenticatorFactory::CreateRejecting() {
+  return scoped_ptr<AuthenticatorFactory>(new Me2MeHostAuthenticatorFactory());
+}
+
+Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {
 }
 
 Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {
@@ -91,9 +121,20 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
 
-  return scoped_ptr<Authenticator>(new NegotiatingHostAuthenticator(
-      local_cert_, key_pair_, shared_secret_hash_.value,
-      shared_secret_hash_.hash_function));
+  if (!local_cert_.empty() && key_pair_) {
+    if (token_validator_factory_) {
+      return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
+          local_cert_, key_pair_,
+          token_validator_factory_->CreateTokenValidator(
+              local_jid, remote_jid));
+    }
+
+    return NegotiatingHostAuthenticator::CreateWithSharedSecret(
+        local_cert_, key_pair_, shared_secret_hash_.value,
+        shared_secret_hash_.hash_function);
+  }
+
+  return scoped_ptr<Authenticator>(new RejectingAuthenticator());
 }
 
 }  // namespace protocol

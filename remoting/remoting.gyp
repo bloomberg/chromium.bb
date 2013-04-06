@@ -441,6 +441,8 @@
             'host/session_manager_factory.h',
             'host/signaling_connector.cc',
             'host/signaling_connector.h',
+            'host/token_validator_factory_impl.cc',
+            'host/token_validator_factory_impl.h',
             'host/ui_strings.cc',
             'host/ui_strings.h',
             'host/url_request_context.cc',

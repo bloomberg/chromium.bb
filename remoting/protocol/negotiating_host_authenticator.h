@@ -15,6 +15,7 @@
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
+#include "remoting/protocol/third_party_host_authenticator.h"
 
 namespace remoting {
 
@@ -26,14 +27,20 @@ namespace protocol {
 // See comments in negotiating_authenticator_base.h for a general explanation.
 class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
  public:
+  virtual ~NegotiatingHostAuthenticator();
+
   // Creates a host authenticator, using a fixed shared secret/PIN hash.
-  NegotiatingHostAuthenticator(
+  static scoped_ptr<Authenticator> CreateWithSharedSecret(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret_hash,
       AuthenticationMethod::HashFunction hash_function);
 
-  virtual ~NegotiatingHostAuthenticator();
+  // Creates a host authenticator, using third party authentication.
+  static scoped_ptr<Authenticator> CreateWithThirdPartyAuth(
+      const std::string& local_cert,
+      scoped_refptr<RsaKeyPair> key_pair,
+      scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator);
 
   // Overriden from Authenticator.
   virtual void ProcessMessage(const buzz::XmlElement* message,
@@ -41,6 +48,10 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
 
  private:
+  NegotiatingHostAuthenticator(
+      const std::string& local_cert,
+      scoped_refptr<RsaKeyPair> key_pair);
+
   // (Asynchronously) creates an authenticator, and stores it in
   // |current_authenticator_|. Authenticators that can be started in either
   // state will be created in |preferred_initial_state|.
@@ -50,7 +61,12 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> local_key_pair_;
+
+  // Used only for shared secret host authenticators.
   std::string shared_secret_hash_;
+
+  // Used only for third party host authenticators.
+  scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(NegotiatingHostAuthenticator);
 };
