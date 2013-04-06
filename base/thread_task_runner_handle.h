@@ -12,16 +12,17 @@ namespace base {
 
 class SingleThreadTaskRunner;
 
-// ThreadTaskRunnerHandle stores a reference to the main task runner
-// for each thread. Not more than one of these objects can be created
-// per thread. After an instance of this object is created the Get()
-// function will return the |task_runner| specified in the
-// constructor.
+// ThreadTaskRunnerHandle stores a reference to a thread's TaskRunner
+// in thread-local storage.  Callers can then retrieve the TaskRunner
+// for the current thread by calling ThreadTaskRunnerHandle::Get().
+// At most one TaskRunner may be bound to each thread at a time.
 class BASE_EXPORT ThreadTaskRunnerHandle {
  public:
   // Gets the SingleThreadTaskRunner for the current thread.
   static scoped_refptr<SingleThreadTaskRunner> Get();
 
+  // Binds |task_runner| to the current thread. |task_runner| must belong
+  // to the current thread for this to succeed.
   explicit ThreadTaskRunnerHandle(
       const scoped_refptr<SingleThreadTaskRunner>& task_runner);
   ~ThreadTaskRunnerHandle();
