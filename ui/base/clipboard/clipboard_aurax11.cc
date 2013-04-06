@@ -17,11 +17,13 @@
 #include "base/memory/singleton.h"
 #include "base/message_pump_aurax11.h"
 #include "base/message_pump_observer.h"
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/x/selection_owner.h"
+#include "ui/base/x/selection_requestor.h"
+#include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
 
@@ -31,14 +33,12 @@ namespace ui {
 
 namespace {
 
-const char kChromeSelection[] = "CHROME_SELECTION";
 const char kClipboard[] = "CLIPBOARD";
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeFilename[] = "chromium/filename";
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-const char kMultiple[] = "MULTIPLE";
 const char kSourceTagType[] = "org.chromium.source-tag";
 const char kString[] = "STRING";
 const char kTargets[] = "TARGETS";
@@ -46,13 +46,11 @@ const char kText[] = "TEXT";
 const char kUtf8String[] = "UTF8_STRING";
 
 const char* kAtomsToCache[] = {
-  kChromeSelection,
   kClipboard,
   kMimeTypeBitmap,
   kMimeTypeFilename,
   kMimeTypeMozillaURL,
   kMimeTypeWebkitSmartPaste,
-  kMultiple,
   kSourceTagType,
   kString,
   kTargets,
@@ -60,17 +58,6 @@ const char* kAtomsToCache[] = {
   kUtf8String,
   NULL
 };
-
-///////////////////////////////////////////////////////////////////////////////
-
-// Returns a list of all text atoms that we handle.
-std::vector< ::Atom> GetTextAtomsFrom(const X11AtomCache* atom_cache) {
-  std::vector< ::Atom> atoms;
-  atoms.push_back(atom_cache->GetAtom(kUtf8String));
-  atoms.push_back(atom_cache->GetAtom(kString));
-  atoms.push_back(atom_cache->GetAtom(kText));
-  return atoms;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -152,56 +139,6 @@ base::EventStatus SelectionChangeObserver::WillProcessEvent(
     }
   }
   return base::EVENT_CONTINUE;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// Represents the selection in different data formats. Binary data passed in is
-// assumed to be allocated with new char[], and is owned by FormatMap.
-class FormatMap {
- public:
-  // Our internal data store, which we only expose through iterators.
-  typedef std::map< ::Atom, std::pair<char*, size_t> > InternalMap;
-  typedef std::map< ::Atom, std::pair<char*, size_t> >::const_iterator
-      const_iterator;
-
-  FormatMap();
-  ~FormatMap();
-
-  // Adds the selection in the format |atom|. Ownership of |data| is passed to
-  // us.
-  void Insert(::Atom atom, char* data, size_t size);
-
-  // Pass through to STL map. Only allow non-mutation access.
-  const_iterator begin() const { return data_.begin(); }
-  const_iterator end() const { return data_.end(); }
-  const_iterator find(::Atom atom) const { return data_.find(atom); }
-  size_t size() const { return data_.size(); }
-
- private:
-  InternalMap data_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormatMap);
-};
-
-FormatMap::FormatMap() {}
-
-FormatMap::~FormatMap() {
-  // WriteText() inserts the same pointer multiple times for different
-  // representations; we need to dedupe it.
-  std::set<char*> to_delete;
-  for (InternalMap::iterator it = data_.begin(); it != data_.end(); ++it)
-    to_delete.insert(it->second.first);
-
-  for (std::set<char*>::iterator it = to_delete.begin(); it != to_delete.end();
-       ++it) {
-    delete [] *it;
-  }
-}
-
-void FormatMap::Insert(::Atom atom, char* data, size_t size) {
-  DCHECK(data_.find(atom) == data_.end());
-  data_.insert(std::make_pair(atom, std::make_pair(data, size)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -374,8 +311,11 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   // given buffer.
   ::Atom LookupSelectionForBuffer(Buffer buffer) const;
 
-  // Finds the FormatMap for the incoming selection atom.
-  FormatMap* LookupStorageForAtom(::Atom atom);
+  // Returns the object which is responsible for communication on |buffer|.
+  SelectionRequestor* GetSelectionRequestorForBuffer(Buffer buffer);
+
+  // Finds the SelectionFormatMap for the incoming selection atom.
+  SelectionFormatMap* LookupStorageForAtom(::Atom atom);
 
   // As we need to collect all the data types before we tell X11 that we own a
   // particular selection, we create a temporary clipboard mapping that
@@ -408,18 +348,6 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   // blocking message loop.
   TargetList WaitAndGetTargetsList(Buffer buffer);
 
-  // Does the work of requesting |target| from |selection_name|, spinning up
-  // the nested message loop, and reading the resulting data back. |out_data|
-  // is allocated with the X allocator and must be freed with
-  // XFree(). |out_data_bytes| is the length in machine chars, while
-  // |out_data_items| is the length in |out_type| items.
-  bool PerformBlockingConvertSelection(::Atom selection_name,
-                                       ::Atom target,
-                                       unsigned char** out_data,
-                                       size_t* out_data_bytes,
-                                       size_t* out_data_items,
-                                       ::Atom* out_type);
-
   // Returns a list of all text atoms that we handle.
   std::vector< ::Atom> GetTextAtoms() const;
 
@@ -430,22 +358,8 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   void Clear(Buffer buffer);
 
  private:
-  // Called by Dispatch to handle specific types of events.
-  void HandleSelectionRequest(const XSelectionRequestEvent& event);
-  void HandleSelectionNotify(const XSelectionEvent& event);
-  void HandleSelectionClear(const XSelectionClearEvent& event);
-  void HandlePropertyNotify(const XPropertyEvent& event);
-
   // Overridden from base::MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
-
-  // Temporary target map that we write to during DispatchObects.
-  scoped_ptr<FormatMap> clipboard_data_;
-
-  // The current value of our clipboard and primary selections. These should be
-  // non-NULL when we own the selection.
-  scoped_ptr<FormatMap> clipboard_selection_;
-  scoped_ptr<FormatMap> primary_selection_;
 
   // Our X11 state.
   Display* x_display_;
@@ -454,25 +368,18 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   // Input-only window used as a selection owner.
   ::Window x_window_;
 
-  // True if we're currently running a nested message loop, waiting for data to
-  // come back from the X server.
-  bool in_nested_loop_;
-
-  // Data to the current XConvertSelection request. Used for error detection;
-  // we verify it on the return message.
-  ::Atom current_selection_;
-  ::Atom current_target_;
-
-  // The property in the returning SelectNotify message is used to signal
-  // success. If None, our request failed somehow. If equal to the property
-  // atom that we sent in the XConvertSelection call, we can read that property
-  // on |x_window_| for the requested data.
-  ::Atom returned_property_;
-
-  // Called to terminate the nested message loop.
-  base::Closure quit_closure_;
-
   X11AtomCache atom_cache_;
+
+  // Objects which request and receive selection data.
+  SelectionRequestor clipboard_requestor_;
+  SelectionRequestor primary_requestor_;
+
+  // Temporary target map that we write to during DispatchObects.
+  scoped_ptr<SelectionFormatMap> clipboard_data_;
+
+  // Objects which offer selection data to other windows.
+  SelectionOwner clipboard_owner_;
+  SelectionOwner primary_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraX11Details);
 };
@@ -480,20 +387,24 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
 Clipboard::AuraX11Details::AuraX11Details()
     : x_display_(GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
-      in_nested_loop_(false),
-      atom_cache_(x_display_, kAtomsToCache) {
+      x_window_(XCreateWindow(
+          x_display_, x_root_window_,
+          -100, -100, 10, 10,  // x, y, width, height
+          0,                   // border width
+          CopyFromParent,      // depth
+          InputOnly,
+          CopyFromParent,      // visual
+          0,
+          NULL)),
+      atom_cache_(x_display_, kAtomsToCache),
+      clipboard_requestor_(x_display_, x_window_,
+                           atom_cache_.GetAtom(kClipboard)),
+      primary_requestor_(x_display_, x_window_, XA_PRIMARY),
+      clipboard_owner_(x_display_, x_window_, atom_cache_.GetAtom(kClipboard)),
+      primary_owner_(x_display_, x_window_, XA_PRIMARY) {
   // We don't know all possible MIME types at compile time.
   atom_cache_.allow_uncached_atoms();
 
-  x_window_ = XCreateWindow(
-      x_display_, x_root_window_,
-      -100, -100, 10, 10,  // x, y, width, height
-      0,                   // border width
-      CopyFromParent,      // depth
-      InputOnly,
-      CopyFromParent,      // visual
-      0,
-      NULL);
   XStoreName(x_display_, x_window_, "Chromium clipboard");
   XSelectInput(x_display_, x_window_, PropertyChangeMask);
 
@@ -514,17 +425,26 @@ Clipboard::AuraX11Details::~AuraX11Details() {
     return XA_PRIMARY;
 }
 
-FormatMap* Clipboard::AuraX11Details::LookupStorageForAtom(::Atom atom) {
+SelectionFormatMap* Clipboard::AuraX11Details::LookupStorageForAtom(
+    ::Atom atom) {
   if (atom == XA_PRIMARY)
-    return primary_selection_.get();
+    return primary_owner_.selection_format_map();
   else if (atom == atom_cache_.GetAtom(kClipboard))
-    return clipboard_selection_.get();
+    return clipboard_owner_.selection_format_map();
   else
     return NULL;
 }
 
+ui::SelectionRequestor*
+Clipboard::AuraX11Details::GetSelectionRequestorForBuffer(Buffer buffer) {
+  if (buffer == BUFFER_STANDARD)
+    return &clipboard_requestor_;
+  else
+    return &primary_requestor_;
+}
+
 void Clipboard::AuraX11Details::CreateNewClipboardData() {
-  clipboard_data_.reset(new FormatMap);
+  clipboard_data_.reset(new SelectionFormatMap);
 }
 
 void Clipboard::AuraX11Details::InsertMapping(const std::string& key,
@@ -535,17 +455,10 @@ void Clipboard::AuraX11Details::InsertMapping(const std::string& key,
 }
 
 void Clipboard::AuraX11Details::TakeOwnershipOfSelection(Buffer buffer) {
-  // Tell the X server that we are now the selection owner.
-  ::Atom xselection = LookupSelectionForBuffer(buffer);
-  XSetSelectionOwner(x_display_, xselection, x_window_, CurrentTime);
-
-  if (XGetSelectionOwner(x_display_, xselection) == x_window_) {
-    // The X server agrees that we are the selection owner. Commit our data.
-    if (buffer == BUFFER_STANDARD)
-      clipboard_selection_ = clipboard_data_.Pass();
-    else
-      primary_selection_ = clipboard_data_.Pass();
-  }
+  if (buffer == BUFFER_STANDARD)
+    return clipboard_owner_.TakeOwnershipOfSelection(clipboard_data_.Pass());
+  else
+    return primary_owner_.TakeOwnershipOfSelection(clipboard_data_.Pass());
 }
 
 scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
@@ -555,12 +468,12 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
   if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
     // We can local fastpath instead of playing the nested message loop game
     // with the X server.
-    FormatMap* format_map = LookupStorageForAtom(selection_name);
+    SelectionFormatMap* format_map = LookupStorageForAtom(selection_name);
     DCHECK(format_map);
 
     for (std::vector< ::Atom>::const_iterator it = types.begin();
          it != types.end(); ++it) {
-      FormatMap::const_iterator format_map_it = format_map->find(*it);
+      SelectionFormatMap::const_iterator format_map_it = format_map->find(*it);
       if (format_map_it != format_map->end()) {
         scoped_ptr<SelectionData> data_out(new SelectionData(&atom_cache_));
         data_out->Set(format_map_it->first, format_map_it->second.first,
@@ -570,6 +483,7 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
     }
   } else {
     TargetList targets = WaitAndGetTargetsList(buffer);
+    SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
 
     for (std::vector< ::Atom>::const_iterator it = types.begin();
          it != types.end(); ++it) {
@@ -577,12 +491,11 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
       size_t data_bytes = 0;
       ::Atom type = None;
       if (targets.ContainsAtom(*it) &&
-          PerformBlockingConvertSelection(selection_name,
-                                          *it,
-                                          &data,
-                                          &data_bytes,
-                                          NULL,
-                                          &type) &&
+          receiver->PerformBlockingConvertSelection(*it,
+                                                    &data,
+                                                    &data_bytes,
+                                                    NULL,
+                                                    &type) &&
           type == *it) {
         scoped_ptr<SelectionData> data_out(new SelectionData(&atom_cache_));
         data_out->Set(type, (char*)data, data_bytes, true);
@@ -600,10 +513,10 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
   std::vector< ::Atom> out;
   if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
     // We can local fastpath and return the list of local targets.
-    FormatMap* format_map = LookupStorageForAtom(selection_name);
+    SelectionFormatMap* format_map = LookupStorageForAtom(selection_name);
     DCHECK(format_map);
 
-    for (FormatMap::const_iterator it = format_map->begin();
+    for (SelectionFormatMap::const_iterator it = format_map->begin();
          it != format_map->end(); ++it) {
       out.push_back(it->first);
     }
@@ -612,12 +525,12 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
     size_t out_data_items = 0;
     ::Atom out_type = None;
 
-    if (PerformBlockingConvertSelection(selection_name,
-                                        atom_cache_.GetAtom(kTargets),
-                                        &data,
-                                        NULL,
-                                        &out_data_items,
-                                        &out_type)) {
+    SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
+    if (receiver->PerformBlockingConvertSelection(atom_cache_.GetAtom(kTargets),
+                                                  &data,
+                                                  NULL,
+                                                  &out_data_items,
+                                                  &out_type)) {
       ::Atom* atom_array = reinterpret_cast< ::Atom*>(data);
       for (size_t i = 0; i < out_data_items; ++i)
         out.push_back(atom_array[i]);
@@ -634,12 +547,11 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
       for (std::vector< ::Atom>::const_iterator it = types.begin();
            it != types.end(); ++it) {
         ::Atom type = None;
-        if (PerformBlockingConvertSelection(selection_name,
-                                            *it,
-                                            NULL,
-                                            NULL,
-                                            NULL,
-                                            &type) &&
+        if (receiver->PerformBlockingConvertSelection(*it,
+                                                      NULL,
+                                                      NULL,
+                                                      NULL,
+                                                      &type) &&
             type == *it) {
           out.push_back(*it);
         }
@@ -648,91 +560,6 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
   }
 
   return TargetList(out, &atom_cache_);
-}
-
-bool Clipboard::AuraX11Details::PerformBlockingConvertSelection(
-    ::Atom selection_name,
-    ::Atom target,
-    unsigned char** out_data,
-    size_t* out_data_bytes,
-    size_t* out_data_items,
-    ::Atom* out_type) {
-  // The name of the property we're asking to be set on |x_window_|.
-  ::Atom property_to_set = atom_cache_.GetAtom(kChromeSelection);
-
-  XConvertSelection(x_display_,
-                    selection_name,
-                    target,
-                    property_to_set,
-                    x_window_,
-                    CurrentTime);
-
-  // Now that we've thrown our message off to the X11 server, we block waiting
-  // for a response.
-  MessageLoopForUI* loop = MessageLoopForUI::current();
-  MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop(base::MessagePumpAuraX11::Current());
-
-  current_selection_ = selection_name;
-  current_target_ = target;
-  in_nested_loop_ = true;
-  quit_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
-  in_nested_loop_ = false;
-  current_selection_ = None;
-  current_target_ = None;
-
-  if (returned_property_ != property_to_set)
-    return false;
-
-  // Retrieve the data from our window.
-  unsigned long nitems = 0;
-  unsigned long nbytes = 0;
-  Atom prop_type = None;
-  int prop_format = 0;
-  unsigned char* property_data = NULL;
-  if (XGetWindowProperty(x_display_,
-                         x_window_,
-                         returned_property_,
-                         0, 0x1FFFFFFF /* MAXINT32 / 4 */, False,
-                         AnyPropertyType, &prop_type, &prop_format,
-                         &nitems, &nbytes, &property_data) != Success) {
-    return false;
-  }
-
-  if (prop_type == None)
-    return false;
-
-  if (out_data)
-    *out_data = property_data;
-
-  if (out_data_bytes) {
-    // So even though we should theoretically have nbytes (and we can't
-    // pass NULL there), we need to manually calculate the byte length here
-    // because nbytes always returns zero.
-    switch (prop_format) {
-      case 8:
-        *out_data_bytes = nitems;
-        break;
-      case 16:
-        *out_data_bytes = sizeof(short) * nitems;
-        break;
-      case 32:
-        *out_data_bytes = sizeof(long) * nitems;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  if (out_data_items)
-    *out_data_items = nitems;
-
-  if (out_type)
-    *out_type = prop_type;
-
-  return true;
 }
 
 std::vector< ::Atom> Clipboard::AuraX11Details::GetTextAtoms() const {
@@ -747,123 +574,37 @@ std::vector< ::Atom> Clipboard::AuraX11Details::GetAtomsForFormat(
 }
 
 void Clipboard::AuraX11Details::Clear(Buffer buffer) {
-  ::Atom selection_name = LookupSelectionForBuffer(buffer);
-  if (XGetSelectionOwner(x_display_, selection_name) == x_window_)
-    XSetSelectionOwner(x_display_, selection_name, None, CurrentTime);
-
   if (buffer == BUFFER_STANDARD)
-    clipboard_selection_.reset();
+    return clipboard_owner_.Clear();
   else
-    primary_selection_.reset();
-}
-
-void Clipboard::AuraX11Details::HandleSelectionRequest(
-    const XSelectionRequestEvent& event) {
-  // Incrementally build our selection. By default this is a refusal, and we'll
-  // override the parts indicating success in the different cases.
-  XEvent reply;
-  reply.xselection.type = SelectionNotify;
-  reply.xselection.requestor = event.requestor;
-  reply.xselection.selection = event.selection;
-  reply.xselection.target = event.target;
-  reply.xselection.property = None;  // Indicates failure
-  reply.xselection.time = event.time;
-
-  // Get the proper selection.
-  FormatMap* format_map = LookupStorageForAtom(event.selection);
-  if (format_map) {
-    ::Atom targets_atom = atom_cache_.GetAtom(kTargets);
-    if (event.target == targets_atom) {
-      std::vector< ::Atom> targets;
-      targets.push_back(targets_atom);
-      for (FormatMap::const_iterator it = format_map->begin();
-           it != format_map->end(); ++it) {
-        targets.push_back(it->first);
-      }
-
-      XChangeProperty(x_display_, event.requestor, event.property, XA_ATOM, 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char*>(&targets.front()),
-                      targets.size());
-      reply.xselection.property = event.property;
-    } else if (event.target == atom_cache_.GetAtom(kMultiple)) {
-      // TODO(erg): Theoretically, the spec claims I'm supposed to handle the
-      // MULTIPLE case, but I haven't seen it in the wild yet.
-      NOTIMPLEMENTED();
-    } else {
-      // Try to find the data type in map.
-      FormatMap::const_iterator it = format_map->find(event.target);
-      if (it != format_map->end()) {
-        XChangeProperty(x_display_, event.requestor, event.property,
-                        event.target, 8,
-                        PropModeReplace,
-                        reinterpret_cast<unsigned char*>(it->second.first),
-                        it->second.second);
-        reply.xselection.property = event.property;
-      }
-      // I would put error logging here, but GTK ignores TARGETS and spams us
-      // looking for its own internal types.
-    }
-  } else {
-    DLOG(ERROR) << "Requested on a selection we don't support: "
-                << XGetAtomName(x_display_, event.selection);
-  }
-
-  // Send off the reply.
-  XSendEvent(x_display_, event.requestor, False, 0, &reply);
-}
-
-void Clipboard::AuraX11Details::HandleSelectionNotify(
-    const XSelectionEvent& event) {
-  if (!in_nested_loop_) {
-    // This shouldn't happen; we're not waiting on the X server for data, but
-    // any client can send any message...
-    return;
-  }
-
-  if (current_selection_ == event.selection &&
-      current_target_ == event.target) {
-    returned_property_ = event.property;
-  } else {
-    // I am assuming that if some other client sent us a message after we've
-    // asked for data, but it's malformed, we should just treat as if they sent
-    // us an error message.
-    returned_property_ = None;
-  }
-
-  quit_closure_.Run();
-}
-
-void Clipboard::AuraX11Details::HandleSelectionClear(
-    const XSelectionClearEvent& event) {
-  DLOG(ERROR) << "SelectionClear";
-
-  // TODO(erg): If we receive a SelectionClear event while we're handling data,
-  // we need to delay clearing.
-}
-
-void Clipboard::AuraX11Details::HandlePropertyNotify(
-    const XPropertyEvent& event) {
-  // TODO(erg): Must handle PropertyNotify events on our |x_window_| as part
-  // of receiving data during paste.
+    return primary_owner_.Clear();
 }
 
 bool Clipboard::AuraX11Details::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
   switch (xev->type) {
-    case SelectionRequest:
-      HandleSelectionRequest(xev->xselectionrequest);
+    case SelectionRequest: {
+      if (xev->xselectionrequest.selection == XA_PRIMARY)
+        primary_owner_.OnSelectionRequest(xev->xselectionrequest);
+      else
+        clipboard_owner_.OnSelectionRequest(xev->xselectionrequest);
       break;
-    case SelectionNotify:
-      HandleSelectionNotify(xev->xselection);
+    }
+    case SelectionNotify: {
+      if (xev->xselection.selection == XA_PRIMARY)
+        primary_requestor_.OnSelectionNotify(xev->xselection);
+      else
+        clipboard_requestor_.OnSelectionNotify(xev->xselection);
       break;
-    case SelectionClear:
-      HandleSelectionClear(xev->xselectionclear);
+    }
+    case SelectionClear: {
+      if (xev->xselectionclear.selection == XA_PRIMARY)
+        primary_owner_.OnSelectionClear(xev->xselectionclear);
+      else
+        clipboard_owner_.OnSelectionClear(xev->xselectionclear);
       break;
-    case PropertyNotify:
-      HandlePropertyNotify(xev->xproperty);
-      break;
+    }
     default:
       break;
   }
@@ -918,7 +659,8 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
   DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
 
-  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(buffer);
+  TargetList target_list =
+      aurax11_details_->WaitAndGetTargetsList(buffer);
   return target_list.ContainsFormat(format);
 }
 
@@ -936,7 +678,8 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
     return;
   }
 
-  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(buffer);
+  TargetList target_list =
+      aurax11_details_->WaitAndGetTargetsList(buffer);
 
   types->clear();
 
