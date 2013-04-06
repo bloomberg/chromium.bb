@@ -22,7 +22,7 @@ namespace webkit_media {
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusOk, kOk);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
-#undef COMPILE_ASSERT_MATCHING_ENUM
+#undef COMPILE_ASSERT_MATCHING_STATUS_ENUM
 
 WebMediaSourceClientImpl::WebMediaSourceClientImpl(
     const scoped_refptr<media::ChunkDemuxer>& demuxer,
