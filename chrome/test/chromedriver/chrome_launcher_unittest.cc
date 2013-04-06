@@ -61,12 +61,24 @@ TEST(ProcessCommandLineArgs, MultipleArgs) {
   ASSERT_EQ("/test/user/data", command.GetSwitchValueASCII("user-data-dir"));
 }
 
+TEST(ProcessExtensions, AutomationExtension) {
+  CommandLine command(CommandLine::NO_PROGRAM);
+  base::ListValue extensions;
+  base::FilePath extension_dir;
+  Status status = internal::ProcessExtensions(&extensions, extension_dir,
+                                              true, &command);
+  ASSERT_TRUE(status.IsOk()) << status.message();
+  ASSERT_TRUE(command.HasSwitch("load-extension"));
+  base::FilePath temp_ext_path = command.GetSwitchValuePath("load-extension");
+  ASSERT_TRUE(file_util::PathExists(temp_ext_path));
+}
+
 TEST(ProcessExtensions, NoExtension) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ListValue extensions;
   base::FilePath extension_dir;
   Status status = internal::ProcessExtensions(&extensions, extension_dir,
-                                              &command);
+                                              false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_FALSE(command.HasSwitch("load-extension"));
 }
@@ -89,7 +101,7 @@ TEST(ProcessExtensions, SingleExtension) {
 
   CommandLine command(CommandLine::NO_PROGRAM);
   Status status = internal::ProcessExtensions(&extensions, extension_dir.path(),
-                                              &command);
+                                              false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(command.HasSwitch("load-extension"));
   base::FilePath temp_ext_path = command.GetSwitchValuePath("load-extension");
@@ -120,7 +132,7 @@ TEST(ProcessExtensions, MultipleExtensions) {
 
   CommandLine command(CommandLine::NO_PROGRAM);
   Status status = internal::ProcessExtensions(&extensions, extension_dir.path(),
-                                              &command);
+                                              false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(command.HasSwitch("load-extension"));
   CommandLine::StringType ext_paths = command.GetSwitchValueNative(

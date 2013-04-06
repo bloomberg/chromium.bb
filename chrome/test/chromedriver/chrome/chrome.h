@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+class AutomationExtension;
 class Status;
 class WebView;
 
@@ -37,6 +38,9 @@ class Chrome {
   // Handles an open JavaScript dialog.
   virtual Status HandleJavaScriptDialog(bool accept,
                                         const std::string& prompt_text) = 0;
+
+  // Gets the automation extension.
+  virtual Status GetAutomationExtension(AutomationExtension** extension) = 0;
 
   // Get the operation system where Chrome is running.
   virtual std::string GetOperatingSystemName() = 0;

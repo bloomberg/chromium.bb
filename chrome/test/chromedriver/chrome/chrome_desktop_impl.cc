@@ -8,8 +8,13 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/sys_info.h"
+#include "base/threading/platform_thread.h"
+#include "base/time.h"
+#include "chrome/test/chromedriver/chrome/automation_extension.h"
+#include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
 ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsHttpClient> client,
@@ -28,6 +33,48 @@ ChromeDesktopImpl::ChromeDesktopImpl(
 
 ChromeDesktopImpl::~ChromeDesktopImpl() {
   base::CloseProcessHandle(process_);
+}
+
+Status ChromeDesktopImpl::GetAutomationExtension(
+    AutomationExtension** extension) {
+  if (!automation_extension_) {
+    base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+    std::string id;
+    while (base::Time::Now() < deadline) {
+      WebViewsInfo views_info;
+      Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
+      if (status.IsError())
+        return status;
+
+      for (size_t i = 0; i < views_info.GetSize(); ++i) {
+        if (views_info.Get(i).url.find(
+                "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb") == 0) {
+          id = views_info.Get(i).id;
+          break;
+        }
+      }
+      if (!id.empty())
+        break;
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    }
+    if (id.empty())
+      return Status(kUnknownError, "automation extension cannot be found");
+
+    scoped_ptr<WebView> web_view(new WebViewImpl(
+        id, devtools_http_client_->CreateClient(id)));
+    Status status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+
+    // Wait for the extension background page to load.
+    status = web_view->WaitForPendingNavigations("");
+    if (status.IsError())
+      return status;
+
+    automation_extension_.reset(new AutomationExtension(web_view.Pass()));
+  }
+  *extension = automation_extension_.get();
+  return Status(kOk);
 }
 
 std::string ChromeDesktopImpl::GetOperatingSystemName() {

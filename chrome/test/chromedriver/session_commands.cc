@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -383,4 +384,90 @@ Status ExecuteGetLocation(
   location.SetDouble("altitude", 0);
   value->reset(location.DeepCopy());
   return Status(kOk);
+}
+
+Status ExecuteGetWindowPosition(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  AutomationExtension* extension = NULL;
+  Status status = session->chrome->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  int x, y;
+  status = extension->GetWindowPosition(&x, &y);
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue position;
+  position.SetInteger("x", x);
+  position.SetInteger("y", y);
+  value->reset(position.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSetWindowPosition(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  double x, y;
+  if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
+    return Status(kUnknownError, "missing or invalid 'x' or 'y'");
+  AutomationExtension* extension = NULL;
+  Status status = session->chrome->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  return extension->SetWindowPosition(static_cast<int>(x), static_cast<int>(y));
+}
+
+Status ExecuteGetWindowSize(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  AutomationExtension* extension = NULL;
+  Status status = session->chrome->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  int width, height;
+  status = extension->GetWindowSize(&width, &height);
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue size;
+  size.SetInteger("width", width);
+  size.SetInteger("height", height);
+  value->reset(size.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSetWindowSize(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  double width, height;
+  if (!params.GetDouble("width", &width) ||
+      !params.GetDouble("height", &height))
+    return Status(kUnknownError, "missing or invalid 'width' or 'height'");
+  AutomationExtension* extension = NULL;
+  Status status = session->chrome->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  return extension->SetWindowSize(
+      static_cast<int>(width), static_cast<int>(height));
+}
+
+Status ExecuteMaximizeWindow(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  AutomationExtension* extension = NULL;
+  Status status = session->chrome->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  return extension->MaximizeWindow();
 }

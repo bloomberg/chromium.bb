@@ -43,6 +43,11 @@ if util.IsWindows():
       # https://code.google.com/p/chromedriver/issues/detail?id=299
       'ChromeLogPathCapabilityTest.testChromeLogPath',
   ]
+elif util.IsLinux():
+  _DESKTOP_OS_SPECIFIC_FILTER = [
+      # Xvfb doesn't support maximization.
+      'ChromeDriverTest.testWindowMaximize',
+  ]
 
 
 _DESKTOP_NEGATIVE_FILTER = {}
@@ -75,6 +80,10 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeDriverTest.testSendKeysToElement',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
         'ChromeDriverTest.testPopups',
+        # https://code.google.com/p/chromedriver/issues/detail?id=298
+        'ChromeDriverTest.testWindowPosition',
+        'ChromeDriverTest.testWindowSize',
+        'ChromeDriverTest.testWindowMaximize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
     ]
 )
@@ -492,6 +501,40 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertRaises(chromedriver.NoSuchFrame,
                       self._driver.SwitchToFrame,
                       self._driver.FindElement('tagName', 'body'))
+
+  def testWindowPosition(self):
+    position = self._driver.GetWindowPosition()
+    self._driver.SetWindowPosition(position[0], position[1])
+    self.assertEquals(position, self._driver.GetWindowPosition())
+
+    # Resize so the window isn't moved offscreen.
+    # See https://code.google.com/p/chromedriver/issues/detail?id=297.
+    self._driver.SetWindowSize(300, 300)
+
+    self._driver.SetWindowPosition(100, 200)
+    self.assertEquals([100, 200], self._driver.GetWindowPosition())
+
+  def testWindowSize(self):
+    size = self._driver.GetWindowSize()
+    self._driver.SetWindowSize(size[0], size[1])
+    self.assertEquals(size, self._driver.GetWindowSize())
+
+    self._driver.SetWindowSize(600, 400)
+    self.assertEquals([600, 400], self._driver.GetWindowSize())
+
+  def testWindowMaximize(self):
+    self._driver.SetWindowPosition(100, 200)
+    self._driver.SetWindowSize(600, 400)
+    self._driver.MaximizeWindow()
+
+    self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
+    self.assertNotEqual([600, 400], self._driver.GetWindowSize())
+    # Set size first so that the window isn't moved offscreen.
+    # See https://code.google.com/p/chromedriver/issues/detail?id=297.
+    self._driver.SetWindowSize(600, 400)
+    self._driver.SetWindowPosition(100, 200)
+    self.assertEquals([100, 200], self._driver.GetWindowPosition())
+    self.assertEquals([600, 400], self._driver.GetWindowSize())
 
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):

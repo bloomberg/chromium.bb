@@ -49,9 +49,14 @@ class WebViewImpl : public WebView {
   virtual Status CallAsyncFunction(const std::string& frame,
                                    const std::string& function,
                                    const base::ListValue& args,
-                                   bool is_user_supplied,
                                    const base::TimeDelta& timeout,
                                    scoped_ptr<base::Value>* result) OVERRIDE;
+  virtual Status CallUserAsyncFunction(
+      const std::string& frame,
+      const std::string& function,
+      const base::ListValue& args,
+      const base::TimeDelta& timeout,
+      scoped_ptr<base::Value>* result) OVERRIDE;
   virtual Status GetFrameByFunction(const std::string& frame,
                                     const std::string& function,
                                     const base::ListValue& args,
@@ -75,6 +80,12 @@ class WebViewImpl : public WebView {
                                    const base::ListValue& files) OVERRIDE;
 
  private:
+  Status CallAsyncFunctionInternal(const std::string& frame,
+                                   const std::string& function,
+                                   const base::ListValue& args,
+                                   bool is_user_supplied,
+                                   const base::TimeDelta& timeout,
+                                   scoped_ptr<base::Value>* result);
   std::string id_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;

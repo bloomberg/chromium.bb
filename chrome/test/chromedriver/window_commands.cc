@@ -203,9 +203,9 @@ Status ExecuteExecuteAsyncScript(
   if (!params.GetList("args", &args))
     return Status(kUnknownError, "'args' must be a list");
 
-  return web_view->CallAsyncFunction(
+  return web_view->CallUserAsyncFunction(
       session->GetCurrentFrameId(), "function(){" + script + "}", *args,
-      true, base::TimeDelta::FromMilliseconds(session->script_timeout), value);
+      base::TimeDelta::FromMilliseconds(session->script_timeout), value);
 }
 
 Status ExecuteSwitchToFrame(

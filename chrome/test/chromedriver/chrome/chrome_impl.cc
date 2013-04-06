@@ -124,6 +124,10 @@ Status ChromeImpl::HandleJavaScriptDialog(bool accept,
   return manager->HandleDialog(accept, prompt_text);
 }
 
+Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
+  return Status(kUnknownError, "automation extension not supported");
+}
+
 ChromeImpl::ChromeImpl(
     scoped_ptr<DevToolsHttpClient> client,
     const std::string& version,

@@ -265,6 +265,25 @@ class ChromeDriver(object):
   def IsLoading(self):
     return self.ExecuteSessionCommand('isLoading')
 
+  def GetWindowPosition(self):
+    position = self.ExecuteSessionCommand('getWindowPosition')
+    return [position['x'], position['y']]
+
+  def SetWindowPosition(self, x, y):
+    self.ExecuteSessionCommand('setWindowPosition',
+                               {'x': x, 'y': y})
+
+  def GetWindowSize(self):
+    size = self.ExecuteSessionCommand('getWindowSize')
+    return [size['width'], size['height']]
+
+  def SetWindowSize(self, width, height):
+    self.ExecuteSessionCommand('setWindowSize',
+                               {'width': width, 'height': height})
+
+  def MaximizeWindow(self):
+    self.ExecuteSessionCommand('maximizeWindow')
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteSessionCommand('quit')

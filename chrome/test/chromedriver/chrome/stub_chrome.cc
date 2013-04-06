@@ -44,6 +44,10 @@ Status StubChrome::HandleJavaScriptDialog(
   return Status(kOk);
 }
 
+Status StubChrome::GetAutomationExtension(AutomationExtension** extension) {
+  return Status(kOk);
+}
+
 std::string StubChrome::GetOperatingSystemName() {
   return "";
 }

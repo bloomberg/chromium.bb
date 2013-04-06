@@ -45,6 +45,7 @@ Status ProcessCommandLineArgs(const base::ListValue* args,
                               CommandLine* command);
 Status ProcessExtensions(const base::ListValue* extensions,
                          const base::FilePath& temp_dir,
+                         bool include_automation_extension,
                          CommandLine* command);
 Status PrepareUserDataDir(
     const base::FilePath& user_data_dir,

@@ -58,20 +58,23 @@ class WebView {
                               scoped_ptr<base::Value>* result) = 0;
 
   // Calls a JavaScript function in a specified frame with the given args and
-  // a callback function. Waits until the callback is invoked or the timeout
-  // occurs. The callback may be invoked with one value, which will be returned
-  // via |result|. If |is_user_supplied| is false, an additional callback
-  // will be passed, which may be invoked to give an error. |is_user_supplied|
-  // also affects the status codes used when reporting errors; if false,
-  // |kUnknownError| will be used for reporting script errors/timeouts, unless
-  // the error contains a 'code' property; if true, |kJavaScriptError| or
-  // |kScriptTimeout| will be used.
+  // two callbacks. The first may be invoked with a value to return to the user.
+  // The second may be used to report an error. This function waits until
+  // one of the callbacks is invoked or the timeout occurs.
   virtual Status CallAsyncFunction(const std::string& frame,
                                    const std::string& function,
                                    const base::ListValue& args,
-                                   bool is_user_supplied,
                                    const base::TimeDelta& timeout,
                                    scoped_ptr<base::Value>* result) = 0;
+
+  // Same as |CallAsyncFunction|, except no additional error callback is passed
+  // to the function. Also, |kJavaScriptError| or |kScriptTimeout| is used
+  // as the error code instead of |kUnknownError| in appropriate cases.
+  virtual Status CallUserAsyncFunction(const std::string& frame,
+                                       const std::string& function,
+                                       const base::ListValue& args,
+                                       const base::TimeDelta& timeout,
+                                       scoped_ptr<base::Value>* result) = 0;
 
   // Gets the frame ID for a frame element returned by invoking the given
   // JavaScript function. |frame| is a frame ID or an empty string for the main

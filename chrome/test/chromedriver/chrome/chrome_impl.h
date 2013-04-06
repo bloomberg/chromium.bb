@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
+class AutomationExtension;
 class DevToolsHttpClient;
 class JavaScriptDialogManager;
 class Status;
@@ -35,19 +36,20 @@ class ChromeImpl : public Chrome {
   virtual Status HandleJavaScriptDialog(
       bool accept,
       const std::string& prompt_text) OVERRIDE;
+  virtual Status GetAutomationExtension(
+      AutomationExtension** extension) OVERRIDE;
 
  protected:
   ChromeImpl(scoped_ptr<DevToolsHttpClient> client,
              const std::string& version,
              int build_no);
 
+  scoped_ptr<DevToolsHttpClient> devtools_http_client_;
+
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
 
   Status GetDialogManagerForOpenDialog(JavaScriptDialogManager** manager);
-  Status ParseAndCheckVersion(const std::string& version);
-
-  scoped_ptr<DevToolsHttpClient> devtools_http_client_;
 
   std::string version_;
   int build_no_;

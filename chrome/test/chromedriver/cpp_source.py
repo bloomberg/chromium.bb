@@ -48,11 +48,17 @@ def WriteSource(base_name,
     f.write(header)
 
   # Write cc file.
+  def EscapeLine(line):
+    return line.replace('\\', '\\\\').replace('"', '\\"')
+
   definitions = []
   for name, contents in global_string_map.iteritems():
     lines = []
-    for line in contents.split('\n'):
-      lines += ['    "%s\\n"' % line.replace('\\', '\\\\').replace('"', '\\"')]
+    if '\n' not in contents:
+      lines = ['    "%s"' % EscapeLine(contents)]
+    else:
+      for line in contents.split('\n'):
+        lines += ['    "%s\\n"' % EscapeLine(line)]
     definitions += ['const char %s[] =\n%s;' % (name, '\n'.join(lines))]
 
   cc = '\n'.join([

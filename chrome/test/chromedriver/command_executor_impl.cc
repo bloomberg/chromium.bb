@@ -218,6 +218,16 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteIsLoading);
   session_command_map[CommandNames::kGetLocation] =
       base::Bind(&ExecuteGetLocation);
+  session_command_map[CommandNames::kGetWindowPosition] =
+      base::Bind(&ExecuteGetWindowPosition);
+  session_command_map[CommandNames::kSetWindowPosition] =
+      base::Bind(&ExecuteSetWindowPosition);
+  session_command_map[CommandNames::kGetWindowSize] =
+      base::Bind(&ExecuteGetWindowSize);
+  session_command_map[CommandNames::kSetWindowSize] =
+      base::Bind(&ExecuteSetWindowSize);
+  session_command_map[CommandNames::kMaximizeWindow] =
+      base::Bind(&ExecuteMaximizeWindow);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

@@ -25,6 +25,7 @@
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
+#include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/version.h"
@@ -32,6 +33,27 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
 namespace {
+
+Status UnpackAutomationExtension(const base::FilePath& temp_dir,
+                                 base::FilePath* automation_extension) {
+  std::string decoded_extension;
+  if (!base::Base64Decode(kAutomationExtension, &decoded_extension))
+    return Status(kUnknownError, "failed to base64decode automation extension");
+
+  base::FilePath extension_zip = temp_dir.AppendASCII("internal.zip");
+  int size = static_cast<int>(decoded_extension.length());
+  if (file_util::WriteFile(extension_zip, decoded_extension.c_str(), size)
+      != size) {
+    return Status(kUnknownError, "failed to write automation extension zip");
+  }
+
+  base::FilePath extension_dir = temp_dir.AppendASCII("internal");
+  if (!zip::Unzip(extension_zip, extension_dir))
+    return Status(kUnknownError, "failed to unzip automation extension");
+
+  *automation_extension = extension_dir;
+  return Status(kOk);
+}
 
 Status PrepareCommandLine(int port,
                           const base::FilePath& exe,
@@ -72,15 +94,15 @@ Status PrepareCommandLine(int port,
       return status;
   }
 
-  if (extensions) {
-    if (!extension_dir->CreateUniqueTempDir())
-      return Status(kUnknownError,
-                    "cannot create temp dir for unpacking extensions");
-    Status status = internal::ProcessExtensions(
-        extensions, extension_dir->path(), &command);
-    if (status.IsError())
-      return status;
+  if (!extension_dir->CreateUniqueTempDir()) {
+    return Status(kUnknownError,
+                  "cannot create temp dir for unpacking extensions");
   }
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir->path(), true, &command);
+  if (status.IsError())
+    return status;
+
   *prepared_command = command;
   return Status(kOk);
 }
@@ -300,9 +322,10 @@ Status ProcessCommandLineArgs(const base::ListValue* args,
 
 Status ProcessExtensions(const base::ListValue* extensions,
                          const base::FilePath& temp_dir,
+                         bool include_automation_extension,
                          CommandLine* command) {
   std::vector<base::FilePath::StringType> extension_paths;
-  for (size_t i = 0; i < extensions->GetSize(); ++i) {
+  for (size_t i = 0; i < (extensions ? extensions->GetSize() : 0); ++i) {
     std::string extension_base64;
     if (!extensions->GetString(i, &extension_base64)) {
       return Status(kUnknownError,
@@ -337,13 +360,19 @@ Status ProcessExtensions(const base::ListValue* extensions,
     extension_paths.push_back(extension_dir.value());
   }
 
-  // Sets paths of unpacked extensions to the command line.
-  if (!extension_paths.empty()) {
+  if (include_automation_extension) {
+    base::FilePath automation_extension;
+    Status status = UnpackAutomationExtension(temp_dir, &automation_extension);
+    if (status.IsError())
+      return status;
+    extension_paths.push_back(automation_extension.value());
+  }
+
+  if (extension_paths.size()) {
     base::FilePath::StringType extension_paths_value = JoinString(
         extension_paths, FILE_PATH_LITERAL(','));
     command->AppendSwitchNative("load-extension", extension_paths_value);
   }
-
   return Status(kOk);
 }
 

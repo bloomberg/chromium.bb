@@ -30,6 +30,8 @@ class StubChrome : public Chrome {
   virtual Status HandleJavaScriptDialog(
       bool accept,
       const std::string& prompt_text) OVERRIDE;
+  virtual Status GetAutomationExtension(
+      AutomationExtension** extension) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
   virtual Status Quit() OVERRIDE;
 };
