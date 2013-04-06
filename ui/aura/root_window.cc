@@ -547,6 +547,7 @@ ui::EventTarget* RootWindow::GetParentTarget() {
 // RootWindow, ui::CompositorDelegate implementation:
 
 void RootWindow::ScheduleDraw() {
+  DCHECK(!ui::Compositor::WasInitializedWithThread());
   if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
     MessageLoop::current()->PostTask(

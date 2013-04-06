@@ -138,6 +138,7 @@ ui::Compositor* TestCompositorHostMac::GetCompositor() {
 }
 
 void TestCompositorHostMac::ScheduleDraw() {
+  DCHECK(!ui::Compositor::WasInitializedWithThread());
   if (!compositor_.get())
     return;
 

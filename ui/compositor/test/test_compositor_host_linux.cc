@@ -85,6 +85,7 @@ ui::Compositor* TestCompositorHostLinux::GetCompositor() {
 }
 
 void TestCompositorHostLinux::ScheduleDraw() {
+  DCHECK(!ui::Compositor::WasInitializedWithThread());
   if (!method_factory_.HasWeakPtrs()) {
     MessageLoopForUI::current()->PostTask(
         FROM_HERE,

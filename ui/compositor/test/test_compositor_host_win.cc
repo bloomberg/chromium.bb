@@ -35,6 +35,7 @@ class TestCompositorHostWin : public TestCompositorHost,
 
   // Overridden from CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE {
+    DCHECK(!ui::Compositor::WasInitializedWithThread());
     RECT rect;
     ::GetClientRect(hwnd(), &rect);
     InvalidateRect(hwnd(), &rect, FALSE);

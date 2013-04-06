@@ -222,6 +222,7 @@ class COMPOSITOR_EXPORT Compositor
   virtual ~Compositor();
 
   static void Initialize(bool useThread);
+  static bool WasInitializedWithThread();
   static void Terminate();
 
   // Schedules a redraw of the layer tree associated with this compositor.

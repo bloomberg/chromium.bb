@@ -475,6 +475,7 @@ Compositor::~Compositor() {
   ContextFactory::GetInstance()->RemoveCompositor(this);
 }
 
+// static
 void Compositor::Initialize(bool use_thread) {
   if (use_thread) {
     g_compositor_thread = new base::Thread("Browser Compositor");
@@ -482,6 +483,12 @@ void Compositor::Initialize(bool use_thread) {
   }
 }
 
+// static
+bool Compositor::WasInitializedWithThread() {
+  return !!g_compositor_thread;
+}
+
+// static
 void Compositor::Terminate() {
   if (g_compositor_thread) {
     g_compositor_thread->Stop();
