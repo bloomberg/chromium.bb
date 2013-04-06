@@ -73,7 +73,9 @@ void ChromeBrowserFieldTrials::DataCompressionProxyFieldTrial() {
   const char kDataCompressionProxyFieldTrialName[] =
       "DataCompressionProxyRollout";
   const base::FieldTrial::Probability kDataCompressionProxyDivisor = 1000;
-  const base::FieldTrial::Probability kDataCompressionProxyStable = 0;
+
+  // 10/1000 = 1% for starters.
+  const base::FieldTrial::Probability kDataCompressionProxyStable = 10;
   const char kEnabled[] = "Enabled";
   const char kDisabled[] = "Disabled";
 
@@ -87,6 +89,8 @@ void ChromeBrowserFieldTrials::DataCompressionProxyFieldTrial() {
           kDataCompressionProxyFieldTrialName, kDataCompressionProxyDivisor,
           kDisabled, 2015, 1, 1, NULL));
 
+  // We want our trial results to be persistent.
+  trial->UseOneTimeRandomization();
   // Non-stable channels will run with probability 1.
   const int kEnabledGroup = trial->AppendGroup(
       kEnabled,
