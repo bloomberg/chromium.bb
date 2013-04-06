@@ -203,18 +203,19 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& work_area,
   }
 }
 
-void MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
+bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   views::View* target = static_cast<views::View*>(event.target());
   if (!target)
-    return;
+    return false;
   aura::RootWindow* target_root =
       target->GetWidget()->GetNativeView()->GetRootWindow();
   if (!target_root || target_root == window->GetRootWindow())
-    return;
+    return false;
   aura::Window* window_container =
       ash::Shell::GetContainer(target_root, window->parent()->id());
   // Move the window to the target launcher.
   window_container->AddChild(window);
+  return true;
 }
 
 }  // namespace wm

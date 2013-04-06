@@ -125,9 +125,9 @@ ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
     int min_height,
     gfx::Rect* bounds);
 
-// Move |window| to the root window where the |event| occured if it is not
-// already in the same root window.
-ASH_EXPORT void MoveWindowToEventRoot(aura::Window* window,
+// Moves |window| to the root window where the |event| occured if it is not
+// already in the same root window. Returns true if |window| was moved.
+ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
                                       const ui::Event& event);
 
 }  // namespace wm
