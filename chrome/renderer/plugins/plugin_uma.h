@@ -22,14 +22,23 @@ class PluginUMAReporter {
     DISABLED_PLUGIN
   };
 
-  // This must be sync'd with histogram values.
+  // Make sure the enum list in tools/histogram/histograms.xml is updated with
+  // any change in this list.
   enum PluginType {
     WINDOWS_MEDIA_PLAYER = 0,
     SILVERLIGHT = 1,
     REALPLAYER = 2,
     JAVA = 3,
     QUICKTIME = 4,
-    OTHER = 5
+    OTHER = 5,  // This is obsolete and replaced by UNSUPPORTED_* types.
+    UNSUPPORTED_MIMETYPE,
+    UNSUPPORTED_EXTENSION,
+    // NOTE: Add new unsupported types only immediately above this line.
+    BROWSER_PLUGIN = 10,
+    SHOCKWAVE_FLASH,
+    WIDEVINE_CDM,
+    // NOTE: Add new plugin types only immediately above this line.
+    PLUGIN_TYPE_MAX
   };
 
   // Sends UMA data, i.e. plugin's type.

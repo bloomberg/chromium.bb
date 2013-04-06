@@ -22,10 +22,10 @@ TEST_F(PluginUMATest, WindowsMediaPlayer) {
   ExpectPluginType(PluginUMAReporter::WINDOWS_MEDIA_PLAYER,
                    "application/x-mplayer2",
                    GURL("file://some_file.mov"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "application/x-mplayer2-some_sufix",
                    GURL("file://some_file.mov"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "some-prefix-application/x-mplayer2",
                    GURL("file://some_file.mov"));
 }
@@ -37,7 +37,7 @@ TEST_F(PluginUMATest, Silverlight) {
   ExpectPluginType(PluginUMAReporter::SILVERLIGHT,
                    "application/x-silverlight-some-sufix",
                    GURL("aaaa"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "some-prefix-application/x-silverlight",
                    GURL("aaaa"));
 }
@@ -49,7 +49,7 @@ TEST_F(PluginUMATest, RealPlayer) {
   ExpectPluginType(PluginUMAReporter::REALPLAYER,
                    "audio/x-pn-realaudio-some-sufix",
                    GURL("some url"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "some-prefix-audio/x-pn-realaudio",
                    GURL("some url"));
 }
@@ -70,11 +70,50 @@ TEST_F(PluginUMATest, QuickTime) {
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
                    "video/quicktime",
                    GURL("some url"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "video/quicktime-sufix",
                    GURL("some url"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "prefix-video/quicktime",
+                   GURL("some url"));
+}
+
+TEST_F(PluginUMATest, BrowserPlugin) {
+  ExpectPluginType(PluginUMAReporter::BROWSER_PLUGIN,
+                   "application/browser-plugin",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "application/browser-plugin-sufix",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "prefix-application/browser-plugin",
+                   GURL("some url"));
+}
+
+TEST_F(PluginUMATest, ShockwaveFlash) {
+  ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
+                   "application/x-shockwave-flash",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
+                   "application/futuresplash",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "application/x-futuresplash",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "application/shockwave-flash",
+                   GURL("some url"));
+}
+
+TEST_F(PluginUMATest, WidevineCdm) {
+  ExpectPluginType(PluginUMAReporter::WIDEVINE_CDM,
+                   "application/x-ppapi-widevine-cdm",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "application/x-ppapi-widevine-cdm-sufix",
+                   GURL("some url"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+                   "prefix-application/x-ppapi-widevine-cdm",
                    GURL("some url"));
 }
 
@@ -84,23 +123,36 @@ TEST_F(PluginUMATest, BySrcExtension) {
                    GURL("file://file.mov"));
 
   // When plugin's mime type is given, we don't check extension.
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "unknown-plugin",
                    GURL("http://file.mov"));
 
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::WINDOWS_MEDIA_PLAYER,
                    "",
-                   GURL("http://file.unknown_extension"));
+                   GURL("file://file.asx"));
+  ExpectPluginType(PluginUMAReporter::REALPLAYER,
+                   "",
+                   GURL("file://file.rm"));
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
                    "",
                    GURL("http://aaa/file.mov?x=aaaa&y=b#c"));
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
                    "",
                    GURL("http://file.mov?x=aaaa&y=b#c"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
+                   "",
+                   GURL("http://file.swf?x=aaaa&y=b#c"));
+  ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
+                   "",
+                   GURL("http://file.spl?x=aaaa&y=b#c"));
+
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
+                   "",
+                   GURL("http://file.unknown_extension"));
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
                    "",
                    GURL("http://"));
-  ExpectPluginType(PluginUMAReporter::OTHER,
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
                    "",
                    GURL("mov"));
 }

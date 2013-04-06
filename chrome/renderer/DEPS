@@ -27,6 +27,7 @@ include_rules = [
   "+third_party/re2",
   "+third_party/smhasher",
   "+third_party/sqlite",
+  "+third_party/widevine",
 ]
 
 # TODO(joi): Remove these once Autofill code moves to //components/autofill.

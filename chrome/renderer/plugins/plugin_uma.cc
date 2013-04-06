@@ -9,6 +9,9 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "content/public/common/content_constants.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
+#include "webkit/plugins/plugin_constants.h"
 
 namespace {
 
@@ -20,7 +23,7 @@ const char kJavaTypeSubstring[] = "application/x-java-applet";
 const char kQuickTimeType[] = "video/quicktime";
 
 // Arrays containing file extensions connected with specific plugins.
-// The arrays must be sorted because binary search is used on them.
+// Note: THE ARRAYS MUST BE SORTED BECAUSE BINARY SEARCH IS USED ON THEM!
 const char* kWindowsMediaPlayerExtensions[] = {
     ".asx"
 };
@@ -43,6 +46,11 @@ const char* kQuickTimeExtensions[] = {
     ".qtif"
 };
 
+const char* kShockwaveFlashExtensions[] = {
+    ".spl",
+    ".swf"
+};
+
 }  // namespace.
 
 class UMASenderImpl : public PluginUMAReporter::UMASender {
@@ -59,12 +67,12 @@ void UMASenderImpl::SendPluginUMA(PluginUMAReporter::ReportType report_type,
     case PluginUMAReporter::MISSING_PLUGIN:
       UMA_HISTOGRAM_ENUMERATION("Plugin.MissingPlugins",
                                 plugin_type,
-                                PluginUMAReporter::OTHER);
+                                PluginUMAReporter::PLUGIN_TYPE_MAX);
       break;
     case PluginUMAReporter::DISABLED_PLUGIN:
       UMA_HISTOGRAM_ENUMERATION("Plugin.DisabledPlugins",
                                 plugin_type,
-                                PluginUMAReporter::OTHER);
+                                PluginUMAReporter::PLUGIN_TYPE_MAX);
       break;
     default:
       NOTREACHED();
@@ -153,12 +161,18 @@ PluginUMAReporter::PluginType PluginUMAReporter::SrcToPluginType(
     return REALPLAYER;
   }
 
-  return OTHER;
+  if (CStringArrayContainsCString(kShockwaveFlashExtensions,
+                                  arraysize(kShockwaveFlashExtensions),
+                                  file_extension.c_str())) {
+    return SHOCKWAVE_FLASH;
+  }
+
+  return UNSUPPORTED_EXTENSION;
 }
 
 PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
     const std::string& mime_type) {
-  if (strcmp(mime_type.c_str(), kWindowsMediaPlayerType) == 0)
+  if (mime_type == kWindowsMediaPlayerType)
     return WINDOWS_MEDIA_PLAYER;
 
   size_t prefix_length = strlen(kSilverlightTypePrefix);
@@ -172,8 +186,19 @@ PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
   if (strstr(mime_type.c_str(), kJavaTypeSubstring))
     return JAVA;
 
-  if (strcmp(mime_type.c_str(), kQuickTimeType) == 0)
+  if (mime_type == kQuickTimeType)
     return QUICKTIME;
 
-  return OTHER;
+  if (mime_type == content::kBrowserPluginMimeType)
+    return BROWSER_PLUGIN;
+
+  if (mime_type == kFlashPluginSwfMimeType ||
+      mime_type == kFlashPluginSplMimeType) {
+    return SHOCKWAVE_FLASH;
+  }
+
+  if (mime_type == kWidevineCdmPluginMimeType)
+    return WIDEVINE_CDM;
+
+  return UNSUPPORTED_MIMETYPE;
 }
