@@ -33,7 +33,6 @@ private:
   TransportDIB* CreateDIB();
 
   int front_buffer_;
-  int last_buffer_;
   int num_free_buffers_;
   ScopedVector<TransportDIB> dibs_;
   ScopedVector<TransportDIB> awaiting_ack_;

@@ -85,6 +85,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   RendererCapabilities capabilities_;
   bool visible_;
   bool is_scissor_enabled_;
+  bool is_viewport_changed_;
   gfx::Rect scissor_rect_;
 
   OutputSurface* output_surface_;

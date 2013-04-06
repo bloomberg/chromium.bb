@@ -32,8 +32,7 @@ class CompareById {
 }  // namespace
 
 CompositorSoftwareOutputDevice::CompositorSoftwareOutputDevice()
-    : front_buffer_(0),
-      last_buffer_(-1),
+    : front_buffer_(-1),
       num_free_buffers_(0),
       sequence_num_(0) {
   DetachFromThread();
@@ -55,38 +54,44 @@ TransportDIB* CompositorSoftwareOutputDevice::CreateDIB() {
 void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   DCHECK(CalledOnValidThread());
 
-  // Reset last_buffer_ so that we don't copy over old damage.
-  last_buffer_ = -1;
-
   if (viewport_size_ == viewport_size)
     return;
-  viewport_size_ = viewport_size;
 
-  // Keep non-acked dibs open.
-  for (size_t i = 0; i < dibs_.size() - num_free_buffers_; ++i) {
-    size_t index = (front_buffer_ + num_free_buffers_ + i) % dibs_.size();
+  // Keep non-ACKed dibs open.
+  int first_non_free = front_buffer_ + num_free_buffers_ + 1;
+  int num_non_free = dibs_.size() - num_free_buffers_;
+  for (int i = 0; i < num_non_free; ++i) {
+    int index = (first_non_free + i) % dibs_.size();
     awaiting_ack_.push_back(dibs_[index]);
     dibs_[index] = NULL;
   }
 
   dibs_.clear();
-  front_buffer_ = 0;
+  front_buffer_ = -1;
   num_free_buffers_ = 0;
+  viewport_size_ = viewport_size;
 }
 
 SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   DCHECK(CalledOnValidThread());
 
+  gfx::Rect last_damage_rect = damage_rect_;
+  damage_rect_ = damage_rect;
+
+  int last_buffer = front_buffer_;
   if (num_free_buffers_ == 0) {
-    dibs_.insert(dibs_.begin() + front_buffer_, CreateDIB());
-    num_free_buffers_++;
+    dibs_.insert(dibs_.begin() + (front_buffer_ + 1), CreateDIB());
+    last_damage_rect = gfx::Rect(viewport_size_);
+  } else {
+    --num_free_buffers_;
   }
+  front_buffer_ = (front_buffer_ + 1) % dibs_.size();
 
   TransportDIB* front_dib = dibs_[front_buffer_];
   DCHECK(front_dib);
   DCHECK(front_dib->memory());
 
-  // Set up a canvas for the front_dib.
+  // Set up a canvas for the current front buffer.
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                     viewport_size_.width(),
                     viewport_size_.height());
@@ -94,19 +99,23 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   device_ = skia::AdoptRef(new SkDevice(bitmap_));
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
 
-  // Copy damage_rect_ from last_buffer_ to front_buffer_.
-  if (last_buffer_ != -1 && !damage_rect.Contains(damage_rect_)) {
-    TransportDIB* last_dib = dibs_[last_buffer_];
+  // Copy over previous damage.
+  if (last_buffer != -1) {
+    TransportDIB* last_dib = dibs_[last_buffer];
     SkBitmap back_bitmap;
     back_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                           viewport_size_.width(),
                           viewport_size_.height());
     back_bitmap.setPixels(last_dib->memory());
 
-    SkRect last_damage = gfx::RectToSkRect(damage_rect_);
-    canvas_->drawBitmapRectToRect(back_bitmap, &last_damage, last_damage, NULL);
+    SkRegion region(RectToSkIRect(last_damage_rect));
+    region.op(RectToSkIRect(damage_rect), SkRegion::kDifference_Op);
+    for (SkRegion::Iterator it(region); !it.done(); it.next()) {
+      const SkIRect& src_rect = it.rect();
+      SkRect dst_rect = SkRect::Make(src_rect);
+      canvas_->drawBitmapRect(back_bitmap, &src_rect, dst_rect, NULL);
+    }
   }
-  damage_rect_ = damage_rect;
 
   return canvas_.get();
 }
@@ -120,30 +129,28 @@ void CompositorSoftwareOutputDevice::EndPaint(
     frame_data->damage_rect = damage_rect_;
     frame_data->dib_id = dibs_[front_buffer_]->id();
   }
-
-  last_buffer_ = front_buffer_;
-  front_buffer_ = (front_buffer_ + 1) % dibs_.size();
-  --num_free_buffers_;
-  DCHECK_GE(num_free_buffers_, 0);
 }
 
 void CompositorSoftwareOutputDevice::ReclaimDIB(const TransportDIB::Id& id) {
   DCHECK(CalledOnValidThread());
 
-  // The reclaimed handle might not be among the currently
+  if (!TransportDIB::is_valid_id(id))
+    return;
+
+  // The reclaimed dib id might not be among the currently
   // active dibs if we got a resize event in the mean time.
   ScopedVector<TransportDIB>::iterator it =
       std::find_if(dibs_.begin(), dibs_.end(), CompareById(id));
   if (it != dibs_.end()) {
     ++num_free_buffers_;
+    DCHECK_LE(static_cast<size_t>(num_free_buffers_), dibs_.size());
+    return;
   } else {
-    it = std::find_if(awaiting_ack_.begin(),
-                      awaiting_ack_.end(),
+    it = std::find_if(awaiting_ack_.begin(), awaiting_ack_.end(),
                       CompareById(id));
+    DCHECK(it != awaiting_ack_.end());
     awaiting_ack_.erase(it);
   }
-
-  DCHECK_LE(static_cast<size_t>(num_free_buffers_), dibs_.size());
 }
 
 }  // namespace content

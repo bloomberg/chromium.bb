@@ -1619,6 +1619,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
       ack.gl_frame_data->sync_point = 0;
     } else if (frame->delegated_frame_data) {
       ack.resources.swap(frame->delegated_frame_data->resource_list);
+    } else if (frame->software_frame_data) {
+      ack.last_dib_id = frame->software_frame_data->dib_id;
     }
     SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
   }

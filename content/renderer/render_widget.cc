@@ -24,7 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
-#include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
+#include "content/renderer/gpu/compositor_software_output_device.h"
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -555,6 +555,13 @@ bool RenderWidget::ForceCompositingModeEnabled() {
 }
 
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
+      return scoped_ptr<cc::OutputSurface>(
+          new CompositorOutputSurface(routing_id(), NULL,
+              new CompositorSoftwareOutputDevice()));
+  }
+
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
   // compositor was Mac OS X, because the on-screen OpenGL context creation
@@ -573,25 +580,15 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
-      // In the absence of a software-based delegating renderer, use this
-      // stopgap adapter class to present the software renderer output using a
-      // 3d context.
-      return scoped_ptr<cc::OutputSurface>(
-          new CompositorOutputSurface(routing_id(), NULL,
-              new CompositorSoftwareOutputDeviceGLAdapter(context)));
-  } else {
-      bool composite_to_mailbox =
-          command_line.HasSwitch(cc::switches::kCompositeToMailbox);
-      DCHECK(!composite_to_mailbox || command_line.HasSwitch(
-          cc::switches::kEnableCompositorFrameMessage));
-      // No swap throttling yet when compositing on the main thread.
-      DCHECK(!composite_to_mailbox || is_threaded_compositing_enabled_);
-      return scoped_ptr<cc::OutputSurface>(composite_to_mailbox ?
-          new MailboxOutputSurface(routing_id(), context, NULL) :
-              new CompositorOutputSurface(routing_id(), context, NULL));
-  }
+  bool composite_to_mailbox =
+      command_line.HasSwitch(cc::switches::kCompositeToMailbox);
+  DCHECK(!composite_to_mailbox || command_line.HasSwitch(
+      cc::switches::kEnableCompositorFrameMessage));
+  // No swap throttling yet when compositing on the main thread.
+  DCHECK(!composite_to_mailbox || is_threaded_compositing_enabled_);
+  return scoped_ptr<cc::OutputSurface>(composite_to_mailbox ?
+      new MailboxOutputSurface(routing_id(), context, NULL) :
+          new CompositorOutputSurface(routing_id(), context, NULL));
 }
 
 void RenderWidget::OnViewContextSwapBuffersAborted() {

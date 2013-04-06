@@ -67,6 +67,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   : DirectRenderer(client, resource_provider),
     visible_(true),
     is_scissor_enabled_(false),
+    is_viewport_changed_(true),
     output_surface_(output_surface),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
@@ -81,8 +82,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   if (Settings().compositor_frame_message && client_->HasImplThread())
     capabilities_.using_swap_complete_callback = true;
   compositor_frame_.software_frame_data.reset(new SoftwareFrameData());
-
-  ViewportChanged();
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
@@ -92,11 +91,15 @@ const RendererCapabilities& SoftwareRenderer::Capabilities() const {
 }
 
 void SoftwareRenderer::ViewportChanged() {
-  output_device_->Resize(ViewportSize());
+  is_viewport_changed_ = true;
 }
 
 void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::BeginDrawingFrame");
+  if (is_viewport_changed_) {
+    is_viewport_changed_ = false;
+    output_device_->Resize(ViewportSize());
+  }
   root_canvas_ = output_device_->BeginPaint(
       gfx::ToEnclosingRect(frame->root_damage_rect));
 }

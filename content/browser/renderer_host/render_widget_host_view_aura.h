@@ -316,7 +316,7 @@ class RenderWidgetHostViewAura
   virtual ~RenderWidgetHostViewAura();
 
   void UpdateCursorIfOverSelf();
-  bool ShouldSkipFrame(gfx::Size size_in_dip);
+  bool ShouldSkipFrame(gfx::Size size_in_dip) const;
   void CheckResizeLocks(gfx::Size size_in_dip);
   void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
@@ -340,8 +340,11 @@ class RenderWidgetHostViewAura
   // moved to center.
   bool ShouldMoveToCenter();
 
-  // Run the compositing callbacks.
-  void RunCompositingDidCommitCallbacks();
+  // Run all on compositing commit callbacks.
+  void RunOnCommitCallbacks();
+
+  // Add on compositing commit callback.
+  void AddOnCommitCallbackAndDisableLocks(const base::Closure& callback);
 
   // Called after |window_| is parented to a RootWindow.
   void AddedToRootWindow();
@@ -391,9 +394,14 @@ class RenderWidgetHostViewAura
       const scoped_refptr<ui::Texture>& texture_to_return);
 
   void SwapDelegatedFrame(
-      scoped_ptr<cc::DelegatedFrameData> frame,
-      float device_scale_factor);
+      scoped_ptr<cc::DelegatedFrameData> frame_data,
+      float frame_device_scale_factor);
   void SendDelegatedFrameAck();
+
+  void SwapSoftwareFrame(
+      scoped_ptr<cc::SoftwareFrameData> frame_data,
+      float frame_device_scale_factor);
+  void SendSoftwareFrameAck(const TransportDIB::Id& id);
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 
@@ -470,6 +478,13 @@ class RenderWidgetHostViewAura
 
   // The current frontbuffer texture.
   scoped_refptr<ui::Texture> current_surface_;
+
+  // The current frontbuffer DIB.
+  scoped_ptr<TransportDIB> current_dib_;
+
+  // The current DIB id as it was received from the renderer. Note that on
+  // some platforms (e.g. Windows) this is different from current_dib_->id().
+  TransportDIB::Id current_dib_id_;
 
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;

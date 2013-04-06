@@ -927,7 +927,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return current_surface_ || !!host_->GetBackingStore(false);
+  return current_surface_ || current_dib_ || !!host_->GetBackingStore(false);
 }
 
 void RenderWidgetHostViewAura::Show() {
@@ -1228,13 +1228,13 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   accelerated_compositing_state_changed_ = true;
 }
 
-bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) {
+bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) const {
   if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
       can_lock_compositor_ == NO_PENDING_COMMIT ||
       resize_locks_.empty())
     return false;
 
-  ResizeLockList::iterator it = resize_locks_.begin();
+  ResizeLockList::const_iterator it = resize_locks_.begin();
   while (it != resize_locks_.end()) {
     if ((*it)->expected_size() == size_in_dip)
       break;
@@ -1282,10 +1282,15 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   if (accelerated_compositing_state_changed_)
     accelerated_compositing_state_changed_ = false;
 
-  if (current_surface_ && host_->is_accelerated_compositing_active()) {
+  bool is_compositing_active = host_->is_accelerated_compositing_active();
+  if (is_compositing_active && current_surface_) {
     window_->SetExternalTexture(current_surface_.get());
     gfx::Size container_size = ConvertSizeToDIP(this, current_surface_->size());
     CheckResizeLocks(container_size);
+  } else if (is_compositing_active && current_dib_) {
+    window_->SetExternalTexture(NULL);
+    gfx::Size frame_size = ConvertSizeToDIP(this, last_swapped_surface_size_);
+    CheckResizeLocks(frame_size);
   } else {
     window_->SetExternalTexture(NULL);
     resize_locks_.clear();
@@ -1335,12 +1340,8 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
   if (!compositor) {
     ack_callback.Run(false, texture_to_return);
   } else {
-    // Add sending an ACK to the list of things to do OnCompositingDidCommit
-    can_lock_compositor_ = NO_PENDING_COMMIT;
-    on_compositing_did_commit_callbacks_.push_back(
+    AddOnCommitCallbackAndDisableLocks(
         base::Bind(ack_callback, false, texture_to_return));
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
   }
 }
 
@@ -1409,18 +1410,87 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   if (!compositor) {
     SendDelegatedFrameAck();
   } else {
-    can_lock_compositor_ = NO_PENDING_COMMIT;
-    on_compositing_did_commit_callbacks_.push_back(
+    AddOnCommitCallbackAndDisableLocks(
         base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
-                   base::Unretained(this)));
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
+                   AsWeakPtr()));
   }
 }
 
 void RenderWidgetHostViewAura::SendDelegatedFrameAck() {
   cc::CompositorFrameAck ack;
   window_->layer()->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+}
+
+void RenderWidgetHostViewAura::SwapSoftwareFrame(
+    scoped_ptr<cc::SoftwareFrameData> frame_data,
+    float frame_device_scale_factor) {
+  const gfx::Size& frame_size = frame_data->size;
+  const gfx::Rect& damage_rect = frame_data->damage_rect;
+  const TransportDIB::Id& dib_id = frame_data->dib_id;
+
+  scoped_ptr<TransportDIB> dib;
+#if defined(OS_WIN)
+  TransportDIB::Handle my_handle = TransportDIB::DefaultHandleValue();
+  ::DuplicateHandle(host_->GetProcess()->GetHandle(), dib_id.handle,
+                    ::GetCurrentProcess(), &my_handle,
+                    0, FALSE, DUPLICATE_SAME_ACCESS);
+  dib.reset(TransportDIB::Map(my_handle));
+#elif defined(USE_X11)
+  dib.reset(TransportDIB::Map(dib_id.shmkey));
+#else
+  NOTIMPLEMENTED();
+#endif
+
+  // Validate the received DIB.
+  size_t expected_size = 4 * frame_size.GetArea();
+  if (!dib || dib->size() < expected_size) {
+    host_->GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
+  if (last_swapped_surface_size_ != frame_size) {
+    DLOG_IF(ERROR, damage_rect != gfx::Rect(frame_size))
+      << "Expected full damage rect";
+  }
+
+  TransportDIB::Id last_dib_id = current_dib_id_;
+  current_dib_.reset(dib.release());
+  current_dib_id_ = dib_id;
+  last_swapped_surface_size_ = frame_size;
+  previous_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
+
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor) {
+    SendSoftwareFrameAck(last_dib_id);
+    return;
+  }
+
+  gfx::Size frame_size_in_dip = gfx::ToFlooredSize(
+      gfx::ScaleSize(frame_size, 1.0f / frame_device_scale_factor));
+  if (ShouldSkipFrame(frame_size_in_dip)) {
+    can_lock_compositor_ = NO_PENDING_COMMIT;
+    SendSoftwareFrameAck(last_dib_id);
+  } else {
+    AddOnCommitCallbackAndDisableLocks(
+        base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
+                   AsWeakPtr(), last_dib_id));
+  }
+
+  CheckResizeLocks(frame_size_in_dip);
+  released_front_lock_ = NULL;
+  window_->SetExternalTexture(NULL);
+  window_->SchedulePaintInRect(ConvertRectToDIP(this, damage_rect));
+
+  if (paint_observer_)
+    paint_observer_->OnUpdateCompositorContent();
+}
+
+void RenderWidgetHostViewAura::SendSoftwareFrameAck(
+    const TransportDIB::Id& id) {
+  cc::CompositorFrameAck ack;
+  ack.last_dib_id = id;
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
       host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
 }
@@ -1432,6 +1502,13 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
                        frame->metadata.device_scale_factor);
     return;
   }
+
+  if (frame->software_frame_data) {
+    SwapSoftwareFrame(frame->software_frame_data.Pass(),
+                      frame->metadata.device_scale_factor);
+    return;
+  }
+
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
@@ -1461,7 +1538,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const std::string& mailbox_name,
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> texture_to_return(current_surface_);
-  const gfx::Rect surface_rect = gfx::Rect(gfx::Point(), size);
+  const gfx::Rect surface_rect = gfx::Rect(size);
   if (!SwapBuffersPrepare(
       surface_rect, surface_rect, mailbox_name, ack_callback)) {
     return;
@@ -1487,7 +1564,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     int gpu_host_id) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect =
-      gfx::Rect(gfx::Point(), params_in_pixel.surface_size);
+      gfx::Rect(params_in_pixel.surface_size);
   gfx::Rect damage_rect(params_in_pixel.x,
                         params_in_pixel.y,
                         params_in_pixel.width,
@@ -1561,15 +1638,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
     if (compositor) {
       // We need to wait for a commit to clear to guarantee that all we
       // will not issue any more GL referencing the previous surface.
-      can_lock_compositor_ = NO_PENDING_COMMIT;
-      on_compositing_did_commit_callbacks_.push_back(
+      AddOnCommitCallbackAndDisableLocks(
           base::Bind(&RenderWidgetHostViewAura::
                      SetSurfaceNotInUseByCompositor,
                      AsWeakPtr(),
                      current_surface_));  // Hold a ref so the texture will not
                                           // get deleted until after commit.
-      if (!compositor->HasObserver(this))
-        compositor->AddObserver(this);
     }
     current_surface_ = NULL;
     UpdateExternalTexture();
@@ -1952,12 +2026,47 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  paint_canvas_ = canvas;
-  BackingStore* backing_store = host_->GetBackingStore(true);
-  paint_canvas_ = NULL;
-  if (backing_store) {
-    static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
-                                                                canvas);
+  bool is_compositing_active = host_->is_accelerated_compositing_active();
+  bool has_backing_store = !!host_->GetBackingStore(false);
+  if (is_compositing_active && current_dib_) {
+    const gfx::Size window_size = window_->bounds().size();
+    const gfx::Size& frame_size = last_swapped_surface_size_;
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     frame_size.width(),
+                     frame_size.height());
+    bitmap.setPixels(current_dib_->memory());
+
+    SkCanvas* sk_canvas = canvas->sk_canvas();
+    for (SkRegion::Iterator it(previous_damage_); !it.done(); it.next()) {
+      const SkIRect& src_rect = it.rect();
+      SkRect dst_rect = SkRect::Make(src_rect);
+      sk_canvas->drawBitmapRect(bitmap, &src_rect, dst_rect, NULL);
+    }
+    previous_damage_.setEmpty();
+
+    if (frame_size != window_size) {
+      SkRegion region;
+      region.op(0, 0, window_size.width(), window_size.height(),
+                SkRegion::kUnion_Op);
+      region.op(0, 0, frame_size.width(), frame_size.height(),
+                SkRegion::kDifference_Op);
+      SkPaint paint;
+      paint.setColor(SK_ColorWHITE);
+      for (SkRegion::Iterator it(region); !it.done(); it.next())
+        sk_canvas->drawIRect(it.rect(), paint);
+    }
+
+    if (paint_observer_)
+      paint_observer_->OnPaintComplete();
+  } else if (!is_compositing_active && has_backing_store) {
+    paint_canvas_ = canvas;
+    BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
+        host_->GetBackingStore(true));
+    paint_canvas_ = NULL;
+    backing_store->SkiaShowRect(gfx::Point(), canvas);
+
     if (paint_observer_)
       paint_observer_->OnPaintComplete();
   } else if (aura::Env::GetInstance()->render_white_bg()) {
@@ -2375,7 +2484,7 @@ void RenderWidgetHostViewAura::OnCompositingDidCommit(
       if ((*it)->GrabDeferredLock())
         can_lock_compositor_ = YES_DID_LOCK;
   }
-  RunCompositingDidCommitCallbacks();
+  RunOnCommitCallbacks();
   locks_pending_commit_.clear();
 }
 
@@ -2474,7 +2583,7 @@ void RenderWidgetHostViewAura::OnLostResources() {
   // Make sure all ImageTransportClients are deleted now that the context those
   // are using is becoming invalid. This sends pending ACKs and needs to happen
   // after calling UpdateExternalTexture() which syncs with the impl thread.
-  RunCompositingDidCommitCallbacks();
+  RunOnCommitCallbacks();
 
   DCHECK(!shared_surface_handle_.is_null());
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -2630,13 +2739,25 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
       global_mouse_position_.y() > rect.bottom() - border_y;
 }
 
-void RenderWidgetHostViewAura::RunCompositingDidCommitCallbacks() {
+void RenderWidgetHostViewAura::RunOnCommitCallbacks() {
   for (std::vector<base::Closure>::const_iterator
       it = on_compositing_did_commit_callbacks_.begin();
       it != on_compositing_did_commit_callbacks_.end(); ++it) {
     it->Run();
   }
   on_compositing_did_commit_callbacks_.clear();
+}
+
+void RenderWidgetHostViewAura::AddOnCommitCallbackAndDisableLocks(
+    const base::Closure& callback) {
+  ui::Compositor* compositor = GetCompositor();
+  DCHECK(compositor);
+
+  if (!compositor->HasObserver(this))
+    compositor->AddObserver(this);
+
+  can_lock_compositor_ = NO_PENDING_COMMIT;
+  on_compositing_did_commit_callbacks_.push_back(callback);
 }
 
 void RenderWidgetHostViewAura::AddedToRootWindow() {
@@ -2658,7 +2779,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   // frame though, because we will reissue a new frame right away without that
   // composited data.
   ui::Compositor* compositor = GetCompositor();
-  RunCompositingDidCommitCallbacks();
+  RunOnCommitCallbacks();
   locks_pending_commit_.clear();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
