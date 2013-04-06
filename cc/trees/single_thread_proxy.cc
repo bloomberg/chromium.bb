@@ -54,7 +54,12 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeAndReadback");
   DCHECK(Proxy::IsMainThread());
 
-  if (!CommitAndComposite(base::TimeTicks::Now()))
+  gfx::Rect device_viewport_damage_rect = rect;
+
+  LayerTreeHostImpl::FrameData frame;
+  if (!CommitAndComposite(base::TimeTicks::Now(),
+                          device_viewport_damage_rect,
+                          &frame))
     return false;
 
   {
@@ -64,7 +69,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
     if (layer_tree_host_impl_->IsContextLost())
       return false;
 
-    layer_tree_host_impl_->SwapBuffers();
+    layer_tree_host_impl_->SwapBuffers(frame);
   }
   DidSwapFrame();
 
@@ -330,8 +335,13 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 // Called by the legacy scheduling path (e.g. where render_widget does the
 // scheduling)
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
-  if (CommitAndComposite(frame_begin_time)) {
-    layer_tree_host_impl_->SwapBuffers();
+  gfx::Rect device_viewport_damage_rect;
+
+  LayerTreeHostImpl::FrameData frame;
+  if (CommitAndComposite(frame_begin_time,
+                         device_viewport_damage_rect,
+                         &frame)) {
+    layer_tree_host_impl_->SwapBuffers(frame);
     DidSwapFrame();
   }
 }
@@ -360,7 +370,10 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
 
 void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() { NOTREACHED(); }
 
-bool SingleThreadProxy::CommitAndComposite(base::TimeTicks frame_begin_time) {
+bool SingleThreadProxy::CommitAndComposite(
+    base::TimeTicks frame_begin_time,
+    gfx::Rect device_viewport_damage_rect,
+    LayerTreeHostImpl::FrameData* frame) {
   DCHECK(Proxy::IsMainThread());
 
   if (!layer_tree_host_->InitializeRendererIfNeeded())
@@ -384,7 +397,10 @@ bool SingleThreadProxy::CommitAndComposite(base::TimeTicks frame_begin_time) {
 
   layer_tree_host_->WillCommit();
   DoCommit(queue.Pass());
-  bool result = DoComposite(offscreen_context_provider, frame_begin_time);
+  bool result = DoComposite(offscreen_context_provider,
+                            frame_begin_time,
+                            device_viewport_damage_rect,
+                            frame);
   layer_tree_host_->DidBeginFrame();
   return result;
 }
@@ -397,7 +413,9 @@ bool SingleThreadProxy::ShouldComposite() const {
 
 bool SingleThreadProxy::DoComposite(
     scoped_refptr<cc::ContextProvider> offscreen_context_provider,
-    base::TimeTicks frame_begin_time) {
+    base::TimeTicks frame_begin_time,
+    gfx::Rect device_viewport_damage_rect,
+    LayerTreeHostImpl::FrameData* frame) {
   DCHECK(!output_surface_lost_);
   {
     DebugScopedSetImplThread impl(this);
@@ -418,10 +436,9 @@ bool SingleThreadProxy::DoComposite(
     layer_tree_host_impl_->Animate(base::TimeTicks::Now(), base::Time::Now());
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 
-    LayerTreeHostImpl::FrameData frame;
-    layer_tree_host_impl_->PrepareToDraw(&frame);
-    layer_tree_host_impl_->DrawLayers(&frame, frame_begin_time);
-    layer_tree_host_impl_->DidDrawAllLayers(frame);
+    layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);
+    layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
+    layer_tree_host_impl_->DidDrawAllLayers(*frame);
     output_surface_lost_ = layer_tree_host_impl_->IsContextLost();
 
     bool start_ready_animations = true;

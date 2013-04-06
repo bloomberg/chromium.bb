@@ -43,8 +43,9 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual bool PrepareToDrawOnThread(
-      LayerTreeHostImpl*, LayerTreeHostImpl::FrameData* frame, bool result)
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame,
+                                     bool result)
       OVERRIDE {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
 

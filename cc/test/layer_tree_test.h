@@ -30,6 +30,8 @@ class TestHooks : public WebKit::WebAnimationDelegate {
   TestHooks();
   virtual ~TestHooks();
 
+  void ReadSettings(const LayerTreeSettings& settings);
+
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) {}

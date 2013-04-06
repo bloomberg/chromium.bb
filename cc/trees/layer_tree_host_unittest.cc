@@ -120,19 +120,20 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++num_draws_;
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++num_commits_;
     if (impl->active_tree()->source_frame_number() == 0)
       PostSetNeedsCommitToMainThread();
     else if (impl->active_tree()->source_frame_number() == 1)
       EndTest();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_commits_++;
-  }
-
   virtual void AfterTest() OVERRIDE {
     EXPECT_EQ(2, num_commits_);
-    EXPECT_GE(2, num_draws_);
+    EXPECT_LE(1, num_draws_);
   }
 
  private:
@@ -694,7 +695,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
     // Compute all the layer transforms for the frame.
     LayerTreeHostImpl::FrameData frame_data;
-    impl->PrepareToDraw(&frame_data);
+    impl->PrepareToDraw(&frame_data, gfx::Rect());
     impl->DidDrawAllLayers(frame_data);
 
     const LayerImplList& render_surface_layer_list =
@@ -1124,15 +1125,15 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit()
-      : root_layer_(ContentLayerWithUpdateTracking::Create(&fake_delegate_)),
+      : root_layer_(FakeContentLayer::Create(&client_)),
         surface_layer1_(
-            ContentLayerWithUpdateTracking::Create(&fake_delegate_)),
+            FakeContentLayer::Create(&client_)),
         replica_layer1_(
-            ContentLayerWithUpdateTracking::Create(&fake_delegate_)),
+            FakeContentLayer::Create(&client_)),
         surface_layer2_(
-            ContentLayerWithUpdateTracking::Create(&fake_delegate_)),
+            FakeContentLayer::Create(&client_)),
         replica_layer2_(
-            ContentLayerWithUpdateTracking::Create(&fake_delegate_)) {}
+            FakeContentLayer::Create(&client_)) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->cache_render_pass_contents = true;
@@ -1192,19 +1193,24 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     }
   }
 
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    if (!TestEnded())
+      root_layer_->SetNeedsDisplay();
+  }
+
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(2, root_layer_->PaintContentsCount());
-    EXPECT_EQ(2, surface_layer1_->PaintContentsCount());
-    EXPECT_EQ(2, surface_layer2_->PaintContentsCount());
+    EXPECT_EQ(3u, root_layer_->update_count());
+    EXPECT_EQ(3u, surface_layer1_->update_count());
+    EXPECT_EQ(3u, surface_layer2_->update_count());
   }
 
  private:
-  FakeContentLayerClient fake_delegate_;
-  scoped_refptr<ContentLayerWithUpdateTracking> root_layer_;
-  scoped_refptr<ContentLayerWithUpdateTracking> surface_layer1_;
-  scoped_refptr<ContentLayerWithUpdateTracking> replica_layer1_;
-  scoped_refptr<ContentLayerWithUpdateTracking> surface_layer2_;
-  scoped_refptr<ContentLayerWithUpdateTracking> replica_layer2_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_layer_;
+  scoped_refptr<FakeContentLayer> surface_layer1_;
+  scoped_refptr<FakeContentLayer> replica_layer1_;
+  scoped_refptr<FakeContentLayer> surface_layer2_;
+  scoped_refptr<FakeContentLayer> replica_layer2_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -1362,7 +1368,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
   // the beginFrame/commit pair.
   // Commits 5+6 test the path where an eviction happens during the eviction
   // recovery path.
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
     switch (num_commits_) {
       case 1:
         EXPECT_TRUE(layer_->HaveBackingTexture());
@@ -1449,7 +1455,7 @@ class LayerTreeHostTestContinuousCommit : public LayerTreeHostTest {
   virtual void DidCommit() OVERRIDE {
     if (num_draw_layers_ == 2)
       return;
-    PostSetNeedsCommitToMainThread();
+    layer_tree_host()->root_layer()->SetNeedsDisplay();
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
@@ -1484,7 +1490,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
     layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
-    content_layer_ = ContentLayer::Create(&fake_delegate_);
+    content_layer_ = ContentLayer::Create(&client_);
     content_layer_->SetBounds(gfx::Size(10, 10));
     content_layer_->SetPosition(gfx::PointF(0.f, 0.f));
     content_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
@@ -1517,7 +1523,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
   }
 
  private:
-  FakeContentLayerClient fake_delegate_;
+  FakeContentLayerClient client_;
   scoped_refptr<Layer> content_layer_;
   int num_commit_complete_;
   int num_draw_layers_;

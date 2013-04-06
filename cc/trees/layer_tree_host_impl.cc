@@ -139,7 +139,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
 };
 
 LayerTreeHostImpl::FrameData::FrameData()
-    : contains_incomplete_tile(false) {}
+    : contains_incomplete_tile(false), has_no_damage(false) {}
 
 LayerTreeHostImpl::FrameData::~FrameData() {}
 
@@ -183,6 +183,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
+      next_frame_damages_full_device_viewport_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
   DCHECK(proxy_->IsImplThread());
@@ -508,6 +509,23 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   TrackDamageForAllSurfaces(active_tree_->root_layer(),
                             *frame->render_surface_layer_list);
 
+  // If the root render surface has no visible damage, then don't generate a
+  // frame at all.
+  RenderSurfaceImpl* root_surface =
+      active_tree_->root_layer()->render_surface();
+  bool root_surface_has_no_visible_damage =
+      !root_surface->damage_tracker()->current_damage_rect().Intersects(
+          root_surface->content_rect());
+  bool root_surface_has_contributing_layers =
+      !root_surface->layer_list().empty();
+  if (root_surface_has_contributing_layers &&
+      root_surface_has_no_visible_damage) {
+    TRACE_EVENT0("cc",
+                 "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
+    frame->has_no_damage = true;
+    return true;
+  }
+
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::CalculateRenderPasses",
                "render_surface_layer_list.size()",
@@ -675,6 +693,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
                      frame);
 
+  // If we're making a frame to draw, it better have at least one render pass.
+  DCHECK(!frame->render_passes.empty());
   return draw_frame;
 }
 
@@ -827,7 +847,8 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
   }
 }
 
-bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
+bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
+                                      gfx::Rect device_viewport_damage_rect) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PrepareToDraw");
 
   active_tree_->UpdateDrawProperties(
@@ -837,6 +858,17 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   frame->render_passes.clear();
   frame->render_passes_by_id.clear();
   frame->will_draw_layers.clear();
+  frame->contains_incomplete_tile = false;
+  frame->has_no_damage = false;
+
+  if (active_tree_->root_layer()) {
+    if (next_frame_damages_full_device_viewport_)
+      device_viewport_damage_rect.Union(gfx::Rect(device_viewport_size_));
+
+    active_tree_->root_layer()->render_surface()->damage_tracker()->
+        AddDamageNextUpdate(device_viewport_damage_rect);
+  }
+  next_frame_damages_full_device_viewport_ = false;
 
   if (!CalculateRenderPasses(frame))
     return false;
@@ -997,6 +1029,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
+
+  if (frame->has_no_damage)
+    return;
+
   DCHECK(!frame->render_passes.empty());
 
   fps_counter_->SaveTimeStamp(frame_begin_time);
@@ -1074,7 +1110,9 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
   return renderer_->Capabilities();
 }
 
-bool LayerTreeHostImpl::SwapBuffers() {
+bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
+  if (frame.has_no_damage)
+    return false;
   return renderer_->SwapBuffers();
 }
 
@@ -1763,12 +1801,7 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullRootLayerDamage() {
-  if (active_tree_->root_layer()) {
-    RenderSurfaceImpl* render_surface =
-        active_tree_->root_layer()->render_surface();
-    if (render_surface)
-      render_surface->damage_tracker()->ForceFullDamageNextUpdate();
-  }
+  next_frame_damages_full_device_viewport_ = true;
 }
 
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {

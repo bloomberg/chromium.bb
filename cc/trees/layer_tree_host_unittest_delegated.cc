@@ -252,7 +252,13 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     if (!first_draw_for_source_frame_)
       return result;
 
-    gfx::RectF damage_rect = frame->render_passes.back()->damage_rect;
+    gfx::RectF damage_rect;
+    if (!frame->has_no_damage) {
+      damage_rect = frame->render_passes.back()->damage_rect;
+    } else {
+      // If there is no damage, then we have no render passes to send.
+      EXPECT_TRUE(frame->render_passes.empty());
+    }
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:

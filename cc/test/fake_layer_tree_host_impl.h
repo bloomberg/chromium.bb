@@ -20,7 +20,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
   void ForcePrepareToDraw() {
     LayerTreeHostImpl::FrameData frame_data;
-    PrepareToDraw(&frame_data);
+    PrepareToDraw(&frame_data, gfx::Rect());
     DidDrawAllLayers(frame_data);
   }
 

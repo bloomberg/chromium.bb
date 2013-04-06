@@ -1262,30 +1262,35 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(206.f, 200.f, 6.f, 8.f), child_damage_rect);
 }
 
-TEST_F(DamageTrackerTest, VerifyDamageWhenForcedFullDamage) {
+TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
   LayerImpl* child = root->children()[0];
 
-  // Case 1: This test ensures that when the tracker is forced to have full
-  //         damage, that it takes priority over any other partial damage.
+  // Case 1: This test ensures that when the tracker is given damage, that
+  //         it is included with any other partial damage.
   //
   ClearDamageForAllSurfaces(root.get());
-  child->set_update_rect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
-  root->render_surface()->damage_tracker()->ForceFullDamageNextUpdate();
+  child->set_update_rect(gfx::RectF(10, 11, 12, 13));
+  root->render_surface()->damage_tracker()->AddDamageNextUpdate(
+      gfx::RectF(15, 16, 32, 33));
   EmulateDrawingOneFrame(root.get());
   gfx::RectF root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0.f, 0.f, 500.f, 500.f), root_damage_rect);
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_FLOAT_RECT_EQ(
+      gfx::UnionRects(gfx::RectF(15, 16, 32, 33),
+                      gfx::RectF(100+10, 100+11, 12, 13)),
+      root_damage_rect);
 
-  // Case 2: An additional sanity check that forcing full damage works even
-  //         when nothing on the layer tree changed.
+  // Case 2: An additional sanity check that adding damage works even when
+  //         nothing on the layer tree changed.
   //
   ClearDamageForAllSurfaces(root.get());
-  root->render_surface()->damage_tracker()->ForceFullDamageNextUpdate();
+  root->render_surface()->damage_tracker()->AddDamageNextUpdate(
+      gfx::RectF(30, 31, 14, 15));
   EmulateDrawingOneFrame(root.get());
   root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0.f, 0.f, 500.f, 500.f), root_damage_rect);
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(30, 31, 14, 15), root_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {

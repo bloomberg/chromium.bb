@@ -894,6 +894,11 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
   // CanDraw() as well.
 
+  // If it is a forced draw, make sure we do a draw and swap.
+  gfx::Rect readback_rect;
+  if (readback_request_on_impl_thread_)
+    readback_rect = readback_request_on_impl_thread_->rect;
+
   LayerTreeHostImpl::FrameData frame;
   bool draw_frame = false;
   bool start_ready_animations = true;
@@ -901,7 +906,8 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   if (layer_tree_host_impl_->CanDraw()) {
     // Do not start animations if we skip drawing the frame to avoid
     // checkerboarding.
-    if (layer_tree_host_impl_->PrepareToDraw(&frame) || forced_draw)
+    if (layer_tree_host_impl_->PrepareToDraw(&frame, readback_rect) ||
+        forced_draw)
       draw_frame = true;
     else
       start_ready_animations = false;
@@ -939,7 +945,7 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
     readback_request_on_impl_thread_->completion.Signal();
     readback_request_on_impl_thread_ = NULL;
   } else if (draw_frame) {
-    result.did_swap = layer_tree_host_impl_->SwapBuffers();
+    result.did_swap = layer_tree_host_impl_->SwapBuffers(frame);
 
     if (frame.contains_incomplete_tile)
       DidSwapUseIncompleteTileOnImplThread();

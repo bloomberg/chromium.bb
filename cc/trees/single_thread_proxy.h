@@ -78,11 +78,15 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
  private:
   explicit SingleThreadProxy(LayerTreeHost* layer_tree_host);
 
-  bool CommitAndComposite(base::TimeTicks frame_begin_time);
+  bool CommitAndComposite(base::TimeTicks frame_begin_time,
+                          gfx::Rect device_viewport_damage_rect,
+                          LayerTreeHostImpl::FrameData* frame);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
   bool DoComposite(
       scoped_refptr<cc::ContextProvider> offscreen_context_provider,
-      base::TimeTicks frame_begin_time);
+      base::TimeTicks frame_begin_time,
+      gfx::Rect device_viewport_damage_rect,
+      LayerTreeHostImpl::FrameData* frame);
   void DidSwapFrame();
 
   bool ShouldComposite() const;

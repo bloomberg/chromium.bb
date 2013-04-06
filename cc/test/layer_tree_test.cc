@@ -26,10 +26,9 @@
 
 namespace cc {
 
-TestHooks::TestHooks() {
-  fake_client_.reset(
-      new FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D));
-}
+TestHooks::TestHooks()
+    : fake_client_(
+          new FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
 
 TestHooks::~TestHooks() {}
 
@@ -100,8 +99,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       test_hooks_->TreeActivatedOnThread(this);
   }
 
-  virtual bool PrepareToDraw(FrameData* frame) OVERRIDE {
-    bool result = LayerTreeHostImpl::PrepareToDraw(frame);
+  virtual bool PrepareToDraw(FrameData* frame, gfx::Rect damage_rect) OVERRIDE {
+    bool result = LayerTreeHostImpl::PrepareToDraw(frame, damage_rect);
     if (!test_hooks_->PrepareToDrawOnThread(this, frame, result))
       result = false;
     return result;
@@ -113,8 +112,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DrawLayersOnThread(this);
   }
 
-  virtual bool SwapBuffers() OVERRIDE {
-    bool result = LayerTreeHostImpl::SwapBuffers();
+  virtual bool SwapBuffers(const LayerTreeHostImpl::FrameData& frame) OVERRIDE {
+    bool result = LayerTreeHostImpl::SwapBuffers(frame);
     test_hooks_->SwapBuffersOnThread(this, result);
     return result;
   }
@@ -413,7 +412,9 @@ void LayerTreeTest::DoBeginTest() {
 void LayerTreeTest::SetupTree() {
   if (!layer_tree_host_->root_layer()) {
     scoped_refptr<Layer> root_layer = Layer::Create();
+    root_layer->SetAnchorPoint(gfx::PointF());
     root_layer->SetBounds(gfx::Size(1, 1));
+    root_layer->SetIsDrawable(true);
     layer_tree_host_->SetRootLayer(root_layer);
   }
 

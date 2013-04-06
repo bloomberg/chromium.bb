@@ -36,7 +36,7 @@ class CC_EXPORT DamageTracker {
   ~DamageTracker();
 
   void DidDrawDamagedArea() { current_damage_rect_ = gfx::RectF(); }
-  void ForceFullDamageNextUpdate() { force_full_damage_next_update_ = true; }
+  void AddDamageNextUpdate(gfx::RectF dmg) { current_damage_rect_.Union(dmg); }
   void UpdateDamageTrackingState(
       const LayerImplList& layer_list,
       int target_surface_layer_id,
@@ -74,7 +74,6 @@ class CC_EXPORT DamageTracker {
   scoped_ptr<RectMap> next_rect_history_;
 
   gfx::RectF current_damage_rect_;
-  bool force_full_damage_next_update_;
 
   DISALLOW_COPY_AND_ASSIGN(DamageTracker);
 };

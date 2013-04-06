@@ -22,8 +22,7 @@ scoped_ptr<DamageTracker> DamageTracker::Create() {
 
 DamageTracker::DamageTracker()
     : current_rect_history_(new RectMap),
-      next_rect_history_(new RectMap),
-      force_full_damage_next_update_(false) {}
+      next_rect_history_(new RectMap) {}
 
 DamageTracker::~DamageTracker() {}
 
@@ -135,10 +134,8 @@ void DamageTracker::UpdateDamageTrackingState(
 
   gfx::RectF damage_rect_for_this_update;
 
-  if (force_full_damage_next_update_ ||
-      target_surface_property_changed_only_from_descendant) {
+  if (target_surface_property_changed_only_from_descendant) {
     damage_rect_for_this_update = target_surface_content_rect;
-    force_full_damage_next_update_ = false;
   } else {
     // TODO(shawnsingh): can we clamp this damage to the surface's content rect?
     // (affects performance, but not correctness)

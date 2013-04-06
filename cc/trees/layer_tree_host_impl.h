@@ -131,6 +131,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     const LayerImplList* render_surface_layer_list;
     LayerImplList will_draw_layers;
     bool contains_incomplete_tile;
+    bool has_no_damage;
 
     // RenderPassSink implementation.
     virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE;
@@ -150,7 +151,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers
   // must also be called, regardless of whether DrawLayers is called between the
   // two.
-  virtual bool PrepareToDraw(FrameData* frame);
+  virtual bool PrepareToDraw(FrameData* frame,
+                             gfx::Rect device_viewport_damage_rect);
   virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
@@ -208,7 +210,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   Renderer* renderer() { return renderer_.get(); }
   const RendererCapabilities& GetRendererCapabilities() const;
 
-  virtual bool SwapBuffers();
+  virtual bool SwapBuffers(const FrameData& frame);
   void EnableVSyncNotification(bool enable);
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
@@ -461,6 +463,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   size_t last_sent_memory_visible_bytes_;
   size_t last_sent_memory_visible_and_nearby_bytes_;
   size_t last_sent_memory_use_bytes_;
+
+  bool next_frame_damages_full_device_viewport_;
 
   base::TimeTicks current_frame_time_;
 

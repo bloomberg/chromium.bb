@@ -155,7 +155,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
                                      LayerTreeHostImpl::FrameData* frame,
                                      bool result)
       OVERRIDE {
-    EXPECT_TRUE(result);
+    bool expect_success = !frame->has_no_damage;
+    EXPECT_EQ(expect_success, result);
     if (!times_to_lose_during_draw_)
       return result;
 
@@ -269,7 +270,8 @@ class LayerTreeHostContextTestLostContextSucceeds
   }
 
   virtual void InvalidateAndSetNeedsCommit() {
-    layer_tree_host()->SetNeedsCommit();
+    // Cause damage so we try to draw.
+    layer_tree_host()->root_layer()->SetNeedsDisplay();
   }
 
   bool NextTestCase() {
@@ -1050,10 +1052,9 @@ class LayerTreeHostContextTestDontUseLostResources
     }
   }
 
-  virtual bool PrepareToDrawOnThread(
-      LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData* frame,
-      bool result) OVERRIDE {
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame,
+                                     bool result) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.
