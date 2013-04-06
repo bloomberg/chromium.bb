@@ -67,6 +67,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // True if any message bubble is shown.
   bool IsMessageBubbleShown() const;
 
+  // Overridden from views::Widget:
+  virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
+
  private:
   void AddSystemTray();
   void AddWebNotificationTray();

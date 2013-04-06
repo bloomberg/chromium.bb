@@ -304,6 +304,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
       alpha_(0),
       dimmer_view_(NULL),
       disable_dimming_animations_for_test_(false) {
+  set_allow_deactivate_on_esc(true);
 }
 
 ShelfWidget::DelegateView::~DelegateView() {

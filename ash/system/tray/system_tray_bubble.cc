@@ -262,6 +262,11 @@ void SystemTrayBubble::InitView(views::View* anchor,
       tray_->GetBubbleWindowContainer(), anchor, tray_, init_params);
   bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);
+
+  if (bubble_view_->CanActivate()) {
+    bubble_view_->GetWidget()->NotifyAccessibilityEvent(
+        bubble_view_, ui::AccessibilityTypes::EVENT_ALERT, true);
+  }
 }
 
 void SystemTrayBubble::DestroyItemViews() {

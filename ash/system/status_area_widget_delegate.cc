@@ -41,16 +41,6 @@ views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {
   return child_at(0);
 }
 
-bool StatusAreaWidgetDelegate::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    RemovePaneFocus();
-    GetFocusManager()->ClearFocus();
-    return true;
-  }
-  return false;
-}
-
 views::Widget* StatusAreaWidgetDelegate::GetWidget() {
   return View::GetWidget();
 }

@@ -90,6 +90,12 @@ bool StatusAreaWidget::IsMessageBubbleShown() const {
            web_notification_tray_->IsMessageCenterBubbleVisible()));
 }
 
+void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
+  Widget::OnNativeWidgetActivationChanged(active);
+  if (active)
+    status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
+}
+
 void StatusAreaWidget::AddSystemTray() {
   system_tray_ = new SystemTray(this);
   status_area_widget_delegate_->AddTray(system_tray_);

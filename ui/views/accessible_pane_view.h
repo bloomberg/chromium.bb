@@ -81,8 +81,6 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   // Remove pane focus.
   virtual void RemovePaneFocus();
 
-  void RestoreLastFocusedView();
-
   View* GetFirstFocusableChild();
   View* GetLastFocusableChild();
 
@@ -119,6 +117,9 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   ui::Accelerator escape_key_;
   ui::Accelerator left_key_;
   ui::Accelerator right_key_;
+
+  // View storage id for the last focused view that's not within this pane.
+  int last_focused_view_storage_id_;
 
   friend class AccessiblePaneViewFocusSearch;
 
