@@ -4,6 +4,8 @@
 
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -120,8 +122,9 @@ void GetStorageInfo(const std::string& storage_name,
 }  // namespace
 
 MediaTransferProtocolDeviceObserverLinux::
-MediaTransferProtocolDeviceObserverLinux()
-    : get_storage_info_func_(&GetStorageInfo) {
+MediaTransferProtocolDeviceObserverLinux(StorageMonitor::Receiver* receiver)
+    : get_storage_info_func_(&GetStorageInfo),
+      notifications_(receiver) {
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 
@@ -135,9 +138,10 @@ MediaTransferProtocolDeviceObserverLinux()
 // This constructor is only used by unit tests.
 MediaTransferProtocolDeviceObserverLinux::
 MediaTransferProtocolDeviceObserverLinux(
+    StorageMonitor::Receiver* receiver,
     GetStorageInfoFunc get_storage_info_func)
     : get_storage_info_func_(get_storage_info_func),
-      notifications_(NULL) {
+      notifications_(receiver) {
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
 }
@@ -151,13 +155,6 @@ MediaTransferProtocolDeviceObserverLinux::
       device::MediaTransferProtocolManager::GetInstance();
   if (mtp_manager)
     mtp_manager->RemoveObserver(this);
-}
-
-// static
-MediaTransferProtocolDeviceObserverLinux*
-MediaTransferProtocolDeviceObserverLinux::GetInstance() {
-  DCHECK(g_mtp_device_observer != NULL);
-  return g_mtp_device_observer;
 }
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
@@ -182,11 +179,6 @@ bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
   if (storage_info)
     *storage_info = info_it->second;
   return true;
-}
-
-void MediaTransferProtocolDeviceObserverLinux::SetNotifications(
-    StorageMonitor::Receiver* notifications) {
-  notifications_ = notifications;
 }
 
 // device::MediaTransferProtocolManager::Observer override.

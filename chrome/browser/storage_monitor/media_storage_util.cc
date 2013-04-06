@@ -17,10 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if defined(OS_LINUX)  // Implies OS_CHROMEOS
-#include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
-#endif
-
 using content::BrowserThread;
 
 namespace chrome {
@@ -301,20 +297,9 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   if (!path.IsAbsolute())
     return false;
 
-  bool found_device = false;
   StorageInfo info;
   StorageMonitor* monitor = StorageMonitor::GetInstance();
-  found_device = monitor->GetStorageInfoForPath(path, &info);
-
-// TODO(gbillock): Move this upstream into the RemovableStorageNotifications
-// implementation to handle in its GetDeviceInfoForPath call.
-#if defined(OS_LINUX)
-  if (!found_device) {
-    MediaTransferProtocolDeviceObserverLinux* mtp_manager =
-        MediaTransferProtocolDeviceObserverLinux::GetInstance();
-    found_device = mtp_manager->GetStorageInfoForPath(path, &info);
-  }
-#endif
+  bool found_device = monitor->GetStorageInfoForPath(path, &info);
 
   if (found_device && IsRemovableDevice(info.device_id)) {
     base::FilePath sub_folder_path;
@@ -346,7 +331,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
 #endif
 
   // Handle non-removable devices. Note: this is just overwriting
-  // good values from RemovableStorageNotifications.
+  // good values from StorageMonitor.
   // TODO(gbillock): Make sure return values from that class are definitive,
   // and don't do this here.
   info.device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());

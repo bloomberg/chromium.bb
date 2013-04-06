@@ -30,24 +30,19 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
 class MediaTransferProtocolDeviceObserverLinux
     : public device::MediaTransferProtocolManager::Observer {
  public:
-  // Should only be called by browser start up code. Use GetInstance() instead.
-  MediaTransferProtocolDeviceObserverLinux();
+  explicit MediaTransferProtocolDeviceObserverLinux(
+      StorageMonitor::Receiver* receiver);
   virtual ~MediaTransferProtocolDeviceObserverLinux();
-
-  static MediaTransferProtocolDeviceObserverLinux* GetInstance();
 
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* storage_info) const;
 
-  // Set the volume notifications object to be used when new
-  // MTP devices are found.
-  void SetNotifications(StorageMonitor::Receiver* notifications);
-
  protected:
   // Only used in unit tests.
-  explicit MediaTransferProtocolDeviceObserverLinux(
+  MediaTransferProtocolDeviceObserverLinux(
+      StorageMonitor::Receiver* receiver,
       GetStorageInfoFunc get_storage_info_func);
 
   // device::MediaTransferProtocolManager::Observer implementation.
@@ -71,9 +66,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
   // The notifications object to use to signal newly attached devices.
   // Guaranteed to outlive this class.
-  // TODO(gbillock): Edit this when this class is owned by a
-  // StorageMonitor subclass.
-  StorageMonitor::Receiver* notifications_;
+  StorageMonitor::Receiver* const notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
 };

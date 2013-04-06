@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
@@ -54,17 +55,40 @@ void GetStorageInfo(const std::string& storage_name,
     *location = kStorageLocation;
 }
 
+class TestMediaTransferProtocolDeviceObserverLinux
+    : public MediaTransferProtocolDeviceObserverLinux {
+ public:
+  TestMediaTransferProtocolDeviceObserverLinux(
+      StorageMonitor::Receiver* receiver)
+      : MediaTransferProtocolDeviceObserverLinux(receiver, &GetStorageInfo) {
+  }
+
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the attachment of
+  // mtp storage device given the |storage_name|.
+  void MtpStorageAttached(const std::string& storage_name) {
+    StorageChanged(true, storage_name);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the detachment of
+  // mtp storage device given the |storage_name|.
+  void MtpStorageDetached(const std::string& storage_name) {
+    StorageChanged(false, storage_name);
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolDeviceObserverLinux);
+};
+
 }  // namespace
 
 // A class to test the functionality of MediaTransferProtocolDeviceObserverLinux
 // member functions.
-class MediaTransferProtocolDeviceObserverLinuxTest
-    : public testing::Test,
-      public MediaTransferProtocolDeviceObserverLinux {
+class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
  public:
   MediaTransferProtocolDeviceObserverLinuxTest()
-      : MediaTransferProtocolDeviceObserverLinux(&GetStorageInfo),
-        message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(MessageLoop::TYPE_IO),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {}
 
   virtual ~MediaTransferProtocolDeviceObserverLinuxTest() {}
@@ -72,12 +96,14 @@ class MediaTransferProtocolDeviceObserverLinuxTest
  protected:
   virtual void SetUp() OVERRIDE {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
+    mtp_device_observer_.reset(
+        new TestMediaTransferProtocolDeviceObserverLinux(monitor_.receiver()));
     monitor_.AddObserver(mock_storage_observer_.get());
-    SetNotifications(monitor_.receiver());
   }
 
   virtual void TearDown() OVERRIDE {
     monitor_.RemoveObserver(mock_storage_observer_.get());
+    mtp_device_observer_.reset();
   }
 
   // Returns the device changed observer object.
@@ -85,20 +111,8 @@ class MediaTransferProtocolDeviceObserverLinuxTest
     return *mock_storage_observer_;
   }
 
-  // Notifies MediaTransferProtocolDeviceObserverLinux about the attachment of
-  // mtp storage device given the |storage_name|.
-  void MtpStorageAttached(const std::string& storage_name) {
-    MediaTransferProtocolDeviceObserverLinux::StorageChanged(true,
-                                                             storage_name);
-    message_loop_.RunUntilIdle();
-  }
-
-  // Notifies MediaTransferProtocolDeviceObserverLinux about the detachment of
-  // mtp storage device given the |storage_name|.
-  void MtpStorageDetached(const std::string& storage_name) {
-    MediaTransferProtocolDeviceObserverLinux::StorageChanged(false,
-                                                             storage_name);
-    message_loop_.RunUntilIdle();
+  TestMediaTransferProtocolDeviceObserverLinux* mtp_device_observer() {
+    return mtp_device_observer_.get();
   }
 
  private:
@@ -106,6 +120,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest
   content::TestBrowserThread file_thread_;
 
   chrome::test::TestStorageMonitor monitor_;
+  scoped_ptr<TestMediaTransferProtocolDeviceObserverLinux> mtp_device_observer_;
   scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinuxTest);
@@ -116,7 +131,7 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
   std::string device_id = GetMtpDeviceId(kStorageUniqueId);
 
   // Attach a mtp storage.
-  MtpStorageAttached(kStorageWithValidInfo);
+  mtp_device_observer()->MtpStorageAttached(kStorageWithValidInfo);
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
@@ -125,7 +140,7 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
   EXPECT_EQ(kStorageLocation, observer().last_attached().location);
 
   // Detach the attached storage.
-  MtpStorageDetached(kStorageWithValidInfo);
+  mtp_device_observer()->MtpStorageDetached(kStorageWithValidInfo);
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
@@ -137,10 +152,10 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
 // notifications.
 TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, StorageWithInvalidInfo) {
   // Attach the mtp storage with invalid storage info.
-  MtpStorageAttached(kStorageWithInvalidInfo);
+  mtp_device_observer()->MtpStorageAttached(kStorageWithInvalidInfo);
 
   // Detach the attached storage.
-  MtpStorageDetached(kStorageWithInvalidInfo);
+  mtp_device_observer()->MtpStorageDetached(kStorageWithInvalidInfo);
 
   EXPECT_EQ(0, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());

@@ -258,8 +258,7 @@ void StorageMonitorLinux::Init() {
     device::MediaTransferProtocolManager::Initialize(loop_proxy);
 
     media_transfer_protocol_device_observer_.reset(
-        new MediaTransferProtocolDeviceObserverLinux());
-    media_transfer_protocol_device_observer_->SetNotifications(receiver());
+        new MediaTransferProtocolDeviceObserverLinux(receiver()));
   }
 }
 
@@ -267,6 +266,14 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
+  // valid.
+  if (media_transfer_protocol_device_observer_ &&
+      media_transfer_protocol_device_observer_->GetStorageInfoForPath(
+          path, device_info)) {
+    return true;
+  }
 
   if (!path.IsAbsolute())
     return false;

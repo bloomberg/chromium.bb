@@ -131,8 +131,7 @@ void StorageMonitorCros::Init() {
     device::MediaTransferProtocolManager::Initialize(loop_proxy);
 
     media_transfer_protocol_device_observer_.reset(
-        new chrome::MediaTransferProtocolDeviceObserverLinux());
-    media_transfer_protocol_device_observer_->SetNotifications(receiver());
+        new chrome::MediaTransferProtocolDeviceObserverLinux(receiver()));
   }
 }
 
@@ -207,6 +206,14 @@ void StorageMonitorCros::OnFormatEvent(
 bool StorageMonitorCros::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
+  // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
+  // valid.
+  if (media_transfer_protocol_device_observer_ &&
+      media_transfer_protocol_device_observer_->GetStorageInfoForPath(
+          path, device_info)) {
+    return true;
+  }
+
   if (!path.IsAbsolute())
     return false;
 
