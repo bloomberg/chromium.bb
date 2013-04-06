@@ -158,6 +158,15 @@ WTF_EXPORT_PRIVATE void WTFInstallReportBacktraceOnCrashHook();
 }
 #endif
 
+/* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
+#ifndef IMMEDIATE_CRASH
+#if COMPILER(CLANG)
+#define IMMEDIATE_CRASH() __builtin_trap()
+#else
+#define IMMEDIATE_CRASH() ((void(*)())0)()
+#endif
+#endif
+
 /* CRASH() - Raises a fatal error resulting in program termination and triggering either the debugger or the crash reporter.
 
    Use CRASH() in response to known, unrecoverable errors like out-of-memory.
@@ -167,20 +176,11 @@ WTF_EXPORT_PRIVATE void WTFInstallReportBacktraceOnCrashHook();
    Signals are ignored by the crash reporter on OS X so we must do better.
 */
 #ifndef CRASH
-#if COMPILER(CLANG)
 #define CRASH() \
     (WTFReportBacktrace(), \
      WTFInvokeCrashHook(), \
      (*(int *)(uintptr_t)0xbbadbeef = 0), \
-     __builtin_trap())
-#else
-#define CRASH() \
-    (WTFReportBacktrace(), \
-     WTFInvokeCrashHook(), \
-     (*(int *)(uintptr_t)0xbbadbeef = 0), \
-     ((void(*)())0)() /* More reliable, but doesn't say BBADBEEF */ \
-    )
-#endif
+     IMMEDIATE_CRASH())
 #endif
 
 #if COMPILER(CLANG)
@@ -416,9 +416,9 @@ static inline void UNREACHABLE_FOR_PLATFORM()
 #endif
 
 #if ASSERT_DISABLED
-#define RELEASE_ASSERT(assertion) (!(assertion) ? (CRASH()) : (void)0)
+#define RELEASE_ASSERT(assertion) (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
 #define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) RELEASE_ASSERT(assertion)
-#define RELEASE_ASSERT_NOT_REACHED() CRASH()
+#define RELEASE_ASSERT_NOT_REACHED() IMMEDIATE_CRASH()
 #else
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
 #define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) ASSERT_WITH_MESSAGE(assertion, __VA_ARGS__)
