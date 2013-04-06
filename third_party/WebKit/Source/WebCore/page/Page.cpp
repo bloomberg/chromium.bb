@@ -658,17 +658,9 @@ void Page::setDefersLoading(bool defers)
     if (!m_settings->loadDeferringEnabled())
         return;
 
-    if (m_settings->wantsBalancedSetDefersLoadingBehavior()) {
-        ASSERT(defers || m_defersLoadingCallCount);
-        if (defers && ++m_defersLoadingCallCount > 1)
-            return;
-        if (!defers && --m_defersLoadingCallCount)
-            return;
-    } else {
-        ASSERT(!m_defersLoadingCallCount);
-        if (defers == m_defersLoading)
-            return;
-    }
+    ASSERT(!m_defersLoadingCallCount);
+    if (defers == m_defersLoading)
+        return;
 
     m_defersLoading = defers;
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())

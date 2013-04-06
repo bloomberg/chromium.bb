@@ -138,7 +138,6 @@ scrollAnimatorEnabled initial=true, conditional=SMOOTH_SCROLLING
 notificationsEnabled initial=true
 
 shouldRespectImageOrientation initial=false
-wantsBalancedSetDefersLoadingBehavior initial=false
 requestAnimationFrameEnabled initial=true
 deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
