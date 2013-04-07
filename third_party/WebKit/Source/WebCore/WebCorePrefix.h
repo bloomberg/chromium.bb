@@ -136,15 +136,6 @@ _LIBCPP_END_NAMESPACE_STD
 #include <CoreFoundation/CoreFoundation.h>
 
 #if OS(WINDOWS)
-#if USE(CG)
-// FIXME <rdar://problem/8208868> Remove support for obsolete ColorSync API, CoreServices header in CoreGraphics
-// We can remove this once the new ColorSync APIs are available in an internal Safari SDK.
-#include <ColorSync/ColorSync.h>
-#ifdef __COLORSYNCDEPRECATED__
-#define COREGRAPHICS_INCLUDES_CORESERVICES_HEADER
-#define OBSOLETE_COLORSYNC_API
-#endif
-#endif
 #if USE(CFNETWORK)
 /* Windows doesn't include CFNetwork.h via CoreServices.h, so we do
    it explicitly here to make Windows more consistent with Mac. */

@@ -35,12 +35,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringHash.h>
 
-#if USE(CG)
-#include "ImageSourceCG.h"
-#include <ApplicationServices/ApplicationServices.h>
-#include <wtf/RetainPtr.h>
-#endif
-
 namespace WebCore {
 
 namespace {
@@ -186,41 +180,7 @@ typedef HashMap<String, Vector<String>*, CaseFoldingHash> MediaMIMETypeMap;
     
 static void initializeSupportedImageMIMETypes()
 {
-#if USE(CG)
-    RetainPtr<CFArrayRef> supportedTypes(AdoptCF, CGImageSourceCopyTypeIdentifiers());
-    CFIndex count = CFArrayGetCount(supportedTypes.get());
-    for (CFIndex i = 0; i < count; i++) {
-        RetainPtr<CFStringRef> supportedType(AdoptCF, reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(supportedTypes.get(), i)));
-        String mimeType = MIMETypeForImageSourceType(supportedType.get());
-        if (!mimeType.isEmpty()) {
-            supportedImageMIMETypes->add(mimeType);
-            supportedImageResourceMIMETypes->add(mimeType);
-        }
-    }
 
-    // On Tiger and Leopard, com.microsoft.bmp doesn't have a MIME type in the registry.
-    supportedImageMIMETypes->add("image/bmp");
-    supportedImageResourceMIMETypes->add("image/bmp");
-
-    // Favicons don't have a MIME type in the registry either.
-    supportedImageMIMETypes->add("image/vnd.microsoft.icon");
-    supportedImageMIMETypes->add("image/x-icon");
-    supportedImageResourceMIMETypes->add("image/vnd.microsoft.icon");
-    supportedImageResourceMIMETypes->add("image/x-icon");
-
-    //  We only get one MIME type per UTI, hence our need to add these manually
-    supportedImageMIMETypes->add("image/pjpeg");
-    supportedImageResourceMIMETypes->add("image/pjpeg");
-
-    //  We don't want to try to treat all binary data as an image
-    supportedImageMIMETypes->remove("application/octet-stream");
-    supportedImageResourceMIMETypes->remove("application/octet-stream");
-
-    //  Don't treat pdf/postscript as images directly
-    supportedImageMIMETypes->remove("application/pdf");
-    supportedImageMIMETypes->remove("application/postscript");
-
-#else
     // assume that all implementations at least support the following standard
     // image types:
     static const char* types[] = {
@@ -236,31 +196,11 @@ static void initializeSupportedImageMIMETypes()
         supportedImageMIMETypes->add(types[i]);
         supportedImageResourceMIMETypes->add(types[i]);
     }
-#endif // USE(CG)
 }
 
 static void initializeSupportedImageMIMETypesForEncoding()
 {
     supportedImageMIMETypesForEncoding = new HashSet<String>;
-
-#if USE(CG)
-#if PLATFORM(MAC)
-    RetainPtr<CFArrayRef> supportedTypes(AdoptCF, CGImageDestinationCopyTypeIdentifiers());
-    CFIndex count = CFArrayGetCount(supportedTypes.get());
-    for (CFIndex i = 0; i < count; i++) {
-        RetainPtr<CFStringRef> supportedType(AdoptCF, reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(supportedTypes.get(), i)));
-        String mimeType = MIMETypeForImageSourceType(supportedType.get());
-        if (!mimeType.isEmpty())
-            supportedImageMIMETypesForEncoding->add(mimeType);
-    }
-#else
-    // FIXME: Add Windows support for all the supported UTI's when a way to convert from MIMEType to UTI reliably is found.
-    // For now, only support PNG, JPEG and GIF.  See <rdar://problem/6095286>.
-    supportedImageMIMETypesForEncoding->add("image/png");
-    supportedImageMIMETypesForEncoding->add("image/jpeg");
-    supportedImageMIMETypesForEncoding->add("image/gif");
-#endif
-#endif
 }
 
 static void initializeSupportedJavaScriptMIMETypes()

@@ -34,15 +34,6 @@
 #include "ImageSource.h"
 #include "IntSize.h"
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS NSImage;
-#endif
-
-#if PLATFORM(WIN)
-typedef struct HBITMAP__ *HBITMAP;
-#endif
-
 namespace WebCore {
     struct FrameData;
 }
@@ -135,30 +126,6 @@ public:
 
     virtual unsigned decodedSize() const;
 
-#if PLATFORM(MAC)
-    // Accessors for native image formats.
-    virtual NSImage* getNSImage();
-    virtual CFDataRef getTIFFRepresentation();
-#endif
-    
-#if USE(CG)
-    virtual CGImageRef getCGImageRef();
-    virtual CGImageRef getFirstCGImageRefOfSize(const IntSize&);
-    virtual RetainPtr<CFArrayRef> getCGImageArray();
-#endif
-
-#if PLATFORM(WIN)
-    static PassRefPtr<BitmapImage> create(HBITMAP);
-#endif
-#if PLATFORM(WIN)
-    virtual bool getHBITMAP(HBITMAP);
-    virtual bool getHBITMAPOfSize(HBITMAP, LPSIZE);
-#endif
-
-#if PLATFORM(GTK)
-    virtual GdkPixbuf* getGdkPixbuf();
-#endif
-
     virtual PassNativeImagePtr nativeImageForCurrentFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
 
@@ -183,13 +150,8 @@ protected:
     BitmapImage(PassNativeImagePtr, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
-#if PLATFORM(WIN)
-    virtual void drawFrameMatchingSourceSize(GraphicsContext*, const FloatRect& dstRect, const IntSize& srcSize, ColorSpace styleColorSpace, CompositeOperator);
-#endif
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode);
-#if USE(CG) || PLATFORM(CHROMIUM)
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode, RespectImageOrientationEnum) OVERRIDE;
-#endif
 
     size_t currentFrame() const { return m_currentFrame; }
     virtual size_t frameCount();
@@ -266,11 +228,6 @@ protected:
     RepetitionCountStatus m_repetitionCountStatus;
     int m_repetitionsComplete;  // How many repetitions we've finished.
     double m_desiredFrameStartTime;  // The system time at which we hope to see the next call to startAnimation().
-
-#if PLATFORM(MAC)
-    mutable RetainPtr<NSImage> m_nsImage; // A cached NSImage of frame 0. Only built lazily if someone actually queries for one.
-    mutable RetainPtr<CFDataRef> m_tiffRep; // Cached TIFF rep for frame 0.  Only built lazily if someone queries for one.
-#endif
 
     Color m_solidColor;  // If we're a 1x1 solid color, this is the color to use to fill.
 

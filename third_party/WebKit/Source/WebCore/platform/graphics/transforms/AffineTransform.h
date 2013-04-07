@@ -32,11 +32,7 @@
 #include <string.h> // for memcpy
 #include <wtf/FastAllocBase.h>
 
-#if USE(CG)
-#include <CoreGraphics/CGAffineTransform.h>
-#elif USE(SKIA)
 #include <SkMatrix.h>
-#endif
 
 namespace WebCore {
 
@@ -54,10 +50,6 @@ public:
 
     AffineTransform();
     AffineTransform(double a, double b, double c, double d, double e, double f);
-
-#if USE(CG)
-    AffineTransform(const CGAffineTransform&);
-#endif
 
     void setMatrix(double a, double b, double c, double d, double e, double f);
 
@@ -162,11 +154,7 @@ public:
         return result;
     }
 
-#if USE(CG)
-    operator CGAffineTransform() const;
-#elif USE(SKIA)
     operator SkMatrix() const;
-#endif
 
     static AffineTransform translation(double x, double y)
     {

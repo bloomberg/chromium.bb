@@ -113,13 +113,9 @@ namespace WebCore {
         void convertToLuminanceMask();
         
         String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
-#if !USE(CG)
         AffineTransform baseTransform() const { return AffineTransform(); }
         void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
         void platformTransformColorSpace(const Vector<int>&);
-#else
-        AffineTransform baseTransform() const { return AffineTransform(1, 0, 0, -1, 0, internalSize().height()); }
-#endif
 #if USE(ACCELERATED_COMPOSITING)
         PlatformLayer* platformLayer() const;
 #endif
@@ -158,7 +154,7 @@ namespace WebCore {
 #endif
     };
 
-#if USE(CG) || USE(SKIA)
+#if USE(SKIA)
     String ImageDataToDataURL(const ImageData&, const String& mimeType, const double* quality);
 #endif
 

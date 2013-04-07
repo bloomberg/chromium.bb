@@ -33,19 +33,8 @@
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
 
-#if USE(CG)
-typedef struct CGPath PlatformPath;
-#elif USE(SKIA)
 class SkPath;
 typedef SkPath PlatformPath;
-#elif OS(WINCE)
-namespace WebCore {
-    class PlatformPath;
-}
-typedef WebCore::PlatformPath PlatformPath;
-#else
-typedef void PlatformPath;
-#endif
 
 typedef PlatformPath* PlatformPathPtr;
 
@@ -138,10 +127,6 @@ namespace WebCore {
 
         void addPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy = PreferNativeRoundedRect);
         void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
-
-#if USE(CG)
-        void platformAddPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
-#endif
 
     private:
         PlatformPathPtr m_path;

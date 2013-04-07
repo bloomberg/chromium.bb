@@ -46,9 +46,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 #elif OS(DARWIN)
     , m_font(hashTableDeletedFontValue())
 #endif
-#if USE(CG) && PLATFORM(WIN)
-    , m_cgFont(0)
-#endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
 #if OS(DARWIN)
@@ -68,9 +65,6 @@ FontPlatformData::FontPlatformData()
     , m_widthVariant(RegularWidth)
 #if OS(DARWIN)
     , m_font(0)
-#endif
-#if USE(CG) && PLATFORM(WIN)
-    , m_cgFont(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
@@ -92,9 +86,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
 #if OS(DARWIN)
     , m_font(0)
 #endif
-#if USE(CG) && PLATFORM(WIN)
-    , m_cgFont(0)
-#endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
 #if OS(DARWIN)
@@ -106,7 +97,7 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
 {
 }
 
-#if OS(DARWIN) && (USE(CG) || USE(SKIA_ON_MAC_CHROMIUM))
+#if OS(DARWIN)
 FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
     : m_syntheticBold(syntheticBold)
     , m_syntheticOblique(syntheticOblique)

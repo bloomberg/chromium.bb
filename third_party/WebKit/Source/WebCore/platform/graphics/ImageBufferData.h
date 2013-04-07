@@ -23,10 +23,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#if USE(CG)
-#include "ImageBufferDataCG.h"
-#elif USE(SKIA)
+// FIXME: Remove this file.
 #include "ImageBufferDataSkia.h"
-#elif OS(WINCE)
-#include "ImageBufferDataWince.h"
-#endif

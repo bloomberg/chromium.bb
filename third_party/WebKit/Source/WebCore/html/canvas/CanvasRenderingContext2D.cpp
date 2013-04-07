@@ -77,10 +77,6 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/text/StringBuilder.h>
 
-#if USE(CG)
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
 using namespace std;
 
 namespace WebCore {
@@ -2199,42 +2195,6 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
                                    width + fontMetrics.height(), fontMetrics.lineSpacing());
     if (!fill)
         inflateStrokeRect(textRect);
-
-#if USE(CG)
-    CanvasStyle* drawStyle = fill ? state().m_fillStyle.get() : state().m_strokeStyle.get();
-    if (drawStyle->canvasGradient() || drawStyle->canvasPattern()) {
-        IntRect maskRect = enclosingIntRect(textRect);
-
-        OwnPtr<ImageBuffer> maskImage = c->createCompatibleBuffer(maskRect.size());
-
-        GraphicsContext* maskImageContext = maskImage->context();
-
-        if (fill)
-            maskImageContext->setFillColor(Color::black, ColorSpaceDeviceRGB);
-        else {
-            maskImageContext->setStrokeColor(Color::black, ColorSpaceDeviceRGB);
-            maskImageContext->setStrokeThickness(c->strokeThickness());
-        }
-
-        maskImageContext->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
-
-        if (useMaxWidth) {
-            maskImageContext->translate(location.x() - maskRect.x(), location.y() - maskRect.y());
-            // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
-            maskImageContext->scale(FloatSize((fontWidth > 0 ? (width / fontWidth) : 0), 1));
-            maskImageContext->drawBidiText(font, textRun, FloatPoint(0, 0), Font::UseFallbackIfFontNotReady);
-        } else {
-            maskImageContext->translate(-maskRect.x(), -maskRect.y());
-            maskImageContext->drawBidiText(font, textRun, location, Font::UseFallbackIfFontNotReady);
-        }
-
-        GraphicsContextStateSaver stateSaver(*c);
-        c->clipToImageBuffer(maskImage.get(), maskRect);
-        drawStyle->applyFillColor(c);
-        c->fillRect(maskRect);
-        return;
-    }
-#endif
 
     c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
     if (useMaxWidth) {

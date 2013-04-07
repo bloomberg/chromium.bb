@@ -35,10 +35,6 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 
-#if USE(CG)
-#include <CoreGraphics/CGGeometry.h>
-#endif
-
 #if OS(DARWIN) && PLATFORM(CHROMIUM)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -55,7 +51,7 @@ typedef Glyph GlyphBufferGlyph;
 
 // CG uses CGSize instead of FloatSize so that the result of advances()
 // can be passed directly to CGContextShowGlyphsWithAdvances in FontMac.mm
-#if USE(CG) || (OS(DARWIN) && PLATFORM(CHROMIUM))
+#if OS(DARWIN)
 struct GlyphBufferAdvance : CGSize {
 public:
     GlyphBufferAdvance(CGSize size) : CGSize(size)
@@ -65,22 +61,6 @@ public:
     void setWidth(CGFloat width) { this->CGSize::width = width; }
     CGFloat width() const { return this->CGSize::width; }
     CGFloat height() const { return this->CGSize::height; }
-};
-#elif OS(WINCE)
-// There is no cross-platform code that uses the height of GlyphBufferAdvance,
-// so we can save memory space on embedded devices by storing only the width
-struct GlyphBufferAdvance {
-public:
-    GlyphBufferAdvance(float width)
-        : advance(width)
-    {
-    }
-
-    void setWidth(float width) { advance = width; }
-    float width() const { return advance; }
-
-private:
-    float advance;
 };
 #else
 typedef FloatSize GlyphBufferAdvance;
@@ -96,9 +76,6 @@ public:
         m_fontData.clear();
         m_glyphs.clear();
         m_advances.clear();
-#if PLATFORM(WIN)
-        m_offsets.clear();
-#endif
     }
 
     GlyphBufferGlyph* glyphs(int from) { return m_glyphs.data() + from; }
@@ -120,12 +97,9 @@ public:
 
     FloatSize offsetAt(int index) const
     {
-#if PLATFORM(WIN)
-        return m_offsets[index];
-#else
+        // FIXME: Remove this function, it was only used in PLATFORM(WIN).
         UNUSED_PARAM(index);
         return FloatSize();
-#endif
     }
 
     void add(Glyph glyph, const SimpleFontData* font, float width, const FloatSize* offset = 0)
@@ -133,33 +107,22 @@ public:
         m_fontData.append(font);
         m_glyphs.append(glyph);
 
-#if USE(CG) || (OS(DARWIN) && PLATFORM(CHROMIUM))
+#if OS(DARWIN)
         CGSize advance = { width, 0 };
         m_advances.append(advance);
-#elif OS(WINCE)
-        m_advances.append(width);
 #else
         m_advances.append(FloatSize(width, 0));
 #endif
 
-#if PLATFORM(WIN)
-        if (offset)
-            m_offsets.append(*offset);
-        else
-            m_offsets.append(FloatSize());
-#else
         UNUSED_PARAM(offset);
-#endif
     }
     
-#if !OS(WINCE)
     void add(Glyph glyph, const SimpleFontData* font, GlyphBufferAdvance advance)
     {
         m_fontData.append(font);
         m_glyphs.append(glyph);
         m_advances.append(advance);
     }
-#endif
 
     void reverse(int from, int length)
     {
@@ -188,20 +151,11 @@ private:
         GlyphBufferAdvance s = m_advances[index1];
         m_advances[index1] = m_advances[index2];
         m_advances[index2] = s;
-
-#if PLATFORM(WIN)
-        FloatSize offset = m_offsets[index1];
-        m_offsets[index1] = m_offsets[index2];
-        m_offsets[index2] = offset;
-#endif
     }
 
     Vector<const SimpleFontData*, 2048> m_fontData;
     Vector<GlyphBufferGlyph, 2048> m_glyphs;
     Vector<GlyphBufferAdvance, 2048> m_advances;
-#if PLATFORM(WIN)
-    Vector<FloatSize, 2048> m_offsets;
-#endif
 };
 
 }

@@ -419,7 +419,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
 
     String encodingMimeType = toEncodingMimeType(mimeType);
 
-#if USE(CG) || USE(SKIA)
+#if USE(SKIA)
     // Try to get ImageData first, as that may avoid lossy conversions.
     RefPtr<ImageData> imageData = getImageData();
 

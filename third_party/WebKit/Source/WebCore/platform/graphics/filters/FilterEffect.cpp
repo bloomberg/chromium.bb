@@ -491,10 +491,6 @@ OpenCLHandle FilterEffect::createOpenCLImageResult(uint8_t* source)
 
 void FilterEffect::transformResultColorSpace(ColorSpace dstColorSpace)
 {
-#if USE(CG)
-    // CG handles color space adjustments internally.
-    UNUSED_PARAM(dstColorSpace);
-#else
     if (!hasResult() || dstColorSpace == m_resultColorSpace)
         return;
 
@@ -522,7 +518,6 @@ void FilterEffect::transformResultColorSpace(ColorSpace dstColorSpace)
         m_unmultipliedImageResult.clear();
     if (m_premultipliedImageResult)
         m_premultipliedImageResult.clear();
-#endif
 }
 
 TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const

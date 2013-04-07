@@ -33,7 +33,6 @@
 
 namespace WebCore {
 
-#if !USE(CG)
 void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
 {
     DEFINE_STATIC_LOCAL(Vector<int>, deviceRgbLUT, ());
@@ -71,7 +70,6 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
         platformTransformColorSpace(deviceRgbLUT);
     }
 }
-#endif // USE(CG)
 
 inline void ImageBuffer::genericConvertToLuminanceMask()
 {

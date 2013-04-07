@@ -37,10 +37,6 @@
 #include <windows.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringHash.h>
-#if USE(CG)
-#include <ApplicationServices/ApplicationServices.h>
-#include <WebKitSystemInterface/WebKitSystemInterface.h>
-#endif
 
 using std::min;
 
@@ -49,9 +45,6 @@ namespace WebCore
 
 void FontCache::platformInit()
 {
-#if USE(CG)
-    wkSetUpFontCache(1536 * 1024 * 4); // This size matches Mac.
-#endif
 }
 
 IMLangFontLinkType* FontCache::getFontLinkInterface()
@@ -469,11 +462,7 @@ static HFONT createGDIFont(const AtomicString& family, LONG desiredWeight, bool 
     matchData.m_chosen.lfUnderline = false;
     matchData.m_chosen.lfStrikeOut = false;
     matchData.m_chosen.lfCharSet = DEFAULT_CHARSET;
-#if USE(CG)
-    matchData.m_chosen.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-#else
     matchData.m_chosen.lfOutPrecision = OUT_TT_PRECIS;
-#endif
     matchData.m_chosen.lfQuality = DEFAULT_QUALITY;
     matchData.m_chosen.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 
@@ -575,10 +564,6 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     bool synthesizeItalic = fontDescription.italic() && !logFont.lfItalic;
 
     FontPlatformData* result = new FontPlatformData(hfont, fontDescription.computedPixelSize(), synthesizeBold, synthesizeItalic, useGDI);
-
-#if USE(CG)
-    bool fontCreationFailed = !result->cgFont();
-#endif
 
     if (fontCreationFailed) {
         // The creation of the CGFontRef failed for some reason.  We already asserted in debug builds, but to make

@@ -30,10 +30,6 @@
 #include "WebCoreInstanceHandle.h"
 #include <windows.h>
 
-#if USE(CG)
-#include <CoreGraphics/CGColor.h>
-#endif
-
 #if USE(ACCELERATED_COMPOSITING)
 #include "CACFLayerTreeHost.h"
 #include "PlatformCALayer.h"

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IntRect.h"
 
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
-
 #include <ApplicationServices/ApplicationServices.h>
 
 namespace WebCore {
@@ -47,5 +45,3 @@ IntRect enclosingIntRect(const CGRect& rect)
 }
 
 }
-
-#endif // USE(CG)

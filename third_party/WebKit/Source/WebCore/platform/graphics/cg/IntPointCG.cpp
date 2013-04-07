@@ -26,8 +26,6 @@
 #include "config.h"
 #include "IntPoint.h"
 
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
-
 #include <ApplicationServices/ApplicationServices.h>
 
 namespace WebCore {
@@ -42,5 +40,3 @@ IntPoint::operator CGPoint() const
 }
 
 }
-
-#endif // USE(CG)

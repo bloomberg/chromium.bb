@@ -28,16 +28,10 @@
 #ifndef NativeImagePtr_h
 #define NativeImagePtr_h
 
-#if USE(CG)
-typedef struct CGImage* CGImageRef;
-#elif USE(SKIA)
 #include "NativeImageSkia.h"
 namespace WebCore {
 class NativeImageSkia;
 }
-#elif OS(WINCE)
-#include "SharedBitmap.h"
-#endif
 
 namespace WTF {
 class MemoryObjectInfo;
@@ -47,19 +41,9 @@ namespace WebCore {
 
 // FIXME: NativeImagePtr and PassNativeImagePtr should be smart
 // pointers (see SVGImage::nativeImageForCurrentFrame()).
-#if USE(CG)
-typedef CGImageRef NativeImagePtr;
-#elif PLATFORM(OPENVG)
-class TiledImageOpenVG;
-typedef TiledImageOpenVG* NativeImagePtr;
-#elif USE(SKIA)
 typedef RefPtr<NativeImageSkia> NativeImagePtr;
 typedef PassRefPtr<NativeImageSkia> PassNativeImagePtr;
 void reportMemoryUsage(const NativeImageSkia*, WTF::MemoryObjectInfo*);
-#elif OS(WINCE)
-typedef RefPtr<SharedBitmap> NativeImagePtr;
-#endif
-
 }
 
 #endif

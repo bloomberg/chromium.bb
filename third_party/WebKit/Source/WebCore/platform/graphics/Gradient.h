@@ -35,20 +35,9 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 
-#if USE(CG)
-
-typedef struct CGContext* CGContextRef;
-
-typedef struct CGGradient* CGGradientRef;
-typedef CGGradientRef PlatformGradient;
-
-#elif USE(SKIA)
 class SkShader;
 typedef class SkShader* PlatformGradient;
 typedef class SkShader* PlatformPattern;
-#else
-typedef void* PlatformGradient;
-#endif
 
 namespace WebCore {
 
@@ -156,11 +145,6 @@ namespace WebCore {
 
         virtual unsigned hash() const OVERRIDE;
         void invalidateHash() { m_cachedHash = 0; }
-
-#if USE(CG)
-        void paint(CGContextRef);
-        void paint(GraphicsContext*);
-#endif
 
     private:
         Gradient(const FloatPoint& p0, const FloatPoint& p1);

@@ -57,7 +57,7 @@ typedef const struct __CTFont* CTFontRef;
 typedef struct HFONT__* HFONT;
 #endif
 
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(SKIA_ON_MAC_CHROMIUM)
 typedef struct CGFont* CGFontRef;
 #if OS(DARWIN)
 typedef const struct __CTFont* CTFontRef;
@@ -91,7 +91,7 @@ public:
 #if OS(DARWIN)
     FontPlatformData(NSFont*, float size, bool isPrinterFont = false, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(SKIA_ON_MAC_CHROMIUM)
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
 #endif
 #endif
@@ -103,7 +103,7 @@ public:
     void setFont(NSFont*);
 #endif
 
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(SKIA_ON_MAC_CHROMIUM)
 #if OS(DARWIN)
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
@@ -137,7 +137,7 @@ public:
     unsigned hash() const
     {
 #if OS(DARWIN)
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(SKIA_ON_MAC_CHROMIUM)
         ASSERT(m_font || !m_cgFont);
 #endif
         uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isPrinterFont << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
@@ -200,7 +200,7 @@ private:
     NSFont* m_font;
 #endif
 
-#if USE(CG) || USE(SKIA_ON_MAC_CHROMIUM)
+#if USE(SKIA_ON_MAC_CHROMIUM)
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
 #endif

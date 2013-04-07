@@ -41,10 +41,6 @@
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>
 
-#if USE(CG)
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 namespace WebCore {
 
 Image::Image(ImageObserver* observer)

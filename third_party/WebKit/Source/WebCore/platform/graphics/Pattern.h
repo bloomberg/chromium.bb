@@ -35,15 +35,8 @@
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 
-#if USE(CG)
-typedef struct CGPattern* CGPatternRef;
-typedef CGPatternRef PlatformPatternPtr;
-#elif USE(SKIA)
 class SkShader;
 typedef SkShader* PlatformPatternPtr;
-#elif OS(WINCE)
-typedef void* PlatformPatternPtr;
-#endif
 
 namespace WebCore {
 

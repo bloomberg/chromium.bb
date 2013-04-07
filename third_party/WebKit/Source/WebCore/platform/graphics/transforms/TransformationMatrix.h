@@ -32,25 +32,7 @@
 #include <string.h> //for memcpy
 #include <wtf/FastAllocBase.h>
 
-#if USE(CA)
-typedef struct CATransform3D CATransform3D;
-#endif
-#if USE(CLUTTER)
-typedef struct _CoglMatrix CoglMatrix;
-#endif
-#if USE(CG)
-typedef struct CGAffineTransform CGAffineTransform;
-#elif USE(SKIA)
 #include <SkMatrix.h>
-#endif
-
-#if PLATFORM(WIN)
-#if COMPILER(MINGW) && !COMPILER(MINGW64)
-typedef struct _XFORM XFORM;
-#else
-typedef struct tagXFORM XFORM;
-#endif
-#endif
 
 namespace WebCore {
 
@@ -322,24 +304,7 @@ public:
         return result;
     }
 
-#if USE(CA)
-    TransformationMatrix(const CATransform3D&);
-    operator CATransform3D() const;
-#endif
-#if USE(CLUTTER)
-    TransformationMatrix(const CoglMatrix*);
-    operator CoglMatrix() const;
-#endif
-#if USE(CG)
-    TransformationMatrix(const CGAffineTransform&);
-    operator CGAffineTransform() const;
-#elif USE(SKIA)
     operator SkMatrix() const;
-#endif
-
-#if PLATFORM(WIN)
-    operator XFORM() const;
-#endif
 
     bool isIdentityOrTranslation() const
     {

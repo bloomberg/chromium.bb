@@ -28,11 +28,7 @@
 
 #include <wtf/Vector.h>
 
-#if USE(CG)
-typedef CGFloat DashArrayElement;
-#else
 typedef float DashArrayElement;
-#endif
 
 typedef Vector<DashArrayElement> DashArray;
 

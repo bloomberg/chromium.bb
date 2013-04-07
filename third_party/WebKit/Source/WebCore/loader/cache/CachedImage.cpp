@@ -44,10 +44,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
-#if USE(CG)
-#include "PDFDocumentImage.h"
-#endif
-
 #if ENABLE(SVG)
 #include "SVGImage.h"
 #endif
@@ -313,10 +309,6 @@ inline void CachedImage::createImage()
     // Create the image if it doesn't yet exist.
     if (m_image)
         return;
-#if USE(CG) && !USE(WEBKIT_IMAGE_DECODERS)
-    else if (m_response.mimeType() == "application/pdf")
-        m_image = PDFDocumentImage::create();
-#endif
 #if ENABLE(SVG)
     else if (m_response.mimeType() == "image/svg+xml") {
         RefPtr<SVGImage> svgImage = SVGImage::create(this);

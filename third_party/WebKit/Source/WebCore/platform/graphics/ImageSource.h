@@ -35,11 +35,6 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 
-#if USE(CG)
-typedef struct CGImageSource* CGImageSourceRef;
-typedef const struct __CFData* CFDataRef;
-#endif
-
 namespace WebCore {
 
 class ImageOrientation;
@@ -47,19 +42,10 @@ class IntPoint;
 class IntSize;
 class SharedBuffer;
 
-#if USE(CG)
-typedef CGImageSourceRef NativeImageDecoderPtr;
-#elif !PLATFORM(CHROMIUM)
-class ImageDecoder;
-typedef ImageDecoder* NativeImageDecoderPtr;
-#endif
-
 #if PLATFORM(CHROMIUM)
 class DeferredImageDecoder;
 typedef DeferredImageDecoder NativeImageDecoder;
 typedef DeferredImageDecoder* NativeImageDecoderPtr;
-#elif USE(CG)
-#define NativeImageDecoder ImageDecoder
 #else
 typedef ImageDecoder NativeImageDecoder;
 #endif
@@ -94,13 +80,6 @@ public:
         GammaAndColorProfileApplied,
         GammaAndColorProfileIgnored
     };
-
-#if USE(CG)
-    enum ShouldSkipMetadata {
-        DoNotSkipMetadata,
-        SkipMetadata
-    };
-#endif
 
     ImageSource(AlphaOption alphaOption = AlphaPremultiplied, GammaAndColorProfileOption gammaAndColorProfileOption = GammaAndColorProfileApplied);
     ~ImageSource();
@@ -171,10 +150,8 @@ public:
 private:
     OwnPtr<NativeImageDecoderPtr> m_decoder;
 
-#if !USE(CG)
     AlphaOption m_alphaOption;
     GammaAndColorProfileOption m_gammaAndColorProfileOption;
-#endif
 #if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
     static unsigned s_maxPixelsPerDecodedImage;
 #endif

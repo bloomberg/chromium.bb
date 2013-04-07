@@ -31,11 +31,6 @@
 #include <wtf/Forward.h>
 #include <wtf/unicode/Unicode.h>
 
-#if USE(CG)
-#include "ColorSpace.h"
-typedef struct CGColor* CGColorRef;
-#endif
-
 namespace WebCore {
 
 class Color;
@@ -115,10 +110,6 @@ public:
     Color blend(const Color&) const;
     Color blendWithWhite() const;
 
-#if USE(CG)
-    Color(CGColorRef);
-#endif
-
     static bool parseHexColor(const String&, RGBA32&);
     static bool parseHexColor(const LChar*, unsigned, RGBA32&);
     static bool parseHexColor(const UChar*, unsigned, RGBA32&);
@@ -173,11 +164,6 @@ inline Color blend(const Color& from, const Color& to, double progress, bool ble
                  blend(from.blue(), to.blue(), progress),
                  blend(from.alpha(), to.alpha(), progress));
 }
-
-#if USE(CG)
-CGColorRef cachedCGColor(const Color&, ColorSpace);
-#endif
-
 } // namespace WebCore
 
 #endif // Color_h

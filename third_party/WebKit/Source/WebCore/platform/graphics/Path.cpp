@@ -147,11 +147,7 @@ void Path::addPathForRoundedRect(const FloatRect& rect, const FloatSize& topLeft
         return;
     }
 
-#if USE(CG)
-    platformAddPathForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
-#else
     addBeziersForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
-#endif
 }
 
 // Approximation of control point positions on a bezier to simulate a quarter of a circle.
@@ -186,11 +182,9 @@ void Path::addBeziersForRoundedRect(const FloatRect& rect, const FloatSize& topL
     closeSubpath();
 }
 
-#if !USE(CG)
 FloatRect Path::fastBoundingRect() const
 {
     return boundingRect();
 }
-#endif
 
 }
