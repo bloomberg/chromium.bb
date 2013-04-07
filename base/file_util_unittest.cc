@@ -1531,10 +1531,8 @@ typedef PlatformTest ReadOnlyFileUtilTest;
 
 TEST_F(ReadOnlyFileUtilTest, ContentsEqual) {
   FilePath data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
-  data_dir = data_dir.Append(FILE_PATH_LITERAL("base"))
-                     .Append(FILE_PATH_LITERAL("data"))
-                     .Append(FILE_PATH_LITERAL("file_util_unittest"));
+  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir));
+  data_dir = data_dir.AppendASCII("file_util");
   ASSERT_TRUE(file_util::PathExists(data_dir));
 
   FilePath original_file =
@@ -1580,10 +1578,8 @@ TEST_F(ReadOnlyFileUtilTest, ContentsEqual) {
 
 TEST_F(ReadOnlyFileUtilTest, TextContentsEqual) {
   FilePath data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
-  data_dir = data_dir.Append(FILE_PATH_LITERAL("base"))
-                     .Append(FILE_PATH_LITERAL("data"))
-                     .Append(FILE_PATH_LITERAL("file_util_unittest"));
+  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir));
+  data_dir = data_dir.AppendASCII("file_util");
   ASSERT_TRUE(file_util::PathExists(data_dir));
 
   FilePath original_file =

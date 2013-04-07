@@ -42,13 +42,8 @@ class JsonPrefStoreTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir_));
-    data_dir_ = data_dir_.AppendASCII("base");
+    ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("prefs");
-    data_dir_ = data_dir_.AppendASCII("test");
-    data_dir_ = data_dir_.AppendASCII("data");
-    data_dir_ = data_dir_.AppendASCII("pref_service");
-    LOG(WARNING) << data_dir_.value().c_str();
     ASSERT_TRUE(file_util::PathExists(data_dir_));
   }
 

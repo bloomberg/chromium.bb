@@ -32,12 +32,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   # features not supported, etc..).
   if test_suite_basename in ['base_unittests', 'sql_unittests', 'unit_tests']:
     test_files = [
-        'base/data/file_util_unittest',
-        'base/data/json/bom_feff.json',
-        'base/prefs/test/data/pref_service',
-        'base/test/data/serializer_nested_test.json',
-        'base/test/data/serializer_test.json',
-        'base/test/data/serializer_test_nowhitespace.json',
+        'base/test/data/',
         'chrome/test/data/download-test1.lib',
         'chrome/test/data/extensions/bad_magic.crx',
         'chrome/test/data/extensions/good.crx',
