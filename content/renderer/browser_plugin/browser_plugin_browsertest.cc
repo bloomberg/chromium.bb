@@ -121,7 +121,7 @@ std::string BrowserPluginTest::ExecuteScriptAndReturnString(
 
   v8::Local<v8::String> v8_str = value->ToString();
   int length = v8_str->Utf8Length() + 1;
-  scoped_array<char> str(new char[length]);
+  scoped_ptr<char[]> str(new char[length]);
   v8_str->WriteUtf8(str.get(), length);
   return str.get();
 }

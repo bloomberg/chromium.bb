@@ -43,7 +43,7 @@ class GpuDriverBugListTest : public testing::Test {
     if (!file_util::GetFileSize(data_file, &data_file_size64))
       return false;
     int data_file_size = static_cast<int>(data_file_size64);
-    scoped_array<char> data(new char[data_file_size]);
+    scoped_ptr<char[]> data(new char[data_file_size]);
     if (file_util::ReadFile(data_file, data.get(), data_file_size) !=
         data_file_size)
       return false;

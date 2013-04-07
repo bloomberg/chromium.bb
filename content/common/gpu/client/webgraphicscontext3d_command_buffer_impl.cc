@@ -999,7 +999,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveAttrib(
       program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_array<GLchar> name(new GLchar[max_name_length]);
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   if (!name.get()) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
@@ -1025,7 +1025,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveUniform(
       program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_array<GLchar> name(new GLchar[max_name_length]);
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   if (!name.get()) {
     synthesizeGLError(GL_OUT_OF_MEMORY);
     return false;
@@ -1093,7 +1093,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getProgramInfoLog(
   gl_->GetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
   if (!logLength)
     return WebKit::WebString();
-  scoped_array<GLchar> log(new GLchar[logLength]);
+  scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
@@ -1116,7 +1116,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderInfoLog(
   gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
   if (!logLength)
     return WebKit::WebString();
-  scoped_array<GLchar> log(new GLchar[logLength]);
+  scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
@@ -1137,7 +1137,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderSource(
   gl_->GetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &logLength);
   if (!logLength)
     return WebKit::WebString();
-  scoped_array<GLchar> log(new GLchar[logLength]);
+  scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;
@@ -1158,7 +1158,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
       shader, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE, &logLength);
   if (!logLength)
     return WebKit::WebString();
-  scoped_array<GLchar> log(new GLchar[logLength]);
+  scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
   GLsizei returnedLogLength = 0;

@@ -131,7 +131,7 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
     gpu.device_id = device->device_id;
 
     const int buffer_size = 255;
-    scoped_array<char> buffer(new char[buffer_size]);
+    scoped_ptr<char[]> buffer(new char[buffer_size]);
     // The current implementation of pci_lookup_name returns the same pointer
     // as the passed in upon success, and a different one (NULL or a pointer
     // to an error message) upon failure.

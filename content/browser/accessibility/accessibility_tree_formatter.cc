@@ -52,7 +52,7 @@ void AccessibilityTreeFormatter::FormatAccessibilityTree(
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     BrowserAccessibility* node, string16* contents, int indent) {
-  scoped_array<char> prefix(new char[indent + 1]);
+  scoped_ptr<char[]> prefix(new char[indent + 1]);
   for (int i = 0; i < indent; ++i)
     prefix[i] = ' ';
   prefix[indent] = '\0';

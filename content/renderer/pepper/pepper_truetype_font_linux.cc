@@ -103,7 +103,7 @@ int32_t PepperTrueTypeFontLinux::GetTableTags(std::vector<uint32_t>* tags) {
   static const size_t kFontHeaderSize = 12;
   static const size_t kTableEntrySize = 16;
   output_length = num_tables * kTableEntrySize;
-  scoped_array<uint8_t> table_entries(new uint8_t[output_length]);
+  scoped_ptr<uint8_t[]> table_entries(new uint8_t[output_length]);
   // Get the table directory entries, which follow the font header.
   if (!content::GetFontTable(fd_,
                              0 /* tag */,

@@ -127,7 +127,7 @@ bool GetFontTable(int fd, uint32_t table_tag, off_t offset,
     // Read the table directory.
     static const size_t kTableEntrySize = 16;
     const size_t directory_size = num_tables * kTableEntrySize;
-    scoped_array<uint8_t> table_entries(new uint8_t[directory_size]);
+    scoped_ptr<uint8_t[]> table_entries(new uint8_t[directory_size]);
     n = HANDLE_EINTR(pread(fd, table_entries.get(), directory_size,
                            12 /* skip the SFNT header */));
     if (n != base::checked_numeric_cast<ssize_t>(directory_size))

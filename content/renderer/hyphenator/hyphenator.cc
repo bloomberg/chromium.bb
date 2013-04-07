@@ -98,7 +98,7 @@ class Query {
   std::string word_utf8_;
 
   // Return variables from the hyphen library.
-  scoped_array<char> hyphen_vector_;
+  scoped_ptr<char[]> hyphen_vector_;
   char** rep_;
   int* pos_;
   int* cut_;

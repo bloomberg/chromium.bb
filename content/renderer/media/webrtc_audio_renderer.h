@@ -78,7 +78,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Buffers used for temporary storage during render callbacks.
   // Allocated during initialization.
-  scoped_array<int16> buffer_;
+  scoped_ptr<int16[]> buffer_;
 
   // Protects access to |state_|, |source_| and |sink_|.
   base::Lock lock_;

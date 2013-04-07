@@ -65,7 +65,7 @@ TEST_F(GpuSwitchingListTest, CurrentSwitchingListValidation) {
   int64 data_file_size64 = 0;
   ASSERT_TRUE(file_util::GetFileSize(data_file, &data_file_size64));
   int data_file_size = static_cast<int>(data_file_size64);
-  scoped_array<char> data(new char[data_file_size]);
+  scoped_ptr<char[]> data(new char[data_file_size]);
   ASSERT_EQ(data_file_size,
             file_util::ReadFile(data_file, data.get(), data_file_size));
   std::string json_string(data.get(), data_file_size);

@@ -140,7 +140,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
   InSequence s;
 
   int index = 0;
-  scoped_array<int> session_id(new int[devices_.size()]);
+  scoped_ptr<int[]> session_id(new int[devices_.size()]);
 
   // Opens the devices in a loop.
   for (StreamDeviceInfoArray::const_iterator iter = devices_.begin();
@@ -245,7 +245,7 @@ TEST_F(AudioInputDeviceManagerTest, AccessAndCloseSession) {
   InSequence s;
 
   int index = 0;
-  scoped_array<int> session_id(new int[devices_.size()]);
+  scoped_ptr<int[]> session_id(new int[devices_.size()]);
 
   // Loops through the devices and calls Open()/Close()/GetOpenedDeviceInfoById
   // for each device.

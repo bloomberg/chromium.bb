@@ -304,7 +304,7 @@ bool BrokerProcessDispatcher::SetSitePermission(
     return true;
 
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  scoped_array<PP_Flash_BrowserOperations_SiteSetting> site_array(
+  scoped_ptr<PP_Flash_BrowserOperations_SiteSetting[]> site_array(
       new PP_Flash_BrowserOperations_SiteSetting[sites.size()]);
 
   for (size_t i = 0; i < sites.size(); ++i) {

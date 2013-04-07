@@ -96,7 +96,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   // signal handlers when this WebDragDestGtk is deleted so that if, later on,
   // we re-create the drag dest with the same widget, we don't get callbacks to
   // deleted functions.
-  scoped_array<int> handlers_;
+  scoped_ptr<int[]> handlers_;
 
   // A delegate that can receive drag information about drag events.
   WebDragDestDelegate* delegate_;

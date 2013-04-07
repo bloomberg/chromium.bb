@@ -253,7 +253,7 @@ class SandboxIPCProcess  {
     }
 
     EnsureWebKitInitialized();
-    scoped_array<WebUChar> chars(new WebUChar[num_chars]);
+    scoped_ptr<WebUChar[]> chars(new WebUChar[num_chars]);
 
     for (int i = 0; i < num_chars; ++i) {
       uint32_t c;
