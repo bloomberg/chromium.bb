@@ -64,12 +64,10 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
 {
     ASSERT(document);
 
-#if PLATFORM(CHROMIUM)
     if (type == ShadowRoot::AuthorShadowRoot) {
         ShadowRootUsageOriginType usageType = document->url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
         HistogramSupport::histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
     }
-#endif
 }
 
 ShadowRoot::~ShadowRoot()

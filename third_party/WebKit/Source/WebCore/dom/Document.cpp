@@ -164,6 +164,7 @@
 #include "StyleSheetList.h"
 #include "TextResourceDecoder.h"
 #include "Timer.h"
+#include "TraceEvent.h"
 #include "TransformSource.h"
 #include "TreeWalker.h"
 #include "UserActionElementSet.h"
@@ -237,10 +238,6 @@
 
 #if ENABLE(TEXT_AUTOSIZING)
 #include "TextAutosizer.h"
-#endif
-
-#if PLATFORM(CHROMIUM)
-#include "TraceEvent.h"
 #endif
 
 #if ENABLE(VIDEO_TRACK)
@@ -1796,9 +1793,7 @@ void Document::recalcStyle(StyleChange change)
     if (m_inStyleRecalc)
         return; // Guard against re-entrancy. -dwh
 
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("webkit", "Document::recalcStyle");
-#endif
 
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
@@ -2483,7 +2478,6 @@ void Document::implicitClose()
 
     m_processingLoadEvent = false;
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
     if (f && renderObject && AXObjectCache::accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
@@ -2498,7 +2492,6 @@ void Document::implicitClose()
             axObjectCache()->postNotification(renderObject, AXObjectCache::AXLayoutComplete, true);
         }
     }
-#endif
 
 #if ENABLE(SVG)
     if (svgExtensions())

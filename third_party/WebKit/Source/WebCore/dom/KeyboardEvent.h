@@ -34,17 +34,6 @@ class EventDispatcher;
 class Node;
 class PlatformKeyboardEvent;
 
-#if PLATFORM(MAC)
-struct KeypressCommand {
-    KeypressCommand() { }
-    explicit KeypressCommand(const String& commandName) : commandName(commandName) { ASSERT(isASCIILower(commandName[0U])); }
-    KeypressCommand(const String& commandName, const String& text) : commandName(commandName), text(text) { ASSERT(commandName == "insertText:"); }
-
-    String commandName; // Actually, a selector name - it may have a trailing colon, and a name that can be different from an editor command name.
-    String text;
-};
-#endif
-
 struct KeyboardEventInit : public UIEventInit {
     KeyboardEventInit();
 
@@ -110,11 +99,6 @@ public:
     virtual bool isKeyboardEvent() const;
     virtual int which() const;
 
-#if PLATFORM(MAC)
-    // We only have this need to store keypress command info on the Mac.
-    Vector<KeypressCommand>& keypressCommands() { return m_keypressCommands; }
-#endif
-
 private:
     KeyboardEvent();
     KeyboardEvent(const PlatformKeyboardEvent&, AbstractView*);
@@ -127,11 +111,6 @@ private:
     String m_keyIdentifier;
     unsigned m_keyLocation;
     bool m_altGraphKey : 1;
-
-#if PLATFORM(MAC)
-    // Commands that were sent by AppKit when interpreting the event. Doesn't include input method commands.
-    Vector<KeypressCommand> m_keypressCommands;
-#endif
 };
 
 KeyboardEvent* findKeyboardEvent(Event*);

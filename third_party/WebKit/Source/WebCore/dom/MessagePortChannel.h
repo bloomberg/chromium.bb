@@ -85,13 +85,11 @@ namespace WebCore {
 
         ~MessagePortChannel();
 
-#if PLATFORM(CHROMIUM)
         // Creates a new wrapper for the passed channel.
         static PassOwnPtr<MessagePortChannel> create(PassRefPtr<PlatformMessagePortChannel>);
 
         // FIXME: PlatformMessagePortChannel is an implementation detail, and should not be exposed via a public function.
         PlatformMessagePortChannel* channel() const { return m_channel.get(); }
-#endif
 
     private:
         explicit MessagePortChannel(PassRefPtr<PlatformMessagePortChannel>);

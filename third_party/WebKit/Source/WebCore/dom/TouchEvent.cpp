@@ -54,10 +54,6 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     , m_touches(touches)
     , m_targetTouches(targetTouches)
     , m_changedTouches(changedTouches)
-#if PLATFORM(BLACKBERRY)
-    , m_touchHold(false)
-    , m_doubleTap(false)
-#endif
 {
 }
 
@@ -84,11 +80,6 @@ void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
     m_shiftKey = shiftKey;
     m_metaKey = metaKey;
     initCoordinates(IntPoint(clientX, clientY));
-#if PLATFORM(BLACKBERRY)
-    m_doubleTap = false;
-    m_touchHold = false;
-#endif
-
 }
 
 const AtomicString& TouchEvent::interfaceName() const
