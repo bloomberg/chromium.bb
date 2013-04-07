@@ -1810,8 +1810,6 @@
         'browser/ui/views/tabs/tab_strip.h',
         'browser/ui/views/tabs/tab_strip_controller.h',
         'browser/ui/views/task_manager_view.cc',
-        'browser/ui/views/theme_background.cc',
-        'browser/ui/views/theme_background.h',
         'browser/ui/views/theme_image_mapper.cc',
         'browser/ui/views/theme_image_mapper.h',
         'browser/ui/views/theme_image_mapper_aura_win.cc',
