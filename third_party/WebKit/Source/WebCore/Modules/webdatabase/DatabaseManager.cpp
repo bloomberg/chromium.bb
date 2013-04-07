@@ -36,6 +36,7 @@
 #include "DatabaseBackendSync.h"
 #include "DatabaseCallback.h"
 #include "DatabaseContext.h"
+#include "DatabaseServer.h"
 #include "DatabaseSync.h"
 #include "DatabaseTask.h"
 #include "ExceptionCode.h"
@@ -44,8 +45,6 @@
 #include "ScriptController.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
-
-#include "DatabaseServer.h"
 
 namespace WebCore {
 
