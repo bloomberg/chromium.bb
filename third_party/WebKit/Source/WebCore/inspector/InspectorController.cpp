@@ -192,6 +192,7 @@ void InspectorController::inspectedPageDestroyed()
 {
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
+    m_inspectorClient->inspectorDestroyed();
     m_inspectorClient = 0;
     m_page = 0;
 }
@@ -257,6 +258,25 @@ void InspectorController::disconnectFrontend()
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 }
 
+void InspectorController::show()
+{
+    if (m_inspectorFrontend)
+        m_inspectorClient->bringFrontendToFront();
+    else {
+        InspectorFrontendChannel* frontendChannel = m_inspectorClient->openInspectorFrontend(this);
+        if (frontendChannel)
+            connectFrontend(frontendChannel);
+    }
+}
+
+void InspectorController::close()
+{
+    if (!m_inspectorFrontend)
+        return;
+    disconnectFrontend();
+    m_inspectorClient->closeInspectorFrontend();
+}
+
 void InspectorController::reconnectFrontend(InspectorFrontendChannel* frontendChannel, const String& inspectorStateCookie)
 {
     ASSERT(!m_inspectorFrontend);
@@ -298,6 +318,8 @@ void InspectorController::getHighlight(Highlight* highlight) const
 
 void InspectorController::inspect(Node* node)
 {
+    show();
+
     m_domAgent->inspect(node);
 }
 

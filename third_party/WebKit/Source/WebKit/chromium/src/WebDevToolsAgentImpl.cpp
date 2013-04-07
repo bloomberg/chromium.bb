@@ -415,6 +415,7 @@ void WebDevToolsAgentImpl::detach()
     InspectorController* ic = inspectorController();
     ic->disconnectFrontend();
     ic->hideHighlight();
+    ic->close();
     m_attached = false;
 }
 
@@ -632,6 +633,24 @@ Frame* WebDevToolsAgentImpl::mainFrame()
     if (Page* page = m_webViewImpl->page())
         return page->mainFrame();
     return 0;
+}
+
+void WebDevToolsAgentImpl::inspectorDestroyed()
+{
+    // Our lifetime is bound to the WebViewImpl.
+}
+
+InspectorFrontendChannel* WebDevToolsAgentImpl::openInspectorFrontend(InspectorController*)
+{
+    return 0;
+}
+
+void WebDevToolsAgentImpl::closeInspectorFrontend()
+{
+}
+
+void WebDevToolsAgentImpl::bringFrontendToFront()
+{
 }
 
 // WebPageOverlay

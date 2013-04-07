@@ -59,6 +59,31 @@ InspectorClientImpl::~InspectorClientImpl()
 {
 }
 
+void InspectorClientImpl::inspectorDestroyed()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->inspectorDestroyed();
+}
+
+InspectorFrontendChannel* InspectorClientImpl::openInspectorFrontend(InspectorController* controller)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        return agent->openInspectorFrontend(controller);
+    return 0;
+}
+
+void InspectorClientImpl::closeInspectorFrontend()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->closeInspectorFrontend();
+}
+
+void InspectorClientImpl::bringFrontendToFront()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->bringFrontendToFront();
+}
+
 void InspectorClientImpl::highlight()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

@@ -95,8 +95,14 @@ public:
     virtual void setProcessId(long);
 
     // InspectorClient implementation.
+    virtual void inspectorDestroyed();
+    virtual WebCore::InspectorFrontendChannel* openInspectorFrontend(WebCore::InspectorController*);
+    virtual void closeInspectorFrontend();
+
+    virtual void bringFrontendToFront();
     virtual void highlight();
     virtual void hideHighlight();
+    virtual bool supportsInspectorStateUpdates() const { return true; }
     virtual void updateInspectorStateCookie(const WTF::String&);
     virtual bool sendMessageToFrontend(const WTF::String&);
 
