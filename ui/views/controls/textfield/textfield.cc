@@ -56,6 +56,7 @@ bool Textfield::IsViewsTextfieldEnabled() {
     return false;
   if (command_line->HasSwitch(switches::kEnableViewsTextfield))
     return true;
+  return false;
 #endif
   return true;
 }
