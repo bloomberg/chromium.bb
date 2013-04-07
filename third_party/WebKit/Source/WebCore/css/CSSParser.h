@@ -675,9 +675,6 @@ private:
 CSSPropertyID cssPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
 int cssValueKeywordID(const CSSParserString&);
-#if PLATFORM(IOS)
-void cssPropertyNameIOSAliasing(const char* propertyName, const char*& propertyNameAlias, unsigned& newLength);
-#endif
 
 class ShorthandScope {
     WTF_MAKE_FAST_ALLOCATED;

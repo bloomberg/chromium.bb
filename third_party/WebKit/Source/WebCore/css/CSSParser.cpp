@@ -11778,12 +11778,6 @@ static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned l
     buffer[length] = '\0';
 
     const char* name = buffer;
-    if (buffer[0] == '-') {
-#if PLATFORM(IOS)
-        cssPropertyNameIOSAliasing(buffer, name, length);
-#endif
-    }
-
     const Property* hashTableEntry = findProperty(name, length);
     const CSSPropertyID propertyID = hashTableEntry ? static_cast<CSSPropertyID>(hashTableEntry->id) : CSSPropertyInvalid;
 
@@ -11820,18 +11814,6 @@ CSSPropertyID cssPropertyID(const CSSParserString& string)
     
     return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters16(), length);
 }
-
-#if PLATFORM(IOS)
-void cssPropertyNameIOSAliasing(const char* propertyName, const char*& propertyNameAlias, unsigned& newLength)
-{
-    if (!strcmp(propertyName, "-webkit-hyphenate-locale")) {
-        // Worked in iOS 4.2.
-        static const char* const webkitLocale = "-webkit-locale";
-        propertyNameAlias = webkitLocale;
-        newLength = strlen(webkitLocale);
-    }
-}
-#endif
 
 template <typename CharacterType>
 static int cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
