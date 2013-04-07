@@ -3605,7 +3605,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, PartialWrite) {
   // Chop the SYN_STREAM frame into 5 chunks.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   const int kChunks = 5;
-  scoped_array<MockWrite> writes(ChopWriteFrame(*req.get(), kChunks));
+  scoped_ptr<MockWrite[]> writes(ChopWriteFrame(*req.get(), kChunks));
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));

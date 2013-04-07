@@ -246,7 +246,7 @@ class SpdyFramerTestUtil {
 
    private:
     int version_;
-    scoped_array<char> buffer_;
+    scoped_ptr<char[]> buffer_;
     size_t size_;
     bool finished_;
 
@@ -506,7 +506,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   size_t last_compressed_size_;
 
   // Header block streaming state:
-  scoped_array<char> header_buffer_;
+  scoped_ptr<char[]> header_buffer_;
   size_t header_buffer_length_;
   size_t header_buffer_size_;
   SpdyStreamId header_stream_id_;
@@ -514,7 +514,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   bool header_buffer_valid_;
   SpdyHeaderBlock headers_;
 
-  scoped_array<char> credential_buffer_;
+  scoped_ptr<char[]> credential_buffer_;
   size_t credential_buffer_length_;
   size_t credential_buffer_size_;
   SpdyCredential credential_;
@@ -1739,7 +1739,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
 
     const int kFrameSize = arraysize(kFrameHeader) + kDataSize;
-    scoped_array<unsigned char> expected_frame_data(
+    scoped_ptr<unsigned char[]> expected_frame_data(
         new unsigned char[kFrameSize]);
     memcpy(expected_frame_data.get(), kFrameHeader, arraysize(kFrameHeader));
     memset(expected_frame_data.get() + arraysize(kFrameHeader), 'A', kDataSize);

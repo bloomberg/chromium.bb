@@ -259,7 +259,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   MockSendAlgorithm* send_algorithm_;
   TestReceiveAlgorithm* receive_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
-  scoped_array<MockWrite> mock_writes_;
+  scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
   MockRandom random_generator_;
   TestQuicConnection* connection_;

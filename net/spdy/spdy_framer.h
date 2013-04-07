@@ -629,7 +629,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // are part of the frame's payload, and not the frame's headers.
   size_t remaining_control_header_;
 
-  scoped_array<char> current_frame_buffer_;
+  scoped_ptr<char[]> current_frame_buffer_;
   // Number of bytes read into the current_frame_buffer_.
   size_t current_frame_buffer_length_;
 

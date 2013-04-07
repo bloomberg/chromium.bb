@@ -31,7 +31,7 @@ void* MappedFile::Init(const base::FilePath& name, size_t size) {
     buffer_ = 0;
 
   // Make sure we detect hardware failures reading the headers.
-  scoped_array<char> temp(new char[temp_len]);
+  scoped_ptr<char[]> temp(new char[temp_len]);
   if (!Read(temp.get(), temp_len, 0))
     return NULL;
 

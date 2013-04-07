@@ -638,7 +638,7 @@ TEST_F(URLRequestTest, FileTestCancel) {
 
 TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   const size_t buffer_size = 4000;
-  scoped_array<char> buffer(new char[buffer_size]);
+  scoped_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
   base::FilePath temp_path;
@@ -682,7 +682,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
 
 TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   const size_t buffer_size = 4000;
-  scoped_array<char> buffer(new char[buffer_size]);
+  scoped_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
   base::FilePath temp_path;
@@ -725,7 +725,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
 
 TEST_F(URLRequestTest, FileTestMultipleRanges) {
   const size_t buffer_size = 400000;
-  scoped_array<char> buffer(new char[buffer_size]);
+  scoped_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
   base::FilePath temp_path;
@@ -3346,7 +3346,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     int64 size = 0;
     ASSERT_EQ(true, file_util::GetFileSize(path, &size));
-    scoped_array<char> buf(new char[size]);
+    scoped_ptr<char[]> buf(new char[size]);
 
     ASSERT_EQ(size, file_util::ReadFile(path, buf.get(), size));
 

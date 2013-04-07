@@ -2336,7 +2336,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResume) {
   scoped_ptr<SpdyFrame> body3(ConstructSpdyBodyFrame(1, true));
 
   // Fill in mock writes.
-  scoped_array<MockWrite> writes(new MockWrite[num_writes]);
+  scoped_ptr<MockWrite[]> writes(new MockWrite[num_writes]);
   size_t i = 0;
   writes[i] = CreateMockWrite(*req);
   for (i = 1; i < num_writes - 2; i++)
@@ -2434,7 +2434,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   scoped_ptr<SpdyFrame> body3(ConstructSpdyBodyFrame(1, true));
 
   // Fill in mock writes.
-  scoped_array<MockWrite> writes(new MockWrite[num_writes]);
+  scoped_ptr<MockWrite[]> writes(new MockWrite[num_writes]);
   size_t i = 0;
   writes[i] = CreateMockWrite(*req);
   for (i = 1; i < num_writes - 2; i++)
@@ -2538,7 +2538,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlNegativeSendWindowSize) {
   scoped_ptr<SpdyFrame> body3(ConstructSpdyBodyFrame(1, true));
 
   // Fill in mock writes.
-  scoped_array<MockWrite> writes(new MockWrite[num_writes]);
+  scoped_ptr<MockWrite[]> writes(new MockWrite[num_writes]);
   size_t i = 0;
   writes[i] = CreateMockWrite(*req);
   for (i = 1; i < num_writes - 2; i++)
@@ -4196,7 +4196,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, PartialWrite) {
   // Chop the SYN_STREAM frame into 5 chunks.
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   const int kChunks = 5;
-  scoped_array<MockWrite> writes(ChopWriteFrame(*req.get(), kChunks));
+  scoped_ptr<MockWrite[]> writes(ChopWriteFrame(*req.get(), kChunks));
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));

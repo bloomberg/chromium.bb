@@ -97,7 +97,7 @@ class RingBuffer : public BufferInterface {
   int set_write_idx(int idx) { return write_idx_ = idx; }
 
  private:
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
   int buffer_size_;
   int bytes_used_;
   int read_idx_;

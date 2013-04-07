@@ -176,7 +176,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
   scoped_refptr<TestTaskRunner> runner_;
   QuicConnectionHelper* helper_;
   scoped_ptr<MockUDPClientSocket> socket_;
-  scoped_array<MockWrite> mock_writes_;
+  scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
   MockRandom random_generator_;
   scoped_ptr<TestConnection> connection_;

@@ -1036,7 +1036,7 @@ void SSLClientSocketNSS::Core::SetPredictedCertificates(
 
   predicted_certs_ = predicted_certs;
 
-  scoped_array<CERTCertificate*> certs(
+  scoped_ptr<CERTCertificate*[]> certs(
       new CERTCertificate*[predicted_certs.size()]);
 
   for (size_t i = 0; i < predicted_certs.size(); i++) {
@@ -1859,7 +1859,7 @@ int SSLClientSocketNSS::Core::DoHandshake() {
         SSL_GetStapledOCSPResponse(nss_fd_, NULL, &len);
         if (len) {
           const unsigned int orig_len = len;
-          scoped_array<uint8> ocsp_response(new uint8[orig_len]);
+          scoped_ptr<uint8[]> ocsp_response(new uint8[orig_len]);
           SSL_GetStapledOCSPResponse(nss_fd_, ocsp_response.get(), &len);
           DCHECK_EQ(orig_len, len);
 

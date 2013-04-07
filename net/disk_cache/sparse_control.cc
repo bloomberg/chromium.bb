@@ -73,7 +73,7 @@ class ChildrenDeleter
   std::string name_;
   disk_cache::Bitmap children_map_;
   int64 signature_;
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
   DISALLOW_COPY_AND_ASSIGN(ChildrenDeleter);
 };
 

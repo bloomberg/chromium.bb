@@ -540,7 +540,7 @@ void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
 void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
   int64 size = 0;
   ASSERT_EQ(true, file_util::GetFileSize(path_, &size));
-  scoped_array<char> expected(new char[size]);
+  scoped_ptr<char[]> expected(new char[size]);
   ASSERT_EQ(size, file_util::ReadFile(path_, expected.get(), size));
 
   std::string data;

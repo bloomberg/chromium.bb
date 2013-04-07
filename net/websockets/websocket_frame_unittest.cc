@@ -418,7 +418,7 @@ TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskShortPayload) {
 }
 
 TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
-  scoped_array<char> payload(new char[kLongPayloadSize]);
+  scoped_ptr<char[]> payload(new char[kLongPayloadSize]);
   std::fill(payload.get(), payload.get() + kLongPayloadSize, 'a');
   Benchmark(payload.get(), kLongPayloadSize);
 }

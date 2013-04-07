@@ -226,7 +226,7 @@ void CompareCharArraysWithHexError(
     const int expected_len) {
   const int min_len = min(actual_len, expected_len);
   const int max_len = max(actual_len, expected_len);
-  scoped_array<bool> marks(new bool[max_len]);
+  scoped_ptr<bool[]> marks(new bool[max_len]);
   bool identical = (actual_len == expected_len);
   for (int i = 0; i < min_len; ++i) {
     if (actual[i] != expected[i]) {

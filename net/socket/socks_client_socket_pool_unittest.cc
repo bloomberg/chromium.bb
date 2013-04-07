@@ -66,8 +66,8 @@ class SOCKSClientSocketPoolTest : public testing::Test {
 
    private:
     scoped_ptr<StaticSocketDataProvider> data_;
-    scoped_array<MockWrite> writes_;
-    scoped_array<MockRead> reads_;
+    scoped_ptr<MockWrite[]> writes_;
+    scoped_ptr<MockRead[]> reads_;
   };
 
   SOCKSClientSocketPoolTest()

@@ -464,7 +464,7 @@ bool BlockFiles::OpenBlockFile(int index) {
 
   if (index == 0) {
     // Load the links file into memory with a single read.
-    scoped_array<char> buf(new char[file_len]);
+    scoped_ptr<char[]> buf(new char[file_len]);
     if (!file->Read(buf.get(), file_len, 0))
       return false;
   }

@@ -1969,7 +1969,7 @@ bool BackendImpl::CheckIndex() {
     mask_ = data_->header.table_len - 1;
 
   // Load the table into memory with a single read.
-  scoped_array<char> buf(new char[current_size]);
+  scoped_ptr<char[]> buf(new char[current_size]);
   return index_->Read(buf.get(), current_size, 0);
 }
 

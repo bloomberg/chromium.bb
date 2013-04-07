@@ -327,7 +327,7 @@ TEST(HttpChunkedDecoderTest, MultipleExtraDataBlocks) {
 // Test when the line with the chunk length is too long.
 TEST(HttpChunkedDecoderTest, LongChunkLengthLine) {
   int big_chunk_length = HttpChunkedDecoder::kMaxLineBufLen;
-  scoped_array<char> big_chunk(new char[big_chunk_length + 1]);
+  scoped_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
   memset(big_chunk.get(), '0', big_chunk_length);
   big_chunk[big_chunk_length] = 0;
   const char* inputs[] = {
@@ -341,7 +341,7 @@ TEST(HttpChunkedDecoderTest, LongChunkLengthLine) {
 // long.
 TEST(HttpChunkedDecoderTest, LongLengthLengthLine) {
   int big_chunk_length = HttpChunkedDecoder::kMaxLineBufLen;
-  scoped_array<char> big_chunk(new char[big_chunk_length + 1]);
+  scoped_ptr<char[]> big_chunk(new char[big_chunk_length + 1]);
   memset(big_chunk.get(), '0', big_chunk_length);
   big_chunk[big_chunk_length] = 0;
   const char* inputs[] = {
