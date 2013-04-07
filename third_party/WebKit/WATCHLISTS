@@ -60,6 +60,14 @@
                   '|Source/WebCore/dom/SecurityPolicyViolationEvent' \
                   '|LayoutTests/http/tests/security/contentSecurityPolicy'
     },
+    "loader": {
+      'filepath': 'WebCore/loader'
+    },
+    "prerender": {
+      'filepath': 'Prerender' \
+                  '|loader/LinkLoader' \
+                  '|html/HTMLLinkElement'
+    },
   },
 
   'WATCHLISTS': {
@@ -83,5 +91,7 @@
                    'jsbell@chromium.org'],
     'rendering': [ 'jchaffraix+rendering@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
+    'prerender': [ 'gavinp+prerender@chromium.org' ],
+    'loader': [ 'gavinp+loader@chromium.org' ],
   },
 }
