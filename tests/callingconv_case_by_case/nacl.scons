@@ -18,12 +18,7 @@ if env.Bit('bitcode'):
   # Disabling the PNaCl ABI checker is necessary for the
   # PNaCl-calling-PNaCl case below because the test uses the __m128
   # type, which the checker rejects.
-  env.Append(LINKFLAGS=['--pnacl-disable-pass=-verify-pnaclabi-module',
-                        '--pnacl-disable-pass=-verify-pnaclabi-functions'])
-  # TODO(mseaborn): Replace the above with the following option after
-  # a TOOL_REVISIONS roll makes the option available:
-  #   env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
-  # See https://code.google.com/p/nativeclient/issues/detail?id=2309
+  env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
 
 # Case-by-case calling Convention Test for PNaCl and nacl-gcc compatibility.
 
