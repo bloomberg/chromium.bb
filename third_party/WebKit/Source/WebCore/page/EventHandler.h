@@ -42,10 +42,6 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
 
-#if PLATFORM(MAC) && !defined(__OBJC__)
-class NSView;
-#endif
-
 #if ENABLE(TOUCH_EVENTS)
 #include <wtf/HashMap.h>
 #endif
@@ -222,23 +218,6 @@ public:
     void sendResizeEvent(); // Only called in FrameView
     void sendScrollEvent(); // Ditto
 
-#if PLATFORM(MAC) && defined(__OBJC__)
-    void mouseDown(NSEvent *);
-    void mouseDragged(NSEvent *);
-    void mouseUp(NSEvent *);
-    void mouseMoved(NSEvent *);
-    bool keyEvent(NSEvent *);
-    bool wheelEvent(NSEvent *);
-
-    void passMouseMovedEventToScrollbars(NSEvent *);
-
-    void sendFakeEventsAfterWidgetTracking(NSEvent *initiatingEvent);
-
-    void setActivationEventNumber(int num) { m_activationEventNumber = num; }
-
-    static NSEvent *currentNSEvent();
-#endif
-
 #if ENABLE(TOUCH_EVENTS)
     bool handleTouchEvent(const PlatformTouchEvent&);
 #endif
@@ -339,12 +318,6 @@ private:
 
     bool capturesDragging() const { return m_capturesDragging; }
 
-#if PLATFORM(MAC) && defined(__OBJC__)
-    NSView *mouseDownViewIfStillGood();
-
-    PlatformMouseEvent currentPlatformMouseEvent() const;
-#endif
-
     bool isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent&) const;
 
 #if ENABLE(GESTURE_EVENTS)
@@ -428,11 +401,6 @@ private:
 
     RefPtr<Node> m_previousWheelScrolledNode;
 
-#if PLATFORM(MAC)
-    NSView *m_mouseDownView;
-    bool m_sendingEventToSubview;
-    int m_activationEventNumber;
-#endif
 #if ENABLE(TOUCH_EVENTS)
     typedef HashMap<int, RefPtr<EventTarget> > TouchTargetMap;
     TouchTargetMap m_originatingTouchPointTargets;

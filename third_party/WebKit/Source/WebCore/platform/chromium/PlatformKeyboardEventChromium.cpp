@@ -41,7 +41,7 @@ namespace WebCore {
 static const unsigned short HIGH_BIT_MASK_SHORT = 0x8000;
 #endif
 
-void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type, bool backwardCompatibilityMode)
+void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
 {
 #if OS(WINDOWS)
     // No KeyDown events on Windows to disambiguate.
@@ -51,8 +51,6 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type, bool backwardCom
     ASSERT(m_type == PlatformEvent::KeyDown);
     ASSERT(type == PlatformEvent::RawKeyDown || type == PlatformEvent::Char);
     m_type = type;
-    if (backwardCompatibilityMode)
-        return;
 
     if (type == RawKeyDown) {
         m_text = String();

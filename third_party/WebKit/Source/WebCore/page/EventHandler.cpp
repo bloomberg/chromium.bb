@@ -312,11 +312,6 @@ EventHandler::EventHandler(Frame* frame)
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
     , m_widgetIsLatched(false)
-#if PLATFORM(MAC)
-    , m_mouseDownView(nil)
-    , m_sendingEventToSubview(false)
-    , m_activationEventNumber(-1)
-#endif
 #if ENABLE(TOUCH_EVENTS)
     , m_originatingTouchPointTargetKey(0)
     , m_touchPressed(false)
@@ -1079,11 +1074,6 @@ bool EventHandler::logicalScrollRecursively(ScrollLogicalDirection direction, Sc
     FrameView* view = frame->view();
     
     bool scrolled = false;
-#if PLATFORM(MAC)
-    // Mac also resets the scroll position in the inline direction.
-    if (granularity == ScrollByDocument && view && view->logicalScroll(ScrollInlineDirectionBackward, ScrollByDocument))
-        scrolled = true;
-#endif
     if (view && view->logicalScroll(direction, granularity))
         scrolled = true;
     
@@ -2044,9 +2034,6 @@ void EventHandler::clearDragState()
     m_dragTarget = 0;
     m_capturingMouseEventsNode = 0;
     m_shouldOnlyFireDragOverEvent = false;
-#if PLATFORM(MAC)
-    m_sendingEventToSubview = false;
-#endif
 }
 
 void EventHandler::setCapturingMouseEventsNode(PassRefPtr<Node> n)
@@ -2689,9 +2676,7 @@ bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEven
         scaledDelta.width() / tickDivisor, scaledDelta.height() / tickDivisor,
         ScrollByPixelWheelEvent,
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey());
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
     syntheticWheelEvent.setHasPreciseScrollingDeltas(true);
-#endif
 
     bool scrolledFrame = view->wheelEvent(syntheticWheelEvent);
     if (scrolledFrame)
@@ -3109,11 +3094,9 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     if (initialKeyEvent.type() == PlatformEvent::KeyUp || initialKeyEvent.type() == PlatformEvent::Char)
         return !node->dispatchKeyEvent(initialKeyEvent);
 
-    bool backwardCompatibilityMode = needsKeyboardEventDisambiguationQuirks();
-
     PlatformKeyboardEvent keyDownEvent = initialKeyEvent;    
     if (keyDownEvent.type() != PlatformEvent::RawKeyDown)
-        keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown, backwardCompatibilityMode);
+        keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown);
     RefPtr<KeyboardEvent> keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->defaultView());
     if (matchedAnAccessKey)
         keydown->setDefaultPrevented(true);
@@ -3146,7 +3129,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
-    if (handledByInputMethod || (keydownResult && !backwardCompatibilityMode))
+    if (handledByInputMethod || keydownResult)
         return keydownResult;
     
     // Focus may have changed during keydown handling, so refetch node.
@@ -3158,7 +3141,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     }
 
     PlatformKeyboardEvent keyPressEvent = initialKeyEvent;
-    keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char, backwardCompatibilityMode);
+    keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);
     if (keyPressEvent.text().isEmpty())
         return keydownResult;
     RefPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->defaultView());

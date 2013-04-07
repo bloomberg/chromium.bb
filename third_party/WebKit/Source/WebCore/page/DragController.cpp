@@ -710,12 +710,7 @@ static void prepareClipboardForImageDrag(Frame* source, Clipboard* clipboard, El
 static IntPoint dragLocForDHTMLDrag(const IntPoint& mouseDraggedPoint, const IntPoint& dragOrigin, const IntPoint& dragImageOffset, bool isLinkImage)
 {
     // dragImageOffset is the cursor position relative to the lower-left corner of the image.
-#if PLATFORM(MAC)
-    // We add in the Y dimension because we are a flipped view, so adding moves the image down.
-    const int yOffset = dragImageOffset.y();
-#else
     const int yOffset = -dragImageOffset.y();
-#endif
 
     if (isLinkImage)
         return IntPoint(mouseDraggedPoint.x() - dragImageOffset.x(), mouseDraggedPoint.y() + yOffset);
@@ -729,12 +724,7 @@ static IntPoint dragLocForSelectionDrag(Frame* src)
     int xpos = draggingRect.maxX();
     xpos = draggingRect.x() < xpos ? draggingRect.x() : xpos;
     int ypos = draggingRect.maxY();
-#if PLATFORM(MAC)
-    // Deal with flipped coordinates on Mac
-    ypos = draggingRect.y() > ypos ? draggingRect.y() : ypos;
-#else
     ypos = draggingRect.y() < ypos ? draggingRect.y() : ypos;
-#endif
     return IntPoint(xpos, ypos);
 }
 
@@ -883,10 +873,6 @@ void DragController::doImageDrag(Element* element, const IntPoint& dragOrigin, c
         float dx = origin.x() - mouseDownPoint.x();
         dx *= scale;
         origin.setX((int)(dx + 0.5));
-#if PLATFORM(MAC)
-        //Compensate for accursed flipped coordinates in cocoa
-        origin.setY(origin.y() + originalSize.height());
-#endif
         float dy = origin.y() - mouseDownPoint.y();
         dy *= scale;
         origin.setY((int)(dy + 0.5));
