@@ -16,7 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
