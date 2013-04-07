@@ -226,7 +226,7 @@ class AudioRendererImplTest : public ::testing::Test {
   // |muted| is optional and if passed will get set if the byte value of
   // the consumed data is muted audio.
   bool ConsumeBufferedData(uint32 size, bool* muted) {
-    scoped_array<uint8> buffer(new uint8[size]);
+    scoped_ptr<uint8[]> buffer(new uint8[size]);
     uint32 bytes_per_frame = (decoder_->bits_per_channel() / 8) *
         ChannelLayoutToChannelCount(decoder_->channel_layout());
     uint32 requested_frames = size / bytes_per_frame;
@@ -251,7 +251,7 @@ class AudioRendererImplTest : public ::testing::Test {
     const int kRequestFrames = 1024;
     const uint32 bytes_per_frame = (decoder_->bits_per_channel() / 8) *
         ChannelLayoutToChannelCount(decoder_->channel_layout());
-    scoped_array<uint8> buffer(new uint8[kRequestFrames * bytes_per_frame]);
+    scoped_ptr<uint8[]> buffer(new uint8[kRequestFrames * bytes_per_frame]);
 
     do {
       TimeDelta audio_delay = TimeDelta::FromMicroseconds(

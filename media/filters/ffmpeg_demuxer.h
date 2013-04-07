@@ -48,7 +48,7 @@ namespace media {
 // Second parameter - The initialization data associated with the stream.
 // Third parameter - Number of bytes of the initialization data.
 typedef base::Callback<void(const std::string& type,
-                            scoped_array<uint8> init_data,
+                            scoped_ptr<uint8[]> init_data,
                             int init_data_size)> FFmpegNeedKeyCB;
 
 class FFmpegDemuxer;

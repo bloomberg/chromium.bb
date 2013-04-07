@@ -1032,7 +1032,7 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
 void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
                                    const std::string& session_id,
                                    const std::string& type,
-                                   scoped_array<uint8> init_data,
+                                   scoped_ptr<uint8[]> init_data,
                                    int init_data_size) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 

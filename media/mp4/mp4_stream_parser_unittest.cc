@@ -83,7 +83,7 @@ class MP4StreamParserTest : public testing::Test {
   }
 
   bool KeyNeededF(const std::string& type,
-                  scoped_array<uint8> init_data, int init_data_size) {
+                  scoped_ptr<uint8[]> init_data, int init_data_size) {
     DVLOG(1) << "KeyNeededF: " << init_data_size;
     EXPECT_EQ(kMp4InitDataType, type);
     EXPECT_TRUE(init_data.get());

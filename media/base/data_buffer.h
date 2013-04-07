@@ -25,7 +25,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   explicit DataBuffer(int buffer_size);
 
   // Assumes valid data of size |buffer_size|.
-  DataBuffer(scoped_array<uint8> buffer, int buffer_size);
+  DataBuffer(scoped_ptr<uint8[]> buffer, int buffer_size);
 
   // Create a DataBuffer whose |data_| is copied from |data|.
   //
@@ -71,7 +71,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 
-  scoped_array<uint8> data_;
+  scoped_ptr<uint8[]> data_;
   int buffer_size_;
   int data_size_;
 

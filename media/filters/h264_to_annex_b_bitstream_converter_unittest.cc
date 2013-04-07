@@ -265,7 +265,7 @@ static const uint8 kPacketDataOkWithFieldLen4[] = {
 
 TEST_F(H264ToAnnexBBitstreamConverterTest, Success) {
   // Initialize converter.
-  scoped_array<uint8> output;
+  scoped_ptr<uint8[]> output;
   H264ToAnnexBBitstreamConverter converter;
 
   // Parse the headers.
@@ -353,7 +353,7 @@ TEST_F(H264ToAnnexBBitstreamConverterTest, FailureHeaderBufferOverflow) {
 
 TEST_F(H264ToAnnexBBitstreamConverterTest, FailureNalUnitBreakage) {
   // Initialize converter.
-  scoped_array<uint8> output;
+  scoped_ptr<uint8[]> output;
   H264ToAnnexBBitstreamConverter converter;
 
   // Parse the headers.
@@ -402,7 +402,7 @@ TEST_F(H264ToAnnexBBitstreamConverterTest, FailureNalUnitBreakage) {
 
 TEST_F(H264ToAnnexBBitstreamConverterTest, FailureTooSmallOutputBuffer) {
   // Initialize converter.
-  scoped_array<uint8> output;
+  scoped_ptr<uint8[]> output;
   H264ToAnnexBBitstreamConverter converter;
 
   // Parse the headers.

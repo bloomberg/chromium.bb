@@ -45,7 +45,7 @@ enum {
   kInitialBufferSize = 32768,
 };
 
-Cluster::Cluster(scoped_array<uint8> data, int size)
+Cluster::Cluster(scoped_ptr<uint8[]> data, int size)
     : data_(data.Pass()), size_(size) {}
 Cluster::~Cluster() {}
 
@@ -154,7 +154,7 @@ void ClusterBuilder::ExtendBuffer(int bytes_needed) {
   while ((new_buffer_size - bytes_used_) < bytes_needed)
     new_buffer_size *= 2;
 
-  scoped_array<uint8> new_buffer(new uint8[new_buffer_size]);
+  scoped_ptr<uint8[]> new_buffer(new uint8[new_buffer_size]);
 
   memcpy(new_buffer.get(), buffer_.get(), bytes_used_);
   buffer_.reset(new_buffer.release());

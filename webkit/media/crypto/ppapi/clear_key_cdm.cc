@@ -187,7 +187,7 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
 void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
                                   const std::string& session_id,
                                   const std::string& type,
-                                  scoped_array<uint8> init_data,
+                                  scoped_ptr<uint8[]> init_data,
                                   int init_data_length) {
   // In the current implementation of AesDecryptor, NeedKey is not used.
   // If no key is available to decrypt an input buffer, it returns kNoKey to

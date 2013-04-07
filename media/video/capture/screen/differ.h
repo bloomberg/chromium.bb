@@ -70,7 +70,7 @@ class MEDIA_EXPORT Differ {
   int bytes_per_row_;
 
   // Diff information for each block in the image.
-  scoped_array<DiffInfo> diff_info_;
+  scoped_ptr<DiffInfo[]> diff_info_;
 
   // Dimensions and total size of diff info array.
   int diff_info_width_;

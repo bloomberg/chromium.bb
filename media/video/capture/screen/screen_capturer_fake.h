@@ -59,7 +59,7 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
   scoped_refptr<SharedBuffer> shared_buffers_[kNumBuffers];
 
   // Used when |delegate_| does not implement CreateSharedBuffer().
-  scoped_array<uint8> private_buffers_[kNumBuffers];
+  scoped_ptr<uint8[]> private_buffers_[kNumBuffers];
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerFake);
 };

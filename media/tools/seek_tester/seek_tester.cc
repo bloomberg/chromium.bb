@@ -53,7 +53,7 @@ void TimestampExtractor(uint64* timestamp_ms,
   loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-static void NeedKey(const std::string& type, scoped_array<uint8> init_data,
+static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
              int init_data_size) {
   LOG(INFO) << "File is encrypted.";
 }

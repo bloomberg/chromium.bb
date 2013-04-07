@@ -129,7 +129,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   WebMListParser parser_;
 
   int64 last_block_timecode_;
-  scoped_array<uint8> block_data_;
+  scoped_ptr<uint8[]> block_data_;
   int block_data_size_;
   int64 block_duration_;
 

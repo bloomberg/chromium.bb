@@ -81,7 +81,7 @@ class AlsaPcmInputStream : public AudioInputStreamImpl {
   snd_mixer_t* mixer_handle_; // Handle to the ALSA microphone mixer.
   snd_mixer_elem_t* mixer_element_handle_; // Handle to the capture element.
   base::WeakPtrFactory<AlsaPcmInputStream> weak_factory_;
-  scoped_array<uint8> audio_buffer_;  // Buffer used for reading audio data.
+  scoped_ptr<uint8[]> audio_buffer_;  // Buffer used for reading audio data.
   bool read_callback_behind_schedule_;
 
   DISALLOW_COPY_AND_ASSIGN(AlsaPcmInputStream);

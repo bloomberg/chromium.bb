@@ -13,14 +13,14 @@ namespace media {
 
 class Cluster {
  public:
-  Cluster(scoped_array<uint8> data, int size);
+  Cluster(scoped_ptr<uint8[]> data, int size);
   ~Cluster();
 
   const uint8* data() const { return data_.get(); }
   int size() const { return size_; }
 
  private:
-  scoped_array<uint8> data_;
+  scoped_ptr<uint8[]> data_;
   int size_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Cluster);
@@ -46,7 +46,7 @@ class ClusterBuilder {
   void WriteBlock(uint8* buf, int track_num, int64 timecode, int flags,
                   const uint8* data, int size);
 
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
   int buffer_size_;
   int bytes_used_;
   int64 cluster_timecode_;

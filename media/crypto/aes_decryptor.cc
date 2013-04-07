@@ -103,7 +103,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   // copy all encrypted subsamples to a contiguous buffer, decrypt them, then
   // copy the decrypted bytes over the encrypted bytes in the output.
   // TODO(strobe): attempt to reduce number of memory copies
-  scoped_array<uint8> encrypted_bytes(new uint8[total_encrypted_size]);
+  scoped_ptr<uint8[]> encrypted_bytes(new uint8[total_encrypted_size]);
   CopySubsamples(subsamples, kSrcContainsClearBytes,
                  reinterpret_cast<const uint8*>(sample), encrypted_bytes.get());
 

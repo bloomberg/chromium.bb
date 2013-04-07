@@ -319,7 +319,7 @@ bool MP4StreamParser::EmitNeedKeyIfNecessary(
   for (size_t i = 0; i < headers.size(); i++)
     total_size += headers[i].raw_box.size();
 
-  scoped_array<uint8> init_data(new uint8[total_size]);
+  scoped_ptr<uint8[]> init_data(new uint8[total_size]);
   size_t pos = 0;
   for (size_t i = 0; i < headers.size(); i++) {
     memcpy(&init_data.get()[pos], &headers[i].raw_box[0],

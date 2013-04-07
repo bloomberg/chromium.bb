@@ -80,7 +80,7 @@ int CrossProcessNotification::WaitMultiple(const Notifications& notifications,
   // variable to split up the array so that the last socket to be signaled
   // becomes the last socket in the array and all the other sockets will have
   // priority the next time WaitMultiple is called.
-  scoped_array<struct pollfd> sockets(new struct pollfd[notifications.size()]);
+  scoped_ptr<struct pollfd[]> sockets(new struct pollfd[notifications.size()]);
   memset(&sockets[0], 0, notifications.size() * sizeof(sockets[0]));
   size_t index = 0;
   for (size_t i = wait_offset; i < notifications.size(); ++i) {

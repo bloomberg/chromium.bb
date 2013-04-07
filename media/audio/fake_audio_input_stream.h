@@ -57,7 +57,7 @@ class MEDIA_EXPORT FakeAudioInputStream
 
   AudioManagerBase* audio_manager_;
   AudioInputCallback* callback_;
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
   int buffer_size_;
   AudioParameters params_;
   base::Thread thread_;

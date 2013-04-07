@@ -60,7 +60,7 @@ TEST(SincResamplerTest, ChunkedResample) {
 
   static const int kChunks = 2;
   int max_chunk_size = resampler.ChunkSize() * kChunks;
-  scoped_array<float> resampled_destination(new float[max_chunk_size]);
+  scoped_ptr<float[]> resampled_destination(new float[max_chunk_size]);
 
   // Verify requesting ChunkSize() frames causes a single callback.
   EXPECT_CALL(mock_source, ProvideInput(_, _))
@@ -80,7 +80,7 @@ TEST(SincResamplerTest, Flush) {
   SincResampler resampler(
       kSampleRateRatio,
       base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
-  scoped_array<float> resampled_destination(new float[resampler.ChunkSize()]);
+  scoped_ptr<float[]> resampled_destination(new float[resampler.ChunkSize()]);
 
   // Fill the resampler with junk data.
   EXPECT_CALL(mock_source, ProvideInput(_, _))
@@ -306,8 +306,8 @@ TEST_P(SincResamplerTest, Resample) {
 
   // TODO(dalecurtis): If we switch to AVX/SSE optimization, we'll need to
   // allocate these on 32-byte boundaries and ensure they're sized % 32 bytes.
-  scoped_array<float> resampled_destination(new float[output_samples]);
-  scoped_array<float> pure_destination(new float[output_samples]);
+  scoped_ptr<float[]> resampled_destination(new float[output_samples]);
+  scoped_ptr<float[]> pure_destination(new float[output_samples]);
 
   // Generate resampled signal.
   resampler.Resample(resampled_destination.get(), output_samples);

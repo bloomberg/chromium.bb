@@ -22,7 +22,7 @@ void BoundBoolSetFromScopedPtrMalloc(bool* var, scoped_ptr_malloc<bool> val) {
   *var = val;
 }
 
-void BoundBoolSetFromScopedArray(bool* var, scoped_array<bool> val) {
+void BoundBoolSetFromScopedArray(bool* var, scoped_ptr<bool[]> val) {
   *var = val[0];
 }
 
@@ -91,7 +91,7 @@ TEST_F(BindToLoopTest, PassedScopedPtrBool) {
 
 TEST_F(BindToLoopTest, BoundScopedArrayBool) {
   bool bool_val = false;
-  scoped_array<bool> scoped_array_bool(new bool[1]);
+  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
   base::Closure cb = BindToLoop(proxy_, base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val,
@@ -104,9 +104,9 @@ TEST_F(BindToLoopTest, BoundScopedArrayBool) {
 
 TEST_F(BindToLoopTest, PassedScopedArrayBool) {
   bool bool_val = false;
-  scoped_array<bool> scoped_array_bool(new bool[1]);
+  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
-  base::Callback<void(scoped_array<bool>)> cb = BindToLoop(proxy_, base::Bind(
+  base::Callback<void(scoped_ptr<bool[]>)> cb = BindToLoop(proxy_, base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val));
   cb.Run(scoped_array_bool.Pass());
   EXPECT_FALSE(bool_val);

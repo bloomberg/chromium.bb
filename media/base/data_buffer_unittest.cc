@@ -30,7 +30,7 @@ TEST(DataBufferTest, Constructor_NonZeroSize) {
 TEST(DataBufferTest, Constructor_ScopedArray) {
   // Data should be passed and both data and buffer size should be set.
   const int kSize = 8;
-  scoped_array<uint8> data(new uint8[kSize]);
+  scoped_ptr<uint8[]> data(new uint8[kSize]);
   const uint8* kData = data.get();
 
   scoped_refptr<DataBuffer> buffer = new DataBuffer(data.Pass(), kSize);

@@ -156,7 +156,7 @@ class PPVarArrayFromNPVariantArray {
 
  private:
   size_t size_;
-  scoped_array<PP_Var> array_;
+  scoped_ptr<PP_Var[]> array_;
 
   DISALLOW_COPY_AND_ASSIGN(PPVarArrayFromNPVariantArray);
 };

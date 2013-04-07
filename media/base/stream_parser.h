@@ -68,7 +68,7 @@ class MEDIA_EXPORT StreamParser {
   //                False if something was wrong with the initialization data
   //                and a parsing error should be signalled.
   typedef base::Callback<bool(const std::string&,
-                              scoped_array<uint8>, int)> NeedKeyCB;
+                              scoped_ptr<uint8[]>, int)> NeedKeyCB;
 
   // Initialize the parser with necessary callbacks. Must be called before any
   // data is passed to Parse(). |init_cb| will be called once enough data has

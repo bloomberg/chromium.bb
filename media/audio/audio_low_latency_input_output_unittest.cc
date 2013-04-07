@@ -275,7 +275,7 @@ class FullDuplexAudioSinkSource
   int channels_;
   int frame_size_;
   double frames_to_ms_;
-  scoped_array<AudioDelayState> delay_states_;
+  scoped_ptr<AudioDelayState[]> delay_states_;
   size_t input_elements_to_write_;
   size_t output_elements_to_write_;
   base::Time previous_write_time_;

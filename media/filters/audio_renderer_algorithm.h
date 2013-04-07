@@ -168,7 +168,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   bool muted_;
 
   // Temporary buffer to hold crossfade data.
-  scoped_array<uint8> crossfade_buffer_;
+  scoped_ptr<uint8[]> crossfade_buffer_;
 
   // Window size, in bytes (calculated from audio properties).
   int window_size_;

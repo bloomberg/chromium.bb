@@ -34,7 +34,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   };
 
   typedef base::Callback<void(const std::string& type,
-                              scoped_array<uint8> init_data,
+                              scoped_ptr<uint8[]> init_data,
                               int init_data_size)> NeedKeyCB;
 
   // |open_cb| Run when Initialize() is called to signal that the demuxer
@@ -138,7 +138,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool OnAudioBuffers(const StreamParser::BufferQueue& buffers);
   bool OnVideoBuffers(const StreamParser::BufferQueue& buffers);
   bool OnNeedKey(const std::string& type,
-                 scoped_array<uint8> init_data,
+                 scoped_ptr<uint8[]> init_data,
                  int init_data_size);
   void OnNewMediaSegment(const std::string& source_id,
                          base::TimeDelta start_timestamp);

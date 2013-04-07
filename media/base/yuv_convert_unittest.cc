@@ -39,7 +39,7 @@ static const int kRGBSizeConverted = kSourceYSize * kBpp;
 // Helper for reading test data into a scoped_array<uint8>.
 static void ReadData(const base::FilePath::CharType* filename,
                      int expected_size,
-                     scoped_array<uint8>* data) {
+                     scoped_ptr<uint8[]>* data) {
   data->reset(new uint8[expected_size]);
 
   base::FilePath path;
@@ -60,27 +60,27 @@ static void ReadData(const base::FilePath::CharType* filename,
   CHECK_EQ(bytes_read, expected_size);
 }
 
-static void ReadYV12Data(scoped_array<uint8>* data) {
+static void ReadYV12Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_P420.yuv"), kYUV12Size, data);
 }
 
-static void ReadYV16Data(scoped_array<uint8>* data) {
+static void ReadYV16Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_P422.yuv"), kYUV16Size, data);
 }
 
-static void ReadRGB24Data(scoped_array<uint8>* data) {
+static void ReadRGB24Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_RGB24.rgb"), kRGB24Size, data);
 }
 
-static void ReadYUY2Data(scoped_array<uint8>* data) {
+static void ReadYUY2Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_YUY2.yuv"), kYUY2Size, data);
 }
 
 TEST(YUVConvertTest, YV12) {
   // Allocate all surfaces.
-  scoped_array<uint8> yuv_bytes;
-  scoped_array<uint8> rgb_bytes(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_converted_bytes(new uint8[kRGBSizeConverted]);
+  scoped_ptr<uint8[]> yuv_bytes;
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_converted_bytes(new uint8[kRGBSizeConverted]);
 
   // Read YUV reference data from file.
   ReadYV12Data(&yuv_bytes);
@@ -103,9 +103,9 @@ TEST(YUVConvertTest, YV12) {
 
 TEST(YUVConvertTest, YV16) {
   // Allocate all surfaces.
-  scoped_array<uint8> yuv_bytes;
-  scoped_array<uint8> rgb_bytes(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_converted_bytes(new uint8[kRGBSizeConverted]);
+  scoped_ptr<uint8[]> yuv_bytes;
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_converted_bytes(new uint8[kRGBSizeConverted]);
 
   // Read YUV reference data from file.
   ReadYV16Data(&yuv_bytes);
@@ -166,8 +166,8 @@ class YUVScaleTest : public ::testing::TestWithParam<YUVScaleTestData> {
     return NULL;
   }
 
-  scoped_array<uint8> yuv_bytes_;
-  scoped_array<uint8> rgb_bytes_;
+  scoped_ptr<uint8[]> yuv_bytes_;
+  scoped_ptr<uint8[]> rgb_bytes_;
 };
 
 TEST_P(YUVScaleTest, NoScale) {
@@ -279,9 +279,9 @@ INSTANTIATE_TEST_CASE_P(
 // This tests a known worst case YUV value, and for overflow.
 TEST(YUVConvertTest, Clamp) {
   // Allocate all surfaces.
-  scoped_array<uint8> yuv_bytes(new uint8[1]);
-  scoped_array<uint8> rgb_bytes(new uint8[1]);
-  scoped_array<uint8> rgb_converted_bytes(new uint8[1]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[1]);
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[1]);
+  scoped_ptr<uint8[]> rgb_converted_bytes(new uint8[1]);
 
   // Values that failed previously in bug report.
   unsigned char y = 255u;
@@ -308,8 +308,8 @@ TEST(YUVConvertTest, Clamp) {
 
 TEST(YUVConvertTest, RGB24ToYUV) {
   // Allocate all surfaces.
-  scoped_array<uint8> rgb_bytes;
-  scoped_array<uint8> yuv_converted_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes;
+  scoped_ptr<uint8[]> yuv_converted_bytes(new uint8[kYUV12Size]);
 
   // Read RGB24 reference data from file.
   ReadRGB24Data(&rgb_bytes);
@@ -331,10 +331,10 @@ TEST(YUVConvertTest, RGB24ToYUV) {
 
 TEST(YUVConvertTest, RGB32ToYUV) {
   // Allocate all surfaces.
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes(new uint8[kRGBSize]);
-  scoped_array<uint8> yuv_converted_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_converted_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_converted_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_converted_bytes(new uint8[kRGBSize]);
 
   // Read YUV reference data from file.
   base::FilePath yuv_url;
@@ -395,8 +395,8 @@ TEST(YUVConvertTest, RGB32ToYUV) {
 
 TEST(YUVConvertTest, YUY2ToYUV) {
   // Allocate all surfaces.
-  scoped_array<uint8> yuy_bytes;
-  scoped_array<uint8> yuv_converted_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> yuy_bytes;
+  scoped_ptr<uint8[]> yuv_converted_bytes(new uint8[kYUV12Size]);
 
   // Read YUY reference data from file.
   ReadYUY2Data(&yuy_bytes);
@@ -422,7 +422,7 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
                    .Append(FILE_PATH_LITERAL("data"))
                    .Append(FILE_PATH_LITERAL("bali_640x360_P420.yuv"));
   const size_t size_of_yuv = kSourceYSize * 12 / 8;  // 12 bpp.
-  scoped_array<uint8> yuv_bytes(new uint8[size_of_yuv]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[size_of_yuv]);
   EXPECT_EQ(static_cast<int>(size_of_yuv),
             file_util::ReadFile(yuv_url,
                                 reinterpret_cast<char*>(yuv_bytes.get()),
@@ -431,7 +431,7 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
   // Scale the full frame of YUV to 32 bit ARGB.
   // The API currently only supports down-scaling, so we don't test up-scaling.
   const size_t size_of_rgb_scaled = kDownScaledWidth * kDownScaledHeight * kBpp;
-  scoped_array<uint8> rgb_scaled_bytes(new uint8[size_of_rgb_scaled]);
+  scoped_ptr<uint8[]> rgb_scaled_bytes(new uint8[size_of_rgb_scaled]);
   gfx::Rect sub_rect(0, 0, kDownScaledWidth, kDownScaledHeight);
 
   // We can't compare with the full-frame scaler because it uses slightly
@@ -495,10 +495,10 @@ TEST(YUVConvertTest, RGB32ToYUV_SSE2_MatchReference) {
   }
 
   // Allocate all surfaces.
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes(new uint8[kRGBSize]);
-  scoped_array<uint8> yuv_converted_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> yuv_reference_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_converted_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> yuv_reference_bytes(new uint8[kYUV12Size]);
 
   ReadYV12Data(&yuv_bytes);
 
@@ -581,9 +581,9 @@ TEST(YUVConvertTest, ConvertYUVToRGB32Row_MMX) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -610,9 +610,9 @@ TEST(YUVConvertTest, ConvertYUVToRGB32Row_SSE) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -639,9 +639,9 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_MMX) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -671,9 +671,9 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_SSE) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -703,9 +703,9 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_MMX) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -735,9 +735,9 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_SSE) {
     return;
   }
 
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -761,8 +761,8 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_SSE) {
 }
 
 TEST(YUVConvertTest, FilterYUVRows_C_OutOfBounds) {
-  scoped_array<uint8> src(new uint8[16]);
-  scoped_array<uint8> dst(new uint8[16]);
+  scoped_ptr<uint8[]> src(new uint8[16]);
+  scoped_ptr<uint8[]> dst(new uint8[16]);
 
   memset(src.get(), 0xff, 16);
   memset(dst.get(), 0, 16);
@@ -783,8 +783,8 @@ TEST(YUVConvertTest, FilterYUVRows_MMX_OutOfBounds) {
     return;
   }
 
-  scoped_array<uint8> src(new uint8[16]);
-  scoped_array<uint8> dst(new uint8[16]);
+  scoped_ptr<uint8[]> src(new uint8[16]);
+  scoped_ptr<uint8[]> dst(new uint8[16]);
 
   memset(src.get(), 0xff, 16);
   memset(dst.get(), 0, 16);
@@ -806,8 +806,8 @@ TEST(YUVConvertTest, FilterYUVRows_SSE2_OutOfBounds) {
     return;
   }
 
-  scoped_array<uint8> src(new uint8[16]);
-  scoped_array<uint8> dst(new uint8[16]);
+  scoped_ptr<uint8[]> src(new uint8[16]);
+  scoped_ptr<uint8[]> dst(new uint8[16]);
 
   memset(src.get(), 0xff, 16);
   memset(dst.get(), 0, 16);
@@ -829,9 +829,9 @@ TEST(YUVConvertTest, FilterYUVRows_MMX_UnalignedDestination) {
   }
 
   const int kSize = 32;
-  scoped_array<uint8> src(new uint8[kSize]);
-  scoped_array<uint8> dst_sample(new uint8[kSize]);
-  scoped_array<uint8> dst(new uint8[kSize]);
+  scoped_ptr<uint8[]> src(new uint8[kSize]);
+  scoped_ptr<uint8[]> dst_sample(new uint8[kSize]);
+  scoped_ptr<uint8[]> dst(new uint8[kSize]);
 
   memset(dst_sample.get(), 0, kSize);
   memset(dst.get(), 0, kSize);
@@ -860,9 +860,9 @@ TEST(YUVConvertTest, FilterYUVRows_SSE2_UnalignedDestination) {
   }
 
   const int kSize = 64;
-  scoped_array<uint8> src(new uint8[kSize]);
-  scoped_array<uint8> dst_sample(new uint8[kSize]);
-  scoped_array<uint8> dst(new uint8[kSize]);
+  scoped_ptr<uint8[]> src(new uint8[kSize]);
+  scoped_ptr<uint8[]> dst_sample(new uint8[kSize]);
+  scoped_ptr<uint8[]> dst(new uint8[kSize]);
 
   memset(dst_sample.get(), 0, kSize);
   memset(dst.get(), 0, kSize);
@@ -885,9 +885,9 @@ TEST(YUVConvertTest, FilterYUVRows_SSE2_UnalignedDestination) {
 #if defined(ARCH_CPU_X86_64)
 
 TEST(YUVConvertTest, ScaleYUVToRGB32Row_SSE2_X64) {
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;
@@ -911,9 +911,9 @@ TEST(YUVConvertTest, ScaleYUVToRGB32Row_SSE2_X64) {
 }
 
 TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_MMX_X64) {
-  scoped_array<uint8> yuv_bytes(new uint8[kYUV12Size]);
-  scoped_array<uint8> rgb_bytes_reference(new uint8[kRGBSize]);
-  scoped_array<uint8> rgb_bytes_converted(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> yuv_bytes(new uint8[kYUV12Size]);
+  scoped_ptr<uint8[]> rgb_bytes_reference(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_bytes_converted(new uint8[kRGBSize]);
   ReadYV12Data(&yuv_bytes);
 
   const int kWidth = 167;

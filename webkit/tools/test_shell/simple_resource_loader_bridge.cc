@@ -402,7 +402,7 @@ class RequestProxy
       return;
 
     // Make a local copy of buf_, since AsyncReadData reuses it.
-    scoped_array<char> buf_copy(new char[bytes_read]);
+    scoped_ptr<char[]> buf_copy(new char[bytes_read]);
     memcpy(buf_copy.get(), buf_->data(), bytes_read);
 
     // Continue reading more data into buf_

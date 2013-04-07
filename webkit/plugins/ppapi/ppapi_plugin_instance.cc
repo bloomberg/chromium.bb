@@ -294,9 +294,9 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 // Convert the given vector to an array of C-strings. The strings in the
 // returned vector are only guaranteed valid so long as the vector of strings
 // is not modified.
-scoped_array<const char*> StringVectorToArgArray(
+scoped_ptr<const char*[]> StringVectorToArgArray(
     const std::vector<std::string>& vector) {
-  scoped_array<const char*> array(new const char*[vector.size()]);
+  scoped_ptr<const char*[]> array(new const char*[vector.size()]);
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array.Pass();
@@ -582,8 +582,8 @@ bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
 
   argn_ = arg_names;
   argv_ = arg_values;
-  scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
-  scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
+  scoped_ptr<const char*[]> argn_array(StringVectorToArgArray(argn_));
+  scoped_ptr<const char*[]> argv_array(StringVectorToArgArray(argv_));
   bool success =  PP_ToBool(instance_interface_->DidCreate(pp_instance(),
                                                            argn_.size(),
                                                            argn_array.get(),
@@ -2419,8 +2419,8 @@ PP_NaClResult PluginInstance::ResetAsProxied(
   plugin_zoom_interface_ = NULL;
 
   // Re-send the DidCreate event via the proxy.
-  scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
-  scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
+  scoped_ptr<const char*[]> argn_array(StringVectorToArgArray(argn_));
+  scoped_ptr<const char*[]> argv_array(StringVectorToArgArray(argv_));
   if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
                                       argn_array.get(), argv_array.get()))
     return PP_NACL_ERROR_INSTANCE;

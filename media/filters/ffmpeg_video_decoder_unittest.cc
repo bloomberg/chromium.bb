@@ -209,7 +209,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   VideoDecoder::ReadCB read_cb_;
 
   // Various buffers for testing.
-  scoped_array<uint8_t> frame_buffer_;
+  scoped_ptr<uint8_t[]> frame_buffer_;
   scoped_refptr<DecoderBuffer> end_of_stream_buffer_;
   scoped_refptr<DecoderBuffer> i_frame_buffer_;
   scoped_refptr<DecoderBuffer> corrupt_i_frame_buffer_;

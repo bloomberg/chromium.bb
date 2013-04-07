@@ -217,7 +217,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   void WriteData(int size) {
     EXPECT_CALL(*this, ProgressCallback(_));
 
-    scoped_array<char> data(new char[size]);
+    scoped_ptr<char[]> data(new char[size]);
     loader_->didReceiveData(url_loader_, data.get(), size, size);
   }
 

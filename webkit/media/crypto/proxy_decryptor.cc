@@ -215,7 +215,7 @@ void ProxyDecryptor::KeyMessage(const std::string& key_system,
 void ProxyDecryptor::NeedKey(const std::string& key_system,
                              const std::string& session_id,
                              const std::string& type,
-                             scoped_array<uint8> init_data,
+                             scoped_ptr<uint8[]> init_data,
                              int init_data_size) {
   need_key_cb_.Run(key_system, session_id, type,
                    init_data.Pass(), init_data_size);

@@ -65,7 +65,7 @@ class PulseAudioInputStream : public AudioInputStreamImpl {
 
   // Temporary storage for recorded data. It gets a packet of data from
   // |buffer_| and deliver the data to OnData() callback.
-  scoped_array<uint8> audio_data_buffer_;
+  scoped_ptr<uint8[]> audio_data_buffer_;
 
   // PulseAudio API structs.
   pa_threaded_mainloop* pa_mainloop_; // Weak.

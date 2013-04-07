@@ -49,10 +49,10 @@ TEST(YUVConvertTest, SideBySideRGB) {
 
   for (int size = 3; size <= 4; ++size) {
     // Create the output buffers.
-    scoped_array<uint8> rgb(new uint8[kWidth * size]);
-    scoped_array<uint8> y(new uint8[kWidth]);
-    scoped_array<uint8> u(new uint8[kWidth / 2]);
-    scoped_array<uint8> v(new uint8[kWidth / 2]);
+    scoped_ptr<uint8[]> rgb(new uint8[kWidth * size]);
+    scoped_ptr<uint8[]> y(new uint8[kWidth]);
+    scoped_ptr<uint8[]> u(new uint8[kWidth / 2]);
+    scoped_ptr<uint8[]> v(new uint8[kWidth / 2]);
 
     // Choose the function that converts from RGB pixels to YUV ones.
     void (*convert)(const uint8*, uint8*, uint8*, uint8*,

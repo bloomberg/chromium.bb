@@ -82,7 +82,7 @@ class FakeScreenCapturer : public ScreenCapturer {
 
  private:
   Delegate* delegate_;
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
   scoped_refptr<ScreenCaptureData> frames_[2];
   int frame_index_;
 };

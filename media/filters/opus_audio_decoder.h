@@ -78,7 +78,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   int skip_samples_;
 
   // Buffer for output from libopus.
-  scoped_array<int16> output_buffer_;
+  scoped_ptr<int16[]> output_buffer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);
 };

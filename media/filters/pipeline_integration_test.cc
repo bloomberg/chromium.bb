@@ -82,7 +82,7 @@ class FakeEncryptedMedia {
     virtual void NeedKey(const std::string& key_system,
                          const std::string& session_id,
                          const std::string& type,
-                         scoped_array<uint8> init_data, int init_data_length,
+                         scoped_ptr<uint8[]> init_data, int init_data_length,
                          AesDecryptor* decryptor) = 0;
   };
 
@@ -124,7 +124,7 @@ class FakeEncryptedMedia {
   void NeedKey(const std::string& key_system,
                const std::string& session_id,
                const std::string& type,
-               scoped_array<uint8> init_data, int init_data_length) {
+               scoped_ptr<uint8[]> init_data, int init_data_length) {
     app_->NeedKey(key_system, session_id, type,
                   init_data.Pass(), init_data_length, &decryptor_);
   }
@@ -158,7 +158,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   virtual void NeedKey(const std::string& key_system,
                        const std::string& session_id,
                        const std::string& type,
-                       scoped_array<uint8> init_data, int init_data_length,
+                       scoped_ptr<uint8[]> init_data, int init_data_length,
                        AesDecryptor* decryptor) OVERRIDE {
     current_key_system_ = key_system;
     current_session_id_ = session_id;
@@ -216,7 +216,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
   virtual void NeedKey(const std::string& key_system,
                        const std::string& session_id,
                        const std::string& type,
-                       scoped_array<uint8> init_data, int init_data_length,
+                       scoped_ptr<uint8[]> init_data, int init_data_length,
                        AesDecryptor* decryptor) OVERRIDE {
   }
 };
@@ -312,7 +312,7 @@ class MockMediaSource {
   }
 
   void DemuxerNeedKey(const std::string& type,
-                      scoped_array<uint8> init_data, int init_data_size) {
+                      scoped_ptr<uint8[]> init_data, int init_data_size) {
     DCHECK(init_data.get());
     DCHECK_GT(init_data_size, 0);
     CHECK(!need_key_cb_.is_null());

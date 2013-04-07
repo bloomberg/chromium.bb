@@ -75,7 +75,7 @@ class PulseAudioUnifiedStream : public AudioOutputStream {
 
   // Temporary storage for recorded data. It gets a packet of data from
   // |fifo_| and deliver the data to OnMoreIOData() callback.
-  scoped_array<uint8> input_data_buffer_;
+  scoped_ptr<uint8[]> input_data_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PulseAudioUnifiedStream);
 };

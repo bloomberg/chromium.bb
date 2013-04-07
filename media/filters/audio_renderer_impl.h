@@ -262,7 +262,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Variables used only on the audio thread. ---------------------------------
   int actual_frames_per_buffer_;
-  scoped_array<uint8> audio_buffer_;
+  scoped_ptr<uint8[]> audio_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

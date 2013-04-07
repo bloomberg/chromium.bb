@@ -43,7 +43,7 @@ void QuitLoopWithStatus(MessageLoop* message_loop,
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
 }
 
-static void NeedKey(const std::string& type, scoped_array<uint8> init_data,
+static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
              int init_data_size) {
   LOG(INFO) << "File is encrypted.";
 }

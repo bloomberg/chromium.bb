@@ -235,7 +235,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTest) {
 
 TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
   const size_t buffer_size = 4000;
-  scoped_array<char> buffer(new char[buffer_size]);
+  scoped_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
   WriteFile("bigfile", buffer.get(), buffer_size);
 
@@ -259,7 +259,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
 
 TEST_F(FileSystemURLRequestJobTest, FileTestHalfSpecifiedRange) {
   const size_t buffer_size = 4000;
-  scoped_array<char> buffer(new char[buffer_size]);
+  scoped_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
   WriteFile("bigfile", buffer.get(), buffer_size);
 

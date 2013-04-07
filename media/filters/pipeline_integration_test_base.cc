@@ -62,7 +62,7 @@ PipelineStatusCB PipelineIntegrationTestBase::QuitOnStatusCB(
 
 void PipelineIntegrationTestBase::DemuxerNeedKeyCB(
     const std::string& type,
-    scoped_array<uint8> init_data,
+    scoped_ptr<uint8[]> init_data,
     int init_data_size) {
   DCHECK(init_data.get());
   DCHECK_GT(init_data_size, 0);

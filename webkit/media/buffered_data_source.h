@@ -177,7 +177,7 @@ class BufferedDataSource : public media::DataSource {
   // because we want buffer to be passed into BufferedResourceLoader to be
   // always non-null. And by initializing this member with a default size we can
   // avoid creating zero-sized buffered if the first read has zero size.
-  scoped_array<uint8> intermediate_read_buffer_;
+  scoped_ptr<uint8[]> intermediate_read_buffer_;
   int intermediate_read_buffer_size_;
 
   // The message loop of the render thread.

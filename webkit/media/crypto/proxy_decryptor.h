@@ -68,7 +68,7 @@ class ProxyDecryptor {
   void NeedKey(const std::string& key_system,
                const std::string& session_id,
                const std::string& type,
-               scoped_array<uint8> init_data, int init_data_size);
+               scoped_ptr<uint8[]> init_data, int init_data_size);
 
   // Needed to create the PpapiDecryptor.
   WebKit::WebMediaPlayerClient* web_media_player_client_;

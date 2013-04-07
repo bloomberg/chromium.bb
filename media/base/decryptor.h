@@ -235,7 +235,7 @@ typedef base::Callback<void(const std::string& key_system,
 typedef base::Callback<void(const std::string& key_system,
                             const std::string& session_id,
                             const std::string& type,
-                            scoped_array<uint8> init_data,
+                            scoped_ptr<uint8[]> init_data,
                             int init_data_size)> NeedKeyCB;
 
 }  // namespace media

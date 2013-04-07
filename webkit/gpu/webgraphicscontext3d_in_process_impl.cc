@@ -40,9 +40,9 @@ struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
   }
 
   WGC3Denum type;
-  scoped_array<char> source;
-  scoped_array<char> log;
-  scoped_array<char> translated_source;
+  scoped_ptr<char[]> source;
+  scoped_ptr<char[]> log;
+  scoped_ptr<char[]> translated_source;
   bool is_valid;
 };
 
@@ -1080,7 +1080,7 @@ bool WebGraphicsContext3DInProcessImpl::getActiveAttrib(
   glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_array<GLchar> name(new GLchar[max_name_length]);
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
   GLenum type = 0;
@@ -1102,7 +1102,7 @@ bool WebGraphicsContext3DInProcessImpl::getActiveUniform(
   glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_array<GLchar> name(new GLchar[max_name_length]);
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
   GLenum type = 0;
@@ -1202,7 +1202,7 @@ WebString WebGraphicsContext3DInProcessImpl::getProgramInfoLog(
   glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
   if (!log_length)
     return WebString();
-  scoped_array<GLchar> log(new GLchar[log_length]);
+  scoped_ptr<GLchar[]> log(new GLchar[log_length]);
   GLsizei returned_log_length;
   glGetProgramInfoLog(program, log_length, &returned_log_length, log.get());
   DCHECK(log_length == returned_log_length + 1);
@@ -1305,7 +1305,7 @@ WebString WebGraphicsContext3DInProcessImpl::getShaderInfoLog(WebGLId shader) {
   glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
   if (log_length <= 1)
     return WebString();
-  scoped_array<GLchar> log(new GLchar[log_length]);
+  scoped_ptr<GLchar[]> log(new GLchar[log_length]);
   GLsizei returned_log_length;
   glGetShaderInfoLog(shader, log_length, &returned_log_length, log.get());
   DCHECK(log_length == returned_log_length + 1);
@@ -1331,7 +1331,7 @@ WebString WebGraphicsContext3DInProcessImpl::getShaderSource(WebGLId shader) {
   glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &log_length);
   if (log_length <= 1)
     return WebString();
-  scoped_array<GLchar> log(new GLchar[log_length]);
+  scoped_ptr<GLchar[]> log(new GLchar[log_length]);
   GLsizei returned_log_length;
   glGetShaderSource(shader, log_length, &returned_log_length, log.get());
   DCHECK(log_length == returned_log_length + 1);

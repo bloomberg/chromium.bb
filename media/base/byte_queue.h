@@ -39,7 +39,7 @@ class MEDIA_EXPORT ByteQueue {
   // Returns a pointer to the front of the queue.
   uint8* front() const;
 
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
 
   // Size of |buffer_|.
   size_t size_;

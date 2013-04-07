@@ -40,7 +40,7 @@ void ByteQueue::Push(const uint8* data, int size) {
     // Sanity check to make sure we didn't overflow.
     CHECK_GT(new_size, size_);
 
-    scoped_array<uint8> new_buffer(new uint8[new_size]);
+    scoped_ptr<uint8[]> new_buffer(new uint8[new_size]);
 
     // Copy the data from the old buffer to the start of the new one.
     if (used_ > 0)

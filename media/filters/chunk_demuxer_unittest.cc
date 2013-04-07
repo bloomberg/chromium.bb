@@ -161,7 +161,7 @@ class ChunkDemuxerTest : public testing::Test {
 
   void CreateInitSegment(bool has_audio, bool has_video,
                          bool is_audio_encrypted, bool is_video_encrypted,
-                         scoped_array<uint8>* buffer,
+                         scoped_ptr<uint8[]>* buffer,
                          int* size) {
     scoped_refptr<DecoderBuffer> ebml_header;
     scoped_refptr<DecoderBuffer> info;
@@ -315,7 +315,7 @@ class ChunkDemuxerTest : public testing::Test {
                                           bool has_audio, bool has_video,
                                           bool is_audio_encrypted,
                                           bool is_video_encrypted) {
-    scoped_array<uint8> info_tracks;
+    scoped_ptr<uint8[]> info_tracks;
     int info_tracks_size = 0;
     CreateInitSegment(has_audio, has_video,
                       is_audio_encrypted, is_video_encrypted,
@@ -326,7 +326,7 @@ class ChunkDemuxerTest : public testing::Test {
   void AppendGarbage() {
     // Fill up an array with gibberish.
     int garbage_cluster_size = 10;
-    scoped_array<uint8> garbage_cluster(new uint8[garbage_cluster_size]);
+    scoped_ptr<uint8[]> garbage_cluster(new uint8[garbage_cluster_size]);
     for (int i = 0; i < garbage_cluster_size; ++i)
       garbage_cluster[i] = i;
     AppendData(garbage_cluster.get(), garbage_cluster_size);
@@ -481,7 +481,7 @@ class ChunkDemuxerTest : public testing::Test {
     CHECK_GT(block_count, 0);
 
     int size = 10;
-    scoped_array<uint8> data(new uint8[size]);
+    scoped_ptr<uint8[]> data(new uint8[size]);
 
     ClusterBuilder cb;
     cb.SetClusterTimecode(std::min(first_audio_timecode, first_video_timecode));
@@ -537,7 +537,7 @@ class ChunkDemuxerTest : public testing::Test {
     CHECK_GT(end_timecode, timecode);
 
     int size = 10;
-    scoped_array<uint8> data(new uint8[size]);
+    scoped_ptr<uint8[]> data(new uint8[size]);
 
     ClusterBuilder cb;
     cb.SetClusterTimecode(timecode);
@@ -775,7 +775,7 @@ class ChunkDemuxerTest : public testing::Test {
   MOCK_METHOD3(NeedKeyMock, void(const std::string& type,
                                  const uint8* init_data, int init_data_size));
   void DemuxerNeedKey(const std::string& type,
-                      scoped_array<uint8> init_data, int init_data_size) {
+                      scoped_ptr<uint8[]> init_data, int init_data_size) {
     NeedKeyMock(type, init_data.get(), init_data_size);
   }
 
@@ -940,7 +940,7 @@ TEST_F(ChunkDemuxerTest, TestSeekWhileParsingCluster) {
 
 // Test the case where AppendData() is called before Init().
 TEST_F(ChunkDemuxerTest, TestAppendDataBeforeInit) {
-  scoped_array<uint8> info_tracks;
+  scoped_ptr<uint8[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(true, true, false, false, &info_tracks, &info_tracks_size);
 
@@ -1294,7 +1294,7 @@ TEST_F(ChunkDemuxerTest, TestAppendingInPieces) {
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
-  scoped_array<uint8> info_tracks;
+  scoped_ptr<uint8[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(true, true, false, false, &info_tracks, &info_tracks_size);
 
@@ -1302,7 +1302,7 @@ TEST_F(ChunkDemuxerTest, TestAppendingInPieces) {
   scoped_ptr<Cluster> cluster_b(kDefaultSecondCluster());
 
   size_t buffer_size = info_tracks_size + cluster_a->size() + cluster_b->size();
-  scoped_array<uint8> buffer(new uint8[buffer_size]);
+  scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
   uint8* dst = buffer.get();
   memcpy(dst, info_tracks.get(), info_tracks_size);
   dst += info_tracks_size;

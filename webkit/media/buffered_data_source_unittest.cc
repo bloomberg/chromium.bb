@@ -168,7 +168,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void ReceiveData(int size) {
-    scoped_array<char> data(new char[size]);
+    scoped_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
     loader()->didReceiveData(url_loader(), data.get(), size, size);

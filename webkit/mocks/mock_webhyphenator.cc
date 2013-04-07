@@ -61,7 +61,7 @@ size_t MockWebHyphenator::computeLastHyphenLocation(
   if (!IsStringASCII(word_utf16))
     return 0;
   std::string word = StringToLowerASCII(UTF16ToASCII(word_utf16));
-  scoped_array<char> hyphens(new char[word.length() + 5]);
+  scoped_ptr<char[]> hyphens(new char[word.length() + 5]);
   char** rep = NULL;
   int* pos = NULL;
   int* cut = NULL;

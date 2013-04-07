@@ -136,7 +136,7 @@ class FFmpegDemuxerTest : public testing::Test {
   MOCK_METHOD3(NeedKeyCBMock, void(const std::string& type,
                                    const uint8* init_data, int init_data_size));
   void NeedKeyCB(const std::string& type,
-                 scoped_array<uint8> init_data, int init_data_size) {
+                 scoped_ptr<uint8[]> init_data, int init_data_size) {
     NeedKeyCBMock(type, init_data.get(), init_data_size);
   }
 

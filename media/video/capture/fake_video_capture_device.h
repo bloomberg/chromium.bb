@@ -54,7 +54,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   InternalState state_;
   base::Thread capture_thread_;
   int frame_size_;
-  scoped_array<uint8> fake_frame_;
+  scoped_ptr<uint8[]> fake_frame_;
   int frame_count_;
   int frame_width_;
   int frame_height_;

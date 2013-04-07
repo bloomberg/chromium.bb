@@ -15,7 +15,7 @@ DataBuffer::DataBuffer(int buffer_size)
   data_.reset(new uint8[buffer_size_]);
 }
 
-DataBuffer::DataBuffer(scoped_array<uint8> buffer, int buffer_size)
+DataBuffer::DataBuffer(scoped_ptr<uint8[]> buffer, int buffer_size)
     : data_(buffer.Pass()),
       buffer_size_(buffer_size),
       data_size_(buffer_size) {

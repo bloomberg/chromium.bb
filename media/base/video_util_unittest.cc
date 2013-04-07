@@ -50,9 +50,9 @@ class VideoUtilTest : public testing::Test {
   }
 
  private:
-  scoped_array<uint8> y_plane_;
-  scoped_array<uint8> u_plane_;
-  scoped_array<uint8> v_plane_;
+  scoped_ptr<uint8[]> y_plane_;
+  scoped_ptr<uint8[]> u_plane_;
+  scoped_ptr<uint8[]> v_plane_;
 
   int height_;
   int y_stride_;

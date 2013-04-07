@@ -66,8 +66,8 @@ bool WebPluginDelegateImpl::Initialize(
     webkit_glue::SetForcefullyTerminatePluginProcess(true);
 
   int argc = 0;
-  scoped_array<char*> argn(new char*[arg_names.size()]);
-  scoped_array<char*> argv(new char*[arg_names.size()]);
+  scoped_ptr<char*[]> argn(new char*[arg_names.size()]);
+  scoped_ptr<char*[]> argv(new char*[arg_names.size()]);
   for (size_t i = 0; i < arg_names.size(); ++i) {
     if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
         LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {

@@ -89,7 +89,7 @@ class PpapiDecryptor : public media::Decryptor {
   void NeedKey(const std::string& key_system,
                const std::string& session_id,
                const std::string& type,
-               scoped_array<uint8> init_data, int init_data_size);
+               scoped_ptr<uint8[]> init_data, int init_data_size);
 
   // Hold a reference of the plugin instance to make sure the plugin outlives
   // the |plugin_cdm_delegate_|. This is needed because |plugin_cdm_delegate_|

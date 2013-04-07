@@ -93,7 +93,7 @@ scoped_ptr<SkRegion> ScreenCapturerHelper::ExpandToGrid(
     ++rectNum;
   }
   // Expand each rect.
-  scoped_array<SkIRect> rects(new SkIRect[rectNum]);
+  scoped_ptr<SkIRect[]> rects(new SkIRect[rectNum]);
   iter.rewind();
   int rectI = 0;
   while (!iter.done()) {

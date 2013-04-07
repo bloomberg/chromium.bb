@@ -41,8 +41,8 @@ base::internal::PassedWrapper<scoped_ptr<T> > TrampolineForward(
     scoped_ptr<T>& p) { return base::Passed(&p); }
 
 template <typename T>
-base::internal::PassedWrapper<scoped_array<T> > TrampolineForward(
-    scoped_array<T>& p) { return base::Passed(&p); }
+base::internal::PassedWrapper<scoped_ptr<T[]> > TrampolineForward(
+    scoped_ptr<T[]>& p) { return base::Passed(&p); }
 
 template <typename T, typename R>
 base::internal::PassedWrapper<scoped_ptr_malloc<T, R> > TrampolineForward(

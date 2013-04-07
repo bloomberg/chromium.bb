@@ -213,7 +213,7 @@ bool AudioRendererAlgorithm::OutputFasterPlayback(uint8* dest,
   int offset_into_buffer = index_into_window_ - intro_crossfade_begin;
   memcpy(dest, crossfade_buffer_.get() + offset_into_buffer,
          bytes_per_frame_);
-  scoped_array<uint8> intro_frame_ptr(new uint8[bytes_per_frame_]);
+  scoped_ptr<uint8[]> intro_frame_ptr(new uint8[bytes_per_frame_]);
   audio_buffer_.Read(intro_frame_ptr.get(), bytes_per_frame_);
   OutputCrossfadedFrame(dest, intro_frame_ptr.get());
   index_into_window_ += bytes_per_frame_;

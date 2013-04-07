@@ -207,7 +207,7 @@ class WebMediaPlayerImpl
   void OnNeedKey(const std::string& key_system,
                  const std::string& type,
                  const std::string& session_id,
-                 scoped_array<uint8> init_data,
+                 scoped_ptr<uint8[]> init_data,
                  int init_data_size);
   void SetOpaque(bool);
 

@@ -95,7 +95,7 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb,
 
 static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
 
-static void NeedKey(const std::string& type, scoped_array<uint8> init_data,
+static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
              int init_data_size) {
   std::cout << "File is encrypted." << std::endl;
 }

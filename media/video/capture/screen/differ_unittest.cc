@@ -187,8 +187,8 @@ class DifferTest : public testing::Test {
   int buffer_size_;
 
   // Previous and current screen buffers.
-  scoped_array<uint8> prev_;
-  scoped_array<uint8> curr_;
+  scoped_ptr<uint8[]> prev_;
+  scoped_ptr<uint8[]> curr_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DifferTest);
