@@ -40,24 +40,8 @@
 #include "ScriptController.h"
 #include "UserScriptTypes.h"
 
-#if PLATFORM(WIN)
-#include "FrameWin.h"
-#endif
-
 #if USE(TILED_BACKING_STORE)
 #include "TiledBackingStoreClient.h"
-#endif
-
-#if PLATFORM(MAC)
-#ifndef __OBJC__
-class NSArray;
-class NSMutableDictionary;
-class NSString;
-#endif
-#endif
-
-#if PLATFORM(WIN)
-typedef struct HBITMAP__* HBITMAP;
 #endif
 
 namespace WebCore {
@@ -188,12 +172,6 @@ namespace WebCore {
         String searchForLabelsBeforeElement(const Vector<String>& labels, Element*, size_t* resultDistance, bool* resultIsInCellAbove);
         String matchLabelsAgainstElement(const Vector<String>& labels, Element*);
 
-#if PLATFORM(MAC)
-        NSImage* selectionImage(bool forceBlackText = false) const;
-        NSImage* rangeImage(Range*, bool forceBlackText = false) const;
-        NSImage* snapshotDragImage(Node*, NSRect* imageRect, NSRect* elementRect) const;
-        NSImage* imageFromRect(NSRect) const;
-#endif
         void suspendActiveDOMObjectsAndAnimations();
         void resumeActiveDOMObjectsAndAnimations();
         bool activeDOMObjectsAndAnimationsSuspended() const { return m_activeDOMObjectsAndAnimationsSuspendedCount > 0; }

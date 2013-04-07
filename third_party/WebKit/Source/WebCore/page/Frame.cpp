@@ -1037,7 +1037,6 @@ bool Frame::isURLAllowed(const KURL& url) const
     return true;
 }
 
-#if !PLATFORM(MAC) && !PLATFORM(WIN)
 struct ScopedFramePaintingState {
     ScopedFramePaintingState(Frame* frame, Node* node)
         : frame(frame)
@@ -1133,7 +1132,5 @@ DragImageRef Frame::dragImageForSelection()
     RefPtr<Image> image = buffer->copyImage();
     return createDragImageFromImage(image.get());
 }
-
-#endif
 
 } // namespace WebCore
