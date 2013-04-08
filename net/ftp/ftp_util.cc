@@ -187,6 +187,24 @@ class AbbreviatedMonthsMap {
         map_[month_name.substr(0, 3)] = month + 1;
       }
     }
+
+    // Fail loudly if the data returned by ICU is obviously incomplete.
+    // This is intended to catch cases like http://crbug.com/177428
+    // much earlier. Note that the issue above turned out to be non-trivial
+    // to reproduce - crash data is much better indicator of a problem
+    // than incomplete bug reports.
+    CHECK_EQ(1, map_[ASCIIToUTF16("jan")]);
+    CHECK_EQ(2, map_[ASCIIToUTF16("feb")]);
+    CHECK_EQ(3, map_[ASCIIToUTF16("mar")]);
+    CHECK_EQ(4, map_[ASCIIToUTF16("apr")]);
+    CHECK_EQ(5, map_[ASCIIToUTF16("may")]);
+    CHECK_EQ(6, map_[ASCIIToUTF16("jun")]);
+    CHECK_EQ(7, map_[ASCIIToUTF16("jul")]);
+    CHECK_EQ(8, map_[ASCIIToUTF16("aug")]);
+    CHECK_EQ(9, map_[ASCIIToUTF16("sep")]);
+    CHECK_EQ(10, map_[ASCIIToUTF16("oct")]);
+    CHECK_EQ(11, map_[ASCIIToUTF16("nov")]);
+    CHECK_EQ(12, map_[ASCIIToUTF16("dec")]);
   }
 
   // Maps lowercase month names to numbers in range 1-12.
