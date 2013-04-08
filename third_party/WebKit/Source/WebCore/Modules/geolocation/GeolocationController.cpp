@@ -26,8 +26,6 @@
 #include "config.h"
 #include "GeolocationController.h"
 
-#if ENABLE(GEOLOCATION)
-
 #include "GeolocationClient.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
@@ -143,5 +141,3 @@ void provideGeolocationTo(Page* page, GeolocationClient* client)
 }
     
 } // namespace WebCore
-
-#endif // ENABLE(GEOLOCATION)

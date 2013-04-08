@@ -172,18 +172,12 @@ bool WebRuntimeFeatures::isDataTransferItemsEnabled()
 
 void WebRuntimeFeatures::enableGeolocation(bool enable)
 {
-#if ENABLE(GEOLOCATION)
     RuntimeEnabledFeatures::setGeolocationEnabled(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isGeolocationEnabled()
 {
-#if ENABLE(GEOLOCATION)
     return RuntimeEnabledFeatures::geolocationEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableIndexedDatabase(bool enable)

@@ -55,8 +55,7 @@ WebInspector.OverridesView = function()
     this.containerElement = container;
     appendBlockTo(container, this._createUserAgentControl());
     appendBlockTo(container, this._createDeviceMetricsControl());
-    if (Capabilities.canOverrideGeolocation)
-        appendBlockTo(container, this._createGeolocationOverrideControl());
+    appendBlockTo(container, this._createGeolocationOverrideControl());
     if (Capabilities.canOverrideDeviceOrientation)
         appendBlockTo(container, this._createDeviceOrientationOverrideControl());
     appendBlockTo(container, this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents));

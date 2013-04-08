@@ -1128,7 +1128,6 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
 
 void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
 {
-#if ENABLE (GEOLOCATION)
     GeolocationController* controller = GeolocationController::from(m_page);
     GeolocationPosition* position = 0;
     if (!controller) {
@@ -1146,38 +1145,18 @@ void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double
         m_geolocationPosition.clear();
 
     controller->positionChanged(0); // Kick location update.
-#else
-    *error = "Geolocation is not available";
-    UNUSED_PARAM(latitude);
-    UNUSED_PARAM(longitude);
-    UNUSED_PARAM(accuracy);
-#endif
 }
 
-void InspectorPageAgent::clearGeolocationOverride(ErrorString* error)
+void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
 {
     if (!m_geolocationOverridden)
         return;
-#if ENABLE(GEOLOCATION)
-    UNUSED_PARAM(error);
     m_geolocationOverridden = false;
     m_geolocationPosition.clear();
 
     GeolocationController* controller = GeolocationController::from(m_page);
     if (controller && m_platformGeolocationPosition.get())
         controller->positionChanged(m_platformGeolocationPosition.get());
-#else
-    *error = "Geolocation is not available";
-#endif
-}
-
-void InspectorPageAgent::canOverrideGeolocation(ErrorString*, bool* out_param)
-{
-#if ENABLE(GEOLOCATION)
-    *out_param = true;
-#else
-    *out_param = false;
-#endif
 }
 
 GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(GeolocationPosition* position)

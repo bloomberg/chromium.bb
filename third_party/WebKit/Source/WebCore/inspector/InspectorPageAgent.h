@@ -116,7 +116,6 @@ public:
     virtual void setScriptExecutionDisabled(ErrorString*, bool);
     virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*);
     virtual void clearGeolocationOverride(ErrorString*);
-    virtual void canOverrideGeolocation(ErrorString*, bool* out_param);
     virtual void setDeviceOrientationOverride(ErrorString*, double, double, double);
     virtual void clearDeviceOrientationOverride(ErrorString*);
     virtual void canOverrideDeviceOrientation(ErrorString*, bool*);

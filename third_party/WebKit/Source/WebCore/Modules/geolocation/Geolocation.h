@@ -27,8 +27,6 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
-#if ENABLE(GEOLOCATION)
-
 #include "ActiveDOMObject.h"
 #include "Geoposition.h"
 #include "PositionCallback.h"
@@ -177,8 +175,6 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(GEOLOCATION)
 
 #endif // Geolocation_h
 

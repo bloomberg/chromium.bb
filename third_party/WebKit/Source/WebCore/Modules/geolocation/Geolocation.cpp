@@ -28,8 +28,6 @@
 #include "config.h"
 #include "Geolocation.h"
 
-#if ENABLE(GEOLOCATION)
-
 #include "Document.h"
 #include "Frame.h"
 #include "Geoposition.h"
@@ -679,5 +677,3 @@ void Geolocation::handlePendingPermissionNotifiers()
 }
 
 } // namespace WebCore
-                                                        
-#endif // ENABLE(GEOLOCATION)

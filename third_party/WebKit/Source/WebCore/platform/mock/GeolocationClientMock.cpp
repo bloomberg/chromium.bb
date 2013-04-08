@@ -32,8 +32,6 @@
 #include "config.h"
 #include "GeolocationClientMock.h"
 
-#if ENABLE(GEOLOCATION)
-
 #include "GeolocationController.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
@@ -190,5 +188,3 @@ void GeolocationClientMock::clearError()
 }
 
 } // WebCore
-
-#endif // ENABLE(GEOLOCATION)

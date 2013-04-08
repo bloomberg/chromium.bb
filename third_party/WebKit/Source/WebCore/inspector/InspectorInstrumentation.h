@@ -290,9 +290,7 @@ public:
     static bool timelineAgentEnabled(ScriptExecutionContext*);
     static bool collectingHTMLParseErrors(Page*);
 
-#if ENABLE(GEOLOCATION)
     static GeolocationPosition* overrideGeolocationPosition(Page*, GeolocationPosition*);
-#endif
 
     static void registerInstrumentingAgents(InstrumentingAgents*);
     static void unregisterInstrumentingAgents(InstrumentingAgents*);
@@ -480,9 +478,7 @@ private:
     static void cancelPauseOnNativeEvent(InstrumentingAgents*);
     static InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
 
-#if ENABLE(GEOLOCATION)
     static GeolocationPosition* overrideGeolocationPositionImpl(InstrumentingAgents*, GeolocationPosition*);
-#endif
 
     static DeviceOrientationData* overrideDeviceOrientationImpl(InstrumentingAgents*, DeviceOrientationData*);
 
@@ -1336,7 +1332,6 @@ inline void InspectorInstrumentation::didFireAnimationFrame(const InspectorInstr
         didFireAnimationFrameImpl(cookie);
 }
 
-#if ENABLE(GEOLOCATION)
 inline GeolocationPosition* InspectorInstrumentation::overrideGeolocationPosition(Page* page, GeolocationPosition* position)
 {
     FAST_RETURN_IF_NO_FRONTENDS(position);
@@ -1344,7 +1339,6 @@ inline GeolocationPosition* InspectorInstrumentation::overrideGeolocationPositio
         return overrideGeolocationPositionImpl(instrumentingAgents, position);
     return position;
 }
-#endif
 
 inline DeviceOrientationData* InspectorInstrumentation::overrideDeviceOrientation(Page* page, DeviceOrientationData* deviceOrientation)
 {

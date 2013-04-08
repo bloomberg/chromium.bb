@@ -42,7 +42,6 @@ var Preferences = {
 }
 
 var Capabilities = {
-    canOverrideGeolocation: false,
     canOverrideDeviceOrientation: false,
     canShowFPSCounter: false,
     canContinuouslyPaint: false,
