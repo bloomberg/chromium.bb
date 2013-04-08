@@ -82,7 +82,7 @@ class NET_EXPORT CanonicalCookie {
     return !domain_.empty() && domain_[0] == '.'; }
   bool IsHostCookie() const { return !IsDomainCookie(); }
 
-  bool IsExpired(const base::Time& current) {
+  bool IsExpired(const base::Time& current) const {
     return !expiry_date_.is_null() && current >= expiry_date_;
   }
 

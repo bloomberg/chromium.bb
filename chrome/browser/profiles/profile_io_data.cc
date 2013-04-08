@@ -36,6 +36,7 @@
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/evicted_domain_cookie_counter.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
@@ -229,7 +230,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
                  profile);
   params->cookie_monster_delegate =
-      new ChromeCookieMonsterDelegate(profile_getter);
+      new chrome_browser_net::EvictedDomainCookieCounter(
+          new ChromeCookieMonsterDelegate(profile_getter));
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
 

@@ -646,7 +646,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
 
-class CookieMonster::Delegate
+class NET_EXPORT CookieMonster::Delegate
     : public base::RefCountedThreadSafe<CookieMonster::Delegate> {
  public:
   // The publicly relevant reasons a cookie might be changed.
