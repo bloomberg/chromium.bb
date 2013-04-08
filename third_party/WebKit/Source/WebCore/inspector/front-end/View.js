@@ -43,6 +43,7 @@ WebInspector.View = function()
 
 WebInspector.View._cssFileToVisibleViewCount = {};
 WebInspector.View._cssFileToStyleElement = {};
+WebInspector.View._cssUnloadTimeout = 2000;
 
 WebInspector.View.prototype = {
     /**
@@ -353,22 +354,32 @@ WebInspector.View.prototype = {
 
     _disableCSSIfNeeded: function()
     {
+        var scheduleUnload = !!WebInspector.View._cssUnloadTimer;
+
         for (var i = 0; i < this._cssFiles.length; ++i) {
             var cssFile = this._cssFiles[i];
 
-            var viewsWithCSSFile = WebInspector.View._cssFileToVisibleViewCount[cssFile];
-            viewsWithCSSFile--;
-            WebInspector.View._cssFileToVisibleViewCount[cssFile] = viewsWithCSSFile;
-
-            if (!viewsWithCSSFile)
-                this._doUnloadCSS(cssFile);
+            if (!--WebInspector.View._cssFileToVisibleViewCount[cssFile])
+                scheduleUnload = true;
         }
-    },
 
-    _doUnloadCSS: function(cssFile)
-    {
-        var styleElement = WebInspector.View._cssFileToStyleElement[cssFile];
-        styleElement.disabled = true;
+        function doUnloadCSS()
+        {
+            delete WebInspector.View._cssUnloadTimer;
+
+            for (cssFile in WebInspector.View._cssFileToVisibleViewCount) {
+                if (WebInspector.View._cssFileToVisibleViewCount.hasOwnProperty(cssFile)
+                    && !WebInspector.View._cssFileToVisibleViewCount[cssFile])
+                    WebInspector.View._cssFileToStyleElement[cssFile].disabled = true;
+            }
+        }
+
+        if (scheduleUnload) {
+            if (WebInspector.View._cssUnloadTimer)
+                clearTimeout(WebInspector.View._cssUnloadTimer);
+
+            WebInspector.View._cssUnloadTimer = setTimeout(doUnloadCSS, WebInspector.View._cssUnloadTimeout)
+        }
     },
 
     printViewHierarchy: function()

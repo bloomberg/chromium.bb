@@ -10,8 +10,12 @@ Child 1.show()
 Child 2.show()
   LOAD child2.css
 Child 2.detach()
+
+Running: childDetachTimeout
   UNLOAD child2.css
 Parent.detach()
+
+Running: parentDetachTimeout
   UNLOAD parent.css
   UNLOAD child.css
   UNLOAD child1.css
@@ -19,4 +23,10 @@ Parent.show()
   LOAD parent.css
   LOAD child.css
   LOAD child1.css
+
+Running: quickDetachAttach
+Child 1.detach()
+Child 1.show()
+
+Running: checkThatNothingUnloaded
 
