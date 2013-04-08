@@ -803,6 +803,16 @@ util.platform = {
   },
 
   /**
+   * @return {boolean} True for the new ui.
+   */
+  newUI: function() {
+    if (!util.platform.v2())
+      return false;
+    var manifest = chrome.runtime.getManifest();
+    return manifest.version >= 3.0;
+  },
+
+  /**
    * @param {function(Object)} callback Function accepting a preference map.
    */
   getPreferences: function(callback) {

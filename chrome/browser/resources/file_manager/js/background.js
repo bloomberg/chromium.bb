@@ -243,7 +243,8 @@ function createFileManagerOptions() {
     defaultWidth: Math.round(window.screen.availWidth * 0.8),
     defaultHeight: Math.round(window.screen.availHeight * 0.8),
     minWidth: 320,
-    minHeight: 240
+    minHeight: 240,
+    frame: util.platform.newUI() ? 'none' : 'chrome'
   };
 }
 

@@ -3,7 +3,7 @@
   "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDlhpGghtnNJ7pluQN0RDwbUxwwi99oM35ZEaFYvxPLrf0fIEC18cfDdJi6u4aJ+UoSpgzK731L0P/k4LvK2Rz9kVKOy0+IvuRrWkT7lbrLfA1UEBh02OA1AAshjmyRg4IxCqgl8ia8XWq6HKegS1y1KXZYGgb4qp7Bh9VC4cIzswIBIw==",
   "manifest_version": 2,
   "name": "Files",
-  "version": "2.0",
+  "version": "3.0",
   "description": "File Manager",
   "incognito" : "split",
   "icons": {
@@ -191,7 +191,6 @@
         "js/util.js",
         "js/background.js"]
     },
-    // chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp is the image loader extension.
-    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com"
+    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com"
   }
 }

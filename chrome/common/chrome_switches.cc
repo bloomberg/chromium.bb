@@ -1590,6 +1590,9 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // Loads the File Manager as a packaged app.
 const char kFileManagerPackaged[]           = "file-manager-packaged";
 
+// Loads the File Manager with the new UI.
+const char kFileManagerNewUI[]              = "file-manager-new-ui";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
