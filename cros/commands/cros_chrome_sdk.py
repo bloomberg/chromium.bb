@@ -224,7 +224,8 @@ class ChromeSDKCommand(cros.CrosCommand):
     parser.add_argument(
         '--board', required=True, help='The board SDK to use.')
     parser.add_argument(
-        '--bashrc', default=constants.CHROME_SDK_BASHRC,
+        '--bashrc', type=osutils.ExpandPath,
+        default=constants.CHROME_SDK_BASHRC,
         help='A bashrc file used to set up the SDK shell environment. '
              'Defaults to %s.' % constants.CHROME_SDK_BASHRC)
     parser.add_argument(
