@@ -1173,17 +1173,7 @@ CommandLineAPIImpl.prototype = {
         if (this._canQuerySelectorOnNode(start))
             return start.querySelector(selector);
 
-        var result = inspectedWindow.document.querySelector(selector);
-        if (result)
-            return result;
-        if (selector && selector[0] !== "#") {
-            result = inspectedWindow.document.getElementById(selector);
-            if (result) {
-                inspectedWindow.console.warn("The console function $() has changed from $=getElementById(id) to $=querySelector(selector). You might try $(\"#%s\")", selector );
-                return null;
-            }
-        }
-        return result;
+        return inspectedWindow.document.querySelector(selector);
     },
 
     /**

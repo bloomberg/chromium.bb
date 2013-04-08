@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 1182: The console function $() has changed from $=getElementById(id) to $=querySelector(selector). You might try $("#%s")
 Tests that command line api works.
 
 
@@ -44,5 +43,5 @@ String($$('p#foo', document.body))
 
 
 String($('foo'))
-The console function $() has changed from $=getElementById(id) to $=querySelector(selector). You might try $("#foo")
+"null"
 
