@@ -103,7 +103,6 @@ cr.define('cr.ui', function() {
 
           // Hide the focus ring on mouse click.
           this.classList.add('using-mouse');
-
           break;
         case 'keydown':
           this.handleKeyDown(e);
@@ -133,6 +132,9 @@ cr.define('cr.ui', function() {
           this.hideMenu(hideDelayed ? HideType.DELAYED : HideType.INSTANT);
           break;
         case 'scroll':
+          if (!(e.target == this.menu || this.menu.contains(e.target)))
+            this.hideMenu();
+          break;
         case 'resize':
           this.hideMenu();
           break;
