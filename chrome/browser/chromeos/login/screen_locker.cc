@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -288,7 +289,9 @@ void ScreenLocker::EnableInput() {
 void ScreenLocker::Signout() {
   delegate_->ClearErrors();
   content::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
-  DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+  // We expect that this call will not wait for any user input.
+  // If it changes at some point, we will need to force exit.
+  chrome::AttemptUserExit();
 
   // Don't hide yet the locker because the chrome screen may become visible
   // briefly.
