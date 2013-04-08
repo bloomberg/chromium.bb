@@ -613,7 +613,11 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
 
   // No networks or other messages (fallback)
   if (index == 0) {
-    string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NO_NETWORKS);
+    string16 text;
+    if (list_type_ == LIST_TYPE_VPN)
+      text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN);
+    else
+      text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NO_NETWORKS);
     if (CreateOrUpdateInfoLabel(index++, text, &scanning_view_))
       needs_relayout = true;
   }
