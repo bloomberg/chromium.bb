@@ -27,7 +27,6 @@
         ],
         'isolate_dependency_untracked': [
           'data/',
-          'prefs/test/',
           'test/data/',
         ],
       },
