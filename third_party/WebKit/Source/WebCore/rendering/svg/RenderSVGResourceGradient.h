@@ -67,11 +67,6 @@ protected:
 private:
     bool m_shouldCollectGradientAttributes : 1;
     HashMap<RenderObject*, OwnPtr<GradientData> > m_gradientMap;
-
-#if USE(CG)
-    GraphicsContext* m_savedContext;
-    OwnPtr<ImageBuffer> m_imageBuffer;
-#endif
 };
 
 }

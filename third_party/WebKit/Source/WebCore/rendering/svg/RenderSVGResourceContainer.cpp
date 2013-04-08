@@ -201,10 +201,7 @@ void RenderSVGResourceContainer::registerResource()
 bool RenderSVGResourceContainer::shouldTransformOnTextPainting(RenderObject* object, AffineTransform& resourceTransform)
 {
     ASSERT_UNUSED(object, object);
-#if USE(CG)
-    UNUSED_PARAM(resourceTransform);
-    return false;
-#else
+
     // This method should only be called for RenderObjects that deal with text rendering. Cmp. RenderObject.h's is*() methods.
     ASSERT(object->isSVGText() || object->isSVGTextPath() || object->isSVGInline());
 
@@ -216,7 +213,6 @@ bool RenderSVGResourceContainer::shouldTransformOnTextPainting(RenderObject* obj
         return false;
     resourceTransform.scale(scalingFactor);
     return true;
-#endif
 }
 
 // FIXME: This does not belong here.

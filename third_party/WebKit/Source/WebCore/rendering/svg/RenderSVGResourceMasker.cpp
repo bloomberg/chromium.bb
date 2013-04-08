@@ -147,11 +147,7 @@ bool RenderSVGResourceMasker::drawContentIntoMaskImage(MaskerData* maskerData, C
         SVGRenderingContext::renderSubtreeToImageBuffer(maskerData->maskImage.get(), renderer, maskContentTransformation);
     }
 
-#if !USE(CG)
     maskerData->maskImage->transformColorSpace(ColorSpaceDeviceRGB, colorSpace);
-#else
-    UNUSED_PARAM(colorSpace);
-#endif
 
     ASSERT(style());
     ASSERT(style()->svgStyle());

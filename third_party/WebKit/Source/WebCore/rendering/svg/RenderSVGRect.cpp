@@ -82,12 +82,6 @@ void RenderSVGRect::updateShapeFromElement()
     }
 
     m_strokeBoundingBox = m_outerStrokeRect;
-
-#if USE(CG)
-    // CoreGraphics can inflate the stroke by 1px when drawing a rectangle with antialiasing disabled at non-integer coordinates, we need to compensate.
-    if (style()->svgStyle()->shapeRendering() == SR_CRISPEDGES)
-        m_strokeBoundingBox.inflate(1);
-#endif
 }
 
 void RenderSVGRect::fillShape(GraphicsContext* context) const
@@ -96,19 +90,6 @@ void RenderSVGRect::fillShape(GraphicsContext* context) const
         RenderSVGShape::fillShape(context);
         return;
     }
-
-#if USE(CG)
-    // FIXME: CG implementation of GraphicsContextCG::fillRect has an own
-    // shadow drawing method, which draws an extra shadow.
-    // This is a workaround for switching off the extra shadow.
-    // https://bugs.webkit.org/show_bug.cgi?id=68899
-    if (context->hasShadow()) {
-        GraphicsContextStateSaver stateSaver(*context);
-        context->clearShadow();
-        context->fillRect(m_fillBoundingBox);
-        return;
-    }
-#endif
 
     context->fillRect(m_fillBoundingBox);
 }
