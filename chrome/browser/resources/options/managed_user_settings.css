@@ -6,7 +6,6 @@
   min-width: 600px;
 }
 
-/* Content Packs list */
 #content-packs-list {
   margin-bottom: 10px;
   min-height: 0;
@@ -20,4 +19,31 @@
 .locked #lock-settings,
 #managed-user-settings-page:not(.locked) #unlock-settings {
   display: none;
+}
+
+#managed-user-exceptions-area {
+  min-width: 540px;
+}
+
+#managed-user-exceptions-area list {
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+#manual-exception-column-headers {
+  -webkit-margin-start: 17px;
+  display: -webkit-flex;
+  margin-top: 17px;
+}
+
+#manual-exception-column-headers > div {
+  font-weight: bold;
+}
+
+#manual-exception-pattern-column {
+  -webkit-flex: 1;
+}
+
+#manual-exception-behavior-column {
+  width: 145px;
 }

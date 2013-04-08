@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/managed_user_settings_handler.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,17 +15,80 @@
 #include "base/values.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "googleurl/src/url_canon.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
 
 using content::UserMetricsAction;
+
+namespace {
+
+const char* kSetting = "setting";
+const char* kPattern = "pattern";
+
+// Takes the |host| string and tries to get the canonical version. Returns
+// whether the operation succeeded, and if it did and the |output_string| is
+// not NULL writes the canonical version in |output_string|.
+bool CanonicalizeHost(std::string host, std::string* output_string) {
+  url_parse::Component in_comp(0, host.length());
+  url_parse::Component out_comp;
+  std::string output;
+
+  url_canon::StdStringCanonOutput canon_output(&output);
+  url_canon::CanonHostInfo host_info;
+
+  bool is_valid = url_canon::CanonicalizeHost(
+      host.c_str(), in_comp, &canon_output, &out_comp);
+  canon_output.Complete();
+  if (is_valid && output_string)
+    *output_string = output;
+  return is_valid;
+}
+
+// Create a DictionaryValue that will act as a row in the pattern list.
+// Ownership of the pointer is passed to the caller.
+DictionaryValue* GetEntryForPattern(const std::string pattern,
+                                    const std::string setting) {
+  base::DictionaryValue* entry = new base::DictionaryValue();
+  entry->SetString(kPattern, pattern);
+  entry->SetString(kSetting, setting);
+  return entry;
+}
+
+// Reads the manual url and host lists from the current profile and adds them
+// to the list of |entries|.
+void AddCurrentURLEntries(content::WebUI* web_ui, ListValue* entries) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  const DictionaryValue* dict =
+      profile->GetPrefs()->GetDictionary(prefs::kManagedModeManualHosts);
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    bool allow = false;
+    bool result = it.value().GetAsBoolean(&allow);
+    DCHECK(result);
+    entries->Append(
+        GetEntryForPattern(it.key(), allow ? "allow" : "block"));
+  }
+
+  dict = profile->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    bool allow = false;
+    bool result = it.value().GetAsBoolean(&allow);
+    DCHECK(result);
+    entries->Append(
+        GetEntryForPattern(it.key(), allow ? "allow" : "block"));
+  }
+}
+
+}  // namespace
 
 namespace options {
 
@@ -59,6 +124,9 @@ void ManagedUserSettingsHandler::InitializePage() {
     ManagedModeNavigationObserver::FromWebContents(
         web_ui()->GetWebContents())->set_elevated(true);
   }
+
+  // Populate the list.
+  UpdateViewFromModel();
 }
 
 void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
@@ -79,8 +147,17 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
     // Unlock the settings page to allow editing.
     { "unlockSettings", IDS_UNLOCK_PASSPHRASE_BUTTON },
     { "lockSettings", IDS_LOCK_MANAGED_USER_BUTTON },
+    // Manual exception view.
+    { "allowException", IDS_EXCEPTIONS_ALLOW_BUTTON },
+    { "blockException", IDS_EXCEPTIONS_BLOCK_BUTTON },
+    { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
+    { "manageExceptions", IDS_EXCEPTIONS_MANAGE },
+    { "exceptionPatternHeader", IDS_EXCEPTIONS_PATTERN_HEADER },
+    { "exceptionBehaviorHeader", IDS_EXCEPTIONS_ACTION_HEADER },
     // Installed content packs.
-    { "installedContentPacks", IDS_INSTALLED_CONTENT_PACKS_LABEL },
+    { "manualExceptionsHeader", IDS_MANUAL_EXCEPTION_HEADER },
+    { "manualExceptionsTabTitle", IDS_MANUAL_EXCEPTION_TAB_TITLE },
+    { "contentPacksTabLabel", IDS_CONTENT_PACKS_TAB_LABEL },
     { "getContentPacks", IDS_GET_CONTENT_PACKS_BUTTON },
     { "getContentPacksURL", IDS_GET_CONTENT_PACKS_URL },
     // Content pack restriction options.
@@ -100,7 +177,8 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "managedUserSettingsPage",
                 IDS_MANAGED_USER_SETTINGS_TITLE);
-
+  RegisterTitle(localized_strings, "manualExceptions",
+                IDS_MANUAL_EXCEPTION_HEADER);
   localized_strings->SetBoolean(
       "managedUsersEnabled",
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -115,6 +193,16 @@ void ManagedUserSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "settingsPageOpened",
       base::Bind(&ManagedUserSettingsHandler::HandlePageOpened,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("removeManualException",
+      base::Bind(&ManagedUserSettingsHandler::RemoveManualException,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setManualException",
+      base::Bind(&ManagedUserSettingsHandler::SetManualException,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("checkManualExceptionValidity",
+      base::Bind(
+      &ManagedUserSettingsHandler::CheckManualExceptionValidity,
                  base::Unretained(this)));
 }
 
@@ -134,6 +222,88 @@ void ManagedUserSettingsHandler::OnLocalPassphraseChanged() {
       prefs::kManagedModeLocalPassphrase).empty());
   web_ui()->CallJavascriptFunction("ManagedUserSettings.passphraseChanged",
                                    is_passphrase_set);
+}
+
+void ManagedUserSettingsHandler::RemoveManualException(
+    const ListValue* args) {
+  size_t arg_i = 0;
+  std::string pattern;
+  CHECK(args->GetString(arg_i++, &pattern));
+
+  UpdateManualBehavior(pattern, ManagedUserService::MANUAL_NONE);
+
+  UpdateViewFromModel();
+}
+
+void ManagedUserSettingsHandler::UpdateManualBehavior(
+    std::string pattern,
+    ManagedUserService::ManualBehavior behavior) {
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  GURL url(pattern);
+  if (!url.is_valid()) {
+    // This is a host, get the canonical version of the string.
+    std::vector<std::string> to_update;
+    std::string canonical_host;
+    bool result = CanonicalizeHost(pattern, &canonical_host);
+    DCHECK(result);
+    to_update.push_back(canonical_host);
+    service->SetManualBehaviorForHosts(to_update, behavior);
+  } else {
+    // A specific URL. The GURL generates the canonical form when being built.
+    std::vector<GURL> to_update;
+    to_update.push_back(url);
+    service->SetManualBehaviorForURLs(to_update, behavior);
+  }
+}
+
+void ManagedUserSettingsHandler::SetManualException(
+    const ListValue* args) {
+  size_t arg_i = 0;
+  std::string pattern;
+  CHECK(args->GetString(arg_i++, &pattern));
+  std::string setting;
+  CHECK(args->GetString(arg_i++, &setting));
+  bool needs_update;
+  CHECK(args->GetBoolean(arg_i++, &needs_update));
+
+  DCHECK(setting == "allow" || setting == "block");
+  ManagedUserService::ManualBehavior behavior =
+      (setting == "allow") ? ManagedUserService::MANUAL_ALLOW
+                           : ManagedUserService::MANUAL_BLOCK;
+  UpdateManualBehavior(pattern, behavior);
+
+  if (needs_update)
+    UpdateViewFromModel();
+}
+
+void ManagedUserSettingsHandler::CheckManualExceptionValidity(
+    const ListValue* args) {
+  size_t arg_i = 0;
+  std::string pattern_string;
+  CHECK(args->GetString(arg_i++, &pattern_string));
+
+  // First, try to see if it is a valid URL.
+  GURL url(pattern_string);
+
+  // If the pattern is a valid URL then we're done, otherwise try to get the
+  // canonical host and see if that is valid.
+  bool is_valid = (url.is_valid() && url.IsStandard()) ||
+                  CanonicalizeHost(pattern_string, NULL);
+
+  web_ui()->CallJavascriptFunction(
+      "ManagedUserSettings.patternValidityCheckComplete",
+      base::StringValue(pattern_string),
+      base::FundamentalValue(is_valid));
+}
+
+void ManagedUserSettingsHandler::UpdateViewFromModel() {
+  ListValue entries;
+  AddCurrentURLEntries(web_ui(), &entries);
+
+  web_ui()->CallJavascriptFunction(
+      "ManagedUserSettings.setManualExceptions",
+      entries);
 }
 
 }  // namespace options

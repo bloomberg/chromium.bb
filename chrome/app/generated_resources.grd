@@ -8129,8 +8129,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MANAGED_USER_SETTINGS_TITLE" desc="Title for the Managed User Settings dialog.">
         Managed User Settings
       </message>
-      <message name="IDS_INSTALLED_CONTENT_PACKS_LABEL" desc="Label for installed whitelists on the Managed User Settings dialog.">
-        Installed and enabled content packs:
+      <message name="IDS_CONTENT_PACKS_TAB_LABEL" desc="Label for installed whitelists on the Managed User Settings dialog.">
+        Content packs
+      </message>
+      <message name="IDS_MANUAL_EXCEPTION_HEADER" desc="Header for the manual exception management page on Managed User Settings dialog">
+        Manual exceptions
+      </message>
+      <message name="IDS_MANUAL_EXCEPTION_TAB_TITLE" desc="Title for the manual exception management page on Managed User Settings dialog">
+        Manual exceptions
       </message>
       <message name="IDS_GET_CONTENT_PACKS_BUTTON" desc="The text for the button that opens the webstore, Content pack section.">
         Get Content Packs

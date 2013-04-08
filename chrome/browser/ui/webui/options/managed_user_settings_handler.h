@@ -8,6 +8,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace options {
@@ -34,6 +35,28 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
 
   // Called when the local passphrase changes.
   void OnLocalPassphraseChanged();
+
+  // Decides whether a given pattern is valid, or if it should be
+  // rejected. Called while the user is editing an exception pattern.
+  void CheckManualExceptionValidity(const base::ListValue* args);
+
+  // Sets the manual behavior for |pattern|. If pattern looks like a host (no
+  // schema) then update the manual host list, otherwise update the manual
+  // URL list.
+  void UpdateManualBehavior(std::string pattern,
+                            ManagedUserService::ManualBehavior behavior);
+
+  // Removes the given row from the table. The first entry in |args| is
+  // the pattern to remove.
+  void RemoveManualException(const base::ListValue* args);
+
+  // Changes the value of an exception. Called after the user is done editing an
+  // exception.
+  void SetManualException(const base::ListValue* args);
+
+  // Updates the current view by reading the entries from the managed mode
+  // service and updating the WebUI model.
+  void UpdateViewFromModel();
 
   // For tracking how long the user spends on this page.
   base::TimeTicks start_time_;

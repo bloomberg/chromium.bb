@@ -59,6 +59,16 @@ cr.define('options', function() {
       // Call base class implementation to start preference initialization.
       SettingsDialog.prototype.initializePage.call(this);
 
+      $('manage-exceptions-button').onclick = function(event) {
+        var page = ManagedUserSettingsExceptionsArea.getInstance();
+        var url = page.name;
+
+        OptionsPage.navigateToPage('manualExceptions');
+        uber.invokeMethodOnParent('setPath', {path: url});
+        uber.invokeMethodOnParent('setTitle',
+            {title: loadTimeData.getString('manualExceptionsTabTitle')});
+      };
+
       $('get-content-packs-button').onclick = function(event) {
         window.open(loadTimeData.getString('getContentPacksURL'));
       };
@@ -176,6 +186,28 @@ cr.define('options', function() {
     getUnlockButton: function() {
       return $('unlock-settings');
     }
+  };
+
+  /**
+   * Initializes an exceptions list.
+   * @param {Array} list An array of pairs, where the first element of each pair
+   *     is the filter string, and the second is the setting (allow/block).
+   */
+  ManagedUserSettings.setManualExceptions = function(list) {
+    $('manual-exceptions').setManualExceptions(list);
+  };
+
+  /**
+   * The browser's response to a request to check the validity of a given URL
+   * pattern.
+   * @param {string} mode The browser mode.
+   * @param {string} pattern The pattern.
+   * @param {bool} valid Whether said pattern is valid in the context of
+   *     a content exception setting.
+   */
+  ManagedUserSettings.patternValidityCheckComplete =
+      function(pattern, valid) {
+    $('manual-exceptions').patternValidityCheckComplete(pattern, valid);
   };
 
   // Export
