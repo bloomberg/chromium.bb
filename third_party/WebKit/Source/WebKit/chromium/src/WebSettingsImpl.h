@@ -82,7 +82,6 @@ public:
     virtual void setDefaultVideoPosterURL(const WebString&);
     virtual void setDeferred2dCanvasEnabled(bool);
     virtual void setDeferredImageDecodingEnabled(bool);
-    virtual void setDeveloperExtrasEnabled(bool);
     virtual void setDeviceSupportsMouse(bool);
     virtual void setDeviceSupportsTouch(bool);
     virtual void setDoubleTapToZoomEnabled(bool);
