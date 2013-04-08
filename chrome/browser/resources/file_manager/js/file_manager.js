@@ -1360,7 +1360,7 @@ DialogType.isModal = function(type) {
         this.delayShow_(500);
       // Reflect immediatelly in the UI we are on Drive and display
       // mounting UI.
-      this.directoryModel_.setupPath(RootDirectory.DRIVE);
+      this.directoryModel_.setupPath(path);
 
       if (!this.isOnDrive()) {
         // Since DRIVE is not mounted it should be resolved synchronously
