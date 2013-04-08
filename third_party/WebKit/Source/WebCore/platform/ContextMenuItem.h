@@ -38,9 +38,6 @@
 OBJC_CLASS NSMenuItem;
 #elif PLATFORM(WIN)
 typedef struct tagMENUITEMINFOW MENUITEMINFO;
-#elif PLATFORM(GTK)
-typedef struct _GtkMenuItem GtkMenuItem;
-typedef struct _GtkAction GtkAction;
 #endif // PLATFORM(MAC)
 #endif // ENABLE(CONTEXT_MENUS)
 
@@ -193,10 +190,6 @@ namespace WebCore {
         bool enabled() const;
 
         void setSubMenu(ContextMenu*);
-
-#if PLATFORM(GTK)
-        GtkAction* gtkAction() const;
-#endif
 
 #if USE(CROSS_PLATFORM_CONTEXT_MENUS)
         ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems);

@@ -3480,7 +3480,6 @@
         'webcore_platform_files': [
             'platform/Arena.cpp',
             'platform/Arena.h',
-            'platform/AsyncFileSystem.cpp',
             'platform/AsyncFileSystem.h',
             'platform/AsyncFileSystemCallbacks.h',
             'platform/CalculationValue.cpp',

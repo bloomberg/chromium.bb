@@ -29,11 +29,6 @@
 #include "IntPoint.h"
 #include "PlatformEvent.h"
 
-#if PLATFORM(GTK)
-typedef struct _GdkEventButton GdkEventButton;
-typedef struct _GdkEventMotion GdkEventMotion;
-#endif
-
 namespace WebCore {
     
     // These button numbers match the ones used in the DOM API, 0 through 2, except for NoButton which isn't specified.
@@ -80,13 +75,6 @@ namespace WebCore {
         int clickCount() const { return m_clickCount; }
         unsigned modifierFlags() const { return m_modifierFlags; }
         
-
-#if PLATFORM(GTK) 
-        explicit PlatformMouseEvent(GdkEventButton*);
-        explicit PlatformMouseEvent(GdkEventMotion*);
-        void setClickCount(int count) { m_clickCount = count; }
-#endif
-
 #if PLATFORM(MAC)
         int eventNumber() const { return m_eventNumber; }
 #endif

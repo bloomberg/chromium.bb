@@ -29,10 +29,6 @@
 #include "IntPoint.h"
 #include "PlatformEvent.h"
 
-#if PLATFORM(GTK)
-typedef struct _GdkEventScroll GdkEventScroll;
-#endif
-
 namespace WebCore {
 
     class FloatPoint;
@@ -130,10 +126,6 @@ namespace WebCore {
         PlatformWheelEventGranularity granularity() const { return m_granularity; }
 
         bool directionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
-
-#if PLATFORM(GTK)
-        explicit PlatformWheelEvent(GdkEventScroll*);
-#endif
 
 #if PLATFORM(MAC) || PLATFORM(CHROMIUM)
         bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
