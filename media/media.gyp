@@ -573,6 +573,7 @@
           ],
           'dependencies': [
             'media_android_jni_headers',
+            'media_java',
             'player_android',
             'video_capture_android_jni_headers',
           ],
