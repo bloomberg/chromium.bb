@@ -39,6 +39,29 @@ namespace {
 // Passed as value of kTestType.
 const char kUITestType[] = "ui";
 
+// Copies the contents of the given source directory to the given dest
+// directory. This is somewhat different than CopyDirectory in base which will
+// copies "source/" to "dest/source/". This version will copy "source/*" to
+// "dest/*", overwriting existing files as necessary.
+bool CopyDirectoryContents(const base::FilePath& source,
+                           const base::FilePath& dest) {
+  file_util::FileEnumerator en(source, false,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
+  for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next()) {
+    file_util::FileEnumerator::FindInfo info;
+    en.GetFindInfo(&info);
+    if (file_util::FileEnumerator::IsDirectory(info)) {
+      if (!file_util::CopyDirectory(cur, dest, true))
+        return false;
+    } else {
+      if (!file_util::CopyFile(cur, dest.Append(cur.BaseName())))
+        return false;
+    }
+  }
+  return true;
+}
+
 // We want to have a current history database when we start the browser so
 // things like the NTP will have thumbnails.  This method updates the dates
 // in the history to be more recent.
@@ -186,8 +209,7 @@ bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
 
   if (!state.template_user_data.empty()) {
     // Recursively copy the template directory to the user_data_dir.
-    if (!file_util::CopyRecursiveDirNoCache(
-            state.template_user_data, user_data_dir())) {
+    if (!CopyDirectoryContents(state.template_user_data, user_data_dir())) {
       LOG(ERROR) << "Failed to copy user data directory template.";
       return false;
     }

@@ -239,6 +239,12 @@ class StartupTest : public UIPerfTest {
             dir_app.Append(FILE_PATH_LITERAL("chrome.dll")));
         ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_dll));
 #endif
+
+        // Kick out the profile files.
+        file_util::FileEnumerator en(user_data_dir(), true,
+                                     file_util::FileEnumerator::FILES);
+        for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next())
+          EvictFileFromSystemCacheWrapper(cur);
       }
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
