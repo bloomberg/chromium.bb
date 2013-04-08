@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLVertexArrayObjectOES.h"
 
 #include "Extensions3D.h"
@@ -144,5 +142,3 @@ void WebGLVertexArrayObjectOES::unbindBuffer(PassRefPtr<WebGLBuffer> buffer)
 }
 
 }
-
-#endif // ENABLE(WEBGL)

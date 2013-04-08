@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLProgram.h"
 
 #include "WebGLContextGroup.h"
@@ -194,5 +192,3 @@ void WebGLProgram::cacheInfoIfNeeded()
 }
 
 }
-
-#endif // ENABLE(WEBGL)

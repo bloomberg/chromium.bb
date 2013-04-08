@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "V8WebGLRenderingContext.h"
 
 #include "ExceptionCode.h"
@@ -744,5 +742,3 @@ v8::Handle<v8::Value> V8WebGLRenderingContext::vertexAttrib4fvMethodCustom(const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

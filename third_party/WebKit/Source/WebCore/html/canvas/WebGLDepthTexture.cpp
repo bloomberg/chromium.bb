@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLDepthTexture.h"
 
 #include "Extensions3D.h"
@@ -61,5 +59,3 @@ bool WebGLDepthTexture::supported(GraphicsContext3D* context)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

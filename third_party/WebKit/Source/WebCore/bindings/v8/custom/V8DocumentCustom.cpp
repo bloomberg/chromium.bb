@@ -50,9 +50,7 @@
 #include "V8Node.h"
 #include "V8Touch.h"
 #include "V8TouchList.h"
-#if ENABLE(WEBGL)
 #include "V8WebGLRenderingContext.h"
-#endif
 #include "V8XPathNSResolver.h"
 #include "V8XPathResult.h"
 

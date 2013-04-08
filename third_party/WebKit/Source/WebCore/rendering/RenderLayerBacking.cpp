@@ -65,9 +65,7 @@
 #endif
 #endif
 
-#if ENABLE(WEBGL) || ENABLE(ACCELERATED_2D_CANVAS)
 #include "GraphicsContext3D.h"
-#endif
 
 using namespace std;
 
@@ -80,15 +78,11 @@ static IntRect clipBox(RenderBox* renderer);
 
 static inline bool isAcceleratedCanvas(RenderObject* renderer)
 {
-#if ENABLE(WEBGL) || ENABLE(ACCELERATED_2D_CANVAS)
     if (renderer->isCanvas()) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
             return context->isAccelerated();
     }
-#else
-    UNUSED_PARAM(renderer);
-#endif
     return false;
 }
 
@@ -491,14 +485,12 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
     }
 #endif
-#if ENABLE(WEBGL) || ENABLE(ACCELERATED_2D_CANVAS)
     else if (isAcceleratedCanvas(renderer)) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
             m_graphicsLayer->setContentsToCanvas(context->platformLayer());
         layerConfigChanged = true;
     }
-#endif
     if (renderer->isRenderPart())
         layerConfigChanged = RenderLayerCompositor::parentFrameContentLayers(toRenderPart(renderer));
 
@@ -1437,7 +1429,7 @@ bool RenderLayerBacking::containsPaintedContent() const
         return m_owningLayer->hasBoxDecorationsOrBackground();
 #endif
 #if PLATFORM(MAC) && USE(CA) && (PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)
-#elif ENABLE(WEBGL) || ENABLE(ACCELERATED_2D_CANVAS)
+#else
     if (isAcceleratedCanvas(renderer()))
         return m_owningLayer->hasBoxDecorationsOrBackground();
 #endif
@@ -1482,12 +1474,10 @@ void RenderLayerBacking::contentChanged(ContentChangeType changeType)
         updateAfterLayout(CompositingChildrenOnly | IsUpdateRoot);
     }
 
-#if ENABLE(WEBGL) || ENABLE(ACCELERATED_2D_CANVAS)
     if ((changeType == CanvasChanged || changeType == CanvasPixelsChanged) && isAcceleratedCanvas(renderer())) {
         m_graphicsLayer->setContentsNeedsDisplay();
         return;
     }
-#endif
 }
 
 void RenderLayerBacking::updateImageContents()

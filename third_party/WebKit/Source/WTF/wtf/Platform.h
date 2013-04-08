@@ -605,7 +605,7 @@
 #define HAVE_COMPOSITOR_FILTER_OUTSETS 1
 #endif
 
-#if ENABLE(WEBGL) && !defined(WTF_USE_3D_GRAPHICS)
+#if !defined(WTF_USE_3D_GRAPHICS)
 #define WTF_USE_3D_GRAPHICS 1
 #endif
 

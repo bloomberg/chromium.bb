@@ -197,7 +197,6 @@ ScriptObject InspectorCanvasAgent::wrapCanvas2DRenderingContextForInstrumentatio
     return notifyRenderingContextWasWrapped(module.wrapCanvas2DContext(context));
 }
 
-#if ENABLE(WEBGL)
 ScriptObject InspectorCanvasAgent::wrapWebGLRenderingContextForInstrumentation(const ScriptObject& glContext)
 {
     ErrorString error;
@@ -206,7 +205,6 @@ ScriptObject InspectorCanvasAgent::wrapWebGLRenderingContextForInstrumentation(c
         return ScriptObject();
     return notifyRenderingContextWasWrapped(module.wrapWebGLContext(glContext));
 }
-#endif
 
 ScriptObject InspectorCanvasAgent::notifyRenderingContextWasWrapped(const ScriptObject& wrappedContext)
 {

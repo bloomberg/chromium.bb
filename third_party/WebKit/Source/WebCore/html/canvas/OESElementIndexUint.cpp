@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "OESElementIndexUint.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ PassOwnPtr<OESElementIndexUint> OESElementIndexUint::create(WebGLRenderingContex
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

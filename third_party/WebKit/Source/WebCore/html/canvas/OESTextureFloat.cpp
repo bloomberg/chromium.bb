@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "OESTextureFloat.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ PassOwnPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContext* conte
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLUniformLocation.h"
 
 namespace WebCore {
@@ -63,5 +61,3 @@ GC3Dint WebGLUniformLocation::location() const
 }
 
 }
-
-#endif // ENABLE(WEBGL)

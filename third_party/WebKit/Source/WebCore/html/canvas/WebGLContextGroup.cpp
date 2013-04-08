@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLContextGroup.h"
 
 #include "GraphicsContext3D.h"
@@ -98,5 +96,3 @@ void WebGLContextGroup::loseContextGroup(WebGLRenderingContext::LostContextMode 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

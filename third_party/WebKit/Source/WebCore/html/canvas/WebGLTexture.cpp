@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLTexture.h"
 
 #include "WebGLContextGroup.h"
@@ -366,5 +364,3 @@ const WebGLTexture::LevelInfo* WebGLTexture::getLevelInfo(GC3Denum target, GC3Di
 }
 
 }
-
-#endif // ENABLE(WEBGL)

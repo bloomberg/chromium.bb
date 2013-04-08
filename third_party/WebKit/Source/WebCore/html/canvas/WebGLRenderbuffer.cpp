@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLRenderbuffer.h"
 
 #include "WebGLContextGroup.h"
@@ -62,5 +60,3 @@ void WebGLRenderbuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3
 }
 
 }
-
-#endif // ENABLE(WEBGL)

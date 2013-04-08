@@ -50,10 +50,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#if ENABLE(WEBGL)
 #include "WebGLContextAttributes.h"
 #include "WebGLRenderingContext.h"
-#endif
 
 #if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
@@ -176,7 +174,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         }
         return m_context.get();
     }
-#if ENABLE(WEBGL)
+
     Settings* settings = document()->settings();
     if (settings && settings->webGLEnabled()
 #if !PLATFORM(CHROMIUM) && !PLATFORM(GTK) && !PLATFORM(QT)
@@ -205,9 +203,6 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             return m_context.get();
         }
     }
-#else
-    UNUSED_PARAM(attrs);
-#endif
     return 0;
 }
 
@@ -279,10 +274,8 @@ void HTMLCanvasElement::reset()
 
     setSurfaceSize(newSize);
 
-#if ENABLE(WEBGL)
     if (m_context && m_context->is3d() && oldSize != size())
         static_cast<WebGLRenderingContext*>(m_context.get())->reshape(width(), height());
-#endif
 
     if (RenderObject* renderer = this->renderer()) {
         if (m_rendererIsCanvas) {
@@ -355,18 +348,14 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
         }
     }
 
-#if ENABLE(WEBGL)
     if (is3D())
         static_cast<WebGLRenderingContext*>(m_context.get())->markLayerComposited();
-#endif
 }
 
-#if ENABLE(WEBGL)
 bool HTMLCanvasElement::is3D() const
 {
     return m_context && m_context->is3d();
 }
-#endif
 
 void HTMLCanvasElement::makeRenderingResultsAvailable()
 {
@@ -437,13 +426,9 @@ PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
     if (!m_context || !m_context->is3d())
        return 0;
 
-#if ENABLE(WEBGL)
     WebGLRenderingContext* ctx = static_cast<WebGLRenderingContext*>(m_context.get());
 
     return ctx->paintRenderingResultsToImageData();
-#else
-    return 0;
-#endif
 }
 
 FloatRect HTMLCanvasElement::convertLogicalToDevice(const FloatRect& logicalRect) const

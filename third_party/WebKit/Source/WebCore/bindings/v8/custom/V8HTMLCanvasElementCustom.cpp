@@ -40,9 +40,7 @@
 #include "V8Binding.h"
 #include "V8CanvasRenderingContext2D.h"
 #include "V8Node.h"
-#if ENABLE(WEBGL)
 #include "V8WebGLRenderingContext.h"
-#endif
 #include <wtf/MathExtras.h>
 #include <wtf/text/WTFString.h>
 
@@ -54,7 +52,6 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
     HTMLCanvasElement* imp = V8HTMLCanvasElement::toNative(holder);
     String contextId = toWebCoreString(args[0]);
     RefPtr<CanvasContextAttributes> attrs;
-#if ENABLE(WEBGL)
     if (contextId == "webgl" || contextId == "experimental-webgl" || contextId == "webkit-3d") {
         attrs = WebGLContextAttributes::create();
         WebGLContextAttributes* webGLAttrs = static_cast<WebGLContextAttributes*>(attrs.get());
@@ -80,7 +77,6 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
                 webGLAttrs->setPreserveDrawingBuffer(jsAttrs->Get(preserveDrawingBuffer)->BooleanValue());
         }
     }
-#endif
     CanvasRenderingContext* result = imp->getContext(contextId, attrs.get());
     if (!result)
         return v8Null(args.GetIsolate());
@@ -95,7 +91,6 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
         }
         return v8Result;
     }
-#if ENABLE(WEBGL)
     else if (result->is3d()) {
         v8::Handle<v8::Value> v8Result = toV8Fast(static_cast<WebGLRenderingContext*>(result), args, imp);
         if (InspectorInstrumentation::canvasAgentEnabled(imp->document())) {
@@ -107,7 +102,6 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
         }
         return v8Result;
     }
-#endif
     ASSERT_NOT_REACHED();
     return v8Null(args.GetIsolate());
 }

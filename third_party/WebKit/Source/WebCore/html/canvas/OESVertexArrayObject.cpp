@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "OESVertexArrayObject.h"
 
 #include "Extensions3D.h"
@@ -113,5 +111,3 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

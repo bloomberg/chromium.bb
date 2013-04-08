@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLContextObject.h"
 
 #include "WebGLRenderingContext.h"
@@ -61,5 +59,3 @@ GraphicsContext3D* WebGLContextObject::getAGraphicsContext3D() const
 }
 
 }
-
-#endif // ENABLE(WEBGL)

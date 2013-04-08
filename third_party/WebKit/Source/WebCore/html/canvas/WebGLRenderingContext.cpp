@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLRenderingContext.h"
 
 #include "CachedImage.h"
@@ -6066,5 +6064,3 @@ bool WebGLRenderingContext::supportsDrawBuffers()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

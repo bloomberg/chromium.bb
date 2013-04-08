@@ -193,7 +193,6 @@ v8::Handle<v8::Value> V8XMLHttpRequest::sendMethodCustom(const v8::Arguments& ar
             DOMFormData* domFormData = V8DOMFormData::toNative(object);
             ASSERT(domFormData);
             xmlHttpRequest->send(domFormData, ec);
-#if ENABLE(WEBGL) || ENABLE(BLOB)
         } else if (V8ArrayBuffer::HasInstance(arg, args.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(object);
@@ -204,7 +203,6 @@ v8::Handle<v8::Value> V8XMLHttpRequest::sendMethodCustom(const v8::Arguments& ar
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(object);
             ASSERT(arrayBufferView);
             xmlHttpRequest->send(arrayBufferView, ec);
-#endif
         } else
             xmlHttpRequest->send(toWebCoreStringWithNullCheck(arg), ec);
     }

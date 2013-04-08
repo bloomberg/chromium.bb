@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLSharedObject.h"
 
 #include "WebGLContextGroup.h"
@@ -62,5 +60,3 @@ GraphicsContext3D* WebGLSharedObject::getAGraphicsContext3D() const
 }
 
 }
-
-#endif // ENABLE(WEBGL)

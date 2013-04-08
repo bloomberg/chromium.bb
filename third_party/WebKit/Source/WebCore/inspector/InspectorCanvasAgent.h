@@ -71,9 +71,7 @@ public:
 
     // Called from InspectorCanvasInstrumentation.
     ScriptObject wrapCanvas2DRenderingContextForInstrumentation(const ScriptObject&);
-#if ENABLE(WEBGL)
     ScriptObject wrapWebGLRenderingContextForInstrumentation(const ScriptObject&);
-#endif
 
     // Called from the front-end.
     virtual void enable(ErrorString*);

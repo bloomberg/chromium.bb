@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "EXTTextureFilterAnisotropic.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ PassOwnPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebG
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

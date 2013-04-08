@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLGetInfo.h"
 
 #include "WebGLBuffer.h"
@@ -318,5 +316,3 @@ PassRefPtr<WebGLVertexArrayObjectOES> WebGLGetInfo::getWebGLVertexArrayObjectOES
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

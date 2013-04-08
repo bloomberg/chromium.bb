@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLShaderPrecisionFormat.h"
 
 namespace WebCore {
@@ -61,6 +59,3 @@ WebGLShaderPrecisionFormat::WebGLShaderPrecisionFormat(GC3Dint rangeMin, GC3Dint
 }
 
 }
-
-#endif // ENABLE(WEBGL)
-

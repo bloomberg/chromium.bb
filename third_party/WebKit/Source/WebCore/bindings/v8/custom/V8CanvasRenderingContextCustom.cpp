@@ -33,9 +33,7 @@
 
 #include "CanvasRenderingContext.h"
 #include "V8CanvasRenderingContext2D.h"
-#if ENABLE(WEBGL)
 #include "V8WebGLRenderingContext.h"
-#endif
 
 namespace WebCore {
 
@@ -44,10 +42,8 @@ v8::Handle<v8::Object> wrap(CanvasRenderingContext* impl, v8::Handle<v8::Object>
     ASSERT(impl);
     if (impl->is2d())
         return wrap(static_cast<CanvasRenderingContext2D*>(impl), creationContext, isolate);
-#if ENABLE(WEBGL)
     if (impl->is3d())
         return wrap(static_cast<WebGLRenderingContext*>(impl), creationContext, isolate);
-#endif
     ASSERT_NOT_REACHED();
     return v8::Handle<v8::Object>();
 }

@@ -28,8 +28,6 @@
 
 #include "EventNames.h"
 
-#if ENABLE(WEBGL)
-
 namespace WebCore {
 
 WebGLContextEventInit::WebGLContextEventInit()
@@ -62,5 +60,3 @@ const AtomicString& WebGLContextEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

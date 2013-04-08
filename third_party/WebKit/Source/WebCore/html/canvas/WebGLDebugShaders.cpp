@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLDebugShaders.h"
 
 #include "Extensions3D.h"
@@ -67,5 +65,3 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader, Excepti
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

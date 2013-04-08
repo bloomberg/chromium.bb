@@ -1654,7 +1654,6 @@ void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formSta
 }
 #endif
 
-#if ENABLE(WEBGL)
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)
 {
     if (m_webFrame->client())
@@ -1668,7 +1667,6 @@ void FrameLoaderClientImpl::didLoseWebGLContext(int arbRobustnessContextLostReas
     if (m_webFrame->client())
         m_webFrame->client()->didLoseWebGLContext(m_webFrame, arbRobustnessContextLostReason);
 }
-#endif
 
 void FrameLoaderClientImpl::dispatchWillInsertBody()
 {

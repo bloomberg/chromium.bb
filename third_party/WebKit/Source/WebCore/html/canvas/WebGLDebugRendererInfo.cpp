@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLDebugRendererInfo.h"
 
 #include "WebGLRenderingContext.h"
@@ -53,5 +51,3 @@ PassOwnPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRendering
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

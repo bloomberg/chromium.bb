@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLBuffer.h"
 
 #include "CheckedInt.h"
@@ -196,5 +194,3 @@ void WebGLBuffer::clearCachedMaxIndices()
 }
 
 }
-
-#endif // ENABLE(WEBGL)

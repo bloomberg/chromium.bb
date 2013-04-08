@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLFramebuffer.h"
 
 #include "EXTDrawBuffers.h"
@@ -636,5 +634,3 @@ GC3Denum WebGLFramebuffer::getDrawBuffer(GC3Denum drawBuffer)
 }
 
 }
-
-#endif // ENABLE(WEBGL)

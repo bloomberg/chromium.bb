@@ -70,12 +70,10 @@ ScriptObject InjectedScriptCanvasModule::wrapCanvas2DContext(const ScriptObject&
     return callWrapContextFunction("wrapCanvas2DContext", context);
 }
 
-#if ENABLE(WEBGL)
 ScriptObject InjectedScriptCanvasModule::wrapWebGLContext(const ScriptObject& glContext)
 {
     return callWrapContextFunction("wrapWebGLContext", glContext);
 }
-#endif // ENABLE(WEBGL)
 
 ScriptObject InjectedScriptCanvasModule::callWrapContextFunction(const String& functionName, const ScriptObject& context)
 {

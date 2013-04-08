@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "EXTDrawBuffers.h"
 
 #include "Extensions3D.h"
@@ -179,5 +177,3 @@ bool EXTDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCont
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

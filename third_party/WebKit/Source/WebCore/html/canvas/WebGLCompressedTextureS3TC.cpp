@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLCompressedTextureS3TC.h"
 
 #include "Extensions3D.h"
@@ -70,5 +68,3 @@ bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContext* context)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLObject.h"
 
 #include "EXTTextureFilterAnisotropic.h"
@@ -95,5 +93,3 @@ void WebGLObject::onDetached(GraphicsContext3D* context3d)
 }
 
 }
-
-#endif // ENABLE(WEBGL)

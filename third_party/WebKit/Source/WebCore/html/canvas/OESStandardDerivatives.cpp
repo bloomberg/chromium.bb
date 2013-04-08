@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "OESStandardDerivatives.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ PassOwnPtr<OESStandardDerivatives> OESStandardDerivatives::create(WebGLRendering
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

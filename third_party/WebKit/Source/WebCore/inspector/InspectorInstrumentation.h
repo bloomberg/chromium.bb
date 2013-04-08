@@ -273,9 +273,7 @@ public:
     static void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
 
     static ScriptObject wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptObject&);
-#if ENABLE(WEBGL)
     static ScriptObject wrapWebGLRenderingContextForInstrumentation(Document*, const ScriptObject&);
-#endif
 
     static void networkStateChanged(Page*);
     static void updateApplicationCacheStatus(Frame*);

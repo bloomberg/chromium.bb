@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLContextAttributes.h"
 
 namespace WebCore {
@@ -123,5 +121,3 @@ GraphicsContext3D::Attributes WebGLContextAttributes::attributes() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLExtension.h"
 
 namespace WebCore {
@@ -41,5 +39,3 @@ WebGLExtension::~WebGLExtension()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

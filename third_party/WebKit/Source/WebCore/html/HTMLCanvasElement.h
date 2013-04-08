@@ -122,9 +122,7 @@ public:
 
     AffineTransform baseTransform() const;
 
-#if ENABLE(WEBGL)    
     bool is3D() const;
-#endif
 
     void makeRenderingResultsAvailable();
     bool hasCreatedImageBuffer() const { return m_hasCreatedImageBuffer; }

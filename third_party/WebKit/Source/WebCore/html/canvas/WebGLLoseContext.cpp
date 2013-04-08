@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEBGL)
-
 #include "WebGLLoseContext.h"
 
 #include "WebGLRenderingContext.h"
@@ -63,5 +61,3 @@ void WebGLLoseContext::restoreContext()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEBGL)

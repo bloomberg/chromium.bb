@@ -48,7 +48,6 @@ ScriptObject InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrument
     return ScriptObject();
 }
 
-#if ENABLE(WEBGL)
 ScriptObject InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(Document* document, const ScriptObject& glContext)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document)) {
@@ -57,7 +56,6 @@ ScriptObject InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentati
     }
     return ScriptObject();
 }
-#endif // ENABLE(WEBGL)
 
 } // namespace WebCore
 
