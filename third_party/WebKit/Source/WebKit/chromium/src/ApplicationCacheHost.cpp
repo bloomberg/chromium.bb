@@ -119,13 +119,12 @@ void ApplicationCacheHost::maybeLoadMainResourceForRedirect(ResourceRequest&, Su
     // N/A to the chromium port
 }
 
-bool ApplicationCacheHost::maybeLoadFallbackForMainResponse(const ResourceRequest&, const ResourceResponse& response)
+void ApplicationCacheHost::maybeLoadFallbackForMainResponse(const ResourceRequest&, const ResourceResponse& response)
 {
     if (m_internal) {
         WrappedResourceResponse wrapped(response);
         m_internal->m_outerHost->didReceiveResponseForMainResource(wrapped);
     }
-    return false;
 }
 
 bool ApplicationCacheHost::maybeLoadFallbackForMainError(const ResourceRequest&, const ResourceError& error)

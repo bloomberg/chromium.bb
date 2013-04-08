@@ -226,11 +226,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
         frameLoader()->client()->dispatchDidFailLoading(this, m_identifierForLoadWithoutResourceLoader, error);
     }
 
-    // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
-    // See <rdar://problem/6304600> for more details.
-#if !USE(CF)
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
-#endif
 
     m_applicationCacheHost->failedLoadingMainResource();
 
@@ -335,24 +331,12 @@ void DocumentLoader::notifyFinished(CachedResource* resource)
         return;
     }
 
-    // FIXME: we should fix the design to eliminate the need for a platform ifdef here
-#if !PLATFORM(CHROMIUM)
-    if (m_request.cachePolicy() == ReturnCacheDataDontLoad && !m_mainResource->wasCanceled()) {
-        frameLoader()->retryAfterFailedCacheOnlyMainResourceLoad();
-        return;
-    }
-#endif
-
     mainReceivedError(m_mainResource->resourceError());
 }
 
 void DocumentLoader::finishedLoading(double finishTime)
 {
-    // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
-    // See <rdar://problem/6304600> for more details.
-#if !USE(CF)
     ASSERT(!m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
-#endif
 
     RefPtr<DocumentLoader> protect(this);
 
@@ -538,22 +522,14 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     RefPtr<DocumentLoader> protect(this);
-    bool willLoadFallback = m_applicationCacheHost->maybeLoadFallbackForMainResponse(request(), response);
+
+    m_applicationCacheHost->maybeLoadFallbackForMainResponse(request(), response);
 
     // The memory cache doesn't understand the application cache or its caching rules. So if a main resource is served
-    // from the application cache, ensure we don't save the result for future use.
-    bool shouldRemoveResourceFromCache = willLoadFallback;
-#if PLATFORM(CHROMIUM)
-    // chromium's ApplicationCacheHost implementation always returns true for maybeLoadFallbackForMainResponse(). However, all responses loaded
+    // from the application cache, ensure we don't save the result for future use. All responses loaded
     // from appcache will have a non-zero appCacheID().
     if (response.appCacheID())
-        shouldRemoveResourceFromCache = true;
-#endif
-    if (shouldRemoveResourceFromCache)
         memoryCache()->remove(m_mainResource.get());
-
-    if (willLoadFallback)
-        return;
 
     DEFINE_STATIC_LOCAL(AtomicString, xFrameOptionHeader, ("x-frame-options", AtomicString::ConstructFromLiteral));
     HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(xFrameOptionHeader);
@@ -574,11 +550,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
         }
     }
 
-    // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
-    // See <rdar://problem/6304600> for more details.
-#if !USE(CF)
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
-#endif
 
     if (m_isLoadingMultipartContent) {
         setupForReplace();
@@ -623,11 +595,7 @@ void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
     switch (policy) {
     case PolicyUse: {
         // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks (4120255).
-        bool isRemoteWebArchive = (equalIgnoringCase("application/x-webarchive", mimeType)
-#if PLATFORM(GTK)
-            || equalIgnoringCase("message/rfc822", mimeType)
-#endif
-            || equalIgnoringCase("multipart/related", mimeType))
+        bool isRemoteWebArchive = equalIgnoringCase("multipart/related", mimeType)
             && !m_substituteData.isValid() && !SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol());
         if (!frameLoader()->client()->canShowMIMEType(mimeType) || isRemoteWebArchive) {
             frameLoader()->policyChecker()->cannotShowMIMEType(m_response);
@@ -792,18 +760,7 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
     ASSERT(length);
     ASSERT_UNUSED(resource, resource == m_mainResource);
     ASSERT(!m_response.isNull());
-
-#if USE(CFNETWORK) || PLATFORM(MAC)
-    // Workaround for <rdar://problem/6060782>
-    if (m_response.isNull())
-        m_response = ResourceResponse(KURL(), "text/html", 0, String(), String());
-#endif
-
-    // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
-    // See <rdar://problem/6304600> for more details.
-#if !USE(CF)
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
-#endif
 
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
