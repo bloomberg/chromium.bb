@@ -33,7 +33,7 @@ var ALL = 'ALL';
 var FORWARD = 'forward';
 var BACKWARD = 'backward';
 var GTEST_MODIFIERS = ['FLAKY', 'FAILS', 'MAYBE', 'DISABLED'];
-var TEST_URL_BASE_PATH_TRAC = 'http://trac.webkit.org/browser/trunk/LayoutTests/';
+var TEST_URL_BASE_PATH_IN_VERSION_CONTROL = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/';
 var TEST_URL_BASE_PATH = "http://svn.webkit.org/repository/webkit/trunk/LayoutTests/";
 var EXPECTATIONS_URL_BASE_PATH = TEST_URL_BASE_PATH + "platform/";
 var TEST_RESULTS_BASE_PATH = 'http://build.chromium.org/f/chromium/layout_test_results/';
@@ -41,7 +41,7 @@ var GPU_RESULTS_BASE_PATH = 'http://chromium-browser-gpu-tests.commondatastorage
 
 var PLATFORMS = {
     'CHROMIUM': {
-        expectationsDirectory: 'chromium',
+        expectationsDirectory:  null, /* FIXME: cleanup post blink split 'chromium', */
         subPlatforms: {
             'LION': { fallbackPlatforms: ['CHROMIUM'] },
             'SNOWLEOPARD': { fallbackPlatforms: ['CHROMIUM'] },
@@ -49,7 +49,7 @@ var PLATFORMS = {
             'VISTA': { fallbackPlatforms: ['CHROMIUM'] },
             'WIN7': { fallbackPlatforms: ['CHROMIUM'] },
             'LUCID': { fallbackPlatforms: ['CHROMIUM'] },
-            'ANDROID': { fallbackPlatforms: ['CHROMIUM'], expectationsDirectory: 'chromium-android' }
+            'ANDROID': { fallbackPlatforms: ['CHROMIUM'], expectationsDirectory: null /* 'chromium-android' */ }
         },
         platformModifierUnions: {
             'MAC': ['CHROMIUM_LION', 'CHROMIUM_SNOWLEOPARD'],
@@ -1185,22 +1185,6 @@ function linkHTMLToOpenWindow(url, text)
     return '<a href="' + url + '" target="_blank">' + text + '</a>';
 }
 
-// FIXME: replaced with ui.html.chromiumRevisionLink/ui.html.webKitRevisionLink
-function createBlameListHTML(revisions, index, urlBase, separator, repo)
-{
-    var thisRevision = revisions[index];
-    if (!thisRevision)
-        return '';
-
-    var previousRevision = revisions[index + 1];
-    if (previousRevision && previousRevision != thisRevision) {
-        previousRevision++;
-        return linkHTMLToOpenWindow(urlBase + thisRevision + separator + previousRevision,
-            repo + ' blamelist r' + previousRevision + ':r' + thisRevision);
-    } else
-        return 'At ' + repo + ' revision: ' + thisRevision;
-}
-
 // Returns whether the result for index'th result for testName on builder was
 // a failure.
 function isFailure(builder, testName, index)
@@ -1254,11 +1238,7 @@ function showPopupForBuild(e, builder, index, opt_testName)
     var buildBasePath = master.logPath(builder, buildNumber);
 
     html += '<ul><li>' + linkHTMLToOpenWindow(buildBasePath, 'Build log') +
-        '</li><li>' +
-        createBlameListHTML(g_resultsByBuilder[builder].webkitRevision, index,
-            'http://trac.webkit.org/log/?verbose=on&rev=', '&stop_rev=',
-            'WebKit') +
-        '</li>';
+        '</li><li>Blink: ' + ui.html.blinkRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
     if (master.name == WEBKIT_BUILDER_MASTER) {
         var revision = g_resultsByBuilder[builder].webkitRevision[index];
@@ -1266,10 +1246,7 @@ function showPopupForBuild(e, builder, index, opt_testName)
             revision + ')">Show results for WebKit r' + revision +
             '</span></li>';
     } else {
-        html += '<li>' +
-            createBlameListHTML(g_resultsByBuilder[builder].chromeRevision, index,
-                'http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog.html?url=/trunk/src&mode=html&range=', ':', 'Chrome') +
-            '</li>';
+        html += '</li><li>Chromium: ' + ui.html.chromiumRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
         var chromeRevision = g_resultsByBuilder[builder].chromeRevision[index];
         if (chromeRevision && g_history.isLayoutTestResults()) {
@@ -2044,7 +2021,7 @@ function handleFinishedLoadingExpectations(container)
         else {
             console.log('No expectations identified for this test. This means ' +
                 'there is a logic bug in the dashboard for which expectations a ' +
-                'platform uses or trac.webkit.org/src.chromium.org is giving 5XXs.');
+                'platform uses or src.chromium.org is giving 5XXs.');
         }
     }
 
@@ -2416,8 +2393,8 @@ function htmlForIndividualTests(tests)
             if (g_history.isLayoutTestResults()) {
                 var suite = lookupVirtualTestSuite(test);
                 var base = suite ? baseTest(test, suite) : test;
-                var tracURL = TEST_URL_BASE_PATH_TRAC + base;
-                testNameHtml += '<h2>' + linkHTMLToOpenWindow(tracURL, test) + '</h2>';
+                var versionControlUrl = TEST_URL_BASE_PATH_IN_VERSION_CONTROL + base;
+                testNameHtml += '<h2>' + linkHTMLToOpenWindow(versionControlUrl, test) + '</h2>';
             } else
                 testNameHtml += '<h2>' + test + '</h2>';
         }

@@ -242,7 +242,7 @@ function updateBuildInspector(results, builder, dygraph, index)
     // Revision link(s)
     if (!shouldShowWebKitRevisionsOnly())
         addRow('Chromium change:', ui.html.chromiumRevisionLink(results, index));
-    addRow('WebKit change:', ui.html.webKitRevisionLink(results, index));
+    addRow('Blink change:', ui.html.blinkRevisionLink(results, index));
 
     // Test status/counts
     addRow('', '');
