@@ -75,14 +75,9 @@ public:
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled
-    // menulist (a menulist with background-color or border set). They have
-    // this distinction to support showing aqua style themes whenever they
-    // possibly can, which is something we don't want to replicate.
-    //
-    // In short, we either go down the MenuList code path or the MenuListButton
-    // codepath. We never go down both. And in both cases, they render the
-    // entire menulist.
+    // menulist (a menulist with background-color or border set).
     virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual void adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;

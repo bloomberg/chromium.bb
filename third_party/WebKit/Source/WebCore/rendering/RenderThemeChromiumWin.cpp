@@ -371,15 +371,23 @@ bool RenderThemeChromiumWin::paintMenuList(RenderObject* o, const PaintInfo& i, 
     bool drawEdges = !(!borderRight && !borderLeft && !borderTop && !borderBottom);
 
     paintTextFieldInternal(o, i, r, drawEdges);
+    return paintMenuListButton(o, i, r);
+}
 
+bool RenderThemeChromiumWin::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& r)
+{
+    if (!o->isBox())
+        return false;
+
+    const RenderBox* box = toRenderBox(o);
     // Take padding and border into account.  If the MenuList is smaller than
     // the size of a button, make sure to shrink it appropriately and not put
     // its x position to the left of the menulist.
     const int buttonWidth = menuListButtonWidth();
-    int spacingLeft = borderLeft + box->paddingLeft();
-    int spacingRight = borderRight + box->paddingRight();
-    int spacingTop = borderTop + box->paddingTop();
-    int spacingBottom = borderBottom + box->paddingBottom();
+    int spacingLeft = box->borderLeft() + box->paddingLeft();
+    int spacingRight = box->borderRight() + box->paddingRight();
+    int spacingTop = box->borderTop() + box->paddingTop();
+    int spacingBottom = box->borderBottom() + box->paddingBottom();
 
     int buttonX;
     if (r.maxX() - r.x() < buttonWidth)
