@@ -250,20 +250,7 @@ class PatchSeries(object):
     """
     if self.force_content_merging:
       return True
-    helper = self._helper_pool.ForChange(change)
-
-    if not helper.version.startswith('2.1'):
-      return self.manifest.ProjectIsContentMerging(change.project)
-
-    # Fallback to doing gsql trickery to get it; note this requires admin
-    # access.  This isn't required for CrOS anymore, but is left in place
-    # should a thirdparty not yet be on >=2.2
-    projects = self._content_merging_projects.get(helper)
-    if projects is None:
-      projects = helper.FindContentMergingProjects()
-      self._content_merging_projects[helper] = projects
-
-    return change.project in projects
+    return self.manifest.ProjectIsContentMerging(change.project)
 
   def ApplyChange(self, change, dryrun=False):
     # If we're in dryrun mode, then 3way is always allowed.

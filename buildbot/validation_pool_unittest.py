@@ -65,6 +65,9 @@ class MockManifest(object):
   def GetProjectsLocalRevision(self, _project):
     return 'refs/remotes/cros/master'
 
+  def ProjectIsContentMerging(self, _project):
+    return False
+
 
 # pylint: disable=W0212,R0904
 class base(cros_test_lib.MoxTestCase):
@@ -125,12 +128,12 @@ class base(cros_test_lib.MoxTestCase):
     # pylint: disable=W0201
     if cros_internal:
       cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
-      cros_internal.version = '2.1'
+      cros_internal.version = '2.2'
       cros_internal.remote = constants.INTERNAL_REMOTE
     if cros:
       cros = self.mox.CreateMock(gerrit.GerritHelper)
       cros.remote = constants.EXTERNAL_REMOTE
-      cros.version = '2.1'
+      cros.version = '2.2'
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
 
@@ -139,13 +142,6 @@ class base(cros_test_lib.MoxTestCase):
 class TestPatchSeries(base):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
-
-  def setUp(self):
-    # All tests should set their content merging projects via
-    # SetContentMergingProjects since FindContentMergingProjects
-    # requires admin rights in gerrit.
-    self.mox.StubOutWithMock(gerrit.GerritHelper,
-                             'FindContentMergingProjects')
 
   @staticmethod
   def SetContentMergingProjects(series, projects=(),
@@ -519,10 +515,6 @@ class TestPatchSeries(base):
 class TestCoreLogic(base):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
-
-  def setUp(self):
-    self.mox.StubOutWithMock(gerrit.GerritHelper,
-                             'FindContentMergingProjects')
 
   def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
                builder_name='foon', is_master=True, dryrun=True, **kwds):

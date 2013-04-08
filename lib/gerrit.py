@@ -464,29 +464,6 @@ class GerritHelper(object):
              % (change.gerrit_number, change.patch_number))
     self._SqlQuery(query, dryrun=dryrun, is_command=True)
 
-  def FindContentMergingProjects(self):
-    """Query the gerrit server to find which projects have content merging on
-
-    Content merging is also known as 3way merging; if enabled, changes that
-    aren't in the same git historical lineage and touch the same file can
-    fall back to patch (fuzzy matches) semantics.  If disabled, then changes
-    that try to touch the same file *must* be on the same lineage.
-
-    Returns:
-      A set of all projects that have content merging enabled
-    """
-
-    # Example json output from gerrit:
-    # {"type":"row","columns":{"name":"webm/libvpx"}}
-    # {"type":"row","columns":{"name":"webm/adaptive-prototype-manifest"}}
-    # {"type":"row","columns":{"name":"webm/bitstream-guide"}}
-    # {"type":"row","columns":{"name":"chromiumos/chromite"}}
-    # {"type":"query-stats","rowCount":4,"runTimeMilliseconds":2}
-
-    results = self._SqlQuery(
-        "SELECT name FROM projects where use_content_merge='Y';")
-    return frozenset(x['columns']['name'] for x in results)
-
 
 def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.
