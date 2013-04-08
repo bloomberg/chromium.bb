@@ -1881,6 +1881,7 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
     top: 1px;
     display: inline-block;
     background-image: url(Images/checker.png);
+    -webkit-user-select: none;
 }
 
 .swatch-inner {

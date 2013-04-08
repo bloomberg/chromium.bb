@@ -68,6 +68,7 @@ color: rgba(255, 0, 0, -5)
 color: rgba(255, 0, 0, 5)
   simple: false
   original: rgba(255, 0, 0, 5)
+  nickname: red
   rgb: rgb(255, 0, 0)
   rgba: rgba(255, 0, 0, 1)
   hsl: hsl(0, 100%, 50%)

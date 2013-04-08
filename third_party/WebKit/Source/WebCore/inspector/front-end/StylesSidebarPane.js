@@ -1822,10 +1822,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                     if (formatSetting === cf.Original)
                         format = cf.Original;
                     else if (formatSetting === cf.RGB)
-                        format = (color.simple ? cf.RGB : cf.RGBA);
+                        format = (color.hasAlpha() ? cf.RGBA : cf.RGB);
                     else if (formatSetting === cf.HSL)
-                        format = (color.simple ? cf.HSL : cf.HSLA);
-                    else if (color.simple)
+                        format = (color.hasAlpha() ? cf.HSLA : cf.HSL);
+                    else if (!color.hasAlpha())
                         format = (color.hasShortHex() ? cf.ShortHEX : cf.HEX);
                     else
                         format = cf.RGBA;
@@ -1848,18 +1848,18 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                     //   - hex
                     switch (curFormat) {
                         case cf.Original:
-                            return color.simple ? cf.RGB : cf.RGBA;
+                            return !color.hasAlpha() ? cf.RGB : cf.RGBA;
 
                         case cf.RGB:
                         case cf.RGBA:
-                            return color.simple ? cf.HSL : cf.HSLA;
+                            return !color.hasAlpha() ? cf.HSL : cf.HSLA;
 
                         case cf.HSL:
                         case cf.HSLA:
-                            if (color.nickname)
+                            if (color.nickname())
                                 return cf.Nickname;
-                            if (color.simple)
-                                return color.hasShortHex() ? cf.ShortHEX : cf.HEX;
+                            if (!color.hasAlpha())
+                                return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
                             else
                                 return cf.Original;
 
@@ -1870,13 +1870,13 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                             return cf.Original;
 
                         case cf.Nickname:
-                            if (color.simple)
-                                return color.hasShortHex() ? cf.ShortHEX : cf.HEX;
+                            if (!color.hasAlpha())
+                                return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
                             else
                                 return cf.Original;
 
                         default:
-                            return null;
+                            return cf.RGBA;
                     }
                 }
 
@@ -1884,11 +1884,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 {
                     do {
                         format = nextFormat(format);
-                        var currentValue = color.toString(format || "");
-                    } while (format && currentValue === color.value && format !== cf.Original);
-
-                    if (format)
-                        colorValueElement.textContent = currentValue;
+                        var currentValue = color.toString(format);
+                    } while (currentValue === colorValueElement.textContent);
+                    colorValueElement.textContent = currentValue;
                 }
 
                 var container = document.createElement("nobr");

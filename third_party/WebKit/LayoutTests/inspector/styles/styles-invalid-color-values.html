@@ -60,21 +60,21 @@ function test()
 
         InspectorTest.addResult("");
         InspectorTest.addResult("color: " + colorString);
-        InspectorTest.addResult("  simple: " + color.simple);
+        InspectorTest.addResult("  simple: " + !color.hasAlpha());
         var cf = WebInspector.Color.Format;
         for (var colorFormatKey in cf) {
             var colorFormat = cf[colorFormatKey];
             // Simple colors do not have RGBA and HSLA representations.
-            if (color.simple && (colorFormat === cf.RGBA || colorFormat === cf.HSLA))
+            if (!color.hasAlpha() && (colorFormat === cf.RGBA || colorFormat === cf.HSLA))
                 continue;
             // Advanced colors do not have HEX representations.
-            if (!color.simple && (colorFormat === cf.ShortHEX || colorFormat === cf.HEX))
+            if (color.hasAlpha() && (colorFormat === cf.ShortHEX || colorFormat === cf.HEX))
                 continue;
             // If there is no ShortHEX then skip it.
-            if (colorFormat === cf.ShortHEX && !color.hasShortHex())
+            if (colorFormat === cf.ShortHEX && !color.canBeShortHex())
                 continue;
             // If there is no nickname, then skip it.
-            if (colorFormat === cf.Nickname && !color.nickname)
+            if (colorFormat === cf.Nickname && !color.nickname())
                 continue;
             InspectorTest.addResult('  ' + colorFormat + ": " + color.toString(colorFormat));
         }

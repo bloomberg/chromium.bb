@@ -71,7 +71,7 @@ WebInspector.Spectrum = function()
 
     function hueDrag(element, dragX, dragY)
     {
-        this.hsv[0] = (dragY / this.slideHeight);
+        this._hsv[0] = dragY / this.slideHeight;
 
         this._onchange();
     }
@@ -92,15 +92,15 @@ WebInspector.Spectrum = function()
                 dragX = initialHelperOffset.x;
         }
 
-        this.hsv[1] = dragX / this.dragWidth;
-        this.hsv[2] = (this.dragHeight - dragY) / this.dragHeight;
+        this._hsv[1] = dragX / this.dragWidth;
+        this._hsv[2] = (this.dragHeight - dragY) / this.dragHeight;
 
         this._onchange();
     }
 
     function alphaDrag()
     {
-        this.hsv[3] = this._alphaElement.value / 100;
+        this._hsv[3] = this._alphaElement.value / 100;
 
         this._onchange();
     }
@@ -110,76 +110,6 @@ WebInspector.Spectrum.Events = {
     ColorChanged: "ColorChanged"
 };
 
-WebInspector.Spectrum.hsvaToRGBA = function(h, s, v, a)
-{
-    var r, g, b;
-
-    var i = Math.floor(h * 6);
-    var f = h * 6 - i;
-    var p = v * (1 - s);
-    var q = v * (1 - f * s);
-    var t = v * (1 - (1 - f) * s);
-
-    switch(i % 6) {
-    case 0:
-        r = v, g = t, b = p;
-        break;
-    case 1:
-        r = q, g = v, b = p;
-        break;
-    case 2:
-        r = p, g = v, b = t;
-        break;
-    case 3:
-        r = p, g = q, b = v;
-        break;
-    case 4:
-        r = t, g = p, b = v;
-        break;
-    case 5:
-        r = v, g = p, b = q;
-        break;
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), a];
-};
-
-WebInspector.Spectrum.rgbaToHSVA = function(r, g, b, a)
-{
-    r = r / 255;
-    g = g / 255;
-    b = b / 255;
-
-    var max = Math.max(r, g, b);
-    var min = Math.min(r, g, b);
-    var h;
-    var s;
-    var v = max;
-
-    var d = max - min;
-    s = max ? d / max : 0;
-
-    if(max === min) {
-        // Achromatic.
-        h = 0;
-    } else {
-        switch(max) {
-        case r:
-            h = (g - b) / d + (g < b ? 6 : 0);
-            break;
-        case g:
-            h = (b - r) / d + 2;
-            break;
-        case b:
-            h = (r - g) / d + 4;
-            break;
-        }
-        h /= 6;
-    }
-    return [h, s, v, a];
-};
-
-//FIXME: migrate to WebInspector.installDragHandle
 /**
  * @param {Function=} onmove
  * @param {Function=} onstart
@@ -256,40 +186,27 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
 
 WebInspector.Spectrum.prototype = {
     /**
-     * @type {WebInspector.Color}
+     * @param {WebInspector.Color} color
      */
-    set color(color)
+    setColor: function(color)
     {
-        var rgba = (color.rgba || color.rgb).slice(0);
-
-        if (rgba.length === 3)
-            rgba[3] = 1;
-
-        this.hsv = WebInspector.Spectrum.rgbaToHSVA(rgba[0], rgba[1], rgba[2], rgba[3]);
+        this._hsv = color.hsva();
     },
 
-    get color()
+    /**
+     * @return {WebInspector.Color}
+     */
+    color: function()
     {
-        var rgba = WebInspector.Spectrum.hsvaToRGBA(this.hsv[0], this.hsv[1], this.hsv[2], this.hsv[3]);
-        var color;
-
-        if (rgba[3] === 1)
-            color = WebInspector.Color.fromRGB(rgba[0], rgba[1], rgba[2]);
-        else
-            color = WebInspector.Color.fromRGBA(rgba[0], rgba[1], rgba[2], rgba[3]);
-
-        var colorValue = color.toString(this.outputColorFormat);
-        if (!colorValue)
-            colorValue = color.toString(); // this.outputColorFormat can be invalid for current color (e.g. "nickname").
-        return WebInspector.Color.parse(colorValue);
+        return WebInspector.Color.fromHSVA(this._hsv, this._outputColorFormat());
     },
 
-    get outputColorFormat()
+    _outputColorFormat: function()
     {
         var cf = WebInspector.Color.Format;
         var format = this._originalFormat;
 
-        if (this.hsv[3] === 1) {
+        if (this._hsv[3] === 1) {
             // Simplify transparent formats.
             if (format === cf.RGBA)
                 format = cf.RGB;
@@ -306,11 +223,6 @@ WebInspector.Spectrum.prototype = {
         return format;
     },
 
-    get colorHueOnly()
-    {
-        var rgba = WebInspector.Spectrum.hsvaToRGBA(this.hsv[0], 1, 1, 1);
-        return WebInspector.Color.fromRGBA(rgba[0], rgba[1], rgba[2], rgba[3]);
-    },
 
     set displayText(text)
     {
@@ -320,14 +232,14 @@ WebInspector.Spectrum.prototype = {
     _onchange: function()
     {
         this._updateUI();
-        this.dispatchEventToListeners(WebInspector.Spectrum.Events.ColorChanged, this.color);
+        this.dispatchEventToListeners(WebInspector.Spectrum.Events.ColorChanged, this.color());
     },
 
     _updateHelperLocations: function()
     {
-        var h = this.hsv[0];
-        var s = this.hsv[1];
-        var v = this.hsv[2];
+        var h = this._hsv[0];
+        var s = this._hsv[1];
+        var v = this._hsv[2];
 
         // Where to show the little circle that displays your current selected color.
         var dragX = s * this.dragWidth;
@@ -344,27 +256,17 @@ WebInspector.Spectrum.prototype = {
         var slideY = (h * this.slideHeight) - this.slideHelperHeight;
         this.slideHelper.style.top = slideY + "px";
 
-        this._alphaElement.value = this.hsv[3] * 100;
+        this._alphaElement.value = this._hsv[3] * 100;
     },
 
     _updateUI: function()
     {
         this._updateHelperLocations();
 
-        var rgb = (this.color.rgba || this.color.rgb).slice(0);
+        this._draggerElement.style.backgroundColor = WebInspector.Color.fromHSVA([this._hsv[0], 1, 1, 1]).toString(WebInspector.Color.Format.RGB);
+        this._swatchInnerElement.style.backgroundColor = this.color().toString(WebInspector.Color.Format.RGB);
 
-        if (rgb.length === 3)
-            rgb[3] = 1;
-
-        var rgbHueOnly = this.colorHueOnly.rgb;
-
-        var flatColor = "rgb(" + rgbHueOnly[0] + ", " + rgbHueOnly[1] + ", " + rgbHueOnly[2] + ")";
-        var fullColor = "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", " + rgb[3] + ")";
-
-        this._draggerElement.style.backgroundColor = flatColor;
-        this._swatchInnerElement.style.backgroundColor = fullColor;
-
-        this._alphaElement.value = this.hsv[3] * 100;
+        this._alphaElement.value = this._hsv[3] * 100;
     },
 
     wasShown: function()
@@ -431,8 +333,8 @@ WebInspector.SpectrumPopupHelper.prototype = {
 
         this._anchorElement = element;
 
-        this._spectrum.color = color;
-        this._spectrum._originalFormat = format || color.format;
+        this._spectrum.setColor(color);
+        this._spectrum._originalFormat = format !== WebInspector.Color.Format.Original ? format : color.format();
         this.reposition(element);
 
         document.addEventListener("mousedown", this._hideProxy, false);

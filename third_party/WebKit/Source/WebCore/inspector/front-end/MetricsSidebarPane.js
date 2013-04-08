@@ -216,7 +216,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             WebInspector.Color.PageHighlight.Padding,
             WebInspector.Color.PageHighlight.Border,
             WebInspector.Color.PageHighlight.Margin,
-            WebInspector.Color.fromRGBA(0, 0, 0, 0)
+            WebInspector.Color.fromRGBA([0, 0, 0, 0])
         ];
         var boxLabels = [WebInspector.UIString("content"), WebInspector.UIString("padding"), WebInspector.UIString("border"), WebInspector.UIString("margin"), WebInspector.UIString("position")];
         var previousBox = null;
