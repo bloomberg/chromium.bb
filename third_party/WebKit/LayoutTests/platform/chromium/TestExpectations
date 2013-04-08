@@ -3656,7 +3656,8 @@ crbug.com/225184 svg/as-image/image-respects-pageScaleFactor.html [ Failure Imag
 crbug.com/225184 [ Mac ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
-crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/227473 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+crbug.com/227473 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
