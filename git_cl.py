@@ -713,11 +713,14 @@ or verify this branch is set up to track another (via the --track argument to
           ('%s\nMaybe your depot_tools is out of date?\n'
            'If all fails, contact maruel@') % e)
 
+  def UpdateDescription(self, description):
+    self.description = description
+    return self.RpcServer().update_description(
+        self.GetIssue(), self.description)
+
   def CloseIssue(self):
     """Updates the description and closes the issue."""
-    issue = self.GetIssue()
-    self.RpcServer().update_description(issue, self.description)
-    return self.RpcServer().close_issue(issue)
+    return self.RpcServer().close_issue(self.GetIssue())
 
   def SetFlag(self, flag, value):
     """Patchset must match."""
@@ -1512,6 +1515,7 @@ def SendUpstream(parser, args, cmd):
       cl.description += ('\n\nCommitted: ' + revision)
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
+    cl.UpdateDescription(cl.description)
     cl.CloseIssue()
     props = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
     patch_num = len(props['patchsets'])
