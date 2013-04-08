@@ -123,10 +123,6 @@
 #include "ValidatedCustomFilterOperation.h"
 #endif
 
-#if PLATFORM(BLACKBERRY)
-#define DISABLE_ROUNDED_CORNER_CLIPPING
-#endif
-
 #define MIN_INTERSECT_FOR_REVEAL 32
 
 using namespace std;

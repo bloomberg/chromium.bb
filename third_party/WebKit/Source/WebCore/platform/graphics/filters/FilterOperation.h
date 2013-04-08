@@ -37,10 +37,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(BLACKBERRY)
-#include <wtf/ThreadSafeRefCounted.h>
-#endif
-
 #if ENABLE(SVG)
 #include "CachedSVGDocumentReference.h"
 #endif
@@ -54,11 +50,7 @@ namespace WebCore {
 
 // CSS Filters
 
-#if PLATFORM(BLACKBERRY)
-class FilterOperation : public ThreadSafeRefCounted<FilterOperation> {
-#else
 class FilterOperation : public RefCounted<FilterOperation> {
-#endif
 public:
     enum OperationType {
         REFERENCE, // url(#somefilter)

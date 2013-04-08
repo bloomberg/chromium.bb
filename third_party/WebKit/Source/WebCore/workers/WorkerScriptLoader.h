@@ -73,7 +73,7 @@ namespace WebCore {
         virtual void didFail(const ResourceError&) OVERRIDE;
         virtual void didFailRedirectCheck() OVERRIDE;
 
-#if PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
+#if PLATFORM(CHROMIUM)
         void setTargetType(ResourceRequest::TargetType targetType) { m_targetType = targetType; }
 #endif
 
@@ -96,7 +96,7 @@ namespace WebCore {
         bool m_failed;
         unsigned long m_identifier;
         bool m_finishing;
-#if PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
+#if PLATFORM(CHROMIUM)
         ResourceRequest::TargetType m_targetType;
 #endif
     };

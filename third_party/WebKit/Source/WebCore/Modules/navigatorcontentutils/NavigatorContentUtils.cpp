@@ -44,7 +44,6 @@ static void initProtocolHandlerWhitelist()
 {
     protocolWhitelist = new HashSet<String>;
     static const char* protocols[] = {
-#if !PLATFORM(BLACKBERRY)
         "irc",
         "mailto",
         "mms",
@@ -55,7 +54,6 @@ static void initProtocolHandlerWhitelist()
         "tel",
         "urn",
         "webcal",
-#endif
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(protocols); ++i)
         protocolWhitelist->add(protocols[i]);

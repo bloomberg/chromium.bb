@@ -34,9 +34,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Threading.h>
-#if PLATFORM(BLACKBERRY)
-#include <BlackBerryPlatformAnimationFrameRateController.h>
-#endif
 
 #if PLATFORM(MAC)
 typedef struct __CVDisplayLink *CVDisplayLinkRef;
@@ -73,17 +70,6 @@ private:
     bool m_displayIDIsSet;
     PlatformDisplayID m_displayID;
 };
-
-#if PLATFORM(BLACKBERRY)
-class DisplayAnimationClient : public BlackBerry::Platform::AnimationFrameRateClient {
-public:
-    DisplayAnimationClient(DisplayRefreshMonitor *);
-    ~DisplayAnimationClient() { }
-private:
-    virtual void animationFrameChanged();
-    DisplayRefreshMonitor *m_monitor;
-};
-#endif
 
 //
 // Monitor for display refresh messages for a given screen
@@ -131,14 +117,6 @@ private:
     
     typedef HashSet<DisplayRefreshMonitorClient*> DisplayRefreshMonitorClientSet;
     DisplayRefreshMonitorClientSet m_clients;
-#if PLATFORM(BLACKBERRY)
-public:
-    void displayLinkFired();
-private:
-    DisplayAnimationClient *m_animationClient;
-    void startAnimationClient();
-    void stopAnimationClient();
-#endif
 #if PLATFORM(MAC)
 public:
     void displayLinkFired(double nowSeconds, double outputTimeSeconds);

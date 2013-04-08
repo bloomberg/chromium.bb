@@ -71,10 +71,6 @@
 #include "android/log.h"
 #endif
 
-#if PLATFORM(BLACKBERRY)
-#include <BlackBerryPlatformLog.h>
-#endif
-
 extern "C" {
 
 WTF_ATTRIBUTE_PRINTF(1, 0)
@@ -117,8 +113,6 @@ static void vprintf_stderr_common(const char* format, va_list args)
 
     // Fall through to write to stderr in the same manner as other platforms.
 
-#elif PLATFORM(BLACKBERRY)
-    BBLOGV(BlackBerry::Platform::LogLevelCritical, format, args);
 #elif OS(ANDROID)
     __android_log_vprint(ANDROID_LOG_WARN, "WebKit", format, args);
 #elif HAVE(ISDEBUGGERPRESENT)
@@ -155,9 +149,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
         } while (size > 1024);
     }
 #endif
-#if !PLATFORM(BLACKBERRY)
     vfprintf(stderr, format, args);
-#endif
 }
 
 #if COMPILER(CLANG) || (COMPILER(GCC) && GCC_VERSION_AT_LEAST(4, 6, 0))

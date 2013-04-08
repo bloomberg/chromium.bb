@@ -216,11 +216,6 @@ bool portAllowed(const KURL& url)
     if (url.protocolIs("file"))
         return true;
 
-#if PLATFORM(BLACKBERRY)
-    if (url.protocolIs("local"))
-        return true;
-#endif
-
     return false;
 }
 

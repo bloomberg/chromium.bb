@@ -33,10 +33,6 @@
 #include "NetworkStorageSession.h"
 #include "PlatformCookieJar.h"
 
-#if PLATFORM(BLACKBERRY)
-#error Blackberry currently uses a fork of this file because of layering violations
-#endif
-
 namespace WebCore {
 
 static NetworkingContext* networkingContext(const Document* document)

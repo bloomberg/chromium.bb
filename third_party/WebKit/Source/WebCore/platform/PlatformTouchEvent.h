@@ -33,12 +33,6 @@ class PlatformTouchEvent : public PlatformEvent {
 public:
     PlatformTouchEvent()
         : PlatformEvent(PlatformEvent::TouchStart)
-#if PLATFORM(BLACKBERRY)
-        , m_rotation(0)
-        , m_scale(1)
-        , m_doubleTap(false)
-        , m_touchHold(false)
-#endif
     {
     }
 

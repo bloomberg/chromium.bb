@@ -740,7 +740,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
 
     ResourceRequest request(m_url);
     request.setHTTPMethod(m_method);
-#if PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
+#if PLATFORM(CHROMIUM)
     request.setTargetType(ResourceRequest::TargetIsXHR);
 #endif
 

@@ -53,13 +53,6 @@ Path::Path(const Path& other)
     m_path = other.m_path ? new SkPath(*other.m_path) : 0;
 }
 
-#if PLATFORM(BLACKBERRY)
-Path::Path(const SkPath& path)
-{
-    m_path = new SkPath(path);
-}
-#endif
-
 Path::~Path()
 {
     if (m_path)

@@ -242,7 +242,7 @@ void WorkerContext::importScripts(const Vector<String>& urls, ExceptionCode& ec)
 
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
-#if PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
+#if PLATFORM(CHROMIUM)
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
 #endif
         scriptLoader->loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);

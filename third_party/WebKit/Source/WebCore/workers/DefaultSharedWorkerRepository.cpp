@@ -311,9 +311,6 @@ void SharedWorkerScriptLoader::load(const KURL& url)
 
     // Mark this object as active for the duration of the load.
     m_scriptLoader = WorkerScriptLoader::create();
-#if PLATFORM(BLACKBERRY)
-    m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
-#endif
     m_scriptLoader->loadAsynchronously(m_worker->scriptExecutionContext(), url, DenyCrossOriginRequests, this);
 }
 

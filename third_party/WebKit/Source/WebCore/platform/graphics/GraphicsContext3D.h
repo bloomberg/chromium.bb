@@ -852,15 +852,11 @@ private:
     Vector<Vector<float> > m_vertexArray;
 
     GC3Duint m_texture;
-#if !PLATFORM(BLACKBERRY)
     GC3Duint m_compositorTexture;
-#endif
     GC3Duint m_fbo;
 
-#if !PLATFORM(BLACKBERRY)
     GC3Duint m_depthBuffer;
     GC3Duint m_stencilBuffer;
-#endif
     GC3Duint m_depthStencilBuffer;
 
     bool m_layerComposited;
@@ -888,14 +884,8 @@ private:
     // Errors raised by synthesizeGLError().
     ListHashSet<GC3Denum> m_syntheticErrors;
 
-#if PLATFORM(BLACKBERRY)
-    bool m_isImaginationHardware;
-#endif
-
-#if !PLATFORM(BLACKBERRY)
     friend class GraphicsContext3DPrivate;
     OwnPtr<GraphicsContext3DPrivate> m_private;
-#endif
 };
 
 } // namespace WebCore

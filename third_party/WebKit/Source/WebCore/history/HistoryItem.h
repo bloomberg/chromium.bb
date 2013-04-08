@@ -40,10 +40,6 @@
 typedef struct objc_object* id;
 #endif
 
-#if PLATFORM(BLACKBERRY)
-#include "HistoryItemViewState.h"
-#endif
-
 namespace WebCore {
 
 class CachedPage;
@@ -190,10 +186,6 @@ public:
     // The properties will not be persisted; when the history item is removed, the properties will be lost.
     id getTransientProperty(const String&) const;
     void setTransientProperty(const String&, id);
-#endif
-
-#if PLATFORM(BLACKBERRY)
-    HistoryItemViewState& viewState() { return m_viewState; }
 #endif
 
 #ifndef NDEBUG
