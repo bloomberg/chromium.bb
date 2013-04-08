@@ -1965,10 +1965,6 @@ crbug.com/58735 http/tests/misc/prefetch-purpose.html [ Slow ]
 crbug.com/58936 fast/js/basic-strict-mode.html [ Failure ]
 crbug.com/58936 fast/js/numeric-escapes-in-string-literals.html [ Failure ]
 
-# For some reason it seems to not properly rect hit-tests elements in shadow
-# content of <video> elements.
-webkit.org/b/91205 media/nodesFromRect-shadowContent.html [ Skip ]
-
 webkit.org/b/96470 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure ]
 webkit.org/b/96470 [ Win ] fast/text/international/vertical-text-metrics-test.html [ Failure ]
 
