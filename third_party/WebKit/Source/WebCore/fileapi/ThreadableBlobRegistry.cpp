@@ -72,8 +72,6 @@ public:
     OwnPtr<BlobData> blobData;
 };
 
-#if ENABLE(BLOB)
-
 typedef HashMap<String, RefPtr<SecurityOrigin> > BlobUrlOriginMap;
 static ThreadSpecific<BlobUrlOriginMap>& originMap()
 {
@@ -140,26 +138,5 @@ PassRefPtr<SecurityOrigin> ThreadableBlobRegistry::getCachedOrigin(const KURL& u
 {
     return originMap()->get(url.string());
 }
-
-#else
-
-void ThreadableBlobRegistry::registerBlobURL(const KURL&, PassOwnPtr<BlobData>)
-{
-}
-
-void ThreadableBlobRegistry::registerBlobURL(SecurityOrigin*, const KURL&, const KURL&)
-{
-}
-
-void ThreadableBlobRegistry::unregisterBlobURL(const KURL&)
-{
-}
-
-PassRefPtr<SecurityOrigin> ThreadableBlobRegistry::getCachedOrigin(const KURL&)
-{
-    return 0;
-}
-
-#endif // ENABL(BLOB)
 
 } // namespace WebCore

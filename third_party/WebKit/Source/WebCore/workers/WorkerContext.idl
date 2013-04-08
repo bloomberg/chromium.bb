@@ -75,14 +75,12 @@
     attribute XMLHttpRequestConstructor XMLHttpRequest;
 #endif
 
-#if defined(ENABLE_BLOB) && ENABLE_BLOB
     attribute BlobConstructor Blob;
     attribute FileReaderConstructor FileReader;
     attribute FileReaderSyncConstructor FileReaderSync;
-#endif
 
-    [Conditional=BLOB] attribute DOMURLConstructor URL;
-    [Conditional=BLOB] attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
+    attribute DOMURLConstructor URL;
+    attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
 
     attribute ArrayBufferConstructor ArrayBuffer; // Usable with new operator
     attribute Int8ArrayConstructor Int8Array; // Usable with new operator

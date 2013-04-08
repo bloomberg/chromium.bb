@@ -84,10 +84,6 @@
 #define ENABLE_BATTERY_STATUS 0
 #endif
 
-#if !defined(ENABLE_BLOB)
-#define ENABLE_BLOB 0
-#endif
-
 #if !defined(ENABLE_CALENDAR_PICKER)
 #define ENABLE_CALENDAR_PICKER 0
 #endif

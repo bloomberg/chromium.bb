@@ -34,8 +34,6 @@
     'feature_defines': [
       'ENABLE_3D_PLUGIN=1',
       'ENABLE_BATTERY_STATUS=0',
-      'ENABLE_BLOB=1',
-      'ENABLE_BLOB_SLICE=1',
       'ENABLE_CANVAS_PATH=1',
       'ENABLE_CANVAS_PROXY=1',
       'ENABLE_CHANNEL_MESSAGING=1',

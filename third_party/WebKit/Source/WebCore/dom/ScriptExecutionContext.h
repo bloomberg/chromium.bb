@@ -52,10 +52,7 @@ class EventListener;
 class EventQueue;
 class EventTarget;
 class MessagePort;
-
-#if ENABLE(BLOB)
 class PublicURLManager;
-#endif
 
 class ScriptExecutionContext : public SecurityContext, public Supplementable<ScriptExecutionContext> {
 public:
@@ -83,9 +80,8 @@ public:
 
     virtual const SecurityOrigin* topOrigin() const = 0;
 
-#if ENABLE(BLOB)
     PublicURLManager& publicURLManager();
-#endif
+
     // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
     bool canSuspendActiveDOMObjects();
     // Active objects can be asked to suspend even if canSuspendActiveDOMObjects() returns 'false' -
@@ -210,9 +206,7 @@ private:
     ActiveDOMObject::ReasonForSuspension m_reasonForSuspendingActiveDOMObjects;
     bool m_activeDOMObjectsAreStopped;
 
-#if ENABLE(BLOB)
     OwnPtr<PublicURLManager> m_publicURLManager;
-#endif
 
 #if ENABLE(SQL_DATABASE)
     RefPtr<DatabaseContext> m_databaseContext;

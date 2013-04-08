@@ -84,9 +84,7 @@ WebSocketChannel::WebSocketChannel(Document* document, WebSocketChannelClient* c
     , m_hasContinuousFrame(false)
     , m_closeEventCode(CloseEventCodeAbnormalClosure)
     , m_outgoingFrameQueueStatus(OutgoingFrameQueueOpen)
-#if ENABLE(BLOB)
     , m_blobLoaderStatus(BlobLoaderNotStarted)
-#endif
 {
     if (Page* page = m_document->page())
         m_identifier = page->progress()->createUniqueIdentifier();
@@ -344,7 +342,6 @@ void WebSocketChannel::didCancelAuthenticationChallenge(SocketStreamHandle*, con
 {
 }
 
-#if ENABLE(BLOB)
 void WebSocketChannel::didStartLoading()
 {
     LOG(Network, "WebSocketChannel %p didStartLoading", this);
@@ -379,7 +376,6 @@ void WebSocketChannel::didFail(int errorCode)
     fail("Failed to load Blob: error code = " + String::number(errorCode)); // FIXME: Generate human-friendly reason message.
     deref();
 }
-#endif
 
 bool WebSocketChannel::appendToBuffer(const char* data, size_t len)
 {
@@ -728,7 +724,6 @@ void WebSocketChannel::processOutgoingFrameQueue()
             break;
 
         case QueuedFrameTypeBlob: {
-#if ENABLE(BLOB)
             switch (m_blobLoaderStatus) {
             case BlobLoaderNotStarted:
                 ref(); // Will be derefed after didFinishLoading() or didFail().
@@ -752,11 +747,8 @@ void WebSocketChannel::processOutgoingFrameQueue()
                     fail("Failed to send WebSocket frame.");
                 break;
             }
-            }
-#else
-            fail("FileReader is not available. Could not send a Blob as WebSocket binary message.");
-#endif
             break;
+        }
         }
 
         default:
@@ -776,12 +768,10 @@ void WebSocketChannel::abortOutgoingFrameQueue()
 {
     m_outgoingFrameQueue.clear();
     m_outgoingFrameQueueStatus = OutgoingFrameQueueClosed;
-#if ENABLE(BLOB)
     if (m_blobLoaderStatus == BlobLoaderStarted) {
         m_blobLoader->cancel();
         didFail(FileError::ABORT_ERR);
     }
-#endif
 }
 
 bool WebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const char* data, size_t dataLength)

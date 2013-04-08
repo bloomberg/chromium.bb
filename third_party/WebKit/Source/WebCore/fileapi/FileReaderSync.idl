@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=BLOB,
     Constructor
 ] interface FileReaderSync {
     [CallWith=ScriptExecutionContext] ArrayBuffer readAsArrayBuffer(Blob blob)
