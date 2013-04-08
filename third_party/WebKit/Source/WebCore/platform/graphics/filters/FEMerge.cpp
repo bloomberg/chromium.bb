@@ -27,7 +27,10 @@
 #include "Filter.h"
 #include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
+#include "SkMergeImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 #include "TextStream.h"
+#include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {
 
@@ -55,6 +58,19 @@ void FEMerge::platformApplySoftware()
         FilterEffect* in = inputEffect(i);
         filterContext->drawImageBuffer(in->asImageBuffer(), ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()));
     }
+}
+
+SkImageFilter* FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    unsigned size = numberOfEffectInputs();
+
+    OwnArrayPtr<SkAutoTUnref<SkImageFilter> > inputRefs = adoptArrayPtr(new SkAutoTUnref<SkImageFilter>[size]);
+    OwnArrayPtr<SkImageFilter*> inputs = adoptArrayPtr(new SkImageFilter*[size]);
+    for (unsigned i = 0; i < size; ++i) {
+        inputRefs[i].reset(builder->build(inputEffect(i)));
+        inputs[i] = inputRefs[i].get();
+    }
+    return new SkMergeImageFilter(inputs.get(), size);
 }
 
 void FEMerge::dump()

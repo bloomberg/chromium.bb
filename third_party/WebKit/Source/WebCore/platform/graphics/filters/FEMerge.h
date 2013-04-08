@@ -37,6 +37,8 @@ public:
 #if ENABLE(OPENCL)
     virtual bool platformApplyOpenCL();
 #endif
+    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+
     virtual void dump();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;

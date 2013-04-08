@@ -37,6 +37,18 @@
     <filter id="displacement">
       <feDisplacementMap scale="10" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
+    <filter id="merge">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.3 0"  result="trans"/>
+      <feOffset dx="5"  dy="5"  in="trans" result="offset1"/>
+      <feOffset dx="10" dy="10" in="trans" result="offset2"/>
+      <feOffset dx="15" dy="15" in="trans" result="offset3"/>
+      <feMerge>
+        <feMergeNode in="trans"/>
+        <feMergeNode in="offset1"/>
+        <feMergeNode in="offset2"/>
+        <feMergeNode in="offset3"/>
+      </feMerge>
+    </filter>
   </defs>
 </svg>
 <style>
@@ -55,3 +67,4 @@ img {
 <img style="-webkit-filter: url(#offset); filter: url(#offset);" src="resources/reference.png">
 <img style="-webkit-filter: url(#convolvematrix); filter: url(#convolvematrix);" src="resources/reference.png">
 <img style="-webkit-filter: url(#displacement); filter: url(#displacement);" src="resources/reference.png">
+<img style="-webkit-filter: url(#merge); filter: url(#merge);" src="resources/reference.png">
