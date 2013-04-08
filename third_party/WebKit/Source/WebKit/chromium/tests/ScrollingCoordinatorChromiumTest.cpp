@@ -319,4 +319,12 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     ASSERT_EQ(973, webScrollLayer->maxScrollPosition().width);
 }
 
+TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)
+{
+    registerMockedHttpURLLoad("setup_scrollbar_layer_crash.html");
+    navigateTo(m_baseURL + "setup_scrollbar_layer_crash.html");
+    // This test document setup an iframe with scrollbars, then switch to
+    // an empty document by javascript.
+}
+
 } // namespace

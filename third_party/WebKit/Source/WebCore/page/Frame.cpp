@@ -289,6 +289,14 @@ void Frame::setDocument(PassRefPtr<Document> newDoc)
     ASSERT(!m_doc || m_doc->domWindow());
     ASSERT(!m_doc || m_doc->domWindow()->frame() == this);
 
+    if (m_page && m_view) {
+        if (ScrollingCoordinator* scrollingCoordinator = m_page->scrollingCoordinator()) {
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_view.get(), HorizontalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_view.get(), VerticalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_view.get());
+        }
+    }
+
     selection()->updateSecureKeyboardEntryIfActive();
 
     if (m_doc && !m_doc->attached())
