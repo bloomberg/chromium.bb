@@ -10,13 +10,14 @@ import unittest
 from in_memory_object_store import InMemoryObjectStore
 from branch_utility import BranchUtility
 from fake_url_fetcher import FakeUrlFetcher
+from test_object_store import TestObjectStore
 
 class BranchUtilityTest(unittest.TestCase):
   def setUp(self):
     self._branch_util = BranchUtility(
         os.path.join('branch_utility', 'first.json'),
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
-        InMemoryObjectStore(''))
+        object_store=TestObjectStore('test'))
 
   def testSplitChannelNameFromPath(self):
     self.assertEquals(('stable', 'extensions/stuff.html'),

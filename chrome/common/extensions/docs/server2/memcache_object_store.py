@@ -13,12 +13,17 @@ class _AsyncMemcacheGetFuture(object):
     return self._rpc.get_result()
 
 class MemcacheObjectStore(ObjectStore):
-  def SetMulti(self, mapping, namespace, time=CACHE_TIMEOUT):
-    memcache.Client().set_multi_async(mapping, namespace=namespace, time=time)
+  def __init__(self, namespace):
+    self._namespace = namespace
 
-  def GetMulti(self, keys, namespace, time=CACHE_TIMEOUT):
-    rpc = memcache.Client().get_multi_async(keys, namespace=namespace)
+  def SetMulti(self, mapping, time=CACHE_TIMEOUT):
+    memcache.Client().set_multi_async(mapping,
+                                      namespace=self._namespace,
+                                      time=time)
+
+  def GetMulti(self, keys, time=CACHE_TIMEOUT):
+    rpc = memcache.Client().get_multi_async(keys, namespace=self._namespace)
     return _AsyncMemcacheGetFuture(rpc)
 
-  def Delete(self, key, namespace):
-    memcache.delete(key, namespace=namespace)
+  def Delete(self, key):
+    memcache.delete(key, namespace=self._namespace)

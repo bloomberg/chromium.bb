@@ -24,7 +24,6 @@ class GithubFileSystemTest(unittest.TestCase):
                                    'github_file_system')
     self._file_system = GithubFileSystem(
         AppEngineUrlFetcher(url_constants.GITHUB_URL),
-        InMemoryObjectStore('github'),
         AppEngineBlobstore())
 
   def _ReadLocalFile(self, filename):

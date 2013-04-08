@@ -25,7 +25,7 @@ class AppEngineUrlFetcher(object):
   """A wrapper around the App Engine urlfetch module that allows for easy
   async fetches.
   """
-  def __init__(self, base_path):
+  def __init__(self, base_path=None):
     self._base_path = base_path
 
   def Fetch(self, url, username=None, password=None):

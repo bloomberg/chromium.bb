@@ -7,7 +7,7 @@ import json
 import logging
 import re
 
-import compiled_file_system as compiled_fs
+from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
@@ -15,44 +15,46 @@ import url_constants
 
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
-# See api_data_source.py for more info on _VERSION.
-_VERSION = 3
+# Increment this if the data model changes for SamplesDataSource.
+_VERSION = 4
 
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
   """
-
   class Factory(object):
     """A factory to create SamplesDataSource instances bound to individual
     Requests.
     """
     def __init__(self,
                  channel,
-                 file_system,
-                 github_file_system,
-                 cache_factory,
-                 github_cache_factory,
+                 extensions_file_system,
+                 apps_file_system,
                  ref_resolver_factory,
-                 samples_path):
-      self._file_system = file_system
-      self._github_file_system = github_file_system
+                 extension_samples_path):
+      self._svn_file_system = extensions_file_system
+      self._github_file_system = apps_file_system
       self._static_path = '/%s/static' % channel
-      self._extensions_cache = cache_factory.Create(self._MakeSamplesList,
-                                                    compiled_fs.EXTENSIONS,
-                                                    version=_VERSION)
-      self._apps_cache = github_cache_factory.Create(
-          lambda x, y: self._MakeSamplesList(x, y, is_apps=True),
-          compiled_fs.APPS,
-          version=_VERSION)
       self._ref_resolver = ref_resolver_factory.Create()
-      self._samples_path = samples_path
+      self._extension_samples_path = extension_samples_path
+      def create_compiled_fs(fs, fn, category):
+        return CompiledFileSystem.Factory(fs).Create(fn,
+                                                     SamplesDataSource,
+                                                     category=category,
+                                                     version=_VERSION)
+      self._extensions_cache = create_compiled_fs(extensions_file_system,
+                                                  self._MakeSamplesList,
+                                                  'extensions')
+      self._apps_cache = create_compiled_fs(apps_file_system,
+                                            lambda *args: self._MakeSamplesList(
+                                                *args, is_apps=True),
+                                            'apps')
 
     def Create(self, request):
       """Returns a new SamplesDataSource bound to |request|.
       """
       return SamplesDataSource(self._extensions_cache,
                                self._apps_cache,
-                               self._samples_path,
+                               self._extension_samples_path,
                                request)
 
     def _GetAPIItems(self, js_file):
@@ -99,7 +101,11 @@ class SamplesDataSource(object):
       return l10n_data
 
     def _MakeSamplesList(self, base_dir, files, is_apps=False):
-      file_system = self._github_file_system if is_apps else self._file_system
+      # HACK(kalman): The code here (for legacy reasons) assumes that |files| is
+      # prefixed by |base_dir|, so make it true.
+      files = ['%s%s' % (base_dir, f) for f in files]
+      file_system = (self._github_file_system if is_apps else
+                     self._svn_file_system)
       samples_list = []
       for filename in sorted(files):
         if filename.rsplit('/')[-1] != 'manifest.json':
@@ -130,7 +136,7 @@ class SamplesDataSource(object):
             item = item[:-len('.addListener')]
           if item.startswith('chrome.'):
             item = item[len('chrome.'):]
-          ref_data = self._ref_resolver.GetLink(item, 'samples')
+          ref_data = self._ref_resolver.GetLink(item)
           if ref_data is None:
             continue
           api_calls.append({
@@ -173,10 +179,14 @@ class SamplesDataSource(object):
 
       return samples_list
 
-  def __init__(self, extensions_cache, apps_cache, samples_path, request):
+  def __init__(self,
+               extensions_cache,
+               apps_cache,
+               extension_samples_path,
+               request):
     self._extensions_cache = extensions_cache
     self._apps_cache = apps_cache
-    self._samples_path = samples_path
+    self._extension_samples_path = extension_samples_path
     self._request = request
 
   def _GetAcceptedLanguages(self):
@@ -212,7 +222,7 @@ class SamplesDataSource(object):
       samples_list = self._apps_cache.GetFromFileListing('/')
     else:
       samples_list = self._extensions_cache.GetFromFileListing(
-          self._samples_path + '/')
+          self._extension_samples_path + '/')
     return_list = []
     for dict_ in samples_list:
       name = dict_['name']

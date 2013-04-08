@@ -57,15 +57,13 @@ class APIDataSourceTest(unittest.TestCase):
   def _CreateRefResolver(self, filename):
     data_source = FakeAPIAndListDataSource(
         self._LoadJSON(filename))
-    return ReferenceResolver.Factory(data_source,
-                                     data_source,
-                                     InMemoryObjectStore('')).Create()
+    return ReferenceResolver.Factory(data_source, data_source).Create()
 
   def DISABLED_testSimple(self):
-    cache_factory = CompiledFileSystem.Factory(
+    compiled_fs_factory = CompiledFileSystem.Factory(
         LocalFileSystem(self._base_path),
         InMemoryObjectStore('fake_branch'))
-    data_source_factory = APIDataSource.Factory(cache_factory,
+    data_source_factory = APIDataSource.Factory(compiled_fs_factory,
                                                 '.')
     data_source_factory.SetSamplesDataSourceFactory(FakeSamplesDataSource())
     data_source = data_source_factory.Create({}, disable_refs=True)

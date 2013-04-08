@@ -10,14 +10,18 @@ import compiled_file_system as compiled_fs
 from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 
+# Increment this if the data model changes for SidenavDataSource.
+_VERSION = 1
+
 class SidenavDataSource(object):
   """This class reads in and caches a JSON file representing the side navigation
   menu.
   """
   class Factory(object):
-    def __init__(self, cache_factory, json_path):
-      self._cache = cache_factory.Create(self._CreateSidenavDict,
-                                         compiled_fs.SIDENAV)
+    def __init__(self, compiled_fs_factory, json_path):
+      self._cache = compiled_fs_factory.Create(self._CreateSidenavDict,
+                                               SidenavDataSource,
+                                               version=_VERSION)
       self._json_path = json_path
 
     def Create(self, path):

@@ -18,4 +18,4 @@ CLOSED_ISSUES_CSV_URL = (
     'http://code.google.com/p/chromium/issues/csv?can=1&'
     'q=Hotlist%3DKnownIssue+Feature%3DApps+-is%3Aopen')
 EXTENSIONS_SAMPLES = ('http://src.chromium.org/viewvc/chrome/trunk/src/chrome/'
-                      'common/extensions/docs/examples/')
+                      'common/extensions/docs/examples')

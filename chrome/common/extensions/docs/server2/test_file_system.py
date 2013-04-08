@@ -11,11 +11,38 @@ class TestFileSystem(FileSystem):
   Read('a/') as ['b'], and Stat determined by a value incremented via
   IncrementStat.
   '''
+
+  # TODO(kalman): this method would be unnecessary if we injected paths properly
+  # in ServerInstance.
+  @staticmethod
+  def MoveTo(base, obj):
+    '''Returns an object as |obj| moved to |prefix|. That is,
+    MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
+    '''
+    result = {}
+    leaf = result
+    for k in base.split('/'):
+      leaf[k] = {}
+      leaf = leaf[k]
+    leaf.update(obj)
+    return result
+
   def __init__(self, obj):
     self._obj = obj
-    self._stat = 0
+    self._global_stat = 0
+    self._path_stats = {}
+    self._read_count = 0
+    self._stat_count = 0
+
+  #
+  # FileSystem implementation.
+  #
 
   def Read(self, paths, binary=False):
+    self._read_count += 1
+    return self._ReadImpl(paths, binary=binary)
+
+  def _ReadImpl(self, paths, binary=False):
     try:
       result = {}
       for path in paths:
@@ -46,7 +73,7 @@ class TestFileSystem(FileSystem):
           return k
         if isinstance(v, dict):
           return '%s/' % k
-        raise ValueError('Cannot convert type % to path', type(v))
+        raise ValueError('Cannot convert type %s to path', type(v))
       return [ToPath(k, v) for k, v in obj.items()]
 
     path = path.lstrip('/')
@@ -72,12 +99,35 @@ class TestFileSystem(FileSystem):
     return GetPaths(dir_contents)
 
   def Stat(self, path):
-    read_result = self.ReadSingle(path)
-    stat_result = StatInfo(str(self._stat))
+    self._stat_count += 1
+    return self._StatImpl(path)
+
+  def _StatImpl(self, path):
+    read_result = self._ReadImpl([path]).Get()[path]
+    stat_result = StatInfo(self._SinglePathStat(path))
     if isinstance(read_result, list):
-      stat_result.child_versions = dict((file_result, str(self._stat))
-                                        for file_result in read_result)
+      stat_result.child_versions = dict(
+          (file_result, self._SinglePathStat('%s%s' % (path, file_result)))
+          for file_result in read_result)
     return stat_result
 
-  def IncrementStat(self):
-    self._stat += 1
+  def _SinglePathStat(self, path):
+    return str(self._global_stat + self._path_stats.get(path, 0))
+
+  #
+  # Testing methods.
+  #
+
+  def IncrementStat(self, path=None):
+    if path is not None:
+      self._path_stats[path] = self._path_stats.get(path, 0) + 1
+    else:
+      self._global_stat += 1
+
+  def CheckAndReset(self, stat_count=0, read_count=0):
+    try:
+      return (self._read_count == read_count and
+              self._stat_count == stat_count)
+    finally:
+      self._read_count = 0
+      self._stat_count = 0

@@ -49,7 +49,7 @@ class IntegrationTest(unittest.TestCase):
       request.headers['Accept-Language'] = lang + ';q=0.8'
       response = _MockResponse()
       try:
-        Handler(request, response, local_path=BASE_PATH).get()
+        Handler(request, response).get()
         if 200 != response.status:
           failures.append(
               'Samples page with language %s does not have 200 status.'
@@ -82,7 +82,7 @@ class IntegrationTest(unittest.TestCase):
       request = _MockRequest(filename)
       response = _MockResponse()
       try:
-        Handler(request, response, local_path=BASE_PATH).get()
+        Handler(request, response).get()
         if 200 != response.status:
           failures.append('%s does not have 200 status. Status was %d.' %
               (filename, response.status))
@@ -108,11 +108,11 @@ class IntegrationTest(unittest.TestCase):
     logging.getLogger().setLevel(logging.CRITICAL)
     request = _MockRequest('extensions/junk.html')
     bad_response = _MockResponse()
-    Handler(request, bad_response, local_path=BASE_PATH).get()
+    Handler(request, bad_response).get()
     self.assertEqual(404, bad_response.status)
     request_404 = _MockRequest('404.html')
     response_404 = _MockResponse()
-    Handler(request_404, response_404, local_path=BASE_PATH).get()
+    Handler(request_404, response_404).get()
     self.assertEqual(200, response_404.status)
     self.assertEqual(response_404.out.getvalue(), bad_response.out.getvalue())
 
@@ -124,7 +124,7 @@ class IntegrationTest(unittest.TestCase):
       logging.error = self.fail
       request = _MockRequest('/cron/trunk')
       response = _MockResponse()
-      Handler(request, response, local_path=BASE_PATH).get()
+      Handler(request, response).get()
       self.assertEqual(200, response.status)
       self.assertEqual('Success', response.out.getvalue())
     finally:

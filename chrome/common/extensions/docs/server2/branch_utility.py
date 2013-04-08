@@ -4,14 +4,16 @@
 
 import json
 import logging
-
-import object_store
 import operator
 
+from object_store_creator import ObjectStoreCreator
+
 class BranchUtility(object):
-  def __init__(self, base_path, fetcher, object_store):
-    self._base_path = base_path
+  def __init__(self, fetch_url, fetcher, object_store=None):
+    self._fetch_url = fetch_url
     self._fetcher = fetcher
+    if object_store is None:
+      object_store = ObjectStoreCreator(BranchUtility).Create()
     self._object_store = object_store
 
   @staticmethod
@@ -22,7 +24,8 @@ class BranchUtility(object):
     return [(branch, self.GetBranchNumberForChannelName(branch))
             for branch in BranchUtility.GetAllBranchNames()]
 
-  def SplitChannelNameFromPath(self, path):
+  @staticmethod
+  def SplitChannelNameFromPath(path):
     """Splits the channel name out of |path|, returning the tuple
     (channel_name, real_path). If the channel cannot be determined then returns
     (None, path).
@@ -41,13 +44,12 @@ class BranchUtility(object):
     if channel_name == 'trunk':
       return 'trunk'
 
-    branch_number = self._object_store.Get(channel_name + '.' + self._base_path,
-                                           object_store.BRANCH_UTILITY).Get()
+    branch_number = self._object_store.Get(channel_name).Get()
     if branch_number is not None:
       return branch_number
 
     try:
-      version_json = json.loads(self._fetcher.Fetch(self._base_path).content)
+      version_json = json.loads(self._fetcher.Fetch(self._fetch_url).content)
     except Exception as e:
       # This can happen if omahaproxy is misbehaving, which we've seen before.
       # Quick hack fix: just serve from trunk until it's fixed.
@@ -72,8 +74,6 @@ class BranchUtility(object):
                              None,
                              operator.itemgetter(1),
                              True)
-    self._object_store.Set(channel_name + '.' + self._base_path,
-                           sorted_branches[0][0],
-                           object_store.BRANCH_UTILITY)
+    self._object_store.Set(channel_name, sorted_branches[0][0])
 
     return sorted_branches[0][0]

@@ -7,7 +7,6 @@ import time
 from appengine_wrappers import CACHE_TIMEOUT
 from future import Future
 from object_store import ObjectStore
-from memcache_object_store import MemcacheObjectStore
 
 class _CacheEntry(object):
   def __init__(self, value, expire_time):
@@ -26,67 +25,53 @@ class _AsyncGetFuture(object):
   Properties:
   - |cache| the in-memory cache used by InMemoryObjectStore
   - |time| the cache timeout
-  - |namespace| the namespace of the cache items
   - |future| the |Future| from the backing |ObjectStore|
   - |initial_mapping| a mapping of cache items already in memory
   """
-  def __init__(self, cache, time, namespace, future, initial_mapping):
+  def __init__(self, cache, time, future, initial_mapping):
     self._cache = cache
     self._time = time
-    self._namespace = namespace
     self._future = future
     self._mapping = initial_mapping
 
   def Get(self):
     if self._future is not None:
       result = self._future.Get()
-      self._cache[self._namespace].update(
+      self._cache.update(
           dict((k, _CacheEntry(v, self._time)) for k, v in result.iteritems()))
       self._mapping.update(result)
     return self._mapping
 
 class InMemoryObjectStore(ObjectStore):
-  def __init__(self, branch):
-    self._branch = branch
+  def __init__(self, object_store):
+    self._object_store = object_store
     self._cache = {}
-    self._object_store = MemcacheObjectStore()
 
-  def _MakeNamespace(self, namespace):
-    return 'ObjectStore.%s.%s' % (self._branch, namespace)
-
-  def SetMulti(self, mapping, namespace, time=CACHE_TIMEOUT):
-    namespace = self._MakeNamespace(namespace)
+  def SetMulti(self, mapping, time=CACHE_TIMEOUT):
     for k, v in mapping.iteritems():
-      if namespace not in self._cache:
-        self._cache[namespace] = {}
-      self._cache[namespace][k] = _CacheEntry(v, time)
+      self._cache[k] = _CacheEntry(v, time)
       # TODO(cduvall): Use a batch set? App Engine kept throwing:
       # ValueError: Values may not be more than 1000000 bytes in length
       # for the batch set.
-      self._object_store.Set(k, v, namespace, time=time)
+      self._object_store.Set(k, v, time=time)
 
-  def GetMulti(self, keys, namespace, time=CACHE_TIMEOUT):
-    namespace = self._MakeNamespace(namespace)
+  def GetMulti(self, keys, time=CACHE_TIMEOUT):
     keys = keys[:]
     mapping = {}
-    if namespace not in self._cache:
-      self._cache[namespace] = {}
     for key in keys:
-      cache_entry = self._cache[namespace].get(key, None)
+      cache_entry = self._cache.get(key, None)
       if cache_entry is None or cache_entry.HasExpired():
         mapping[key] = None
       else:
         mapping[key] = cache_entry.value
         keys.remove(key)
-    future = self._object_store.GetMulti(keys, namespace, time=time)
+    future = self._object_store.GetMulti(keys, time=time)
     return Future(delegate=_AsyncGetFuture(self._cache,
                                            time,
-                                           namespace,
                                            future,
                                            mapping))
 
-  def Delete(self, key, namespace):
-    namespace = self._MakeNamespace(namespace)
-    if namespace in self._cache and key in self._cache[namespace]:
-      self._cache[namespace].pop(key)
-    self._object_store.Delete(key, namespace)
+  def Delete(self, key):
+    if key in self._cache:
+      self._cache.pop(key)
+    self._object_store.Delete(key)

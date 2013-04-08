@@ -12,9 +12,11 @@ from file_system import FileNotFoundError
 import compiled_file_system as compiled_fs
 from third_party.handlebar import Handlebar
 
-# Increment this version if there are changes to the table of contents dict that
-# IntroDataSource caches.
-_VERSION = 4
+# TODO(kalman): rename this HTMLDataSource or other, then have separate intro
+# article data sources created as instances of it.
+
+# Increment this if the data model changes for IntroDataSource.
+_VERSION = 5
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
@@ -65,10 +67,10 @@ class IntroDataSource(object):
   of contents dictionary is created, which contains the headings in the intro.
   """
   class Factory(object):
-    def __init__(self, cache_factory, ref_resolver_factory, base_paths):
-      self._cache = cache_factory.Create(self._MakeIntroDict,
-                                         compiled_fs.INTRO,
-                                         version=_VERSION)
+    def __init__(self, compiled_fs_factory, ref_resolver_factory, base_paths):
+      self._cache = compiled_fs_factory.Create(self._MakeIntroDict,
+                                               IntroDataSource,
+                                               version=_VERSION)
       self._ref_resolver = ref_resolver_factory.Create()
       self._base_paths = base_paths
 
@@ -107,11 +109,15 @@ class IntroDataSource(object):
     self._base_paths = base_paths
 
   def get(self, key):
-    real_path = FormatKey(key)
-    error = None
+    path = FormatKey(key)
+    def get_from_base_path(base_path):
+      return self._cache.GetFromFile('%s/%s' % (base_path, path))
     for base_path in self._base_paths:
       try:
-        return self._cache.GetFromFile(base_path + '/' + real_path)
-      except FileNotFoundError as error:
-        pass
-    raise ValueError(str(error) + ': No intro found for "%s".' % key)
+        return get_from_base_path(base_path)
+      except FileNotFoundError:
+        continue
+    # Not found. Do the first operation again so that we get a stack trace - we
+    # know that it'll fail.
+    get_from_base_path(self._base_paths[0])
+    raise AssertionError()
