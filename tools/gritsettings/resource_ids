@@ -179,7 +179,7 @@
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
     "messages": [23500],
   },
-  "cloud_print/service/win/cloud_print_service_resources.grd": {
+  "cloud_print/service/win/service_resources.grd": {
     "messages": [23600],
     "includes": [23800],
   },

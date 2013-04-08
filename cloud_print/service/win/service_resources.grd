@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.  Use of this
+source code is governed by a BSD-style license that can be found in the LICENSE
+file.
+-->
+
+
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="service_resources_en.rc" type="rc_all" lang="en" language_section="lang"/>
+  </outputs>
+  <translations>
+  </translations>
+    <release seq="1">
+    <messages>
+      <message name="IDS_SERVICENAME" translateable="false">
+        CloudPrintService
+      </message>
+    </messages>
+    <includes>
+      <if expr="lang == 'en'">
+        <include name="IDR_CLOUDPRINTSERVICE" file="resources/cloud_print_service.rgs" type="REGISTRY" translateable="false" />
+        <include name="IDI_ICON" file="resources/cloudprint.ico" type="ICON" translateable="false" />
+      </if>
+    </includes>
+  </release>
+</grit>
