@@ -3228,19 +3228,21 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   PaintTrackingView* content_view = new PaintTrackingView;
   widget()->SetContentsView(content_view);
   content_view->SetPaintToLayer(true);
-  // TODO(piman): Compositor::Draw() won't work for the threaded compositor.
-  GetRootLayer()->GetCompositor()->Draw(false);
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
   GetRootLayer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   content_view->set_painted(false);
   // content_view no longer has a dirty rect. Paint from the root and make sure
   // PaintTrackingView isn't painted.
-  GetRootLayer()->GetCompositor()->Draw(false);
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
   EXPECT_FALSE(content_view->painted());
 
   // Make content_view have a dirty rect, paint the layers and make sure
   // PaintTrackingView is painted.
   content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
-  GetRootLayer()->GetCompositor()->Draw(false);
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  EXPECT_TRUE(ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor()));
   EXPECT_TRUE(content_view->painted());
 }
 

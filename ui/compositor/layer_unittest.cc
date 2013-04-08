@@ -4,14 +4,12 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "cc/layers/layer.h"
@@ -84,53 +82,6 @@ class ColoredLayer : public Layer, public LayerDelegate {
   SkColor color_;
 };
 
-const int kDrawWaitTimeOutMs = 1000;
-
-class DrawWaiter : public ui::CompositorObserver {
- public:
-  DrawWaiter() : did_draw_(false) {}
-
-  bool Wait(ui::Compositor* compositor) {
-    did_draw_ = false;
-    compositor->AddObserver(this);
-    wait_run_loop_.reset(new base::RunLoop());
-    base::CancelableClosure timeout(
-        base::Bind(&DrawWaiter::TimedOutWhileWaiting,
-                   base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(),
-        base::TimeDelta::FromMilliseconds(kDrawWaitTimeOutMs));
-    wait_run_loop_->Run();
-    compositor->RemoveObserver(this);
-    return did_draw_;
-  }
-
- private:
-  void TimedOutWhileWaiting() {
-    LOG(ERROR) << "Timed out waiting for draw.";
-    wait_run_loop_->Quit();
-  }
-
-  // ui::CompositorObserver implementation.
-  virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE {}
-  virtual void OnCompositingStarted(Compositor* compositor,
-                                    base::TimeTicks start_time) OVERRIDE {}
-  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
-    did_draw_ = true;
-    wait_run_loop_->Quit();
-  }
-  virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE {}
-  virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE {}
-  virtual void OnUpdateVSyncParameters(Compositor* compositor,
-                                       base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE {}
-
-  scoped_ptr<base::RunLoop> wait_run_loop_;
-  bool did_draw_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawWaiter);
-};
-
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {
@@ -185,8 +136,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   bool WaitForDraw() {
-    DrawWaiter draw_waiter;
-    return draw_waiter.Wait(GetCompositor());
+    return ui::DrawWaiterForTest::Wait(GetCompositor());
   }
 
   // Invalidates the entire contents of the layer.
@@ -478,8 +428,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   }
 
   bool WaitForDraw() {
-    DrawWaiter draw_waiter;
-    return draw_waiter.Wait(compositor());
+    return DrawWaiterForTest::Wait(compositor());
   }
 
   // CompositorDelegate overrides.

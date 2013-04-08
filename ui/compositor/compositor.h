@@ -15,6 +15,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
@@ -22,6 +23,10 @@
 #include "ui/gl/gl_share_group.h"
 
 class SkBitmap;
+
+namespace base {
+class RunLoop;
+}
 
 namespace cc {
 class ContextProvider;
@@ -207,6 +212,38 @@ class COMPOSITOR_EXPORT CompositorLock
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
 
+class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
+ public:
+  // Waits at most |kDrawWaitTimeOutMs| milliseconds for a draw to be issued.
+  // If a draw is issued in that timeframe, it will complete. Returns true if
+  // a draw completed, false otherwise.
+  static bool Wait(Compositor* compositor);
+
+ private:
+  DrawWaiterForTest();
+  virtual ~DrawWaiterForTest();
+
+  bool WaitImpl(Compositor* compositor);
+  void TimedOutWhileWaiting();
+
+  // CompositorObserver implementation.
+  virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingStarted(Compositor* compositor,
+                                    base::TimeTicks start_time) OVERRIDE;
+  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE;
+  virtual void OnUpdateVSyncParameters(Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE;
+
+  const int kDrawWaitTimeOutMs;
+
+  scoped_ptr<base::RunLoop> wait_run_loop_;
+  bool did_draw_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawWaiterForTest);
+};
 
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final

@@ -8,9 +8,11 @@
 #include <deque>
 
 #include "base/bind.h"
+#include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -333,6 +335,63 @@ void CompositorLock::CancelLock() {
     return;
   compositor_->UnlockCompositor();
   compositor_ = NULL;
+}
+
+// static
+bool DrawWaiterForTest::Wait(Compositor* compositor) {
+  DrawWaiterForTest waiter;
+  return waiter.WaitImpl(compositor);
+}
+
+DrawWaiterForTest::DrawWaiterForTest()
+    : kDrawWaitTimeOutMs(1000),
+      did_draw_(false) {
+}
+
+DrawWaiterForTest::~DrawWaiterForTest() {
+}
+
+bool DrawWaiterForTest::WaitImpl(Compositor* compositor) {
+  did_draw_ = false;
+  compositor->AddObserver(this);
+  wait_run_loop_.reset(new base::RunLoop());
+  base::CancelableClosure timeout(
+      base::Bind(&DrawWaiterForTest::TimedOutWhileWaiting,
+                 base::Unretained(this)));
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, timeout.callback(),
+      base::TimeDelta::FromMilliseconds(kDrawWaitTimeOutMs));
+  wait_run_loop_->Run();
+  compositor->RemoveObserver(this);
+  return did_draw_;
+}
+
+void DrawWaiterForTest::TimedOutWhileWaiting() {
+  LOG(ERROR) << "Timed out waiting for draw.";
+  wait_run_loop_->Quit();
+}
+
+void DrawWaiterForTest::OnCompositingDidCommit(Compositor* compositor) {
+}
+
+void DrawWaiterForTest::OnCompositingStarted(Compositor* compositor,
+                                             base::TimeTicks start_time) {
+}
+
+void DrawWaiterForTest::OnCompositingEnded(Compositor* compositor) {
+  did_draw_ = true;
+  wait_run_loop_->Quit();
+}
+
+void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {
+}
+
+void DrawWaiterForTest::OnCompositingLockStateChanged(Compositor* compositor) {
+}
+
+void DrawWaiterForTest::OnUpdateVSyncParameters(Compositor* compositor,
+                                                base::TimeTicks timebase,
+                                                base::TimeDelta interval) {
 }
 
 class PostedSwapQueue {
