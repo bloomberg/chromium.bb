@@ -3795,6 +3795,9 @@ Bug(ojan) editing/selection/after-line-wrap.html [ Failure ImageOnlyFailure Pass
 Bug(ojan) editing/style/create-block-for-style-012.html [ Failure ImageOnlyFailure Pass ]
 Bug(ojan) fast/repaint/inline-outline-repaint.html [ Failure ImageOnlyFailure Pass ]
 Bug(ojan) fast/text/whitespace/nbsp-mode-and-linewraps.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) [ Mac ] editing/inserting/typing-at-end-of-line.html [ Failure ]
+Bug(ojan) [ Mac ] editing/selection/wrapped-line-caret-1.html [ Failure ]
+Bug(ojan) [ Mac ] editing/selection/wrapped-line-caret-2.html [ Failure ]
 
 webkit.org/b/113555 [ Win7 Debug ] fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
