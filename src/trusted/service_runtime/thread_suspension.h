@@ -62,6 +62,7 @@ void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
  */
 void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
                                         struct NaClSignalContext *regs);
+int NaClAppThreadIsSuspendedInSyscall(struct NaClAppThread *natp);
 void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
                                         const struct NaClSignalContext *regs);
 

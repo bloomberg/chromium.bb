@@ -27,10 +27,13 @@
 
 
 /*
- * These tests mirror thread_suspension_test.cc, but they operate on
- * threads running real untrusted code rather than on mock untrusted
- * threads.
+ * Some of these tests mirror thread_suspension_test.cc, but they
+ * operate on threads running real untrusted code rather than on mock
+ * untrusted threads.
  */
+
+static int g_simple_syscall_should_exit;
+static volatile int g_simple_syscall_called;
 
 /* This must be called with the mutex nap->threads_mu held. */
 static struct NaClAppThread *GetOnlyThread(struct NaClApp *nap) {
@@ -133,8 +136,12 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap) {
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 }
 
-/* This implements a NaCl syscall. */
-static int32_t SuspendTestSyscall(struct NaClAppThread *natp) {
+/*
+ * This implements a NaCl syscall.  This syscall will spin until told
+ * by the (trusted) test code to return.  This is used for testing
+ * suspension of a thread that's inside a syscall.
+ */
+static int32_t SpinWaitTestSyscall(struct NaClAppThread *natp) {
   uint32_t test_shm_uptr;
   struct SuspendTestShm *test_shm;
   uint32_t next_val = 0;
@@ -370,6 +377,75 @@ static void TestGettingRegisterSnapshotInSyscall(struct NaClApp *nap) {
   RegsAssertEqual(&regs, &test_shm->expected_regs);
 }
 
+/*
+ * This implements a NaCl syscall.  This is called in an infinite loop
+ * in order to test getting the register state of a thread during
+ * trusted/untrusted context switches.
+ */
+static int32_t SimpleTestSyscall(struct NaClAppThread *natp) {
+  NaClCopyDropLock(natp->nap);
+  g_simple_syscall_called = 1;
+  if (g_simple_syscall_should_exit) {
+    NaClAppThreadTeardown(natp);
+  }
+  return 0;
+}
+
+/*
+ * Test getting the register state of a thread suspended during a
+ * trusted/untrusted context switch.  In this test, untrusted code
+ * calls a syscall in an infinite loop; we should get the same
+ * register state regardless of when this thread is interrupted.  This
+ * is a stress test; see tests/signal_handler_single_step for a
+ * non-stress test which covers the unwinding logic.
+ */
+static void TestGettingRegisterSnapshotInSyscallContextSwitch(
+    struct NaClApp *nap) {
+  struct SuspendTestShm *test_shm;
+  struct NaClAppThread *natp;
+  struct NaClSignalContext regs;
+  int iteration;
+
+  g_simple_syscall_should_exit = 0;
+  g_simple_syscall_called = 0;
+  test_shm = StartGuestWithSharedMemory(nap, "SyscallRegisterSetterLoopThread");
+  /*
+   * Wait until the syscall is called, otherwise
+   * test_shm->expected_regs won't have been filled out by untrusted
+   * code yet.
+   */
+  while (!g_simple_syscall_called) { /* do nothing */ }
+
+  for (iteration = 0; iteration < 10000; iteration++) {
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+    natp = GetOnlyThread(nap);
+    NaClAppThreadGetSuspendedRegisters(natp, &regs);
+
+    /*
+     * Only compare prog_ctr if the thread is inside the syscall,
+     * otherwise there is a small set of instructions that untrusted
+     * code executes.
+     */
+    if (!NaClAppThreadIsSuspendedInSyscall(natp)) {
+      regs.prog_ctr = test_shm->expected_regs.prog_ctr;
+      RegsUnsetNonCalleeSavedRegisters(&regs);
+    }
+    /*
+     * TODO(mseaborn): Enable the RegsAssertEqual() check for ARM/MIPS
+     * once NaClGetRegistersForContextSwitch() is implemented for
+     * those architectures.
+     */
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) {
+      RegsAssertEqual(&regs, &test_shm->expected_regs);
+    }
+
+    NaClUntrustedThreadsResumeAll(nap);
+  }
+
+  g_simple_syscall_should_exit = 1;
+  WaitForThreadToExitFully(nap);
+}
+
 int main(int argc, char **argv) {
   struct NaClApp app;
 
@@ -394,7 +470,8 @@ int main(int argc, char **argv) {
   NaClAppInitialDescriptorHookup(&app);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
-  NaClAddSyscall(NACL_sys_test_syscall_1, SuspendTestSyscall);
+  NaClAddSyscall(NACL_sys_test_syscall_1, SpinWaitTestSyscall);
+  NaClAddSyscall(NACL_sys_test_syscall_2, SimpleTestSyscall);
 
   /*
    * We reuse the same sandbox for both tests.
@@ -424,6 +501,9 @@ int main(int argc, char **argv) {
 
   printf("Running TestGettingRegisterSnapshotInSyscall...\n");
   TestGettingRegisterSnapshotInSyscall(&app);
+
+  printf("Running TestGettingRegisterSnapshotInSyscallContextSwitch...\n");
+  TestGettingRegisterSnapshotInSyscallContextSwitch(&app);
 
   /*
    * Avoid calling exit() because it runs process-global destructors

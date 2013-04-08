@@ -14,10 +14,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-/*
- * TODO(mseaborn): Extend this to handle ARM and MIPS.
- */
-
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 static void GetNaClSyscallSeg(struct NaClApp *nap,
@@ -153,6 +149,17 @@ void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
             "Failed to read return address; using dummy value\n");
   }
   regs->prog_ctr = NaClSandboxCodeAddr(natp->nap, user_ret);
+}
+
+#else
+
+/* TODO(mseaborn): Extend this to handle ARM and MIPS. */
+void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
+                                      struct NaClSignalContext *regs,
+                                      enum NaClUnwindCase *unwind_case) {
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(regs);
+  *unwind_case = 0;
 }
 
 #endif

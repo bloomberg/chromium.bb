@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
 void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
@@ -50,9 +51,22 @@ void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
                                         struct NaClSignalContext *regs) {
   if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
     NaClAppThreadGetSuspendedRegistersInternal(natp, regs);
+    if (!NaClSignalContextIsUntrusted(natp, regs)) {
+      enum NaClUnwindCase unwind_case;
+      NaClGetRegistersForContextSwitch(natp, regs, &unwind_case);
+    }
   } else {
     NaClThreadContextToSignalContext(&natp->user, regs);
   }
+}
+
+int NaClAppThreadIsSuspendedInSyscall(struct NaClAppThread *natp) {
+  if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
+    struct NaClSignalContext regs;
+    NaClAppThreadGetSuspendedRegistersInternal(natp, &regs);
+    return !NaClSignalContextIsUntrusted(natp, &regs);
+  }
+  return 1;
 }
 
 void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,

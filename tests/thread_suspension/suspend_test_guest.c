@@ -168,6 +168,64 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
   }
 }
 
+void SyscallReturnAddress(void);
+#if defined(__i386__)
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        "SyscallLoop:"
+        "naclcall %esi\n"
+        "SyscallReturnAddress:\n"
+        "jmp SyscallLoop\n"
+        ".popsection\n");
+#elif defined(__x86_64__)
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        "SyscallLoop:\n"
+        /* Call via a temporary register so as not to modify %r12. */
+        "mov %r12d, %eax\n"
+        "naclcall %eax, %r15\n"
+        "SyscallReturnAddress:\n"
+        "jmp SyscallLoop\n"
+        ".popsection\n");
+#elif defined(__arm__)
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        ".p2align 4\n"
+        "SyscallReturnAddress:\n"
+        "adr lr, SyscallReturnAddress\n"
+        "bic r4, r4, #0xc000000f\n"
+        "bx r4\n"
+        ".popsection\n");
+#else
+# error Unsupported architecture
+#endif
+
+/*
+ * Set registers to known values and call a NaCl syscall in an
+ * infinite loop.  This is used for testing that the same register
+ * state is reported while the thread is in untrusted code or inside
+ * the syscall.
+ */
+static void SyscallRegisterSetterLoopThread(struct SuspendTestShm *test_shm) {
+  struct NaClSignalContext *regs = &test_shm->expected_regs;
+  char stack[0x10000];
+
+  RegsFillTestValues(regs, /* seed= */ 0);
+  regs->stack_ptr = (uintptr_t) stack + sizeof(stack);
+  regs->prog_ctr = (uintptr_t) SyscallReturnAddress;
+  RegsApplySandboxConstraints(regs);
+  RegsUnsetNonCalleeSavedRegisters(regs);
+
+  uintptr_t syscall_addr = NACL_SYSCALL_ADDR(NACL_sys_test_syscall_2);
+#if defined(__i386__)
+  regs->esi = syscall_addr;
+#elif defined(__x86_64__)
+  regs->r12 = syscall_addr;
+#elif defined(__arm__)
+  regs->r4 = syscall_addr;
+#else
+# error Unsupported architecture
+#endif
+  JUMP_WITH_REGS(regs, SyscallReturnAddress);
+}
+
 int main(int argc, char **argv) {
   if (argc != 3) {
     fprintf(stderr, "Expected 2 arguments: <test-type> <memory-address>\n");
@@ -190,6 +248,8 @@ int main(int argc, char **argv) {
     RegisterSetterThread(test_shm);
   } else if (strcmp(test_type, "SyscallRegisterSetterThread") == 0) {
     SyscallRegisterSetterThread(test_shm);
+  } else if (strcmp(test_type, "SyscallRegisterSetterLoopThread") == 0) {
+    SyscallRegisterSetterLoopThread(test_shm);
   } else {
     fprintf(stderr, "Unknown test type: %s\n", test_type);
     return 1;
