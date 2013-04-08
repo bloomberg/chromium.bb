@@ -857,8 +857,15 @@ DialogType.isModal = function(type) {
       util.enableNewFullScreenHandler(this.document_);
 
     this.updateWindowState_();
+
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
+
+    // Initialize the new header.
+    if (util.platform.newUI()) {
+      this.dialogDom_.querySelector('#app-name').innerText =
+          chrome.runtime.getManifest().name;
+    }
   };
 
   /**

@@ -161,15 +161,50 @@ body.loaded {
 
 /* Directory tree at the left. */
 .dialog-sidebar {
+  -webkit-border-end: 1px solid rgb(170, 170, 170);
   -webkit-box-flex: 0;
+  -webkit-box-orient: vertical;
   background-color: #e6e6e6;
-  border-right: 1px solid rgb(170, 170, 170);
   display: -webkit-box;
   max-width: 50%;
   min-width: 45px;
   overflow: hidden;
   position: relative;
   width: 168px;
+}
+
+body[new-ui] .dialog-sidebar {
+  -webkit-border-end: 1px solid rgb(200, 200, 200);
+  background-color: #f1f1f1;
+  min-width: 100px;
+  width: 200px;
+}
+
+body[new-ui] .dialog-sidebar-header {
+  -webkit-app-region: drag;
+  -webkit-box-flex: 0;
+  display: -webkit-box;
+  height: 30px;  /* Keep in sync with #dialog-header. */
+  line-height: 30px;
+  margin: 7px;
+}
+
+body[new-ui] .dialog-sidebar-header #app-name {
+  -webkit-margin-start: 10px;
+  color: #303030;
+  font-size: 130%;
+}
+
+body[new-ui] .dialog-sidebar-contents {
+  -webkit-box-flex: 1;
+  border-top: 1px solid rgb(200, 200, 200);
+  display: -webkit-box;
+  position: relative;
+}
+
+body[new-ui] .dialog-sidebar-footer {
+  -webkit-box-flex: 0;
+  display: -webkit-box;
 }
 
 /* A vertical splitter between the roots list and the file list. It is actually
@@ -181,7 +216,7 @@ div.sidebar-splitter {
   margin-right: -3px;
   position: relative;
   width: 6px;
-  z-index: 2;
+  z-index: 100;
 }
 
 #directory-tree {
@@ -195,13 +230,17 @@ div.sidebar-splitter {
 }
 
 #directory-tree .tree-row {
-  background-color: #e6e6e6;
+  -webkit-border-radius: 0;
   background-image: none;
   border: none;
   display: -webkit-box;
   line-height: 39px;
   margin: 0;
   padding: 0 3px;
+}
+
+body[new-ui] #directory-tree .tree-row {
+  cursor: pointer;
 }
 
 /* For rows of subitems (non-top items) */
@@ -236,7 +275,10 @@ div.sidebar-splitter {
 
 #directory-tree .tree-row:hover {
   background-color: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.05);
+}
+
+body[new-ui] #directory-tree .tree-row:hover {
+  background-color: transparent;
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -247,6 +289,14 @@ div.sidebar-splitter {
   background-color: rgb(204, 204, 204);
 }
 
+body[new-ui] #directory-tree .tree-item.accepts > .tree-row,
+body[new-ui] #directory-tree .tree-row[lead][selected],
+body[new-ui] #directory-tree .tree-row[lead],
+body[new-ui] #directory-tree .tree-row[selected],
+body[new-ui] #directory-tree .tree-row[anchor] {
+  background-color: rgb(225, 225, 225);
+}
+
 #directory-tree:focus .tree-item.accepts > .tree-row,
 #directory-tree:focus .tree-row[lead][selected],
 #directory-tree:focus .tree-row[lead],
@@ -255,12 +305,13 @@ div.sidebar-splitter {
   background-color: rgb(193, 209, 232);
 }
 
-#directory-tree .tree-item.accepts > .tree-row:hover,
-#directory-tree .tree-row[lead]:hover,
-#directory-tree .tree-row[lead][selected]:hover,
-#directory-tree .tree-row[selected]:hover,
-#directory-tree .tree-row[anchor]:hover {
-  background-color: rgb(192, 192, 192);
+body[new-ui] #directory-tree:focus .tree-item.accepts > .tree-row,
+body[new-ui] #directory-tree:focus .tree-row[lead][selected],
+body[new-ui] #directory-tree:focus .tree-row[lead],
+body[new-ui] #directory-tree:focus .tree-row[selected],
+body[new-ui] #directory-tree:focus .tree-row[anchor] {
+  background-color: rgb(77, 144, 254);
+  color: white;
 }
 
 #directory-tree:hover .tree-item.accepts > .tree-row:hover,
@@ -269,6 +320,23 @@ div.sidebar-splitter {
 #directory-tree:hover .tree-row[selected]:hover,
 #directory-tree:hover .tree-row[anchor]:hover {
   background-color: rgb(177, 193, 216);
+}
+
+body[new-ui] #directory-tree:hover .tree-item.accepts > .tree-row:hover,
+body[new-ui] #directory-tree:hover .tree-row[lead]:hover,
+body[new-ui] #directory-tree:hover .tree-row[lead][selected]:hover,
+body[new-ui] #directory-tree:hover .tree-row[selected]:hover,
+body[new-ui] #directory-tree:hover .tree-row[anchor]:hover {
+  background-color: rgb(225, 225, 225);
+}
+
+body[new-ui] #directory-tree:focus:hover .tree-item.accepts > .tree-row:hover,
+body[new-ui] #directory-tree:focus:hover .tree-row[lead]:hover,
+body[new-ui] #directory-tree:focus:hover .tree-row[lead][selected]:hover,
+body[new-ui] #directory-tree:focus:hover .tree-row[selected]:hover,
+body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
+  background-color: rgb(77, 144, 254);
+  color: white;
 }
 
 #directory-tree .tree-row > div.root-eject {
@@ -310,8 +378,19 @@ div.sidebar-splitter {
   -webkit-margin-end: 7px;
   -webkit-transition: all 180ms ease;
   display: -webkit-box;
+  height: 30px;
   margin-bottom: 7px;
   margin-top: 7px;
+}
+
+body[new-ui] .dialog-header {
+  -webkit-app-region: drag;
+}
+
+body[new-ui] .dialog-header #search-box,
+body[new-ui] .dialog-header #autocomplete-list,
+body[new-ui] .dialog-header .buttonbar {
+  -webkit-app-region: no-drag;
 }
 
 body[maximized][type='full-page'] .dialog-header {
@@ -431,6 +510,10 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   white-space: nowrap;
 }
 
+body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
+  -webkit-app-region: no-drag;
+}
+
 #search-breadcrumbs .breadcrumb-path {
   color: #888;
 }
@@ -459,12 +542,12 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 }
 
 .dialog-header div[role=button] {
+  -webkit-border-radius: 2px;
   -webkit-transition: border-color 130ms linear;
   background-color: transparent;
   background-position: center center;
   background-repeat: no-repeat;
   border: 1px solid transparent;
-  border-radius: 2px;
   height: 29px;
   width: 29px;
 }
@@ -737,6 +820,11 @@ body[type='full-page'] list .filename-label > :hover,
   text-decoration: underline;
 }
 
+body[new-ui][type='full-page'] list .filename-label > :hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .breadcrumb-path.accepts {
   -webkit-animation: acceptsBlinkText 200ms linear 1s 3;
 }
@@ -872,9 +960,10 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   background-color: #dedede;
 }
 
-#list-container list > li.table-row[selected],
-#default-actions-list > li[selected] {
-  border-top: 1px solid #dedede;
+body[new-ui] #list-container list > [selected],
+body[new-ui] #list-container grid > [selected],
+body[new-ui] #default-actions-list > [selected] {
+  background-color: rgb(225, 225, 225);
 }
 
 #list-container list:focus > [selected],
@@ -883,9 +972,10 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   background-color: rgb(203, 219, 241);
 }
 
-#list-container list:focus > li.table-row[selected],
-#default-actions-list:focus > li[selected] {
-  border-top: 1px solid rgb(224, 233, 247);
+body[new-ui] #list-container list:focus > [selected],
+body[new-ui] #list-container grid:focus > [selected],
+body[new-ui] #default-actions-list:focus > [selected] {
+  background-color: rgb(77, 144, 254);
 }
 
 #list-container list > .accepts[selected],
@@ -894,7 +984,22 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container grid > [selected]:hover,
 #default-actions-list > [selected]:hover {
   background-color: rgb(193, 211, 236);
-  border-color: hsl(214, 91%, 85%);
+}
+
+body[new-ui] #list-container list > .accepts[selected],
+body[new-ui] #list-container grid > .accepts[selected],
+body[new-ui] #list-container list > [selected]:hover,
+body[new-ui] #list-container grid > [selected]:hover,
+body[new-ui] #default-actions-list > [selected]:hover {
+  background-color: rgb(215, 215, 215);
+}
+
+body[new-ui] #list-container list:focus > .accepts[selected],
+body[new-ui] #list-container grid:focus > .accepts[selected],
+body[new-ui] #list-container list:focus > [selected]:hover,
+body[new-ui] #list-container grid:focus > [selected]:hover,
+body[new-ui] #default-actions-list:focus > [selected]:hover {
+  background-color: rgb(48, 125, 254);
 }
 
 #list-container list > .accepts,
@@ -903,14 +1008,12 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container grid > :hover,
 #default-actions-list > :hover {
   background-color: #f1f1f1;
-  border-color: hsl(214, 91%, 85%);
 }
 
 #list-container.nohover list > :not([selected]):hover,
 #list-container.nohover grid > :not([selected]):hover,
 #list-container.nohover grid > .accepts {
   background-color: transparent;
-  border-color: transparent;
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -982,13 +1085,18 @@ input.rename {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transform: translate(0, 0);
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
   display: -webkit-box;
   height: 61px;
   opacity: 1;
   padding: 0 16px 0 7px;
   position: relative;
   z-index: 3;
+}
+
+body[new-ui] .preview-panel {
+  background-color: white;
+  border-top: 1px solid #d4d4d4;
 }
 
 .preview-panel[visibility=hiding] {
@@ -1011,12 +1119,16 @@ input.rename {
 
 .preview-thumbnails > .thumbnail {
   -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   border: 1px solid #fff;
   height: 45px;
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
   position: relative;
   width: 45px;
+}
+
+body[new-ui] .preview-thumbnails > .thumbnail {
+  background-color: white;
 }
 
 .preview-thumbnails > .thumbnail > .img-container {
@@ -1029,7 +1141,7 @@ input.rename {
 
 .preview-thumbnails > .popup {
   -webkit-transform: translate(0, 3px) scale(0.95);
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px #F0F0F0,
               0 0 0 2px #D0D0D0,
@@ -1072,12 +1184,24 @@ input.rename {
   height: 27px;
 }
 
+body[new-ui] .table-header-splitter {
+  -webkit-border-start: none;
+  height: 40px;
+  width: 10px;
+}
+
 /* Container for a table header. */
 .table-header {
   -webkit-box-sizing: border-box;
   background-color: #f5f5f5;
   border-bottom: 1px #d2d2d2 solid;
   height: 27px;
+}
+
+body[new-ui] .table-header {
+  background-color: transparent;
+  border-bottom: none;
+  height: 40px;
 }
 
 .table-header-sort-image-desc::after {
@@ -1106,7 +1230,6 @@ input.rename {
   top: -1px;
 }
 
-
 .preview-container .table-header {
   border-radius: 0 4px 0 0;
 }
@@ -1114,6 +1237,11 @@ input.rename {
 /* Text label in a table header. */
 .table-header-label {
   line-height: 27px;
+}
+
+body[new-ui] .table-header-label {
+  color: rgb(100, 100, 100);
+  line-height: 40px;
 }
 
 .table-row-cell > * {
@@ -1124,8 +1252,22 @@ input.rename {
   padding: 0 10px;
 }
 
+body[new-ui] .table-row-cell {
+  color: rgb(100, 100, 100);
+}
+
 .table-row-cell > .detail-name {
   display: -webkit-box;
+}
+
+body[new-ui] .table-row-cell > .detail-name {
+  color: rgb(0, 0, 0);
+}
+
+
+body[new-ui] #list-container list:focus > [selected] .table-row-cell,
+body[new-ui] #list-container list:focus > [selected] .detail-name {
+  color: white;
 }
 
 .table-row-cell {
@@ -1161,11 +1303,16 @@ input.rename {
 
 #list-container li.table-row,
 #default-actions-list li {
-  border: none;
-  border-top: 1px solid transparent;
+  border: 1px solid white;
+  border-left-width: 0;
+  border-right-width: 0;
   height: 39px;
   padding-bottom: 1px;
   padding-top: 1px;
+}
+
+body[new-ui] #list-container li.table-row {
+  height: 30px;
 }
 
 /* The icon in the name column. See file_types.css for specific icons. */
@@ -1685,6 +1832,10 @@ body:not([drive]) [required_drive] {
 
 #list-container .table-header-cell:hover {
   background-color: #ececec;
+}
+
+body[new-ui] #list-container .table-header-cell:hover {
+  background-color: inherit;
 }
 
 button:focus {

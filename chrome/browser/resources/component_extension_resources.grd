@@ -46,6 +46,7 @@
       <if expr="pp_ifdef('file_manager_extension')">
         <!-- App pages and scripts. -->
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MAIN_NEW_UI" file="file_manager/main_new_ui.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/js/background.js" type="BINDATA" />
 

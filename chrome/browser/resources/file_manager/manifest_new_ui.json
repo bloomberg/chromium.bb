@@ -181,7 +181,7 @@
     }
   ],
   "chrome_url_overrides": {
-    "files": "main.html"
+    "files": "main_new_ui.html"
   },
   // Required to import scripts in a web worker. Note, that in Apps v2, it is
   // enough that anything is passed to web_accessible_resources. If there is
@@ -195,6 +195,7 @@
         "js/util.js",
         "js/background.js"]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com"
+    // chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp is the image loader extension.
+    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com"
   }
 }

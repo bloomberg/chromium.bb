@@ -257,7 +257,9 @@ function launchFileManager(opt_appState, opt_id) {
   nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
 
   var appWindow = new AppWindowWrapper(
-        'main.html', FILES_ID_PREFIX + id, createFileManagerOptions);
+      util.platform.newUI() ? 'main_new_ui.html' : 'main.html',
+      FILES_ID_PREFIX + id,
+      createFileManagerOptions);
   appWindow.launch(opt_appState || {});
 }
 

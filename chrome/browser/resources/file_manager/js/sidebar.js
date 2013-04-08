@@ -220,6 +220,15 @@ DirectoryItem.prototype.decorate = function(
 };
 
 /**
+ * Overrides WebKit's scrollIntoViewIfNeeded, which doesn't work well with
+ * a complex layout. This call is not necessary, so we are ignoring it.
+ *
+ * @param {boolean} unused Unused.
+ */
+DirectoryItem.prototype.scrollIntoViewIfNeeded = function(unused) {
+};
+
+/**
  * Invoked when the item is being expanded.
  * @param {!UIEvent} e Event.
  * @private

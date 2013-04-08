@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<!--
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html i18n-values="dir:textdirection;">
+  <head>
+    <!-- We have to set some default title, or chrome will use the page name.
+      -- As soon as we init and change to a directory, we'll show the directory
+      -- path. Until then, use an invisible non-whitespace character.
+      -->
+    <title>&#xFEFF;</title>
+
+    <meta name="google" value="notranslate">
+
+    <link rel="stylesheet" href="chrome://resources/css/dialogs.css"></link>
+    <link rel="stylesheet" href="chrome://resources/css/list.css"></link>
+    <link rel="stylesheet" href="chrome://resources/css/tree.css"></link>
+    <link rel="stylesheet" href="chrome://resources/css/table.css"></link>
+    <link rel="stylesheet" href="chrome://resources/css/menu.css"></link>
+
+    <link rel="stylesheet" href="css/combobutton.css"></link>
+    <link rel="stylesheet" href="css/file_manager.css"></link>
+    <link rel="stylesheet" href="css/file_types.css"></link>
+    <link rel="stylesheet" href="css/common.css"></link>
+
+    <!-- Don't load main_scripts.js when flattening is disabled. -->
+    <if expr="0"><!-- </if>
+      <script src="js/main_scripts.js"></script>
+    <if expr="0"> --></if>
+
+    <if expr="0">
+      <!-- This section is used when the file manager is loaded with
+           'filemgr-ext-path' command-line flag. -->
+      <!-- Keep the list in sync with js/main_scripts.js. -->
+
+      <!-- metrics.js initiates load performance tracking
+           so we want to parse it as early as possible -->
+      <script src="js/metrics.js"></script>
+
+      <!-- Loads the client of the image loader extension -->
+      <script src="chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/client.js"></script>
+
+      <script src="chrome://resources/js/load_time_data.js"></script>
+      <script src="chrome://resources/js/cr.js"></script>
+      <script src="chrome://resources/js/util.js"></script>
+      <script src="chrome://resources/js/i18n_template_no_process.js"></script>
+
+      <script src="chrome://resources/js/event_tracker.js"></script>
+      <script src="chrome://resources/js/cr/ui.js"></script>
+      <script src="chrome://resources/js/cr/event_target.js"></script>
+      <script src="chrome://resources/js/cr/ui/touch_handler.js"></script>
+      <script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
+      <script src="chrome://resources/js/cr/ui/dialogs.js"></script>
+      <script src="chrome://resources/js/cr/ui/list_item.js"></script>
+      <script src="chrome://resources/js/cr/ui/list_selection_model.js"></script>
+      <script src="chrome://resources/js/cr/ui/list_single_selection_model.js"></script>
+      <script src="chrome://resources/js/cr/ui/list_selection_controller.js"></script>
+      <script src="chrome://resources/js/cr/ui/list.js"></script>
+      <script src="chrome://resources/js/cr/ui/tree.js"></script>
+      <script src="chrome://resources/css/tree.css.js"></script>
+      <script src="chrome://resources/js/cr/ui/autocomplete_list.js"></script>
+
+      <script src="chrome://resources/js/cr/ui/splitter.js"></script>
+      <script src="chrome://resources/js/cr/ui/table/table_splitter.js"></script>
+
+      <script src="chrome://resources/js/cr/ui/table/table_column.js"></script>
+      <script src="chrome://resources/js/cr/ui/table/table_column_model.js"></script>
+      <script src="chrome://resources/js/cr/ui/table/table_header.js"></script>
+      <script src="chrome://resources/js/cr/ui/table/table_list.js"></script>
+      <script src="chrome://resources/js/cr/ui/table.js"></script>
+
+      <script src="chrome://resources/js/cr/ui/grid.js"></script>
+
+      <script src="chrome://resources/js/cr/ui/command.js"></script>
+      <script src="chrome://resources/js/cr/ui/position_util.js"></script>
+      <script src="chrome://resources/js/cr/ui/menu_item.js"></script>
+      <script src="chrome://resources/js/cr/ui/menu.js"></script>
+      <script src="chrome://resources/js/cr/ui/menu_button.js"></script>
+      <script src="chrome://resources/js/cr/ui/context_menu_handler.js"></script>
+
+      <script src="js/combobutton.js"></script>
+      <script src="js/commandbutton.js"></script>
+
+      <script src="js/path_util.js"></script>
+      <script src="js/util.js"></script>
+      <script src="js/action_choice_util.js"></script>
+      <script src="js/breadcrumbs_controller.js"></script>
+      <script src="js/butter_bar.js"></script>
+      <script src="js/directory_contents.js"></script>
+      <script src="js/directory_model.js"></script>
+      <script src="js/drive_banners.js"></script>
+      <script src="js/file_copy_manager_wrapper.js"></script>
+      <script src="js/file_grid.js"></script>
+      <script src="js/file_manager.js"></script>
+      <script src="js/file_manager_pyauto.js"></script>
+      <script src="js/file_selection.js"></script>
+      <script src="js/file_table.js"></script>
+      <script src="js/file_tasks.js"></script>
+      <script src="js/file_transfer_controller.js"></script>
+      <script src="js/file_type.js"></script>
+      <script src="js/sidebar.js"></script>
+      <script src="js/volume_manager.js"></script>
+      <script src="js/media/media_util.js"></script>
+      <script src="js/metadata/metadata_cache.js"></script>
+      <script src="js/default_action_dialog.js"></script>
+      <script src="js/file_manager_commands.js"></script>
+
+      <!-- For accurate load performance tracking main.js should be
+           the last script to include. -->
+      <script src="js/main.js"></script>
+    </if>
+
+  </head>
+  <body i18n-values=".style.fontFamily:WEB_FONT_FAMILY;
+                     .style.fontSize:WEB_FONT_SIZE" new-ui>
+    <commands>
+      <!-- We have to use U+XXXX notation here according to event.keyIdentifier
+           property -->
+      <command id="cut" i18n-values="label:CUT_BUTTON_LABEL"
+               shortcut="U+0058-Ctrl">
+      <command id="copy" i18n-values="label:COPY_BUTTON_LABEL"
+               shortcut="U+0043-Ctrl">
+      <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"
+               shortcut="U+0056-Ctrl">
+      <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"
+               shortcut="Enter-Ctrl">
+      <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"
+               shortcut="U+007F">
+      <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
+               shortcut="U+0045-Ctrl">
+      <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
+      <command id="change-default-app"
+               i18n-values="label:CHANGE_DEFAULT_APP_BUTTON_LABEL" hidden>
+
+      <command id="search" shortcut="U+0046-Ctrl">
+
+      <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL">
+      <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL">
+      <command id="import-photos" i18n-values="label:PHOTO_IMPORT_TITLE" hidden>
+
+      <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP">
+      <command id="drive-buy-more-space"
+               i18n-values="label:DRIVE_BUY_MORE_SPACE">
+      <command id="drive-clear-local-cache"
+               i18n-values="label:DRIVE_CLEAR_LOCAL_CACHE">
+      <command id="drive-reload" i18n-values="label:DRIVE_RELOAD">
+      <command id="drive-go-to-drive"
+               i18n-values="label:DRIVE_VISIT_DRIVE_GOOGLE_COM">
+
+      <command id="toggle-pinned" i18n-values="label:OFFLINE_COLUMN_LABEL">
+
+      <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
+      <command id="zip-selection"
+               i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
+    </commands>
+
+    <menu id="file-context-menu" class="chrome-menu" showShortcuts>
+      <menuitem id="default-action"
+                visibleif="full-page" hidden></menuitem>
+      <menuitem command="#open-with"
+                visibleif="full-page" hidden></menuitem>
+      <hr id="default-action-separator" visibleif="full-page" hidden>
+      <menuitem command="#toggle-pinned" checkable></menuitem>
+      <hr command="#toggle-pinned">
+      <menuitem command="#cut" visibleif="full-page"></menuitem>
+      <menuitem command="#copy" visibleif="full-page"></menuitem>
+      <menuitem command="#paste" visibleif="full-page"></menuitem>
+      <hr visibleif="full-page">
+      <menuitem command="#rename"></menuitem>
+      <menuitem command="#delete"></menuitem>
+      <menuitem command="#zip-selection"></menuitem>
+      <hr visibleif="saveas-file full-page">
+      <menuitem command="#newfolder"
+                visibleif="saveas-file full-page"></menuitem>
+    </menu>
+    <menu id="roots-context-menu" class="chrome-menu" >
+      <menuitem command="#import-photos"></menuitem>
+      <menuitem command="#unmount"></menuitem>
+      <menuitem command="#format"></menuitem>
+    </menu>
+
+    <menu id="gear-menu" class="chrome-menu" showShortcuts>
+      <menuitem command="#newwindow"></menuitem>
+      <menuitem command="#newfolder"></menuitem>
+      <menuitem command="#change-default-app"></menuitem>
+      <hr>
+      <menuitem id="drive-sync-settings"
+                i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
+      <menuitem id="drive-hosted-settings"
+                i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
+      <hr required_attr="ctrl-pressing" required_drive>
+      <menuitem required_attr="ctrl-pressing" required_drive
+                command="#drive-clear-local-cache"></menuitem>
+      <menuitem required_attr="ctrl-pressing" required_drive
+                command="#drive-reload"></menuitem>
+      <hr required_drive>
+      <div id="volume-space-info" disabled>
+        <span id="volume-space-info-label"></span>
+        <div><div id="volume-space-info-bar"></div></div>
+      </div>
+      <menuitem command="#drive-buy-more-space"></menuitem>
+      <menuitem command="#drive-go-to-drive"></menuitem>
+      <menuitem command="#volume-help"></menuitem>
+    </menu>
+
+    <menu id="tasks-menu" class="chrome-menu">
+    </menu>
+
+    <menu id="text-context-menu" class="chrome-menu" showShortcuts>
+        <menuitem command="#cut"></menuitem>
+        <menuitem command="#copy"></menuitem>
+        <menuitem command="#paste"></menuitem>
+        <menuitem command="#delete"></menuitem>
+    </menu>
+
+    <div class=dialog-title invisibleif="full-page"></div>
+    <div class=dialog-container>
+      <div class=dialog-sidebar>
+        <div class=dialog-sidebar-header>
+          <span id="app-name"></span>
+        </div>
+        <div class=dialog-sidebar-contents>
+          <tree id="directory-tree" tabindex="8"></tree>
+        </div>
+        <div class=dialog-sidebar-footer>
+        </div>
+      </div>
+      <div class=sidebar-splitter></div>
+      <div class=dialog-main>
+        <div class=dialog-header>
+          <div id="dir-breadcrumbs" class="breadcrumbs"></div>
+          <input id="search-box" type="search" tabindex="9"
+                 i18n-values="aria-label:SEARCH_TEXT_LABEL">
+          <div class="right buttonbar">
+            <div>
+              <button class="left small" id="detail-view" tabindex="10"
+                      i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
+              </button>
+              <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP></div>
+            </div>
+            <div>
+              <button class="right small" id="thumbnail-view" tabindex="11"
+                      i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
+              </button>
+              <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP></div>
+            </div>
+            <button class="menubutton" id="gear-button" tabindex="12"
+                    menu="#gear-menu" visibleif="full-page">
+              <span class="disclosureindicator"></span>
+            </button>
+          </div>
+
+        </div>
+        <div class="drive-welcome header"></div>
+        <div class="volume-warning" id="volume-space-warning" hidden></div>
+        <div class="volume-warning" id="drive-auth-failed-warning" hidden>
+          <div class="drive-icon"></div>
+          <div class="drive-text" id="drive-auth-failed-warning-text"></div>
+        </div>
+        <div class=dialog-body>
+          <div class=filelist-panel>
+            <div id="list-container">
+              <div class=detail-table id="detail-table" tabindex=1 autofocus>
+              </div>
+              <grid class=thumbnail-grid tabindex=1></grid>
+              <div id="spinner-container">
+                <div id="spinner-with-text"></div>
+              </div>
+              <div class="drive-welcome page"></div>
+              <div id="no-search-results"></div>
+            </div>
+            <div class=downloads-warning hidden></div>
+          </div>
+          <div class="preview-panel" visibility="hidden">
+            <div>
+              <div class="preview-thumbnails"></div>
+            </div>
+            <div id="preview-lines">
+              <div class="preview-summary">
+                <span class="preview-text"></span>
+                <span class="calculating-size" hidden></span>
+              </div>
+              <div id="search-breadcrumbs" class="breadcrumbs"></div>
+            </div>
+            <div class="right buttonbar" visibleif="full-page">
+              <button id="tasks" class="combobutton" menu="#tasks-menu"
+                      tabindex="2">
+              </button>
+              <button id="delete-button" command="#delete" tabindex="3"></button>
+            </div>
+          </div>
+          <div id="unmounted-panel"></div>
+          <div id="format-panel">
+              <div class="error"></div>
+              <button id="format-button" command="#format"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=dialog-footer invisibleif="full-page">
+      <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
+              visibleif="saveas-file folder" command="#newfolder" tabindex="4">
+      </button>
+      <div id="filename-input-box">
+        <div class=filename-label i18n-content=FILENAME_LABEL></div>
+        <input type=text spellcheck=false tabindex="5">
+      </div>
+      <div class=horizontal-spacer></div>
+      <select id="file-type"></select>
+      <button class=ok disabled tabindex="6"></button>
+      <div class=preparing-label i18n-content=PREPARING_LABEL></div>
+      <div class=progress-bar>
+        <div class=progress-track></div>
+      </div>
+      <button class=cancel i18n-content=CANCEL_LABEL tabindex="7"></button>
+    </div>
+    <div id="butter-bar-container">
+      <div id="butter-bar">
+        <div class="content">
+          <div class="butter-message"></div>
+          <div class="progress-bar" hidden>
+            <div class="progress-track"></div>
+          </div>
+        </div>
+        <div class="actions" hidden></div>
+      </div>
+    </div>
+    <div id="drag-container"></div>
+    <iframe id="command-dispatcher" hidden></iframe>
+  </body>
+</html>
