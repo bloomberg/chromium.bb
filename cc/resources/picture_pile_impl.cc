@@ -262,12 +262,14 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
   analysis->is_transparent = canvas.isTransparent();
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
   analysis->is_cheap_to_raster = canvas.isCheap();
+  analysis->has_text = canvas.hasText();
   canvas.consumeLazyPixelRefs(&analysis->lazy_pixel_refs);
 }
 
 PicturePileImpl::Analysis::Analysis()
   : is_solid_color(false),
     is_transparent(false),
+    has_text(false),
     is_cheap_to_raster(false) {
 }
 

@@ -156,6 +156,19 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
     CreateTile(new_tiles[i].first, new_tiles[i].second);
 }
 
+void PictureLayerTiling::InvalidateTilesWithText() {
+  std::vector<TileMapKey> new_tiles;
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    if (it->second->has_text())
+      new_tiles.push_back(it->first);
+  }
+
+  for (size_t i = 0; i < new_tiles.size(); ++i) {
+    tiles_.erase(new_tiles[i]);
+    CreateTile(new_tiles[i].first, new_tiles[i].second);
+  }
+}
+
 void PictureLayerTiling::CreateTilesFromLayerRect(gfx::Rect layer_rect) {
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(ScaleRect(layer_rect, contents_scale_));

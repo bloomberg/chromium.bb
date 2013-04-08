@@ -81,6 +81,11 @@ void PictureLayerTilingSet::Invalidate(const Region& layer_invalidation) {
     tilings_[i]->Invalidate(layer_invalidation);
 }
 
+void PictureLayerTilingSet::InvalidateTilesWithText() {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->InvalidateTilesWithText();
+}
+
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
   tilings_.push_back(PictureLayerTiling::Create(contents_scale));
   PictureLayerTiling* appended = tilings_.back();

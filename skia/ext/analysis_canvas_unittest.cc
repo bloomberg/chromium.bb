@@ -454,4 +454,129 @@ TEST(AnalysisCanvasTest, PixelRefsFromPaint) {
   }
 }
 
+TEST(AnalysisCanvasTest, HasText) {
+  int width = 200;
+  int height = 100;
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kNo_Config, width, height);
+
+  const char* text = "A";
+  size_t byteLength = 1;
+
+  SkPoint point = SkPoint::Make(SkIntToScalar(25), SkIntToScalar(25));
+  SkPath path;
+  path.moveTo(point);
+  path.lineTo(SkIntToScalar(75), SkIntToScalar(75));
+
+  SkPaint paint;
+  paint.setColor(SK_ColorGRAY);
+  paint.setTextSize(SkIntToScalar(10));
+
+  {
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    // Test after initialization.
+    EXPECT_FALSE(canvas.hasText());
+    // Test drawing anything other than text.
+    canvas.drawRect(SkRect::MakeWH(width/2, height), paint);
+    EXPECT_FALSE(canvas.hasText());
+  }
+  {
+    // Test SkCanvas::drawText.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Test SkCanvas::drawPosText.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawPosText(text, byteLength, &point, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Test SkCanvas::drawPosTextH.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawPosTextH(text, byteLength, &point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Test SkCanvas::drawTextOnPathHV.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawTextOnPathHV(text, byteLength, path, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Test SkCanvas::drawTextOnPath.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawTextOnPath(text, byteLength, path, NULL, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Text under opaque rect.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+    canvas.drawRect(SkRect::MakeWH(width, height), paint);
+    EXPECT_FALSE(canvas.hasText());
+  }
+  {
+    // Text under translucent rect.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+    SkPaint translucentPaint;
+    translucentPaint.setColor(0x88FFFFFF);
+    canvas.drawRect(SkRect::MakeWH(width, height), translucentPaint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Text under rect in clear mode.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+    SkPaint clearModePaint;
+    clearModePaint.setXfermodeMode(SkXfermode::kClear_Mode);
+    canvas.drawRect(SkRect::MakeWH(width, height), clearModePaint);
+    EXPECT_FALSE(canvas.hasText());
+  }
+  {
+    // Clear.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+    canvas.clear(SK_ColorGRAY);
+    EXPECT_FALSE(canvas.hasText());
+  }
+  {
+    // Text inside clip region.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.clipRect(SkRect::MakeWH(100, 100));
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    EXPECT_TRUE(canvas.hasText());
+  }
+  {
+    // Text outside clip region.
+    skia::AnalysisDevice device(bitmap);
+    skia::AnalysisCanvas canvas(&device);
+    canvas.clipRect(SkRect::MakeXYWH(100, 0, 100, 100));
+    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
+    // Analysis device does not do any clipping.
+    // So even when text is outside the clip region,
+    // it is marked as having the text.
+    // TODO(alokp): We may be able to do some trivial rejection.
+    EXPECT_TRUE(canvas.hasText());
+  }
+}
+
 }  // namespace skia

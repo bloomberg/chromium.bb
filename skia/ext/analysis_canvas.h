@@ -35,6 +35,7 @@ class SK_API AnalysisCanvas : public SkCanvas {
   bool isCheap() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
+  bool hasText() const;
   void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 
   // Returns the estimated cost of drawing, in arbitrary units.
@@ -76,6 +77,7 @@ class SK_API AnalysisDevice : public SkDevice {
   int getEstimatedCost() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
+  bool hasText() const;
   void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 
   void setForceNotSolid(bool flag);
@@ -144,6 +146,7 @@ class SK_API AnalysisDevice : public SkDevice {
   bool isSolidColor_;
   SkColor color_;
   bool isTransparent_;
+  bool hasText_;
   IdSet existingPixelRefIDs_;
   LazyPixelRefList lazyPixelRefs_;
 };

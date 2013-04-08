@@ -50,6 +50,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
     bool is_solid_color;
     bool is_transparent;
+    bool has_text;
     bool is_cheap_to_raster;
     SkColor solid_color;
 

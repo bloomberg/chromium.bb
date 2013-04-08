@@ -96,8 +96,8 @@ AnalysisDevice::AnalysisDevice(const SkBitmap& bm)
   , isForcedNotSolid_(false)
   , isForcedNotTransparent_(false)
   , isSolidColor_(false)
-  , isTransparent_(false) {
-
+  , isTransparent_(false)
+  , hasText_(false) {
 }
 
 AnalysisDevice::~AnalysisDevice() {
@@ -116,6 +116,10 @@ bool AnalysisDevice::getColorIfSolid(SkColor* color) const {
 
 bool AnalysisDevice::isTransparent() const {
   return isTransparent_;
+}
+
+bool AnalysisDevice::hasText() const {
+  return hasText_;
 }
 
 void AnalysisDevice::setForceNotSolid(bool flag) {
@@ -181,6 +185,7 @@ void AnalysisDevice::clear(SkColor color) {
   estimatedCost_ += kUnknownExpensiveCost;
 
   isTransparent_ = (!isForcedNotTransparent_ && SkColorGetA(color) == 0);
+  hasText_ = false;
 
   if (!isForcedNotSolid_ && SkColorGetA(color) == 255) {
     isSolidColor_ = true;
@@ -246,6 +251,7 @@ void AnalysisDevice::drawRect(const SkDraw& draw, const SkRect& rect,
       !isForcedNotTransparent_ &&
       xferMode == SkXfermode::kClear_Mode) {
     isTransparent_ = true;
+    hasText_ = false;
   }
   else if (paint.getAlpha() != 0 ||
            xferMode != SkXfermode::kSrc_Mode) {
@@ -262,6 +268,7 @@ void AnalysisDevice::drawRect(const SkDraw& draw, const SkRect& rect,
       doesCoverCanvas) {
     isSolidColor_ = true;
     color_ = paint.getColor();
+    hasText_ = false;
   }
   else {
     isSolidColor_ = false;
@@ -346,6 +353,7 @@ void AnalysisDevice::drawText(const SkDraw&, const void* text, size_t len,
   }
   isSolidColor_ = false;
   isTransparent_ = false;
+  hasText_ = true;
 }
 
 void AnalysisDevice::drawPosText(const SkDraw& draw, const void* text,
@@ -361,6 +369,7 @@ void AnalysisDevice::drawPosText(const SkDraw& draw, const void* text,
   }
   isSolidColor_ = false;
   isTransparent_ = false;
+  hasText_ = true;
 }
 
 void AnalysisDevice::drawTextOnPath(const SkDraw&, const void* text,
@@ -374,6 +383,7 @@ void AnalysisDevice::drawTextOnPath(const SkDraw&, const void* text,
   }
   isSolidColor_ = false;
   isTransparent_ = false;
+  hasText_ = true;
 }
 
 #ifdef SK_BUILD_FOR_ANDROID
@@ -388,6 +398,7 @@ void AnalysisDevice::drawPosTextOnPath(const SkDraw& draw, const void* text,
   }
   isSolidColor_ = false;
   isTransparent_ = false;
+  hasText_ = true;
 }
 #endif
 
@@ -439,6 +450,10 @@ bool AnalysisCanvas::getColorIfSolid(SkColor* color) const {
 
 bool AnalysisCanvas::isTransparent() const {
   return (static_cast<AnalysisDevice*>(getDevice()))->isTransparent();
+}
+
+bool AnalysisCanvas::hasText() const {
+  return (static_cast<AnalysisDevice*>(getDevice()))->hasText();
 }
 
 int AnalysisCanvas::getEstimatedCost() const {

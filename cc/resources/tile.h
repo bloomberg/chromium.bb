@@ -55,6 +55,9 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   }
 
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
+  bool has_text() const {
+    return managed_state_.picture_pile_analysis.has_text;
+  }
 
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }

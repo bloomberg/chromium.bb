@@ -854,10 +854,7 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   pending_layer->is_using_lcd_text_ = is_using_lcd_text_;
   pending_layer->pile_ = PicturePileImpl::CreateFromOther(pending_layer->pile_,
                                                           is_using_lcd_text_);
-
-  // TODO(enne): if we tracked text regions, we could just invalidate those
-  // directly rather than tossing away every tile.
-  pending_layer->tilings_->Invalidate(gfx::Rect(bounds()));
+  pending_layer->tilings_->InvalidateTilesWithText();
 }
 
 void PictureLayerImpl::ResetRasterScale() {

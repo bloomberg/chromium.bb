@@ -50,6 +50,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size layer_bounds() const { return layer_bounds_; }
   void SetLayerBounds(gfx::Size layer_bounds);
   void Invalidate(const Region& layer_invalidation);
+  void InvalidateTilesWithText();
 
   // Add any tiles that intersect with |layer_rect|.  If any tiles already
   // exist, then this leaves them as-is.
