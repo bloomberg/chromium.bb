@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -59,12 +59,11 @@ BubbleExample::BubbleExample() : ExampleBase("Bubble") {}
 BubbleExample::~BubbleExample() {}
 
 void BubbleExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(
-      new BoxLayout(BoxLayout::kHorizontal, 0, 0, 1));
-  round_ = new TextButton(this, kRoundConfig.label);
-  arrow_ = new TextButton(this, kArrowConfig.label);
-  fade_in_ = new TextButton(this, kFadeInConfig.label);
-  fade_out_ = new TextButton(this, kFadeOutConfig.label);
+  container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 1));
+  round_ = new LabelButton(this, kRoundConfig.label);
+  arrow_ = new LabelButton(this, kArrowConfig.label);
+  fade_in_ = new LabelButton(this, kFadeInConfig.label);
+  fade_out_ = new LabelButton(this, kFadeOutConfig.label);
   container->AddChildView(round_);
   container->AddChildView(arrow_);
   container->AddChildView(fade_in_);

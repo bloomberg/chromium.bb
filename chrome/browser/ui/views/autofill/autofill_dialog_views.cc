@@ -30,6 +30,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -984,8 +985,8 @@ views::View* AutofillDialogViews::CreateSignInContainer() {
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   sign_in_container_->SetVisible(false);
   sign_in_webview_ = new views::WebView(controller_->profile());
-  cancel_sign_in_ = new views::TextButton(this,
-                                          controller_->CancelSignInText());
+  cancel_sign_in_ = new views::LabelButton(this,
+                                           controller_->CancelSignInText());
   sign_in_container_->AddChildView(cancel_sign_in_);
   sign_in_container_->AddChildView(sign_in_webview_);
   return sign_in_container_;

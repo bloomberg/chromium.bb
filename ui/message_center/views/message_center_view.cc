@@ -23,6 +23,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -88,9 +89,9 @@ PoorMessageCenterButtonBar::PoorMessageCenterButtonBar(
   columns->AddPaddingColumn(0, 4);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::TextButton* close_all_button = new views::TextButton(
+  views::LabelButton* close_all_button = new views::LabelButton(
       this, rb.GetLocalizedString(IDS_MESSAGE_CENTER_CLEAR_ALL));
-  close_all_button->set_alignment(views::TextButton::ALIGN_CENTER);
+  close_all_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   close_all_button->set_request_focus_on_press(false);
 
   layout->AddPaddingRow(0, 4);

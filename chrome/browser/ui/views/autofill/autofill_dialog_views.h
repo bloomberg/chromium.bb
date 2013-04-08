@@ -35,10 +35,10 @@ class FocusManager;
 class ImageButton;
 class ImageView;
 class Label;
+class LabelButton;
 class Link;
 class MenuRunner;
 class StyledLabel;
-class TextButton;
 class Textfield;
 class WebView;
 class Widget;
@@ -454,9 +454,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // View to host the signin dialog and related controls.
   views::View* sign_in_container_;
 
-  // TextButton displayed during sign-in. Clicking cancels sign-in and returns
+  // LabelButton displayed during sign-in. Clicking cancels sign-in and returns
   // to the main flow.
-  views::TextButton* cancel_sign_in_;
+  views::LabelButton* cancel_sign_in_;
 
   // A WebView to that navigates to a Google sign-in page to allow the user to
   // sign-in.
