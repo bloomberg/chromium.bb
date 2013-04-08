@@ -34,8 +34,9 @@ import shutil
 import sys
 import tempfile
 
-inspector_path = "Source/WebCore/inspector"
-inspector_frontend_path = inspector_path + "/front-end"
+scripts_path = os.path.dirname(os.path.abspath(__file__))
+inspector_path = os.path.dirname(scripts_path)
+inspector_frontend_path = os.path.dirname(scripts_path) + "/front-end"
 protocol_externs_path = inspector_frontend_path + "/protocol-externs.js"
 
 generate_protocol_externs.generate_protocol_externs(protocol_externs_path, inspector_path + "/Inspector.json")
@@ -398,7 +399,7 @@ def dump_module(name, recursively, processed_modules):
     return command
 
 modules_dir = tempfile.mkdtemp()
-compiler_command = "java -jar ~/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % modules_dir
+compiler_command = "java -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
 
 process_recursively = len(sys.argv) > 1
 if process_recursively:
