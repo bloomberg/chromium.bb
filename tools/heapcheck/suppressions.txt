@@ -1702,6 +1702,18 @@
    fun:v8::internal::IncrementalMarking::Step
 }
 {
+   bug_169678_a
+   Heapcheck:Leak
+   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
+   fun:v8::internal::SlotsBuffer::AddTo
+   fun:v8::internal::MarkCompactCollector::RecordSlot
+   fun:v8::internal::IncrementalMarkingMarkingVisitor::VisitPointers
+   ...
+   fun:v8::internal::Heap::CollectGarbage
+   ...
+   fun:v8::String::New
+}
+{
    bug_171547_b
    Heapcheck:Leak
    ...
