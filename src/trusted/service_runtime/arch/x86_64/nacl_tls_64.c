@@ -217,12 +217,6 @@ void NaClTlsFini(void) {
 void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
   struct NaClThreadContext *ntcp_check;
 
-#if 1  /* PARANOIA */
-  if (NULL != pthread_getspecific(nacl_thread_info_key)) {
-    NaClLog(LOG_WARNING,
-            "NaClSetThreadInfo invoked twice for the same thread\n");
-  }
-#endif
   if (pthread_setspecific(nacl_thread_info_key, &natp->user) != 0) {
     NaClLog(LOG_FATAL, "NaClTlsSetCurrentThread: "
             "pthread_setspecific() failed\n");

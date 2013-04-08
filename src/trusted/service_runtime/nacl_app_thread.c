@@ -128,6 +128,11 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
 #elif NACL_OSX
   NaClClearMachThreadForThreadIndex(thread_idx);
 #endif
+  /*
+   * Unset the TLS variable so that if a crash occurs during thread
+   * teardown, the signal handler does not dereference a dangling
+   * NaClAppThread pointer.
+   */
   NaClTlsSetCurrentThread(NULL);
 
   NaClLog(3, " removing thread from thread table\n");
