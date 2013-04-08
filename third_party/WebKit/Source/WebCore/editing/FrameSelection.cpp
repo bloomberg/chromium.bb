@@ -314,11 +314,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
         setFocusedNodeIfNeeded();
 
     if (!(options & DoNotUpdateAppearance)) {
-#if ENABLE(TEXT_CARET)
         m_frame->document()->updateLayoutIgnorePendingStylesheets();
-#else
-        m_frame->document()->updateStyleIfNeeded();
-#endif
         updateAppearance();
     }
 
@@ -1180,9 +1176,7 @@ void FrameSelection::prepareForDestruction()
 {
     m_granularity = CharacterGranularity;
 
-#if ENABLE(TEXT_CARET)
     m_caretBlinkTimer.stop();
-#endif
 
     RenderView* view = m_frame->contentRenderer();
     if (view)
@@ -1376,7 +1370,6 @@ bool FrameSelection::recomputeCaretRect()
     if (oldAbsCaretBounds == m_absCaretBounds)
         return false;
 
-#if ENABLE(TEXT_CARET)
     if (RenderView* view = m_frame->document()->renderView()) {
         Node* node = m_selection.start().deprecatedNode();
         if (m_previousCaretNode)
@@ -1385,7 +1378,7 @@ bool FrameSelection::recomputeCaretRect()
         if (shouldRepaintCaret(view, isContentEditable()))
             repaintCaretForLocalRect(node, newRect);
     }
-#endif
+
     return true;
 }
 
@@ -1437,7 +1430,6 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
 
 void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
-#if ENABLE(TEXT_CARET)
     if (m_caretVisibility == Hidden)
         return;
 
@@ -1459,12 +1451,6 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     }
 
     context->fillRect(caret, caretColor, colorSpace);
-#else
-    UNUSED_PARAM(node);
-    UNUSED_PARAM(context);
-    UNUSED_PARAM(paintOffset);
-    UNUSED_PARAM(clipRect);
-#endif
 }
 
 void FrameSelection::debugRenderer(RenderObject *r, bool selected) const
@@ -1756,7 +1742,6 @@ inline static bool shouldStopBlinkingDueToTypingCommand(Frame* frame)
 
 void FrameSelection::updateAppearance()
 {
-#if ENABLE(TEXT_CARET)
     bool caretRectChangedOrCleared = recomputeCaretRect();
 
     bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
@@ -1778,7 +1763,6 @@ void FrameSelection::updateAppearance()
             invalidateCaretRect();
         }
     }
-#endif
 
     RenderView* view = m_frame->contentRenderer();
     if (!view)
@@ -1820,23 +1804,18 @@ void FrameSelection::setCaretVisibility(CaretVisibility visibility)
     if (caretVisibility() == visibility)
         return;
 
-#if ENABLE(TEXT_CARET)
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     if (m_caretPaint) {
         m_caretPaint = false;
         invalidateCaretRect();
     }
     CaretBase::setCaretVisibility(visibility);
-#else
-    m_frame->document()->updateStyleIfNeeded();
-#endif
 
     updateAppearance();
 }
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 {
-#if ENABLE(TEXT_CARET)
     ASSERT(caretIsVisible());
     ASSERT(isCaret());
     bool caretPaint = m_caretPaint;
@@ -1844,7 +1823,6 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
         return;
     m_caretPaint = !caretPaint;
     invalidateCaretRect();
-#endif
 }
 
 void FrameSelection::notifyRendererOfSelectionChange(EUserTriggered userTriggered)
@@ -1902,15 +1880,8 @@ void FrameSelection::setFocusedNodeIfNeeded()
 
 void DragCaretController::paintDragCaret(Frame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
-#if ENABLE(TEXT_CARET)
     if (m_position.deepEquivalent().deprecatedNode()->document()->frame() == frame)
         paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);
-#else
-    UNUSED_PARAM(frame);
-    UNUSED_PARAM(p);
-    UNUSED_PARAM(paintOffset);
-    UNUSED_PARAM(clipRect);
-#endif
 }
 
 PassRefPtr<StylePropertySet> FrameSelection::copyTypingStyle() const

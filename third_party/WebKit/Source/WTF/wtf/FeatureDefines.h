@@ -467,10 +467,6 @@
 #endif
 #endif
 
-#if !defined(ENABLE_TEXT_CARET)
-#define ENABLE_TEXT_CARET 1
-#endif
-
 #if !defined(ENABLE_TEXT_NOTIFICATIONS_ONLY)
 #define ENABLE_TEXT_NOTIFICATIONS_ONLY 0
 #endif
