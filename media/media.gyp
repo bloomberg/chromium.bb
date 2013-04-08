@@ -574,6 +574,7 @@
           ],
           'dependencies': [
             'media_android_jni_headers',
+            'player_android',
             'video_capture_android_jni_headers',
           ],
         }],
