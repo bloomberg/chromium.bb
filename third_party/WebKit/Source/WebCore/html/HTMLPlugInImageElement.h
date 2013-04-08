@@ -109,7 +109,6 @@ private:
     virtual void finishParsingChildren();
 
     void updateWidgetIfNecessary();
-    virtual bool useFallbackContent() const { return false; }
 
     void swapRendererTimerFired(Timer<HTMLPlugInImageElement>*);
 
