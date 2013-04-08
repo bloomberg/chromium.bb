@@ -37,7 +37,16 @@ class TokenServiceTableTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTableTest);
 };
 
-TEST_F(TokenServiceTableTest, TokenServiceGetAllRemoveAll) {
+// Flaky on mac_rel. See http://crbug.com/228943
+#if defined(OS_MACOSX)
+#define MAYBE_TokenServiceGetAllRemoveAll DISABLED_TokenServiceGetAllRemoveAll
+#define MAYBE_TokenServiceGetSet DISABLED_TokenServiceGetSet
+#else
+#define MAYBE_TokenServiceGetAllRemoveAll TokenServiceGetAllRemoveAll
+#define MAYBE_TokenServiceGetSet TokenServiceGetSet
+#endif
+
+TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetAllRemoveAll) {
   std::map<std::string, std::string> out_map;
   std::string service;
   std::string service2;
@@ -66,7 +75,7 @@ TEST_F(TokenServiceTableTest, TokenServiceGetAllRemoveAll) {
   EXPECT_EQ(out_map.find(service)->second, "cheese");
 }
 
-TEST_F(TokenServiceTableTest, TokenServiceGetSet) {
+TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetSet) {
   std::map<std::string, std::string> out_map;
   std::string service;
   service = "testservice";

@@ -333,12 +333,35 @@ void AddPasswordEntriesCallback(ProfileSyncServicePasswordTest* test,
     test->AddPasswordSyncNode(entries[i]);
 }
 
-TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
+// Flaky on mac_rel. See http://crbug.com/228943
+#if defined(OS_MACOSX)
+#define MAYBE_EmptyNativeEmptySync DISABLED_EmptyNativeEmptySync
+#define MAYBE_EnsureNoTransactions DISABLED_EnsureNoTransactions
+#define MAYBE_FailModelAssociation DISABLED_FailModelAssociation
+#define MAYBE_FailPasswordStoreLoad DISABLED_FailPasswordStoreLoad
+#define MAYBE_HasNativeEntriesEmptySync DISABLED_HasNativeEntriesEmptySync
+#define MAYBE_HasNativeEntriesEmptySyncSameUsername \
+    DISABLED_HasNativeEntriesEmptySyncSameUsername
+#define MAYBE_HasNativeHasSyncMergeEntry DISABLED_HasNativeHasSyncMergeEntry
+#define MAYBE_HasNativeHasSyncNoMerge DISABLED_HasNativeHasSyncNoMerge
+#else
+#define MAYBE_EmptyNativeEmptySync EmptyNativeEmptySync
+#define MAYBE_EnsureNoTransactions EnsureNoTransactions
+#define MAYBE_FailModelAssociation FailModelAssociation
+#define MAYBE_FailPasswordStoreLoad FailPasswordStoreLoad
+#define MAYBE_HasNativeEntriesEmptySync HasNativeEntriesEmptySync
+#define MAYBE_HasNativeEntriesEmptySyncSameUsername \
+    HasNativeEntriesEmptySyncSameUsername
+#define MAYBE_HasNativeHasSyncMergeEntry HasNativeHasSyncMergeEntry
+#define MAYBE_HasNativeHasSyncNoMerge HasNativeHasSyncNoMerge
+#endif
+
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_FailModelAssociation) {
   StartSyncService(base::Closure(), base::Closure());
   EXPECT_TRUE(sync_service_->HasUnrecoverableError());
 }
 
-TEST_F(ProfileSyncServicePasswordTest, FailPasswordStoreLoad) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_FailPasswordStoreLoad) {
   password_store_ = static_cast<NullPasswordStore*>(
       PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile_, NullPasswordStore::Build).get());
@@ -349,7 +372,7 @@ TEST_F(ProfileSyncServicePasswordTest, FailPasswordStoreLoad) {
   EXPECT_TRUE(failed_types.Equals(syncer::ModelTypeSet(syncer::PASSWORDS)));
 }
 
-TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_EmptyNativeEmptySync) {
   EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
@@ -362,7 +385,7 @@ TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
   EXPECT_EQ(0U, sync_entries.size());
 }
 
-TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_HasNativeEntriesEmptySync) {
   std::vector<PasswordForm*> forms;
   std::vector<PasswordForm> expected_forms;
   PasswordForm* new_form = new PasswordForm;
@@ -393,7 +416,8 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
   EXPECT_TRUE(ComparePasswords(expected_forms[0], sync_forms[0]));
 }
 
-TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
+TEST_F(ProfileSyncServicePasswordTest,
+       MAYBE_HasNativeEntriesEmptySyncSameUsername) {
   std::vector<PasswordForm*> forms;
   std::vector<PasswordForm> expected_forms;
 
@@ -446,7 +470,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
   EXPECT_TRUE(ComparePasswords(expected_forms[1], sync_forms[0]));
 }
 
-TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_HasNativeHasSyncNoMerge) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
   std::vector<PasswordForm> expected_forms;
@@ -506,7 +530,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
 
 // Same as HasNativeHasEmptyNoMerge, but we attempt to aquire a sync transaction
 // every time the password store is accessed.
-TEST_F(ProfileSyncServicePasswordTest, EnsureNoTransactions) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_EnsureNoTransactions) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
   std::vector<PasswordForm> expected_forms;
@@ -569,7 +593,7 @@ TEST_F(ProfileSyncServicePasswordTest, EnsureNoTransactions) {
   EXPECT_TRUE(ComparePasswords(expected_forms[1], new_sync_forms[1]));
 }
 
-TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
+TEST_F(ProfileSyncServicePasswordTest, MAYBE_HasNativeHasSyncMergeEntry) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
   std::vector<PasswordForm> expected_forms;
