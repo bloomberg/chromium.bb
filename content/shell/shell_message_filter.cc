@@ -5,6 +5,7 @@
 #include "content/shell/shell_message_filter.h"
 
 #include "base/file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_network_delegate.h"
@@ -51,6 +52,7 @@ bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void ShellMessageFilter::OnReadFileToString(const base::FilePath& local_file,
                                             std::string* contents) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   file_util::ReadFileToString(local_file, contents);
 }
 
