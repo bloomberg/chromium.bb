@@ -47,7 +47,6 @@ public:
             && compareCSSValuePtr(m_bottom, other.m_bottom);
     }
 
-#if ENABLE(CSS_VARIABLES)
     bool hasVariableReference() const
     {
         return m_top->hasVariableReference()
@@ -55,7 +54,6 @@ public:
             || m_bottom->hasVariableReference()
             || m_left->hasVariableReference();
     }
-#endif
 
 protected:
     RectBase() { }
@@ -87,7 +85,6 @@ public:
         return generateCSSString(top()->cssText(), right()->cssText(), bottom()->cssText(), left()->cssText());
     }
 
-#if ENABLE(CSS_VARIABLES)
     String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
     {
         return generateCSSString(top()->customSerializeResolvingVariables(variables),
@@ -95,7 +92,6 @@ public:
             bottom()->customSerializeResolvingVariables(variables),
             left()->customSerializeResolvingVariables(variables));
     }
-#endif
 
 private:
     Rect() { }
@@ -117,7 +113,6 @@ public:
         return generateCSSString(top()->cssText(), right()->cssText(), bottom()->cssText(), left()->cssText());
     }
 
-#if ENABLE(CSS_VARIABLES)
     String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
     {
         return generateCSSString(top()->customSerializeResolvingVariables(variables),
@@ -125,7 +120,6 @@ public:
             bottom()->customSerializeResolvingVariables(variables),
             left()->customSerializeResolvingVariables(variables));
     }
-#endif
 
 private:
     Quad() { }

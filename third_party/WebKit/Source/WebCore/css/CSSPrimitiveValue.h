@@ -126,10 +126,7 @@ public:
         CSS_CALC = 113,
         CSS_CALC_PERCENTAGE_WITH_NUMBER = 114,
         CSS_CALC_PERCENTAGE_WITH_LENGTH = 115,
-
-#if ENABLE(CSS_VARIABLES)
         CSS_VARIABLE_NAME = 116,
-#endif
     };
 
     // This enum follows the CSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
@@ -185,10 +182,7 @@ public:
     bool isDotsPerInch() const { return primitiveType() == CSS_DPI; }
     bool isDotsPerPixel() const { return primitiveType() == CSS_DPPX; }
     bool isDotsPerCentimeter() const { return primitiveType() == CSS_DPCM; }
-
-#if ENABLE(CSS_VARIABLES)
     bool isVariableName() const { return primitiveType() == CSS_VARIABLE_NAME; }
-#endif
     bool isViewportPercentageLength() const { return m_primitiveUnitType >= CSS_VW && m_primitiveUnitType <= CSS_VMAX; }
 
     static PassRefPtr<CSSPrimitiveValue> createIdentifier(int identifier) { return adoptRef(new CSSPrimitiveValue(identifier)); }
@@ -298,10 +292,8 @@ public:
     template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
 
     String customCssText() const;
-#if ENABLE(CSS_VARIABLES)
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     bool hasVariableReference() const;
-#endif
 
     bool isQuirkValue() { return m_isQuirkValue; }
 

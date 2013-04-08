@@ -390,9 +390,7 @@ private:
     void applyMatchedProperties(const MatchResult&, const Element*);
 
     enum StyleApplicationPass {
-#if ENABLE(CSS_VARIABLES)
         VariableDefinitions,
-#endif
         HighPriorityProperties,
         LowPriorityProperties
     };
@@ -400,9 +398,7 @@ private:
     void applyMatchedProperties(const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
     void applyProperties(const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
-#if ENABLE(CSS_VARIABLES)
     void resolveVariables(CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
-#endif
     static bool isValidRegionStyleProperty(CSSPropertyID);
 #if ENABLE(VIDEO_TRACK)
     static bool isValidCueStyleProperty(CSSPropertyID);

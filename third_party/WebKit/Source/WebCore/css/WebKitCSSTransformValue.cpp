@@ -79,12 +79,10 @@ String WebKitCSSTransformValue::customCssText() const
     return transformValueToCssString(m_type, CSSValueList::customCssText());
 }
 
-#if ENABLE(CSS_VARIABLES)
 String WebKitCSSTransformValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     return transformValueToCssString(m_type, CSSValueList::customSerializeResolvingVariables(variables));
 }
-#endif
 
 WebKitCSSTransformValue::WebKitCSSTransformValue(const WebKitCSSTransformValue& cloneFrom)
     : CSSValueList(cloneFrom)

@@ -53,9 +53,7 @@
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
 #include "CSSValuePool.h"
-#if ENABLE(CSS_VARIABLES)
 #include "CSSVariableValue.h"
-#endif
 #include "Counter.h"
 #include "Document.h"
 #include "FloatConversion.h"
@@ -256,9 +254,7 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isCSSRegionsEnabled(false)
     , isCSSCompositingEnabled(false)
     , isCSSGridLayoutEnabled(false)
-#if ENABLE(CSS_VARIABLES)
     , isCSSVariablesEnabled(false)
-#endif
     , needsSiteSpecificQuirks(false)
     , enforcesCSSMIMETypeInNoQuirksMode(true)
     , useLegacyBackgroundSizeShorthandBehavior(false)
@@ -275,9 +271,7 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isCSSRegionsEnabled(document->cssRegionsEnabled())
     , isCSSCompositingEnabled(document->cssCompositingEnabled())
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
-#if ENABLE(CSS_VARIABLES)
     , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
-#endif
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
     , enforcesCSSMIMETypeInNoQuirksMode(!document->settings() || document->settings()->enforceCSSMIMETypeInNoQuirksMode())
     , useLegacyBackgroundSizeShorthandBehavior(document->settings() ? document->settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
@@ -295,9 +289,7 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isCSSRegionsEnabled == b.isCSSRegionsEnabled
         && a.isCSSCompositingEnabled == b.isCSSCompositingEnabled
         && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
-#if ENABLE(CSS_VARIABLES)
         && a.isCSSVariablesEnabled == b.isCSSVariablesEnabled
-#endif
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks
         && a.enforcesCSSMIMETypeInNoQuirksMode == b.enforcesCSSMIMETypeInNoQuirksMode
         && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
@@ -1278,7 +1270,6 @@ PassRefPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& strin
     return static_pointer_cast<CSSValueList>(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily));
 }
 
-#if ENABLE(CSS_VARIABLES)
 bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, Document* document)
 {
     ASSERT(!string.isEmpty());
@@ -1295,7 +1286,6 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     CSSParser parser(context);
     return parser.parseValue(declaration, propertyID, string, important, static_cast<StyleSheetContents*>(0));
 }
-#endif
 
 bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
 {
@@ -1488,18 +1478,13 @@ PassOwnPtr<MediaQuery> CSSParser::parseMediaQuery(const String& string)
     return m_mediaQuery.release();
 }
 
-#if ENABLE(CSS_VARIABLES)
 static inline void filterProperties(bool important, const CSSParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenVariables)
-#else
-static inline void filterProperties(bool important, const CSSParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
-#endif
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
     for (int i = input.size() - 1; i >= 0; --i) {
         const CSSProperty& property = input[i];
         if (property.isImportant() != important)
             continue;
-#if ENABLE(CSS_VARIABLES)
         if (property.id() == CSSPropertyVariable) {
             const AtomicString& name = static_cast<CSSVariableValue*>(property.value())->name();
             if (seenVariables.contains(name))
@@ -1508,7 +1493,6 @@ static inline void filterProperties(bool important, const CSSParser::ParsedPrope
             output[--unusedEntries] = property;
             continue;
         }
-#endif
         const unsigned propertyIDIndex = property.id() - firstCSSProperty;
         if (seenProperties.get(propertyIDIndex))
             continue;
@@ -1524,14 +1508,9 @@ PassRefPtr<StylePropertySet> CSSParser::createStylePropertySet()
     Vector<CSSProperty, 256> results(unusedEntries);
 
     // Important properties have higher priority, so add them first. Duplicate definitions can then be ignored when found.
-#if ENABLE(CSS_VARIABLES)
     HashSet<AtomicString> seenVariables;
     filterProperties(true, m_parsedProperties, results, unusedEntries, seenProperties, seenVariables);
     filterProperties(false, m_parsedProperties, results, unusedEntries, seenProperties, seenVariables);
-#else
-    filterProperties(true, m_parsedProperties, results, unusedEntries, seenProperties);
-    filterProperties(false, m_parsedProperties, results, unusedEntries, seenProperties);
-#endif
     if (unusedEntries)
         results.remove(0, unusedEntries);
 
@@ -1612,11 +1591,9 @@ bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, Rel
     case CalcPercentNumber:
         b = (unitflags & FPercent) && (unitflags & FNumber);
         break;
-#if ENABLE(CSS_VARIABLES)
     case CalcVariable:
         b = true;
         break;
-#endif
     case CalcOther:
         break;
     }
@@ -1638,12 +1615,10 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
         
     bool b = false;
     switch (value->unit) {
-#if ENABLE(CSS_VARIABLES)
     case CSSPrimitiveValue::CSS_VARIABLE_NAME:
         // Variables are checked at the point they are dereferenced because unit type is not available here.
         b = true;
         break;
-#endif
     case CSSPrimitiveValue::CSS_NUMBER:
         b = (unitflags & FNumber);
         if (!b && shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
@@ -1706,10 +1681,8 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
 
 inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveNumericValue(CSSParserValue* value)
 {
-#if ENABLE(CSS_VARIABLES)
     if (value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
         return createPrimitiveVariableNameValue(value);
-#endif
 
     if (m_parsedCalculation) {
         ASSERT(isCalculation(value));
@@ -1735,14 +1708,12 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveStringValue(CSSPa
     return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_STRING);
 }
 
-#if ENABLE(CSS_VARIABLES)
 inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveVariableNameValue(CSSParserValue* value)
 {
     ASSERT(value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME);
     AtomicString variableName = String(value->string).lower();
     return CSSPrimitiveValue::create(variableName, CSSPrimitiveValue::CSS_VARIABLE_NAME);
 }
-#endif
 
 static inline bool isComma(CSSParserValue* value)
 { 
@@ -1788,10 +1759,8 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::parseValidPrimitive(int identifi
     if (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM)
         return createPrimitiveNumericValue(value);
 #endif
-#if ENABLE(CSS_VARIABLES)
     if (value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
         return createPrimitiveVariableNameValue(value);
-#endif
     if (value->unit >= CSSParserValue::Q_EMS)
         return CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
     if (isCalculation(value))
@@ -1847,14 +1816,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return true;
     }
 
-#if ENABLE(CSS_VARIABLES)
     if (!id && value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME && num == 1) {
         addProperty(propId, createPrimitiveVariableNameValue(value), important);
         m_valueList->next();
         return true;
     }
     ASSERT(propId != CSSPropertyVariable);
-#endif
 
     if (isKeywordPropertyID(propId)) {
         if (!isValidKeywordPropertyAndValue(propId, id, m_context))
@@ -2987,9 +2954,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
-#if ENABLE(CSS_VARIABLES)
     case CSSPropertyVariable:
-#endif
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyWebkitBackfaceVisibility:
@@ -3273,7 +3238,6 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
     return true;
 }
 
-#if ENABLE(CSS_VARIABLES)
 bool CSSParser::cssVariablesEnabled() const
 {
     return m_context.isCSSVariablesEnabled;
@@ -3301,7 +3265,6 @@ void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr
     }
     addProperty(CSSPropertyVariable, CSSVariableValue::create(variableName, builder.toString().lower()), important, false);
 }
-#endif
 
 void CSSParser::addAnimationValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> rval)
 {
@@ -6268,11 +6231,9 @@ bool CSSParser::parseReflect(CSSPropertyID propId, bool important)
     // Direction comes first.
     CSSParserValue* val = m_valueList->current();
     RefPtr<CSSPrimitiveValue> direction;
-#if ENABLE(CSS_VARIABLES)
     if (val->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
         direction = createPrimitiveVariableNameValue(val);
     else
-#endif
     switch (val->id) {
         case CSSValueAbove:
         case CSSValueBelow:
@@ -10188,10 +10149,8 @@ inline void CSSParser::detectDashToken(int length)
             m_token = MINFUNCTION;
         else if (isASCIIAlphaCaselessEqual(name[10], 'x') && isEqualToCSSIdentifier(name + 1, "webkit-ma"))
             m_token = MAXFUNCTION;
-#if ENABLE(CSS_VARIABLES)
         else if (cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[10], 'r') && isEqualToCSSIdentifier(name + 1, "webkit-va"))
             m_token = VARFUNCTION;
-#endif
     } else if (length == 12 && isEqualToCSSIdentifier(name + 1, "webkit-calc"))
         m_token = CALCFUNCTION;
 #if ENABLE(SHADOW_DOM)
@@ -10643,12 +10602,9 @@ restartAfterComment:
             parseIdentifier(result, resultString, hasEscape);
             m_token = IDENT;
 
-#if ENABLE(CSS_VARIABLES)
             if (cssVariablesEnabled() && isEqualToCSSIdentifier(tokenStart<SrcCharacterType>() + 1, "webkit-var") && tokenStart<SrcCharacterType>()[11] == '-' && isIdentifierStartAfterDash(tokenStart<SrcCharacterType>() + 12))
                 m_token = VAR_DEFINITION;
-            else
-#endif
-            if (*currentCharacter<SrcCharacterType>() == '(') {
+            else if (*currentCharacter<SrcCharacterType>() == '(') {
                 m_token = FUNCTION;
                 if (!hasEscape)
                     detectDashToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());

@@ -31,7 +31,6 @@
 
 #ifndef StyleVariableData_h
 #define StyleVariableData_h
-#if ENABLE(CSS_VARIABLES)
 
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
@@ -62,5 +61,4 @@ private:
 
 } // namespace WebCore
 
-#endif /* ENABLE(CSS_VARIABLES) */
 #endif /* StyleVariableData_h */

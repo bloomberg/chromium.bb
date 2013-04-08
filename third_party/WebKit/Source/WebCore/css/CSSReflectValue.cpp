@@ -41,14 +41,12 @@ String CSSReflectValue::customCssText() const
     return m_direction->cssText() + ' ' + m_offset->cssText();
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSReflectValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     if (m_mask)
         return m_direction->customSerializeResolvingVariables(variables) + ' ' + m_offset->customSerializeResolvingVariables(variables) + ' ' + m_mask->serializeResolvingVariables(variables);
     return m_direction->customSerializeResolvingVariables(variables) + ' ' + m_offset->customSerializeResolvingVariables(variables);
 }
-#endif
 
 void CSSReflectValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
 {

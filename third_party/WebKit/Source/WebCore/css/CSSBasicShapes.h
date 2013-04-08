@@ -51,10 +51,8 @@ public:
     virtual String cssText() const = 0;
     virtual bool equals(const CSSBasicShape&) const = 0;
 
-#if ENABLE(CSS_VARIABLES)
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const = 0;
     virtual bool hasVariableReference() const = 0;
-#endif
 
 public:
     virtual ~CSSBasicShape() { }
@@ -85,10 +83,8 @@ public:
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
-#if ENABLE(CSS_VARIABLES)
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     virtual bool hasVariableReference() const;
-#endif
 
 private:
     CSSBasicShapeRectangle() { }
@@ -117,10 +113,8 @@ public:
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
-#if ENABLE(CSS_VARIABLES)
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     virtual bool hasVariableReference() const;
-#endif
 
 private:
     CSSBasicShapeCircle() { }
@@ -148,10 +142,8 @@ public:
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
-#if ENABLE(CSS_VARIABLES)
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     virtual bool hasVariableReference() const;
-#endif
 
 private:
     CSSBasicShapeEllipse() { }
@@ -182,10 +174,8 @@ public:
     virtual Type type() const { return CSS_BASIC_SHAPE_POLYGON; }
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
-#if ENABLE(CSS_VARIABLES)
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     virtual bool hasVariableReference() const;
-#endif
 
 private:
     CSSBasicShapePolygon()

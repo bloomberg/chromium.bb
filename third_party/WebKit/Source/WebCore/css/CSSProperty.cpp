@@ -25,10 +25,7 @@
 #include "RenderStyleConstants.h"
 #include "StylePropertyShorthand.h"
 #include "WebCoreMemoryInstrumentation.h"
-
-#if ENABLE(CSS_VARIABLES)
 #include "CSSVariableValue.h"
-#endif
 
 #include <wtf/text/StringBuilder.h>
 
@@ -293,9 +290,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTextRendering:
     case CSSPropertyTextShadow:
     case CSSPropertyTextTransform:
-#if ENABLE(CSS_VARIABLES)
     case CSSPropertyVariable:
-#endif
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAspectRatio:
     case CSSPropertyWebkitBorderHorizontalSpacing:

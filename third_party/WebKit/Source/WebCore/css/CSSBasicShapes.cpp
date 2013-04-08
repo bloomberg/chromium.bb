@@ -89,7 +89,6 @@ bool CSSBasicShapeRectangle::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_radiusY, other.m_radiusY);
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSBasicShapeRectangle::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     return buildRectangleString(m_x->serializeResolvingVariables(variables),
@@ -109,7 +108,6 @@ bool CSSBasicShapeRectangle::hasVariableReference() const
         || (m_radiusX.get() && m_radiusX->hasVariableReference())
         || (m_radiusY.get() && m_radiusY->hasVariableReference());
 }
-#endif
 
 static String buildCircleString(const String& x, const String& y, const String& radius)
 {
@@ -132,7 +130,6 @@ bool CSSBasicShapeCircle::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_radius, other.m_radius);
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSBasicShapeCircle::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     return buildCircleString(m_centerX->serializeResolvingVariables(variables),
@@ -146,7 +143,6 @@ bool CSSBasicShapeCircle::hasVariableReference() const
         || m_centerY->hasVariableReference()
         || m_radius->hasVariableReference();
 }
-#endif
 
 static String buildEllipseString(const String& x, const String& y, const String& radiusX, const String& radiusY)
 {
@@ -170,7 +166,6 @@ bool CSSBasicShapeEllipse::equals(const CSSBasicShape& shape) const
         && compareCSSValuePtr(m_radiusY, other.m_radiusY);
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSBasicShapeEllipse::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     return buildEllipseString(m_centerX->serializeResolvingVariables(variables),
@@ -186,7 +181,6 @@ bool CSSBasicShapeEllipse::hasVariableReference() const
         || m_radiusX->hasVariableReference()
         || m_radiusY->hasVariableReference();
 }
-#endif
 
 static String buildPolygonString(const WindRule& windRule, const Vector<String>& points)
 {
@@ -246,7 +240,6 @@ bool CSSBasicShapePolygon::equals(const CSSBasicShape& shape) const
     return compareCSSValueVector<CSSPrimitiveValue>(m_values, rhs.m_values);
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSBasicShapePolygon::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     Vector<String> points;
@@ -266,7 +259,6 @@ bool CSSBasicShapePolygon::hasVariableReference() const
     }
     return false;
 }
-#endif
 
 } // namespace WebCore
 

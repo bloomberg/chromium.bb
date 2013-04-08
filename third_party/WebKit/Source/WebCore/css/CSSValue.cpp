@@ -47,9 +47,7 @@
 #include "CSSTimingFunctionValue.h"
 #include "CSSUnicodeRangeValue.h"
 #include "CSSValueList.h"
-#if ENABLE(CSS_VARIABLES)
 #include "CSSVariableValue.h"
-#endif
 #include "FontValue.h"
 #include "FontFeatureValue.h"
 #include "ShadowValue.h"
@@ -240,11 +238,9 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
         static_cast<const WebKitCSSShaderValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
 #endif
-#if ENABLE(CSS_VARIABLES)
     case VariableClass:
         static_cast<const CSSVariableValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
 #if ENABLE(SVG)
     case SVGColorClass:
         static_cast<const SVGColor*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
@@ -357,10 +353,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<WebKitCSSShaderValue>(*this, other);
 #endif
 #endif
-#if ENABLE(CSS_VARIABLES)
         case VariableClass:
             return compareCSSValues<CSSVariableValue>(*this, other);
-#endif
 #if ENABLE(SVG)
         case SVGColorClass:
             return compareCSSValues<SVGColor>(*this, other);
@@ -455,10 +449,8 @@ String CSSValue::cssText() const
         return static_cast<const WebKitCSSShaderValue*>(this)->customCssText();
 #endif
 #endif
-#if ENABLE(CSS_VARIABLES)
     case VariableClass:
         return static_cast<const CSSVariableValue*>(this)->value();
-#endif
 #if ENABLE(SVG)
     case SVGColorClass:
         return static_cast<const SVGColor*>(this)->customCssText();
@@ -472,7 +464,6 @@ String CSSValue::cssText() const
     return String();
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSValue::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     switch (classType()) {
@@ -488,7 +479,6 @@ String CSSValue::serializeResolvingVariables(const HashMap<AtomicString, String>
         return cssText();
     }
 }
-#endif
 
 void CSSValue::destroy()
 {
@@ -596,11 +586,9 @@ void CSSValue::destroy()
         return;
 #endif
 #endif
-#if ENABLE(CSS_VARIABLES)
     case VariableClass:
         delete static_cast<CSSVariableValue*>(this);
         return;
-#endif
 #if ENABLE(SVG)
     case SVGColorClass:
         delete static_cast<SVGColor*>(this);

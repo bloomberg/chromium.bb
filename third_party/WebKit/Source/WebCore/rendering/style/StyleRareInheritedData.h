@@ -31,10 +31,8 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/AtomicString.h>
 
-#if ENABLE(CSS_VARIABLES)
 #include "DataRef.h"
 #include "StyleVariableData.h"
-#endif
 
 namespace WebCore {
 
@@ -145,9 +143,7 @@ public:
     Color tapHighlightColor;
 #endif
 
-#if ENABLE(CSS_VARIABLES)
     DataRef<StyleVariableData> m_variables;
-#endif
 
 private:
     StyleRareInheritedData();

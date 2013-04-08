@@ -197,13 +197,8 @@ namespace WebCore {
         void setCSSStickyPositionEnabled(bool enabled) { m_cssStickyPositionEnabled = enabled; }
         bool cssStickyPositionEnabled() const { return m_cssStickyPositionEnabled; }
 
-#if ENABLE(CSS_VARIABLES)
         void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
         bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
-#else
-        void setCSSVariablesEnabled(bool) { }
-        bool cssVariablesEnabled() const { return false; }
-#endif
 
         void setShowTiledScrollingIndicator(bool);
         bool showTiledScrollingIndicator() const { return m_showTiledScrollingIndicator; }
@@ -290,9 +285,7 @@ namespace WebCore {
         unsigned m_fontRenderingMode : 1;
         bool m_isCSSCustomFilterEnabled : 1;
         bool m_cssStickyPositionEnabled : 1;
-#if ENABLE(CSS_VARIABLES)
         bool m_cssVariablesEnabled : 1;
-#endif
         bool m_showTiledScrollingIndicator : 1;
         bool m_tiledBackingStoreEnabled : 1;
         bool m_dnsPrefetchingEnabled : 1;

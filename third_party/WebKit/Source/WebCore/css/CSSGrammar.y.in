@@ -1610,13 +1610,9 @@ decl_list:
 
 declaration:
     VAR_DEFINITION ':' maybe_space expr prio {
-#if ENABLE_CSS_VARIABLES
         parser->storeVariableDeclaration($1, parser->sinkFloatingValueList($4), $5);
         $$ = true;
         parser->markPropertyEnd($5, true);
-#else
-        $$ = false;
-#endif
     }
     |
     property ':' maybe_space expr prio {
@@ -1751,11 +1747,9 @@ term:
   | HEX maybe_space { $$.id = 0; $$.string = $1; $$.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; }
   | '#' maybe_space { $$.id = 0; $$.string = CSSParserString(); $$.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; } /* Handle error case: "color: #;" */
   | VARFUNCTION maybe_space IDENT ')' maybe_space {
-#if ENABLE_CSS_VARIABLES
       $$.id = 0;
       $$.string = $3;
       $$.unit = CSSPrimitiveValue::CSS_VARIABLE_NAME;
-#endif
   }
   /* FIXME: according to the specs a function can have a unary_operator in front. I know no case where this makes sense */
   | function {
@@ -1849,11 +1843,9 @@ function:
 calc_func_term:
   unary_term { $$ = $1; }
   | VARFUNCTION maybe_space IDENT ')' maybe_space {
-#if ENABLE_CSS_VARIABLES
       $$.id = 0;
       $$.string = $3;
       $$.unit = CSSPrimitiveValue::CSS_VARIABLE_NAME;
-#endif
   }
   | unary_operator unary_term { $$ = $2; $$.fValue *= $1; }
   ;

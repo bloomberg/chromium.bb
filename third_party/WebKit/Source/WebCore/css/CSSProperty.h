@@ -57,9 +57,7 @@ public:
         : m_metadata(propertyID, shorthandID, important, implicit, isInheritedProperty(propertyID))
         , m_value(value)
     {
-#if ENABLE(CSS_VARIABLES)
     ASSERT((propertyID == CSSPropertyVariable) == (m_value && m_value->isVariableValue()));
-#endif
     }
 
     // FIXME: Remove this.
@@ -67,9 +65,7 @@ public:
         : m_metadata(metadata)
         , m_value(value)
     {
-#if ENABLE(CSS_VARIABLES)
     ASSERT((metadata.m_propertyID == CSSPropertyVariable) == (m_value && m_value->isVariableValue()));
-#endif
     }
 
     CSSPropertyID id() const { return static_cast<CSSPropertyID>(m_metadata.m_propertyID); }

@@ -139,7 +139,6 @@ bool CSSValueList::equals(const CSSValue& other) const
     return value && value->equals(other);
 }
 
-#if ENABLE(CSS_VARIABLES)
 String CSSValueList::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     StringBuilder result;
@@ -167,7 +166,6 @@ String CSSValueList::customSerializeResolvingVariables(const HashMap<AtomicStrin
 
     return result.toString();
 }
-#endif
 
 void CSSValueList::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
 {

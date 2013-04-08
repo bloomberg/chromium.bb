@@ -112,11 +112,9 @@ public:
     bool parseContent(CSSPropertyID, bool important);
     bool parseQuotes(CSSPropertyID, bool important);
 
-#if ENABLE(CSS_VARIABLES)
     static bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, Document*);
     bool cssVariablesEnabled() const;
     void storeVariableDeclaration(const CSSParserString&, PassOwnPtr<CSSParserValueList>, bool important);
-#endif
 
     PassRefPtr<CSSValue> parseAttr(CSSParserValueList* args);
 
@@ -435,9 +433,7 @@ public:
 
     PassRefPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
-#if ENABLE(CSS_VARIABLES)
     PassRefPtr<CSSPrimitiveValue> createPrimitiveVariableNameValue(CSSParserValue*);
-#endif
 
     static KURL completeURL(const CSSParserContext&, const String& url);
 

@@ -29,8 +29,6 @@
 #ifndef CSSVariableValue_h
 #define CSSVariableValue_h
 
-#if ENABLE(CSS_VARIABLES)
-
 #include "CSSParserValues.h"
 #include "CSSPropertyNames.h"
 #include "CSSValue.h"
@@ -71,5 +69,4 @@ private:
 
 }
 
-#endif /* ENABLE(CSS_VARIABLES) */
 #endif /* CSSVariableValue_h */
