@@ -596,3 +596,6 @@
 .panel.elements .sidebar-pane-toolbar > select.select-filter {
     background-image: url(Images/paneFilterButtons.png);
 }
+.panel.elements .sidebar-pane-toolbar > select > option, .panel.elements .sidebar-pane-toolbar > select > hr {
+    color: black;
+}
