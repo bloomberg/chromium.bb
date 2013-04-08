@@ -88,12 +88,20 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   content::RenderProcessHost* process = render_view_host()->GetProcess();
 
   // Some extensions use chrome:// URLs.
+  // This is a temporary solution. Replace it with access to chrome-static://
+  // once it is implemented. See: crbug.com/226927.
   Manifest::Type type = extension->GetType();
   if (type == Manifest::TYPE_EXTENSION ||
-      type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
+      type == Manifest::TYPE_LEGACY_PACKAGED_APP ||
+      (type == Manifest::TYPE_PLATFORM_APP &&
+       extension->location() == Manifest::COMPONENT)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
+  }
 
+  // Some extensions use file:// URLs.
+  if (type == Manifest::TYPE_EXTENSION ||
+      type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
     if (extensions::ExtensionSystem::Get(profile_)->extension_service()->
             extension_prefs()->AllowFileAccess(extension->id())) {
       ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
