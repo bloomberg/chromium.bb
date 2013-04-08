@@ -373,7 +373,7 @@ void InputInjectorLinux::Core::InitMouseButtonMap() {
   // Note that if a user has a global mapping that completely disables a button
   // (by assigning 0 to it), we won't be able to inject it.
   int num_buttons = XGetPointerMapping(display_, NULL, 0);
-  scoped_array<unsigned char> pointer_mapping(new unsigned char[num_buttons]);
+  scoped_ptr<unsigned char[]> pointer_mapping(new unsigned char[num_buttons]);
   num_buttons = XGetPointerMapping(display_, pointer_mapping.get(),
                                    num_buttons);
   for (int i = 0; i < kNumPointerButtons; i++) {
@@ -429,7 +429,7 @@ void InputInjectorLinux::Core::InitMouseButtonMap() {
   }
 
   int num_device_buttons = XGetDeviceButtonMapping(display_, device, NULL, 0);
-  scoped_array<unsigned char> button_mapping(new unsigned char[num_buttons]);
+  scoped_ptr<unsigned char[]> button_mapping(new unsigned char[num_buttons]);
   for (int i = 0; i < num_device_buttons; i++) {
     button_mapping[i] = i + 1;
   }

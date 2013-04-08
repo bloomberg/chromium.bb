@@ -50,7 +50,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   int size;
   uint8* test_data;
   PrepareData(&test_data, &size);
-  scoped_array<uint8> memory_deleter(test_data);
+  scoped_ptr<uint8[]> memory_deleter(test_data);
 
   // Then simulate using MessageDecoder to decode variable
   // size of encoded data.

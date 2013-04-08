@@ -112,7 +112,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
     return HRESULT_FROM_WIN32(error);
   }
 
-  scoped_array<char> buffer(new char[kMaxConfigFileSize]);
+  scoped_ptr<char[]> buffer(new char[kMaxConfigFileSize]);
   DWORD size = kMaxConfigFileSize;
   if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
     DWORD error = GetLastError();

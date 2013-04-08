@@ -127,7 +127,7 @@ bool VerifyConfigWindowWin::VerifyHostSecretHash() {
 
   // Get the PIN length.
   int pin_length = pin_edit.GetWindowTextLength();
-  scoped_array<char16> pin(new char16[pin_length + 1]);
+  scoped_ptr<char16[]> pin(new char16[pin_length + 1]);
 
   // Get the PIN making sure it is NULL terminated even if an error occurs.
   int result = pin_edit.GetWindowText(pin.get(), pin_length + 1);

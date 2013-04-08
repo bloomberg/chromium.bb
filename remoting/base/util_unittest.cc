@@ -128,13 +128,13 @@ class YuvToRgbTester {
 
  private:
   size_t yuv_buffer_size_;
-  scoped_array<uint8> yuv_buffer_;
+  scoped_ptr<uint8[]> yuv_buffer_;
   uint8* yplane_;
   uint8* uplane_;
   uint8* vplane_;
 
   size_t rgb_buffer_size_;
-  scoped_array<uint8> rgb_buffer_;
+  scoped_ptr<uint8[]> rgb_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(YuvToRgbTester);
 };

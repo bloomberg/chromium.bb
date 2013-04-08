@@ -174,7 +174,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
   }
 
   // Retrieve the input record itself.
-  scoped_array<uint8> buffer(new uint8[size]);
+  scoped_ptr<uint8[]> buffer(new uint8[size]);
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
   result = GetRawInputData(input_handle,
                            RID_INPUT,

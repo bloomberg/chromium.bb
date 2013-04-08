@@ -48,13 +48,13 @@ class VideoEncoderVp8 : public VideoEncoder {
 
   scoped_ptr<vpx_codec_ctx_t> codec_;
   scoped_ptr<vpx_image_t> image_;
-  scoped_array<uint8> active_map_;
+  scoped_ptr<uint8[]> active_map_;
   int active_map_width_;
   int active_map_height_;
   int last_timestamp_;
 
   // Buffer for storing the yuv image.
-  scoped_array<uint8> yuv_image_;
+  scoped_ptr<uint8[]> yuv_image_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderVp8);
 };

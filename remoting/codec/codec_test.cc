@@ -271,7 +271,7 @@ class VideoDecoderTester {
   SkRegion expected_region_;
   SkRegion update_region_;
   VideoDecoder* decoder_;
-  scoped_array<uint8> image_data_;
+  scoped_ptr<uint8[]> image_data_;
   scoped_refptr<media::ScreenCaptureData> capture_data_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
@@ -319,7 +319,7 @@ class VideoEncoderTester {
 
 scoped_refptr<media::ScreenCaptureData> PrepareEncodeData(
     const SkISize& size,
-    scoped_array<uint8>* memory) {
+    scoped_ptr<uint8[]>* memory) {
   int memory_size = size.width() * size.height() * kBytesPerPixel;
 
   memory->reset(new uint8[memory_size]);
@@ -356,7 +356,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 
   VideoEncoderTester tester(&message_tester);
 
-  scoped_array<uint8> memory;
+  scoped_ptr<uint8[]> memory;
 
   for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
     for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
@@ -413,7 +413,7 @@ void TestVideoEncoderDecoder(
 
   VideoEncoderTester encoder_tester(&message_tester);
 
-  scoped_array<uint8> memory;
+  scoped_ptr<uint8[]> memory;
   scoped_refptr<media::ScreenCaptureData> data =
       PrepareEncodeData(kSize, &memory);
 
@@ -451,12 +451,12 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      double max_error_limit,
                                      double mean_error_limit) {
   SkIRect screen_rect = SkIRect::MakeSize(screen_size);
-  scoped_array<uint8> screen_data(new uint8[
+  scoped_ptr<uint8[]> screen_data(new uint8[
       screen_size.width() * screen_size.height() * kBytesPerPixel]);
   FillWithGradient(screen_data.get(), screen_size, screen_rect);
 
   SkIRect view_rect = SkIRect::MakeSize(view_size);
-  scoped_array<uint8> expected_view_data(new uint8[
+  scoped_ptr<uint8[]> expected_view_data(new uint8[
       view_size.width() * view_size.height() * kBytesPerPixel]);
   FillWithGradient(expected_view_data.get(), view_size, view_rect);
 

@@ -30,7 +30,7 @@ class AudioEncoderSpeex : public AudioEncoder {
   void* speex_state_;
   int speex_frame_size_;
 
-  scoped_array<int16> leftover_buffer_;
+  scoped_ptr<int16[]> leftover_buffer_;
   // We may have some left-over unencoded frames from the previous AudioPacket.
   int leftover_frames_;
 

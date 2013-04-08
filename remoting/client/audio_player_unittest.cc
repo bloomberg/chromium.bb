@@ -86,7 +86,7 @@ class AudioPlayerTest : public ::testing::Test {
   }
 
   scoped_ptr<AudioPlayer> audio_;
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
 };
 
 scoped_ptr<AudioPacket> CreatePacketWithSamplingRate(

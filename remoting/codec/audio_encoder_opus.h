@@ -43,7 +43,7 @@ class AudioEncoderOpus : public AudioEncoder {
 
   int frame_size_;
   scoped_ptr<media::MultiChannelResampler> resampler_;
-  scoped_array<char> resample_buffer_;
+  scoped_ptr<char[]> resample_buffer_;
   scoped_ptr<media::AudioBus> resampler_bus_;
 
   // Used to pass packet to the FetchBytesToResampler() callback.
@@ -52,7 +52,7 @@ class AudioEncoderOpus : public AudioEncoder {
   int resampling_data_pos_;
 
   // Left-over unencoded samples from the previous AudioPacket.
-  scoped_array<int16> leftover_buffer_;
+  scoped_ptr<int16[]> leftover_buffer_;
   int leftover_buffer_size_;
   int leftover_samples_;
 

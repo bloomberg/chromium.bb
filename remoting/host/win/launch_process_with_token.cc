@@ -327,7 +327,7 @@ bool SendCreateProcessRequest(
   // and three NULL-terminated string parameters.
   size_t size = sizeof(CreateProcessRequest) + sizeof(wchar_t) *
       (application_name.size() + command_line.size() + desktop.size() + 3);
-  scoped_array<char> buffer(new char[size]);
+  scoped_ptr<char[]> buffer(new char[size]);
   memset(buffer.get(), 0, size);
 
   // Marshal the input parameters.

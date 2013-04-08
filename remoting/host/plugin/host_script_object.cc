@@ -1427,7 +1427,7 @@ bool HostNPScriptObject::LocalizeStringWithSubstitution(
     const char* substitution,
     string16* result) {
   int argc = substitution ? 2 : 1;
-  scoped_array<NPVariant> args(new NPVariant[argc]);
+  scoped_ptr<NPVariant[]> args(new NPVariant[argc]);
   STRINGZ_TO_NPVARIANT(tag, args[0]);
   if (substitution) {
     STRINGZ_TO_NPVARIANT(substitution, args[1]);
