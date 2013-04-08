@@ -910,33 +910,6 @@ void RenderLayerBacking::setBackgroundLayerPaintsFixedRootBackground(bool backgr
     m_backgroundLayerPaintsFixedRootBackground = backgroundLayerPaintsFixedRootBackground;
 }
 
-bool RenderLayerBacking::requiresHorizontalScrollbarLayer() const
-{
-#if !PLATFORM(CHROMIUM)
-    if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
-        return false;
-#endif
-    return m_owningLayer->horizontalScrollbar();
-}
-
-bool RenderLayerBacking::requiresVerticalScrollbarLayer() const
-{
-#if !PLATFORM(CHROMIUM)
-    if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
-        return false;
-#endif
-    return m_owningLayer->verticalScrollbar();
-}
-
-bool RenderLayerBacking::requiresScrollCornerLayer() const
-{
-#if !PLATFORM(CHROMIUM)
-    if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
-        return false;
-#endif
-    return !m_owningLayer->scrollCornerAndResizerRect().isEmpty();
-}
-
 bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer)
 {
     bool horizontalScrollbarLayerChanged = false;

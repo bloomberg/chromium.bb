@@ -200,9 +200,9 @@ private:
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
     bool updateMaskLayer(bool needsMaskLayer);
-    bool requiresHorizontalScrollbarLayer() const;
-    bool requiresVerticalScrollbarLayer() const;
-    bool requiresScrollCornerLayer() const;
+    bool requiresHorizontalScrollbarLayer() const { return m_owningLayer->horizontalScrollbar(); }
+    bool requiresVerticalScrollbarLayer() const { return m_owningLayer->verticalScrollbar(); }
+    bool requiresScrollCornerLayer() const { return !m_owningLayer->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateDrawsContent(bool isSimpleContainer);
     void registerScrollingLayers();
