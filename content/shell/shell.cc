@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/shell/notify_done_forwarder.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_frontend.h"
@@ -263,6 +264,8 @@ void Shell::WebContentsCreated(WebContents* source_contents,
                                const GURL& target_url,
                                WebContents* new_contents) {
   CreateShell(new_contents);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {

@@ -39,6 +39,10 @@ IPC_MESSAGE_CONTROL1(ShellViewMsg_LoadHyphenDictionary,
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
                     content::ShellTestConfiguration)
 
+// Tells the main window that a secondary window in a different process invoked
+// notifyDone().
+IPC_MESSAGE_ROUTED0(ShellViewMsg_NotifyDone)
+
 // Pushes a snapshot of the current session history from the browser process.
 // This includes only information about those RenderViews that are in the
 // same process as the main window of the layout test and that are the current
@@ -66,6 +70,8 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TestFinished,
                     bool /* did_timeout */)
 
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
+
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinishedInSecondaryWindow)
 
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,

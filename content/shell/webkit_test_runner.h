@@ -114,6 +114,7 @@ class WebKitTestRunner : public RenderViewObserver,
       const std::vector<std::vector<std::string> >& session_histories,
       const std::vector<unsigned>& current_entry_indexes);
   void OnReset();
+  void OnNotifyDone();
 
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.

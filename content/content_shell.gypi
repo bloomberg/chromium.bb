@@ -68,6 +68,8 @@
         'shell/geolocation/shell_access_token_store.h',
         'shell/minimal_ash.cc',
         'shell/minimal_ash.h',
+        'shell/notify_done_forwarder.cc',
+        'shell/notify_done_forwarder.h',
         'shell/paths_mac.h',
         'shell/paths_mac.mm',
         'shell/shell.cc',

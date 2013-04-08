@@ -47,6 +47,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
@@ -73,6 +74,7 @@ using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebPoint;
 using WebKit::WebRect;
+using WebKit::WebScriptSource;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -405,8 +407,10 @@ void WebKitTestRunner::setLocale(const std::string& locale) {
 }
 
 void WebKitTestRunner::testFinished() {
-  if (!is_main_window_)
+  if (!is_main_window_) {
+    Send(new ShellViewHostMsg_TestFinishedInSecondaryWindow(routing_id()));
     return;
+  }
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
@@ -517,6 +521,7 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
                         OnSetTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_NotifyDone, OnNotifyDone)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -525,6 +530,13 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
 
 void WebKitTestRunner::Navigate(const GURL& url) {
   focus_on_next_commit_ = true;
+  if (!is_main_window_ &&
+      ShellRenderProcessObserver::GetInstance()->main_test_runner() == this) {
+    WebTestInterfaces* interfaces =
+        ShellRenderProcessObserver::GetInstance()->test_interfaces();
+    interfaces->setTestIsRunning(true);
+    interfaces->configureForTestWithURL(GURL(), false);
+  }
 }
 
 void WebKitTestRunner::DidCommitProvisionalLoad(WebFrame* frame,
@@ -659,6 +671,11 @@ void WebKitTestRunner::OnReset() {
   render_view()->GetWebView()->mainFrame()
       ->loadRequest(WebURLRequest(GURL("about:blank")));
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
+}
+
+void WebKitTestRunner::OnNotifyDone() {
+  render_view()->GetWebView()->mainFrame()->executeScript(
+      WebScriptSource(WebString::fromUTF8("testRunner.notifyDone();")));
 }
 
 }  // namespace content

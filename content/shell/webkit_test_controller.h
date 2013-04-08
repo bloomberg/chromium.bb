@@ -94,6 +94,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void RendererUnresponsive();
   void OverrideWebkitPrefs(webkit_glue::WebPreferences* prefs);
   void OpenURL(const GURL& url);
+  void TestFinishedInSecondaryWindow();
 
   WebKitTestResultPrinter* printer() { return printer_.get(); }
   void set_printer(WebKitTestResultPrinter* printer) {
