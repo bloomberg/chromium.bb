@@ -427,98 +427,42 @@
     {
       'target_name': 'inspector_overlay_page',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generateInspectorOverlayPage',
-          'inputs': [
-            '../inspector/InspectorOverlayPage.html',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverlayPage.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'InspectorOverlayPage_html',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating InspectorOverlayPage.h from InspectorOverlayPage.html',
-        },
-      ]
+      'variables': {
+        'input_file_path': '../inspector/InspectorOverlayPage.html',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverlayPage.h',
+        'character_array_name': 'InspectorOverlayPage_html',
+      },
+      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'injected_canvas_script_source',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generateInjectedScriptCanvasModuleSource',
-          'inputs': [
-            '../inspector/InjectedScriptCanvasModuleSource.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptCanvasModuleSource.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'InjectedScriptCanvasModuleSource_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating InjectedScriptCanvasModuleSource.h from InjectedScriptCanvasModuleSource.js',
-        },
-      ]
+      'variables': {
+        'input_file_path': '../inspector/InjectedScriptCanvasModuleSource.js',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptCanvasModuleSource.h',
+        'character_array_name': 'InjectedScriptCanvasModuleSource_js',
+      },
+      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'injected_script_source',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generateInjectedScriptSource',
-          'inputs': [
-            '../inspector/InjectedScriptSource.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptSource.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'InjectedScriptSource_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating InjectedScriptSource.h from InjectedScriptSource.js',
-        },
-      ]
+      'variables': {
+        'input_file_path': '../inspector/InjectedScriptSource.js',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptSource.h',
+        'character_array_name': 'InjectedScriptSource_js',
+      },
+      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'debugger_script_source',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generateDebuggerScriptSource',
-          'inputs': [
-            '../bindings/v8/DebuggerScript.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/DebuggerScriptSource.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'DebuggerScriptSource_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating DebuggerScriptSource.h from DebuggerScript.js',
-        },
-      ]
+      'variables': {
+        'input_file_path': '../bindings/v8/DebuggerScript.js',
+        'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/DebuggerScriptSource.h',
+        'character_array_name': 'DebuggerScriptSource_js',
+      },
+      'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
       'target_name': 'generate_settings',
