@@ -31,6 +31,8 @@
 #include "config.h"
 #include "LocalFileSystem.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "CrossThreadTask.h"
 #include "Document.h"
 #include "ErrorCallback.h"
@@ -245,3 +247,5 @@ void LocalFileSystem::deleteFileSystem(ScriptExecutionContext* context, FileSyst
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

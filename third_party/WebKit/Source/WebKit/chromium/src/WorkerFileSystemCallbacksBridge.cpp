@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WorkerFileSystemCallbacksBridge.h"
 
-#if ENABLE(WORKERS)
+#if ENABLE(FILE_SYSTEM) && ENABLE(WORKERS)
 
 #include "BlobData.h"
 #include "CrossThreadTask.h"
@@ -490,4 +490,4 @@ void WorkerFileSystemCallbacksBridge::mayPostTaskToWorker(PassOwnPtr<ScriptExecu
 
 } // namespace WebCore
 
-#endif // ENABLE(WORKERS)
+#endif // ENABLE(FILE_SYSTEM)

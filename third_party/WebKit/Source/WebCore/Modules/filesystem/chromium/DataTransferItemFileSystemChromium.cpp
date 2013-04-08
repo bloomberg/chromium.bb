@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DataTransferItemFileSystem.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "AsyncFileSystemCallbacks.h"
 #include "ChromiumDataObject.h"
@@ -86,3 +88,5 @@ PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ScriptExecutionCo
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

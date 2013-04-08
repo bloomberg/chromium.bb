@@ -31,6 +31,8 @@
 #ifndef FileSystemFlags_h
 #define FileSystemFlags_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "Dictionary.h"
 
 namespace WebCore {
@@ -49,5 +51,7 @@ struct FileSystemFlags  {
 };
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileSystemFlags_h

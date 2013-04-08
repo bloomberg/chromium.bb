@@ -31,6 +31,8 @@
 #include "config.h"
 #include "EntrySync.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "BindingState.h"
 #include "V8Attr.h"
 #include "V8Binding.h"
@@ -52,3 +54,5 @@ v8::Handle<v8::Object> wrap(EntrySync* impl, v8::Handle<v8::Object> creationCont
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

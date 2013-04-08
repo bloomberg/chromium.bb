@@ -31,6 +31,8 @@
 #ifndef Metadata_h
 #define Metadata_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "FileMetadata.h"
 #include <wtf/RefCounted.h>
 
@@ -62,5 +64,7 @@ private:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // Metadata_h

@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface DirectoryEntry : Entry {
+[
+    Conditional=FILE_SYSTEM
+] interface DirectoryEntry : Entry {
     DirectoryReader createReader();
     void getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
     void getDirectory([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);

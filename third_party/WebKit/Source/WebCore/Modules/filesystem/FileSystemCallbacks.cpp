@@ -31,6 +31,8 @@
 #include "config.h"
 #include "FileSystemCallbacks.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "AsyncFileWriter.h"
 #include "DOMFilePath.h"
@@ -279,3 +281,5 @@ void VoidCallbacks::didSucceed()
 }
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)

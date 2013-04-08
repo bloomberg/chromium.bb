@@ -31,6 +31,8 @@
 #include "config.h"
 #include "EntryBase.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "DOMFilePath.h"
 #include "DOMFileSystemBase.h"
@@ -61,3 +63,5 @@ String EntryBase::toURL() const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

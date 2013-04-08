@@ -31,6 +31,8 @@
 #ifndef DirectoryReader_h
 #define DirectoryReader_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DOMFileSystem.h"
 #include "DirectoryReaderBase.h"
 #include <wtf/PassRefPtr.h>
@@ -59,5 +61,7 @@ private:
 };
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DirectoryReader_h

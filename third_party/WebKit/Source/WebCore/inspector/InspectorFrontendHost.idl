@@ -69,7 +69,7 @@
     void requestFileSystems();
     void addFileSystem();
     void removeFileSystem(DOMString fileSystemPath);
-    DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
+    [Conditional=FILE_SYSTEM] DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
 
     boolean isUnderTest();
 

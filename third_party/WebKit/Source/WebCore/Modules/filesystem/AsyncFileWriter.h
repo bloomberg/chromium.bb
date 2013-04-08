@@ -31,6 +31,8 @@
 #ifndef AsyncFileWriter_h
 #define AsyncFileWriter_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
@@ -52,5 +54,7 @@ public:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // AsyncFileWriter_h

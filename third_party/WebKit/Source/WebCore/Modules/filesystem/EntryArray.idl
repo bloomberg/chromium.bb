@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     IndexedGetter,
     ImplementationLacksVTable
 ] interface EntryArray {

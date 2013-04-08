@@ -31,6 +31,8 @@
 #ifndef DataTransferItemFileSystem_h
 #define DataTransferItemFileSystem_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {
@@ -49,5 +51,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DataTransferItemFileSystem_h

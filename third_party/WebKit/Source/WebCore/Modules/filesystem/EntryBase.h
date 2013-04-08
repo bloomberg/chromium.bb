@@ -31,6 +31,8 @@
 #ifndef EntryBase_h
 #define EntryBase_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
@@ -67,5 +69,7 @@ protected:
 };
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // EntryBase_h

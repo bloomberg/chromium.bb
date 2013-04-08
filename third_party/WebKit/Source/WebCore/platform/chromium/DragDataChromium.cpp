@@ -34,7 +34,6 @@
 #include "ClipboardMimeTypes.h"
 #include "Document.h"
 #include "DocumentFragment.h"
-#include "DraggedIsolatedFileSystem.h"
 #include "FileSystem.h"
 #include "Frame.h"
 #include "KURL.h"
@@ -44,6 +43,10 @@
 
 #include <public/Platform.h>
 #include <public/WebFileUtilities.h>
+
+#if ENABLE(FILE_SYSTEM)
+#include "DraggedIsolatedFileSystem.h"
+#endif
 
 namespace WebCore {
 
@@ -164,6 +167,7 @@ Color DragData::asColor() const
     return Color();
 }
 
+#if ENABLE(FILE_SYSTEM)
 String DragData::droppedFileSystemId() const
 {
     DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_platformDragData);
@@ -171,5 +175,7 @@ String DragData::droppedFileSystemId() const
         return String();
     return filesystem->filesystemId();
 }
+#endif
+
 
 } // namespace WebCore

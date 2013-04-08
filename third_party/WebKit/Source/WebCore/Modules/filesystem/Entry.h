@@ -31,6 +31,8 @@
 #ifndef Entry_h
 #define Entry_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DOMFileSystem.h"
 #include "EntryBase.h"
 #include <wtf/PassRefPtr.h>
@@ -60,5 +62,7 @@ protected:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // Entry_h

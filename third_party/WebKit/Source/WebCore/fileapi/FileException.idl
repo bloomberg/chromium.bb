@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=BLOB|FILE_SYSTEM,
     DoNotCheckConstants,
     ImplementationLacksVTable
 ] exception FileException {

@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     ImplementationLacksVTable
 ] interface Metadata {
     readonly attribute Date modificationTime;

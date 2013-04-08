@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DirectoryReader.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "EntriesCallback.h"
 #include "EntryArray.h"
 #include "ErrorCallback.h"
@@ -53,3 +55,5 @@ void DirectoryReader::readEntries(PassRefPtr<EntriesCallback> entriesCallback, P
 }
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)

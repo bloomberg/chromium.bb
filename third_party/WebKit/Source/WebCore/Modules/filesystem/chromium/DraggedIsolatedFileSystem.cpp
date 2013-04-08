@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DraggedIsolatedFileSystem.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DOMFileSystem.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
@@ -66,3 +68,5 @@ DraggedIsolatedFileSystem::DraggedIsolatedFileSystem(const String& filesystemId)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

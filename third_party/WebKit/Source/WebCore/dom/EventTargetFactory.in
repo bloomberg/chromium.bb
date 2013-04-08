@@ -7,7 +7,7 @@ DOMApplicationCache
 DOMWindow
 EventSource
 FileReader conditional=BLOB
-FileWriter
+FileWriter conditional=FILE_SYSTEM
 FontLoader conditional=FONT_LOAD_EVENTS
 IDBDatabase
 IDBOpenDBRequest

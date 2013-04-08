@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     Callback
 ] interface FileWriterCallback {
     boolean handleEvent(FileWriter fileWriter);

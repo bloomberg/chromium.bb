@@ -31,6 +31,8 @@
 #ifndef EntryArraySync_h
 #define EntryArraySync_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "EntrySync.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -62,5 +64,7 @@ private:
 };
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // EntryArraySync_h

@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     CustomToJSObject
 ] interface Entry {
     readonly attribute boolean isFile;

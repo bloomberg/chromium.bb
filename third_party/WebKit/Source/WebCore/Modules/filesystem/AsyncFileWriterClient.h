@@ -31,6 +31,8 @@
 #ifndef AsyncFileWriterClient_h
 #define AsyncFileWriterClient_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "FileError.h"
 
 namespace WebCore {
@@ -45,5 +47,7 @@ public:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // AsyncFileWriterClient_h

@@ -27,6 +27,8 @@
 #ifndef WorkerContextFileSystem_h
 #define WorkerContextFileSystem_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DOMFileSystemSync.h"
 #include <wtf/PassRefPtr.h>
 
@@ -52,9 +54,11 @@ public:
 
 private:
     WorkerContextFileSystem();
-    ~WorkerContextFileSystem();
+    ~WorkerContextFileSystem();    
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // WorkerContextFileSystem_h

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "EntryArraySync.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "EntryArray.h"
 
 namespace WebCore {
@@ -57,3 +59,5 @@ EntrySync* EntryArraySync::item(unsigned index) const
 }
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)

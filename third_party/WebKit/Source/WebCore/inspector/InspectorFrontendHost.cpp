@@ -311,11 +311,13 @@ void InspectorFrontendHost::removeFileSystem(const String& fileSystemPath)
         m_client->removeFileSystem(fileSystemPath);
 }
 
+#if ENABLE(FILE_SYSTEM)
 PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String& fileSystemName, const String& rootURL)
 {
     ScriptExecutionContext* context = m_frontendPage->mainFrame()->document();
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL), AsyncFileSystem::create());
 }
+#endif
 
 bool InspectorFrontendHost::isUnderTest()
 {
@@ -338,3 +340,4 @@ String InspectorFrontendHost::hiddenPanels()
 }
 
 } // namespace WebCore
+

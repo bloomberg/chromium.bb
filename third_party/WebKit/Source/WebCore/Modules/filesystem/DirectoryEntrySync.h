@@ -31,6 +31,8 @@
 #ifndef DirectoryEntrySync_h
 #define DirectoryEntrySync_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "EntrySync.h"
 #include "FileSystemFlags.h"
 #include <wtf/PassRefPtr.h>
@@ -61,5 +63,7 @@ private:
 };
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DirectoryEntrySync_h

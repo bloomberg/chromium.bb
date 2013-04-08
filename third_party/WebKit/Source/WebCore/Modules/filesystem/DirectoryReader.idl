@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     ImplementationLacksVTable
 ] interface DirectoryReader {
     void readEntries([Callback] EntriesCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);

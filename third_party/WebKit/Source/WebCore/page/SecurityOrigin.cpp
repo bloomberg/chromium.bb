@@ -60,8 +60,10 @@ bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
     if (url.protocolIs("blob"))
         return true;
 #endif
+#if ENABLE(FILE_SYSTEM)
     if (url.protocolIs("filesystem"))
         return true;
+#endif
     UNUSED_PARAM(url);
     return false;
 }

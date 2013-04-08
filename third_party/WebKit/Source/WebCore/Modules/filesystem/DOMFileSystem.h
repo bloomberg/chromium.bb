@@ -31,6 +31,8 @@
 #ifndef DOMFileSystem_h
 #define DOMFileSystem_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "ActiveDOMObject.h"
 #include "DOMFileSystemBase.h"
 #include "ScriptExecutionContext.h"
@@ -104,5 +106,7 @@ void DOMFileSystem::scheduleCallback(ScriptExecutionContext* scriptExecutionCont
 }
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DOMFileSystem_h

@@ -30,6 +30,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     ActiveDOMObject,
     CallWith=ScriptExecutionContext,
     EventTarget

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DirectoryEntrySync.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DirectoryReaderSync.h"
 #include "EntrySync.h"
 #include "FileEntrySync.h"
@@ -85,3 +87,5 @@ void DirectoryEntrySync::removeRecursively(ExceptionCode& ec)
 }
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)

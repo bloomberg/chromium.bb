@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface FileWriterSync {
+[
+    Conditional=FILE_SYSTEM
+] interface FileWriterSync {
     // synchronous write/modify methods
     void write(Blob data) raises (FileException);
     void seek(long long position) raises (FileException);

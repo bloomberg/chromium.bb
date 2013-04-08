@@ -31,6 +31,8 @@
 #ifndef DraggedIsolatedFileSystem_h
 #define DraggedIsolatedFileSystem_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "ChromiumDataObject.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
@@ -61,5 +63,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DraggedIsolatedFileSystem_h

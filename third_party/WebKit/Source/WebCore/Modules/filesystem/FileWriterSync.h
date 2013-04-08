@@ -31,6 +31,8 @@
 #ifndef FileWriterSync_h
 #define FileWriterSync_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileWriterClient.h"
 #include "FileError.h"
 #include "FileWriterBase.h"
@@ -71,5 +73,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileWriter_h

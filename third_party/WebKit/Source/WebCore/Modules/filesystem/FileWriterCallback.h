@@ -31,6 +31,8 @@
 #ifndef FileWriterCallback_h
 #define FileWriterCallback_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -44,5 +46,7 @@ public:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileWriterCallback_h

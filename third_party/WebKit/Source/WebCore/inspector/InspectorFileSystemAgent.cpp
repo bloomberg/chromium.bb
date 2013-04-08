@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "InspectorFileSystemAgent.h"
 
 #include "DOMFileSystem.h"
@@ -736,3 +738,5 @@ ScriptExecutionContext* InspectorFileSystemAgent::assertScriptExecutionContextFo
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

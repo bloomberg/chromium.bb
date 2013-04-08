@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "FileWriter.h"
 
 #include "AsyncFileWriter.h"
@@ -325,3 +327,5 @@ void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionCode& ec)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

@@ -29,6 +29,7 @@
  */
 
 [
+    Conditional=FILE_SYSTEM,
     Callback
 ] interface ErrorCallback {
     boolean handleEvent(FileError error);

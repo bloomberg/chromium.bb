@@ -31,6 +31,8 @@
 #ifndef DirectoryEntry_h
 #define DirectoryEntry_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "Entry.h"
 #include "FileSystemFlags.h"
 #include <wtf/PassRefPtr.h>
@@ -63,5 +65,7 @@ private:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DirectoryEntry_h

@@ -31,6 +31,8 @@
 #ifndef FileSystemCallbacks_h
 #define FileSystemCallbacks_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystemCallbacks.h"
 #include "FileSystemType.h"
 #include <wtf/PassRefPtr.h>
@@ -154,5 +156,7 @@ private:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileSystemCallbacks_h

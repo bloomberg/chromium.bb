@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DOMFileSystem.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "DOMFilePath.h"
 #include "DirectoryEntry.h"
@@ -206,3 +208,5 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry, PassRefPtr<FileCallba
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

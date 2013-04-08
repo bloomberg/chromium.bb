@@ -31,6 +31,8 @@
 #ifndef AsyncFileSystem_h
 #define AsyncFileSystem_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "FileSystemType.h"
 #include "KURL.h"
 #include "Timer.h"
@@ -137,5 +139,7 @@ protected:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // AsyncFileSystem_h

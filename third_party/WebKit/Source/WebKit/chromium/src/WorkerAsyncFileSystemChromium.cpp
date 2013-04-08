@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WorkerAsyncFileSystemChromium.h"
 
-#if ENABLE(WORKERS)
+#if ENABLE(FILE_SYSTEM) && ENABLE(WORKERS)
 
 #include "AsyncFileSystemCallbacks.h"
 #include "BlobURL.h"
@@ -195,4 +195,4 @@ PassRefPtr<WorkerFileSystemCallbacksBridge> WorkerAsyncFileSystemChromium::creat
 
 } // namespace WebCore
 
-#endif // ENABLE(WORKERS)
+#endif // ENABLE(FILE_SYSTEM)

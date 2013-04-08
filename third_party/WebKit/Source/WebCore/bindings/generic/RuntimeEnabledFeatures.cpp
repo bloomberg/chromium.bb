@@ -31,11 +31,14 @@
 #include "config.h"
 #include "RuntimeEnabledFeatures.h"
 
-#include "AsyncFileSystem.h"
 #include "DatabaseManager.h"
 #include "MediaPlayer.h"
 #include "SharedWorkerRepository.h"
 #include "WebSocket.h"
+
+#if ENABLE(FILE_SYSTEM)
+#include "AsyncFileSystem.h"
+#endif
 
 namespace WebCore {
 
@@ -70,12 +73,14 @@ bool RuntimeEnabledFeatures::isPeerConnectionEnabled = true;
 bool RuntimeEnabledFeatures::isGamepadEnabled = false;
 #endif
 
+#if ENABLE(FILE_SYSTEM)
 bool RuntimeEnabledFeatures::isFileSystemEnabled = false;
 
 bool RuntimeEnabledFeatures::fileSystemEnabled()
 {
     return isFileSystemEnabled && AsyncFileSystem::isAvailable();
 }
+#endif
 
 #if ENABLE(JAVASCRIPT_I18N_API)
 bool RuntimeEnabledFeatures::isJavaScriptI18NAPIEnabled = false;

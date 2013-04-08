@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DOMFileSystemSync.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "AsyncFileWriter.h"
 #include "DOMFilePath.h"
@@ -260,3 +262,5 @@ PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* 
 }
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)

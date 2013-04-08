@@ -31,6 +31,8 @@
 #ifndef SyncCallbackHelper_h
 #define SyncCallbackHelper_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DirectoryEntry.h"
 #include "EntriesCallback.h"
 #include "EntryArraySync.h"
@@ -181,5 +183,7 @@ typedef SyncCallbackHelper<VoidCallback, AsyncFileSystem, EmptyType, EmptyType> 
 typedef SyncCallbackHelper<FileSystemCallback, EmptyObserverType, DOMFileSystem, DOMFileSystemSync> FileSystemSyncCallbackHelper;
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // SyncCallbackHelper_h

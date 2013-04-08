@@ -30,6 +30,8 @@
 #include "config.h"
 #include "AsyncFileSystemChromium.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystemCallbacks.h"
 #include "AsyncFileWriterChromium.h"
 #include "BlobURL.h"
@@ -185,3 +187,5 @@ void AsyncFileSystemChromium::createSnapshotFileAndReadMetadata(const KURL& path
 }
 
 } // namespace WebCore
+
+#endif

@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "FileWriterSync.h"
 
 #include "AsyncFileWriter.h"
@@ -142,3 +144,5 @@ FileWriterSync::~FileWriterSync()
 
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

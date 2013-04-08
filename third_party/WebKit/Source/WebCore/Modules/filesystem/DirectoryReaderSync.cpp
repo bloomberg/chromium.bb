@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DirectoryReaderSync.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DirectoryEntry.h"
 #include "DirectoryEntrySync.h"
 #include "EntryArraySync.h"
@@ -62,3 +64,5 @@ PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionCode& ec)
 }
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)

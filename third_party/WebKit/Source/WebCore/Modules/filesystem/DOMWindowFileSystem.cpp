@@ -26,6 +26,8 @@
 #include "config.h"
 #include "DOMWindowFileSystem.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "AsyncFileSystem.h"
 #include "DOMFileSystem.h"
 #include "DOMWindow.h"
@@ -102,3 +104,5 @@ COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<i
 COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), enum_mismatch);
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)

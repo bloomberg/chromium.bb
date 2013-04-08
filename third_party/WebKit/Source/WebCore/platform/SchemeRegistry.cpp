@@ -100,7 +100,9 @@ static URLSchemesMap& canDisplayOnlyIfCanRequestSchemes()
 #if ENABLE(BLOB)
     if (canDisplayOnlyIfCanRequestSchemes.isEmpty()) {
         canDisplayOnlyIfCanRequestSchemes.add("blob");
+#if ENABLE(FILE_SYSTEM)
         canDisplayOnlyIfCanRequestSchemes.add("filesystem");
+#endif
     }
 #endif // ENABLE(BLOB)
 

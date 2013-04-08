@@ -31,6 +31,8 @@
 #ifndef DOMFilePath_h
 #define DOMFilePath_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -82,5 +84,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DOMFilePath_h

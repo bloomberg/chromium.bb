@@ -56,7 +56,9 @@ InstrumentingAgents::InstrumentingAgents()
 #if ENABLE(SQL_DATABASE)
     , m_inspectorDatabaseAgent(0)
 #endif
+#if ENABLE(FILE_SYSTEM)
     , m_inspectorFileSystemAgent(0)
+#endif
     , m_inspectorApplicationCacheAgent(0)
     , m_inspectorDebuggerAgent(0)
     , m_pageDebuggerAgent(0)
@@ -87,7 +89,9 @@ void InstrumentingAgents::reset()
 #if ENABLE(SQL_DATABASE)
     m_inspectorDatabaseAgent = 0;
 #endif
+#if ENABLE(FILE_SYSTEM)
     m_inspectorFileSystemAgent = 0;
+#endif
     m_inspectorApplicationCacheAgent = 0;
     m_inspectorDebuggerAgent = 0;
     m_pageDebuggerAgent = 0;
@@ -117,3 +121,4 @@ InstrumentingAgents* instrumentationForWorkerContext(WorkerContext* workerContex
 #endif
 
 } // namespace WebCore
+

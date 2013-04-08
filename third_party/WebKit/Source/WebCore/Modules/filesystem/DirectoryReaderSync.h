@@ -31,6 +31,8 @@
 #ifndef DirectoryReaderSync_h
 #define DirectoryReaderSync_h
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DirectoryReaderBase.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -56,5 +58,7 @@ private:
 };
 
 } // namespace
+
+#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DirectoryReaderSync_h

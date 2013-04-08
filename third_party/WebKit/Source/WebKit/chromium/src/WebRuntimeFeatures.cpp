@@ -279,12 +279,18 @@ bool WebRuntimeFeatures::isXHRResponseBlobEnabled()
 
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
+#if ENABLE(FILE_SYSTEM)
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
+#endif
 }
 
 bool WebRuntimeFeatures::isFileSystemEnabled()
 {
+#if ENABLE(FILE_SYSTEM)
     return RuntimeEnabledFeatures::fileSystemEnabled();
+#else
+    return false;
+#endif
 }
 
 void WebRuntimeFeatures::enableJavaScriptI18NAPI(bool enable)

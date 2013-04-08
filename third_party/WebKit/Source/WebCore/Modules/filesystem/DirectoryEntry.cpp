@@ -31,6 +31,8 @@
 #include "config.h"
 #include "DirectoryEntry.h"
 
+#if ENABLE(FILE_SYSTEM)
+
 #include "DirectoryReader.h"
 #include "EntryCallback.h"
 #include "ErrorCallback.h"
@@ -73,3 +75,5 @@ void DirectoryEntry::removeRecursively(PassRefPtr<VoidCallback> successCallback,
 }
 
 }
+
+#endif // ENABLE(FILE_SYSTEM)
