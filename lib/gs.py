@@ -234,16 +234,21 @@ class GSContext(object):
                       acl=acl, version=version)
 
   def _RunCommand(self, cmd, **kwargs):
+    kwargs.setdefault('redirect_stderr', True)
     try:
       return cros_build_lib.RunCommand(cmd, **kwargs)
     # gsutil uses the same exit code for any failure, so we are left to
     # parse the output as needed.
     except cros_build_lib.RunCommandError as e:
       error = e.result.error
-      if error and 'GSResponseError' in error:
-        if 'code=PreconditionFailed' in error:
-          raise GSContextPreconditionFailed(e)
-        if 'code=NoSuchKey' in error:
+      if error:
+        if 'GSResponseError' in error:
+          if 'code=PreconditionFailed' in error:
+            raise GSContextPreconditionFailed(e)
+          if 'code=NoSuchKey' in error:
+            raise GSNoSuchKey(e)
+        if error.startswith('InvalidUriError:'):
+          # If the file does not exist, InvalidUriError is returned.
           raise GSNoSuchKey(e)
       raise
 
@@ -314,7 +319,7 @@ class GSContext(object):
     # For ease of testing, only pass headers if we got some.
     if headers:
       kwargs['headers'] = headers
-    return self._DoCommand(cmd, redirect_stderr=True, **kwargs)
+    return self._DoCommand(cmd, **kwargs)
 
   def LS(self, path):
     """Does a directory listing of the given gs path."""
@@ -345,8 +350,7 @@ class GSContext(object):
       True if the path exists; otherwise returns False.
     """
     try:
-      self._DoCommand(['getacl', path], redirect_stdout=True,
-                      redirect_stderr=True)
+      self._DoCommand(['getacl', path], redirect_stdout=True)
     except GSNoSuchKey:
       return False
     return True

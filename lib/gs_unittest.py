@@ -227,7 +227,7 @@ class GSContextTest(AbstractGSContextTest):
       ctx.Copy('/blah', 'gs://foon')
       cmd = [self.ctx.gsutil_bin, 'cp', '--', '/blah', 'gs://foon']
       cros_build_lib.RetryCommand.assert_called_once_with(
-          mock.ANY, retries, cmd, sleep=sleep, redirect_stderr=True,
+          mock.ANY, retries, cmd, sleep=sleep,
           extra_env={'BOTO_CONFIG': mock.ANY})
 
   def testDoCommandDefault(self):

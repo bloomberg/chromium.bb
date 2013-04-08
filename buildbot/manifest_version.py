@@ -537,7 +537,7 @@ class BuildSpecsManager(object):
     return self._latest_status and self._latest_status.Failed()
 
   @staticmethod
-  def GetBuildStatus(builder, version, retries=3):
+  def GetBuildStatus(builder, version):
     """Returns a BuilderStatus instance for the given the builder.
 
     Args:
@@ -550,18 +550,12 @@ class BuildSpecsManager(object):
       message associated with the status passed by the builder.
     """
     url = BuildSpecsManager._GetStatusUrl(builder, version)
-    cmd = [gs.GSUTIL_BIN, 'cat', url]
+    ctx = gs.GSContext()
     try:
-      # TODO(davidjames): Use chromite.lib.gs here.
-      result = cros_build_lib.RunCommandWithRetries(
-          retries, cmd, redirect_stdout=True, redirect_stderr=True,
-          debug_level=logging.DEBUG)
-    except cros_build_lib.RunCommandError as ex:
-      # If the file does not exist, InvalidUriError is returned.
-      if ex.result.error and ex.result.error.startswith('InvalidUriError:'):
-        return None
-      raise
-    return BuilderStatus(**cPickle.loads(result.output))
+      output = ctx.Cat(url).output
+    except gs.GSNoSuchKey:
+      return None
+    return BuilderStatus(**cPickle.loads(output))
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
