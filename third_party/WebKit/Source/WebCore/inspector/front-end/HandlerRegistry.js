@@ -124,7 +124,7 @@ WebInspector.HandlerRegistry.prototype = {
         }
         contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), InspectorFrontendHost.copyText.bind(InspectorFrontendHost, contentProvider.contentURL()));
 
-        if (!InspectorFrontendHost.canSave() || !contentProvider.contentURL())
+        if (!contentProvider.contentURL())
             return;
 
         var contentType = contentProvider.contentType();

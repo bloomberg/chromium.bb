@@ -91,11 +91,6 @@ WebInspector.WorkerManager._initializeDedicatedWorkerFrontend = function(workerI
     {
         window.opener.postMessage({workerId: workerId, command: "sendMessageToBackend", message: message}, "*");
     }
-
-    InspectorFrontendHost.loaded = function()
-    {
-        window.opener.postMessage({workerId: workerId, command: "loaded"}, "*");
-    }
 }
 
 WebInspector.WorkerManager._calculateWorkerInspectorTitle = function()

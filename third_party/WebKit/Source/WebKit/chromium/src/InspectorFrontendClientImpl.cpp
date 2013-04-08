@@ -75,18 +75,9 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     global->Set(v8::String::New("InspectorFrontendHost"), frontendHostObj);
 }
 
-void InspectorFrontendClientImpl::frontendLoaded()
-{
-}
-
 void InspectorFrontendClientImpl::moveWindowBy(float x, float y)
 {
     m_client->moveWindowBy(WebFloatPoint(x, y));
-}
-
-String InspectorFrontendClientImpl::localizedStringsURL()
-{
-    return "";
 }
 
 void InspectorFrontendClientImpl::bringToFront()
@@ -125,11 +116,6 @@ void InspectorFrontendClientImpl::openInNewTab(const String& url)
     m_client->openInNewTab(url);
 }
 
-bool InspectorFrontendClientImpl::canSave()
-{
-    return true;
-}
-
 void InspectorFrontendClientImpl::save(const String& url, const String& content, bool forceSaveAs)
 {
     m_client->save(url, content, forceSaveAs);
@@ -148,11 +134,6 @@ void InspectorFrontendClientImpl::inspectedURLChanged(const String& url)
 void InspectorFrontendClientImpl::sendMessageToBackend(const String& message)
 {
     m_client->sendMessageToBackend(message);
-}
-
-bool InspectorFrontendClientImpl::supportsFileSystems()
-{
-    return true;
 }
 
 void InspectorFrontendClientImpl::requestFileSystems()

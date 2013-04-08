@@ -47,7 +47,7 @@ WebInspector.FileManager.prototype = {
      */
     canSave: function()
     {
-        return InspectorFrontendHost.canSave();
+        return true;
     },
 
     /**

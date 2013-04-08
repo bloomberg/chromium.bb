@@ -144,8 +144,6 @@ void InspectorFrontendHost::disconnectClient()
 
 void InspectorFrontendHost::loaded()
 {
-    if (m_client)
-        m_client->frontendLoaded();
 }
 
 void InspectorFrontendHost::requestSetDockSide(const String& side)
@@ -211,7 +209,7 @@ void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, con
 
 String InspectorFrontendHost::localizedStringsURL()
 {
-    return m_client ? m_client->localizedStringsURL() : "";
+    return "";
 }
 
 void InspectorFrontendHost::copyText(const String& text)
@@ -227,9 +225,7 @@ void InspectorFrontendHost::openInNewTab(const String& url)
 
 bool InspectorFrontendHost::canSave()
 {
-    if (m_client)
-        return m_client->canSave();
-    return false;
+    return true;
 }
 
 void InspectorFrontendHost::save(const String& url, const String& content, bool forceSaveAs)
@@ -288,9 +284,7 @@ String InspectorFrontendHost::loadResourceSynchronously(const String& url)
 
 bool InspectorFrontendHost::supportsFileSystems()
 {
-    if (m_client)
-        return m_client->supportsFileSystems();
-    return false;
+    return true;
 }
 
 void InspectorFrontendHost::requestFileSystems()

@@ -40,8 +40,7 @@ WebInspector.TimelinePanelDescriptor.prototype = {
     {
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
         section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.StartStopRecording, WebInspector.UIString("Start/stop recording"));
-        if (InspectorFrontendHost.canSave())
-            section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, WebInspector.UIString("Save timeline data"));
+        section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, WebInspector.UIString("Save timeline data"));
         section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.LoadFromFile, WebInspector.UIString("Load timeline data"));
     },
 

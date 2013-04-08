@@ -57,7 +57,6 @@ public:
     ~InspectorFrontendHost();
     void disconnectClient();
 
-    void loaded();
     void requestSetDockSide(const String&);
     void closeWindow();
     void bringToFront();
@@ -69,11 +68,8 @@ public:
     void moveWindowBy(float x, float y) const;
     void setInjectedScriptForOrigin(const String& origin, const String& script);
 
-    String localizedStringsURL();
-
     void copyText(const String& text);
     void openInNewTab(const String& url);
-    bool canSave();
     void save(const String& url, const String& content, bool forceSaveAs);
     void append(const String& url, const String& content);
     void close(const String& url);
@@ -84,7 +80,6 @@ public:
 
     String loadResourceSynchronously(const String& url);
 
-    bool supportsFileSystems();
     void requestFileSystems();
     void addFileSystem();
     void removeFileSystem(const String& fileSystemPath);
@@ -92,9 +87,14 @@ public:
 
     bool isUnderTest();
 
+    // Deprecated but should stay around for a while as old front-ends may use them.
     bool canInspectWorkers();
     bool canSaveAs();
+    bool canSave();
+    bool supportsFileSystems();
+    void loaded();
     String hiddenPanels();
+    String localizedStringsURL();
 
 private:
 #if ENABLE(CONTEXT_MENUS)

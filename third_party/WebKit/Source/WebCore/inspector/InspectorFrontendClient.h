@@ -50,11 +50,7 @@ public:
     virtual ~InspectorFrontendClient() { }
 
     virtual void windowObjectCleared() = 0;
-    virtual void frontendLoaded() = 0;
-
     virtual void moveWindowBy(float x, float y) = 0;
-
-    virtual String localizedStringsURL() = 0;
 
     virtual void bringToFront() = 0;
     virtual void closeWindow() = 0;
@@ -65,7 +61,6 @@ public:
 
     virtual void openInNewTab(const String& url) = 0;
 
-    virtual bool canSave() = 0;
     virtual void save(const WTF::String& url, const WTF::String& content, bool forceSaveAs) = 0;
     virtual void append(const WTF::String& url, const WTF::String& content) = 0;
 
@@ -73,7 +68,6 @@ public:
 
     virtual void sendMessageToBackend(const String&) = 0;
 
-    virtual bool supportsFileSystems() = 0;
     virtual void requestFileSystems() = 0;
     virtual void addFileSystem() = 0;
     virtual void removeFileSystem(const String& fileSystemPath) = 0;

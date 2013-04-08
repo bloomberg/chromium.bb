@@ -33,7 +33,6 @@
 [
     ImplementationLacksVTable
 ] interface InspectorFrontendHost {
-    void loaded();
     void closeWindow();
     void bringToFront();
     void setZoomFactor(float zoom);
@@ -45,11 +44,8 @@
     void moveWindowBy(float x, float y);
     void setInjectedScriptForOrigin(DOMString origin, DOMString script);
 
-    DOMString localizedStringsURL();
-
     void copyText(DOMString text);
     void openInNewTab(DOMString url);
-    boolean canSave();
     void save(DOMString url, DOMString content, boolean forceSaveAs);
     void append(DOMString url, DOMString content);
     void close(DOMString url);
@@ -65,7 +61,6 @@
 
     DOMString loadResourceSynchronously(DOMString url);
 
-    boolean supportsFileSystems();
     void requestFileSystems();
     void addFileSystem();
     void removeFileSystem(DOMString fileSystemPath);
@@ -76,5 +71,9 @@
     // Deprecated
     boolean canInspectWorkers();
     boolean canSaveAs();
+    boolean canSave();
+    boolean supportsFileSystems();
+    void loaded();
     DOMString hiddenPanels();
+    DOMString localizedStringsURL();
 };

@@ -372,7 +372,6 @@ WebInspector.doLoadedDone = function()
     if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
         WebInspector.setToolbarColors(WebInspector.queryParamsObject.toolbarColor, WebInspector.queryParamsObject.textColor);
 
-    InspectorFrontendHost.loaded();
     WebInspector.WorkerManager.loaded();
 
     PageAgent.canShowFPSCounter(WebInspector._initializeCapability.bind(WebInspector, "canShowFPSCounter", null));
@@ -521,16 +520,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
 var windowLoaded = function()
 {
-    var localizedStringsURL = InspectorFrontendHost.localizedStringsURL();
-    if (localizedStringsURL) {
-        var localizedStringsScriptElement = document.createElement("script");
-        localizedStringsScriptElement.addEventListener("load", WebInspector.loaded.bind(WebInspector), false);
-        localizedStringsScriptElement.type = "text/javascript";
-        localizedStringsScriptElement.src = localizedStringsURL;
-        document.head.appendChild(localizedStringsScriptElement);
-    } else
-        WebInspector.loaded();
-
+    WebInspector.loaded();
     window.removeEventListener("DOMContentLoaded", windowLoaded, false);
     delete windowLoaded;
 };
