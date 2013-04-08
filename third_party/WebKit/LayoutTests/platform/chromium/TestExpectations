@@ -1853,9 +1853,6 @@ webkit.org/b/45991 [ Linux Win ] platform/chromium/virtual/gpu/canvas/philip/tes
 # Chromium does not support cancel for notifications permissions.
 webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html
 
-# HTML5 Geolocation API does not use window.clientInformation.
-crbug.com/11246 fast/dom/Window/window-properties-geolocation.html [ Skip ]
-
 crbug.com/46603 [ Release ] fast/frames/lots-of-iframes.html [ Pass Timeout ]
 crbug.com/46603 [ Win Linux Release ] fast/frames/lots-of-objects.html [ Pass Timeout ]
 crbug.com/46603 [ Mac Release ] fast/frames/lots-of-objects.html [ Pass Timeout Crash ]
