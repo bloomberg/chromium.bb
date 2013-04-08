@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/browser_view_renderer_impl.h"
+#include "android_webview/browser/gpu_memory_buffer_impl.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
@@ -42,6 +43,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 
 struct AwDrawSWFunctionTable;
+struct AwDrawGLFunctionTable;
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -178,6 +180,12 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
 void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
   BrowserViewRendererImpl::SetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
+}
+
+// static
+void SetAwDrawGLFunctionTable(JNIEnv* env, jclass, jint function_table) {
+  GpuMemoryBufferImpl::SetAwDrawGLFunctionTable(
+      reinterpret_cast<AwDrawGLFunctionTable*>(function_table));
 }
 
 // static

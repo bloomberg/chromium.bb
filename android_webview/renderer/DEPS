@@ -6,7 +6,9 @@ include_rules = [
   "+components/visitedlink/renderer",
 
   "+content/public/renderer",
- 
+
   "+third_party/WebKit/Source/WebKit/chromium/public",
   "+third_party/WebKit/Source/Platform/chromium/public",
+
+  "+ui/gl/gpu_memory_buffer.h",
 ]

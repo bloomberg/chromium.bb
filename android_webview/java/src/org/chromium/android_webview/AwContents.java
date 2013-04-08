@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -346,6 +346,10 @@ public class AwContents {
 
     public static void setAwDrawSWFunctionTable(int functionTablePointer) {
         nativeSetAwDrawSWFunctionTable(functionTablePointer);
+    }
+
+    public static void setAwDrawGLFunctionTable(int functionTablePointer) {
+        nativeSetAwDrawGLFunctionTable(functionTablePointer);
     }
 
     public static int getAwDrawGLFunction() {
@@ -1304,6 +1308,7 @@ public class AwContents {
             AwContentsClientBridge contentsClientBridge);
     private static native void nativeDestroy(int nativeAwContents);
     private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
+    private static native void nativeSetAwDrawGLFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
 
     private native int nativeGetWebContents(int nativeAwContents);

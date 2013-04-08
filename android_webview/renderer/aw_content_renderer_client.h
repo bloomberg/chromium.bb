@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,9 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
-#include "base/compiler_specific.h"
 #include "android_webview/renderer/aw_render_process_observer.h"
+#include "base/compiler_specific.h"
+#include "ui/gl/gpu_memory_buffer.h"
 
 namespace components {
 class VisitedLinkSlave;
@@ -42,6 +43,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
   virtual MessageLoop* OverrideCompositorMessageLoop() const OVERRIDE;
   virtual bool ShouldCreateCompositorInputHandler() const OVERRIDE;
+  virtual gfx::GpuMemoryBuffer::Create GetGpuMemoryBufferFactory() const;
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;

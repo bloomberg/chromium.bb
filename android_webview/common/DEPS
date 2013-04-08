@@ -1,4 +1,6 @@
 include_rules = [
   "-android_webview",
   "+android_webview/common",
+
+  "+ui/gl/gpu_memory_buffer.h",
 ]

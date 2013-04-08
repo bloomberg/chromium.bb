@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -126,6 +126,10 @@
         'browser/browser_view_renderer_impl.h',
         'browser/find_helper.cc',
         'browser/find_helper.h',
+        'browser/gpu_memory_buffer_factory_impl.cc',
+        'browser/gpu_memory_buffer_factory_impl.h',
+        'browser/gpu_memory_buffer_impl.cc',
+        'browser/gpu_memory_buffer_impl.h',
         'browser/icon_helper.cc',
         'browser/icon_helper.h',
         'browser/input_stream.h',
@@ -161,6 +165,8 @@
         'common/aw_resource.h',
         'common/aw_switches.cc',
         'common/aw_switches.h',
+        'common/gpu_memory_buffer_factory_proxy.cc',
+        'common/gpu_memory_buffer_factory_proxy.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
         'common/renderer_picture_map.cc',
