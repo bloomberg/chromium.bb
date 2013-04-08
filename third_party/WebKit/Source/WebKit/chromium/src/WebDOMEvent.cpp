@@ -206,18 +206,6 @@ bool WebDOMEvent::isXMLHttpRequestProgressEvent() const
     return m_private->hasInterface(eventNames().interfaceForXMLHttpRequestProgressEvent);
 }
 
-bool WebDOMEvent::isWebKitAnimationEvent() const
-{
-    ASSERT(m_private);
-    return m_private->hasInterface(eventNames().interfaceForWebKitAnimationEvent);
-}
-
-bool WebDOMEvent::isWebKitTransitionEvent() const
-{
-    ASSERT(m_private);
-    return m_private->hasInterface(eventNames().interfaceForWebKitTransitionEvent);
-}
-
 bool WebDOMEvent::isBeforeLoadEvent() const
 {
     ASSERT(m_private);

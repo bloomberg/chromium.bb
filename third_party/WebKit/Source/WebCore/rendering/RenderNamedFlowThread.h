@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
+class NamedFlow;
 class Node;
 class RenderNamedFlowThread;
-class WebKitNamedFlow;
 
 typedef ListHashSet<RenderNamedFlowThread*> RenderNamedFlowThreadList;
 typedef HashCountedSet<RenderNamedFlowThread*> RenderNamedFlowThreadCountedSet;
@@ -47,7 +47,7 @@ class RenderNamedFlowThread : public RenderFlowThread {
 public:
     virtual ~RenderNamedFlowThread();
 
-    static RenderNamedFlowThread* createAnonymous(Document*, PassRefPtr<WebKitNamedFlow>);
+    static RenderNamedFlowThread* createAnonymous(Document*, PassRefPtr<NamedFlow>);
 
     const AtomicString& flowThreadName() const;
 
@@ -80,7 +80,7 @@ protected:
     void resetMarkForDestruction();
 
 private:
-    RenderNamedFlowThread(PassRefPtr<WebKitNamedFlow>);
+    RenderNamedFlowThread(PassRefPtr<NamedFlow>);
 
     virtual const char* renderName() const OVERRIDE;
     virtual bool isRenderNamedFlowThread() const OVERRIDE { return true; }
@@ -119,7 +119,7 @@ private:
     RenderRegionList m_invalidRegionList;
 
     // The DOM Object that represents a named flow.
-    RefPtr<WebKitNamedFlow> m_namedFlow;
+    RefPtr<NamedFlow> m_namedFlow;
 
     Timer<RenderNamedFlowThread> m_regionLayoutUpdateEventTimer;
 };

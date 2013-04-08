@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,55 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "config.h"
-#include "WebKitAnimationEvent.h"
+[
+    CustomConstructor,
+    ConstructorParameters=2,
+    InterfaceName=WebKitPoint,
+    ImplementationLacksVTable
+] interface DOMPoint {
+    attribute float x;
+    attribute float y;
+};
 
-#include "EventNames.h"
-
-namespace WebCore {
-
-WebKitAnimationEventInit::WebKitAnimationEventInit()
-    : animationName()
-    , elapsedTime(0.0)
-{
-}
-
-WebKitAnimationEvent::WebKitAnimationEvent()
-    : m_elapsedTime(0.0)
-{
-}
-
-WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const WebKitAnimationEventInit& initializer)
-    : Event(type, initializer)
-    , m_animationName(initializer.animationName)
-    , m_elapsedTime(initializer.elapsedTime)
-{
-}
-
-WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
-    : Event(type, true, true)
-    , m_animationName(animationName)
-    , m_elapsedTime(elapsedTime)
-{
-}
-
-WebKitAnimationEvent::~WebKitAnimationEvent()
-{
-}
-
-const String& WebKitAnimationEvent::animationName() const
-{
-    return m_animationName;
-}
-
-double WebKitAnimationEvent::elapsedTime() const
-{
-    return m_elapsedTime;
-}
-
-const AtomicString& WebKitAnimationEvent::interfaceName() const
-{
-    return eventNames().interfaceForWebKitAnimationEvent;
-}
-
-} // namespace WebCore

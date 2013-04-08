@@ -31,6 +31,7 @@
 
 #include "AnimationBase.h"
 #include "AnimationControllerPrivate.h"
+#include "AnimationEvent.h"
 #include "CSSParser.h"
 #include "CSSPropertyAnimation.h"
 #include "CompositeAnimation.h"
@@ -40,8 +41,6 @@
 #include "PseudoElement.h"
 #include "RenderView.h"
 #include "TransitionEvent.h"
-#include "WebKitAnimationEvent.h"
-#include "WebKitTransitionEvent.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/UnusedParam.h>
 
@@ -174,7 +173,7 @@ void AnimationControllerPrivate::fireEventsAndUpdateStyle()
         if (it->eventType == eventNames().transitionendEvent)
             element->dispatchEvent(TransitionEvent::create(it->eventType, it->name, it->elapsedTime, PseudoElement::pseudoElementNameForEvents(element->pseudoId())));
         else
-            element->dispatchEvent(WebKitAnimationEvent::create(it->eventType, it->name, it->elapsedTime));
+            element->dispatchEvent(AnimationEvent::create(it->eventType, it->name, it->elapsedTime));
     }
 
     // call setChanged on all the elements

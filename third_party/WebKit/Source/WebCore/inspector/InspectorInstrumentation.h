@@ -130,9 +130,9 @@ public:
     static void mediaQueryResultChanged(Document*);
     static void didPushShadowRoot(Element* host, ShadowRoot*);
     static void willPopShadowRoot(Element* host, ShadowRoot*);
-    static void didCreateNamedFlow(Document*, WebKitNamedFlow*);
-    static void willRemoveNamedFlow(Document*, WebKitNamedFlow*);
-    static void didUpdateRegionLayout(Document*, WebKitNamedFlow*);
+    static void didCreateNamedFlow(Document*, NamedFlow*);
+    static void willRemoveNamedFlow(Document*, NamedFlow*);
+    static void didUpdateRegionLayout(Document*, NamedFlow*);
 
     static void mouseDidMoveOverElement(Page*, const HitTestResult&, unsigned modifierFlags);
     static bool handleMousePress(Page*);
@@ -312,9 +312,9 @@ private:
     static void mediaQueryResultChangedImpl(InstrumentingAgents*);
     static void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
     static void willPopShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
-    static void didCreateNamedFlowImpl(InstrumentingAgents*, Document*, WebKitNamedFlow*);
-    static void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, WebKitNamedFlow*);
-    static void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, WebKitNamedFlow*);
+    static void didCreateNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
+    static void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
+    static void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
 
     static void mouseDidMoveOverElementImpl(InstrumentingAgents*, const HitTestResult&, unsigned modifierFlags);
     static bool handleTouchEventImpl(InstrumentingAgents*, Node*);
@@ -582,21 +582,21 @@ inline void InspectorInstrumentation::willPopShadowRoot(Element* host, ShadowRoo
         willPopShadowRootImpl(instrumentingAgents, host, root);
 }
 
-inline void InspectorInstrumentation::didCreateNamedFlow(Document* document, WebKitNamedFlow* namedFlow)
+inline void InspectorInstrumentation::didCreateNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didCreateNamedFlowImpl(instrumentingAgents, document, namedFlow);
 }
 
-inline void InspectorInstrumentation::willRemoveNamedFlow(Document* document, WebKitNamedFlow* namedFlow)
+inline void InspectorInstrumentation::willRemoveNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         willRemoveNamedFlowImpl(instrumentingAgents, document, namedFlow);
 }
 
-inline void InspectorInstrumentation::didUpdateRegionLayout(Document* document, WebKitNamedFlow* namedFlow)
+inline void InspectorInstrumentation::didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))

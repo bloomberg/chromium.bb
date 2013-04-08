@@ -29,14 +29,14 @@
 #include "config.h"
 #include "DOMNamedFlowCollection.h"
 
+#include "NamedFlow.h"
 #include "NamedFlowCollection.h"
-#include "WebKitNamedFlow.h"
 
 namespace WebCore {
 
-DOMNamedFlowCollection::DOMNamedFlowCollection(const Vector<WebKitNamedFlow*>& namedFlows)
+DOMNamedFlowCollection::DOMNamedFlowCollection(const Vector<NamedFlow*>& namedFlows)
 {
-    for (Vector<WebKitNamedFlow*>::const_iterator it = namedFlows.begin(); it != namedFlows.end(); ++it)
+    for (Vector<NamedFlow*>::const_iterator it = namedFlows.begin(); it != namedFlows.end(); ++it)
         m_namedFlows.add(*it);
 }
 
@@ -45,7 +45,7 @@ unsigned long DOMNamedFlowCollection::length() const
     return m_namedFlows.size();
 }
 
-PassRefPtr<WebKitNamedFlow> DOMNamedFlowCollection::item(unsigned long index) const
+PassRefPtr<NamedFlow> DOMNamedFlowCollection::item(unsigned long index) const
 {
     if (index >= static_cast<unsigned long>(m_namedFlows.size()))
         return 0;
@@ -55,7 +55,7 @@ PassRefPtr<WebKitNamedFlow> DOMNamedFlowCollection::item(unsigned long index) co
     return *it;
 }
 
-PassRefPtr<WebKitNamedFlow> DOMNamedFlowCollection::namedItem(const AtomicString& name) const
+PassRefPtr<NamedFlow> DOMNamedFlowCollection::namedItem(const AtomicString& name) const
 {
     DOMNamedFlowSet::const_iterator it = m_namedFlows.find<String, DOMNamedFlowHashTranslator>(name);
     if (it != m_namedFlows.end())
@@ -71,15 +71,15 @@ bool DOMNamedFlowCollection::hasNamedItem(const AtomicString& name) const
 // The HashFunctions object used by the HashSet to compare between RefPtr<NamedFlows>.
 // It is safe to set safeToCompareToEmptyOrDeleted because the HashSet will never contain null pointers or deleted values.
 struct DOMNamedFlowCollection::DOMNamedFlowHashFunctions {
-    static unsigned hash(PassRefPtr<WebKitNamedFlow> key) { return DefaultHash<String>::Hash::hash(key->name()); }
-    static bool equal(PassRefPtr<WebKitNamedFlow> a, PassRefPtr<WebKitNamedFlow> b) { return a->name() == b->name(); }
+    static unsigned hash(PassRefPtr<NamedFlow> key) { return DefaultHash<String>::Hash::hash(key->name()); }
+    static bool equal(PassRefPtr<NamedFlow> a, PassRefPtr<NamedFlow> b) { return a->name() == b->name(); }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
 // The HashTranslator is used to lookup a RefPtr<NamedFlow> in the set using a name.
 struct DOMNamedFlowCollection::DOMNamedFlowHashTranslator {
     static unsigned hash(const String& key) { return DefaultHash<String>::Hash::hash(key); }
-    static bool equal(PassRefPtr<WebKitNamedFlow> a, const String& b) { return a->name() == b; }
+    static bool equal(PassRefPtr<NamedFlow> a, const String& b) { return a->name() == b; }
 };
 } // namespace WebCore
 

@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "WebKitNamedFlow.h"
+#include "NamedFlow.h"
 
 #include "EventNames.h"
 #include "NamedFlowCollection.h"
@@ -40,30 +40,30 @@
 
 namespace WebCore {
 
-WebKitNamedFlow::WebKitNamedFlow(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName)
+NamedFlow::NamedFlow(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName)
     : m_flowThreadName(flowThreadName)
     , m_flowManager(manager)
     , m_parentFlowThread(0)
 {
 }
 
-WebKitNamedFlow::~WebKitNamedFlow()
+NamedFlow::~NamedFlow()
 {
     // The named flow is not "strong" referenced from anywhere at this time so it shouldn't be reused if the named flow is recreated.
     m_flowManager->discardNamedFlow(this);
 }
 
-PassRefPtr<WebKitNamedFlow> WebKitNamedFlow::create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName)
+PassRefPtr<NamedFlow> NamedFlow::create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName)
 {
-    return adoptRef(new WebKitNamedFlow(manager, flowThreadName));
+    return adoptRef(new NamedFlow(manager, flowThreadName));
 }
 
-const AtomicString& WebKitNamedFlow::name() const
+const AtomicString& NamedFlow::name() const
 {
     return m_flowThreadName;
 }
 
-bool WebKitNamedFlow::overset() const
+bool NamedFlow::overset() const
 {
     if (m_flowManager->document())
         m_flowManager->document()->updateLayoutIgnorePendingStylesheets();
@@ -82,12 +82,12 @@ static inline bool inFlowThread(RenderObject* renderer, RenderNamedFlowThread* f
         return true;
     if (renderer->flowThreadState() != RenderObject::InsideInFlowThread)
         return false;
-    
+
     // An in-flow flow thread can be nested inside an out-of-flow one, so we have to recur up to check.
     return inFlowThread(currentFlowThread->containingBlock(), flowThread);
 }
 
-int WebKitNamedFlow::firstEmptyRegionIndex() const
+int NamedFlow::firstEmptyRegionIndex() const
 {
     if (m_flowManager->document())
         m_flowManager->document()->updateLayoutIgnorePendingStylesheets();
@@ -107,7 +107,7 @@ int WebKitNamedFlow::firstEmptyRegionIndex() const
     return -1;
 }
 
-PassRefPtr<NodeList> WebKitNamedFlow::getRegionsByContent(Node* contentNode)
+PassRefPtr<NodeList> NamedFlow::getRegionsByContent(Node* contentNode)
 {
     Vector<RefPtr<Node> > regionNodes;
 
@@ -137,7 +137,7 @@ PassRefPtr<NodeList> WebKitNamedFlow::getRegionsByContent(Node* contentNode)
     return StaticNodeList::adopt(regionNodes);
 }
 
-PassRefPtr<NodeList> WebKitNamedFlow::getRegions()
+PassRefPtr<NodeList> NamedFlow::getRegions()
 {
     Vector<RefPtr<Node> > regionNodes;
 
@@ -161,7 +161,7 @@ PassRefPtr<NodeList> WebKitNamedFlow::getRegions()
     return StaticNodeList::adopt(regionNodes);
 }
 
-PassRefPtr<NodeList> WebKitNamedFlow::getContent()
+PassRefPtr<NodeList> NamedFlow::getContent()
 {
     Vector<RefPtr<Node> > contentNodes;
 
@@ -183,7 +183,7 @@ PassRefPtr<NodeList> WebKitNamedFlow::getContent()
     return StaticNodeList::adopt(contentNodes);
 }
 
-void WebKitNamedFlow::setRenderer(RenderNamedFlowThread* parentFlowThread)
+void NamedFlow::setRenderer(RenderNamedFlowThread* parentFlowThread)
 {
     // The named flow can either go from a no_renderer->renderer or renderer->no_renderer state; anything else could indicate a bug.
     ASSERT((!m_parentFlowThread && parentFlowThread) || (m_parentFlowThread && !parentFlowThread));
@@ -192,17 +192,17 @@ void WebKitNamedFlow::setRenderer(RenderNamedFlowThread* parentFlowThread)
     m_parentFlowThread = parentFlowThread;
 }
 
-EventTargetData* WebKitNamedFlow::eventTargetData()
+EventTargetData* NamedFlow::eventTargetData()
 {
     return &m_eventTargetData;
 }
 
-EventTargetData* WebKitNamedFlow::ensureEventTargetData()
+EventTargetData* NamedFlow::ensureEventTargetData()
 {
     return &m_eventTargetData;
 }
 
-void WebKitNamedFlow::dispatchRegionLayoutUpdateEvent()
+void NamedFlow::dispatchRegionLayoutUpdateEvent()
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
@@ -215,17 +215,17 @@ void WebKitNamedFlow::dispatchRegionLayoutUpdateEvent()
     dispatchEvent(event);
 }
 
-const AtomicString& WebKitNamedFlow::interfaceName() const
+const AtomicString& NamedFlow::interfaceName() const
 {
-    return eventNames().interfaceForWebKitNamedFlow;
+    return eventNames().interfaceForNamedFlow;
 }
 
-ScriptExecutionContext* WebKitNamedFlow::scriptExecutionContext() const
+ScriptExecutionContext* NamedFlow::scriptExecutionContext() const
 {
     return m_flowManager->document();
 }
 
-Node* WebKitNamedFlow::ownerNode() const
+Node* NamedFlow::ownerNode() const
 {
     return m_flowManager->document();
 }

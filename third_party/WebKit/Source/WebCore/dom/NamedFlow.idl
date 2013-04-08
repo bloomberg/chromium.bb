@@ -29,15 +29,16 @@
 
 [
     EventTarget,
+    InterfaceName=WebKitNamedFlow,
     GenerateIsReachable=ImplOwnerNodeRoot
-] interface WebKitNamedFlow {
+] interface NamedFlow {
     readonly attribute DOMString name;
     readonly attribute boolean overset;
     readonly attribute long firstEmptyRegionIndex;
     NodeList getRegionsByContent(Node contentNode);
     NodeList getRegions();
     NodeList getContent();
-    
+
     // EventTarget interface
     void addEventListener(DOMString type, 
                           EventListener listener, 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,14 +20,45 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    ConstructorTemplate=Event
-] interface WebKitTransitionEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString propertyName;
-    [InitializedByEventConstructor] readonly attribute double elapsedTime;
-    [InitializedByEventConstructor] readonly attribute DOMString pseudoElement;
+#ifndef DOMPoint_h
+#define DOMPoint_h
+
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+
+namespace WebCore {
+
+class DOMPoint : public RefCounted<DOMPoint> {
+public:
+
+    static PassRefPtr<DOMPoint> create()
+    {
+        return adoptRef(new DOMPoint());
+    }
+    static PassRefPtr<DOMPoint> create(float x, float y)
+    {
+        return adoptRef(new DOMPoint(x, y));
+    }
+
+    float x() const { return m_x; }
+    float y() const { return m_y; }
+
+    void setX(float x) { m_x = x; }
+    void setY(float y) { m_y = y; }
+
+private:
+    DOMPoint(float x=0, float y=0)
+        : m_x(x)
+        , m_y(y)
+    {
+    }
+
+    float m_x, m_y;
 };
 
+} // namespace WebCore
+
+#endif // DOMPoint_h

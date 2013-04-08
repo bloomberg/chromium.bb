@@ -18,8 +18,8 @@
  * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
@@ -119,7 +119,7 @@
 #endif
 
 #if ENABLE(TOUCH_ADJUSTMENT)
-#include "WebKitPoint.h"
+#include "DOMPoint.h"
 #endif
 
 #if ENABLE(MOUSE_CURSOR_SCALE)
@@ -1196,7 +1196,7 @@ void Internals::setDelegatesScrolling(bool enabled, Document* document, Exceptio
 }
 
 #if ENABLE(TOUCH_ADJUSTMENT)
-PassRefPtr<WebKitPoint> Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)
+PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)
 {
     if (!document || !document->frame()) {
         ec = INVALID_ACCESS_ERR;
@@ -1211,7 +1211,7 @@ PassRefPtr<WebKitPoint> Internals::touchPositionAdjustedToBestClickableNode(long
 
     bool foundNode = document->frame()->eventHandler()->bestClickableNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     if (foundNode)
-        return WebKitPoint::create(adjustedPoint.x(), adjustedPoint.y());
+        return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
     return 0;
 }
@@ -1232,7 +1232,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
     return targetNode;
 }
 
-PassRefPtr<WebKitPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)
+PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)
 {
     if (!document || !document->frame()) {
         ec = INVALID_ACCESS_ERR;
@@ -1247,9 +1247,9 @@ PassRefPtr<WebKitPoint> Internals::touchPositionAdjustedToBestContextMenuNode(lo
 
     bool foundNode = document->frame()->eventHandler()->bestContextMenuNodeForTouchPoint(point, radius, adjustedPoint, targetNode);
     if (foundNode)
-        return WebKitPoint::create(adjustedPoint.x(), adjustedPoint.y());
+        return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
-    return WebKitPoint::create(x, y);
+    return DOMPoint::create(x, y);
 }
 
 Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)

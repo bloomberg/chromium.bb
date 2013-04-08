@@ -42,7 +42,6 @@
 #include "RenderRegion.h"
 #include "RenderView.h"
 #include "TransformState.h"
-#include "WebKitNamedFlow.h"
 
 namespace WebCore {
 

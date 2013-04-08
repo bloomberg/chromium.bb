@@ -35,7 +35,7 @@
 #include "Event.h"
 #include "EventException.h"
 #include "InspectorInstrumentation.h"
-#include "WebKitTransitionEvent.h"
+#include "TransitionEvent.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
@@ -164,8 +164,8 @@ void EventTarget::uncaughtExceptionInEventHandler()
 static PassRefPtr<Event> createMatchingPrefixedEvent(const Event* event)
 {
     if (event->type() == eventNames().transitionendEvent) {
-        const WebKitTransitionEvent* transitionEvent = static_cast<const WebKitTransitionEvent*>(event);
-        RefPtr<Event> prefixedEvent = WebKitTransitionEvent::create(eventNames().webkitTransitionEndEvent, transitionEvent->propertyName(), transitionEvent->elapsedTime(), transitionEvent->pseudoElement());
+        const TransitionEvent* transitionEvent = static_cast<const TransitionEvent*>(event);
+        RefPtr<Event> prefixedEvent = TransitionEvent::create(eventNames().webkitTransitionEndEvent, transitionEvent->propertyName(), transitionEvent->elapsedTime(), transitionEvent->pseudoElement());
         prefixedEvent->setTarget(event->target());
         prefixedEvent->setCurrentTarget(event->currentTarget());
         prefixedEvent->setEventPhase(event->eventPhase());

@@ -102,10 +102,10 @@ public:
     virtual void disable(ErrorString*);
     void reset();
     void mediaQueryResultChanged();
-    void didCreateNamedFlow(Document*, WebKitNamedFlow*);
-    void willRemoveNamedFlow(Document*, WebKitNamedFlow*);
-    void didUpdateRegionLayout(Document*, WebKitNamedFlow*);
-    void regionLayoutUpdated(WebKitNamedFlow*, int documentNodeId);
+    void didCreateNamedFlow(Document*, NamedFlow*);
+    void willRemoveNamedFlow(Document*, NamedFlow*);
+    void didUpdateRegionLayout(Document*, NamedFlow*);
+    void regionLayoutUpdated(NamedFlow*, int documentNodeId);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&);
     virtual void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes);
@@ -163,7 +163,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, StyleResolver*, Element*);
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > buildArrayForRegions(ErrorString*, PassRefPtr<NodeList>, int documentNodeId);
-    PassRefPtr<TypeBuilder::CSS::NamedFlow> buildObjectForNamedFlow(ErrorString*, WebKitNamedFlow*, int documentNodeId);
+    PassRefPtr<TypeBuilder::CSS::NamedFlow> buildObjectForNamedFlow(ErrorString*, NamedFlow*, int documentNodeId);
 
     // InspectorDOMAgent::DOMListener implementation
     virtual void didRemoveDocument(Document*);

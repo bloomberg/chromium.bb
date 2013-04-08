@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebKitNamedFlow_h
-#define WebKitNamedFlow_h
+#ifndef NamedFlow_h
+#define NamedFlow_h
 
 #include "EventTarget.h"
 
@@ -46,11 +46,11 @@ class NodeList;
 class RenderNamedFlowThread;
 class ScriptExecutionContext;
 
-class WebKitNamedFlow : public RefCounted<WebKitNamedFlow>, public EventTarget {
+class NamedFlow : public RefCounted<NamedFlow>, public EventTarget {
 public:
-    static PassRefPtr<WebKitNamedFlow> create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName);
+    static PassRefPtr<NamedFlow> create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName);
 
-    ~WebKitNamedFlow();
+    ~NamedFlow();
 
     const AtomicString& name() const;
     bool overset() const;
@@ -59,8 +59,8 @@ public:
     PassRefPtr<NodeList> getRegions();
     PassRefPtr<NodeList> getContent();
 
-    using RefCounted<WebKitNamedFlow>::ref;
-    using RefCounted<WebKitNamedFlow>::deref;
+    using RefCounted<NamedFlow>::ref;
+    using RefCounted<NamedFlow>::deref;
 
     virtual const AtomicString& interfaceName() const;
     virtual ScriptExecutionContext* scriptExecutionContext() const;
@@ -81,7 +81,7 @@ public:
     void dispatchRegionLayoutUpdateEvent();
 
 private:
-    WebKitNamedFlow(PassRefPtr<NamedFlowCollection>, const AtomicString&);
+    NamedFlow(PassRefPtr<NamedFlowCollection>, const AtomicString&);
 
     // EventTarget implementation.
     virtual void refEventTarget() { ref(); }

@@ -58,6 +58,7 @@ namespace WebCore {
     class MediaSource;
     class MediaStream;
     class MessagePort;
+    class NamedFlow;
     class Node;
     class Notification;
     class SVGElementInstance;
@@ -68,7 +69,6 @@ namespace WebCore {
     class TextTrack;
     class TextTrackCue;
     class WebSocket;
-    class WebKitNamedFlow;
     class Worker;
     class XMLHttpRequest;
     class XMLHttpRequestUpload;

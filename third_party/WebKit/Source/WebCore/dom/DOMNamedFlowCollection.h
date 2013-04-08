@@ -38,18 +38,18 @@
 namespace WebCore {
 
 class Document;
-class WebKitNamedFlow;
+class NamedFlow;
 
 class DOMNamedFlowCollection : public RefCounted<DOMNamedFlowCollection> {
 public:
-    static PassRefPtr<DOMNamedFlowCollection> create(const Vector<WebKitNamedFlow*>& namedFlows)
+    static PassRefPtr<DOMNamedFlowCollection> create(const Vector<NamedFlow*>& namedFlows)
     {
         return adoptRef(new DOMNamedFlowCollection(namedFlows));
     }
 
     unsigned long length() const;
-    PassRefPtr<WebKitNamedFlow> item(unsigned long index) const;
-    PassRefPtr<WebKitNamedFlow> namedItem(const AtomicString& name) const;
+    PassRefPtr<NamedFlow> item(unsigned long index) const;
+    PassRefPtr<NamedFlow> namedItem(const AtomicString& name) const;
 
     bool hasNamedItem(const AtomicString& name) const;
 
@@ -57,8 +57,8 @@ private:
     struct DOMNamedFlowHashFunctions;
     struct DOMNamedFlowHashTranslator;
 
-    typedef ListHashSet<RefPtr<WebKitNamedFlow>, 1, DOMNamedFlowHashFunctions> DOMNamedFlowSet;
-    explicit DOMNamedFlowCollection(const Vector<WebKitNamedFlow*>&);
+    typedef ListHashSet<RefPtr<NamedFlow>, 1, DOMNamedFlowHashFunctions> DOMNamedFlowSet;
+    explicit DOMNamedFlowCollection(const Vector<NamedFlow*>&);
     DOMNamedFlowSet m_namedFlows;
 };
 

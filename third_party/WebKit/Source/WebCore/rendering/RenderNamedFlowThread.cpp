@@ -30,6 +30,7 @@
 #include "FlowThreadController.h"
 #include "InlineTextBox.h"
 #include "InspectorInstrumentation.h"
+#include "NamedFlow.h"
 #include "NodeTraversal.h"
 #include "Position.h"
 #include "RenderInline.h"
@@ -37,11 +38,10 @@
 #include "RenderText.h"
 #include "RenderView.h"
 #include "Text.h"
-#include "WebKitNamedFlow.h"
 
 namespace WebCore {
 
-RenderNamedFlowThread* RenderNamedFlowThread::createAnonymous(Document* document, PassRefPtr<WebKitNamedFlow> namedFlow)
+RenderNamedFlowThread* RenderNamedFlowThread::createAnonymous(Document* document, PassRefPtr<NamedFlow> namedFlow)
 {
     ASSERT(document->cssRegionsEnabled());
     RenderNamedFlowThread* renderer = new (document->renderArena()) RenderNamedFlowThread(namedFlow);
@@ -49,7 +49,7 @@ RenderNamedFlowThread* RenderNamedFlowThread::createAnonymous(Document* document
     return renderer;
 }
 
-RenderNamedFlowThread::RenderNamedFlowThread(PassRefPtr<WebKitNamedFlow> namedFlow)
+RenderNamedFlowThread::RenderNamedFlowThread(PassRefPtr<NamedFlow> namedFlow)
     : m_namedFlow(namedFlow)
     , m_regionLayoutUpdateEventTimer(this, &RenderNamedFlowThread::regionLayoutUpdateEventTimerFired)
 {
@@ -418,7 +418,7 @@ void RenderNamedFlowThread::regionLayoutUpdateEventTimerFired(Timer<RenderNamedF
 
 void RenderNamedFlowThread::setMarkForDestruction()
 {
-    if (m_namedFlow->flowState() == WebKitNamedFlow::FlowStateNull)
+    if (m_namedFlow->flowState() == NamedFlow::FlowStateNull)
         return;
 
     m_namedFlow->setRenderer(0);
@@ -428,7 +428,7 @@ void RenderNamedFlowThread::setMarkForDestruction()
 
 void RenderNamedFlowThread::resetMarkForDestruction()
 {
-    if (m_namedFlow->flowState() == WebKitNamedFlow::FlowStateCreated)
+    if (m_namedFlow->flowState() == NamedFlow::FlowStateCreated)
         return;
 
     m_namedFlow->setRenderer(this);
@@ -437,7 +437,7 @@ void RenderNamedFlowThread::resetMarkForDestruction()
 bool RenderNamedFlowThread::isMarkedForDestruction() const
 {
     // Flow threads in the "NULL" state can be destroyed.
-    return m_namedFlow->flowState() == WebKitNamedFlow::FlowStateNull;
+    return m_namedFlow->flowState() == NamedFlow::FlowStateNull;
 }
 
 static bool isContainedInNodes(Vector<Node*> others, Node* node)

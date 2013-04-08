@@ -20,64 +20,58 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
-#include "WebKitTransitionEvent.h"
+#include "AnimationEvent.h"
 
 #include "EventNames.h"
 
 namespace WebCore {
 
-WebKitTransitionEventInit::WebKitTransitionEventInit()
-    : elapsedTime(0)
+AnimationEventInit::AnimationEventInit()
+    : animationName()
+    , elapsedTime(0.0)
 {
 }
 
-WebKitTransitionEvent::WebKitTransitionEvent()
-    : m_elapsedTime(0)
+AnimationEvent::AnimationEvent()
+    : m_elapsedTime(0.0)
 {
 }
 
-WebKitTransitionEvent::WebKitTransitionEvent(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
-    : Event(type, true, true)
-    , m_propertyName(propertyName)
-    , m_elapsedTime(elapsedTime)
-    , m_pseudoElement(pseudoElement)
-{
-}
-
-WebKitTransitionEvent::WebKitTransitionEvent(const AtomicString& type, const WebKitTransitionEventInit& initializer)
+AnimationEvent::AnimationEvent(const AtomicString& type, const AnimationEventInit& initializer)
     : Event(type, initializer)
-    , m_propertyName(initializer.propertyName)
+    , m_animationName(initializer.animationName)
     , m_elapsedTime(initializer.elapsedTime)
-    , m_pseudoElement(initializer.pseudoElement)
 {
 }
 
-WebKitTransitionEvent::~WebKitTransitionEvent()
+AnimationEvent::AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
+    : Event(type, true, true)
+    , m_animationName(animationName)
+    , m_elapsedTime(elapsedTime)
 {
 }
 
-const String& WebKitTransitionEvent::propertyName() const
+AnimationEvent::~AnimationEvent()
 {
-    return m_propertyName;
 }
 
-double WebKitTransitionEvent::elapsedTime() const
+const String& AnimationEvent::animationName() const
+{
+    return m_animationName;
+}
+
+double AnimationEvent::elapsedTime() const
 {
     return m_elapsedTime;
 }
 
-const String& WebKitTransitionEvent::pseudoElement() const
+const AtomicString& AnimationEvent::interfaceName() const
 {
-    return m_pseudoElement;
-}
-
-const AtomicString& WebKitTransitionEvent::interfaceName() const
-{
-    return eventNames().interfaceForWebKitTransitionEvent;
+    return eventNames().interfaceForAnimationEvent;
 }
 
 } // namespace WebCore

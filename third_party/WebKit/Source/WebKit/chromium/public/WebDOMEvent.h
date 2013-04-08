@@ -89,8 +89,6 @@ public:
     WEBKIT_EXPORT bool isPopStateEvent() const;
     WEBKIT_EXPORT bool isProgressEvent() const;
     WEBKIT_EXPORT bool isXMLHttpRequestProgressEvent() const;
-    WEBKIT_EXPORT bool isWebKitAnimationEvent() const;
-    WEBKIT_EXPORT bool isWebKitTransitionEvent() const;
     WEBKIT_EXPORT bool isBeforeLoadEvent() const;
 
 #if WEBKIT_IMPLEMENTATION

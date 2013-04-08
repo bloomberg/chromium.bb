@@ -37,7 +37,7 @@ SVGElementInstance conditional=SVG
 TextTrack conditional=VIDEO_TRACK
 TextTrackCue conditional=VIDEO_TRACK
 TextTrackList conditional=VIDEO_TRACK
-WebKitNamedFlow
+WebKitNamedFlow interfaceName=NamedFlow
 WebSocket
 Worker
 XMLHttpRequest

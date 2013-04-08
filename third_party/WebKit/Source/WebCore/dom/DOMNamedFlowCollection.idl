@@ -36,6 +36,6 @@
     ImplementationLacksVTable
 ] interface DOMNamedFlowCollection {
     readonly attribute unsigned long length;
-    WebKitNamedFlow item(unsigned long index);
-    WebKitNamedFlow namedItem(DOMString name);
+    NamedFlow item(unsigned long index);
+    NamedFlow namedItem(DOMString name);
 };

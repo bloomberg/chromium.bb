@@ -41,6 +41,7 @@ namespace WebCore {
     class Console;
     class Crypto;
     class DOMApplicationCache;
+    class DOMPoint;
     class DOMSelection;
     class DOMURL;
     class DOMWindowProperty;
@@ -69,7 +70,6 @@ namespace WebCore {
     class SerializedScriptValue;
     class Storage;
     class StyleMedia;
-    class WebKitPoint;
     class DOMWindowCSS;
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
@@ -230,8 +230,8 @@ namespace WebCore {
         PassRefPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt, bool authorOnly = true) const;
         double devicePixelRatio() const;
 
-        PassRefPtr<WebKitPoint> webkitConvertPointFromPageToNode(Node*, const WebKitPoint*) const;
-        PassRefPtr<WebKitPoint> webkitConvertPointFromNodeToPage(Node*, const WebKitPoint*) const;        
+        PassRefPtr<DOMPoint> webkitConvertPointFromPageToNode(Node*, const DOMPoint*) const;
+        PassRefPtr<DOMPoint> webkitConvertPointFromNodeToPage(Node*, const DOMPoint*) const;
 
         Console* console() const;
         PageConsole* pageConsole() const;

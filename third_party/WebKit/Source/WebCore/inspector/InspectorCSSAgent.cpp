@@ -44,6 +44,7 @@
 #include "InspectorTypeBuilder.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
+#include "NamedFlow.h"
 #include "NamedFlowCollection.h"
 #include "Node.h"
 #include "NodeList.h"
@@ -54,7 +55,6 @@
 #include "StyleResolver.h"
 #include "StyleRule.h"
 #include "StyleSheetList.h"
-#include "WebKitNamedFlow.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>
@@ -230,15 +230,15 @@ PassRefPtr<TypeBuilder::CSS::SelectorProfile> SelectorProfile::toInspectorObject
 class UpdateRegionLayoutTask {
 public:
     UpdateRegionLayoutTask(InspectorCSSAgent*);
-    void scheduleFor(WebKitNamedFlow*, int documentNodeId);
-    void unschedule(WebKitNamedFlow*);
+    void scheduleFor(NamedFlow*, int documentNodeId);
+    void unschedule(NamedFlow*);
     void reset();
     void onTimer(Timer<UpdateRegionLayoutTask>*);
 
 private:
     InspectorCSSAgent* m_cssAgent;
     Timer<UpdateRegionLayoutTask> m_timer;
-    HashMap<WebKitNamedFlow*, int> m_namedFlows;
+    HashMap<NamedFlow*, int> m_namedFlows;
 };
 
 UpdateRegionLayoutTask::UpdateRegionLayoutTask(InspectorCSSAgent* cssAgent)
@@ -247,7 +247,7 @@ UpdateRegionLayoutTask::UpdateRegionLayoutTask(InspectorCSSAgent* cssAgent)
 {
 }
 
-void UpdateRegionLayoutTask::scheduleFor(WebKitNamedFlow* namedFlow, int documentNodeId)
+void UpdateRegionLayoutTask::scheduleFor(NamedFlow* namedFlow, int documentNodeId)
 {
     m_namedFlows.add(namedFlow, documentNodeId);
 
@@ -255,7 +255,7 @@ void UpdateRegionLayoutTask::scheduleFor(WebKitNamedFlow* namedFlow, int documen
         m_timer.startOneShot(0);
 }
 
-void UpdateRegionLayoutTask::unschedule(WebKitNamedFlow* namedFlow)
+void UpdateRegionLayoutTask::unschedule(NamedFlow* namedFlow)
 {
     m_namedFlows.remove(namedFlow);
 }
@@ -269,13 +269,13 @@ void UpdateRegionLayoutTask::reset()
 void UpdateRegionLayoutTask::onTimer(Timer<UpdateRegionLayoutTask>*)
 {
     // The timer is stopped on m_cssAgent destruction, so this method will never be called after m_cssAgent has been destroyed.
-    Vector<std::pair<WebKitNamedFlow*, int> > namedFlows;
+    Vector<std::pair<NamedFlow*, int> > namedFlows;
 
-    for (HashMap<WebKitNamedFlow*, int>::iterator it = m_namedFlows.begin(), end = m_namedFlows.end(); it != end; ++it)
+    for (HashMap<NamedFlow*, int>::iterator it = m_namedFlows.begin(), end = m_namedFlows.end(); it != end; ++it)
         namedFlows.append(std::make_pair(it->key, it->value));
 
     for (unsigned i = 0, size = namedFlows.size(); i < size; ++i) {
-        WebKitNamedFlow* namedFlow = namedFlows.at(i).first;
+        NamedFlow* namedFlow = namedFlows.at(i).first;
         int documentNodeId = namedFlows.at(i).second;
 
         if (m_namedFlows.contains(namedFlow)) {
@@ -606,7 +606,7 @@ void InspectorCSSAgent::mediaQueryResultChanged()
         m_frontend->mediaQueryResultChanged();
 }
 
-void InspectorCSSAgent::didCreateNamedFlow(Document* document, WebKitNamedFlow* namedFlow)
+void InspectorCSSAgent::didCreateNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     int documentNodeId = documentNodeWithRequestedFlowsId(document);
     if (!documentNodeId)
@@ -616,7 +616,7 @@ void InspectorCSSAgent::didCreateNamedFlow(Document* document, WebKitNamedFlow* 
     m_frontend->namedFlowCreated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
 
-void InspectorCSSAgent::willRemoveNamedFlow(Document* document, WebKitNamedFlow* namedFlow)
+void InspectorCSSAgent::willRemoveNamedFlow(Document* document, NamedFlow* namedFlow)
 {
     int documentNodeId = documentNodeWithRequestedFlowsId(document);
     if (!documentNodeId)
@@ -628,7 +628,7 @@ void InspectorCSSAgent::willRemoveNamedFlow(Document* document, WebKitNamedFlow*
     m_frontend->namedFlowRemoved(documentNodeId, namedFlow->name().string());
 }
 
-void InspectorCSSAgent::didUpdateRegionLayout(Document* document, WebKitNamedFlow* namedFlow)
+void InspectorCSSAgent::didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
 {
     int documentNodeId = documentNodeWithRequestedFlowsId(document);
     if (!documentNodeId)
@@ -639,13 +639,13 @@ void InspectorCSSAgent::didUpdateRegionLayout(Document* document, WebKitNamedFlo
     m_updateRegionLayoutTask->scheduleFor(namedFlow, documentNodeId);
 }
 
-void InspectorCSSAgent::regionLayoutUpdated(WebKitNamedFlow* namedFlow, int documentNodeId)
+void InspectorCSSAgent::regionLayoutUpdated(NamedFlow* namedFlow, int documentNodeId)
 {
-    if (namedFlow->flowState() == WebKitNamedFlow::FlowStateNull)
+    if (namedFlow->flowState() == NamedFlow::FlowStateNull)
         return;
 
     ErrorString errorString;
-    RefPtr<WebKitNamedFlow> protector(namedFlow);
+    RefPtr<NamedFlow> protector(namedFlow);
 
     m_frontend->regionLayoutUpdated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
@@ -924,10 +924,10 @@ void InspectorCSSAgent::getNamedFlowCollection(ErrorString* errorString, int doc
 
     m_namedFlowCollectionsRequested.add(documentNodeId);
 
-    Vector<RefPtr<WebKitNamedFlow> > namedFlowsVector = document->namedFlows()->namedFlows();
+    Vector<RefPtr<NamedFlow> > namedFlowsVector = document->namedFlows()->namedFlows();
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> > namedFlows = TypeBuilder::Array<TypeBuilder::CSS::NamedFlow>::create();
 
-    for (Vector<RefPtr<WebKitNamedFlow> >::iterator it = namedFlowsVector.begin(); it != namedFlowsVector.end(); ++it)
+    for (Vector<RefPtr<NamedFlow> >::iterator it = namedFlowsVector.begin(); it != namedFlowsVector.end(); ++it)
         namedFlows->addItem(buildObjectForNamedFlow(errorString, it->get(), documentNodeId));
 
     result = namedFlows.release();
@@ -1237,7 +1237,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > InspectorCSSAgent::bui
     return regions.release();
 }
 
-PassRefPtr<TypeBuilder::CSS::NamedFlow> InspectorCSSAgent::buildObjectForNamedFlow(ErrorString* errorString, WebKitNamedFlow* webkitNamedFlow, int documentNodeId)
+PassRefPtr<TypeBuilder::CSS::NamedFlow> InspectorCSSAgent::buildObjectForNamedFlow(ErrorString* errorString, NamedFlow* webkitNamedFlow, int documentNodeId)
 {
     RefPtr<NodeList> contentList = webkitNamedFlow->getContent();
     RefPtr<TypeBuilder::Array<int> > content = TypeBuilder::Array<int>::create();

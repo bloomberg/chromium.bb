@@ -31,7 +31,7 @@
 #define NamedFlowCollection_h
 
 #include "ContextDestructionObserver.h"
-#include "WebKitNamedFlow.h"
+#include "NamedFlow.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
@@ -47,11 +47,11 @@ class NamedFlowCollection : public RefCounted<NamedFlowCollection>, public Conte
 public:
     static PassRefPtr<NamedFlowCollection> create(Document* doc) { return adoptRef(new NamedFlowCollection(doc)); }
 
-    Vector<RefPtr<WebKitNamedFlow> > namedFlows();
-    WebKitNamedFlow* flowByName(const String&);
-    PassRefPtr<WebKitNamedFlow> ensureFlowWithName(const String&);
+    Vector<RefPtr<NamedFlow> > namedFlows();
+    NamedFlow* flowByName(const String&);
+    PassRefPtr<NamedFlow> ensureFlowWithName(const String&);
 
-    void discardNamedFlow(WebKitNamedFlow*);
+    void discardNamedFlow(NamedFlow*);
 
     Document* document() const;
 
@@ -63,7 +63,7 @@ private:
     struct NamedFlowHashFunctions;
     struct NamedFlowHashTranslator;
 
-    typedef ListHashSet<WebKitNamedFlow*, 1, NamedFlowHashFunctions> NamedFlowSet;
+    typedef ListHashSet<NamedFlow*, 1, NamedFlowHashFunctions> NamedFlowSet;
 
     explicit NamedFlowCollection(Document*);
 

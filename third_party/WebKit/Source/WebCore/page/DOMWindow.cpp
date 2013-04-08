@@ -37,6 +37,7 @@
 #include "Console.h"
 #include "Crypto.h"
 #include "DOMApplicationCache.h"
+#include "DOMPoint.h"
 #include "DOMSelection.h"
 #include "DOMSettableTokenList.h"
 #include "DOMStringList.h"
@@ -95,7 +96,6 @@
 #include "StyleMedia.h"
 #include "StyleResolver.h"
 #include "SuddenTermination.h"
-#include "WebKitPoint.h"
 #include "WindowFeatures.h"
 #include "WindowFocusAllowedIndicator.h"
 #include <algorithm>
@@ -1374,7 +1374,7 @@ PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const St
     return m_frame->document()->styleResolver()->pseudoStyleRulesForElement(element, pseudoId, rulesToInclude);
 }
 
-PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, const WebKitPoint* p) const
+PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, const DOMPoint* p) const
 {
     if (!node || !p)
         return 0;
@@ -1386,10 +1386,10 @@ PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, 
 
     FloatPoint pagePoint(p->x(), p->y());
     pagePoint = node->convertToPage(pagePoint);
-    return WebKitPoint::create(pagePoint.x(), pagePoint.y());
+    return DOMPoint::create(pagePoint.x(), pagePoint.y());
 }
 
-PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromPageToNode(Node* node, const WebKitPoint* p) const
+PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromPageToNode(Node* node, const DOMPoint* p) const
 {
     if (!node || !p)
         return 0;
@@ -1401,7 +1401,7 @@ PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromPageToNode(Node* node, 
 
     FloatPoint nodePoint(p->x(), p->y());
     nodePoint = node->convertFromPage(nodePoint);
-    return WebKitPoint::create(nodePoint.x(), nodePoint.y());
+    return DOMPoint::create(nodePoint.x(), nodePoint.y());
 }
 
 double DOMWindow::devicePixelRatio() const

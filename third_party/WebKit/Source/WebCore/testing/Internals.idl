@@ -138,9 +138,9 @@
 
     void setDelegatesScrolling(boolean enabled, Document document) raises (DOMException);
 #if defined(ENABLE_TOUCH_ADJUSTMENT) && ENABLE_TOUCH_ADJUSTMENT
-    WebKitPoint touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document document) raises (DOMException);
+    DOMPoint touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document document) raises (DOMException);
     Node touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document document) raises (DOMException);
-    WebKitPoint touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document) raises (DOMException);
+    DOMPoint touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document) raises (DOMException);
     Node touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document) raises (DOMException);
     ClientRect bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document document) raises (DOMException);
 #endif

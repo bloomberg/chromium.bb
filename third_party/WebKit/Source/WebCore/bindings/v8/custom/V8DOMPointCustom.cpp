@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8WebKitPoint.h"
+#include "V8DOMPoint.h"
 
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8WebKitPoint::constructorCustom(const v8::Arguments& args)
+v8::Handle<v8::Value> V8DOMPoint::constructorCustom(const v8::Arguments& args)
 {
     float x = 0;
     float y = 0;
@@ -55,7 +55,7 @@ v8::Handle<v8::Value> V8WebKitPoint::constructorCustom(const v8::Arguments& args
                 y = 0;
         }
     }
-    RefPtr<WebKitPoint> point = WebKitPoint::create(x, y);
+    RefPtr<DOMPoint> point = DOMPoint::create(x, y);
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(point.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     return wrapper;

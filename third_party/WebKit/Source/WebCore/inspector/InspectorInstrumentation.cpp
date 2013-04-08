@@ -254,19 +254,19 @@ void InspectorInstrumentation::willPopShadowRootImpl(InstrumentingAgents* instru
         domAgent->willPopShadowRoot(host, root);
 }
 
-void InspectorInstrumentation::didCreateNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, WebKitNamedFlow* namedFlow)
+void InspectorInstrumentation::didCreateNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
 {
     if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
         cssAgent->didCreateNamedFlow(document, namedFlow);
 }
 
-void InspectorInstrumentation::willRemoveNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, WebKitNamedFlow* namedFlow)
+void InspectorInstrumentation::willRemoveNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
 {
     if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
         cssAgent->willRemoveNamedFlow(document, namedFlow);
 }
 
-void InspectorInstrumentation::didUpdateRegionLayoutImpl(InstrumentingAgents* instrumentingAgents, Document* document, WebKitNamedFlow* namedFlow)
+void InspectorInstrumentation::didUpdateRegionLayoutImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
 {
     if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
         cssAgent->didUpdateRegionLayout(document, namedFlow);

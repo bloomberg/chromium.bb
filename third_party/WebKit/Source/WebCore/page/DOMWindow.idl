@@ -153,10 +153,10 @@
 
     [Replaceable] readonly attribute double devicePixelRatio;
     
-    WebKitPoint webkitConvertPointFromPageToNode([Optional=DefaultIsUndefined] Node node, 
-                                                 [Optional=DefaultIsUndefined] WebKitPoint p);
-    WebKitPoint webkitConvertPointFromNodeToPage([Optional=DefaultIsUndefined] Node node, 
-                                                 [Optional=DefaultIsUndefined] WebKitPoint p);
+    DOMPoint webkitConvertPointFromPageToNode([Optional=DefaultIsUndefined] Node node,
+                                              [Optional=DefaultIsUndefined] DOMPoint p);
+    DOMPoint webkitConvertPointFromNodeToPage([Optional=DefaultIsUndefined] Node node,
+                                              [Optional=DefaultIsUndefined] DOMPoint p);
 
     readonly attribute [V8EnabledAtRuntime] DOMApplicationCache applicationCache;
 
@@ -551,8 +551,8 @@
     attribute TextEventConstructor TextEvent;
     attribute TransitionEventConstructor TransitionEvent;
     attribute UIEventConstructor UIEvent;
-    attribute WebKitAnimationEventConstructor WebKitAnimationEvent;
-    attribute WebKitTransitionEventConstructor WebKitTransitionEvent;
+    attribute AnimationEventConstructor WebKitAnimationEvent;
+    attribute TransitionEventConstructor WebKitTransitionEvent;
     attribute WheelEventConstructor WheelEvent;
     attribute XMLHttpRequestProgressEventConstructor XMLHttpRequestProgressEvent;
     [Conditional=DEVICE_ORIENTATION, V8EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
@@ -575,7 +575,7 @@
 
     attribute WebKitCSSMatrixConstructor WebKitCSSMatrix; // Usable with the new operator
 
-    attribute WebKitPointConstructor WebKitPoint; // Usable with new the operator
+    attribute DOMPointConstructor WebKitPoint; // Usable with new the operator
 
     attribute ClipboardConstructor Clipboard;
 

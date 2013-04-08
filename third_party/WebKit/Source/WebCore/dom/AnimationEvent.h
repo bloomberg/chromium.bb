@@ -20,39 +20,39 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitAnimationEvent_h
-#define WebKitAnimationEvent_h
+#ifndef AnimationEvent_h
+#define AnimationEvent_h
 
 #include "Event.h"
 
 namespace WebCore {
 
-struct WebKitAnimationEventInit : public EventInit {
-    WebKitAnimationEventInit();
+struct AnimationEventInit : public EventInit {
+    AnimationEventInit();
 
     String animationName;
     double elapsedTime;
 };
 
-class WebKitAnimationEvent : public Event {
+class AnimationEvent : public Event {
 public:
-    static PassRefPtr<WebKitAnimationEvent> create()
+    static PassRefPtr<AnimationEvent> create()
     {
-        return adoptRef(new WebKitAnimationEvent);
+        return adoptRef(new AnimationEvent);
     }
-    static PassRefPtr<WebKitAnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
+    static PassRefPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
     {
-        return adoptRef(new WebKitAnimationEvent(type, animationName, elapsedTime));
+        return adoptRef(new AnimationEvent(type, animationName, elapsedTime));
     }
-    static PassRefPtr<WebKitAnimationEvent> create(const AtomicString& type, const WebKitAnimationEventInit& initializer)
+    static PassRefPtr<AnimationEvent> create(const AtomicString& type, const AnimationEventInit& initializer)
     {
-        return adoptRef(new WebKitAnimationEvent(type, initializer));
+        return adoptRef(new AnimationEvent(type, initializer));
     }
 
-    virtual ~WebKitAnimationEvent();
+    virtual ~AnimationEvent();
 
     const String& animationName() const;
     double elapsedTime() const;
@@ -60,9 +60,9 @@ public:
     virtual const AtomicString& interfaceName() const;
 
 private:
-    WebKitAnimationEvent();
-    WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);
-    WebKitAnimationEvent(const AtomicString&, const WebKitAnimationEventInit&);
+    AnimationEvent();
+    AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);
+    AnimationEvent(const AtomicString&, const AnimationEventInit&);
 
     String m_animationName;
     double m_elapsedTime;
@@ -70,4 +70,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebKitAnimationEvent_h
+#endif // AnimationEvent_h

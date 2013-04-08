@@ -40,6 +40,7 @@ namespace WebCore {
 
 class ClientRect;
 class ClientRectList;
+class DOMPoint;
 class DOMStringList;
 class DOMWindow;
 class Document;
@@ -54,7 +55,6 @@ class PagePopupController;
 class Range;
 class ScriptExecutionContext;
 class ShadowRoot;
-class WebKitPoint;
 class MallocStatistics;
 class SerializedScriptValue;
 class TypeConversions;
@@ -172,9 +172,9 @@ public:
 
     void setDelegatesScrolling(bool enabled, Document*, ExceptionCode&);
 #if ENABLE(TOUCH_ADJUSTMENT)
-    PassRefPtr<WebKitPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionCode&);
+    PassRefPtr<DOMPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionCode&);
     Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionCode&);
-    PassRefPtr<WebKitPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionCode&);
+    PassRefPtr<DOMPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionCode&);
     Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionCode&);
     PassRefPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionCode&);
 #endif
