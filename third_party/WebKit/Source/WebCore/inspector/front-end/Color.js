@@ -143,7 +143,7 @@ WebInspector.Color.fromRGBA = function(rgba)
 
 /**
  * @param {Array.<number>} hsva
- * @param {string} format
+ * @param {string=} format
  * @return {WebInspector.Color}
  */
 WebInspector.Color.fromHSVA = function(hsva, format)
@@ -161,7 +161,7 @@ WebInspector.Color.fromHSVA = function(hsva, format)
 
 WebInspector.Color.prototype = {
     /**
-     * @return {string}
+     * @return {string|undefined}
      */
     format: function()
     {
@@ -255,7 +255,7 @@ WebInspector.Color.prototype = {
 
         /**
          * @param {number} value
-         * @return {string}
+         * @return {number}
          */
         function toRgbValue(value)
         {
@@ -335,7 +335,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {Object}
+     * @return {DOMAgent.RGBA}
      */
     toProtocolRGBA: function()
     {
@@ -353,7 +353,7 @@ WebInspector.Color.prototype = {
  */
 WebInspector.Color._parseRgbNumeric = function(value)
 {
-    var parsed = parseInt(value);
+    var parsed = parseInt(value, 10);
     if (value.indexOf("%") !== -1)
         parsed /= 100;
     else

@@ -1826,7 +1826,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                     else if (formatSetting === cf.HSL)
                         format = (color.hasAlpha() ? cf.HSLA : cf.HSL);
                     else if (!color.hasAlpha())
-                        format = (color.hasShortHex() ? cf.ShortHEX : cf.HEX);
+                        format = (color.canBeShortHex() ? cf.ShortHEX : cf.HEX);
                     else
                         format = cf.RGBA;
 
