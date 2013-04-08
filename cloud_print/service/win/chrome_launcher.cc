@@ -85,7 +85,8 @@ GURL GetCloudPrintServiceEnableURLWithSignin(const std::string& proxy_id) {
       url, "continue", GetCloudPrintServiceEnableURL(proxy_id).spec());
 }
 
-std::string UpdateServiceState(const std::string& json) {
+std::string UpdateServiceState(const std::string& json,
+                               const std::string& proxy_id) {
   std::string result;
 
   scoped_ptr<base::Value> service_state(base::JSONReader::Read(json));
@@ -107,9 +108,10 @@ std::string UpdateServiceState(const std::string& json) {
   dictionary->Set(prefs::kCloudPrintRoot, cloud_print_root);
 
   dictionary->SetBoolean(prefs::kCloudPrintXmppPingEnabled, true);
-
-  base::JSONWriter::Write(dictionary, &result);
-
+  dictionary->SetString(prefs::kCloudPrintProxyId, proxy_id);
+  base::JSONWriter::WriteWithOptions(dictionary,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &result);
   return result;
 }
 
@@ -302,6 +304,6 @@ std::string ChromeLauncher::CreateServiceStateFile(
     return result;
   }
 
-  return UpdateServiceState(json);
+  return UpdateServiceState(json, proxy_id);
 }
 
