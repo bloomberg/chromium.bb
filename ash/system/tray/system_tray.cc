@@ -135,31 +135,39 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
+#if !defined(OS_WIN)
   AddTrayItem(new internal::TraySessionLengthLimit(this));
   AddTrayItem(new internal::TrayLogoutButton(this));
   AddTrayItem(new internal::TrayUser(this));
+#endif
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayEnterprise(this));
 #endif
   AddTrayItem(new internal::TrayIME(this));
   tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);
+#if !defined(OS_WIN)
   AddTrayItem(new internal::TrayPower(this));
+#endif
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayNetwork(this));
   AddTrayItem(new internal::TrayVPN(this));
   AddTrayItem(new internal::TraySms(this));
 #endif
+#if !defined(OS_WIN)
   AddTrayItem(new internal::TrayBluetooth(this));
+#endif
   AddTrayItem(new internal::TrayDrive(this));
   AddTrayItem(new internal::TrayLocale(this));
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayDisplay(this));
   AddTrayItem(new internal::TrayScreenCapture(this));
 #endif
+#if !defined(OS_WIN)
   AddTrayItem(new internal::TrayVolume(this));
   AddTrayItem(new internal::TrayBrightness(this));
   AddTrayItem(new internal::TrayCapsLock(this));
+#endif
   AddTrayItem(new internal::TraySettings(this));
   AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(new internal::TrayDate(this));
