@@ -306,6 +306,7 @@ function Download(download) {
   }
 
   this.controlRetry_ = document.createElement('a');
+  this.controlRetry_.download = '';
   this.controlRetry_.textContent = loadTimeData.getString('control_retry');
   this.nodeControls_.appendChild(this.controlRetry_);
 
