@@ -55,24 +55,12 @@ namespace WebCore {
         virtual void didReceiveResponse(ResourceHandle*, const ResourceResponse&) { }
         
         virtual void didReceiveData(ResourceHandle*, const char*, int, int /*encodedDataLength*/) { }
-        virtual void didReceiveBuffer(ResourceHandle*, PassRefPtr<SharedBuffer>, int encodedDataLength);
         
         virtual void didReceiveCachedMetadata(ResourceHandle*, const char*, int) { }
         virtual void didFinishLoading(ResourceHandle*, double /*finishTime*/) { }
         virtual void didFail(ResourceHandle*, const ResourceError&) { }
-        virtual void wasBlocked(ResourceHandle*) { }
-        virtual void cannotShowURL(ResourceHandle*) { }
-
-        virtual bool usesAsyncCallbacks() { return false; }
-        // Client will pass an updated request using ResourceHandle::continueWillSendRequest() when ready.
-        virtual void willSendRequestAsync(ResourceHandle*, const ResourceRequest&, const ResourceResponse& redirectResponse);
-        // Client will pass an updated request using ResourceHandle::continueShouldUseCredentialStorage() when ready.
-        virtual void shouldUseCredentialStorageAsync(ResourceHandle*);
 
         virtual bool shouldUseCredentialStorage(ResourceHandle*) { return false; }
-        virtual void didReceiveAuthenticationChallenge(ResourceHandle*, const AuthenticationChallenge&) { }
-        virtual void didCancelAuthenticationChallenge(ResourceHandle*, const AuthenticationChallenge&) { }
-        virtual void receivedCancellation(ResourceHandle*, const AuthenticationChallenge&) { }
 
         virtual void didDownloadData(ResourceHandle*, int /*dataLength*/) { }
     };

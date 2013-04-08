@@ -218,11 +218,6 @@ void SubresourceLoader::didReceiveData(const char* data, int length, long long e
     didReceiveDataOrBuffer(data, length, 0, encodedDataLength, dataPayloadType);
 }
 
-void SubresourceLoader::didReceiveBuffer(PassRefPtr<SharedBuffer> buffer, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    didReceiveDataOrBuffer(0, 0, buffer, encodedDataLength, dataPayloadType);
-}
-
 void SubresourceLoader::didReceiveDataOrBuffer(const char* data, int length, PassRefPtr<SharedBuffer> prpBuffer, long long encodedDataLength, DataPayloadType dataPayloadType)
 {
     if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
