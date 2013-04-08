@@ -253,7 +253,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     endUpdates: function()
     {
-        if (!--this._nestedUpdatesCounter);
+        if (!--this._nestedUpdatesCounter)
             this._codeMirror.refresh();
     },
 
@@ -607,6 +607,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             delete handle.attributes[name];
     },
 
+    /**
+     * @param {WebInspector.TextRange} range
+     * @return {CodeMirror.Pos}
+     */
     _toPos: function(range)
     {
         return {
@@ -615,6 +619,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         }
     },
 
+    /**
+     * @param {CodeMirror.Pos} start
+     * @param {CodeMirror.Pos} end
+     * @return {WebInspector.TextRange}
+     */
     _toRange: function(start, end)
     {
         return new WebInspector.TextRange(start.line, start.ch, end.line, end.ch);
@@ -623,6 +632,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     __proto__: WebInspector.View.prototype
 }
 
+/**
+ * @constructor
+ */
 WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 {
     this._codeMirror = codeMirror;
