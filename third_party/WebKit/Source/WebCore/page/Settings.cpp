@@ -99,10 +99,6 @@ bool Settings::gAVFoundationEnabled = false;
 bool Settings::gMockScrollbarsEnabled = false;
 bool Settings::gUsesOverlayScrollbars = false;
 
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
-bool Settings::gShouldUseHighResolutionTimers = true;
-#endif
-
 // NOTEs
 //  1) EditingMacBehavior comprises Tiger, Leopard, SnowLeopard and iOS builds, as well QtWebKit and Chromium when built on Mac;
 //  2) EditingWindowsBehavior comprises Win32 and WinCE builds, as well as QtWebKit and Chromium when built on Windows;
@@ -506,13 +502,6 @@ void Settings::setShowTiledScrollingIndicator(bool enabled)
         
     m_showTiledScrollingIndicator = enabled;
 }
-
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
-void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTimers)
-{
-    gShouldUseHighResolutionTimers = shouldUseHighResolutionTimers;
-}
-#endif
 
 void Settings::setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy enabled)
 {
