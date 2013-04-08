@@ -28,8 +28,6 @@
 #include "config.h"
 #include "WorkerContextFileSystem.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystem.h"
 #include "DOMFileSystemBase.h"
 #include "DOMFileSystemSync.h"
@@ -138,5 +136,3 @@ COMPILE_ASSERT(static_cast<int>(WorkerContextFileSystem::TEMPORARY) == static_ca
 COMPILE_ASSERT(static_cast<int>(WorkerContextFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), enum_mismatch);
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

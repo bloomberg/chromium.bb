@@ -43,7 +43,6 @@ import CodeGeneratorInspectorStrings
 
 DOMAIN_DEFINE_NAME_MAP = {
     "Database": "SQL_DATABASE",
-    "FileSystem": "FILE_SYSTEM",
     "Worker": "WORKERS",
 }
 

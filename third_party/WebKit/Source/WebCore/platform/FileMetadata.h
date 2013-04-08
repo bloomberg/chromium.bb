@@ -52,10 +52,7 @@ struct FileMetadata {
     };
 
     Type type;
-
-#if ENABLE(FILE_SYSTEM)
     String platformPath;
-#endif
 
     FileMetadata() : modificationTime(invalidFileTime()), length(-1), type(TypeUnknown) { }
 };

@@ -131,22 +131,18 @@ void WebDragData::addItem(const Item& item)
 
 WebString WebDragData::filesystemId() const
 {
-#if ENABLE(FILE_SYSTEM)
     ASSERT(!isNull());
     DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_private);
     if (filesystem)
         return filesystem->filesystemId();
-#endif
     return WebString();
 }
 
 void WebDragData::setFilesystemId(const WebString& filesystemId)
 {
-#if ENABLE(FILE_SYSTEM)
     // The ID is an opaque string, given by and validated by chromium port.
     ensureMutable();
     DraggedIsolatedFileSystem::provideTo(m_private, DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
-#endif
 }
 
 WebDragData::WebDragData(const WTF::PassRefPtr<WebCore::ChromiumDataObject>& data)

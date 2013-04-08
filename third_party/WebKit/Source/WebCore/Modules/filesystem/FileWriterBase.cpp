@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "FileWriterBase.h"
 
 #include "AsyncFileWriter.h"
@@ -72,5 +70,3 @@ void FileWriterBase::seekInternal(long long position)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

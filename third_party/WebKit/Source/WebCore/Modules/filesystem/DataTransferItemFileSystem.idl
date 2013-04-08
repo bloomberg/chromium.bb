@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     Supplemental=DataTransferItem
 ] interface DataTransferItemFileSystem {
     [CallWith=ScriptExecutionContext] Entry webkitGetAsEntry();

@@ -31,8 +31,6 @@
 #ifndef DOMFileSystemSync_h
 #define DOMFileSystemSync_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFileSystemBase.h"
 
 namespace WebCore {
@@ -65,7 +63,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DOMFileSystemSync_h

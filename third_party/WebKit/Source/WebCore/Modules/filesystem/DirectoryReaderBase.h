@@ -31,8 +31,6 @@
 #ifndef DirectoryReaderBase_h
 #define DirectoryReaderBase_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFileSystemBase.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -62,7 +60,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DirectoryReaderBase_h

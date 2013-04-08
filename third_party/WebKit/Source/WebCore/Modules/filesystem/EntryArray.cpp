@@ -31,8 +31,6 @@
 #include "config.h"
 #include "EntryArray.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 namespace WebCore {
 
 EntryArray::EntryArray()
@@ -47,5 +45,3 @@ Entry* EntryArray::item(unsigned index) const
 }
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)

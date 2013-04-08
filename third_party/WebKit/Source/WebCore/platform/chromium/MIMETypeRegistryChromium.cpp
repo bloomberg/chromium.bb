@@ -49,13 +49,11 @@ String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
     return WebKit::Platform::current()->mimeRegistry()->mimeTypeForExtension(ext);
 }
 
-#if ENABLE(FILE_SYSTEM)
 String MIMETypeRegistry::getWellKnownMIMETypeForExtension(const String &ext)
 {
     // This method must be thread safe and should not consult the OS/registry.
     return WebKit::Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(ext);
 }
-#endif
 
 // Returns the file extension if one is found.  Does not include the dot in the
 // filename.  E.g., 'html'.

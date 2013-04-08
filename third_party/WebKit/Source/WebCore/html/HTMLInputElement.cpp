@@ -1367,12 +1367,10 @@ bool HTMLInputElement::receiveDroppedFiles(const DragData* dragData)
     return m_inputType->receiveDroppedFiles(dragData);
 }
 
-#if ENABLE(FILE_SYSTEM)
 String HTMLInputElement::droppedFileSystemId()
 {
     return m_inputType->droppedFileSystemId();
 }
-#endif
 
 Icon* HTMLInputElement::icon() const
 {

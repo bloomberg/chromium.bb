@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=BLOB|FILE_SYSTEM,
     ImplementationLacksVTable
 ] interface FileError {
 #if !defined(LANGUAGE_OBJECTIVE_C)

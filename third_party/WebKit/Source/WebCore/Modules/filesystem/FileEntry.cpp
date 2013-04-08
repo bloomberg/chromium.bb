@@ -31,8 +31,6 @@
 #include "config.h"
 #include "FileEntry.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFileSystem.h"
 #include "ErrorCallback.h"
 #include "File.h"
@@ -57,5 +55,3 @@ void FileEntry::file(PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorC
 }
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)

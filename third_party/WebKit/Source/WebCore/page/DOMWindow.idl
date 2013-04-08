@@ -783,7 +783,7 @@
 
     attribute DOMFormDataConstructor FormData;
 
-    [Conditional=BLOB|FILE_SYSTEM] attribute FileErrorConstructor FileError;
+    attribute FileErrorConstructor FileError;
     [Conditional=BLOB] attribute FileReaderConstructor FileReader;
 
     [Conditional=BLOB] attribute DOMURLConstructor URL;

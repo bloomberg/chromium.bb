@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     CustomToJSObject
 ] interface EntrySync {
     readonly attribute boolean isFile;

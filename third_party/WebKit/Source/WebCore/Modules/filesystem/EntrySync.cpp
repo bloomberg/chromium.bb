@@ -31,8 +31,6 @@
 #include "config.h"
 #include "EntrySync.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFilePath.h"
 #include "DOMFileSystemSync.h"
 #include "DirectoryEntry.h"
@@ -108,5 +106,3 @@ EntrySync::EntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& ful
 }
 
 }
-
-#endif // ENABLE(FILE_SYSTEM)

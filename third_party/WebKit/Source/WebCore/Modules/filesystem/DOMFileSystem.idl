@@ -30,7 +30,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     ActiveDOMObject
 ] interface DOMFileSystem {
     readonly attribute DOMString name;

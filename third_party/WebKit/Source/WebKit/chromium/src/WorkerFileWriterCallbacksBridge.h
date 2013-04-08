@@ -31,7 +31,7 @@
 #ifndef WorkerFileWriterCallbacksBridge_h
 #define WorkerFileWriterCallbacksBridge_h
 
-#if ENABLE(FILE_SYSTEM) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "KURL.h"
 #include "WebFileWriterClient.h"

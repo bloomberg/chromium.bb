@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DOMFilePath.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 
@@ -149,5 +147,3 @@ bool DOMFilePath::isValidName(const String& name)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

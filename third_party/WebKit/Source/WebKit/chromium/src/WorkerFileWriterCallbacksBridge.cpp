@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WorkerFileWriterCallbacksBridge.h"
 
-#if ENABLE(FILE_SYSTEM) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "AsyncFileWriterClient.h"
 #include "CrossThreadTask.h"
@@ -221,4 +221,4 @@ bool WorkerFileWriterCallbacksBridge::waitForOperationToComplete()
 
 } // namespace WebKit
 
-#endif // ENABLE(FILE_SYSTEM)
+#endif // ENABLE(WORKERS)

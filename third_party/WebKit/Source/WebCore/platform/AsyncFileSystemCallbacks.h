@@ -31,8 +31,6 @@
 #ifndef AsyncFileSystemCallbacks_h
 #define AsyncFileSystemCallbacks_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystem.h"
 #include "AsyncFileWriter.h"
 #include "BlobData.h"
@@ -74,7 +72,5 @@ public:
 };
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // AsyncFileSystemCallbacks_h

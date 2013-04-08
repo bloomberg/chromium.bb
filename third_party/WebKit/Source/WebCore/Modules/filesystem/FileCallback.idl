@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     Callback
 ] interface FileCallback {
     boolean handleEvent(File file);

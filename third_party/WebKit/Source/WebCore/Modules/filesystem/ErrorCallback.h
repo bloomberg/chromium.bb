@@ -31,8 +31,6 @@
 #ifndef ErrorCallback_h
 #define ErrorCallback_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -46,7 +44,5 @@ public:
 };
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // ErrorCallback_h

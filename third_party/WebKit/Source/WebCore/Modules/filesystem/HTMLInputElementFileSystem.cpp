@@ -31,8 +31,6 @@
 #include "config.h"
 #include "HTMLInputElementFileSystem.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFilePath.h"
 #include "DOMFileSystem.h"
 #include "DirectoryEntry.h"
@@ -87,5 +85,3 @@ HTMLInputElementFileSystem::~HTMLInputElementFileSystem()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

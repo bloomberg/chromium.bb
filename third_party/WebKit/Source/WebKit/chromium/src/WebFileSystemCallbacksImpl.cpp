@@ -30,8 +30,6 @@
 #include "config.h"
 #include "WebFileSystemCallbacksImpl.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystemCallbacks.h"
 #include "AsyncFileSystemChromium.h"
 #include "FileMetadata.h"
@@ -126,5 +124,3 @@ void WebFileSystemCallbacksImpl::didFail(WebFileError error)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(FILE_SYSTEM)

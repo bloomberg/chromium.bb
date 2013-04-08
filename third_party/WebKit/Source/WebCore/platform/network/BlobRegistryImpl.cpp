@@ -93,10 +93,8 @@ void BlobRegistryImpl::appendStorageItems(BlobStorageData* blobStorageData, cons
     for (BlobDataItemList::const_iterator iter = items.begin(); iter != items.end(); ++iter) {
         if (iter->type == BlobDataItem::Data)
             blobStorageData->m_data.appendData(iter->data, iter->offset, iter->length);
-#if ENABLE(FILE_SYSTEM)
         else if (iter->type == BlobDataItem::URL)
             blobStorageData->m_data.appendURL(iter->url, iter->offset, iter->length, iter->expectedModificationTime);
-#endif
         else {
             ASSERT(iter->type == BlobDataItem::File);
             blobStorageData->m_data.appendFile(iter->path, iter->offset, iter->length, iter->expectedModificationTime);
@@ -123,10 +121,8 @@ void BlobRegistryImpl::appendStorageItems(BlobStorageData* blobStorageData, cons
         long long newLength = currentLength > length ? length : currentLength;
         if (iter->type == BlobDataItem::Data)
             blobStorageData->m_data.appendData(iter->data, iter->offset + offset, newLength);
-#if ENABLE(FILE_SYSTEM)
         else if (iter->type == BlobDataItem::URL)
             blobStorageData->m_data.appendURL(iter->url, iter->offset + offset, newLength, iter->expectedModificationTime);
-#endif
         else {
             ASSERT(iter->type == BlobDataItem::File);
             blobStorageData->m_data.appendFile(iter->path, iter->offset + offset, newLength, iter->expectedModificationTime);
@@ -157,11 +153,9 @@ void BlobRegistryImpl::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> blo
         case BlobDataItem::File:
             blobStorageData->m_data.appendFile(iter->path, iter->offset, iter->length, iter->expectedModificationTime);
             break;
-#if ENABLE(FILE_SYSTEM)
         case BlobDataItem::URL:
             blobStorageData->m_data.appendURL(iter->url, iter->offset, iter->length, iter->expectedModificationTime);
             break;
-#endif
         case BlobDataItem::Blob:
             if (m_blobs.contains(iter->url.string()))
                 appendStorageItems(blobStorageData.get(), m_blobs.get(iter->url.string())->items(), iter->offset, iter->length);

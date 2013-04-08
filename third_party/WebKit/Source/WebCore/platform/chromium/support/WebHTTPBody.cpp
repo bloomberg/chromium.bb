@@ -103,7 +103,6 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
         result.blobURL = element.m_url; // FIXME: deprecate this.
         break;
 #endif
-#if ENABLE(FILE_SYSTEM)
     case FormDataElement::encodedURL:
         result.type = Element::TypeURL;
         result.url = element.m_url;
@@ -111,7 +110,6 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
         result.fileLength = element.m_fileLength;
         result.modificationTime = element.m_expectedFileModificationTime;
         break;
-#endif
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -144,12 +142,10 @@ void WebHTTPBody::appendFileRange(const WebString& filePath, long long fileStart
 
 void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long length, double modificationTime)
 {
-#if ENABLE(FILE_SYSTEM)
     // Currently we only support filesystem URL.
     ASSERT(KURL(url).protocolIs("filesystem"));
     ensureMutable();
     m_private->appendURLRange(url, start, length, modificationTime);
-#endif
 }
 
 void WebHTTPBody::appendBlob(const WebURL& blobURL)

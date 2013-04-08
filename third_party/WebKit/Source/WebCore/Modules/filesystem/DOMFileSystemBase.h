@@ -31,8 +31,6 @@
 #ifndef DOMFileSystemBase_h
 #define DOMFileSystemBase_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystem.h"
 #include "FileSystemFlags.h"
 #include "FileSystemType.h"
@@ -118,7 +116,5 @@ protected:
 inline bool operator==(const DOMFileSystemBase& a, const DOMFileSystemBase& b) { return a.name() == b.name() && a.type() == b.type() && a.rootURL() == b.rootURL(); }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DOMFileSystemBase_h

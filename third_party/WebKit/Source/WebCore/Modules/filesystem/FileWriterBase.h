@@ -31,8 +31,6 @@
 #ifndef FileWriterBase_h
 #define FileWriterBase_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
@@ -86,7 +84,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileWriterBase_h

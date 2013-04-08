@@ -43,9 +43,7 @@ public:
 #else
     FormDataElement(const String& filename, bool shouldGenerateFile) : m_type(encodedFile), m_filename(filename), m_shouldGenerateFile(shouldGenerateFile) { }
 #endif
-#if ENABLE(FILE_SYSTEM)
     FormDataElement(const KURL& url, long long start, long long length, double expectedFileModificationTime) : m_type(encodedURL), m_url(url), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime), m_shouldGenerateFile(false) { }
-#endif
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -55,9 +53,7 @@ public:
 #if ENABLE(BLOB)
         , encodedBlob
 #endif
-#if ENABLE(FILE_SYSTEM)
         , encodedURL
-#endif
     } m_type;
     Vector<char> m_data;
     String m_filename;
@@ -88,10 +84,8 @@ inline bool operator==(const FormDataElement& a, const FormDataElement& b)
 #else
         return a.m_filename == b.m_filename;
 #endif
-#if ENABLE(FILE_SYSTEM)
     if (a.m_type == FormDataElement::encodedURL)
         return a.m_url == b.m_url;
-#endif
 
     return true;
 }
@@ -128,10 +122,8 @@ public:
     void appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime, bool shouldGenerateFile = false);
     void appendBlob(const KURL& blobURL);
 #endif
-#if ENABLE(FILE_SYSTEM)
     void appendURL(const KURL&);
     void appendURLRange(const KURL&, long long start, long long length, double expectedModificationTime);
-#endif
 
     void flatten(Vector<char>&) const; // omits files
     String flattenToString() const; // omits files

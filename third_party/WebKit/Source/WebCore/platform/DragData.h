@@ -77,9 +77,7 @@ public:
     unsigned numberOfFiles() const;
     int modifierKeyState() const;
 
-#if ENABLE(FILE_SYSTEM)
     String droppedFileSystemId() const;
-#endif
 
 private:
     IntPoint m_clientPosition;
