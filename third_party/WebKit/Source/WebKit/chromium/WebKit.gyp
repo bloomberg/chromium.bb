@@ -43,7 +43,7 @@
     'targets': [
         {
             'target_name': 'webkit',
-            'type': 'static_library',
+            'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
@@ -577,7 +577,6 @@
                 'src/win/WebInputEventFactory.cpp',
                 'src/win/WebScreenInfoFactory.cpp',
             ],
-            'type': '<(component)',
             'conditions': [
                 ['component=="shared_library"', {
                     'defines': [
