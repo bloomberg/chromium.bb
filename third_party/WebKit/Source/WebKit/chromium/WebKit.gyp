@@ -36,18 +36,8 @@
         'features.gypi',
     ],
     'variables': {
-        'conditions': [
-            # Location of the chromium src directory and target type is different
-            # if webkit is built inside chromium or as standalone project.
-            ['inside_chromium_build==0', {
-                # Webkit is being built outside of the full chromium project.
-                # e.g. via build-webkit --chromium
-                'chromium_src_dir': '../../WebKit/chromium',
-            },{
-                # WebKit is checked out in src/chromium/third_party/WebKit
-                'chromium_src_dir': '../../../../..',
-            }],
-        ],
+        # FIXME: Replace with DEPTH.
+        'chromium_src_dir': '../../../../..',
 
         # If debug_devtools is set to 1, JavaScript files for DevTools are
         # stored as is. Otherwise, a concatenated file is stored.
@@ -590,95 +580,84 @@
                 'src/win/WebInputEventFactory.cpp',
                 'src/win/WebScreenInfoFactory.cpp',
             ],
+            'type': '<(component)',
             'conditions': [
-                ['inside_chromium_build==1', {
-                    'type': '<(component)',
-
+                ['component=="shared_library"', {
+                    'defines': [
+                        'WEBKIT_DLL',
+                        'WEBKIT_IMPLEMENTATION=1',
+                    ],
+                    'dependencies': [
+                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_bindings',
+                        '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
+                        '<(chromium_src_dir)/base/base.gyp:test_support_base',
+                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(chromium_src_dir)/testing/gtest.gyp:gtest',
+                        '<(chromium_src_dir)/testing/gmock.gyp:gmock',
+                        '<(chromium_src_dir)/third_party/icu/icu.gyp:*',
+                        '<(chromium_src_dir)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
+                        '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
+                        '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
+                        '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
+                        '<(chromium_src_dir)/third_party/modp_b64/modp_b64.gyp:modp_b64',
+                        '<(chromium_src_dir)/third_party/ots/ots.gyp:ots',
+                        '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
+                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                        # We must not add webkit_support here because of cyclic dependency.
+                    ],
+                    'direct_dependent_settings': {
+                        'defines': [
+                            'WEBKIT_DLL',
+                        ],
+                    },
+                    'export_dependent_settings': [
+                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                    ],
+                    'include_dirs': [
+                        # WARNING: Do not view this particular case as a precedent for
+                        # including WebCore headers in DumpRenderTree project.
+                        '../../WebCore/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
+                    ],
+                    'sources': [
+                        '<@(webkit_unittest_files)',
+                        'src/WebTestingSupport.cpp',
+                        'public/WebTestingSupport.h',
+                        'tests/WebUnitTests.cpp',   # Components test runner support.
+                    ],
+                    'sources!': [
+                        # We should not include files depending on webkit_support.
+                        # These tests depend on webkit_support and
+                        # functions defined only in !WEBKIT_IMPLEMENTATION.
+                        'tests/IDBBackingStoreTest.cpp',
+                        'tests/IDBCleanupOnIOErrorTest.cpp',
+                        'tests/LevelDBTest.cpp',
+                    ],
                     'conditions': [
-                        ['component=="shared_library"', {
-                            'defines': [
-                                'WEBKIT_DLL',
-                                'WEBKIT_IMPLEMENTATION=1',
-                            ],
+                        ['OS=="win" or OS=="mac"', {
                             'dependencies': [
-                                '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_bindings',
-                                '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
-                                '<(chromium_src_dir)/base/base.gyp:test_support_base',
-                                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                                '<(chromium_src_dir)/testing/gtest.gyp:gtest',
-                                '<(chromium_src_dir)/testing/gmock.gyp:gmock',
-                                '<(chromium_src_dir)/third_party/icu/icu.gyp:*',
-                                '<(chromium_src_dir)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
-                                '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
-                                '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
-                                '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
-                                '<(chromium_src_dir)/third_party/modp_b64/modp_b64.gyp:modp_b64',
-                                '<(chromium_src_dir)/third_party/ots/ots.gyp:ots',
-                                '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
-                                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                                # We must not add webkit_support here because of cyclic dependency.
+                                '<(chromium_src_dir)/third_party/nss/nss.gyp:*',
                             ],
-                            'direct_dependent_settings': {
-                                'defines': [
-                                    'WEBKIT_DLL',
-                                ],
-                            },
-                            'export_dependent_settings': [
-                                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                            ],
-                            'include_dirs': [
-                                # WARNING: Do not view this particular case as a precedent for
-                                # including WebCore headers in DumpRenderTree project.
-                                '../../WebCore/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
-                            ],
-                            'sources': [
-                                '<@(webkit_unittest_files)',
-                                'src/WebTestingSupport.cpp',
-                                'public/WebTestingSupport.h',
-                                'tests/WebUnitTests.cpp',   # Components test runner support.
-                            ],
-                            'sources!': [
-                                # We should not include files depending on webkit_support.
-                                # These tests depend on webkit_support and
-                                # functions defined only in !WEBKIT_IMPLEMENTATION.
-                                'tests/IDBBackingStoreTest.cpp',
-                                'tests/IDBCleanupOnIOErrorTest.cpp',
-                                'tests/LevelDBTest.cpp',
-                            ],
-                            'conditions': [
-                                ['OS=="win" or OS=="mac"', {
-                                    'dependencies': [
-                                        '<(chromium_src_dir)/third_party/nss/nss.gyp:*',
-                                    ],
-                                }],
-                                ['clang==1', {
-                                    # FIXME: It would be nice to enable this in shared builds too,
-                                    # but the test files have global constructors from the GTEST macro
-                                    # and we pull in the test files into the webkit target in the
-                                    # shared build.
-                                    'cflags!': ['-Wglobal-constructors'],
-                                    'xcode_settings': {
-                                      'WARNING_CFLAGS!': ['-Wglobal-constructors'],
-                                    },
-                                }],
-                            ],
-                            'msvs_settings': {
-                              'VCLinkerTool': {
-                                'conditions': [
-                                  ['incremental_chrome_dll==1', {
-                                    'UseLibraryDependencyInputs': "true",
-                                  }],
-                                ],
-                              },
+                        }],
+                        ['clang==1', {
+                            # FIXME: It would be nice to enable this in shared builds too,
+                            # but the test files have global constructors from the GTEST macro
+                            # and we pull in the test files into the webkit target in the
+                            # shared build.
+                            'cflags!': ['-Wglobal-constructors'],
+                            'xcode_settings': {
+                              'WARNING_CFLAGS!': ['-Wglobal-constructors'],
                             },
                         }],
                     ],
-                }, { # else: inside_chromium_build==0
-                    'direct_dependent_settings': {
-                        'include_dirs': [
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit', # in a chromium-inside-WebKit build, headers in the public WebKit API are copied beneath this directory so includes referencing third_party/WebKit work.
+                    'msvs_settings': {
+                      'VCLinkerTool': {
+                        'conditions': [
+                          ['incremental_chrome_dll==1', {
+                            'UseLibraryDependencyInputs': "true",
+                          }],
                         ],
+                      },
                     },
                 }],
                 ['use_x11 == 1', {
@@ -803,9 +782,9 @@
         {
             'target_name': 'webkit_test_support',
             'conditions': [
-                ['inside_chromium_build==1 and component=="shared_library"', {
+                ['component=="shared_library"', {
                     'type': 'none',
-                }, { # else: inside_chromium_build==0 or component!="shared_library"
+                }, {
                     'type': 'static_library',
                     'dependencies': [
                         '../../WTF/WTF.gyp/WTF.gyp:wtf',

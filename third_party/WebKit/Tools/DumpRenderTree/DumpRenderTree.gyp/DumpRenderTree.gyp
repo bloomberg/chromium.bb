@@ -33,17 +33,9 @@
         'ahem_path': '../../DumpRenderTree/qt/fonts/AHEM____.TTF',
         'tools_dir': '../..',
         'source_dir': '../../../Source',
+        # FIXME: Use DEPTH.
+        'chromium_src_dir': '<(tools_dir)/../../..',
         'conditions': [
-            # Location of the chromium src directory and target type is different
-            # if webkit is built inside chromium or as standalone project.
-            ['inside_chromium_build==0', {
-                # Webkit is being built outside of the full chromium project.
-                # e.g. via build-webkit --chromium
-                'chromium_src_dir': '<(source_dir)/WebKit/chromium',
-            },{
-                # WebKit is checked out in src/chromium/third_party/WebKit
-                'chromium_src_dir': '<(tools_dir)/../../..',
-            }],
             ['OS=="linux"', {
                 'use_custom_freetype%': 1,
             }, {
@@ -81,7 +73,7 @@
         },
         {
             'target_name': 'TestRunner',
-            'type': 'static_library',
+            'type': '<(component)',
             'defines': [
                 'WEBTESTRUNNER_IMPLEMENTATION=1',
             ],
@@ -108,40 +100,35 @@
                 '<@(test_runner_files)',
             ],
             'conditions': [
-                ['inside_chromium_build == 1', {
-                    'type': '<(component)',
-                    'conditions': [
-                        ['component=="shared_library"', {
-                            'defines': [
-                                'WEBTESTRUNNER_DLL',
-                                'WEBTESTRUNNER_IMPLEMENTATION=1',
-                            ],
-                            'dependencies': [
-                                '<(chromium_src_dir)/base/base.gyp:base',
-                                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                                '<(chromium_src_dir)/skia/skia.gyp:skia',
-                                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                            ],
-                            'direct_dependent_settings': {
-                                'defines': [
-                                    'WEBTESTRUNNER_DLL',
-                                ],
-                            },
-                            'export_dependent_settings': [
-                                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                            ],
-                            'msvs_settings': {
-                                'VCLinkerTool': {
-                                    'conditions': [
-                                        ['incremental_chrome_dll==1', {
-                                            'UseLibraryDependencyInputs': 'true',
-                                        }],
-                                    ],
-                                },
-                            },
-                        }],
+                ['component=="shared_library"', {
+                    'defines': [
+                        'WEBTESTRUNNER_DLL',
+                        'WEBTESTRUNNER_IMPLEMENTATION=1',
                     ],
+                    'dependencies': [
+                        '<(chromium_src_dir)/base/base.gyp:base',
+                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(chromium_src_dir)/skia/skia.gyp:skia',
+                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                    ],
+                    'direct_dependent_settings': {
+                        'defines': [
+                            'WEBTESTRUNNER_DLL',
+                        ],
+                    },
+                    'export_dependent_settings': [
+                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                    ],
+                    'msvs_settings': {
+                        'VCLinkerTool': {
+                            'conditions': [
+                                ['incremental_chrome_dll==1', {
+                                    'UseLibraryDependencyInputs': 'true',
+                                }],
+                            ],
+                        },
+                    },
                 }],
                 ['toolkit_uses_gtk == 1', {
                     'defines': [
@@ -287,19 +274,15 @@
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
                     ],
-                    'conditions': [
-                        ['inside_chromium_build==1', {
-                            'configurations': {
-                                'Debug_Base': {
-                                    'msvs_settings': {
-                                        'VCLinkerTool': {
-                                            'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                                        },
-                                    },
+                    'configurations': {
+                        'Debug_Base': {
+                            'msvs_settings': {
+                                'VCLinkerTool': {
+                                    'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                                 },
                             },
-                        }],
-                    ],
+                        },
+                    },
                 },{ # OS!="win"
                     'sources/': [
                         ['exclude', 'Win\\.cpp$'],
@@ -368,11 +351,6 @@
                    'dependencies': [
                        '<(chromium_src_dir)/third_party/freetype2/freetype2.gyp:freetype2',
                    ],
-                }],
-                ['inside_chromium_build==0', {
-                    'dependencies': [
-                        '<(chromium_src_dir)/webkit/support/setup_third_party.gyp:third_party_headers',
-                    ]
                 }],
             ],
         },
@@ -533,13 +511,7 @@
                 ],
                 'variables': {
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)DumpRenderTree<(SHARED_LIB_SUFFIX)',
-                    'conditions': [
-                        ['inside_chromium_build==1', {
-                            'ant_build_to_chromium_src': '<(ant_build_out)/../../',
-                        }, {
-                            'ant_build_to_chromium_src': '<(chromium_src_dir)',
-                        }],
-                    ],
+                    'ant_build_to_chromium_src': '<(ant_build_out)/../../',
                 },
                 # Part of the following was copied from <(chromium_src_dir)/build/apk_test.gpyi.
                 # Not including it because gyp include doesn't support variable in path or under

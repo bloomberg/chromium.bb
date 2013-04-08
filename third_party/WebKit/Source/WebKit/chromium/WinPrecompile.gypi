@@ -32,21 +32,10 @@
 {
   'conditions': [
       ['OS=="win" and chromium_win_pch==1', {
-          'variables': {
-              'conditions': [
-                  # We need to calculate the path to the gyp directory differently depending on whether we are
-                  # being built stand-alone (via build-webkit --chromium) or as part of the Chromium checkout.
-                  ['inside_chromium_build==0', {
-                      'win_pch_dir': '<(DEPTH)/../../WebKit/chromium',
-                  },{
-                      'win_pch_dir': '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium',
-                  }],
-              ]
-          },
           'target_defaults': {
-              'msvs_precompiled_header': '<(win_pch_dir)/WinPrecompile.h',
-              'msvs_precompiled_source': '<(win_pch_dir)/WinPrecompile.cpp',
-              'sources': ['<(win_pch_dir)/WinPrecompile.cpp'],
+              'msvs_precompiled_header': '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.h',
+              'msvs_precompiled_source': '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp',
+              'sources': ['<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
           }
       }],
   ],

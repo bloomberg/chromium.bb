@@ -34,18 +34,8 @@
         'WebKit.gypi',
     ],
     'variables': {
-        'conditions': [
-            # Location of the chromium src directory and target type is different
-            # if webkit is built inside chromium or as standalone project.
-            ['inside_chromium_build==0', {
-                # Webkit is being built outside of the full chromium project.
-                # e.g. via build-webkit --chromium
-                'chromium_src_dir': '../../WebKit/chromium',
-            },{
-                # WebKit is checked out in src/chromium/third_party/WebKit
-                'chromium_src_dir': '../../../../..',
-            }],
-        ],
+        # FIXME: Use DEPTH.
+        'chromium_src_dir': '../../../../..',
     },
     'targets': [
         {
@@ -79,7 +69,7 @@
                 '../../Platform/chromium',
             ],
             'conditions': [
-                ['inside_chromium_build==1 and component=="shared_library"', {
+                ['component=="shared_library"', {
                     'defines': [
                         'WEBKIT_DLL_UNITTEST',
                     ],
@@ -105,7 +95,7 @@
                         }],
                     ],
                 }],
-                ['inside_chromium_build==1 and OS=="win" and component!="shared_library"', {
+                ['OS=="win" and component!="shared_library"', {
                     'configurations': {
                         'Debug_Base': {
                             'msvs_settings': {
@@ -156,13 +146,7 @@
                 ],
                 'variables': {
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_unit_tests<(SHARED_LIB_SUFFIX)',
-                    'conditions': [
-                        ['inside_chromium_build==1', {
-                            'ant_build_to_chromium_src': '<(ant_build_out)/../../',
-                        }, {
-                            'ant_build_to_chromium_src': '<(ant_build_out)/../../Source/WebKit/chromium',
-                        }],
-                    ],
+                    'ant_build_to_chromium_src': '<(ant_build_out)/../../',
                 },
                 # Part of the following was copied from <(chromium_src_dir)/build/apk_test.gpyi.
                 # Not including it because gyp include doesn't support variable in path or under

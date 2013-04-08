@@ -42,6 +42,9 @@
     # size of the binary and increasing the speed of gdb.  gcc only.
     'remove_webcore_debug_symbols%': 0,
 
+    # FIXME: Replace with DEPTH.
+    'chromium_src_dir': '../../../../..',
+
     # If set to 0, doesn't build SVG support, reducing the size of the
     # binary and increasing the speed of gdb.
     'enable_svg%': 1,
@@ -180,15 +183,6 @@
     ],
 
     'conditions': [
-      # Location of the chromium src directory.
-      ['inside_chromium_build==0', {
-        # webkit is being built outside of the full chromium project.
-        'chromium_src_dir': '../../WebKit/chromium',
-        'libjpeg_gyp_path': '../../WebKit/chromium/third_party/libjpeg_turbo/libjpeg.gyp',
-      },{
-        # webkit is checked out in src/chromium/third_party/webkit
-        'chromium_src_dir': '../../../../..',
-      }],
       # TODO(maruel): Move it in its own project or generate it anyway?
       ['enable_svg!=0', {
         'bindings_idl_files': [
@@ -1333,7 +1327,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
       ],
       'conditions': [
-        ['inside_chromium_build==1 and OS=="win" and component=="shared_library"', {
+        ['OS=="win" and component=="shared_library"', {
           'defines': [
             'USING_V8_SHARED',
           ],
@@ -1453,7 +1447,7 @@
         },
       },
       'conditions': [
-        ['inside_chromium_build==1 and OS=="win" and component=="shared_library"', {
+        ['OS=="win" and component=="shared_library"', {
           'direct_dependent_settings': {
             'defines': [
                'USING_V8_SHARED',
@@ -1695,13 +1689,9 @@
         ['exclude', 'platform/text/TextEncodingDetectorNone\\.cpp$'],
       ],
       'conditions': [
-        ['inside_chromium_build==1', {
-            'conditions': [
-                ['component=="shared_library"', {
-                    'defines': [
-                        'WEBKIT_DLL',
-                    ],
-                }],
+        ['component=="shared_library"', {
+            'defines': [
+                'WEBKIT_DLL',
             ],
         }],
         ['use_default_render_theme==1', {
@@ -1918,7 +1908,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(win_pch_dir)/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
           ],
         }],
         ['OS=="android"', {
@@ -2023,7 +2013,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(win_pch_dir)/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
           ],
         }],
         ['OS=="mac"', {

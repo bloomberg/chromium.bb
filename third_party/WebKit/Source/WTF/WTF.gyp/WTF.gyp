@@ -32,16 +32,8 @@
     '../WTF.gypi',
   ],
   'variables': {
-    # Location of the chromium src directory.
-    'conditions': [
-      ['inside_chromium_build==0', {
-        # Webkit is being built outside of the full chromium project.
-        'chromium_src_dir': '../../WebKit/chromium',
-      },{
-        # WebKit is checked out in src/chromium/third_party/WebKit
-        'chromium_src_dir': '../../../../..',
-      }],
-    ],
+    # FIXME: Use DEPTH.
+    'chromium_src_dir': '../../../../..',
   },
   'conditions': [
     ['os_posix == 1 and OS != "mac" and gcc_version>=46', {
@@ -161,7 +153,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
           'conditions': [
-            ['inside_chromium_build==1 and component=="shared_library"', {
+            ['component=="shared_library"', {
               # Chromium windows multi-dll build enables c++ exception and this
               # causes wtf generates 4291 warning due to operator new/delete
               # implementations. Disable the warning for chromium windows

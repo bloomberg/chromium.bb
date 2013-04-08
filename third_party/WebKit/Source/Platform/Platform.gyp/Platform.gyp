@@ -77,13 +77,9 @@
                 ],
             },
             'conditions': [
-                ['inside_chromium_build==1', {
-                    'conditions': [
-                        ['component=="shared_library"', {
-                            'defines': [
-                                'WEBKIT_DLL',
-                            ],
-                        }],
+                ['component=="shared_library"', {
+                    'defines': [
+                        'WEBKIT_DLL',
                     ],
                 }],
                 ['OS=="win"', {
