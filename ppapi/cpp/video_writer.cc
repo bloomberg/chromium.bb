@@ -42,14 +42,12 @@ VideoWriter::VideoWriter(PassRef, PP_Resource resource)
     : Resource(PASS_REF, resource) {
 }
 
-int32_t VideoWriter::Open(const std::string& stream_id,
-                          const CompletionCallback& cc) {
+int32_t VideoWriter::Open(const CompletionCallbackWithOutput<Var>& cc) {
   if (has_interface<PPB_VideoWriter_0_1>()) {
-    Var id(stream_id);
     int32_t result =
         get_interface<PPB_VideoWriter_0_1>()->Open(
             pp_resource(),
-            id.pp_var(), cc.pp_completion_callback());
+            cc.output(), cc.pp_completion_callback());
     return result;
   }
   return cc.MayForce(PP_ERROR_NOINTERFACE);

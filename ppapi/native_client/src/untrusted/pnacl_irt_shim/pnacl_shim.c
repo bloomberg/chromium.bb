@@ -1251,7 +1251,7 @@ PP_Bool Pnacl_M28_PPB_VideoWriter_IsVideoWriter(PP_Resource resource) {
 }
 
 static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_VideoWriter_Open(PP_Resource writer, struct PP_Var stream_id, struct PP_CompletionCallback callback) {
+int32_t Pnacl_M28_PPB_VideoWriter_Open(PP_Resource writer, struct PP_Var* stream_id, struct PP_CompletionCallback callback) {
   const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
   return iface->Open(writer, stream_id, callback);
 }
@@ -4179,7 +4179,7 @@ struct PPB_VideoReader_0_1 Pnacl_Wrappers_PPB_VideoReader_0_1 = {
 struct PPB_VideoWriter_0_1 Pnacl_Wrappers_PPB_VideoWriter_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoWriter_Create,
     .IsVideoWriter = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoWriter_IsVideoWriter,
-    .Open = (int32_t (*)(PP_Resource writer, struct PP_Var stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoWriter_Open,
+    .Open = (int32_t (*)(PP_Resource writer, struct PP_Var* stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoWriter_Open,
     .PutFrame = (int32_t (*)(PP_Resource writer, const struct PP_VideoFrame* frame))&Pnacl_M28_PPB_VideoWriter_PutFrame,
     .Close = (void (*)(PP_Resource writer))&Pnacl_M28_PPB_VideoWriter_Close
 };

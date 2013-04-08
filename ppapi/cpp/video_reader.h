@@ -44,13 +44,13 @@ class VideoReader : public Resource {
 
   /// Opens a stream for reading video and associates it with the given id.
   ///
-  /// @param[in] stream_id A string uniquely identifying the stream to read
-  /// from.
+  /// @param[in] stream_id A <code>Var</code> uniquely identifying the stream
+  /// to read from.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion of Open.
   ///
   /// @return A return code from <code>pp_errors.h</code>.
-  int32_t Open(const std::string& stream_id,
+  int32_t Open(const Var& stream_id,
                const CompletionCallback& cc);
 
   /// Gets the next frame of video from the reader's stream.
