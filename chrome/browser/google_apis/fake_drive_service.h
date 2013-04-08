@@ -231,6 +231,17 @@ class FakeDriveService : public DriveServiceInterface {
     const std::string& title,
     const std::string& entry_kind);
 
+  // Core implementation of GetResourceList.
+  // This method returns the slice of the all matched entries, and its range
+  // is between |start_offset| (inclusive) and |start_offset| + |max_results|
+  // (exclusive).
+  void GetResourceListInternal(int64 start_changestamp,
+                               const std::string& search_query,
+                               const std::string& directory_resource_id,
+                               int start_offset,
+                               int max_results,
+                               const GetResourceListCallback& callback);
+
   scoped_ptr<base::Value> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
