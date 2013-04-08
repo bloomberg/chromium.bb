@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A dictionary keyed off of tabId that keeps track of data per tab (for
-// example what feedUrl was detected in the tab).
-var feedData = {};
-
-chrome.extension.onRequest.addListener(function(request, sender) {
+chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.msg == "feedIcon") {
     // First validate that all the URLs have the right schema.
     var input = [];
@@ -25,13 +21,16 @@ chrome.extension.onRequest.addListener(function(request, sender) {
       return;  // We've rejected all the input, so abort.
 
     // We have received a list of feed urls found on the page.
-    // Enable the page action icon.
-    feedData[sender.tab.id] = input;
-    chrome.pageAction.setTitle(
-      { tabId: sender.tab.id,
-        title: chrome.i18n.getMessage("rss_subscription_action_title")
-      });
-    chrome.pageAction.show(sender.tab.id);
+    var feeds = {};
+    feeds[sender.tab.id] = input;
+    chrome.storage.local.set(feeds, function() {
+      // Enable the page action icon.
+      chrome.pageAction.setTitle(
+        { tabId: sender.tab.id,
+          title: chrome.i18n.getMessage("rss_subscription_action_title")
+        });
+      chrome.pageAction.show(sender.tab.id);
+    });
   } else if (request.msg == "feedDocument") {
     // We received word from the content script that this document
     // is an RSS feed (not just a document linking to the feed).
@@ -52,5 +51,5 @@ chrome.extension.onRequest.addListener(function(request, sender) {
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId) {
-  delete feedData[tabId];
+  chrome.storage.local.remove(tabId.toString());
 });

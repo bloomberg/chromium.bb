@@ -33,7 +33,7 @@ function findFeedLinks() {
 
   if (count > 0) {
     // Notify the extension needs to show the RSS page action icon.
-    chrome.extension.sendRequest({msg: "feedIcon", feeds: feeds});
+    chrome.extension.sendMessage({msg: "feedIcon", feeds: feeds});
   }
 }
 
@@ -57,7 +57,7 @@ function isFeedDocument() {
   if (soleTagInBody == "RSS" || soleTagInBody == "FEED" ||
       soleTagInBody == "RDF") {
     debugMsg(logLevels.info, "Found feed: Tag is: " + soleTagInBody);
-    chrome.extension.sendRequest({msg: "feedDocument", href: location.href});
+    chrome.extension.sendMessage({msg: "feedDocument", href: location.href});
     return true;
   }
 
@@ -79,7 +79,7 @@ function isFeedDocument() {
     // |doc| now contains the parsed document within the PRE tag.
     if (containsFeed(doc)) {
       // Let the extension know that we should show the subscribe page.
-      chrome.extension.sendRequest({msg: "feedDocument", href: location.href});
+      chrome.extension.sendMessage({msg: "feedDocument", href: location.href});
       return true;
     }
   }
