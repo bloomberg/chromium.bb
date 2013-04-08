@@ -130,34 +130,6 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
     gpu.vendor_id = device->vendor_id;
     gpu.device_id = device->device_id;
 
-    const int buffer_size = 255;
-    scoped_ptr<char[]> buffer(new char[buffer_size]);
-    // The current implementation of pci_lookup_name returns the same pointer
-    // as the passed in upon success, and a different one (NULL or a pointer
-    // to an error message) upon failure.
-    if ((libpci_loader.pci_lookup_name)(access,
-                                        buffer.get(),
-                                        buffer_size,
-                                        1,
-                                        device->vendor_id) == buffer.get()) {
-      gpu.vendor_string = buffer.get();
-    }
-    if ((libpci_loader.pci_lookup_name)(access,
-                                        buffer.get(),
-                                        buffer_size,
-                                        2,
-                                        device->vendor_id,
-                                        device->device_id) == buffer.get()) {
-      std::string device_string = buffer.get();
-      size_t begin = device_string.find_first_of('[');
-      size_t end = device_string.find_last_of(']');
-      if (begin != std::string::npos && end != std::string::npos &&
-          begin < end) {
-        device_string = device_string.substr(begin + 1, end - begin - 1);
-      }
-      gpu.device_string = device_string;
-    }
-
     if (!primary_gpu_identified) {
       primary_gpu_identified = true;
       gpu_info->gpu = gpu;
