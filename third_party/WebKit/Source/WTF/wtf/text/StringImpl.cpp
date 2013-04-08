@@ -115,12 +115,6 @@ StringImpl::~StringImpl()
 
     if (isAtomic())
         AtomicString::remove(this);
-#if USE(JSC)
-    if (isIdentifier()) {
-        if (!wtfThreadData().currentIdentifierTable()->remove(this))
-            CRASH();
-    }
-#endif
 
     BufferOwnership ownership = bufferOwnership();
 
