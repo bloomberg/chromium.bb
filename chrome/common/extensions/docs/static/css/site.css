@@ -552,14 +552,6 @@ button.google-button:active {
   display: none;
 }
 
-#known_issues {
-  background: #F5F5F5;
-  padding-top: 1px;
-  padding-bottom: 16px;
-  padding-right: 16px;
-  padding-left: 16px;
-}
-
 /* List with largeish images floated to the right. */
 .imaged li {
   clear: right;
