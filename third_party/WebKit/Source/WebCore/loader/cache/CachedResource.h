@@ -112,9 +112,6 @@ public:
 
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
     const KURL& url() const { return m_resourceRequest.url();}
-#if ENABLE(CACHE_PARTITIONING)
-    const String& cachePartition() const { return m_resourceRequest.cachePartition(); }
-#endif
     Type type() const { return static_cast<Type>(m_type); }
     
     ResourceLoadPriority loadPriority() const { return m_loadPriority; }

@@ -215,6 +215,3 @@ CGFloat (*wkNSElasticDeltaForReboundDelta)(CGFloat delta);
 CGFloat (*wkNSReboundDeltaForElasticDelta)(CGFloat delta);
 #endif
 
-#if ENABLE(CACHE_PARTITIONING)
-CFStringRef (*wkCachePartitionKey)(void);
-#endif

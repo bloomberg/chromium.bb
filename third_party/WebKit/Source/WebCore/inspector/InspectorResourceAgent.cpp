@@ -60,7 +60,6 @@
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptableDocumentParser.h"
-#include "Settings.h"
 #include "SubresourceLoader.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
@@ -603,11 +602,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     if (!xhrReplayData)
         return;
 
-    ResourceRequest request(xhrReplayData->url());
-#if ENABLE(CACHE_PARTITIONING)
-    request.setCachePartition(m_pageAgent->mainFrame()->document()->topOrigin()->cachePartition());
-#endif
-    CachedResource* cachedResource = memoryCache()->resourceForRequest(request);
+    CachedResource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
     if (cachedResource)
         memoryCache()->remove(cachedResource);
 

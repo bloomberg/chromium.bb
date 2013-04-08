@@ -1158,10 +1158,6 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         addHTTPOriginIfNeeded(request, referrerOrigin->toString());
     }
-#if ENABLE(CACHE_PARTITIONING)
-    if (m_frame->tree()->top() != m_frame)
-        request.setCachePartition(m_frame->tree()->top()->document()->securityOrigin()->cachePartition());
-#endif
     addExtraFieldsToRequest(request, newLoadType, true);
     if (newLoadType == FrameLoadTypeReload || newLoadType == FrameLoadTypeReloadFromOrigin)
         request.setCachePolicy(ReloadIgnoringCacheData);
@@ -2869,7 +2865,7 @@ void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
 
     if (!page->areMemoryCacheClientCallsEnabled()) {
         InspectorInstrumentation::didLoadResourceFromMemoryCache(page, m_documentLoader.get(), resource);
-        m_documentLoader->recordMemoryCacheLoadForFutureClientNotification(resource->resourceRequest());
+        m_documentLoader->recordMemoryCacheLoadForFutureClientNotification(resource->url());
         m_documentLoader->didTellClientAboutLoad(resource->url());
         return;
     }
@@ -3250,12 +3246,12 @@ void FrameLoader::tellClientAboutPastMemoryCacheLoads()
     if (!m_documentLoader)
         return;
 
-    Vector<ResourceRequest> pastLoads;
+    Vector<String> pastLoads;
     m_documentLoader->takeMemoryCacheLoadsForClientNotification(pastLoads);
 
     size_t size = pastLoads.size();
     for (size_t i = 0; i < size; ++i) {
-        CachedResource* resource = memoryCache()->resourceForRequest(pastLoads[i]);
+        CachedResource* resource = memoryCache()->resourceForURL(KURL(ParsedURLString, pastLoads[i]));
 
         // FIXME: These loads, loaded from cache, but now gone from the cache by the time
         // Page::setMemoryCacheClientCallsEnabled(true) is called, will not be seen by the client.

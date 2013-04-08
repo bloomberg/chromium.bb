@@ -215,8 +215,8 @@ namespace WebCore {
                 m_resourcesClientKnowsAbout.add(url);
         }
         bool haveToldClientAboutLoad(const String& url) { return m_resourcesClientKnowsAbout.contains(url); }
-        void recordMemoryCacheLoadForFutureClientNotification(const ResourceRequest&);
-        void takeMemoryCacheLoadsForClientNotification(Vector<ResourceRequest>& loads);
+        void recordMemoryCacheLoadForFutureClientNotification(const String& url);
+        void takeMemoryCacheLoadsForClientNotification(Vector<String>& loads);
 
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
         void resetTiming() { m_documentLoadTiming = DocumentLoadTiming(); }
@@ -353,7 +353,7 @@ namespace WebCore {
         RefPtr<SharedBuffer> m_parsedArchiveData;
 
         HashSet<String> m_resourcesClientKnowsAbout;
-        Vector<ResourceRequest> m_resourcesLoadedFromMemoryCacheForClientNotification;
+        Vector<String> m_resourcesLoadedFromMemoryCacheForClientNotification;
         
         String m_clientRedirectSourceForHistory;
         bool m_didCreateGlobalHistoryEntry;
@@ -374,12 +374,12 @@ namespace WebCore {
         OwnPtr<ApplicationCacheHost> m_applicationCacheHost;
     };
 
-    inline void DocumentLoader::recordMemoryCacheLoadForFutureClientNotification(const ResourceRequest& request)
+    inline void DocumentLoader::recordMemoryCacheLoadForFutureClientNotification(const String& url)
     {
-        m_resourcesLoadedFromMemoryCacheForClientNotification.append(request);
+        m_resourcesLoadedFromMemoryCacheForClientNotification.append(url);
     }
 
-    inline void DocumentLoader::takeMemoryCacheLoadsForClientNotification(Vector<ResourceRequest>& loadsSet)
+    inline void DocumentLoader::takeMemoryCacheLoadsForClientNotification(Vector<String>& loadsSet)
     {
         loadsSet.swap(m_resourcesLoadedFromMemoryCacheForClientNotification);
         m_resourcesLoadedFromMemoryCacheForClientNotification.clear();

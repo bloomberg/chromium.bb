@@ -109,11 +109,7 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         return;
 
     KURL url(KURL(), urlString);
-    ResourceRequest request(url);
-#if ENABLE(CACHE_PARTITIONING)
-    request.setCachePartition(scriptExecutionContext->topOrigin()->cachePartition());
-#endif
-    MemoryCache::removeRequestFromCache(scriptExecutionContext, request);
+    MemoryCache::removeUrlFromCache(scriptExecutionContext, urlString);
 
     HashSet<String>& blobURLs = scriptExecutionContext->publicURLManager().blobURLs();
     if (blobURLs.contains(url.string())) {

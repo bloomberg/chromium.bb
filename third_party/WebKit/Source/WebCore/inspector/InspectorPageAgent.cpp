@@ -265,14 +265,8 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, Frame* frame,
 CachedResource* InspectorPageAgent::cachedResource(Frame* frame, const KURL& url)
 {
     CachedResource* cachedResource = frame->document()->cachedResourceLoader()->cachedResource(url);
-    if (!cachedResource) {
-        ResourceRequest request(url);
-#if ENABLE(CACHE_PARTITIONING)
-        request.setCachePartition(frame->document()->topOrigin()->cachePartition());
-#endif
-        cachedResource = memoryCache()->resourceForRequest(request);
-    }
-
+    if (!cachedResource)
+        cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
 }
 
