@@ -868,7 +868,6 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     EXPECT_FLOAT_EQ(webViewImpl->minimumPageScaleFactor(), scale);
 }
 
-#if ENABLE(TEXT_AUTOSIZING)
 TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 {
     registerMockedHttpURLLoad("get_scale_bounds_check_for_auto_zoom_test.html");
@@ -946,7 +945,6 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     simulateDoubleTap(webViewImpl, doubleTapPoint, scale);
     EXPECT_FLOAT_EQ(legibleScale, scale);
 }
-#endif
 
 TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 {

@@ -76,11 +76,9 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
 #endif
     , m_originalEditingBehavior(settings->editingBehaviorType())
-#if ENABLE(TEXT_AUTOSIZING)
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
     , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
-#endif
     , m_originalResolutionOverride(settings->resolutionOverride())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
 #if ENABLE(DIALOG_ELEMENT)
@@ -113,11 +111,9 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
 #endif
     settings->setEditingBehaviorType(m_originalEditingBehavior);
-#if ENABLE(TEXT_AUTOSIZING)
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
     settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
-#endif
     settings->setResolutionOverride(m_originalResolutionOverride);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
 #if ENABLE(DIALOG_ELEMENT)
@@ -307,25 +303,14 @@ void InternalSettings::setPictographFontFamily(const String& family, const Strin
 
 void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionCode& ec)
 {
-#if ENABLE(TEXT_AUTOSIZING)
     InternalSettingsGuardForSettings();
     settings()->setTextAutosizingEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-    UNUSED_PARAM(ec);
-#endif
 }
 
 void InternalSettings::setTextAutosizingWindowSizeOverride(int width, int height, ExceptionCode& ec)
 {
-#if ENABLE(TEXT_AUTOSIZING)
     InternalSettingsGuardForSettings();
     settings()->setTextAutosizingWindowSizeOverride(IntSize(width, height));
-#else
-    UNUSED_PARAM(width);
-    UNUSED_PARAM(height);
-    UNUSED_PARAM(ec);
-#endif
 }
 
 void InternalSettings::setResolutionOverride(int dotsPerCSSInchHorizontally, int dotsPerCSSInchVertically, ExceptionCode& ec)
@@ -343,13 +328,8 @@ void InternalSettings::setMediaTypeOverride(const String& mediaType, ExceptionCo
 
 void InternalSettings::setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionCode& ec)
 {
-#if ENABLE(TEXT_AUTOSIZING)
     InternalSettingsGuardForSettings();
     settings()->setTextAutosizingFontScaleFactor(fontScaleFactor);
-#else
-    UNUSED_PARAM(fontScaleFactor);
-    UNUSED_PARAM(ec);
-#endif
 }
 
 void InternalSettings::setCSSExclusionsEnabled(bool enabled, ExceptionCode& ec)

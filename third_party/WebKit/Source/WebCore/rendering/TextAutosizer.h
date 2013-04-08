@@ -26,8 +26,6 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
-#if ENABLE(TEXT_AUTOSIZING)
-
 #include "HTMLNames.h"
 #include "WritingMode.h"
 #include <wtf/Noncopyable.h>
@@ -104,7 +102,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(TEXT_AUTOSIZING)
 
 #endif // TextAutosizer_h

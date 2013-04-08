@@ -152,14 +152,12 @@ Settings::Settings(Page* page)
     : m_page(0)
     , m_mediaTypeOverride("screen")
     , m_storageBlockingPolicy(SecurityOrigin::AllowAllStorage)
-#if ENABLE(TEXT_AUTOSIZING)
     , m_textAutosizingFontScaleFactor(1)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
 #else
     , m_textAutosizingEnabled(false)
-#endif
 #endif
     SETTINGS_INITIALIZER_LIST
     , m_isJavaEnabled(false)
@@ -290,7 +288,6 @@ void Settings::setPictographFontFamily(const AtomicString& family, UScriptCode s
     setGenericFontFamilyMap(m_pictographFontFamilyMap, family, script, m_page);
 }
 
-#if ENABLE(TEXT_AUTOSIZING)
 void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
 {
     if (m_textAutosizingEnabled == textAutosizingEnabled)
@@ -319,8 +316,6 @@ void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
 
     m_page->setNeedsRecalcStyleInAllFrames();
 }
-
-#endif
 
 void Settings::setResolutionOverride(const IntSize& densityPerInchOverride)
 {

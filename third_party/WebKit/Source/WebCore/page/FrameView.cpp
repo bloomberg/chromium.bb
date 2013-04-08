@@ -68,6 +68,7 @@
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "TextAutosizer.h"
 #include "TextResourceDecoder.h"
 #include "TextStream.h"
 
@@ -88,10 +89,6 @@
 
 #if USE(TILED_BACKING_STORE)
 #include "TiledBackingStore.h"
-#endif
-
-#if ENABLE(TEXT_AUTOSIZING)
-#include "TextAutosizer.h"
 #endif
 
 #if PLATFORM(CHROMIUM)
@@ -451,7 +448,6 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect == oldRect)
         return;
 
-#if ENABLE(TEXT_AUTOSIZING)
     // Autosized font sizes depend on the width of the viewing area.
     if (newRect.width() != oldRect.width()) {
         Page* page = m_frame ? m_frame->page() : 0;
@@ -460,7 +456,6 @@ void FrameView::setFrameRect(const IntRect& newRect)
                 m_frame->document()->textAutosizer()->recalculateMultipliers();
         }
     }
-#endif
 
     ScrollView::setFrameRect(newRect);
 
@@ -1233,11 +1228,11 @@ void FrameView::layout(bool allowSubtree)
             beginDeferredRepaints();
             forceLayoutParentViewIfNeeded();
             root->layout();
-#if ENABLE(TEXT_AUTOSIZING)
+
             bool autosized = document->textAutosizer()->processSubtree(root);
             if (autosized && root->needsLayout())
                 root->layout();
-#endif
+
             endDeferredRepaints();
             m_inLayout = false;
 

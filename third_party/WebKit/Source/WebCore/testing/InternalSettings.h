@@ -60,11 +60,9 @@ public:
         bool m_originalStyleScoped;
 #endif
         EditingBehaviorType m_originalEditingBehavior;
-#if ENABLE(TEXT_AUTOSIZING)
         bool m_originalTextAutosizingEnabled;
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalTextAutosizingFontScaleFactor;
-#endif
         IntSize m_originalResolutionOverride;
         String m_originalMediaTypeOverride;
 #if ENABLE(DIALOG_ELEMENT)

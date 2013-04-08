@@ -144,6 +144,7 @@ class StyleSheet;
 class StyleSheetContents;
 class StyleSheetList;
 class Text;
+class TextAutosizer;
 class TextResourceDecoder;
 class TreeWalker;
 class VisitedLinkState;
@@ -182,10 +183,6 @@ class MicroDataItemList;
 
 #if ENABLE(LINK_PRERENDER)
 class Prerenderer;
-#endif
-
-#if ENABLE(TEXT_AUTOSIZING)
-class TextAutosizer;
 #endif
 
 #if ENABLE(FONT_LOAD_EVENTS)
@@ -1141,9 +1138,7 @@ public:
     Prerenderer* prerenderer() { return m_prerenderer.get(); }
 #endif
 
-#if ENABLE(TEXT_AUTOSIZING)
     TextAutosizer* textAutosizer() { return m_textAutosizer.get(); }
-#endif
 
 #if ENABLE(CUSTOM_ELEMENTS)
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionCode&);
@@ -1532,9 +1527,7 @@ private:
     OwnPtr<Prerenderer> m_prerenderer;
 #endif
 
-#if ENABLE(TEXT_AUTOSIZING)
     OwnPtr<TextAutosizer> m_textAutosizer;
-#endif
 
 #if ENABLE(CUSTOM_ELEMENTS)
     RefPtr<CustomElementRegistry> m_registry;

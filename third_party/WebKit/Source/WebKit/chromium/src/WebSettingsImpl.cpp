@@ -159,20 +159,12 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
 
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
-#if ENABLE(TEXT_AUTOSIZING)
     m_settings->setTextAutosizingEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 void WebSettingsImpl::setTextAutosizingFontScaleFactor(float fontScaleFactor)
 {
-#if ENABLE(TEXT_AUTOSIZING)
     m_settings->setTextAutosizingFontScaleFactor(fontScaleFactor);
-#else
-    UNUSED_PARAM(fontScaleFactor);
-#endif
 }
 
 void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)

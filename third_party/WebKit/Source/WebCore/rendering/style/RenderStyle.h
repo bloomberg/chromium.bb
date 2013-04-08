@@ -557,9 +557,7 @@ public:
     float computedFontSize() const;
     int fontSize() const;
 
-#if ENABLE(TEXT_AUTOSIZING)
     float textAutosizingMultiplier() const { return visual->m_textAutosizingMultiplier; }
-#endif
 
     Length textIndent() const { return rareInheritedData->indent; }
 #if ENABLE(CSS3_TEXT)
@@ -1100,13 +1098,11 @@ public:
     // Only used for blending font sizes when animating, for MathML anonymous blocks, and for text autosizing.
     void setFontSize(float);
 
-#if ENABLE(TEXT_AUTOSIZING)
     void setTextAutosizingMultiplier(float v)
     {
         SET_VAR(visual, m_textAutosizingMultiplier, v);
         setFontSize(fontDescription().specifiedSize());
     }
-#endif
 
     void setColor(const Color&);
     void setTextIndent(Length v) { SET_VAR(rareInheritedData, indent, v); }

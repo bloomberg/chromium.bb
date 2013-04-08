@@ -162,6 +162,7 @@
 #include "StyleResolver.h"
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
+#include "TextAutosizer.h"
 #include "TextResourceDecoder.h"
 #include "Timer.h"
 #include "TraceEvent.h"
@@ -234,10 +235,6 @@
 
 #if ENABLE(LINK_PRERENDER)
 #include "Prerenderer.h"
-#endif
-
-#if ENABLE(TEXT_AUTOSIZING)
-#include "TextAutosizer.h"
 #endif
 
 #if ENABLE(VIDEO_TRACK)
@@ -513,9 +510,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
 #if ENABLE(LINK_PRERENDER)
     m_prerenderer = Prerenderer::create(this);
 #endif
-#if ENABLE(TEXT_AUTOSIZING)
     m_textAutosizer = TextAutosizer::create(this);
-#endif
     m_visuallyOrdered = false;
     m_bParsing = false;
     m_wellFormed = false;
@@ -6044,9 +6039,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_scriptedAnimationController, "scriptedAnimationController");
 #endif
     info.addMember(m_pendingTasksTimer, "pendingTasksTimer");
-#if ENABLE(TEXT_AUTOSIZING)
     info.addMember(m_textAutosizer, "textAutosizer");
-#endif
     info.addMember(m_visualUpdatesSuppressionTimer, "visualUpdatesSuppressionTimer");
     info.addMember(m_namedFlows, "namedFlows");
     info.addMember(m_domSecurityPolicy, "domSecurityPolicy");

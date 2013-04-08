@@ -39,16 +39,13 @@
 #if ENABLE(TOUCH_EVENTS)
 #include "RenderTheme.h"
 #endif
+#include "TextAutosizer.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>
 #include <algorithm>
-
-#if ENABLE(TEXT_AUTOSIZING)
-#include "TextAutosizer.h"
-#endif
 
 using namespace std;
 
@@ -518,10 +515,8 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             return StyleDifferenceLayout;
     }
 
-#if ENABLE(TEXT_AUTOSIZING)
     if (visual->m_textAutosizingMultiplier != other->visual->m_textAutosizingMultiplier)
         return StyleDifferenceLayout;
-#endif
 
     if (inherited->line_height != other->inherited->line_height
         || inherited->font != other->inherited->font
@@ -1241,7 +1236,6 @@ Length RenderStyle::specifiedLineHeight() const { return inherited->line_height;
 Length RenderStyle::lineHeight() const
 {
     const Length& lh = inherited->line_height;
-#if ENABLE(TEXT_AUTOSIZING)
     // Unlike fontDescription().computedSize() and hence fontSize(), this is
     // recalculated on demand as we only store the specified line height.
     // FIXME: Should consider scaling the fixed part of any calc expressions
@@ -1249,7 +1243,7 @@ Length RenderStyle::lineHeight() const
     float multiplier = textAutosizingMultiplier();
     if (multiplier > 1 && lh.isFixed())
         return Length(TextAutosizer::computeAutosizedFontSize(lh.value(), multiplier), Fixed);
-#endif
+
     return lh;
 }
 void RenderStyle::setLineHeight(Length specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
@@ -1290,13 +1284,11 @@ void RenderStyle::setFontSize(float size)
     desc.setSpecifiedSize(size);
     desc.setComputedSize(size);
 
-#if ENABLE(TEXT_AUTOSIZING)
     float multiplier = textAutosizingMultiplier();
     if (multiplier > 1) {
         float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
         desc.setComputedSize(min(maximumAllowedFontSize, autosizedFontSize));
     }
-#endif
 
     setFontDescription(desc);
     font().update(currentFontSelector);

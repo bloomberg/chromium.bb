@@ -94,7 +94,6 @@ namespace WebCore {
         void setPictographFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
         const AtomicString& pictographFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
-#if ENABLE(TEXT_AUTOSIZING)
         void setTextAutosizingEnabled(bool);
         bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
 
@@ -104,7 +103,6 @@ namespace WebCore {
         // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
         void setTextAutosizingWindowSizeOverride(const IntSize&);
         const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
-#endif
 
         // Only set by Layout Tests.
         void setResolutionOverride(const IntSize&);
@@ -264,11 +262,9 @@ namespace WebCore {
         ScriptFontFamilyMap m_fantasyFontFamilyMap;
         ScriptFontFamilyMap m_pictographFontFamilyMap;
         SecurityOrigin::StorageBlockingPolicy m_storageBlockingPolicy;
-#if ENABLE(TEXT_AUTOSIZING)
         float m_textAutosizingFontScaleFactor;
         IntSize m_textAutosizingWindowSizeOverride;
         bool m_textAutosizingEnabled : 1;
-#endif
         IntSize m_resolutionDensityPerInchOverride;
 
         SETTINGS_MEMBER_VARIABLES

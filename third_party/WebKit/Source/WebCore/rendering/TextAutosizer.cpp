@@ -20,8 +20,6 @@
 
 #include "config.h"
 
-#if ENABLE(TEXT_AUTOSIZING)
-
 #include "TextAutosizer.h"
 
 #include "Document.h"
@@ -615,5 +613,3 @@ void TextAutosizer::getNarrowDescendantsGroupedByWidth(const TextAutosizingClust
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(TEXT_AUTOSIZING)

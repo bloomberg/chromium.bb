@@ -102,7 +102,6 @@
       'ENABLE_STYLE_SCOPED=1',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
-      'ENABLE_TEXT_AUTOSIZING=1',
       'ENABLE_THREADED_HTML_PARSER=1',
       'ENABLE_TOUCH_ADJUSTMENT=1',
       'ENABLE_TOUCH_EVENTS=<(enable_touch_events)',

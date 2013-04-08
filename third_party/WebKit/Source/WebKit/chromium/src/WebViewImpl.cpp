@@ -1198,10 +1198,8 @@ void WebViewImpl::computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZo
         // be allowed to manually pinch zoom in further if they desire.
         const float defaultScaleWhenAlreadyLegible = m_minimumPageScaleFactor * doubleTapZoomAlreadyLegibleRatio;
         float legibleScale = 1;
-#if ENABLE(TEXT_AUTOSIZING)
         if (page() && page()->settings())
             legibleScale *= page()->settings()->textAutosizingFontScaleFactor();
-#endif
         if (legibleScale < defaultScaleWhenAlreadyLegible)
             legibleScale = (scale == m_minimumPageScaleFactor) ? defaultScaleWhenAlreadyLegible : m_minimumPageScaleFactor;
 
@@ -2772,10 +2770,9 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     // the caret height will become minReadableCaretHeight (adjusted for dpi
     // and font scale factor).
     float targetScale = 1;
-#if ENABLE(TEXT_AUTOSIZING)
     if (page() && page()->settings())
         targetScale *= page()->settings()->textAutosizingFontScaleFactor();
-#endif
+
     newScale = clampPageScaleFactorToLimits(minReadableCaretHeight * targetScale / caret.height);
     const float deltaScale = newScale / pageScaleFactor();
 

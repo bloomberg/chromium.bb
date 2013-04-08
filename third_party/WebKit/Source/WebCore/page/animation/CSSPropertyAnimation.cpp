@@ -1117,12 +1117,9 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFontSize,
         // Must pass a specified size to setFontSize if Text Autosizing is enabled, but a computed size
         // if text zoom is enabled (if neither is enabled it's irrelevant as they're probably the same).
-        // FIXME: Find some way to assert that text zoom isn't activated when Text Autosizing is compiled in.
-#if ENABLE(TEXT_AUTOSIZING)
+        // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
+        // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
         &RenderStyle::specifiedFontSize,
-#else
-        &RenderStyle::computedFontSize,
-#endif
         &RenderStyle::setFontSize));
     gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnRuleWidth, &RenderStyle::columnRuleWidth, &RenderStyle::setColumnRuleWidth));
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnGap, &RenderStyle::columnGap, &RenderStyle::setColumnGap));
