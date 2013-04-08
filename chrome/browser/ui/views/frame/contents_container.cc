@@ -98,6 +98,8 @@ void ContentsContainer::MakeOverlayContentsActiveContents() {
   active_ = overlay_;
   overlay_ = NULL;
   overlay_web_contents_ = NULL;
+  // Unregister from observing previous |overlay_web_contents_|.
+  registrar_.RemoveAll();
   // Since |overlay_| has been nuked, shadow view is not needed anymore.
   // Note that the previous |active_| will be deleted by caller (see
   // BrowserView::ActiveTabChanged()) after this call, hence removing the old
@@ -145,9 +147,8 @@ void ContentsContainer::SetOverlay(views::WebView* overlay,
 
   if (overlay_web_contents_ != overlay_web_contents) {
 #if !defined(OS_WIN)
-    // Unregister from previous overlay web contents' render view host.
-    if (overlay_web_contents_)
-      registrar_.RemoveAll();
+    // Unregister from observing previous |overlay_web_contents_|.
+    registrar_.RemoveAll();
 #endif  // !defined(OS_WIN)
 
     overlay_web_contents_ = overlay_web_contents;
@@ -157,11 +158,13 @@ void ContentsContainer::SetOverlay(views::WebView* overlay,
     if (overlay_web_contents_) {
       content::RenderViewHost* rvh = overlay_web_contents_->GetRenderViewHost();
       DCHECK(rvh);
-      content::NotificationSource source =
-          content::Source<content::RenderWidgetHost>(rvh);
-      registrar_.Add(this,
-          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-          source);
+      if (rvh) {
+        content::NotificationSource source =
+            content::Source<content::RenderWidgetHost>(rvh);
+        registrar_.Add(this,
+            content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+            source);
+      }
     }
 #endif  // !defined(OS_WIN)
   }
@@ -273,6 +276,10 @@ void ContentsContainer::Observe(int type,
   DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
             type);
   // Remove shadow view if it's not needed.
-  if (overlay_ && !draw_drop_shadow_)
+  if (overlay_ && !draw_drop_shadow_) {
+    DCHECK(overlay_web_contents_);
+    DCHECK_EQ(overlay_web_contents_->GetRenderViewHost(),
+              (content::Source<content::RenderWidgetHost>(source)).ptr());
     shadow_view_.reset();
+  }
 }
