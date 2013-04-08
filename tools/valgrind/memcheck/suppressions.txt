@@ -3184,6 +3184,17 @@
    fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadE*
 }
 {
+   bug_90215_f
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN26TransportSecurityPersisterC1EPN3net22TransportSecurityStateERKN4base8FilePathEb
+   fun:_ZNK13ProfileIOData4InitEPSt3mapISs10linked_ptrIN3net20URLRequestJobFactory15ProtocolHandlerEESt4lessISsESaISt4pairIKSsS5_EEE
+   fun:_ZN12_GLOBAL__N_114FactoryForMain6CreateEv
+   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN7content21ChromeAppCacheService20InitializeOnIOThreadERKN4base8FilePathEPNS_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN5quota20SpecialStoragePolicyEE
+}
+{
    bug_90240
    Memcheck:Leak
    fun:_Znw*
