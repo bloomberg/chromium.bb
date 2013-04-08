@@ -27,7 +27,7 @@ LogStoreEntry::~LogStoreEntry() {
 
 bool LogStoreEntry::Init() {
   DCHECK(!init_);
-  if (!ReadOnly()) {
+  if (IsNew()) {
     init_ = true;
     return true;
   }
@@ -53,13 +53,13 @@ bool LogStoreEntry::Init() {
 bool LogStoreEntry::Close() {
   DCHECK(init_ && !closed_);
 
-  if (ReadOnly()) {
+  if (IsNew()) {
+    closed_ = deleted_ ? true : Save();
+  } else {
     store_->CloseEntry(id_);
     if (deleted_)
       store_->DeleteEntry(id_, Size());
     closed_ = true;
-  } else {
-    closed_ = deleted_ ? true : Save();
   }
   return closed_;
 }
@@ -86,7 +86,7 @@ int LogStoreEntry::ReadData(int index, int offset, net::IOBuffer* buf,
   if (offset + buf_len > stream_size)
     buf_len = stream_size - offset;
 
-  if (ReadOnly()) {
+  if (!IsNew()) {
     offset += streams_[index].offset;
     if (store_->ReadData(id_, buf->data(), buf_len, offset))
       return buf_len;
@@ -122,8 +122,8 @@ void LogStoreEntry::Delete() {
   deleted_ = true;
 }
 
-bool LogStoreEntry::ReadOnly() const {
-  return id_ != -1;
+bool LogStoreEntry::IsNew() const {
+  return id_ == -1;
 }
 
 bool LogStoreEntry::InvalidStream(int stream_index) const {
@@ -140,7 +140,7 @@ int32 LogStoreEntry::Size() const {
 }
 
 bool LogStoreEntry::Save() {
-  DCHECK(init_ && !closed_ && !deleted_ && !ReadOnly());
+  DCHECK(init_ && !closed_ && !deleted_ && IsNew());
   int32 stream_sizes[kFlashLogStoreEntryNumStreams];
   COMPILE_ASSERT(sizeof(stream_sizes) == kFlashLogStoreEntryHeaderSize,
                  invalid_log_store_entry_header_size);

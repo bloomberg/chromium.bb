@@ -30,6 +30,7 @@ class NET_EXPORT_PRIVATE LogStoreEntry {
   bool Close();
 
   int32 id() const;
+  bool IsNew() const;
   int32 GetDataSize(int index) const;
 
   int ReadData(int index, int offset, net::IOBuffer* buf, int buf_len);
@@ -45,7 +46,6 @@ class NET_EXPORT_PRIVATE LogStoreEntry {
     std::vector<char> write_buffer;
   };
 
-  bool ReadOnly() const;
   bool InvalidStream(int stream_index) const;
   int32 Size() const;
   bool Save();
