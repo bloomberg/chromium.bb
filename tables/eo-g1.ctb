@@ -36,8 +36,6 @@ capsign 46
 begcaps 46-46
 endcaps 46-3
 space \s 0		SPACE
-prepunc " 236
-postpunc " 356
 punctuation ! 235		EXCLAMATION MARK
 punctuation ' 3		APOSTROPHE
 punctuation ( 2356		LEFT PARENTHESIS
@@ -48,6 +46,9 @@ punctuation . 256		FULL STOP
 punctuation : 25		COLON
 punctuation ; 23		SEMICOLON
 punctuation ? 26		QUESTION MARK
+punctuation " 236
+prepunc " 236
+postpunc " 356
 include digits6Dots.uti
 
 # define w prior to the included definition so that it is overwridden.
