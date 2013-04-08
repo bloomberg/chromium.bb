@@ -357,6 +357,10 @@
     -webkit-mask-position: -128px -48px;
 }
 
+.glue-async-status-bar-item.toggled-on:disabled .glyph {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
 .timeline-frame-overview-status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
 }
