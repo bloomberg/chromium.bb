@@ -73,7 +73,7 @@ cr.define('ntp', function() {
       this.uninstall_.addEventListener('activate',
                                        this.onUninstall_.bind(this));
 
-      if (!cr.isChromeOS) {
+      if (!(cr.isChromeOS || cr.isMac)) {
         this.createShortcutSeparator_ =
             menu.appendChild(cr.ui.MenuItem.createSeparator());
         this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
@@ -140,7 +140,7 @@ cr.define('ntp', function() {
       this.details_.disabled = !app.appData.detailsUrl;
       this.uninstall_.disabled = !app.appData.mayDisable;
 
-      if (cr.isMac) {
+      if (this.createShortcut_ && cr.isMac) {
         // On Windows and Linux, these should always be visible. On ChromeOS,
         // they are never created. On Mac, shortcuts can only be created for
         // new-style packaged apps, so hide the menu item.
