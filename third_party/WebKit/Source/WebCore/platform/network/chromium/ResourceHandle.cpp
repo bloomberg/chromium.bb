@@ -248,11 +248,6 @@ bool ResourceHandle::start()
     return true;
 }
 
-bool ResourceHandle::hasAuthenticationChallenge() const
-{
-    return false;
-}
-
 void ResourceHandle::clearAuthentication()
 {
 }

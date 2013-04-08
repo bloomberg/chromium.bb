@@ -295,11 +295,6 @@ void ResourceLoader::didDownloadData(int length)
         CRASH();
 }
 
-void ResourceLoader::didReceiveBuffer(PassRefPtr<SharedBuffer> buffer, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    didReceiveDataOrBuffer(0, 0, buffer, encodedDataLength, dataPayloadType);
-}
-
 void ResourceLoader::didReceiveDataOrBuffer(const char* data, int length, PassRefPtr<SharedBuffer> prpBuffer, long long encodedDataLength, DataPayloadType dataPayloadType)
 {
     // This method should only get data+length *OR* a SharedBuffer.
@@ -445,11 +440,6 @@ ResourceError ResourceLoader::cancelledError()
     return frameLoader()->cancelledError(m_request);
 }
 
-ResourceError ResourceLoader::blockedError()
-{
-    return frameLoader()->client()->blockedError(m_request);
-}
-
 ResourceError ResourceLoader::cannotShowURLError()
 {
     return frameLoader()->client()->cannotShowURLError(m_request);
@@ -481,13 +471,6 @@ void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int lengt
     InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
-void ResourceLoader::didReceiveBuffer(ResourceHandle*, PassRefPtr<SharedBuffer> buffer, int encodedDataLength)
-{
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_frame.get(), identifier(), encodedDataLength);
-    didReceiveBuffer(buffer, encodedDataLength, DataPayloadBytes);
-    InspectorInstrumentation::didReceiveResourceData(cookie);
-}
-
 void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 {
     didFinishLoading(finishTime);
@@ -500,16 +483,6 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     didFail(error);
 }
 
-void ResourceLoader::wasBlocked(ResourceHandle*)
-{
-    didFail(blockedError());
-}
-
-void ResourceLoader::cannotShowURL(ResourceHandle*)
-{
-    didFail(cannotShowURLError());
-}
-
 bool ResourceLoader::shouldUseCredentialStorage()
 {
     if (m_options.allowCredentials == DoNotAllowStoredCredentials)
@@ -517,51 +490,6 @@ bool ResourceLoader::shouldUseCredentialStorage()
     
     RefPtr<ResourceLoader> protector(this);
     return frameLoader()->client()->shouldUseCredentialStorage(documentLoader(), identifier());
-}
-
-void ResourceLoader::didReceiveAuthenticationChallenge(const AuthenticationChallenge& challenge)
-{
-    ASSERT(handle()->hasAuthenticationChallenge());
-
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-
-    if (m_options.allowCredentials == AllowStoredCredentials) {
-        if (m_options.crossOriginCredentialPolicy == AskClientForCrossOriginCredentials || m_frame->document()->securityOrigin()->canRequest(originalRequest().url())) {
-            frameLoader()->notifier()->didReceiveAuthenticationChallenge(this, challenge);
-            return;
-        }
-    }
-    // Only these platforms provide a way to continue without credentials.
-    // If we can't continue with credentials, we need to cancel the load altogether.
-#if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL) || PLATFORM(GTK)
-    challenge.authenticationClient()->receivedRequestToContinueWithoutCredential(challenge);
-    ASSERT(!handle() || !handle()->hasAuthenticationChallenge());
-#else
-    didFail(blockedError());
-#endif
-}
-
-void ResourceLoader::didCancelAuthenticationChallenge(const AuthenticationChallenge& challenge)
-{
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-    frameLoader()->notifier()->didCancelAuthenticationChallenge(this, challenge);
-}
-
-#if USE(PROTECTION_SPACE_AUTH_CALLBACK)
-bool ResourceLoader::canAuthenticateAgainstProtectionSpace(const ProtectionSpace& protectionSpace)
-{
-    RefPtr<ResourceLoader> protector(this);
-    return frameLoader()->client()->canAuthenticateAgainstProtectionSpace(documentLoader(), identifier(), protectionSpace);
-}
-#endif
-
-void ResourceLoader::receivedCancellation(const AuthenticationChallenge&)
-{
-    cancel();
 }
 
 void ResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

@@ -26,9 +26,6 @@
 #include "config.h"
 #include "ResourceHandleClient.h"
 
-#include "ResourceHandle.h"
-#include "SharedBuffer.h"
-
 namespace WebCore {
 
 ResourceHandleClient::ResourceHandleClient()
@@ -37,21 +34,6 @@ ResourceHandleClient::ResourceHandleClient()
 
 ResourceHandleClient::~ResourceHandleClient()
 {
-}
-
-void ResourceHandleClient::willSendRequestAsync(ResourceHandle* handle, const ResourceRequest& request, const ResourceResponse& /*redirectResponse*/)
-{
-    handle->continueWillSendRequest(request);
-}
-
-void ResourceHandleClient::shouldUseCredentialStorageAsync(ResourceHandle* handle)
-{
-    handle->continueShouldUseCredentialStorage(false);
-}
-
-void ResourceHandleClient::didReceiveBuffer(ResourceHandle* handle, PassRefPtr<SharedBuffer> buffer, int encodedDataLength)
-{
-    didReceiveData(handle, buffer->data(), buffer->size(), encodedDataLength);
 }
 
 }
