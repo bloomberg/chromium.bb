@@ -179,8 +179,8 @@ void MemoryProgramCache::SaveLinkedProgram(
   }
 
   if (!shader_callback.is_null() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuShaderDiskCache)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuShaderDiskCache)) {
     std::string key;
     base::Base64Encode(sha_string, &key);
 
