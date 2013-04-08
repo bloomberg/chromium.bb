@@ -151,7 +151,7 @@ void InspectorCompositeState::unmute()
 
 void InspectorCompositeState::inspectorStateUpdated()
 {
-    if (m_client && !m_isMuted && m_client->supportsInspectorStateUpdates())
+    if (m_client && !m_isMuted)
         m_client->updateInspectorStateCookie(m_stateObject->toJSONString());
 }
 

@@ -567,12 +567,6 @@ public:
     EmptyInspectorClient() { }
     virtual ~EmptyInspectorClient() { }
 
-    virtual void inspectorDestroyed() { }
-    
-    virtual InspectorFrontendChannel* openInspectorFrontend(InspectorController*) { return 0; }
-    virtual void closeInspectorFrontend() { }
-    virtual void bringFrontendToFront() { }
-
     virtual void highlight() { }
     virtual void hideHighlight() { }
 };
