@@ -327,6 +327,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Clipboard.IncognitoUseCase" enum="ClipboardAction">
+  <obsolete>
+    Deprecated as of 4/2013, experiment confirmed correctness of our patch.
+  </obsolete>
+  <summary>
+    Counts how often the user writes or reads from the clipboard and whether the
+    write was from an incognito window or not.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies">
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
@@ -630,6 +640,12 @@ other types of suffix sets.
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
+</enum>
+
+<enum name="ClipboardAction" type="int">
+  <int value="0" label="Write from non-Incognito"/>
+  <int value="1" label="Write from Incognito"/>
+  <int value="2" label="Read Text"/>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">
