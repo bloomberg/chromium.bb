@@ -514,7 +514,7 @@ class GitRepoPatch(object):
       output = ret.output.split('\0')
       if len(output) != 3:
         return None, None, None
-      return [x.strip() for x in output]
+      return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
 
     if self.sha1 is not None:
       # See if we've already got the object.
@@ -757,7 +757,7 @@ class GitRepoPatch(object):
       # as differing from actual output for a single patch that
       # lacks a commit message.
       # Because the explicit null addition, strip off the last record.
-      patches = return_obj.output.split('\0')
+      patches = unicode(return_obj.output, 'ascii', 'ignore').split('\0')
 
     for patch_output in patches:
       sha1, commit_msg = patch_output.split('\n', 1)
@@ -896,11 +896,9 @@ class GitRepoPatch(object):
 
     # Note the output of this ls-tree invocation is filename per line;
     # basically equivalent to ls -1.
-    conflicts = git.RunGit(
-        git_repo, ['ls-tree', '--full-name', '--name-only', '-z', tree_revision,
-                   '--'] + targets, error_code_ok=True).output.split('\0')[:-1]
-
-    return conflicts
+    cmd = ['ls-tree', '--full-name', '--name-only', '-z', tree_revision, '--']
+    output = git.RunGit(git_repo, cmd + targets, error_code_ok=True).output
+    return unicode(output, 'ascii', 'ignore').split('\0')[:-1]
 
   def __str__(self):
     """Returns custom string to identify this patch."""

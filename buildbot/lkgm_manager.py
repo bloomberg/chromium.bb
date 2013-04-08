@@ -502,7 +502,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
                                        cwd=src_path)
     current_author = None
     current_committer = None
-    for line in result.output.splitlines():
+    for line in unicode(result.output, 'ascii', 'ignore').splitlines():
       author_match = author_re.match(line)
       if author_match:
         current_author = author_match.group(1)
