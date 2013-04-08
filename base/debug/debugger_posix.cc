@@ -218,16 +218,19 @@ bool BeingDebugged() {
 // SIG triggered by native code.
 //
 // Use GDB to set |go| to 1 to resume execution.
-#define DEBUG_BREAK() do { \
-  if (!BeingDebugged()) { \
-    abort(); \
-  } else { \
-    volatile int go = 0; \
-    while (!go) { \
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100)); \
-    } \
-  } \
-} while (0)
+namespace {
+void DebugBreak() {
+  if (!BeingDebugged()) {
+    abort();
+  } else {
+    volatile int go = 0;
+    while (!go) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    }
+  }
+}
+}  // namespace
+#define DEBUG_BREAK() DebugBreak()
 #else
 // ARM && !ANDROID
 #define DEBUG_BREAK() asm("bkpt 0")
