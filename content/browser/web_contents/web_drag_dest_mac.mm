@@ -248,9 +248,11 @@ int GetModifierFlags() {
 
   // Get HTML. If there's no HTML, try RTF.
   if ([types containsObject:NSHTMLPboardType]) {
-    data->html = NullableString16(
-        base::SysNSStringToUTF16([pboard stringForType:NSHTMLPboardType]),
-        false);
+    NSString* html = [pboard stringForType:NSHTMLPboardType];
+    data->html = NullableString16(base::SysNSStringToUTF16(html), false);
+  } else if ([types containsObject:ui::kChromeDragImageHTMLPboardType]) {
+    NSString* html = [pboard stringForType:ui::kChromeDragImageHTMLPboardType];
+    data->html = NullableString16(base::SysNSStringToUTF16(html), false);
   } else if ([types containsObject:NSRTFPboardType]) {
     NSString* html = [pboard htmlFromRtf];
     data->html = NullableString16(base::SysNSStringToUTF16(html), false);

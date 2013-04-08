@@ -22,6 +22,13 @@ namespace ui {
 // associated with it.
 UI_EXPORT extern NSString* const kChromeDragDummyPboardType;
 
+// Mail.app and TextEdit accept drags that have both HTML and image flavors on
+// them, but don't process them correctly <http://crbug.com/55879>. Therefore,
+// if there is an image flavor, don't put the HTML data on as HTML, but rather
+// put it on as this Chrome-only flavor. External apps won't see HTML but
+// Chrome will know enough to read it as HTML. <http://crbug.com/55879>
+UI_EXPORT extern NSString* const kChromeDragImageHTMLPboardType;
+
 // Populates the |url| and |title| with URL data in |pboard|. There may be more
 // than one, but we only handle dropping the first. |url| must not be |NULL|;
 // |title| is an optional parameter. Returns |YES| if URL data was obtained from

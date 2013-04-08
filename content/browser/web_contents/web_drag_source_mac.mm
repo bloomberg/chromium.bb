@@ -156,11 +156,12 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   }
 
   // HTML.
-  if ([type isEqualToString:NSHTMLPboardType]) {
+  if ([type isEqualToString:NSHTMLPboardType] ||
+      [type isEqualToString:ui::kChromeDragImageHTMLPboardType]) {
     DCHECK(!dropData_->html.string().empty());
     // See comment on |kHtmlHeader| above.
     [pboard setString:SysUTF16ToNSString(kHtmlHeader + dropData_->html.string())
-              forType:NSHTMLPboardType];
+              forType:type];
 
   // URL.
   } else if ([type isEqualToString:NSURLPboardType]) {
@@ -365,15 +366,14 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 - (void)fillPasteboard {
   DCHECK(pasteboard_.get());
 
-  [pasteboard_
-      declareTypes:[NSArray arrayWithObject:ui::kChromeDragDummyPboardType]
-             owner:contentsView_];
+  [pasteboard_ declareTypes:@[ui::kChromeDragDummyPboardType]
+                      owner:contentsView_];
 
   // URL (and title).
-  if (dropData_->url.is_valid())
-    [pasteboard_ addTypes:[NSArray arrayWithObjects:NSURLPboardType,
-                                                    kNSURLTitlePboardType, nil]
+  if (dropData_->url.is_valid()) {
+    [pasteboard_ addTypes:@[NSURLPboardType, kNSURLTitlePboardType]
                     owner:contentsView_];
+  }
 
   // MIME type.
   std::string mimeType;
@@ -437,25 +437,32 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   bool hasHTMLData = !dropData_->html.string().empty();
   // Mail.app and TextEdit accept drags that have both HTML and image flavors on
   // them, but don't process them correctly <http://crbug.com/55879>. Therefore,
-  // omit the HTML flavor if there is an image flavor. (The only time that
-  // WebKit fills in the WebDropData::file_contents is with an image drop, but
-  // the MIME time is tested anyway for paranoia's sake.)
+  // if there is an image flavor, don't put the HTML data on as HTML, but rather
+  // put it on as this Chrome-only flavor.
+  //
+  // (The only time that Blink fills in the WebDropData::file_contents is with
+  // an image drop, but the MIME time is tested anyway for paranoia's sake.)
   bool hasImageData = !dropData_->file_contents.empty() &&
                       fileUTI_ &&
                       UTTypeConformsTo(fileUTI_.get(), kUTTypeImage);
-  if (hasHTMLData && !hasImageData)
-    [pasteboard_ addTypes:[NSArray arrayWithObject:NSHTMLPboardType]
-                    owner:contentsView_];
+  if (hasHTMLData) {
+    if (hasImageData) {
+      [pasteboard_ addTypes:@[ui::kChromeDragImageHTMLPboardType]
+                      owner:contentsView_];
+    } else {
+      [pasteboard_ addTypes:@[NSHTMLPboardType] owner:contentsView_];
+    }
+  }
 
   // Plain text.
-  if (!dropData_->text.string().empty())
-    [pasteboard_ addTypes:[NSArray arrayWithObject:NSStringPboardType]
+  if (!dropData_->text.string().empty()) {
+    [pasteboard_ addTypes:@[NSStringPboardType]
                     owner:contentsView_];
+  }
 
   if (!dropData_->custom_data.empty()) {
-    [pasteboard_
-        addTypes:[NSArray arrayWithObject:ui::kWebCustomDataPboardType]
-           owner:contentsView_];
+    [pasteboard_ addTypes:@[ui::kWebCustomDataPboardType]
+                    owner:contentsView_];
   }
 }
 
