@@ -21,7 +21,6 @@
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
-#include "net/base/url_util.h"
 
 using content::BrowserThread;
 
@@ -229,6 +228,16 @@ void FakeDriveService::GetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (offline_) {
+    scoped_ptr<ResourceList> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
+
   // "start-offset" is a parameter only used in the FakeDriveService to
   // implement pagenation.
   int start_offset = 0;
@@ -244,9 +253,86 @@ void FakeDriveService::GetResourceList(
     }
   }
 
-  GetResourceListInternal(
-      start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, callback);
+  scoped_ptr<ResourceList> resource_list =
+      ResourceList::CreateFrom(*resource_list_value_);
+
+  // Filter out entries per parameters like |directory_resource_id| and
+  // |search_query|.
+  ScopedVector<ResourceEntry>* entries = resource_list->mutable_entries();
+
+  int num_entries_matched = 0;
+  for (size_t i = 0; i < entries->size();) {
+    ResourceEntry* entry = (*entries)[i];
+    bool should_exclude = false;
+
+    // If |directory_resource_id| is set, exclude the entry if it's not in
+    // the target directory.
+    if (!directory_resource_id.empty()) {
+      // Get the parent resource ID of the entry.
+      std::string parent_resource_id;
+      const google_apis::Link* parent_link =
+          entry->GetLinkByType(Link::LINK_PARENT);
+      if (parent_link) {
+        parent_resource_id =
+            net::UnescapeURLComponent(parent_link->href().ExtractFileName(),
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
+      }
+      if (directory_resource_id != parent_resource_id)
+        should_exclude = true;
+    }
+
+    // If |search_query| is set, exclude the entry if it does not contain the
+    // search query in the title.
+    if (!should_exclude && !search_query.empty() &&
+        !EntryMatchWithQuery(*entry, search_query)) {
+      should_exclude = true;
+    }
+
+    // If |start_changestamp| is set, exclude the entry if the
+    // changestamp is older than |largest_changestamp|.
+    // See https://developers.google.com/google-apps/documents-list/
+    // #retrieving_all_changes_since_a_given_changestamp
+    if (start_changestamp > 0 && entry->changestamp() < start_changestamp)
+      should_exclude = true;
+
+    // The entry matched the criteria for inclusion.
+    if (!should_exclude)
+      ++num_entries_matched;
+
+    // If |start_offset| is set, exclude the entry if the entry is before the
+    // start index. <= instead of < as |num_entries_matched| was
+    // already incremented.
+    if (start_offset > 0 && num_entries_matched <= start_offset)
+      should_exclude = true;
+
+    if (should_exclude)
+      entries->erase(entries->begin() + i);
+    else
+      ++i;
+  }
+
+  // If |max_results| is set, trim the entries if the number exceeded the max
+  // results.
+  if (max_results > 0 && entries->size() > static_cast<size_t>(max_results)) {
+    entries->erase(entries->begin() + max_results, entries->end());
+    // Adds the next URL.
+    const GURL next_url(
+        base::StringPrintf(
+            "http://localhost/?start-offset=%d&max-results=%d",
+            start_offset + max_results,
+            max_results));
+    Link* link = new Link;
+    link->set_type(Link::LINK_NEXT);
+    link->set_href(next_url);
+    resource_list->mutable_links()->push_back(link);
+  }
+
+  ++resource_list_load_count_;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 HTTP_SUCCESS,
+                 base::Passed(&resource_list)));
 }
 
 void FakeDriveService::GetAllResourceList(
@@ -254,12 +340,11 @@ void FakeDriveService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          "",  // empty search query
-                          "",  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          callback);
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  "",  // empty search query
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::GetResourceListInDirectory(
@@ -269,12 +354,11 @@ void FakeDriveService::GetResourceListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          "",  // empty search query
-                          directory_resource_id,
-                          0,  // start offset
-                          default_max_results_,
-                          callback);
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  "",  // empty search query
+                  directory_resource_id,
+                  callback);
 }
 
 void FakeDriveService::Search(const std::string& search_query,
@@ -283,12 +367,11 @@ void FakeDriveService::Search(const std::string& search_query,
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          search_query,
-                          "",  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          callback);
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  search_query,
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::SearchInDirectory(
@@ -300,12 +383,11 @@ void FakeDriveService::SearchInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(0,  // start changestamp
-                          search_query,
-                          directory_resource_id,
-                          0,  // start offset
-                          default_max_results_,
-                          callback);
+  GetResourceList(GURL(),  // no next feed
+                  0,  // start changestamp
+                  search_query,
+                  directory_resource_id,
+                  callback);
 }
 
 void FakeDriveService::GetChangeList(int64 start_changestamp,
@@ -313,55 +395,21 @@ void FakeDriveService::GetChangeList(int64 start_changestamp,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceListInternal(start_changestamp,
-                          "",  // empty search query
-                          "",  // no directory resource id,
-                          0,  // start offset
-                          default_max_results_,
-                          callback);
+  GetResourceList(GURL(),  // no next feed
+                  start_changestamp,
+                  "",  // empty search query
+                  "",  // no directory resource id,
+                  callback);
 }
 
 void FakeDriveService::ContinueGetResourceList(
     const GURL& override_url,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!override_url.is_empty());
   DCHECK(!callback.is_null());
 
-  // "changestamp", "q", "parent" and "start-offset" are parameters to
-  // implement "paging" of the result on FakeDriveService.
-  // The URL should be the one filled in GetResourceListInternal of the
-  // previous method invocation, so it should start with "http://localhost/?".
-  // See also GetResourceListInternal.
-  DCHECK_EQ(override_url.host(), "localhost");
-  DCHECK_EQ(override_url.path(), "/");
-
-  int64 start_changestamp = 0;
-  std::string search_query;
-  std::string directory_resource_id;
-  int start_offset = 0;
-  int max_results = default_max_results_;
-  std::vector<std::pair<std::string, std::string> > parameters;
-  if (base::SplitStringIntoKeyValuePairs(
-          override_url.query(), '=', '&', &parameters)) {
-    for (size_t i = 0; i < parameters.size(); ++i) {
-      if (parameters[i].first == "changestamp") {
-        base::StringToInt64(parameters[i].second, &start_changestamp);
-      } else if (parameters[i].first == "q") {
-        search_query = parameters[i].second;
-      } else if (parameters[i].first == "parent") {
-        directory_resource_id = parameters[i].second;
-      } else if (parameters[i].first == "start-offset") {
-        base::StringToInt(parameters[i].second, &start_offset);
-      } else if (parameters[i].first == "max-results") {
-        base::StringToInt(parameters[i].second, &max_results);
-      }
-    }
-  }
-
-  GetResourceListInternal(
-      start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, callback);
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
 }
 
 void FakeDriveService::GetResourceEntry(
@@ -1196,121 +1244,6 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
     entries->Append(raw_new_entry);
 
   return raw_new_entry;
-}
-
-void FakeDriveService::GetResourceListInternal(
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    int start_offset,
-    int max_results,
-    const GetResourceListCallback& callback) {
-  if (offline_) {
-    scoped_ptr<ResourceList> null;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   GDATA_NO_CONNECTION,
-                   base::Passed(&null)));
-    return;
-  }
-
-  scoped_ptr<ResourceList> resource_list =
-      ResourceList::CreateFrom(*resource_list_value_);
-
-  // Filter out entries per parameters like |directory_resource_id| and
-  // |search_query|.
-  ScopedVector<ResourceEntry>* entries = resource_list->mutable_entries();
-
-  int num_entries_matched = 0;
-  for (size_t i = 0; i < entries->size();) {
-    ResourceEntry* entry = (*entries)[i];
-    bool should_exclude = false;
-
-    // If |directory_resource_id| is set, exclude the entry if it's not in
-    // the target directory.
-    if (!directory_resource_id.empty()) {
-      // Get the parent resource ID of the entry.
-      std::string parent_resource_id;
-      const google_apis::Link* parent_link =
-          entry->GetLinkByType(Link::LINK_PARENT);
-      if (parent_link) {
-        parent_resource_id =
-            net::UnescapeURLComponent(parent_link->href().ExtractFileName(),
-                                      net::UnescapeRule::URL_SPECIAL_CHARS);
-      }
-      if (directory_resource_id != parent_resource_id)
-        should_exclude = true;
-    }
-
-    // If |search_query| is set, exclude the entry if it does not contain the
-    // search query in the title.
-    if (!should_exclude && !search_query.empty() &&
-        !EntryMatchWithQuery(*entry, search_query)) {
-      should_exclude = true;
-    }
-
-    // If |start_changestamp| is set, exclude the entry if the
-    // changestamp is older than |largest_changestamp|.
-    // See https://developers.google.com/google-apps/documents-list/
-    // #retrieving_all_changes_since_a_given_changestamp
-    if (start_changestamp > 0 && entry->changestamp() < start_changestamp)
-      should_exclude = true;
-
-    // The entry matched the criteria for inclusion.
-    if (!should_exclude)
-      ++num_entries_matched;
-
-    // If |start_offset| is set, exclude the entry if the entry is before the
-    // start index. <= instead of < as |num_entries_matched| was
-    // already incremented.
-    if (start_offset > 0 && num_entries_matched <= start_offset)
-      should_exclude = true;
-
-    if (should_exclude)
-      entries->erase(entries->begin() + i);
-    else
-      ++i;
-  }
-
-  // If |max_results| is set, trim the entries if the number exceeded the max
-  // results.
-  if (max_results > 0 && entries->size() > static_cast<size_t>(max_results)) {
-    entries->erase(entries->begin() + max_results, entries->end());
-    // Adds the next URL.
-    // Here, we embed information which is needed for continueing the
-    // GetResourceList operation in the next invocation into url query
-    // parameters.
-    GURL next_url(base::StringPrintf(
-        "http://localhost/?start-offset=%d&max-results=%d",
-        start_offset + max_results,
-        max_results));
-    if (start_changestamp > 0) {
-      next_url = net::AppendOrReplaceQueryParameter(
-          next_url, "changestamp",
-          base::Int64ToString(start_changestamp).c_str());
-    }
-    if (!search_query.empty()) {
-      next_url = net::AppendOrReplaceQueryParameter(
-          next_url, "q", search_query);
-    }
-    if (!directory_resource_id.empty()) {
-      next_url = net::AppendOrReplaceQueryParameter(
-          next_url, "parent", directory_resource_id);
-    }
-
-    Link* link = new Link;
-    link->set_type(Link::LINK_NEXT);
-    link->set_href(next_url);
-    resource_list->mutable_links()->push_back(link);
-  }
-
-  ++resource_list_load_count_;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 HTTP_SUCCESS,
-                 base::Passed(&resource_list)));
 }
 
 }  // namespace google_apis
