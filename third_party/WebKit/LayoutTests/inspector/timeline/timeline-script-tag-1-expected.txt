@@ -9,7 +9,6 @@ ParseHTML
 ----> ScheduleStyleRecalculation
 ----> EvaluateScript
 --------> TimeStamp : SCRIPT TAG
-----> InvalidateLayout
 EvaluateScript Properties:
 {
     children : <object>
@@ -25,4 +24,14 @@ EvaluateScript Properties:
     usedHeapSize : <number>
 }
 ParseHTML
+----> InvalidateLayout
+ParseHTML
+----> InvalidateLayout
+----> EventDispatch
+--------> FunctionCall
+------------> FunctionCall
+----> MarkLoad
+----> Layout
+--------> Layout
+----> MarkDOMContent
 

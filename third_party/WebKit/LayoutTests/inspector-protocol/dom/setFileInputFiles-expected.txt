@@ -1,4 +1,6 @@
  
-Received error: Cannot set file input files
-Received error: Cannot set file input files
+File count: 2
+Name: file1
+Name: file2
+Received error: Node is not a file input element
 

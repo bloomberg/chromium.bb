@@ -2,11 +2,12 @@ Tests script preprocessor (ability to preprocess all scripts upon reload).
 
 Debugger was enabled.
 Page reloaded.
-inspector-test.js
-debugger-test.js
+inspector-test.js.js
+debugger-test.js.js
 debugger-script-preprocessor.html
-
-
+debugger-script-preprocessor.html
+dynamicScript1
+dynamicScript2
 Page reloaded.
 Debugger was disabled.
 

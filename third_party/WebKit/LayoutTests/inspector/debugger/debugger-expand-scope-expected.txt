@@ -6,17 +6,13 @@ Evaluated script in console.
 Script execution paused.
 
 Dump scope sections:
-WindowWith Block
+Catch
     e: Error
 Local
-    arguments: Arguments[1]
     innerFunctionLocalVar: 2012
     this: Window
     x: 2010
-WindowWith Block
-    innerFunction: function innerFunction(x) {
 Closure
-    arguments: Arguments[1]
     makeClosureLocalVar: "local.TextParam"
     n: "TextParam"
 WindowGlobal

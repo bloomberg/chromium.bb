@@ -61,23 +61,23 @@ iframe style:
 -webkit-background-origin: padding-box;
 -webkit-background-size: auto;
 background-attachment: scroll;
-    body - initial inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - initial user stylesheet
+    #iframebody - initial user stylesheet
+    /-- overloaded --/ body - initial inject-stylesheet-iframe-data.html:4
 background-clip: border-box;
-    body - initial inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - initial user stylesheet
-background-color: rgb(0, 128, 0);
-    body - green inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - red user stylesheet
+    #iframebody - initial user stylesheet
+    /-- overloaded --/ body - initial inject-stylesheet-iframe-data.html:4
+background-color: rgb(255, 0, 0);
+    #iframebody - red user stylesheet
+    /-- overloaded --/ body - green inject-stylesheet-iframe-data.html:4
 background-image: none;
-    body - initial inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - initial user stylesheet
+    #iframebody - initial user stylesheet
+    /-- overloaded --/ body - initial inject-stylesheet-iframe-data.html:4
 background-origin: padding-box;
-    body - initial inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - initial user stylesheet
+    #iframebody - initial user stylesheet
+    /-- overloaded --/ body - initial inject-stylesheet-iframe-data.html:4
 background-size: auto;
-    body - initial inject-stylesheet-iframe-data.html:4
-    /-- overloaded --/ #iframebody - initial user stylesheet
+    #iframebody - initial user stylesheet
+    /-- overloaded --/ body - initial inject-stylesheet-iframe-data.html:4
 display: block;
     body - block user agent stylesheet
 margin-bottom: 8px;
@@ -94,9 +94,8 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-media="screen" (inject-stylesheet-iframe-data.html)
-body  { (inject-stylesheet-iframe-data.html:4)
-background: green;
+#iframebody  { (user stylesheet)
+background: red;
     background-image: initial;
     background-position-x: initial;
     background-position-y: initial;
@@ -106,11 +105,12 @@ background: green;
     background-attachment: initial;
     background-origin: initial;
     background-clip: initial;
-    background-color: green;
+    background-color: red;
 
 [expanded] 
-#iframebody  { (user stylesheet)
-/-- overloaded --/ background: red;
+media="screen" (inject-stylesheet-iframe-data.html)
+body  { (inject-stylesheet-iframe-data.html:4)
+background: green;
     /-- overloaded --/ background-image: initial;
     /-- overloaded --/ background-position-x: initial;
     /-- overloaded --/ background-position-y: initial;
@@ -120,7 +120,7 @@ background: green;
     /-- overloaded --/ background-attachment: initial;
     /-- overloaded --/ background-origin: initial;
     /-- overloaded --/ background-clip: initial;
-    /-- overloaded --/ background-color: red;
+    /-- overloaded --/ background-color: green;
 
 [expanded] 
 body  { (user agent stylesheet)

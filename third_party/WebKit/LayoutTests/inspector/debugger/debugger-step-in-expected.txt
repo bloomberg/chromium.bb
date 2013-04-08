@@ -14,7 +14,7 @@ Stepping into...
 Script execution resumed.
 Script execution paused.
 Call stack:
-    0) d (debugger-step-in.html:8)
+    0) d (debugger-step-in.html:9)
     1) testFunction (debugger-step-in.html:15)
 Script execution resumed.
 Debugger was disabled.
