@@ -64,13 +64,16 @@ def VersionSelect(versions, flavor):
   if isinstance(flavor, tuple):
     ids = [versions[i] for i in flavor[1:]]
     return ','.join(ids)
-  if 'pnacl' in flavor:
+  if toolchainbinaries.IsPnaclFlavor(flavor):
     return versions['PNACL_VERSION']
-  if 'glibc' in flavor:
-    return versions['GLIBC_VERSION']
-  if 'arm-trusted' in flavor:
+  if toolchainbinaries.IsX86Flavor(flavor):
+    if toolchainbinaries.IsNotNaClNewlibFlavor(flavor):
+      return versions['GLIBC_VERSION']
+    else:
+      return versions['NEWLIB_VERSION']
+  if toolchainbinaries.IsArmTrustedFlavor(flavor):
     return versions['ARM_TRUSTED_VERSION']
-  return versions['NEWLIB_VERSION']
+  raise Exception('Unknown flavor "%s"' % flavor)
 
 
 def HashKey(flavor):
