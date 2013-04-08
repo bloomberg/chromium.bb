@@ -493,11 +493,9 @@ void Chrome::scheduleAnimation()
 
 // --------
 
-#if ENABLE(DRAGGABLE_REGION)
 void ChromeClient::annotatedRegionsChanged()
 {
 }
-#endif
 
 void ChromeClient::populateVisitedLinks()
 {

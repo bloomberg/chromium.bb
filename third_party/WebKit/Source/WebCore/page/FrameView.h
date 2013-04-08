@@ -223,9 +223,7 @@ public:
     void endDisableRepaints();
     bool repaintsDisabled() { return m_disableRepaints > 0; }
 
-#if ENABLE(DRAGGABLE_REGION)
     void updateAnnotatedRegions();
-#endif
     void updateControlTints();
 
     void restoreScrollbar();

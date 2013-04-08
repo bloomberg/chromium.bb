@@ -1262,9 +1262,7 @@ void FrameView::layout(bool allowSubtree)
     if (AXObjectCache* cache = root->document()->existingAXObjectCache())
         cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
 #endif
-#if ENABLE(DRAGGABLE_REGION)
     updateAnnotatedRegions();
-#endif
 
     ASSERT(!root->needsLayout());
 
@@ -2977,7 +2975,6 @@ bool FrameView::scrollAnimatorEnabled() const
     return false;
 }
 
-#if ENABLE(DRAGGABLE_REGION)
 void FrameView::updateAnnotatedRegions()
 {
     Document* document = m_frame->document();
@@ -2993,7 +2990,6 @@ void FrameView::updateAnnotatedRegions()
         return;
     page->chrome()->client()->annotatedRegionsChanged();
 }
-#endif
 
 void FrameView::updateScrollCorner()
 {
@@ -3314,10 +3310,8 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     m_lastPaintTime = currentTime();
 
     // Regions may have changed as a result of the visibility/z-index of element changing.
-#if ENABLE(DRAGGABLE_REGION)
     if (document->annotatedRegionsDirty())
         updateAnnotatedRegions();
-#endif
 
     if (isTopLevelPainter)
         sCurrentPaintTimeStamp = 0;

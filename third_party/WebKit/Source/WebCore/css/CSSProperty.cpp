@@ -688,9 +688,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyBufferedRendering:
     case CSSPropertyWebkitSvgShadow:
 #endif
-#if ENABLE(DRAGGABLE_REGION)
     case CSSPropertyWebkitAppRegion:
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     case CSSPropertyMaxZoom:
     case CSSPropertyMinZoom:

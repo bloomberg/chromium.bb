@@ -2720,12 +2720,10 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     // End Apple-specific properties
 
-#if ENABLE(DRAGGABLE_REGION)
     case CSSPropertyWebkitAppRegion:
         if (id >= CSSValueDrag && id <= CSSValueNoDrag)
             validPrimitive = true;
         break;
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
     case CSSPropertyWebkitTapHighlightColor:

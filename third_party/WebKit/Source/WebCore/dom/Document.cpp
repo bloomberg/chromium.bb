@@ -438,10 +438,8 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_hasXMLDeclaration(0)
     , m_savedRenderer(0)
     , m_designMode(inherit)
-#if ENABLE(DRAGGABLE_REGION)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
-#endif
     , m_createRenderers(true)
     , m_inPageCache(false)
     , m_accessKeyMapValid(false)
@@ -3300,7 +3298,6 @@ void Document::activeChainNodeDetached(Node* node)
         m_activeElement = m_activeElement->parentElement();
 }
 
-#if ENABLE(DRAGGABLE_REGION)
 const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const
 {
     return m_annotatedRegions;
@@ -3311,7 +3308,6 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     m_annotatedRegions = regions;
     setAnnotatedRegionsDirty(false);
 }
-#endif
 
 bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection direction)
 {
@@ -5967,9 +5963,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_xmlEncoding, "xmlEncoding");
     info.addMember(m_xmlVersion, "xmlVersion");
     info.addMember(m_contentLanguage, "contentLanguage");
-#if ENABLE(DRAGGABLE_REGION)
     info.addMember(m_annotatedRegions, "annotatedRegions");
-#endif
     info.addMember(m_cssCanvasElements, "cssCanvasElements");
     info.addMember(m_iconURLs, "iconURLs");
     info.addMember(m_documentSuspensionCallbackElements, "documentSuspensionCallbackElements");

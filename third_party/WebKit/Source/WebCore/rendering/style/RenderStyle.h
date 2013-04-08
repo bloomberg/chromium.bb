@@ -1003,10 +1003,8 @@ public:
     void setMinHeight(Length v) { SET_VAR(m_box, m_minHeight, v); }
     void setMaxHeight(Length v) { SET_VAR(m_box, m_maxHeight, v); }
 
-#if ENABLE(DRAGGABLE_REGION)
     DraggableRegionMode getDraggableRegionMode() const { return rareNonInheritedData->m_draggableRegionMode; }
     void setDraggableRegionMode(DraggableRegionMode v) { SET_VAR(rareNonInheritedData, m_draggableRegionMode, v); }
-#endif
 
     void resetBorder() { resetBorderImage(); resetBorderTop(); resetBorderRight(); resetBorderBottom(); resetBorderLeft(); resetBorderRadius(); }
     void resetBorderTop() { SET_VAR(surround, border.m_top, BorderValue()); }

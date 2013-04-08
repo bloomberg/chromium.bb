@@ -1002,10 +1002,8 @@ snap
 -webkit-paged-y
 
 // -webkit-app-region
-#if defined(ENABLE_DRAGGABLE_REGION) && ENABLE_DRAGGABLE_REGION
 drag
 no-drag
-#endif
 
 #if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
 // text-indent

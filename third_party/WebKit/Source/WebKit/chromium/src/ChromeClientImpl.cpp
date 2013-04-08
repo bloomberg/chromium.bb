@@ -1162,14 +1162,12 @@ bool ChromeClientImpl::isPointerLocked()
 }
 #endif
 
-#if ENABLE(DRAGGABLE_REGION)
 void ChromeClientImpl::annotatedRegionsChanged()
 {
     WebViewClient* client = m_webView->client();
     if (client)
         client->draggableRegionsChanged();
 }
-#endif
 
 void ChromeClientImpl::didAssociateFormControls(const Vector<RefPtr<Element> >& elements)
 {

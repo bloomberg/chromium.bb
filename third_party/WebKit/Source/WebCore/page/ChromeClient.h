@@ -210,9 +210,7 @@ public:
     // the new cache.
     virtual void reachedApplicationCacheOriginQuota(SecurityOrigin*, int64_t totalSpaceNeeded) = 0;
 
-#if ENABLE(DRAGGABLE_REGION)
     virtual void annotatedRegionsChanged();
-#endif
 
     virtual void populateVisitedLinks();
 

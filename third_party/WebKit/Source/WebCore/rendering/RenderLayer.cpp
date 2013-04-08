@@ -2118,9 +2118,8 @@ void RenderLayer::scrollTo(int x, int y)
         updateLayerPositionsAfterOverflowScroll();
         if (view) {
             // Update regions, scrolling may change the clip of a particular region.
-#if ENABLE(DRAGGABLE_REGION)
             view->frameView()->updateAnnotatedRegions();
-#endif
+
             view->updateWidgetPositions();
         }
 
@@ -2833,10 +2832,8 @@ void RenderLayer::setHasHorizontalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-#if ENABLE(DRAGGABLE_REGION)
     if (renderer()->document()->hasAnnotatedRegions())
         renderer()->document()->setAnnotatedRegionsDirty(true);
-#endif
 }
 
 void RenderLayer::setHasVerticalScrollbar(bool hasScrollbar)
@@ -2856,10 +2853,8 @@ void RenderLayer::setHasVerticalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-#if ENABLE(DRAGGABLE_REGION)
     if (renderer()->document()->hasAnnotatedRegions())
         renderer()->document()->setAnnotatedRegionsDirty(true);
-#endif
 }
 
 ScrollableArea* RenderLayer::enclosingScrollableArea() const
@@ -3054,10 +3049,8 @@ void RenderLayer::updateScrollbarsAfterLayout()
         updateSelfPaintingLayer();
 
         // Force an update since we know the scrollbars have changed things.
-#if ENABLE(DRAGGABLE_REGION)
         if (renderer()->document()->hasAnnotatedRegions())
             renderer()->document()->setAnnotatedRegionsDirty(true);
-#endif
 
         renderer()->repaint();
 

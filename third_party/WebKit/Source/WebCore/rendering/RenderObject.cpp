@@ -1850,11 +1850,8 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             bool visibilityChanged = m_style->visibility() != newStyle->visibility() 
                 || m_style->zIndex() != newStyle->zIndex() 
                 || m_style->hasAutoZIndex() != newStyle->hasAutoZIndex();
-#if ENABLE(DRAGGABLE_REGION)
-            if (visibilityChanged)
-                document()->setAnnotatedRegionsDirty(true);
-#endif
             if (visibilityChanged) {
+                document()->setAnnotatedRegionsDirty(true);
                 if (AXObjectCache* cache = document()->existingAXObjectCache())
                     cache->childrenChanged(parent());
             }
@@ -2845,7 +2842,6 @@ void RenderObject::getTextDecorationColors(int decorations, Color& underline, Co
     }
 }
 
-#if ENABLE(DRAGGABLE_REGION)
 void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 {
     // Convert the style regions to absolute coordinates.
@@ -2874,7 +2870,6 @@ void RenderObject::collectAnnotatedRegions(Vector<AnnotatedRegionValue>& regions
     for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling())
         curr->collectAnnotatedRegions(regions);
 }
-#endif
 
 bool RenderObject::willRenderImage(CachedImage*)
 {

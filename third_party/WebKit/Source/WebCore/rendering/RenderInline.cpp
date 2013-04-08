@@ -25,6 +25,7 @@
 
 #include "Chrome.h"
 #include "FloatQuad.h"
+#include "Frame.h"
 #include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "InlineTextBox.h"
@@ -40,10 +41,6 @@
 #include "TransformState.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
-
-#if ENABLE(DRAGGABLE_REGION)
-#include "Frame.h"
-#endif
 
 using namespace std;
 
@@ -1556,7 +1553,6 @@ void RenderInline::paintOutlineForLine(GraphicsContext* graphicsContext, const L
             antialias);
 }
 
-#if ENABLE(DRAGGABLE_REGION)
 void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 {
     // Convert the style regions to absolute coordinates.
@@ -1580,7 +1576,6 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     
     regions.append(region);
 }
-#endif
 
 void RenderInline::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

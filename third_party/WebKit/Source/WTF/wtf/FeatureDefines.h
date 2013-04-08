@@ -176,10 +176,6 @@
 #define ENABLE_DIRECTORY_UPLOAD 0
 #endif
 
-#if !defined(ENABLE_DRAGGABLE_REGION)
-#define ENABLE_DRAGGABLE_REGION 0
-#endif
-
 #if !defined(ENABLE_ENCRYPTED_MEDIA)
 #define ENABLE_ENCRYPTED_MEDIA 0
 #endif

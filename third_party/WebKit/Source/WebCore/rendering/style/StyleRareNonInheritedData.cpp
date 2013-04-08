@@ -45,9 +45,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_perspectiveOriginX(RenderStyle::initialPerspectiveOriginX())
     , m_perspectiveOriginY(RenderStyle::initialPerspectiveOriginY())
     , lineClamp(RenderStyle::initialLineClamp())
-#if ENABLE(DRAGGABLE_REGION)
     , m_draggableRegionMode(DraggableRegionNone)
-#endif
     , m_mask(FillLayer(MaskFillLayer))
     , m_pageSize()
     , m_shapeInside(RenderStyle::initialShapeInside())
@@ -102,9 +100,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_perspectiveOriginX(o.m_perspectiveOriginX)
     , m_perspectiveOriginY(o.m_perspectiveOriginY)
     , lineClamp(o.lineClamp)
-#if ENABLE(DRAGGABLE_REGION)
     , m_draggableRegionMode(o.m_draggableRegionMode)
-#endif
     , m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox)
     , m_flexibleBox(o.m_flexibleBox)
     , m_marquee(o.m_marquee)
@@ -188,9 +184,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_perspectiveOriginX == o.m_perspectiveOriginX
         && m_perspectiveOriginY == o.m_perspectiveOriginY
         && lineClamp == o.lineClamp
-#if ENABLE(DRAGGABLE_REGION)
         && m_draggableRegionMode == o.m_draggableRegionMode
-#endif
         && m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox
         && m_flexibleBox == o.m_flexibleBox
         && m_marquee == o.m_marquee

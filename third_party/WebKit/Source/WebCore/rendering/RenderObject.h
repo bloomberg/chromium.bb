@@ -116,7 +116,6 @@ typedef unsigned MapCoordinatesFlags;
 
 const int caretWidth = 1;
 
-#if ENABLE(DRAGGABLE_REGION)
 struct AnnotatedRegionValue {
     bool operator==(const AnnotatedRegionValue& o) const
     {
@@ -130,7 +129,6 @@ struct AnnotatedRegionValue {
     LayoutRect bounds;
     bool draggable;
 };
-#endif
 
 typedef WTF::HashSet<const RenderObject*> RenderObjectAncestorLineboxDirtySet;
 
@@ -707,10 +705,8 @@ public:
     // repaint and do not need a relayout
     virtual void updateFromElement() { }
 
-#if ENABLE(DRAGGABLE_REGION)
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&);
     void collectAnnotatedRegions(Vector<AnnotatedRegionValue>&);
-#endif
 
     bool isComposited() const;
 

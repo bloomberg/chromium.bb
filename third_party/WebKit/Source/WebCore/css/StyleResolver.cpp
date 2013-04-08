@@ -2552,7 +2552,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         setFontDescription(fontDescription);
         return;
     }
-#if ENABLE(DRAGGABLE_REGION)
     case CSSPropertyWebkitAppRegion: {
         if (!primitiveValue || !primitiveValue->getIdent())
             return;
@@ -2560,7 +2559,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.document()->setHasAnnotatedRegions(true);
         return;
     }
-#endif
     case CSSPropertyWebkitTextStrokeWidth: {
         HANDLE_INHERIT_AND_INITIAL(textStrokeWidth, TextStrokeWidth)
         float width = 0;

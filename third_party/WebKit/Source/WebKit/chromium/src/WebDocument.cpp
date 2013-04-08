@@ -259,7 +259,6 @@ WebAccessibilityObject WebDocument::accessibilityObjectFromID(int axID) const
 WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
 {
     WebVector<WebDraggableRegion> draggableRegions;
-#if ENABLE(DRAGGABLE_REGION)
     const Document* document = constUnwrap<Document>();
     if (document->hasAnnotatedRegions()) {
         const Vector<AnnotatedRegionValue>& regions = document->annotatedRegions();
@@ -270,7 +269,6 @@ WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
             draggableRegions[i].bounds = WebCore::IntRect(value.bounds);
         }
     }
-#endif
     return draggableRegions;
 }
 
