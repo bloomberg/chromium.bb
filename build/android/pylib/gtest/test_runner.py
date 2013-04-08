@@ -60,7 +60,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/test/data/web_app_info/',
         'chrome/test/data/web_database',
         'chrome/test/data/webui/',
-        'chrome/test/data/zip',
+        'components/test/data/zip',
         'chrome/third_party/mock4js/',
         'content/browser/gpu/software_rendering_list.json',
         'net/data/cache_tests/insert_load1',
