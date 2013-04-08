@@ -32,18 +32,17 @@
 
 namespace WebCore {
 
-// This is a base class containing only pure virtual functions.
-// Implementations must provide a subclass.
-//
-// The supported extensions are defined below and in subclasses,
-// possibly platform-specific ones.
+class GraphicsContext3DPrivate;
+class ImageBuffer;
+
+// The supported extensions are defined below.
 //
 // Calling any extension function not supported by the current context
 // must be a no-op; in particular, it may not have side effects. In
 // this situation, if the function has a return value, 0 is returned.
 class Extensions3D {
 public:
-    virtual ~Extensions3D() {}
+    ~Extensions3D();
 
     // Supported extensions:
     //   GL_EXT_texture_format_BGRA8888
@@ -73,19 +72,34 @@ public:
     //   GL_CHROMIUM_flipy
     //   GL_ARB_draw_buffers / GL_EXT_draw_buffers
 
+    //   GL_CHROMIUM_shallow_flush  : only supported if an ipc command buffer is used.
+    //   GL_CHROMIUM_resource_safe  : indicating that textures/renderbuffers are always initialized before read/write.
+    //   GL_CHROMIUM_strict_attribs : indicating a GL error is generated for out-of-bounds buffer accesses.
+    //   GL_CHROMIUM_post_sub_buffer
+    //   GL_CHROMIUM_map_sub
+    //   GL_CHROMIUM_swapbuffers_complete_callback
+    //   GL_CHROMIUM_rate_limit_offscreen_context
+    //   GL_CHROMIUM_paint_framebuffer_canvas
+    //   GL_CHROMIUM_iosurface (Mac OS X specific)
+    //   GL_CHROMIUM_command_buffer_query
+    //   GL_ANGLE_texture_usage
+    //   GL_EXT_debug_marker
+    //   GL_EXT_texture_storage
+    //   GL_EXT_occlusion_query_boolean
+
     // Takes full name of extension; for example,
     // "GL_EXT_texture_format_BGRA8888".
-    virtual bool supports(const String&) = 0;
+    bool supports(const String&);
 
     // Certain OpenGL and WebGL implementations may support enabling
     // extensions lazily. This method may only be called with
     // extension names for which supports returns true.
-    virtual void ensureEnabled(const String&) = 0;
+    void ensureEnabled(const String&);
 
     // Takes full name of extension: for example, "GL_EXT_texture_format_BGRA8888".
     // Checks to see whether the given extension is actually enabled (see ensureEnabled).
     // Has no other side-effects.
-    virtual bool isEnabled(const String&) = 0;
+    bool isEnabled(const String&);
 
     enum ExtensionsEnumType {
         // GL_EXT_texture_format_BGRA8888 enums
@@ -193,7 +207,31 @@ public:
         COLOR_ATTACHMENT12_EXT = 0x8CEC,
         COLOR_ATTACHMENT13_EXT = 0x8CED,
         COLOR_ATTACHMENT14_EXT = 0x8CEE,
-        COLOR_ATTACHMENT15_EXT = 0x8CEF
+        COLOR_ATTACHMENT15_EXT = 0x8CEF,
+
+        // GL_OES_EGL_image_external
+        GL_TEXTURE_EXTERNAL_OES = 0x8D65,
+
+        // GL_CHROMIUM_map_sub (enums inherited from GL_ARB_vertex_buffer_object)
+        READ_ONLY = 0x88B8,
+        WRITE_ONLY = 0x88B9,
+
+        // GL_ANGLE_texture_usage
+        GL_TEXTURE_USAGE_ANGLE = 0x93A2,
+        GL_FRAMEBUFFER_ATTACHMENT_ANGLE = 0x93A3,
+
+        // GL_EXT_texture_storage
+        BGRA8_EXT = 0x93A1,
+
+        // GL_EXT_occlusion_query_boolean
+        ANY_SAMPLES_PASSED_EXT = 0x8C2F,
+        ANY_SAMPLES_PASSED_CONSERVATIVE_EXT = 0x8D6A,
+        CURRENT_QUERY_EXT = 0x8865,
+        QUERY_RESULT_EXT = 0x8866,
+        QUERY_RESULT_AVAILABLE_EXT = 0x8867,
+
+        // GL_CHROMIUM_command_buffer_query
+        COMMANDS_ISSUED_CHROMIUM = 0x84F2
     };
 
     // GL_ARB_robustness
@@ -203,54 +241,96 @@ public:
     // If getGraphicsResetStatusARB returns an error, it should continue
     // returning the same error. Restoring the GraphicsContext3D is handled
     // externally.
-    virtual int getGraphicsResetStatusARB() = 0;
+    int getGraphicsResetStatusARB();
     
     // GL_ANGLE_framebuffer_blit
-    virtual void blitFramebuffer(long srcX0, long srcY0, long srcX1, long srcY1, long dstX0, long dstY0, long dstX1, long dstY1, unsigned long mask, unsigned long filter) = 0;
+    void blitFramebuffer(long srcX0, long srcY0, long srcX1, long srcY1, long dstX0, long dstY0, long dstX1, long dstY1, unsigned long mask, unsigned long filter);
     
     // GL_ANGLE_framebuffer_multisample
-    virtual void renderbufferStorageMultisample(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height) = 0;
+    void renderbufferStorageMultisample(unsigned long target, unsigned long samples, unsigned long internalformat, unsigned long width, unsigned long height);
     
     // GL_OES_vertex_array_object
-    virtual Platform3DObject createVertexArrayOES() = 0;
-    virtual void deleteVertexArrayOES(Platform3DObject) = 0;
-    virtual GC3Dboolean isVertexArrayOES(Platform3DObject) = 0;
-    virtual void bindVertexArrayOES(Platform3DObject) = 0;
+    Platform3DObject createVertexArrayOES();
+    void deleteVertexArrayOES(Platform3DObject);
+    GC3Dboolean isVertexArrayOES(Platform3DObject);
+    void bindVertexArrayOES(Platform3DObject);
 
     // GL_ANGLE_translated_shader_source
-    virtual String getTranslatedShaderSourceANGLE(Platform3DObject) = 0;
+    String getTranslatedShaderSourceANGLE(Platform3DObject);
 
     // GL_CHROMIUM_copy_texture
-    virtual void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum) = 0;
+    void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum);
 
     // EXT Robustness - uses getGraphicsResetStatusARB
-    virtual void readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data) = 0;
-    virtual void getnUniformfvEXT(GC3Duint program, int location, GC3Dsizei bufSize, float *params) = 0;
-    virtual void getnUniformivEXT(GC3Duint program, int location, GC3Dsizei bufSize, int *params) = 0;
+    void readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data);
+    void getnUniformfvEXT(GC3Duint program, int location, GC3Dsizei bufSize, float *params);
+    void getnUniformivEXT(GC3Duint program, int location, GC3Dsizei bufSize, int *params);
 
     // GL_EXT_debug_marker
-    virtual void insertEventMarkerEXT(const String&) = 0;
-    virtual void pushGroupMarkerEXT(const String&) = 0;
-    virtual void popGroupMarkerEXT(void) = 0;
+    void insertEventMarkerEXT(const String&);
+    void pushGroupMarkerEXT(const String&);
+    void popGroupMarkerEXT(void);
 
     // GL_ARB_draw_buffers / GL_EXT_draw_buffers
-    virtual void drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs) = 0;
+    void drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs);
 
-    virtual bool isNVIDIA() = 0;
-    virtual bool isAMD() = 0;
-    virtual bool isIntel() = 0;
-    virtual String vendor() = 0;
+    // Some helper methods to detect GPU functionality
+    bool isNVIDIA() { return false; }
+    bool isAMD() { return false; }
+    bool isIntel() { return false; }
+    String vendor() { return ""; }
 
     // If this method returns false then the system *definitely* does not support multisampling.
     // It does not necessarily say the system does support it - callers must attempt to construct
     // multisampled renderbuffers and check framebuffer completeness.
     // Ports should implement this to return false on configurations where it is known
     // that multisampling is not available.
-    virtual bool maySupportMultisampling() = 0;
+    bool maySupportMultisampling() { return true; }
 
     // Some configurations have bugs regarding built-in functions in their OpenGL drivers
     // that must be avoided. Ports should implement this flag such configurations.
-    virtual bool requiresBuiltInFunctionEmulation() = 0;
+    bool requiresBuiltInFunctionEmulation() { return false; }
+
+    // GL_CHROMIUM_map_sub
+    void* mapBufferSubDataCHROMIUM(unsigned target, int offset, int size, unsigned access);
+    void unmapBufferSubDataCHROMIUM(const void*);
+    void* mapTexSubImage2DCHROMIUM(unsigned target, int level, int xoffset, int yoffset, int width, int height, unsigned format, unsigned type, unsigned access);
+    void unmapTexSubImage2DCHROMIUM(const void*);
+
+    // GL_CHROMIUM_rate_limit_offscreen_context
+    void rateLimitOffscreenContextCHROMIUM();
+
+    // GL_CHROMIUM_paint_framebuffer_canvas
+    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
+
+    // GL_CHROMIUM_iosurface
+    // To avoid needing to expose extraneous enums, assumes internal format
+    // RGBA, format BGRA, and type UNSIGNED_INT_8_8_8_8_REV.
+    void texImageIOSurface2DCHROMIUM(unsigned target, int width, int height, uint32_t ioSurfaceId, unsigned plane);
+
+    // GL_EXT_texture_storage
+    void texStorage2DEXT(unsigned target, int levels, unsigned internalformat, int width, int height);
+
+    // GL_EXT_occlusion_query
+    Platform3DObject createQueryEXT();
+    void deleteQueryEXT(Platform3DObject);
+    GC3Dboolean isQueryEXT(Platform3DObject);
+    void beginQueryEXT(GC3Denum, Platform3DObject);
+    void endQueryEXT(GC3Denum);
+    void getQueryivEXT(GC3Denum, GC3Denum, GC3Dint*);
+    void getQueryObjectuivEXT(Platform3DObject, GC3Denum, GC3Duint*);
+
+    // GL_CHROMIUM_shallow_flush
+    void shallowFlushCHROMIUM();
+
+private:
+    // Instances of this class are strictly owned by the GraphicsContext3D implementation and do not
+    // need to be instantiated by any other code.
+    friend class GraphicsContext3DPrivate;
+    explicit Extensions3D(GraphicsContext3DPrivate*);
+
+    // Weak pointer back to GraphicsContext3DPrivate
+    GraphicsContext3DPrivate* m_private;
 };
 
 } // namespace WebCore

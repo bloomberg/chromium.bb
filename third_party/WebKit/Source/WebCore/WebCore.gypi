@@ -3740,6 +3740,7 @@
             'platform/graphics/Color.cpp',
             'platform/graphics/CrossfadeGeneratedImage.cpp',
             'platform/graphics/CrossfadeGeneratedImage.h',
+            'platform/graphics/Extensions3D.cpp',
             'platform/graphics/Extensions3D.h',
             'platform/graphics/Font.cpp',
             'platform/graphics/FontCache.cpp',
@@ -3825,7 +3826,6 @@
             'platform/graphics/chromium/DiscardablePixelRef.cpp',
             'platform/graphics/chromium/DiscardablePixelRef.h',
             'platform/graphics/chromium/DrawingBufferChromium.cpp',
-            'platform/graphics/chromium/Extensions3DChromium.h',
             'platform/graphics/chromium/FontCacheAndroid.cpp',
             'platform/graphics/chromium/FontCacheChromiumLinux.cpp',
             'platform/graphics/chromium/FontCacheChromiumWin.cpp',
@@ -5200,7 +5200,6 @@
         ],
 
         'webcore_platform_support_files': [
-            'platform/chromium/support/Extensions3DChromium.cpp',
             'platform/chromium/support/GraphicsContext3DChromium.cpp',
             'platform/chromium/support/GraphicsContext3DPrivate.cpp',
             'platform/chromium/support/GraphicsContext3DPrivate.h',

@@ -33,7 +33,7 @@
 #include "GraphicsContext3DPrivate.h"
 
 #include "DrawingBuffer.h"
-#include "Extensions3DChromium.h"
+#include "Extensions3D.h"
 #include "GrContext.h"
 #include "GrGLInterface.h"
 #include "ImageBuffer.h"
@@ -282,7 +282,7 @@ void GraphicsContext3DPrivate::setErrorMessageCallback(PassOwnPtr<GraphicsContex
 Extensions3D* GraphicsContext3DPrivate::getExtensions()
 {
     if (!m_extensions)
-        m_extensions = adoptPtr(new Extensions3DChromium(this));
+        m_extensions = adoptPtr(new Extensions3D(this));
     return m_extensions.get();
 }
 

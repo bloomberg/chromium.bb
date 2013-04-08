@@ -26,7 +26,7 @@
 #ifndef GraphicsContext3DPrivate_h
 #define GraphicsContext3DPrivate_h
 
-#include "Extensions3DChromium.h"
+#include "Extensions3D.h"
 #include "GraphicsContext3D.h"
 #include "SkBitmap.h"
 #include <wtf/HashSet.h>
@@ -42,7 +42,7 @@ class WebGraphicsContext3D;
 namespace WebCore {
 
 class DrawingBuffer;
-class Extensions3DChromium;
+class Extensions3D;
 class GraphicsContext3DContextLostCallbackAdapter;
 class GraphicsContext3DErrorMessageCallbackAdapter;
 class GrMemoryAllocationChangedCallbackAdapter;
@@ -94,7 +94,7 @@ private:
 
     WebKit::WebGraphicsContext3D* m_impl;
     OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
-    OwnPtr<Extensions3DChromium> m_extensions;
+    OwnPtr<Extensions3D> m_extensions;
     OwnPtr<GraphicsContext3DContextLostCallbackAdapter> m_contextLostCallbackAdapter;
     OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
     OwnPtr<GrMemoryAllocationChangedCallbackAdapter> m_grContextMemoryAllocationCallbackAdapter;

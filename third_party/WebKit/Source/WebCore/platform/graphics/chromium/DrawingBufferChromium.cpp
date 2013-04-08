@@ -33,7 +33,7 @@
 #include "DrawingBuffer.h"
 
 #include "CanvasRenderingContext.h"
-#include "Extensions3DChromium.h"
+#include "Extensions3D.h"
 #include "GraphicsContext3D.h"
 #include "GraphicsContext3DPrivate.h"
 #include "GraphicsLayerChromium.h"
@@ -244,7 +244,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, framebuffer);
     m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, frontColorBuffer(), 0);
 
-    Extensions3DChromium* extensions = static_cast<Extensions3DChromium*>(m_context->getExtensions());
+    Extensions3D* extensions = m_context->getExtensions();
     extensions->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_context->getContextAttributes().premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
 
