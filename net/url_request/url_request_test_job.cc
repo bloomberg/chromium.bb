@@ -213,6 +213,17 @@ void URLRequestTestJob::GetResponseInfo(HttpResponseInfo* info) {
     info->headers = response_headers_;
 }
 
+void URLRequestTestJob::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  // Preserve the times the URLRequest is responsible for, but overwrite all
+  // the others.
+  base::TimeTicks request_start = load_timing_info->request_start;
+  base::Time request_start_time = load_timing_info->request_start_time;
+  *load_timing_info = load_timing_info_;
+  load_timing_info->request_start = request_start;
+  load_timing_info->request_start_time = request_start_time;
+}
+
 int URLRequestTestJob::GetResponseCode() const {
   if (response_headers_)
     return response_headers_->response_code();

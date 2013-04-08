@@ -27,21 +27,21 @@ namespace net {
 // request_start
 // proxy_start
 // proxy_end
-// *dns_start
-// *dns_end
-// *connect_start
-// *ssl_start
-// *ssl_end
-// *connect_end
+// dns_start
+// dns_end
+// connect_start
+// ssl_start
+// ssl_end
+// connect_end
 // send_start
 // send_end
 // receive_headers_end
 //
-// Those times without an asterisk are computed by the URLRequest, or by objects
-// it directly creates and always owns.  Those with an asterisk are computed
-// by the connection attempt itself.  Since the connection attempt may be
-// started before a URLRequest, the starred times may occur before, during, or
-// after the request_start and proxy events.
+// Times represent when a request starts/stops blocking on an event, not the
+// time the events actually occurred.  In particular, in the case of preconnects
+// and socket reuse, no time may be spent blocking on establishing a connection.
+// In the case of SPDY and HTTP pipelining, PAC scripts are only run once for
+// each shared session, so no time may be spent blocking on them.
 //
 // DNS and SSL times are both times for the host, not the proxy, so DNS times
 // when using proxies are null, and only requests to HTTPS hosts (Not proxies)
@@ -50,6 +50,10 @@ namespace net {
 // host.  The send and receive times will all be null, however.
 // See HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
 // TODO(mmenke):  Is this worth fixing?
+//
+// Note that internal to the network stack, times are when events actually
+// occurred.  URLRequest converts them to time which the network stack was
+// blocked on each state.
 struct NET_EXPORT LoadTimingInfo {
   // Contains the LoadTimingInfo events related to establishing a connection.
   // These are all set by ConnectJobs.

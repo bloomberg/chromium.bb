@@ -119,6 +119,9 @@ class NET_EXPORT URLRequestJob
   // Called to get response info.
   virtual void GetResponseInfo(HttpResponseInfo* info);
 
+  // This returns the times when events actually occurred, rather than the time
+  // each event blocked the request.  See FixupLoadTimingInfo in url_request.h
+  // for more information on the difference.
   virtual void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   // Returns the cookie values included in the response, if applicable.

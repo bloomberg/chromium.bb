@@ -85,9 +85,8 @@ const base::string16 kChrome(ASCIIToUTF16("chrome"));
 const base::string16 kSecret(ASCIIToUTF16("secret"));
 const base::string16 kUser(ASCIIToUTF16("user"));
 
-// Tests load timing information in the case a fresh connection was used.
-// These tests use the TestServer, which doesn't support keep-alive sockets,
-// so there are no tests here that reuse sockets.
+// Tests load timing information in the case a fresh connection was used, with
+// no proxy.
 void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
                              int connect_timing_flags) {
   EXPECT_FALSE(load_timing_info.socket_reused);
@@ -105,9 +104,53 @@ void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
   EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 
-  // Not set by these tests.
   EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+}
+
+// Same as above, but with proxy times.
+void TestLoadTimingNotReusedWithProxy(
+    const net::LoadTimingInfo& load_timing_info,
+    int connect_timing_flags) {
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
+
+  EXPECT_LE(load_timing_info.request_start,
+            load_timing_info.proxy_resolve_start);
+  EXPECT_LE(load_timing_info.proxy_resolve_start,
+            load_timing_info.proxy_resolve_end);
+  EXPECT_LE(load_timing_info.proxy_resolve_end,
+            load_timing_info.connect_timing.connect_start);
+  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                              connect_timing_flags);
+  EXPECT_LE(load_timing_info.connect_timing.connect_end,
+            load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+}
+
+// Same as above, but with a reused socket and proxy times.
+void TestLoadTimingReusedWithProxy(
+    const net::LoadTimingInfo& load_timing_info) {
+  EXPECT_TRUE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
+
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+
+  EXPECT_LE(load_timing_info.request_start,
+            load_timing_info.proxy_resolve_start);
+  EXPECT_LE(load_timing_info.proxy_resolve_start,
+            load_timing_info.proxy_resolve_end);
+  EXPECT_LE(load_timing_info.proxy_resolve_end,
+            load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 }
 
 // Tests load timing in the case that there is no underlying connection.  This
@@ -979,11 +1022,13 @@ class TestInterceptor : URLRequest::Interceptor {
       return NULL;
     intercept_main_request_ = false;
     did_intercept_main_ = true;
-    return new URLRequestTestJob(request,
-                                 network_delegate,
-                                 main_headers_,
-                                 main_data_,
-                                 true);
+    URLRequestTestJob* job =  new URLRequestTestJob(request,
+                                                    network_delegate,
+                                                    main_headers_,
+                                                    main_data_,
+                                                    true);
+    job->set_load_timing_info(main_request_load_timing_info_);
+    return job;
   }
 
   virtual URLRequestJob* MaybeInterceptRedirect(
@@ -1024,10 +1069,12 @@ class TestInterceptor : URLRequest::Interceptor {
                                  true);
   }
 
-  // Whether to intercept the main request, and if so the response to return.
+  // Whether to intercept the main request, and if so the response to return and
+  // the LoadTimingInfo to use.
   bool intercept_main_request_;
   std::string main_headers_;
   std::string main_data_;
+  LoadTimingInfo main_request_load_timing_info_;
 
   // Other actions we take at MaybeIntercept time
   bool restart_main_request_;
@@ -1355,6 +1402,267 @@ TEST_F(URLRequestTest, InterceptRespectsCancelInRestart) {
   // Check we see a canceled request
   EXPECT_FALSE(req.status().is_success());
   EXPECT_EQ(URLRequestStatus::CANCELED, req.status().status());
+}
+
+LoadTimingInfo RunLoadTimingTest(const LoadTimingInfo& job_load_timing,
+                                 URLRequestContext* context) {
+  TestInterceptor interceptor;
+  interceptor.intercept_main_request_ = true;
+  interceptor.main_request_load_timing_info_ = job_load_timing;
+  TestDelegate d;
+  URLRequest req(GURL("http://test_intercept/foo"), &d, context);
+  req.Start();
+  MessageLoop::current()->Run();
+
+  LoadTimingInfo resulting_load_timing;
+  req.GetLoadTimingInfo(&resulting_load_timing);
+
+  // None of these should be modified by the URLRequest.
+  EXPECT_EQ(job_load_timing.socket_reused, resulting_load_timing.socket_reused);
+  EXPECT_EQ(job_load_timing.socket_log_id, resulting_load_timing.socket_log_id);
+  EXPECT_EQ(job_load_timing.send_start, resulting_load_timing.send_start);
+  EXPECT_EQ(job_load_timing.send_end, resulting_load_timing.send_end);
+  EXPECT_EQ(job_load_timing.receive_headers_end,
+            resulting_load_timing.receive_headers_end);
+
+  return resulting_load_timing;
+}
+
+// "Normal" LoadTimingInfo as returned by a job.  Everything is in order, not
+// reused.  |connect_time_flags| is used to indicate if there should be dns
+// or SSL times, and |used_proxy| is used for proxy times.
+LoadTimingInfo NormalLoadTimingInfo(base::TimeTicks now,
+                                    int connect_time_flags,
+                                    bool used_proxy) {
+  LoadTimingInfo load_timing;
+  load_timing.socket_log_id = 1;
+
+  if (used_proxy) {
+    load_timing.proxy_resolve_start = now + base::TimeDelta::FromDays(1);
+    load_timing.proxy_resolve_end = now + base::TimeDelta::FromDays(2);
+  }
+
+  LoadTimingInfo::ConnectTiming& connect_timing = load_timing.connect_timing;
+  if (connect_time_flags & CONNECT_TIMING_HAS_DNS_TIMES) {
+    connect_timing.dns_start = now + base::TimeDelta::FromDays(3);
+    connect_timing.dns_end = now + base::TimeDelta::FromDays(4);
+  }
+  connect_timing.connect_start = now + base::TimeDelta::FromDays(5);
+  if (connect_time_flags & CONNECT_TIMING_HAS_SSL_TIMES) {
+    connect_timing.ssl_start = now + base::TimeDelta::FromDays(6);
+    connect_timing.ssl_end = now + base::TimeDelta::FromDays(7);
+  }
+  connect_timing.connect_end = now + base::TimeDelta::FromDays(8);
+
+  load_timing.send_start = now + base::TimeDelta::FromDays(9);
+  load_timing.send_end = now + base::TimeDelta::FromDays(10);
+  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(11);
+  return load_timing;
+}
+
+// Same as above, but in the case of a reused socket.
+LoadTimingInfo NormalLoadTimingInfoReused(base::TimeTicks now,
+                                          bool used_proxy) {
+  LoadTimingInfo load_timing;
+  load_timing.socket_log_id = 1;
+  load_timing.socket_reused = true;
+
+  if (used_proxy) {
+    load_timing.proxy_resolve_start = now + base::TimeDelta::FromDays(1);
+    load_timing.proxy_resolve_end = now + base::TimeDelta::FromDays(2);
+  }
+
+  load_timing.send_start = now + base::TimeDelta::FromDays(9);
+  load_timing.send_end = now + base::TimeDelta::FromDays(10);
+  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(11);
+  return load_timing;
+}
+
+// Basic test that the intercept + load timing tests work.
+TEST_F(URLRequestTest, InterceptLoadTiming) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing =
+      NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_DNS_TIMES, false);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Nothing should have been changed by the URLRequest.
+  EXPECT_EQ(job_load_timing.proxy_resolve_start,
+            load_timing_result.proxy_resolve_start);
+  EXPECT_EQ(job_load_timing.proxy_resolve_end,
+            load_timing_result.proxy_resolve_end);
+  EXPECT_EQ(job_load_timing.connect_timing.dns_start,
+            load_timing_result.connect_timing.dns_start);
+  EXPECT_EQ(job_load_timing.connect_timing.dns_end,
+            load_timing_result.connect_timing.dns_end);
+  EXPECT_EQ(job_load_timing.connect_timing.connect_start,
+            load_timing_result.connect_timing.connect_start);
+  EXPECT_EQ(job_load_timing.connect_timing.connect_end,
+            load_timing_result.connect_timing.connect_end);
+  EXPECT_EQ(job_load_timing.connect_timing.ssl_start,
+            load_timing_result.connect_timing.ssl_start);
+  EXPECT_EQ(job_load_timing.connect_timing.ssl_end,
+            load_timing_result.connect_timing.ssl_end);
+
+  // Redundant sanity check.
+  TestLoadTimingNotReused(load_timing_result, CONNECT_TIMING_HAS_DNS_TIMES);
+}
+
+// Another basic test, with proxy and SSL times, but no DNS times.
+TEST_F(URLRequestTest, InterceptLoadTimingProxy) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing =
+      NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_SSL_TIMES, true);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Nothing should have been changed by the URLRequest.
+  EXPECT_EQ(job_load_timing.proxy_resolve_start,
+            load_timing_result.proxy_resolve_start);
+  EXPECT_EQ(job_load_timing.proxy_resolve_end,
+            load_timing_result.proxy_resolve_end);
+  EXPECT_EQ(job_load_timing.connect_timing.dns_start,
+            load_timing_result.connect_timing.dns_start);
+  EXPECT_EQ(job_load_timing.connect_timing.dns_end,
+            load_timing_result.connect_timing.dns_end);
+  EXPECT_EQ(job_load_timing.connect_timing.connect_start,
+            load_timing_result.connect_timing.connect_start);
+  EXPECT_EQ(job_load_timing.connect_timing.connect_end,
+            load_timing_result.connect_timing.connect_end);
+  EXPECT_EQ(job_load_timing.connect_timing.ssl_start,
+            load_timing_result.connect_timing.ssl_start);
+  EXPECT_EQ(job_load_timing.connect_timing.ssl_end,
+            load_timing_result.connect_timing.ssl_end);
+
+  // Redundant sanity check.
+  TestLoadTimingNotReusedWithProxy(load_timing_result,
+                                   CONNECT_TIMING_HAS_SSL_TIMES);
+}
+
+// Make sure that URLRequest correctly adjusts proxy times when they're before
+// |request_start|, due to already having a connected socket.  This happens in
+// the case of reusing a SPDY session or HTTP pipeline.  The connected socket is
+// not considered reused in this test (May be a preconnect).
+//
+// To mix things up from the test above, assumes DNS times but no SSL times.
+TEST_F(URLRequestTest, InterceptLoadTimingEarlyProxyResolution) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing =
+      NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_DNS_TIMES, true);
+  job_load_timing.proxy_resolve_start = now - base::TimeDelta::FromDays(6);
+  job_load_timing.proxy_resolve_end = now - base::TimeDelta::FromDays(5);
+  job_load_timing.connect_timing.dns_start = now - base::TimeDelta::FromDays(4);
+  job_load_timing.connect_timing.dns_end = now - base::TimeDelta::FromDays(3);
+  job_load_timing.connect_timing.connect_start =
+      now - base::TimeDelta::FromDays(2);
+  job_load_timing.connect_timing.connect_end =
+      now - base::TimeDelta::FromDays(1);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Proxy times, connect times, and DNS times should all be replaced with
+  // request_start.
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.proxy_resolve_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.proxy_resolve_end);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.dns_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.dns_end);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.connect_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.connect_end);
+
+  // Other times should have been left null.
+  TestLoadTimingNotReusedWithProxy(load_timing_result,
+                                   CONNECT_TIMING_HAS_DNS_TIMES);
+}
+
+// Same as above, but in the reused case.
+TEST_F(URLRequestTest, InterceptLoadTimingEarlyProxyResolutionReused) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing = NormalLoadTimingInfoReused(now, true);
+  job_load_timing.proxy_resolve_start = now - base::TimeDelta::FromDays(4);
+  job_load_timing.proxy_resolve_end = now - base::TimeDelta::FromDays(3);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Proxy times and connect times should all be replaced with request_start.
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.proxy_resolve_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.proxy_resolve_end);
+
+  // Other times should have been left null.
+  TestLoadTimingReusedWithProxy(load_timing_result);
+}
+
+// Make sure that URLRequest correctly adjusts connect times when they're before
+// |request_start|, due to reusing a connected socket.  The connected socket is
+// not considered reused in this test (May be a preconnect).
+//
+// To mix things up, the request has SSL times, but no DNS times.
+TEST_F(URLRequestTest, InterceptLoadTimingEarlyConnect) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing =
+      NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_SSL_TIMES, false);
+  job_load_timing.connect_timing.connect_start =
+      now - base::TimeDelta::FromDays(1);
+  job_load_timing.connect_timing.ssl_start = now - base::TimeDelta::FromDays(2);
+  job_load_timing.connect_timing.ssl_end = now - base::TimeDelta::FromDays(3);
+  job_load_timing.connect_timing.connect_end =
+      now - base::TimeDelta::FromDays(4);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Connect times, and SSL times should be replaced with request_start.
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.connect_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.ssl_start);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.ssl_end);
+  EXPECT_EQ(load_timing_result.request_start,
+            load_timing_result.connect_timing.connect_end);
+
+  // Other times should have been left null.
+  TestLoadTimingNotReused(load_timing_result, CONNECT_TIMING_HAS_SSL_TIMES);
+}
+
+// Make sure that URLRequest correctly adjusts connect times when they're before
+// |request_start|, due to reusing a connected socket in the case that there
+// are also proxy times.  The connected socket is not considered reused in this
+// test (May be a preconnect).
+//
+// In this test, there are no SSL or DNS times.
+TEST_F(URLRequestTest, InterceptLoadTimingEarlyConnectWithProxy) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  LoadTimingInfo job_load_timing =
+      NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY, true);
+  job_load_timing.connect_timing.connect_start =
+      now - base::TimeDelta::FromDays(1);
+  job_load_timing.connect_timing.connect_end =
+      now - base::TimeDelta::FromDays(2);
+
+  LoadTimingInfo load_timing_result = RunLoadTimingTest(job_load_timing,
+                                                        &default_context_);
+
+  // Connect times should be replaced with proxy_resolve_end.
+  EXPECT_EQ(load_timing_result.proxy_resolve_end,
+            load_timing_result.connect_timing.connect_start);
+  EXPECT_EQ(load_timing_result.proxy_resolve_end,
+            load_timing_result.connect_timing.connect_end);
+
+  // Other times should have been left null.
+  TestLoadTimingNotReusedWithProxy(load_timing_result,
+                                   CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 }
 
 // Check that two different URL requests have different identifiers.

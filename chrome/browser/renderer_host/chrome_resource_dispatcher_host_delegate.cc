@@ -92,50 +92,6 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       content::NotificationService::NoDetails());
 }
 
-// The network stack returns actual connect times, while the renderer process
-// expects times that the request was blocked in each phase of setting up
-// a connection.  Due to preconnect and late binding, it is possible for a
-// connection attempt to start before a request has been started, so this
-// function is needed to convert times from the network stack to times the
-// renderer process expects.
-void FixupLoadTimingInfo(net::LoadTimingInfo* load_timing_info) {
-  // If there are no times, do nothing.
-  if (load_timing_info->request_start.is_null())
-    return;
-
-  // Starting the request and resolving the proxy are the only phases of the
-  // request that occur before it blocks on starting a connection.
-  base::TimeTicks block_on_connect_start = load_timing_info->request_start;
-  if (!load_timing_info->proxy_resolve_end.is_null())
-    block_on_connect_start = load_timing_info->proxy_resolve_end;
-
-  net::LoadTimingInfo::ConnectTiming* connect_timing =
-      &load_timing_info->connect_timing;
-  if (!connect_timing->dns_start.is_null()) {
-    DCHECK(!connect_timing->dns_end.is_null());
-    if (connect_timing->dns_start < block_on_connect_start)
-      connect_timing->dns_start = block_on_connect_start;
-    if (connect_timing->dns_end < block_on_connect_start)
-      connect_timing->dns_end = block_on_connect_start;
-  }
-
-  if (!connect_timing->connect_start.is_null()) {
-    DCHECK(!connect_timing->connect_end.is_null());
-    if (connect_timing->connect_start < block_on_connect_start)
-      connect_timing->connect_start = block_on_connect_start;
-    if (connect_timing->connect_end < block_on_connect_start)
-      connect_timing->connect_end = block_on_connect_start;
-  }
-
-  if (!connect_timing->ssl_start.is_null()) {
-    DCHECK(!connect_timing->ssl_end.is_null());
-    if (connect_timing->ssl_start < block_on_connect_start)
-      connect_timing->ssl_start = block_on_connect_start;
-    if (connect_timing->ssl_end < block_on_connect_start)
-      connect_timing->ssl_end = block_on_connect_start;
-  }
-}
-
 // Goes through the extension's file browser handlers and checks if there is one
 // that can handle the |mime_type|.
 // |extension| must not be NULL.
@@ -541,10 +497,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceResponse* response,
     IPC::Sender* sender) {
   // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
-  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING) {
+  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
     request->GetLoadTimingInfo(&response->head.load_timing);
-    FixupLoadTimingInfo(&response->head.load_timing);
-  }
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
@@ -604,10 +558,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
   // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
-  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING) {
+  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
     request->GetLoadTimingInfo(&response->head.load_timing);
-    FixupLoadTimingInfo(&response->head.load_timing);
-  }
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 

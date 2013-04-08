@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "net/base/load_timing_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -90,6 +91,10 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   bool auto_advance() { return auto_advance_; }
   void set_auto_advance(bool auto_advance) { auto_advance_ = auto_advance; }
 
+  void set_load_timing_info(const LoadTimingInfo& load_timing_info) {
+    load_timing_info_ = load_timing_info;
+  }
+
   RequestPriority priority() const { return priority_; }
 
   // Factory method for protocol factory registration if callers don't subclass
@@ -104,6 +109,8 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   virtual void Kill() OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
+  virtual void GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual bool IsRedirectResponse(GURL* location,
                                   int* http_status_code) OVERRIDE;
@@ -151,6 +158,8 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   // Holds the buffer for an asynchronous ReadRawData call
   IOBuffer* async_buf_;
   int async_buf_size_;
+
+  LoadTimingInfo load_timing_info_;
 
   base::WeakPtrFactory<URLRequestTestJob> weak_factory_;
 };

@@ -74,6 +74,68 @@ bool g_url_requests_started = false;
 // True if cookies are accepted by default.
 bool g_default_can_use_cookies = true;
 
+// When the URLRequest first assempts load timing information, it has the times
+// at which each event occurred.  The API requires the time which the request
+// was blocked on each phase.  This function handles the conversion.
+//
+// In the case of reusing a SPDY session or HTTP pipeline, old proxy results may
+// have been reused, so proxy resolution times may be before the request was
+// started.
+//
+// Due to preconnect and late binding, it is also possible for the connection
+// attempt to start before a request has been started, or proxy resolution
+// completed.
+//
+// This functions fixes both those cases.
+void ConvertRealLoadTimesToBlockingTimes(
+    net::LoadTimingInfo* load_timing_info) {
+  DCHECK(!load_timing_info->request_start.is_null());
+
+  // Earliest time possible for the request to be blocking on connect events.
+  base::TimeTicks block_on_connect = load_timing_info->request_start;
+
+  if (!load_timing_info->proxy_resolve_start.is_null()) {
+    DCHECK(!load_timing_info->proxy_resolve_end.is_null());
+
+    // Make sure the proxy times are after request start.
+    if (load_timing_info->proxy_resolve_start < load_timing_info->request_start)
+      load_timing_info->proxy_resolve_start = load_timing_info->request_start;
+    if (load_timing_info->proxy_resolve_end < load_timing_info->request_start)
+      load_timing_info->proxy_resolve_end = load_timing_info->request_start;
+
+    // Connect times must also be after the proxy times.
+    block_on_connect = load_timing_info->proxy_resolve_end;
+  }
+
+  // Make sure connection times are after start and proxy times.
+
+  net::LoadTimingInfo::ConnectTiming* connect_timing =
+      &load_timing_info->connect_timing;
+  if (!connect_timing->dns_start.is_null()) {
+    DCHECK(!connect_timing->dns_end.is_null());
+    if (connect_timing->dns_start < block_on_connect)
+      connect_timing->dns_start = block_on_connect;
+    if (connect_timing->dns_end < block_on_connect)
+      connect_timing->dns_end = block_on_connect;
+  }
+
+  if (!connect_timing->connect_start.is_null()) {
+    DCHECK(!connect_timing->connect_end.is_null());
+    if (connect_timing->connect_start < block_on_connect)
+      connect_timing->connect_start = block_on_connect;
+    if (connect_timing->connect_end < block_on_connect)
+      connect_timing->connect_end = block_on_connect;
+  }
+
+  if (!connect_timing->ssl_start.is_null()) {
+    DCHECK(!connect_timing->ssl_end.is_null());
+    if (connect_timing->ssl_start < block_on_connect)
+      connect_timing->ssl_start = block_on_connect;
+    if (connect_timing->ssl_end < block_on_connect)
+      connect_timing->ssl_end = block_on_connect;
+  }
+}
+
 }  // namespace
 
 URLRequest::ProtocolFactory*
@@ -973,8 +1035,10 @@ void URLRequest::OnHeadersComplete() {
   // Cache load timing information now, as information will be lost once the
   // socket is closed and the ClientSocketHandle is Reset, which will happen
   // once the body is complete.  The start times should already be populated.
-  if (job_)
+  if (job_) {
     job_->GetLoadTimingInfo(&load_timing_info_);
+    ConvertRealLoadTimesToBlockingTimes(&load_timing_info_);
+  }
 }
 
 void URLRequest::NotifyRequestCompleted() {
