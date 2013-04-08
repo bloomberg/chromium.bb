@@ -3484,26 +3484,6 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         adjustViewSize();
 }
 
-void FrameView::adjustPageHeightDeprecated(float *newBottom, float oldTop, float oldBottom, float /*bottomLimit*/)
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView) {
-        *newBottom = oldBottom;
-        return;
-
-    }
-    // Use a context with painting disabled.
-    GraphicsContext context((PlatformGraphicsContext*)0);
-    renderView->setTruncatedAt(static_cast<int>(floorf(oldBottom)));
-    IntRect dirtyRect(0, static_cast<int>(floorf(oldTop)), renderView->layoutOverflowRect().maxX(), static_cast<int>(ceilf(oldBottom - oldTop)));
-    renderView->setPrintRect(dirtyRect);
-    renderView->layer()->paint(&context, dirtyRect);
-    *newBottom = renderView->bestTruncatedAt();
-    if (!*newBottom)
-        *newBottom = oldBottom;
-    renderView->setPrintRect(IntRect());
-}
-
 IntRect FrameView::convertFromRenderer(const RenderObject* renderer, const IntRect& rendererRect) const
 {
     IntRect rect = pixelSnappedIntRect(enclosingLayoutRect(renderer->localToAbsoluteQuad(FloatRect(rendererRect)).boundingBox()));
