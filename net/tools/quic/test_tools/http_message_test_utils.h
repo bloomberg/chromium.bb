@@ -13,6 +13,7 @@
 #include "net/tools/flip_server/balsa_headers.h"
 
 namespace net {
+namespace tools {
 namespace test {
 
 class HttpConstants {
@@ -126,6 +127,7 @@ class HTTPMessage {
 };
 
 }  // namespace test
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_TEST_TOOLS_TEST_TOOLS_HTTP_MESSAGE_TEST_UTILS_H_

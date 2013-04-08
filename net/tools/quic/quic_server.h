@@ -15,6 +15,7 @@
 #include "net/tools/quic/quic_dispatcher.h"
 
 namespace net {
+namespace tools {
 
 class QuicDispatcher;
 
@@ -84,6 +85,7 @@ class QuicServer : public EpollCallbackInterface {
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SERVER_H_

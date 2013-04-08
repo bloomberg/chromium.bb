@@ -25,6 +25,7 @@
 #endif
 
 namespace net {
+namespace tools {
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
@@ -243,4 +244,5 @@ bool QuicClient::ReadAndProcessPacket() {
   return true;
 }
 
+}  // namespace tools
 }  // namespace net

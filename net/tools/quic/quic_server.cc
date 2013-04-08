@@ -27,6 +27,7 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const int kNumPacketsPerReadCall = 5;  // Arbitrary
 
 namespace net {
+namespace tools {
 
 QuicServer::QuicServer()
     : port_(0),
@@ -180,4 +181,5 @@ bool QuicServer::ReadAndDispatchSinglePacket(int fd,
   return true;
 }
 
+}  // namespace tools
 }  // namespace net

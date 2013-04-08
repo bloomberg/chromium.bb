@@ -15,6 +15,7 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
+namespace tools {
 
 // This alarm will be scheduled any time a data-bearing packet is sent out.
 // When the alarm goes off, the connection checks to see if the oldest packets
@@ -203,4 +204,5 @@ void QuicEpollConnectionHelper::UnregisterSendAlarmIfRegistered() {
   send_alarm_->UnregisterIfRegistered();
 }
 
+}  // namespace tools
 }  // namespace net

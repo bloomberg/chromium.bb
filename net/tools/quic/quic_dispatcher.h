@@ -24,7 +24,8 @@
 namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<net::QuicBlockedWriterInterface*> {
-  std::size_t operator()(const net::QuicBlockedWriterInterface* ptr) const {
+  std::size_t operator()(
+      const net::QuicBlockedWriterInterface* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
@@ -38,6 +39,7 @@ namespace gfe2 {
 class QuicSession;
 
 namespace net {
+namespace tools {
 
 class DeleteSessionsAlarm;
 
@@ -123,6 +125,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };
 
-} // namespace net
+}  // namespace tools
+}  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_DISPATCHER_H_

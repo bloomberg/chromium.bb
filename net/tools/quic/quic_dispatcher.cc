@@ -14,6 +14,7 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
+namespace tools {
 
 using std::make_pair;
 
@@ -179,6 +180,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
       new QuicConnection(guid, client_address, helper, true), this);
 }
 
+}  // namespace tools
 }  // namespace net
 
 

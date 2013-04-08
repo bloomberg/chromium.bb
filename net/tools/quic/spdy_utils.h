@@ -12,6 +12,7 @@
 #include "net/tools/flip_server/balsa_headers.h"
 
 namespace net {
+namespace tools {
 
 class SpdyUtils {
  public:
@@ -28,6 +29,7 @@ class SpdyUtils {
                                        BalsaHeaders* response_headers);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_SPDY_UTILS_H_

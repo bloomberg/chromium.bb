@@ -18,6 +18,7 @@ using std::string;
 string FLAGS_quic_in_memory_cache_dir;
 
 namespace net {
+namespace tools {
 
 namespace {
 
@@ -186,4 +187,5 @@ string QuicInMemoryCache::GetKey(const BalsaHeaders& request_headers) const {
       request_headers.request_uri().as_string();
 }
 
+}  // namespace tools
 }  // namespace net

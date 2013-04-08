@@ -21,6 +21,7 @@ using std::pair;
 using std::string;
 
 namespace net {
+namespace tools {
 
 const char* const kV3Host = ":host";
 const char* const kV3Path = ":path";
@@ -246,4 +247,5 @@ bool SpdyUtils::FillBalsaResponseHeaders(
   return true;
 }
 
+}  // namespace tools
 }  // namespace net

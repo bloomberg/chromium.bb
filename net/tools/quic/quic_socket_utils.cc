@@ -18,6 +18,7 @@
 #endif
 
 namespace net {
+namespace tools {
 
 // static
 IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr *hdr) {
@@ -178,4 +179,5 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
   return rc;
 }
 
+}  // namespace tools
 }  // namespace net

@@ -15,6 +15,7 @@ using std::string;
 using std::vector;
 
 namespace net {
+namespace tools {
 namespace test {
 
 namespace {
@@ -170,4 +171,5 @@ void HTTPMessage::ValidateMessage() const {
 }
 
 }  // namespace test
+}  // namespace tools
 }  // namespace net

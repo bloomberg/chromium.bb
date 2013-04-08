@@ -27,9 +27,12 @@
 
 using base::StringPiece;
 using base::WaitableEvent;
+using net::test::QuicSessionPeer;
+using net::test::ReliableQuicStreamPeer;
 using std::string;
 
 namespace net {
+namespace tools {
 namespace test {
 namespace {
 
@@ -520,4 +523,5 @@ TEST_F(EndToEndTest, ResetConnection) {
 
 }  // namespace
 }  // namespace test
+}  // namespace tools
 }  // namespace net

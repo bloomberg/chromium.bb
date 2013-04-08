@@ -12,9 +12,7 @@
 using std::string;
 
 namespace net {
-
-class QuicConnection;
-class ReliableQuicStream;
+namespace tools {
 
 QuicClientSession::QuicClientSession(
     const string& server_hostname,
@@ -61,4 +59,5 @@ ReliableQuicStream* QuicClientSession::CreateIncomingReliableStream(
   return NULL;
 }
 
+}  // namespace tools
 }  // namespace net

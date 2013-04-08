@@ -20,6 +20,8 @@ namespace net {
 class QuicConnection;
 class ReliableQuicStream;
 
+namespace tools {
+
 // An interface from the session to the entity owning the session.
 // This lets the session notify its owner (the Dispatcher) when the connection
 // is closed.
@@ -58,6 +60,7 @@ class QuicServerSession : public QuicSession {
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_

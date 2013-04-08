@@ -7,6 +7,7 @@
 #include "net/tools/flip_server/epoll_server.h"
 
 namespace net {
+namespace tools {
 
 QuicEpollClock::QuicEpollClock(EpollServer* epoll_server)
     : epoll_server_(epoll_server) {
@@ -28,4 +29,5 @@ QuicTime::Delta QuicEpollClock::NowAsDeltaSinceUnixEpoch() const {
   return QuicTime::Delta::FromMicroseconds(epoll_server_->NowInUsec());
 }
 
+}  // namespace tools
 }  // namespace net

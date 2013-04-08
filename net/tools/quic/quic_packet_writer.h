@@ -11,6 +11,8 @@ namespace net {
 
 class QuicBlockedWriterInterface;
 
+namespace tools {
+
 // An interface between writers and the entity managing the
 // socket (in our case the QuicDispatcher).  This allows the Dispatcher to
 // control writes, and manage any writers who end up write blocked.
@@ -25,6 +27,7 @@ class QuicPacketWriter {
                           int* error) = 0;
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_PACKET_WRITER_H_

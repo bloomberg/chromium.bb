@@ -7,6 +7,7 @@
 using std::string;
 
 namespace net {
+namespace tools {
 
 // Sends body data to the server and returns the number of bytes sent.
 ssize_t QuicReliableClientStream::SendBody(const string& data, bool fin) {
@@ -22,4 +23,5 @@ bool QuicReliableClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   return ReliableQuicStream::OnStreamFrame(frame);
 }
 
+}  // namespace tools
 }  // namespace net

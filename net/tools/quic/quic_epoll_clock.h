@@ -13,6 +13,8 @@ namespace net {
 
 class EpollServer;
 
+namespace tools {
+
 // Clock to efficiently retrieve an approximately accurate time from an
 // EpollServer.
 class QuicEpollClock : public QuicClock {
@@ -36,6 +38,7 @@ class QuicEpollClock : public QuicClock {
   EpollServer* epoll_server_;
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // GFE_QUIC_QUIC_EPOLL_CLOCK_H_

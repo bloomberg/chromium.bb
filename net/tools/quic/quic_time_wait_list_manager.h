@@ -20,6 +20,7 @@
 #include "net/tools/quic/quic_packet_writer.h"
 
 namespace net {
+namespace tools {
 
 class GuidCleanUpAlarm;
 
@@ -175,6 +176,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_TIME_WAIT_LIST_MANAGER_H_

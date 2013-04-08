@@ -16,8 +16,11 @@
 
 namespace net {
 
-class QuicClientSession;
 class QuicSession;
+
+namespace tools {
+
+class QuicClientSession;
 
 // A base class for spdy/http client streams which handles the concept
 // of sending and receiving headers and bodies.
@@ -60,6 +63,7 @@ class QuicReliableClientStream : public ReliableQuicStream {
   DISALLOW_COPY_AND_ASSIGN(QuicReliableClientStream);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_

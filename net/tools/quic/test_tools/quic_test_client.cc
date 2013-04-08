@@ -11,6 +11,7 @@ using std::string;
 using base::StringPiece;
 
 namespace net {
+namespace tools {
 namespace test {
 
 BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
@@ -178,4 +179,5 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
 }
 
 }  // namespace test
+}  // namespace tools
 }  // namespace net

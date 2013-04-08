@@ -14,6 +14,7 @@
 #include "net/tools/quic/quic_client.h"
 
 namespace net {
+namespace tools {
 
 namespace test {
 
@@ -90,6 +91,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
 }  // namespace test
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_QUIC_CLIENT_H_

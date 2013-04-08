@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   net::IPAddressNumber ip;
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
-  net::QuicServer server;
+  net::tools::QuicServer server;
 
   if (!server.Listen(net::IPEndPoint(ip, FLAGS_port))) {
     return 1;

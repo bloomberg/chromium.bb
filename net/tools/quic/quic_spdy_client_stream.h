@@ -13,6 +13,8 @@ namespace net {
 
 class BalsaHeaders;
 
+namespace tools {
+
 class QuicClientSession;
 
 // All this does right now is send an SPDY request, and aggregate the
@@ -37,6 +39,7 @@ class QuicSpdyClientStream : public QuicReliableClientStream {
   bool response_headers_received_;
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_

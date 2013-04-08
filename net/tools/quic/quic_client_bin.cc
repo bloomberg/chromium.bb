@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
   net::IPAddressNumber addr;
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
-  net::QuicClient client(
+  net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname);
 
   client.Initialize();

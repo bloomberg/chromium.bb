@@ -9,6 +9,7 @@
 #include "net/tools/quic/quic_spdy_server_stream.h"
 
 namespace net {
+namespace tools {
 
 QuicServerSession::QuicServerSession(QuicConnection* connection,
                                      QuicSessionOwner* owner)
@@ -58,4 +59,5 @@ QuicCryptoServerStream* QuicServerSession::GetCryptoStream() {
   return &crypto_stream_;
 }
 
+}  // namespace tools
 }  // namespace net

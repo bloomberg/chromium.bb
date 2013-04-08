@@ -12,10 +12,12 @@
 
 namespace net {
 
-// All this does right now is aggregate data, and on fin, send a cached
-// response.
 class QuicSession;
 
+namespace tools {
+
+// All this does right now is aggregate data, and on fin, send a cached
+// response.
 class QuicSpdyServerStream : public QuicReliableServerStream {
  public:
   QuicSpdyServerStream(QuicStreamId id, QuicSession* session);
@@ -37,6 +39,7 @@ class QuicSpdyServerStream : public QuicReliableServerStream {
   bool request_headers_received_;
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SPDY_SERVER_STREAM_H_

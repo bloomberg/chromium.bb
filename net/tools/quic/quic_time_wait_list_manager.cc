@@ -19,6 +19,7 @@
 #include "net/quic/quic_utils.h"
 
 namespace net {
+namespace tools {
 
 namespace {
 
@@ -278,4 +279,5 @@ void QuicTimeWaitListManager::CleanUpOldGuids() {
   SetGuidCleanUpAlarm();
 }
 
+}  // namespace tools
 }  // namespace net

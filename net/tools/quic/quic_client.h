@@ -20,6 +20,7 @@
 #include "net/tools/quic/quic_reliable_client_stream.h"
 
 namespace net {
+namespace tools {
 
 class QuicClient : public EpollCallbackInterface {
  public:
@@ -143,6 +144,7 @@ class QuicClient : public EpollCallbackInterface {
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_CLIENT_H_

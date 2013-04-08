@@ -16,6 +16,7 @@
 template <typename T> struct DefaultSingletonTraits;
 
 namespace net {
+namespace tools {
 
 class QuicServer;
 
@@ -76,6 +77,7 @@ class QuicInMemoryCache {
   DISALLOW_COPY_AND_ASSIGN(QuicInMemoryCache);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_

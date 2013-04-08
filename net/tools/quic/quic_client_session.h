@@ -17,8 +17,11 @@
 namespace net {
 
 class QuicConnection;
-class QuicReliableClientStream;
 class ReliableQuicStream;
+
+namespace tools {
+
+class QuicReliableClientStream;
 
 class QuicClientSession : public QuicSession {
  public:
@@ -45,6 +48,7 @@ class QuicClientSession : public QuicSession {
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_

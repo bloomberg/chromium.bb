@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 
 namespace net {
+namespace tools {
 
 class QuicSocketUtils {
  public:
@@ -52,6 +53,7 @@ class QuicSocketUtils {
                          int* error);
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_

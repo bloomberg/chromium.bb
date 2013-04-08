@@ -10,6 +10,7 @@
 using std::string;
 
 namespace net {
+namespace tools {
 
 static const size_t kHeaderBufInitialSize = 4096;
 
@@ -91,4 +92,5 @@ int QuicSpdyServerStream::ParseRequestHeaders() {
   return len;
 }
 
+}  // namespace tools
 }  // namespace net

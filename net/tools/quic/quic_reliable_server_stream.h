@@ -13,11 +13,13 @@
 
 namespace net {
 
+class QuicSession;
+
+namespace tools {
+
 namespace test {
 class QuicReliableServerStreamPeer;
 }  // namespace test
-
-class QuicSession;
 
 // A base class for spdy/http server streams which handles the concept
 // of sending and receiving headers and bodies.
@@ -57,6 +59,7 @@ class QuicReliableServerStream : public ReliableQuicStream {
   string body_;
 };
 
+}  // namespace tools
 }  // namespace net
 
 #endif  // NET_TOOLS_QUIC_QUIC_RELIABLE_SERVER_STREAM_H_

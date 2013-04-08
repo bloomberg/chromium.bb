@@ -11,6 +11,7 @@
 using base::StringPiece;
 
 namespace net {
+namespace tools {
 
 QuicReliableServerStream::QuicReliableServerStream(QuicStreamId id,
                                                   QuicSession* session)
@@ -51,4 +52,5 @@ QuicConsumedData QuicReliableServerStream::WriteData(StringPiece data,
   return ReliableQuicStream::WriteData(data, fin);
 }
 
+}  // namespace tools
 }  // namespace net
