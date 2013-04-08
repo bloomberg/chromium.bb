@@ -482,7 +482,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareInheritedData->m_effectiveZoom != other->rareInheritedData->m_effectiveZoom
             || rareInheritedData->wordBreak != other->rareInheritedData->wordBreak
             || rareInheritedData->overflowWrap != other->rareInheritedData->overflowWrap
-            || rareInheritedData->nbspMode != other->rareInheritedData->nbspMode
             || rareInheritedData->lineBreak != other->rareInheritedData->lineBreak
             || rareInheritedData->textSecurity != other->rareInheritedData->textSecurity
             || rareInheritedData->hyphens != other->rareInheritedData->hyphens

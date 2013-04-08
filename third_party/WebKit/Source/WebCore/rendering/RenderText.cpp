@@ -859,11 +859,6 @@ void RenderText::trimmedPrefWidths(float leadWidth,
     }
 }
 
-static inline bool isSpaceAccordingToStyle(UChar c, RenderStyle* style)
-{
-    return c == ' ' || (c == noBreakSpace && style->nbspMode() == SPACE);
-}
-
 float RenderText::minLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty())
@@ -992,7 +987,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
     int firstGlyphLeftOverflow = -1;
 
-    bool breakNBSP = styleToUse->autoWrap() && styleToUse->nbspMode() == SPACE;
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();
 
     for (int i = 0; i < len; i++) {
@@ -1041,15 +1035,15 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             continue;
         }
 
-        bool hasBreak = breakAll || isBreakable(breakIterator, i, nextBreakable, breakNBSP);
+        bool hasBreak = breakAll || isBreakable(breakIterator, i, nextBreakable);
         bool betweenWords = true;
         int j = i;
-        while (c != '\n' && !isSpaceAccordingToStyle(c, styleToUse) && c != '\t' && (c != softHyphen || styleToUse->hyphens() == HyphensNone)) {
+        while (c != '\n' && c != ' ' && c != '\t' && (c != softHyphen || styleToUse->hyphens() == HyphensNone)) {
             j++;
             if (j == len)
                 break;
             c = characterAt(j);
-            if (isBreakable(breakIterator, j, nextBreakable, breakNBSP) && characterAt(j - 1) != softHyphen)
+            if (isBreakable(breakIterator, j, nextBreakable) && characterAt(j - 1) != softHyphen)
                 break;
             if (breakAll) {
                 betweenWords = false;
@@ -1059,7 +1053,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
         int wordLen = j - i;
         if (wordLen) {
-            bool isSpace = (j < len) && isSpaceAccordingToStyle(c, styleToUse);
+            bool isSpace = (j < len) && c == ' ';
             float w;
             if (wordTrailingSpaceWidth && isSpace)
                 w = widthFromCache(f, i, wordLen + 1, leadWidth + currMaxWidth, &fallbackFonts, &glyphOverflow) - wordTrailingSpaceWidth;

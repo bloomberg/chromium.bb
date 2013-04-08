@@ -316,7 +316,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineGrid:
     case CSSPropertyWebkitLineSnap:
-    case CSSPropertyWebkitNbspMode:
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     case CSSPropertyWebkitOverflowScrolling:
 #endif

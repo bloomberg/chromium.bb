@@ -1145,8 +1145,6 @@ static inline bool isCollapsibleSpace(UChar character, RenderText* renderer)
         return true;
     if (character == '\n')
         return !renderer->style()->preserveNewline();
-    if (character == noBreakSpace)
-        return renderer->style()->nbspMode() == SPACE;
     return false;
 }
 
@@ -2287,22 +2285,6 @@ bool RenderBlock::matchedEndLine(LineLayoutState& layoutState, const InlineBidiR
     return false;
 }
 
-static inline bool skipNonBreakingSpace(const InlineIterator& it, const LineInfo& lineInfo)
-{
-    if (it.m_obj->style()->nbspMode() != SPACE || it.current() != noBreakSpace)
-        return false;
-
-    // FIXME: This is bad.  It makes nbsp inconsistent with space and won't work correctly
-    // with m_minWidth/m_maxWidth.
-    // Do not skip a non-breaking space if it is the first character
-    // on a line after a clean line break (or on the first line, since previousLineBrokeCleanly starts off
-    // |true|).
-    if (lineInfo.isEmpty() && lineInfo.previousLineBrokeCleanly())
-        return false;
-
-    return true;
-}
-
 enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
 static inline bool shouldCollapseWhiteSpace(const RenderStyle* style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
 {
@@ -2345,7 +2327,7 @@ static bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
         return true;
 
     UChar current = it.current();
-    bool notJustWhitespace = current != ' ' && current != '\t' && current != softHyphen && (current != '\n' || it.m_obj->preservesNewline()) && !skipNonBreakingSpace(it, lineInfo);
+    bool notJustWhitespace = current != ' ' && current != '\t' && current != softHyphen && (current != '\n' || it.m_obj->preservesNewline());
     return notJustWhitespace || isEmptyInline(it.m_obj);
 }
 
@@ -2675,7 +2657,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
     // this to detect when we encounter a second space so we know we have to terminate
     // a run.
     bool currentCharacterIsSpace = false;
-    bool currentCharacterIsWS = false;
     TrailingObjects trailingObjects;
 
     InlineIterator lBreak = resolver.position();
@@ -2812,7 +2793,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     // Like with list markers, we start ignoring spaces to make sure that any
                     // additional spaces we see will be discarded.
                     currentCharacterIsSpace = true;
-                    currentCharacterIsWS = true;
                     ignoringSpaces = true;
                 }
             }
@@ -2836,7 +2816,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             lineInfo.setEmpty(false, m_block, &width);
             ignoringSpaces = false;
             currentCharacterIsSpace = false;
-            currentCharacterIsWS = false;
             trailingObjects.clear();
 
             // Optimize for a common case. If we can't find whitespace after the list
@@ -2847,7 +2826,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     // Like with inline flows, we start ignoring spaces to make sure that any
                     // additional spaces we see will be discarded.
                     currentCharacterIsSpace = true;
-                    currentCharacterIsWS = true;
                     ignoringSpaces = true;
                 }
                 if (toRenderListMarker(current.m_obj)->isInside())
@@ -2891,7 +2869,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
 
             float wrapW = width.uncommittedWidth() + inlineLogicalWidth(current.m_obj, !appliedStartWidth, true);
             float charWidth = 0;
-            bool breakNBSP = autoWrap && currentStyle->nbspMode() == SPACE;
             // Auto-wrapping text should wrap in the middle of a word only if it could not wrap before the word,
             // which is only possible if the word is the first thing on the line, that is, if |w| is zero.
             bool breakWords = currentStyle->breakWords() && ((autoWrap && !width.committedWidth()) || currWS == PRE);
@@ -2932,7 +2909,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             UChar secondToLastCharacter = renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
             for (; current.m_pos < t->textLength(); current.fastIncrementInTextNode()) {
                 bool previousCharacterIsSpace = currentCharacterIsSpace;
-                bool previousCharacterIsWS = currentCharacterIsWS;
                 UChar c = current.current();
                 currentCharacterIsSpace = c == ' ' || c == '\t' || (!preserveNewline && (c == '\n'));
 
@@ -2946,8 +2922,6 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
 
                 bool applyWordSpacing = false;
 
-                currentCharacterIsWS = currentCharacterIsSpace || (breakNBSP && c == noBreakSpace);
-
                 if ((breakAll || breakWords) && !midWordBreak) {
                     wrapW += charWidth;
                     bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && current.m_pos + 1 < t->textLength() && U16_IS_TRAIL(t->characters()[current.m_pos + 1]);
@@ -2955,7 +2929,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     midWordBreak = width.committedWidth() + wrapW + charWidth > width.availableWidth();
                 }
 
-                bool betweenWords = c == '\n' || (currWS != PRE && !atStart && isBreakable(renderTextInfo.m_lineBreakIterator, current.m_pos, current.m_nextBreakablePosition, breakNBSP)
+                bool betweenWords = c == '\n' || (currWS != PRE && !atStart && isBreakable(renderTextInfo.m_lineBreakIterator, current.m_pos, current.m_nextBreakablePosition)
                     && (style->hyphens() != HyphensNone || (current.previousInSameNode() != softHyphen)));
 
                 if (betweenWords || midWordBreak) {
@@ -3006,7 +2980,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                         // If we break only after white-space, consider the current character
                         // as candidate width for this line.
                         bool lineWasTooWide = false;
-                        if (width.fitsOnLine() && currentCharacterIsWS && currentStyle->breakOnlyAfterWhiteSpace() && !midWordBreak) {
+                        if (width.fitsOnLine() && currentCharacterIsSpace && currentStyle->breakOnlyAfterWhiteSpace() && !midWordBreak) {
                             float charWidth = textWidth(t, current.m_pos, 1, f, width.currentWidth(), isFixedPitch, collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) + (applyWordSpacing ? wordSpacing : 0);
                             // Check if line is too big even without the extra space
                             // at the end of the line. If it is not, do nothing.
@@ -3122,7 +3096,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     ignoreStart.m_pos = current.m_pos;
                 }
 
-                if (!currentCharacterIsWS && previousCharacterIsWS) {
+                if (!currentCharacterIsSpace && previousCharacterIsSpace) {
                     if (autoWrap && currentStyle->breakOnlyAfterWhiteSpace())
                         lBreak.moveTo(current.m_obj, current.m_pos, current.m_nextBreakablePosition);
                 }

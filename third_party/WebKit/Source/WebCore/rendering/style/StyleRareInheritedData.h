@@ -87,7 +87,6 @@ public:
     unsigned userModify : 2; // EUserModify (editing)
     unsigned wordBreak : 2; // EWordBreak
     unsigned overflowWrap : 1; // EOverflowWrap
-    unsigned nbspMode : 1; // ENBSPMode
     unsigned lineBreak : 3; // LineBreak
     unsigned resize : 2; // EResize
     unsigned userSelect : 2; // EUserSelect

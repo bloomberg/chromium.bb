@@ -2023,33 +2023,6 @@ template<> inline CSSPrimitiveValue::operator EMarqueeDirection() const
     return MAUTO;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ENBSPMode e)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_IDENT;
-    switch (e) {
-        case NBNORMAL:
-            m_value.ident = CSSValueNormal;
-            break;
-        case SPACE:
-            m_value.ident = CSSValueSpace;
-            break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator ENBSPMode() const
-{
-    switch (m_value.ident) {
-        case CSSValueSpace:
-            return SPACE;
-        case CSSValueNormal:
-            return NBNORMAL;
-    }
-
-    ASSERT_NOT_REACHED();
-    return NBNORMAL;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EOverflow e)
     : CSSValue(PrimitiveClass)
 {
