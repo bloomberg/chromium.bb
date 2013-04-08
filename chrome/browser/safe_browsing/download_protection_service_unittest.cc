@@ -23,7 +23,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "chrome/common/zip.h"
+#include "components/zip/zip.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ZIP_INTERNAL_H_
-#define CHROME_COMMON_ZIP_INTERNAL_H_
+#ifndef COMPONENTS_ZIP_ZIP_INTERNAL_H_
+#define COMPONENTS_ZIP_ZIP_INTERNAL_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -59,4 +59,4 @@ const int kZipBufSize = 8192;
 }  // namespace internal
 }  // namespace zip
 
-#endif  // CHROME_COMMON_ZIP_INTERNAL_H_
+#endif  // COMPONENTS_ZIP_ZIP_INTERNAL_H_

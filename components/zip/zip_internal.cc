@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/zip.h"
+#include "components/zip/zip.h"
 
 #include <algorithm>
 
@@ -10,9 +10,9 @@
 #include "base/utf_string_conversions.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
+#include <minizip/ioapi.h>
 #include <minizip/unzip.h>
 #include <minizip/zip.h>
-#include <minizip/ioapi.h>
 #else
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"

@@ -16,6 +16,8 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'test/run_all_unittests.cc',
             'visitedlink/test/visitedlink_unittest.cc',
+            'zip/zip_reader_unittest.cc',
+            'zip/zip_unittest.cc',
           ],
           'include_dirs': [
             '..',
@@ -40,6 +42,9 @@
             'visitedlink_browser',
             'visitedlink_renderer',
             '../content/content_resources.gyp:content_resources',
+
+            # Dependencies of zip
+            'zip',
           ],
           'conditions': [
             ['OS == "android" and gtest_target_type == "shared_library"', {

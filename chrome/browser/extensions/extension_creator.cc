@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_creator_filter.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/zip.h"
+#include "components/zip/zip.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
 #include "extensions/common/crx_file.h"

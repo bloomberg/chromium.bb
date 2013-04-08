@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ZIP_H_
-#define CHROME_COMMON_ZIP_H_
+#ifndef COMPONENTS_ZIP_ZIP_H_
+#define COMPONENTS_ZIP_ZIP_H_
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -41,4 +41,4 @@ bool Unzip(const base::FilePath& zip_file, const base::FilePath& dest_dir);
 
 }  // namespace zip
 
-#endif  // CHROME_COMMON_ZIP_H_
+#endif  // COMPONENTS_ZIP_ZIP_H_

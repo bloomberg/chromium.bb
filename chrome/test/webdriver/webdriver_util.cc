@@ -19,8 +19,8 @@
 #include "base/strings/string_split.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chrome/common/automation_id.h"
-#include "chrome/common/zip.h"
 #include "chrome/test/automation/automation_json_requests.h"
+#include "components/zip/zip.h"
 
 using base::DictionaryValue;
 using base::ListValue;

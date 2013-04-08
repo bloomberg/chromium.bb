@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/zip.h"
-#include "chrome/common/zip_reader.h"
+#include "components/zip/zip.h"
+#include "components/zip/zip_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -49,10 +49,21 @@ class ZipTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
+  bool GetTestDataDirectory(base::FilePath* path) {
+    bool success = PathService::Get(base::DIR_SOURCE_ROOT, path);
+    EXPECT_TRUE(success);
+    if (!success)
+      return false;
+    *path = path->AppendASCII("components");
+    *path = path->AppendASCII("test");
+    *path = path->AppendASCII("data");
+    return true;
+  }
+
   void TestUnzipFile(const base::FilePath::StringType& filename,
                      bool expect_hidden_files) {
     base::FilePath test_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    ASSERT_TRUE(GetTestDataDirectory(&test_dir));
     test_dir = test_dir.AppendASCII("zip");
     TestUnzipFile(test_dir.Append(filename), expect_hidden_files);
   }
@@ -108,7 +119,7 @@ TEST_F(ZipTest, UnzipUncompressed) {
 
 TEST_F(ZipTest, UnzipEvil) {
   base::FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  ASSERT_TRUE(GetTestDataDirectory(&path));
   path = path.AppendASCII("zip").AppendASCII("evil.zip");
   // Unzip the zip file into a sub directory of test_dir_ so evil.zip
   // won't create a persistent file outside test_dir_ in case of a
@@ -123,7 +134,7 @@ TEST_F(ZipTest, UnzipEvil) {
 
 TEST_F(ZipTest, UnzipEvil2) {
   base::FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  ASSERT_TRUE(GetTestDataDirectory(&path));
   // The zip file contains an evil file with invalid UTF-8 in its file
   // name.
   path = path.AppendASCII("zip").AppendASCII("evil_via_invalid_utf8.zip");
@@ -138,7 +149,7 @@ TEST_F(ZipTest, UnzipEvil2) {
 
 TEST_F(ZipTest, Zip) {
   base::FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
+  ASSERT_TRUE(GetTestDataDirectory(&src_dir));
   src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
 
   base::ScopedTempDir temp_dir;
@@ -151,7 +162,7 @@ TEST_F(ZipTest, Zip) {
 
 TEST_F(ZipTest, ZipIgnoreHidden) {
   base::FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
+  ASSERT_TRUE(GetTestDataDirectory(&src_dir));
   src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
 
   base::ScopedTempDir temp_dir;
@@ -165,7 +176,7 @@ TEST_F(ZipTest, ZipIgnoreHidden) {
 #if defined(OS_POSIX)
 TEST_F(ZipTest, ZipFiles) {
   base::FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
+  ASSERT_TRUE(GetTestDataDirectory(&src_dir));
   src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
 
   base::ScopedTempDir temp_dir;

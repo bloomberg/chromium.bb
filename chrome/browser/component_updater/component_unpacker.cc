@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/zip.h"
+#include "components/zip/zip.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/crx_file.h"

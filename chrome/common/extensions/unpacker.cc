@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/zip.h"
+#include "components/zip/zip.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"

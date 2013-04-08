@@ -18,5 +18,6 @@
     'visitedlink.gypi',
     'webdata.gypi',
     'web_contents_delegate_android.gypi',
+    'zip.gypi',
   ],
 }

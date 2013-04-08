@@ -1578,8 +1578,6 @@
         'common/time_format_unittest.cc',
         'common/web_apps_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
-        'common/zip_reader_unittest.cc',
-        'common/zip_unittest.cc',
         'nacl/nacl_ipc_adapter_unittest.cc',
         'nacl/nacl_validation_query_unittest.cc',
         'renderer/chrome_content_renderer_client_unittest.cc',

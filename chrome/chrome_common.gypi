@@ -38,6 +38,7 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
         '<(DEPTH)/components/components.gyp:visitedlink_common',
+        '<(DEPTH)/components/components.gyp:zip',
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -47,8 +48,6 @@
         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
         '<(DEPTH)/third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/third_party/zlib/zlib.gyp:minizip',
-        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
       ],
@@ -411,12 +410,6 @@
         'common/web_resource/web_resource_unpacker.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
-        'common/zip.cc',  # Requires zlib directly.
-        'common/zip.h',
-        'common/zip_internal.cc',
-        'common/zip_internal.h',
-        'common/zip_reader.cc',
-        'common/zip_reader.h',
       ],
       'conditions': [
         ['enable_extensions==1', {

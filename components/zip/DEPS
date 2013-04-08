@@ -1,0 +1,7 @@
+include_rules = [
+  # No need for a content dependency - and it's better to enforce it.
+  "-content",
+
+  "+net/base",
+  "+third_party/zlib/contrib/minizip",
+]
