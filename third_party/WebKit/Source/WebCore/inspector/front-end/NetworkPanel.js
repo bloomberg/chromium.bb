@@ -84,7 +84,6 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
 }
 
-WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._defaultColumnsVisivility = {method: true, status: true, domain: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true};
 
 WebInspector.NetworkLogView.prototype = {
@@ -1078,7 +1077,7 @@ WebInspector.NetworkLogView.prototype = {
     _copyAll: function()
     {
         var harArchive = {
-            log: (new WebInspector.HARLog(this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter))).build()
+            log: (new WebInspector.HARLog(this._requests)).build()
         };
         InspectorFrontendHost.copyText(JSON.stringify(harArchive, null, 2));
     },
@@ -1116,7 +1115,7 @@ WebInspector.NetworkLogView.prototype = {
             var progressIndicator = new WebInspector.ProgressIndicator();
             this._progressBarContainer.appendChild(progressIndicator.element);
             var harWriter = new WebInspector.HARWriter();
-            harWriter.write(stream, this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter), progressIndicator);
+            harWriter.write(stream, this._requests, progressIndicator);
         }
     },
 
@@ -1435,15 +1434,6 @@ WebInspector.NetworkLogView.prototype = {
     }, 
 
     __proto__: WebInspector.View.prototype
-}
-
-/**
- * @param {!WebInspector.NetworkRequest} request
- * @return {boolean}
- */
-WebInspector.NetworkLogView.HTTPRequestsFilter = function(request)
-{
-    return request.parsedURL.isValid && (request.parsedURL.scheme in WebInspector.NetworkLogView.HTTPSchemas);
 }
 
 
