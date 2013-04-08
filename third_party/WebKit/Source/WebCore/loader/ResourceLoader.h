@@ -41,6 +41,8 @@
 namespace WebCore {
 
 class AuthenticationChallenge;
+class CachedResource;
+class CachedResourceLoader;
 class DocumentLoader;
 class Frame;
 class FrameLoader;
@@ -60,6 +62,7 @@ public:
 
     FrameLoader* frameLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
+    CachedResource* cachedResource() { return m_resource; }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
     
     virtual void cancel(const ResourceError&);
@@ -76,8 +79,6 @@ public:
 
     PassRefPtr<ResourceBuffer> resourceData();
     void clearResourceData();
-    
-    virtual bool isSubresourceLoader();
     
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
@@ -116,10 +117,10 @@ public:
 
     void setDataBufferingPolicy(DataBufferingPolicy);
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
+    void reportMemoryUsage(MemoryObjectInfo*) const;
 
 protected:
-    ResourceLoader(Frame*, ResourceLoaderOptions);
+    ResourceLoader(Frame*, CachedResource*, ResourceLoaderOptions);
 
     void didFinishLoadingOnePart(double finishTime);
 
@@ -131,8 +132,7 @@ protected:
     RefPtr<Frame> m_frame;
     RefPtr<DocumentLoader> m_documentLoader;
     ResourceResponse m_response;
-    
-private:
+
     virtual void willCancel(const ResourceError&) = 0;
     virtual void didCancel(const ResourceError&) = 0;
 
@@ -144,6 +144,7 @@ private:
     
     unsigned long m_identifier;
 
+    bool m_loadingMultipartContent;
     bool m_reachedTerminalState;
     bool m_calledWillCancel;
     bool m_cancelled;
@@ -152,6 +153,25 @@ private:
     bool m_defersLoading;
     ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;
+
+    enum ResourceLoaderState {
+        Uninitialized,
+        Initialized,
+        Finishing
+    };
+
+    class RequestCountTracker {
+    public:
+        RequestCountTracker(CachedResourceLoader*, CachedResource*);
+        ~RequestCountTracker();
+    private:
+        CachedResourceLoader* m_cachedResourceLoader;
+        CachedResource* m_resource;
+    };
+
+    CachedResource* m_resource;
+    ResourceLoaderState m_state;
+    OwnPtr<RequestCountTracker> m_requestCountTracker;
 };
 
 inline const ResourceResponse& ResourceLoader::response() const

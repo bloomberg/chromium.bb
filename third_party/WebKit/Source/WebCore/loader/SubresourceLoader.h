@@ -36,20 +36,11 @@
  
 namespace WebCore {
 
-class CachedResource;
-class CachedResourceLoader;
-class Document;
-class ResourceRequest;
-
 class SubresourceLoader : public ResourceLoader {
 public:
     static PassRefPtr<SubresourceLoader> create(Frame*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
 
     void cancelIfNotFinishing();
-    virtual bool isSubresourceLoader();
-    CachedResource* cachedResource();
-
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 private:
     SubresourceLoader(Frame*, CachedResource*, const ResourceLoaderOptions&);
@@ -74,26 +65,6 @@ private:
     void sendDataToResource(const char*, int);
 
     void didReceiveDataOrBuffer(const char*, int, PassRefPtr<SharedBuffer>, long long encodedDataLength, DataPayloadType);
-
-    enum SubresourceLoaderState {
-        Uninitialized,
-        Initialized,
-        Finishing
-    };
-
-    class RequestCountTracker {
-    public:
-        RequestCountTracker(CachedResourceLoader*, CachedResource*);
-        ~RequestCountTracker();
-    private:
-        CachedResourceLoader* m_cachedResourceLoader;
-        CachedResource* m_resource;
-    };
-
-    CachedResource* m_resource;
-    bool m_loadingMultipartContent;
-    SubresourceLoaderState m_state;
-    OwnPtr<RequestCountTracker> m_requestCountTracker;
 };
 
 }

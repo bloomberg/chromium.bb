@@ -33,6 +33,7 @@
 #include "ApplicationCacheHost.h"
 #include "AsyncFileStream.h"
 #include "AuthenticationChallenge.h"
+#include "CachedResourceLoader.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -49,21 +50,37 @@
 
 namespace WebCore {
 
+ResourceLoader::RequestCountTracker::RequestCountTracker(CachedResourceLoader* cachedResourceLoader, CachedResource* resource)
+    : m_cachedResourceLoader(cachedResourceLoader)
+    , m_resource(resource)
+{
+    m_cachedResourceLoader->incrementRequestCount(m_resource);
+}
+
+ResourceLoader::RequestCountTracker::~RequestCountTracker()
+{
+    m_cachedResourceLoader->decrementRequestCount(m_resource);
+}
+
 PassRefPtr<ResourceBuffer> ResourceLoader::resourceData()
 {
     return m_resourceData;
 }
 
-ResourceLoader::ResourceLoader(Frame* frame, ResourceLoaderOptions options)
+ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceLoaderOptions options)
     : m_frame(frame)
     , m_documentLoader(frame->loader()->activeDocumentLoader())
     , m_identifier(0)
+    , m_loadingMultipartContent(false)
     , m_reachedTerminalState(false)
     , m_calledWillCancel(false)
     , m_cancelled(false)
     , m_notifiedLoadComplete(false)
     , m_defersLoading(frame->page()->defersLoading())
     , m_options(options)
+    , m_resource(resource)
+    , m_state(Uninitialized)
+    , m_requestCountTracker(adoptPtr(new RequestCountTracker(frame->document()->cachedResourceLoader(), resource)))
 {
 }
 
@@ -213,11 +230,6 @@ void ResourceLoader::clearResourceData()
 {
     if (m_resourceData)
         m_resourceData->clear();
-}
-
-bool ResourceLoader::isSubresourceLoader()
-{
-    return false;
 }
 
 void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceResponse& redirectResponse)
@@ -503,6 +515,9 @@ void ResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_resourceData, "resourceData");
     info.addMember(m_deferredRequest, "deferredRequest");
     info.addMember(m_options, "options");
+    info.addMember(m_resource, "resource");
+    info.addMember(m_documentLoader, "documentLoader");
+    info.addMember(m_requestCountTracker, "requestCountTracker");
 }
 
 }

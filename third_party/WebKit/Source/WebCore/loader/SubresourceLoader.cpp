@@ -46,24 +46,8 @@ namespace WebCore {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, subresourceLoaderCounter, ("SubresourceLoader"));
 
-SubresourceLoader::RequestCountTracker::RequestCountTracker(CachedResourceLoader* cachedResourceLoader, CachedResource* resource)
-    : m_cachedResourceLoader(cachedResourceLoader)
-    , m_resource(resource)
-{
-    m_cachedResourceLoader->incrementRequestCount(m_resource);
-}
-
-SubresourceLoader::RequestCountTracker::~RequestCountTracker()
-{
-    m_cachedResourceLoader->decrementRequestCount(m_resource);
-}
-
 SubresourceLoader::SubresourceLoader(Frame* frame, CachedResource* resource, const ResourceLoaderOptions& options)
-    : ResourceLoader(frame, options)
-    , m_resource(resource)
-    , m_loadingMultipartContent(false)
-    , m_state(Uninitialized)
-    , m_requestCountTracker(adoptPtr(new RequestCountTracker(frame->document()->cachedResourceLoader(), resource)))
+    : ResourceLoader(frame, resource, options)
 {
 #ifndef NDEBUG
     subresourceLoaderCounter.increment();
@@ -87,26 +71,12 @@ PassRefPtr<SubresourceLoader> SubresourceLoader::create(Frame* frame, CachedReso
     return subloader.release();
 }
 
-CachedResource* SubresourceLoader::cachedResource()
-{
-    return m_resource;
-}
-
 void SubresourceLoader::cancelIfNotFinishing()
 {
     if (m_state != Initialized)
         return;
 
     ResourceLoader::cancel();
-}
-
-void SubresourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    ResourceLoader::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_resource, "resource");
-    info.addMember(m_documentLoader, "documentLoader");
-    info.addMember(m_requestCountTracker, "requestCountTracker");
 }
 
 bool SubresourceLoader::init(const ResourceRequest& request)
@@ -117,11 +87,6 @@ bool SubresourceLoader::init(const ResourceRequest& request)
     ASSERT(!reachedTerminalState());
     m_state = Initialized;
     m_documentLoader->addSubresourceLoader(this);
-    return true;
-}
-
-bool SubresourceLoader::isSubresourceLoader()
-{
     return true;
 }
 

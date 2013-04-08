@@ -248,7 +248,7 @@ void InspectorResourceAgent::didReceiveResponse(unsigned long identifier, Docume
     bool isNotModified = response.httpStatusCode() == 304;
 
     CachedResource* cachedResource = 0;
-    if (resourceLoader && resourceLoader->isSubresourceLoader() && !isNotModified)
+    if (resourceLoader && !isNotModified)
         cachedResource = static_cast<SubresourceLoader*>(resourceLoader)->cachedResource();
     if (!cachedResource)
         cachedResource = InspectorPageAgent::cachedResource(loader->frame(), response.url());
