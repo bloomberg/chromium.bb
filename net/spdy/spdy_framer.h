@@ -488,6 +488,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetWindowUpdateSize() const;
   size_t GetCredentialMinimumSize() const;
 
+  // Returns the maximum payload size of a DATA frame.
+  size_t GetDataFrameMaximumPayload() const;
+
   // For debugging.
   static const char* StateToString(int state);
   static const char* ErrorCodeToString(int error_code);

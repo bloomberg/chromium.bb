@@ -253,6 +253,13 @@ size_t SpdyFramer::GetCredentialMinimumSize() const {
   return GetControlFrameHeaderSize() + 2;
 }
 
+size_t SpdyFramer::GetDataFrameMaximumPayload() const {
+  if (protocol_version() < 4) {
+    return 0xffffff - GetDataFrameMinimumSize();
+  }
+  return 0xffff - GetDataFrameMinimumSize();
+}
+
 const char* SpdyFramer::StateToString(int state) {
   switch (state) {
     case SPDY_ERROR:
