@@ -65,6 +65,14 @@
                   '|loader/LinkLoader' \
                   '|html/HTMLLinkElement'
     },
+    'track': {
+      'filepath': 'Source/WebCore/html/track/' \
+                  '|Source/WebCore/loader/TextTrack' \
+                  '|Source/WebCore/html/HTMLMediaElement' \
+                  '|Source/WebCore/html/shadow/MediaControl' \
+                  '|Source/WebCore/css/mediaControl' \
+                  '|LayoutTests/media/track/'
+    },
   },
 
   'WATCHLISTS': {
@@ -94,5 +102,6 @@
     'rendering': [ 'jchaffraix+rendering@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
+    'track': ['vcarbune@chromium.org'],
   },
 }
