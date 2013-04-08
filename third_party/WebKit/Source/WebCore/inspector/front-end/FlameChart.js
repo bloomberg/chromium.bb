@@ -226,6 +226,7 @@ WebInspector.FlameChart.Entry = function(colorPair, depth, duration, startTime, 
     this.duration = duration;
     this.startTime = startTime;
     this.node = node;
+    this.selfTime = 0;
 }
 
 WebInspector.FlameChart.prototype = {
@@ -357,16 +358,19 @@ WebInspector.FlameChart.prototype = {
 
             var depth = 0;
             node = stackTrace.pop();
+            var intervalIndex;
             while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
-                var intervalIndex = openIntervals[depth].index;
+                intervalIndex = openIntervals[depth].index;
                 entries[intervalIndex].duration += 1;
                 node = stackTrace.pop();
                 ++depth;
             }
             if (depth < openIntervals.length)
                 openIntervals.length = depth;
-            if (!node)
+            if (!node) {
+                entries[intervalIndex].selfTime += 1;
                 continue;
+            }
 
             while (node) {
                 var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
@@ -378,6 +382,7 @@ WebInspector.FlameChart.prototype = {
                 node = stackTrace.pop();
                 ++depth;
             }
+            entries[entries.length - 1].selfTime += 1;
         }
 
         this._timelineData = {
@@ -413,12 +418,17 @@ WebInspector.FlameChart.prototype = {
     {
         if (this._isDragging)
             return;
-        var node = this._timelineData.entries[this._highlightedNodeIndex].node;
+        var entry = this._timelineData.entries[this._highlightedNodeIndex];
+        var node = entry.node;
         if (!node)
             return;
         var contentHelper = new WebInspector.PopoverContentHelper(node.functionName);
-        contentHelper.appendTextRow(WebInspector.UIString("Total time"), Number.secondsToString(node.totalTime / 1000, true));
-        contentHelper.appendTextRow(WebInspector.UIString("Self time"), Number.secondsToString(node.selfTime / 1000, true));
+        if (this._cpuProfileView.samples) {
+            contentHelper.appendTextRow(WebInspector.UIString("Self time"), Number.secondsToString(entry.selfTime / 1000, true));
+            contentHelper.appendTextRow(WebInspector.UIString("Total time"), Number.secondsToString(entry.duration / 1000, true));
+        }
+        contentHelper.appendTextRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
+        contentHelper.appendTextRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
         if (node.numberOfCalls)
             contentHelper.appendTextRow(WebInspector.UIString("Number of calls"), node.numberOfCalls);
         if (node.url) {
