@@ -76,7 +76,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
           base::Time(),
           0,
           0,
-          DownloadItem::IN_PROGRESS,
+          DownloadItem::COMPLETE,
           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
           DOWNLOAD_INTERRUPT_REASON_NONE,
           false,

@@ -213,8 +213,6 @@ void BackendDelegate::BroadcastNotifications(int type,
   delete details;
 }
 
-namespace {
-
 TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   CreateBackendAndDatabase();
 
@@ -513,6 +511,65 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
       ASSERT_TRUE(statement.Step());
       EXPECT_EQ(0, statement.ColumnInt(0));
     }
+  }
+}
+
+TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
+  // Create the DB.
+  CreateBackendAndDatabase();
+
+  base::Time now(base::Time::Now());
+
+  // Put an IN_PROGRESS download in the DB.
+  AddDownload(DownloadItem::IN_PROGRESS, now);
+
+  // Confirm that they made it into the DB unchanged.
+  DeleteBackend();
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    sql::Statement statement(db.GetUniqueStatement(
+        "Select Count(*) from downloads"));
+    EXPECT_TRUE(statement.Step());
+    EXPECT_EQ(1, statement.ColumnInt(0));
+
+    sql::Statement statement1(db.GetUniqueStatement(
+        "Select state, interrupt_reason from downloads"));
+    EXPECT_TRUE(statement1.Step());
+    EXPECT_EQ(DownloadDatabase::kStateInProgress, statement1.ColumnInt(0));
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, statement1.ColumnInt(1));
+    EXPECT_FALSE(statement1.Step());
+  }
+
+  // Read in the DB through query downloads, then test that the
+  // right transformation was returned.
+  CreateBackendAndDatabase();
+  std::vector<DownloadRow> results;
+  db_->QueryDownloads(&results);
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(content::DownloadItem::INTERRUPTED, results[0].state);
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
+            results[0].interrupt_reason);
+
+  // Allow the update to propagate, shut down the DB, and confirm that
+  // the query updated the on disk database as well.
+  MessageLoop::current()->RunUntilIdle();
+  DeleteBackend();
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    sql::Statement statement(db.GetUniqueStatement(
+        "Select Count(*) from downloads"));
+    EXPECT_TRUE(statement.Step());
+    EXPECT_EQ(1, statement.ColumnInt(0));
+
+    sql::Statement statement1(db.GetUniqueStatement(
+        "Select state, interrupt_reason from downloads"));
+    EXPECT_TRUE(statement1.Step());
+    EXPECT_EQ(DownloadDatabase::kStateInterrupted, statement1.ColumnInt(0));
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
+              statement1.ColumnInt(1));
+    EXPECT_FALSE(statement1.Step());
   }
 }
 
@@ -1634,7 +1691,5 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   EXPECT_EQ(title, results[0]->GetTitle());
   STLDeleteElements(&results);
 }
-
-}  // namespace
 
 }  // namespace history

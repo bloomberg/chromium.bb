@@ -1312,16 +1312,6 @@ void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
     db_->QueryDownloads(rows);
 }
 
-// Clean up entries that has been corrupted (because of the crash, for example).
-void HistoryBackend::CleanUpInProgressEntries() {
-  // If some "in progress" entries were not updated when Chrome exited, they
-  // need to be cleaned up.
-  if (!db_.get())
-    return;
-  db_->CleanUpInProgressEntries();
-  ScheduleCommit();
-}
-
 // Update a particular download entry.
 void HistoryBackend::UpdateDownload(const history::DownloadRow& data) {
   if (!db_.get())

@@ -27,9 +27,6 @@ using content::DownloadItem;
 
 namespace history {
 
-// static
-const int64 DownloadDatabase::kUninitializedHandle = -1;
-
 namespace {
 
 // Reason for dropping a particular record.
@@ -62,105 +59,6 @@ static const char kUrlChainSchema[] =
     "url LONGVARCHAR NOT NULL, "     // URL.
     "PRIMARY KEY (id, chain_index) )";
 
-// These constants and next two functions are used to allow
-// DownloadItem::DownloadState and DownloadDangerType to change without
-// breaking the database schema.
-// They guarantee that the values of the |state| field in the database are one
-// of the values returned by StateToInt, and that the values of the |state|
-// field of the DownloadRows returned by QueryDownloads() are one of the values
-// returned by IntToState().
-static const int kStateInvalid = -1;
-static const int kStateInProgress = 0;
-static const int kStateComplete = 1;
-static const int kStateCancelled = 2;
-static const int kStateBug140687 = 3;
-static const int kStateInterrupted = 4;
-
-static const int kDangerTypeInvalid = -1;
-static const int kDangerTypeNotDangerous = 0;
-static const int kDangerTypeDangerousFile = 1;
-static const int kDangerTypeDangerousUrl = 2;
-static const int kDangerTypeDangerousContent = 3;
-static const int kDangerTypeMaybeDangerousContent = 4;
-static const int kDangerTypeUncommonContent = 5;
-static const int kDangerTypeUserValidated = 6;
-static const int kDangerTypeDangerousHost = 7;
-
-int StateToInt(DownloadItem::DownloadState state) {
-  switch (state) {
-    case DownloadItem::IN_PROGRESS: return kStateInProgress;
-    case DownloadItem::COMPLETE: return kStateComplete;
-    case DownloadItem::CANCELLED: return kStateCancelled;
-    case DownloadItem::INTERRUPTED: return kStateInterrupted;
-    case DownloadItem::MAX_DOWNLOAD_STATE:
-      NOTREACHED();
-      return kStateInvalid;
-  }
-  NOTREACHED();
-  return kStateInvalid;
-}
-
-DownloadItem::DownloadState IntToState(int state) {
-  switch (state) {
-    case kStateInProgress: return DownloadItem::IN_PROGRESS;
-    case kStateComplete: return DownloadItem::COMPLETE;
-    case kStateCancelled: return DownloadItem::CANCELLED;
-    // We should not need kStateBug140687 here because MigrateDownloadsState()
-    // is called in HistoryDatabase::Init().
-    case kStateInterrupted: return DownloadItem::INTERRUPTED;
-    default: return DownloadItem::MAX_DOWNLOAD_STATE;
-  }
-}
-
-int DangerTypeToInt(content::DownloadDangerType danger_type) {
-  switch (danger_type) {
-    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
-      return kDangerTypeNotDangerous;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return kDangerTypeDangerousFile;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      return kDangerTypeDangerousUrl;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      return kDangerTypeDangerousContent;
-    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
-      return kDangerTypeMaybeDangerousContent;
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      return kDangerTypeUncommonContent;
-    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-      return kDangerTypeUserValidated;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-      return kDangerTypeDangerousHost;
-    case content::DOWNLOAD_DANGER_TYPE_MAX:
-      NOTREACHED();
-      return kDangerTypeInvalid;
-  }
-  NOTREACHED();
-  return kDangerTypeInvalid;
-}
-
-content::DownloadDangerType IntToDangerType(int danger_type) {
-  switch (danger_type) {
-    case kDangerTypeNotDangerous:
-      return content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
-    case kDangerTypeDangerousFile:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-    case kDangerTypeDangerousUrl:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
-    case kDangerTypeDangerousContent:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
-    case kDangerTypeMaybeDangerousContent:
-      return content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
-    case kDangerTypeUncommonContent:
-      return content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT;
-    case kDangerTypeUserValidated:
-      return content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
-    case kDangerTypeDangerousHost:
-      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
-    default:
-      return content::DOWNLOAD_DANGER_TYPE_MAX;
-  }
-}
-
 #if defined(OS_POSIX)
 
 // Binds/reads the given file path to the given column of the given statement.
@@ -191,11 +89,114 @@ static const char kNextDownloadId[] = "next_download_id";
 
 }  // namespace
 
+// static
+const int64 DownloadDatabase::kUninitializedHandle = -1;
+
+// These constants and the transformation functions below are used to allow
+// DownloadItem::DownloadState and DownloadDangerType to change without
+// breaking the database schema.
+// They guarantee that the values of the |state| field in the database are one
+// of the values returned by StateToInt, and that the values of the |state|
+// field of the DownloadRows returned by QueryDownloads() are one of the values
+// returned by IntToState().
+const int DownloadDatabase::kStateInvalid = -1;
+const int DownloadDatabase::kStateInProgress = 0;
+const int DownloadDatabase::kStateComplete = 1;
+const int DownloadDatabase::kStateCancelled = 2;
+const int DownloadDatabase::kStateBug140687 = 3;
+const int DownloadDatabase::kStateInterrupted = 4;
+
+const int DownloadDatabase::kDangerTypeInvalid = -1;
+const int DownloadDatabase::kDangerTypeNotDangerous = 0;
+const int DownloadDatabase::kDangerTypeDangerousFile = 1;
+const int DownloadDatabase::kDangerTypeDangerousUrl = 2;
+const int DownloadDatabase::kDangerTypeDangerousContent = 3;
+const int DownloadDatabase::kDangerTypeMaybeDangerousContent = 4;
+const int DownloadDatabase::kDangerTypeUncommonContent = 5;
+const int DownloadDatabase::kDangerTypeUserValidated = 6;
+const int DownloadDatabase::kDangerTypeDangerousHost = 7;
+
+int DownloadDatabase::StateToInt(DownloadItem::DownloadState state) {
+  switch (state) {
+    case DownloadItem::IN_PROGRESS: return DownloadDatabase::kStateInProgress;
+    case DownloadItem::COMPLETE: return DownloadDatabase::kStateComplete;
+    case DownloadItem::CANCELLED: return DownloadDatabase::kStateCancelled;
+    case DownloadItem::INTERRUPTED: return DownloadDatabase::kStateInterrupted;
+    case DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+      return DownloadDatabase::kStateInvalid;
+  }
+  NOTREACHED();
+  return DownloadDatabase::kStateInvalid;
+}
+
+DownloadItem::DownloadState DownloadDatabase::IntToState(int state) {
+  switch (state) {
+    case DownloadDatabase::kStateInProgress: return DownloadItem::IN_PROGRESS;
+    case DownloadDatabase::kStateComplete: return DownloadItem::COMPLETE;
+    case DownloadDatabase::kStateCancelled: return DownloadItem::CANCELLED;
+    // We should not need kStateBug140687 here because MigrateDownloadsState()
+    // is called in HistoryDatabase::Init().
+    case DownloadDatabase::kStateInterrupted: return DownloadItem::INTERRUPTED;
+    default: return DownloadItem::MAX_DOWNLOAD_STATE;
+  }
+}
+
+int DownloadDatabase::DangerTypeToInt(content::DownloadDangerType danger_type) {
+  switch (danger_type) {
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+      return DownloadDatabase::kDangerTypeNotDangerous;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return DownloadDatabase::kDangerTypeDangerousFile;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+      return DownloadDatabase::kDangerTypeDangerousUrl;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return DownloadDatabase::kDangerTypeDangerousContent;
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+      return DownloadDatabase::kDangerTypeMaybeDangerousContent;
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return DownloadDatabase::kDangerTypeUncommonContent;
+    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+      return DownloadDatabase::kDangerTypeUserValidated;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      return DownloadDatabase::kDangerTypeDangerousHost;
+    case content::DOWNLOAD_DANGER_TYPE_MAX:
+      NOTREACHED();
+      return DownloadDatabase::kDangerTypeInvalid;
+  }
+  NOTREACHED();
+  return DownloadDatabase::kDangerTypeInvalid;
+}
+
+content::DownloadDangerType DownloadDatabase::IntToDangerType(int danger_type) {
+  switch (danger_type) {
+    case DownloadDatabase::kDangerTypeNotDangerous:
+      return content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+    case DownloadDatabase::kDangerTypeDangerousFile:
+      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+    case DownloadDatabase::kDangerTypeDangerousUrl:
+      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
+    case DownloadDatabase::kDangerTypeDangerousContent:
+      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
+    case DownloadDatabase::kDangerTypeMaybeDangerousContent:
+      return content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
+    case DownloadDatabase::kDangerTypeUncommonContent:
+      return content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT;
+    case DownloadDatabase::kDangerTypeUserValidated:
+      return content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
+    case DownloadDatabase::kDangerTypeDangerousHost:
+      return content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
+    default:
+      return content::DOWNLOAD_DANGER_TYPE_MAX;
+  }
+}
+
 DownloadDatabase::DownloadDatabase()
     : owning_thread_set_(false),
       owning_thread_(0),
       next_id_(0),
-      next_db_handle_(0) {
+      next_db_handle_(0),
+      in_progress_entry_cleanup_completed_(false) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
@@ -283,6 +284,8 @@ bool DownloadDatabase::DropDownloadTable() {
 
 void DownloadDatabase::QueryDownloads(
     std::vector<DownloadRow>* results) {
+  EnsureInProgressEntriesCleanedUp();
+
   results->clear();
   if (next_db_handle_ < 1)
     next_db_handle_ = 1;
@@ -401,6 +404,8 @@ void DownloadDatabase::QueryDownloads(
 }
 
 bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
+  EnsureInProgressEntriesCleanedUp();
+
   DCHECK(data.db_handle > 0);
   int state = StateToInt(data.state);
   if (state == kStateInvalid) {
@@ -433,16 +438,23 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   return statement.Run();
 }
 
-bool DownloadDatabase::CleanUpInProgressEntries() {
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE downloads SET state=? WHERE state=?"));
-  statement.BindInt(0, kStateCancelled);
-  statement.BindInt(1, kStateInProgress);
+void DownloadDatabase::EnsureInProgressEntriesCleanedUp() {
+  if (in_progress_entry_cleanup_completed_)
+    return;
 
-  return statement.Run();
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE downloads SET state=?, interrupt_reason=? WHERE state=?"));
+  statement.BindInt(0, kStateInterrupted);
+  statement.BindInt(1, content::DOWNLOAD_INTERRUPT_REASON_CRASH);
+  statement.BindInt(2, kStateInProgress);
+
+  statement.Run();
+  in_progress_entry_cleanup_completed_ = true;
 }
 
 int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
+  EnsureInProgressEntriesCleanedUp();
+
   if (next_db_handle_ == 0) {
     // This is unlikely. All current known tests and users already call
     // QueryDownloads() before CreateDownload().
@@ -537,6 +549,8 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
 }
 
 void DownloadDatabase::RemoveDownload(int64 handle) {
+  EnsureInProgressEntriesCleanedUp();
+
   sql::Statement downloads_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
   downloads_statement.BindInt64(0, handle);
@@ -559,6 +573,8 @@ void DownloadDatabase::RemoveDownloadURLs(int64 handle) {
 }
 
 int DownloadDatabase::CountDownloads() {
+  EnsureInProgressEntriesCleanedUp();
+
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT count(*) from downloads"));
   statement.Step();

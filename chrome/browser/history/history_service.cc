@@ -804,14 +804,6 @@ void HistoryService::QueryDownloads(
       base::Bind(callback, base::Passed(&scoped_rows)));
 }
 
-// Changes all IN_PROGRESS in the database entries to CANCELED.
-// IN_PROGRESS entries are the corrupted entries, not updated by next function
-// because of the crash or some other extremal exit.
-void HistoryService::CleanUpInProgressEntries() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::CleanUpInProgressEntries);
-}
-
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
 void HistoryService::UpdateDownload(const history::DownloadRow& data) {

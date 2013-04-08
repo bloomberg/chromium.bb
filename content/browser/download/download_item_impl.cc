@@ -133,10 +133,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       bound_net_log_(bound_net_log),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   delegate_->Attach();
-  if (state_ == IN_PROGRESS_INTERNAL) {
-    state_ = INTERRUPTED_INTERNAL;
-    last_reason_ = DOWNLOAD_INTERRUPT_REASON_CRASH;
-  }
+  DCHECK_NE(IN_PROGRESS_INTERNAL, state_);
   Init(false /* not actively downloading */, SRC_HISTORY_IMPORT);
 }
 
