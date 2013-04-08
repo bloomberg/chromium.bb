@@ -651,6 +651,11 @@ const char kEnableSyncFavicons[]            = "enable-sync-favicons";
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 
+// Enables Chrome Translate for "alpha languages", that may have less-reliable
+// translation quality than supported languages.
+const char kEnableTranslateAlphaLanguages[] =
+    "enable-translate-alpha-languages";
+
 // Enables Alternate-Protocol when the port is user controlled (> 1024).
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
@@ -688,7 +693,7 @@ const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 // is to be used for testing only. Possible values are "stable", "beta", "dev"
 // and "canary". Note that this only applies if the browser's reported channel
 // is UNKNOWN.
-const char kFakeVariationsChannel[] =       "fake-variations-channel";
+const char kFakeVariationsChannel[]         = "fake-variations-channel";
 
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags

@@ -49,6 +49,7 @@
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -141,7 +142,12 @@ const char* const kTranslateScriptHeader =
 const char* const kReportLanguageDetectionErrorURL =
     "https://translate.google.com/translate_error";
 const char* const kLanguageListFetchURL =
-    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl&hl=%s";
+    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
+
+const char* const kLanguageListFetchLocaleQueryName = "hl";
+const char* const kLanguageListFetchAlphaLanguageQueryName = "alpha";
+const char* const kLanguageListFetchAlphaLanguageQueryValue = "1";
+
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
 
@@ -776,11 +782,23 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     return;
   }
 
-  GURL language_list_fetch_url = GURL(
-      base::StringPrintf(
-          kLanguageListFetchURL,
-          GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str()));
+  GURL language_list_fetch_url = GURL(kLanguageListFetchURL);
+  language_list_fetch_url = net::AppendQueryParameter(
+      language_list_fetch_url,
+      kLanguageListFetchLocaleQueryName,
+      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableTranslateAlphaLanguages)) {
+    language_list_fetch_url = net::AppendQueryParameter(
+        language_list_fetch_url,
+        kLanguageListFetchAlphaLanguageQueryName,
+        kLanguageListFetchAlphaLanguageQueryValue);
+  }
   AddApiKeyToUrl(&language_list_fetch_url);
+  VLOG(9) << "Fetch supporting language list from: "
+          << language_list_fetch_url.spec().c_str();
+
   language_list_request_pending_.reset(net::URLFetcher::Create(
       1, language_list_fetch_url, net::URLFetcher::GET, this));
   language_list_request_pending_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

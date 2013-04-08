@@ -1301,6 +1301,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableGoogleNowIntegration)
   },
 #endif
+  {
+    "enable-translate-alpha-languages",
+    IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_NAME,
+    IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableTranslateAlphaLanguages)
+  },
 };
 
 const Experiment* experiments = kExperiments;
