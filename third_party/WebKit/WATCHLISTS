@@ -60,9 +60,6 @@
                   '|Source/WebCore/dom/SecurityPolicyViolationEvent' \
                   '|LayoutTests/http/tests/security/contentSecurityPolicy'
     },
-    "loader": {
-      'filepath': 'WebCore/loader'
-    },
     "prerender": {
       'filepath': 'Prerender' \
                   '|loader/LinkLoader' \
@@ -85,7 +82,7 @@
     'bindings': [ 'abarth@chromium.org',
                   'japhet@chromium.org',
                   'haraken@chromium.org' ],
-    'loader': [ 'japhet@chromium.org' ],
+    'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'jamesr@chromium.org', 'schenney@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org' ],
@@ -97,6 +94,5 @@
     'rendering': [ 'jchaffraix+rendering@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
-    'loader': [ 'gavinp+loader@chromium.org' ],
   },
 }
