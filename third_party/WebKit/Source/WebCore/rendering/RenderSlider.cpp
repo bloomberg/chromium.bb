@@ -113,7 +113,7 @@ void RenderSlider::layout()
     if (thumbBox && thumbBox->isSliderThumb())
         static_cast<RenderSliderThumb*>(thumbBox)->updateAppearance(style());
 
-    RenderBlock::layout();
+    RenderFlexibleBox::layout();
 }
 
 bool RenderSlider::inDragMode() const
