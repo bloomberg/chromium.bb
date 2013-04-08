@@ -1382,13 +1382,26 @@ WebInspector.NetworkLogView.prototype = {
         var command = ["curl"];
         var ignoredHeaders = {};
 
+        function escapeCharacter(x)
+        {
+           var code = x.charCodeAt(0);
+           // Add leading zero when needed to not care about the next character.
+           return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
+        }
+
         function escape(str)
         {
-            return "\"" + str.replace(/\\/g, "\\\\")
-                             .replace(/\"/g, "\\\"")
-                             .replace(/\$/g, "\\$")
-                             .replace(/\n/g, "\\\n")
-                             .replace(/\`/g, "\\\`") + "\"";
+            if (/[\0-\x1f\']/.test(str)) {
+                // Use ANSI-C quoting syntax.
+                return "$\'" + str.replace(/\\/g, "\\\\")
+                                  .replace(/\'/g, "\\\'")
+                                  .replace(/\n/g, "\\n")
+                                  .replace(/\r/g, "\\r")
+                                  .replace(/[\0-\x1f]/g, escapeCharacter) + "'";
+            } else {
+                // Use single quote syntax.
+                return "'" + str + "'";
+            }
         }
         command.push(escape(request.url));
 
