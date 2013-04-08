@@ -426,7 +426,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._elementToWidget.clear();
 
         var newRange = this.range();
-        this._delegate.onTextChanged(this._lastRange, newRange);
+        if (!this._muteTextChangedEvent)
+            this._delegate.onTextChanged(this._lastRange, newRange);
         this._lastRange = newRange;
     },
 
@@ -532,7 +533,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setText: function(text)
     {
+        this._muteTextChangedEvent = true;
         this._codeMirror.setValue(text);
+        delete this._muteTextChangedEvent;
     },
 
     /**
