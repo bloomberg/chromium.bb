@@ -55,7 +55,6 @@ Layer::Layer()
       raster_scale_(1.f),
       automatically_compute_raster_scale_(false),
       bounds_contain_page_scale_(false),
-      layer_animation_delegate_(NULL),
       layer_scroll_client_(NULL) {
   if (layer_id_ < 0) {
     s_next_layer_id = 1;
@@ -63,8 +62,7 @@ Layer::Layer()
   }
 
   layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
-  layer_animation_controller_->AddObserver(this);
-  AddLayerAnimationEventObserver(layer_animation_controller_.get());
+  layer_animation_controller_->AddValueObserver(this);
 }
 
 Layer::~Layer() {
@@ -72,7 +70,7 @@ Layer::~Layer() {
   // way for us to be destroyed while we still have a parent.
   DCHECK(!parent());
 
-  layer_animation_controller_->RemoveObserver(this);
+  layer_animation_controller_->RemoveValueObserver(this);
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
@@ -100,8 +98,10 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (replica_layer_)
     replica_layer_->SetLayerTreeHost(host);
 
-  layer_animation_controller_->SetAnimationRegistrar(
-      host ? host->animation_registrar() : NULL);
+  if (host) {
+    layer_animation_controller_->SetAnimationRegistrar(
+        host->animation_registrar());
+  }
 
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
@@ -744,6 +744,11 @@ void Layer::RemoveAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
+void Layer::TransferAnimationsTo(Layer* layer) {
+  layer_animation_controller_->TransferAnimationsTo(
+      layer->layer_animation_controller());
+}
+
 void Layer::SuspendAnimations(double monotonic_time) {
   layer_animation_controller_->SuspendAnimations(monotonic_time);
   SetNeedsCommit();
@@ -754,62 +759,27 @@ void Layer::ResumeAnimations(double monotonic_time) {
   SetNeedsCommit();
 }
 
-void Layer::SetLayerAnimationController(
+void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
-  RemoveLayerAnimationEventObserver(layer_animation_controller_.get());
-  layer_animation_controller_->RemoveObserver(this);
+  layer_animation_controller_->RemoveValueObserver(this);
   layer_animation_controller_ = controller;
   layer_animation_controller_->set_force_sync();
-  layer_animation_controller_->AddObserver(this);
-  AddLayerAnimationEventObserver(layer_animation_controller_.get());
+  layer_animation_controller_->AddValueObserver(this);
   SetNeedsCommit();
-}
-
-scoped_refptr<LayerAnimationController>
-Layer::ReleaseLayerAnimationController() {
-  layer_animation_controller_->RemoveObserver(this);
-  scoped_refptr<LayerAnimationController> to_return =
-      layer_animation_controller_;
-  layer_animation_controller_ = LayerAnimationController::Create(id());
-  layer_animation_controller_->AddObserver(this);
-  layer_animation_controller_->SetAnimationRegistrar(
-      to_return->animation_registrar());
-  return to_return;
 }
 
 bool Layer::HasActiveAnimation() const {
   return layer_animation_controller_->HasActiveAnimation();
 }
 
-void Layer::NotifyAnimationStarted(const AnimationEvent& event,
-                                   double wall_clock_time) {
-  FOR_EACH_OBSERVER(LayerAnimationEventObserver, layer_animation_observers_,
-                    OnAnimationStarted(event));
-  if (layer_animation_delegate_)
-    layer_animation_delegate_->notifyAnimationStarted(wall_clock_time);
-}
-
-void Layer::NotifyAnimationFinished(double wall_clock_time) {
-  if (layer_animation_delegate_)
-    layer_animation_delegate_->notifyAnimationFinished(wall_clock_time);
-}
-
-void Layer::NotifyAnimationPropertyUpdate(const AnimationEvent& event) {
-  if (event.target_property == Animation::Opacity)
-    SetOpacity(event.opacity);
-  else
-    SetTransform(event.transform);
-}
-
 void Layer::AddLayerAnimationEventObserver(
     LayerAnimationEventObserver* animation_observer) {
-  if (!layer_animation_observers_.HasObserver(animation_observer))
-    layer_animation_observers_.AddObserver(animation_observer);
+  layer_animation_controller_->AddEventObserver(animation_observer);
 }
 
 void Layer::RemoveLayerAnimationEventObserver(
     LayerAnimationEventObserver* animation_observer) {
-  layer_animation_observers_.RemoveObserver(animation_observer);
+  layer_animation_controller_->RemoveEventObserver(animation_observer);
 }
 
 Region Layer::VisibleContentOpaqueRegion() const {

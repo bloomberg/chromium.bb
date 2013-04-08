@@ -554,9 +554,36 @@ bool LayerTreeHost::CommitRequested() const {
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                                        base::Time wall_clock_time) {
   DCHECK(proxy_->IsMainThread());
-  SetAnimationEventsRecursive(*events,
-                              root_layer_.get(),
-                              wall_clock_time);
+  AnimationRegistrar::AnimationControllerMap copy =
+      animation_registrar_->active_animation_controllers();
+  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
+       iter != copy.end();
+       ++iter) {
+    for (size_t event_index = 0; event_index < events->size(); ++event_index) {
+      if ((*iter).second->id() == (*events)[event_index].layer_id) {
+        switch ((*events)[event_index].type) {
+          case AnimationEvent::Started:
+            (*iter).second->NotifyAnimationStarted((*events)[event_index],
+                                                   wall_clock_time.ToDoubleT());
+            break;
+
+          case AnimationEvent::Finished:
+            (*iter).second->NotifyAnimationFinished(
+                (*events)[event_index],
+                wall_clock_time.ToDoubleT());
+            break;
+
+          case AnimationEvent::PropertyUpdate:
+            (*iter).second->NotifyAnimationPropertyUpdate(
+                (*events)[event_index]);
+            break;
+
+          default:
+            NOTREACHED();
+        }
+      }
+    }
+  }
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
@@ -1043,43 +1070,6 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
     bool start_ready_animations = true;
     (*iter).second->UpdateState(start_ready_animations, NULL);
   }
-}
-
-void LayerTreeHost::SetAnimationEventsRecursive(
-    const AnimationEventsVector& events,
-    Layer* layer,
-    base::Time wall_clock_time) {
-  if (!layer)
-    return;
-
-  for (size_t event_index = 0; event_index < events.size(); ++event_index) {
-    if (layer->id() == events[event_index].layer_id) {
-      switch (events[event_index].type) {
-        case AnimationEvent::Started:
-          layer->NotifyAnimationStarted(events[event_index],
-                                        wall_clock_time.ToDoubleT());
-          break;
-
-        case AnimationEvent::Finished:
-          layer->NotifyAnimationFinished(wall_clock_time.ToDoubleT());
-          break;
-
-        case AnimationEvent::PropertyUpdate:
-          layer->NotifyAnimationPropertyUpdate(events[event_index]);
-          break;
-
-        default:
-          NOTREACHED();
-      }
-    }
-  }
-
-  for (size_t child_index = 0;
-       child_index < layer->children().size();
-       ++child_index)
-    SetAnimationEventsRecursive(events,
-                                layer->children()[child_index].get(),
-                                wall_clock_time);
 }
 
 skia::RefPtr<SkPicture> LayerTreeHost::CapturePicture() {

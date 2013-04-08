@@ -493,7 +493,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
 
-  layer_tree_root->SetLayerAnimationController(
+  layer_tree_root->SetLayerAnimationControllerForTest(
       FakeLayerAnimationController::Create());
 
   EXPECT_FALSE(static_cast<FakeLayerAnimationController*>(

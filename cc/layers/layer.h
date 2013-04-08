@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/animation/layer_animation_event_observer.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
@@ -37,6 +36,7 @@ namespace cc {
 class Animation;
 struct AnimationEvent;
 class LayerAnimationDelegate;
+class LayerAnimationEventObserver;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeImpl;
@@ -324,26 +324,22 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
 
+  void TransferAnimationsTo(Layer* layer);
+
   void SuspendAnimations(double monotonic_time);
   void ResumeAnimations(double monotonic_time);
 
   LayerAnimationController* layer_animation_controller() {
     return layer_animation_controller_.get();
   }
-  void SetLayerAnimationController(
+  void SetLayerAnimationControllerForTest(
       scoped_refptr<LayerAnimationController> controller);
-  scoped_refptr<LayerAnimationController> ReleaseLayerAnimationController();
 
   void set_layer_animation_delegate(WebKit::WebAnimationDelegate* delegate) {
-    layer_animation_delegate_ = delegate;
+    layer_animation_controller_->set_layer_animation_delegate(delegate);
   }
 
   bool HasActiveAnimation() const;
-
-  virtual void NotifyAnimationStarted(const AnimationEvent& event,
-                                      double wall_clock_time);
-  virtual void NotifyAnimationFinished(double wall_clock_time);
-  virtual void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
 
   void AddLayerAnimationEventObserver(
       LayerAnimationEventObserver* animation_observer);
@@ -431,8 +427,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // updated via SetLayerTreeHost() if a layer moves between trees.
   LayerTreeHost* layer_tree_host_;
 
-  ObserverList<LayerAnimationEventObserver> layer_animation_observers_;
-
   scoped_refptr<LayerAnimationController> layer_animation_controller_;
 
   // Layer properties.
@@ -478,7 +472,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   gfx::Transform impl_transform_;
 
-  WebKit::WebAnimationDelegate* layer_animation_delegate_;
   WebKit::WebLayerScrollClient* layer_scroll_client_;
 
   DrawProperties<Layer, RenderSurface> draw_properties_;

@@ -271,9 +271,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   void AnimateLayers(base::TimeTicks monotonic_time);
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
-  void SetAnimationEventsRecursive(const AnimationEventsVector& events,
-                                   Layer* layer,
-                                   base::Time wall_clock_time);
 
   bool animating_;
   bool needs_full_tree_sync_;

@@ -107,6 +107,15 @@ class CC_EXPORT Animation {
     needs_synchronized_start_time_ = needs_synchronized_start_time;
   }
 
+  // This is true for animations running on the main thread when the Finished
+  // event sent by the corresponding impl animation has been received.
+  bool received_finished_event() const {
+    return received_finished_event_;
+  }
+  void set_received_finished_event(bool received_finished_event) {
+    received_finished_event_ = received_finished_event;
+  }
+
   // Takes the given absolute time, and using the start time and the number
   // of iterations, returns the relative time in the current iteration.
   double TrimTimeToCurrentIteration(double monotonic_time) const;
@@ -158,6 +167,7 @@ class CC_EXPORT Animation {
   double time_offset_;
 
   bool needs_synchronized_start_time_;
+  bool received_finished_event_;
 
   // When an animation is suspended, it behaves as if it is paused and it also
   // ignores all run state changes until it is resumed. This is used for testing

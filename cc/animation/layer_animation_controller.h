@@ -17,6 +17,10 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "ui/gfx/transform.h"
 
+namespace WebKit {
+class WebAnimationDelegate;
+}
+
 namespace gfx { class Transform; }
 
 namespace cc {
@@ -27,8 +31,7 @@ class KeyframeValueList;
 class LayerAnimationValueObserver;
 
 class CC_EXPORT LayerAnimationController
-    : public base::RefCounted<LayerAnimationController>,
-      public LayerAnimationEventObserver {
+    : public base::RefCounted<LayerAnimationController> {
  public:
   static scoped_refptr<LayerAnimationController> Create(int id);
 
@@ -48,6 +51,14 @@ class CC_EXPORT LayerAnimationController
   // thread controller.
   virtual void PushAnimationUpdatesTo(
       LayerAnimationController* controller_impl);
+
+  // Transfers ownership of all animations to other_controller, replacing
+  // any animations currently owned by other_controller. This is intended
+  // to be used for transferring animations between main thread controllers,
+  // so the run state of each transferred animation is preserved (note that
+  // this differs from ReplaceImplThreadAnimations, which is used for copying
+  // animations from a main thread controller to an impl thread controller).
+  void TransferAnimationsTo(LayerAnimationController* other_controller);
 
   void Animate(double monotonic_time);
   void AccumulatePropertyUpdates(double monotonic_time,
@@ -77,11 +88,6 @@ class CC_EXPORT LayerAnimationController
   // the future.
   bool IsAnimatingProperty(Animation::TargetProperty target_property) const;
 
-  // This is called in response to an animation being started on the impl
-  // thread. This function updates the corresponding main thread animation's
-  // start time.
-  virtual void OnAnimationStarted(const AnimationEvent& event) OVERRIDE;
-
   // If a sync is forced, then the next time animation updates are pushed to the
   // impl thread, all animations will be transferred.
   void set_force_sync() { force_sync_ = true; }
@@ -89,8 +95,21 @@ class CC_EXPORT LayerAnimationController
   void SetAnimationRegistrar(AnimationRegistrar* registrar);
   AnimationRegistrar* animation_registrar() { return registrar_; }
 
-  void AddObserver(LayerAnimationValueObserver* observer);
-  void RemoveObserver(LayerAnimationValueObserver* observer);
+  void NotifyAnimationStarted(const AnimationEvent& event,
+                              double wall_clock_time);
+  void NotifyAnimationFinished(const AnimationEvent& event,
+                               double wall_clock_time);
+  void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
+
+  void AddValueObserver(LayerAnimationValueObserver* observer);
+  void RemoveValueObserver(LayerAnimationValueObserver* observer);
+
+  void AddEventObserver(LayerAnimationEventObserver* observer);
+  void RemoveEventObserver(LayerAnimationEventObserver* observer);
+
+  void set_layer_animation_delegate(WebKit::WebAnimationDelegate* delegate) {
+    layer_animation_delegate_ = delegate;
+  }
 
  protected:
   friend class base::RefCounted<LayerAnimationController>;
@@ -132,7 +151,7 @@ class CC_EXPORT LayerAnimationController
   void NotifyObserversOpacityAnimated(float opacity);
   void NotifyObserversTransformAnimated(const gfx::Transform& transform);
 
-  bool HasActiveObserver();
+  bool HasActiveValueObserver();
 
   // If this is true, we force a sync to the impl thread.
   bool force_sync_;
@@ -146,7 +165,10 @@ class CC_EXPORT LayerAnimationController
 
   double last_tick_time_;
 
-  ObserverList<LayerAnimationValueObserver> observers_;
+  ObserverList<LayerAnimationValueObserver> value_observers_;
+  ObserverList<LayerAnimationEventObserver> event_observers_;
+
+  WebKit::WebAnimationDelegate* layer_animation_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);
 };

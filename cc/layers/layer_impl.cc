@@ -63,7 +63,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
   AnimationRegistrar* registrar = layer_tree_impl_->animationRegistrar();
   layer_animation_controller_ =
       registrar->GetAnimationControllerForId(layer_id_);
-  layer_animation_controller_->AddObserver(this);
+  layer_animation_controller_->AddValueObserver(this);
 }
 
 LayerImpl::~LayerImpl() {
@@ -71,7 +71,7 @@ LayerImpl::~LayerImpl() {
   DCHECK(!between_will_draw_and_did_draw_);
 #endif
   layer_tree_impl_->UnregisterLayer(this);
-  layer_animation_controller_->RemoveObserver(this);
+  layer_animation_controller_->RemoveValueObserver(this);
 }
 
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
@@ -362,9 +362,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetSentScrollDelta(gfx::Vector2d());
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
-
-  layer_animation_controller_->PushAnimationUpdatesTo(
-      layer->layer_animation_controller());
 
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
