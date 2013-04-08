@@ -902,13 +902,6 @@ void FrameView::setFooterHeight(int footerHeight)
     m_footerHeight = footerHeight;
 }
 
-void FrameView::setNeedsOneShotDrawingSynchronization()
-{
-    Page* page = frame() ? frame()->page() : 0;
-    if (page)
-        page->chrome()->client()->setNeedsOneShotDrawingSynchronization();
-}
-
 #endif // USE(ACCELERATED_COMPOSITING)
 
 bool FrameView::hasCompositedContent() const

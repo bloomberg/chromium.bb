@@ -125,10 +125,6 @@ public:
 
     void clearBackingStores();
     void restoreBackingStores();
-
-    // Called when changes to the GraphicsLayer hierarchy have to be synchronized with
-    // content rendered via the normal painting path.
-    void setNeedsOneShotDrawingSynchronization();
 #endif
 
     bool hasCompositedContent() const;

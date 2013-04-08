@@ -614,12 +614,6 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
         repaintContainer = m_renderView;
 
     layer->repaintIncludingNonCompositingDescendants(repaintContainer);
-    if (repaintContainer == m_renderView) {
-        // The contents of this layer may be moving between the window
-        // and a GraphicsLayer, so we need to make sure the window system
-        // synchronizes those changes on the screen.
-        m_renderView->frameView()->setNeedsOneShotDrawingSynchronization();
-    }
 }
 
 // This method assumes that layout is up-to-date, unlike repaintOnCompositingChange().
@@ -637,11 +631,6 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
 
         compositedAncestor->setBackingNeedsRepaintInRect(repaintRect);
     }
-
-    // The contents of this layer may be moving from a GraphicsLayer to the window,
-    // so we need to make sure the window system synchronizes those changes on the screen.
-    if (compositedAncestor == m_renderView->layer())
-        m_renderView->frameView()->setNeedsOneShotDrawingSynchronization();
 }
 
 // The bounds of the GraphicsLayer created for a compositing layer is the union of the bounds of all the descendant
