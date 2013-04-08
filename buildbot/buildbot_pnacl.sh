@@ -103,11 +103,6 @@ tc-build-translator() {
   ${PNACL_BUILD} translator-all
 }
 
-tc-add-glibc-support() {
-  echo @@@BUILD_STEP add_glibc_support@@@
-  ${PNACL_BUILD} glibc-all
-}
-
 tc-archive() {
   local label=$1
   echo @@@BUILD_STEP archive_toolchain@@@
@@ -140,7 +135,6 @@ tc-build-all() {
   local label=$1
   local is_try=$2
   local build_translator=$3
-  local build_glibc=$3
 
   # Tell build.sh and test.sh that we're a bot.
   export PNACL_BUILDBOT=true
@@ -166,10 +160,6 @@ tc-build-all() {
       tc-prune-translator-pexes
       tc-archive-translator
     fi
-  fi
-
-  if ${build_glibc} ; then
-    tc-add-glibc-support
   fi
 
 }
@@ -537,7 +527,7 @@ mode-buildbot-arm-hw-try() {
   mode-buildbot-arm-hw
 }
 
-# These are also suitable for local TC sanity testing
+# These 2 functions are also suitable for local TC sanity testing.
 tc-tests-all() {
   local is_try=$1
 
@@ -563,29 +553,26 @@ tc-tests-all() {
   # smaller set of sbtc tests for ARM because qemu is flaky.
   scons-stage-noirt "arm"    "${scons_flags} use_sandboxed_translator=1" \
     "run_hello_world_test run_eh_catch_many_opt_noframe_test"
-
-  # glibc
-  scons-stage-noirt "x86-32" \
-    "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
-    "${SCONS_TC_TESTS}"
-  scons-stage-noirt "x86-64" \
-    "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
-    "${SCONS_TC_TESTS}"
 }
 
 tc-tests-fast() {
+  local arch="$1"
+  local scons_flags="-j8 -k skip_trusted_tests=1"
+
   llvm-regression
-  scons-stage-noirt "$1" "-j8 -k" "${SCONS_TC_TESTS}"
+
+  scons-stage-noirt "${arch}" "${scons_flags}" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
-  scons-stage-noirt "$1" "-j1 -k" "large_tests"
-  scons-stage-noirt "$1" "-j8 -k pnacl_generate_pexe=0" "nonpexe_tests"
+  scons-stage-noirt "${arch}" "-j1 -k skip_trusted_tests=1" "large_tests"
+  scons-stage-noirt "${arch}" "${scons_flags} pnacl_generate_pexe=0" \
+    "nonpexe_tests"
 }
 
 mode-buildbot-tc-x8664-linux() {
   local is_try=$1
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} true true
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} true
   tc-tests-all ${is_try}
 }
 
@@ -594,7 +581,7 @@ mode-buildbot-tc-x8632-linux() {
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
   # For now, just use this bot to test a pure 32 bit build but don't upload
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false false
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false
   tc-tests-fast "x86-32"
 }
 
@@ -604,7 +591,7 @@ mode-buildbot-tc-x8632-mac() {
   export PNACL_TOOLCHAIN_LABEL=pnacl_mac_x86
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false false
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
   tc-tests-fast "x86-32"
 }
 
@@ -613,7 +600,7 @@ mode-buildbot-tc-x8664-win() {
   FAIL_FAST=false
   # NOTE: this is a 64bit bot but the TC generated is 32bit
   export PNACL_TOOLCHAIN_LABEL=pnacl_win_x86
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false false
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
 
   # We can't test ARM because we do not have QEMU for Win.
   tc-tests-fast "x86-64"
