@@ -11,10 +11,10 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int mprotect(void *start, size_t length, int prot) {
-  int error = __libnacl_irt_memory.mprotect(&start, length, prot);
+  int error = __libnacl_irt_memory.mprotect(start, length, prot);
   if (error) {
     errno = error;
     return -1;
   }
-  return start;
+  return 0;
 }

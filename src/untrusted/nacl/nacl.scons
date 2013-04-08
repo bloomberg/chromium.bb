@@ -37,6 +37,7 @@ SRCS_NEWLIB_SYSCALL =  [
     'lock.c',
     'lseek.c',
     'mmap.c',
+    'mprotect.c',
     'munmap.c',
     'nanosleep.c',
     'nacl_interface_query.c',

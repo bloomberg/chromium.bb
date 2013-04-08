@@ -22,6 +22,7 @@
       'lseek.c',
       'malloc.c',
       'mmap.c',
+      'mprotect.c',
       'munmap.c',
       'nanosleep.c',
       'nacl_interface_query.c',
