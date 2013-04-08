@@ -8,6 +8,8 @@
 #include <string>
 
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/dev/var_array_dev.h"
+#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/var.h"
@@ -80,7 +82,7 @@ class FromVarConverter<Optional<T> >
 };
 
 template <>
-class FromVarConverter<std::string> : public FromVarConverterBase<std::string> {
+class FromVarConverter<bool> : public FromVarConverterBase<bool> {
  public:
   FromVarConverter() {
   }
@@ -93,7 +95,25 @@ class FromVarConverter<std::string> : public FromVarConverterBase<std::string> {
   }
 
   void Set(const PP_Var& var) {
-    FromVarConverterBase<std::string>::value_ = Var(var).AsString();
+    FromVarConverterBase<bool>::value_ = Var(var).AsBool();
+  }
+};
+
+template <>
+class FromVarConverter<int32_t> : public FromVarConverterBase<int32_t> {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<int32_t>::value_ = Var(var).AsInt();
   }
 };
 
@@ -112,6 +132,80 @@ class FromVarConverter<double> : public FromVarConverterBase<double> {
 
   void Set(const PP_Var& var) {
     FromVarConverterBase<double>::value_ = Var(var).AsDouble();
+  }
+};
+
+template <>
+class FromVarConverter<std::string> : public FromVarConverterBase<std::string> {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<std::string>::value_ = Var(var).AsString();
+  }
+};
+
+template <>
+class FromVarConverter<Var> : public FromVarConverterBase<Var> {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<Var>::value_ = Var(var);
+  }
+};
+
+template <>
+class FromVarConverter<VarArray_Dev>
+    : public FromVarConverterBase<VarArray_Dev> {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<VarArray_Dev>::value_ = Var(var);
+  }
+};
+
+template <>
+class FromVarConverter<VarDictionary_Dev>
+    : public FromVarConverterBase<VarDictionary_Dev> {
+ public:
+  FromVarConverter() {
+  }
+
+  FromVarConverter(const PP_Var& var) {
+    Set(var);
+  }
+
+  ~FromVarConverter() {
+  }
+
+  void Set(const PP_Var& var) {
+    FromVarConverterBase<VarDictionary_Dev>::value_ = Var(var);
   }
 };
 

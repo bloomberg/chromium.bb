@@ -138,6 +138,7 @@
       # Extensions dev interfaces.
       'c/extensions/dev/ppb_ext_alarms_dev.h',
       'c/extensions/dev/ppb_ext_events_dev.h',
+      'c/extensions/dev/ppb_ext_socket_dev.h',
     ],
     'cpp_source_files': [
       'cpp/array_output.cc',
@@ -342,6 +343,8 @@
       'cpp/extensions/dev/alarms_dev.h',
       'cpp/extensions/dev/events_dev.cc',
       'cpp/extensions/dev/events_dev.h',
+      'cpp/extensions/dev/socket_dev.cc',
+      'cpp/extensions/dev/socket_dev.h',
 
       # Utility sources.
       'utility/completion_callback_factory.h',

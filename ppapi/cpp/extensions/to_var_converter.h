@@ -8,8 +8,11 @@
 #include <string>
 
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/dev/var_array_dev.h"
+#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 
 namespace pp {
 namespace ext {
@@ -66,6 +69,36 @@ class ToVarConverter<Optional<T> > : public ToVarConverterBase {
 };
 
 template <>
+class ToVarConverter<bool> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(bool object) : ToVarConverterBase(Var(object)) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
+class ToVarConverter<int32_t> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(int32_t object) : ToVarConverterBase(Var(object)) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
+class ToVarConverter<double> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(double object) : ToVarConverterBase(Var(object)) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
 class ToVarConverter<std::string> : public ToVarConverterBase {
  public:
   explicit ToVarConverter(const std::string& object)
@@ -77,9 +110,39 @@ class ToVarConverter<std::string> : public ToVarConverterBase {
 };
 
 template <>
-class ToVarConverter<double> : public ToVarConverterBase {
+class ToVarConverter<Var> : public ToVarConverterBase {
  public:
-  explicit ToVarConverter(double object) : ToVarConverterBase(Var(object)) {
+  explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
+class ToVarConverter<VarArray_Dev> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
+class ToVarConverter<VarDictionary_Dev> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
+  }
+
+  ~ToVarConverter() {
+  }
+};
+
+template <>
+class ToVarConverter<VarArrayBuffer> : public ToVarConverterBase {
+ public:
+  explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
   }
 
   ~ToVarConverter() {
