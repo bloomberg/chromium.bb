@@ -438,6 +438,7 @@ RenderThreadImpl::~RenderThreadImpl() {
     compositor_output_surface_filter_ = NULL;
   }
 
+  compositor_thread_.reset();
   if (input_handler_manager_.get()) {
     RemoveFilter(input_handler_manager_->GetMessageFilter());
     input_handler_manager_.reset();
