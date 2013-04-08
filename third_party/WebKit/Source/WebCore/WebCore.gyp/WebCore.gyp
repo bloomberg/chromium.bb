@@ -210,8 +210,6 @@
       ['OS=="win"', {
         'webcore_include_dirs': [
           '../page/win',
-          '../platform/audio/win',
-          '../platform/graphics/win',
           '../platform/text/win',
           '../platform/win',
         ],
