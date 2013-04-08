@@ -30,8 +30,6 @@
 #include "config.h"
 #include "Entry.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystem.h"
 #include "DirectoryEntry.h"
 #include "EntryCallback.h"
@@ -87,5 +85,3 @@ void Entry::getParent(PassRefPtr<EntryCallback> successCallback, PassRefPtr<Erro
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

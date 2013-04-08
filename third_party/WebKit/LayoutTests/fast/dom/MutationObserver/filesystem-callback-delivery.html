@@ -56,10 +56,6 @@ function testFilesystem() {
 
 description('Test that Mutation Records are delivered following FileSystem callbacks.');
 
-if (!window.webkitRequestFileSystem) {
-    testFailed('This test requires ENABLE(FILE_SYSTEM)');
-    finishJSTest();
-} else
-    testFilesystem();
+testFilesystem();
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

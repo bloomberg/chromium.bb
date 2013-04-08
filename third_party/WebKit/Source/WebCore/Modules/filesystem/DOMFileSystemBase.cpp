@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DOMFileSystemBase.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFilePath.h"
 #include "DirectoryEntry.h"
 #include "DirectoryReaderBase.h"
@@ -258,5 +256,3 @@ bool DOMFileSystemBase::readDirectory(PassRefPtr<DirectoryReaderBase> reader, co
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

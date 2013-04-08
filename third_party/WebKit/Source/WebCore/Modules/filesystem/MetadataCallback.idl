@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     Callback
 ] interface MetadataCallback {
     boolean handleEvent(Metadata metadata);

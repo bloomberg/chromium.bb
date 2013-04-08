@@ -35,8 +35,6 @@
 #error "Chromium should not compile this file and instead define its own version of these factories."
 #endif
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "CrossThreadTask.h"
 #include "DOMFileSystem.h"
 #include "ErrorCallback.h"
@@ -106,5 +104,3 @@ void LocalFileSystem::deleteFileSystem(ScriptExecutionContext* context, FileSyst
 }
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)

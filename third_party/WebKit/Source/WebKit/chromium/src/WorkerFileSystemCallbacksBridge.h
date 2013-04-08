@@ -31,7 +31,7 @@
 #ifndef WorkerFileSystemCallbacksBridge_h
 #define WorkerFileSystemCallbacksBridge_h
 
-#if ENABLE(FILE_SYSTEM) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "ScriptExecutionContext.h"
 #include <public/WebFileError.h>

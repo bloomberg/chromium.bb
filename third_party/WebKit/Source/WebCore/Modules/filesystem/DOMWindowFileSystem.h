@@ -26,8 +26,6 @@
 #ifndef DOMWindowFileSystem_h
 #define DOMWindowFileSystem_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -57,7 +55,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // DOMWindowFileSystem_h

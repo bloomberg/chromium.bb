@@ -31,8 +31,6 @@
 #ifndef AsyncFileWriterChromium_h
 #define AsyncFileWriterChromium_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileWriter.h"
 #include "WebFileWriterClient.h"
 #include <public/WebFileError.h>
@@ -70,7 +68,5 @@ private:
 };
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // AsyncFileWriterChromium_h

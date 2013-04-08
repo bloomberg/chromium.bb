@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=FILE_SYSTEM
-] interface FileEntrySync : EntrySync {
+interface FileEntrySync : EntrySync {
     File file() raises (FileException);
     FileWriterSync createWriter() raises (FileException);
 };

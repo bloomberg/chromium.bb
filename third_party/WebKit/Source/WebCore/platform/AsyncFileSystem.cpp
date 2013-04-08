@@ -31,8 +31,6 @@
 #include "config.h"
 #include "AsyncFileSystem.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "AsyncFileSystemCallbacks.h"
 #include "ExceptionCode.h"
 #include "NotImplemented.h"
@@ -60,5 +58,3 @@ void AsyncFileSystem::deleteFileSystem(const String& basePath, const String& sto
 #endif
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)

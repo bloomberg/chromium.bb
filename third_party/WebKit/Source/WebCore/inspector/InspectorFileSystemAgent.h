@@ -31,8 +31,6 @@
 #ifndef InspectorFileSystemAgent_h
 #define InspectorFileSystemAgent_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "InspectorBaseAgent.h"
 
 #include <wtf/PassOwnPtr.h>
@@ -73,5 +71,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(FILE_SYSTEM)
 #endif // InspectorFileSystemAgent_h

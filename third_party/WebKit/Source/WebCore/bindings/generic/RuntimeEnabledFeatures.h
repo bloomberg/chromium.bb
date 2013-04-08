@@ -178,10 +178,8 @@ public:
     static bool webkitSpeechGrammarListEnabled() { return isScriptedSpeechEnabled; }
 #endif
 
-#if ENABLE(FILE_SYSTEM)
     static bool fileSystemEnabled();
     static void setFileSystemEnabled(bool isEnabled) { isFileSystemEnabled = isEnabled; }
-#endif
 
 #if ENABLE(JAVASCRIPT_I18N_API)
     static bool javaScriptI18NAPIEnabled();
@@ -312,9 +310,7 @@ private:
 #if ENABLE(SCRIPTED_SPEECH)
     static bool isScriptedSpeechEnabled;
 #endif
-#if ENABLE(FILE_SYSTEM)
     static bool isFileSystemEnabled;
-#endif
 
 #if ENABLE(JAVASCRIPT_I18N_API)
     static bool isJavaScriptI18NAPIEnabled;

@@ -31,8 +31,6 @@
 #ifndef LocalFileSystem_h
 #define LocalFileSystem_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFileSystemBase.h"
 #include "FileSystemType.h"
 #include <wtf/PassRefPtr.h>
@@ -92,7 +90,5 @@ private:
 };
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // LocalFileSystem_h

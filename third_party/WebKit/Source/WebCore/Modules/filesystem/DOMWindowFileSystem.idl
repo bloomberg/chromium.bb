@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     Supplemental=DOMWindow
 ] interface DOMWindowFileSystem {
     const unsigned short TEMPORARY = 0;

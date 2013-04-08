@@ -31,8 +31,6 @@
 #ifndef FileEntry_h
 #define FileEntry_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "Entry.h"
 
 namespace WebCore {
@@ -58,7 +56,5 @@ private:
 };
 
 } // namespace
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileEntry_h

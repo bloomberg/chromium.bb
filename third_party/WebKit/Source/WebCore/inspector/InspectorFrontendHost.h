@@ -88,9 +88,7 @@ public:
     void requestFileSystems();
     void addFileSystem();
     void removeFileSystem(const String& fileSystemPath);
-#if ENABLE(FILE_SYSTEM)
     PassRefPtr<DOMFileSystem> isolatedFileSystem(const String& fileSystemName, const String& rootURL);
-#endif
 
     bool isUnderTest();
 

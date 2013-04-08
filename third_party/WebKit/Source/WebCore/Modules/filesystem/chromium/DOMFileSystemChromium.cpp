@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DOMFileSystemBase.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFilePath.h"
 #include "FileSystemType.h"
 #include "ScriptExecutionContext.h"
@@ -105,5 +103,3 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)

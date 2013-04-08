@@ -31,8 +31,6 @@
 #ifndef FileSystemType_h
 #define FileSystemType_h
 
-#if ENABLE(FILE_SYSTEM)
-
 namespace WebCore {
 
 // For file system types used in FileSystem API.
@@ -55,7 +53,5 @@ enum FileSystemSynchronousType {
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // FileSystemType_h

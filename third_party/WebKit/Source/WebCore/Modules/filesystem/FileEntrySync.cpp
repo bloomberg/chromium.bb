@@ -31,8 +31,6 @@
 #include "config.h"
 #include "FileEntrySync.h"
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "File.h"
 #include "FileWriterSync.h"
 
@@ -54,5 +52,3 @@ PassRefPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionCode& ec)
 }
 
 }
-
-#endif // ENABLE(FILE_SYSTEM)

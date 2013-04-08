@@ -31,8 +31,6 @@
 #ifndef EntrySync_h
 #define EntrySync_h
 
-#if ENABLE(FILE_SYSTEM)
-
 #include "DOMFileSystemSync.h"
 #include "EntryBase.h"
 #include <wtf/Forward.h>
@@ -63,7 +61,5 @@ protected:
 };
 
 }
-
-#endif // ENABLE(FILE_SYSTEM)
 
 #endif // EntrySync_h

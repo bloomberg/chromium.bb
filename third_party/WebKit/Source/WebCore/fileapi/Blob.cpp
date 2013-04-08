@@ -124,12 +124,10 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     if (isFile()) {
-#if ENABLE(FILE_SYSTEM)
         if (!toFile(this)->fileSystemURL().isEmpty())
             blobData->appendURL(toFile(this)->fileSystemURL(), start, length, modificationTime);
         else
-#endif
-        blobData->appendFile(toFile(this)->path(), start, length, modificationTime);
+            blobData->appendFile(toFile(this)->path(), start, length, modificationTime);
     } else
         blobData->appendBlob(m_internalURL, start, length);
 

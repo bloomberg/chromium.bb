@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     ImplementationLacksVTable
 ] interface DirectoryReaderSync {
     EntryArraySync readEntries() raises (FileException);

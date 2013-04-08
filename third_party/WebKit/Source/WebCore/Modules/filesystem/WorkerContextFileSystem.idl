@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=FILE_SYSTEM,
     Supplemental=WorkerContext
 ] interface WorkerContextFileSystem {
     const unsigned short TEMPORARY = 0;
