@@ -536,6 +536,8 @@
     'browser/in_process_webkit/webkit_thread.h',
     'browser/indexed_db/indexed_db_context_impl.cc',
     'browser/indexed_db/indexed_db_context_impl.h',
+    'browser/indexed_db/indexed_db_internals_ui.cc',
+    'browser/indexed_db/indexed_db_internals_ui.h',
     'browser/indexed_db/indexed_db_quota_client.cc',
     'browser/indexed_db/indexed_db_quota_client.h',
     'browser/loader/async_resource_handler.cc',
