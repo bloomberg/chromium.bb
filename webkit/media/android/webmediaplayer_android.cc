@@ -114,6 +114,10 @@ void WebMediaPlayerAndroid::pause() {
   is_playing_ = false;
 }
 
+void WebMediaPlayerAndroid::seekFloat(float seconds) {
+  seek(seconds);
+}
+
 void WebMediaPlayerAndroid::seek(float seconds) {
   pending_seek_ = seconds;
   seeking_ = true;
@@ -129,13 +133,25 @@ bool WebMediaPlayerAndroid::supportsSave() const {
   return false;
 }
 
+void WebMediaPlayerAndroid::setEndTimeFloat(float seconds) {
+  setEndTime(seconds);
+}
+
 void WebMediaPlayerAndroid::setEndTime(float seconds) {
   // Deprecated.
   // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
 }
 
+void WebMediaPlayerAndroid::setRateFloat(float rate) {
+  setRate(rate);
+}
+
 void WebMediaPlayerAndroid::setRate(float rate) {
   NOTIMPLEMENTED();
+}
+
+void WebMediaPlayerAndroid::setVolumeFloat(float volume) {
+  setVolume(volume);
 }
 
 void WebMediaPlayerAndroid::setVolume(float volume) {
@@ -186,8 +202,16 @@ bool WebMediaPlayerAndroid::seeking() const {
   return seeking_;
 }
 
+float WebMediaPlayerAndroid::durationFloat() const {
+  return duration();
+}
+
 float WebMediaPlayerAndroid::duration() const {
   return static_cast<float>(duration_.InSecondsF());
+}
+
+float WebMediaPlayerAndroid::currentTimeFloat() const {
+  return currentTime();
 }
 
 float WebMediaPlayerAndroid::currentTime() const {
@@ -218,6 +242,10 @@ WebMediaPlayer::ReadyState WebMediaPlayerAndroid::readyState() const {
 
 const WebTimeRanges& WebMediaPlayerAndroid::buffered() {
   return buffered_;
+}
+
+float WebMediaPlayerAndroid::maxTimeSeekableFloat() const {
+  return maxTimeSeekable();
 }
 
 float WebMediaPlayerAndroid::maxTimeSeekable() const {
@@ -258,6 +286,10 @@ WebMediaPlayer::MovieLoadType WebMediaPlayerAndroid::movieLoadType() const {
   // Deprecated.
   // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
   return WebMediaPlayer::MovieLoadTypeUnknown;
+}
+
+float WebMediaPlayerAndroid::mediaTimeForTimeValueFloat(float timeValue) const {
+  return mediaTimeForTimeValue(timeValue);
 }
 
 float WebMediaPlayerAndroid::mediaTimeForTimeValue(float timeValue) const {

@@ -367,6 +367,10 @@ bool WebMediaPlayerImpl::supportsSave() const {
   return supports_save_;
 }
 
+void WebMediaPlayerImpl::seekFloat(float seconds) {
+  seek(seconds);
+}
+
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -397,11 +401,19 @@ void WebMediaPlayerImpl::seek(float seconds) {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek));
 }
 
+void WebMediaPlayerImpl::setEndTimeFloat(float seconds) {
+  setEndTime(seconds);
+}
+
 void WebMediaPlayerImpl::setEndTime(float seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // TODO(hclam): add method call when it has been implemented.
   return;
+}
+
+void WebMediaPlayerImpl::setRateFloat(float rate) {
+  setRate(rate);
 }
 
 void WebMediaPlayerImpl::setRate(float rate) {
@@ -424,6 +436,10 @@ void WebMediaPlayerImpl::setRate(float rate) {
   if (!paused_) {
     pipeline_->SetPlaybackRate(rate);
   }
+}
+
+void WebMediaPlayerImpl::setVolumeFloat(float volume) {
+  setVolume(volume);
 }
 
 void WebMediaPlayerImpl::setVolume(float volume) {
@@ -496,6 +512,10 @@ bool WebMediaPlayerImpl::seeking() const {
   return seeking_;
 }
 
+float WebMediaPlayerImpl::durationFloat() const {
+  return duration();
+}
+
 float WebMediaPlayerImpl::duration() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -523,6 +543,10 @@ float WebMediaPlayerImpl::duration() const {
   }
 
   return static_cast<float>(duration);
+}
+
+float WebMediaPlayerImpl::currentTimeFloat() const {
+  return currentTime();
 }
 
 float WebMediaPlayerImpl::currentTime() const {
@@ -555,6 +579,10 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
       ConvertToWebTimeRanges(pipeline_->GetBufferedTimeRanges()));
   buffered_.swap(web_ranges);
   return buffered_;
+}
+
+float WebMediaPlayerImpl::maxTimeSeekableFloat() const {
+  return maxTimeSeekable();
 }
 
 float WebMediaPlayerImpl::maxTimeSeekable() const {
@@ -633,6 +661,10 @@ WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   if (data_source_ && data_source_->IsStreaming())
     return WebMediaPlayer::MovieLoadTypeLiveStream;
   return WebMediaPlayer::MovieLoadTypeUnknown;
+}
+
+float WebMediaPlayerImpl::mediaTimeForTimeValueFloat(float timeValue) const {
+  return mediaTimeForTimeValue(timeValue);
 }
 
 float WebMediaPlayerImpl::mediaTimeForTimeValue(float timeValue) const {

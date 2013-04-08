@@ -43,15 +43,20 @@ class WebMediaPlayerAndroid
   // Playback controls.
   virtual void play();
   virtual void pause();
+  virtual void seekFloat(float seconds);
   virtual void seek(float seconds);
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
+  virtual void setEndTimeFloat(float seconds);
   virtual void setEndTime(float seconds);
+  virtual void setRateFloat(float rate);
   virtual void setRate(float rate);
+  virtual void setVolumeFloat(float volume);
   virtual void setVolume(float volume);
   virtual void setVisible(bool visible);
   virtual bool totalBytesKnown();
   virtual const WebKit::WebTimeRanges& buffered();
+  virtual float maxTimeSeekableFloat() const;
   virtual float maxTimeSeekable() const;
 
   // Methods for painting.
@@ -70,7 +75,9 @@ class WebMediaPlayerAndroid
   // Getters of playback state.
   virtual bool paused() const;
   virtual bool seeking() const;
+  virtual float durationFloat() const;
   virtual float duration() const;
+  virtual float currentTimeFloat() const;
   virtual float currentTime() const;
 
   // Get rate of loading the resource.
@@ -87,6 +94,7 @@ class WebMediaPlayerAndroid
   virtual bool didPassCORSAccessCheck() const;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
+  virtual float mediaTimeForTimeValueFloat(float timeValue) const;
   virtual float mediaTimeForTimeValue(float timeValue) const;
 
   // Provide statistics.
