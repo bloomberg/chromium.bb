@@ -287,6 +287,24 @@ gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
       rect_with_decorations.width - current_width - left_inset);
 }
 
+gfx::Point NativeAppWindowGtk::GetDialogPosition(const gfx::Size& size) {
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window_, &current_width, &current_height);
+  return gfx::Point(current_width / 2 - size.width() / 2,
+                    current_height / 2 - size.height() / 2);
+}
+
+void NativeAppWindowGtk::AddObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void NativeAppWindowGtk::RemoveObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   // Do nothing if we're in the process of closing the browser window.
   if (!window_)
@@ -336,6 +354,10 @@ gboolean NativeAppWindowGtk::OnConfigure(GtkWidget* widget,
 void NativeAppWindowGtk::OnDebouncedBoundsChanged() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
   shell_window_->OnNativeWindowChanged();
+
+  FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnPositionRequiresUpdate());
 }
 
 gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,

@@ -693,6 +693,21 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
   return frame_rect.InsetsFrom(content_rect);
 }
 
+gfx::Point NativeAppWindowCocoa::GetDialogPosition(const gfx::Size& size) {
+  NOTIMPLEMENTED();
+  return gfx::Point();
+}
+
+void NativeAppWindowCocoa::AddObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
+void NativeAppWindowCocoa::RemoveObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
 void NativeAppWindowCocoa::WindowWillClose() {
   [window_controller_ setAppWindow:NULL];
   shell_window_->OnNativeWindowChanged();

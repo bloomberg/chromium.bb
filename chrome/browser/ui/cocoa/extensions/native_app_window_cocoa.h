@@ -113,6 +113,13 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
 
+  // WebContentsModalDialogHost implementation.
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
+  virtual void AddObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE;
+
  private:
   virtual ~NativeAppWindowCocoa();
 

@@ -109,6 +109,8 @@ void ShellWindow::Init(const GURL& url,
   FaviconTabHelper::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
+  WebContentsModalDialogManager::FromWebContents(web_contents)->
+      set_delegate(this);
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_SHELL);
 
   // Initialize the window
@@ -498,6 +500,14 @@ extensions::ActiveTabPermissionGranter*
     ShellWindow::GetActiveTabPermissionGranter() {
   // Shell windows don't support the activeTab permission.
   return NULL;
+}
+
+void ShellWindow::SetWebContentsBlocked(content::WebContents* web_contents,
+                                        bool blocked) {
+}
+
+WebContentsModalDialogHost* ShellWindow::GetWebContentsModalDialogHost() {
+  return native_app_window_.get();
 }
 
 void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,

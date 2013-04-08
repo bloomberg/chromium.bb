@@ -383,6 +383,21 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   return window_bounds.InsetsFrom(client_bounds);
 }
 
+gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
+  gfx::Size shell_window_size = window_->GetWindowBoundsInScreen().size();
+  return gfx::Point(shell_window_size.width() / 2 - size.width() / 2,
+                    shell_window_size.height() / 2 - size.height() / 2);
+}
+
+void NativeAppWindowViews::AddObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+void NativeAppWindowViews::RemoveObserver(
+    WebContentsModalDialogHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 // Private method. TODO(stevenjb): Move this below InitializePanelWindow()
 // to match declaration order.
 void NativeAppWindowViews::OnViewWasResized() {
@@ -436,6 +451,10 @@ void NativeAppWindowViews::OnViewWasResized() {
   if (web_contents()->GetRenderViewHost()->GetView())
     web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
 #endif
+
+  FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnPositionRequiresUpdate());
 }
 
 // WidgetDelegate implementation.

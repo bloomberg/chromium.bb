@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/observer_list.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -66,6 +67,13 @@ class NativeAppWindowGtk : public NativeAppWindow,
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void RenderViewHostChanged() OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
+
+  // WebContentsModalDialogHost implementation.
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
+  virtual void AddObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      WebContentsModalDialogHostObserver* observer) OVERRIDE;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();
@@ -139,6 +147,10 @@ class NativeAppWindowGtk : public NativeAppWindow,
   // accelerators that are sent to the window, that are destined to be turned
   // into events and sent to the extension.
   scoped_ptr<ExtensionKeybindingRegistryGtk> extension_keybinding_registry_;
+
+  // Observers to be notified when any web contents modal dialog requires
+  // updating its dimensions.
+  ObserverList<WebContentsModalDialogHostObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowGtk);
 };

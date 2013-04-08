@@ -104,7 +104,31 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   // views::WidgetObserver overrides
+
+  // NOTE(wittman): OnWidgetClosing is overriden to ensure that, when the widget
+  // is explicitly closed, the destruction occurs within the same call
+  // stack. This avoids event races that lead to non-deterministic destruction
+  // ordering in e.g. the print preview dialog. OnWidgetDestroying is overridden
+  // because OnWidgetClosing is *only* invoked on explicit close, not when the
+  // widget is implicitly destroyed due to its parent being closed. This
+  // situation occurs with app windows.  WidgetClosing removes the observer, so
+  // only one of these two functions is ever invoked for a given widget.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+    WidgetClosing(widget);
+  }
+
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    WidgetClosing(widget);
+  }
+
+ private:
+  static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
+    DCHECK(widget);
+    return widget;
+  }
+
+  void WidgetClosing(views::Widget* widget) {
 #if defined(USE_ASH)
     gfx::NativeView view = platform_util::GetParent(widget->GetNativeView());
     // Allow the parent to animate again.
@@ -114,13 +138,6 @@ class NativeWebContentsModalDialogManagerViews
     widget->RemoveObserver(this);
     native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
-  }
-
- private:
-  static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
-    DCHECK(widget);
-    return widget;
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;

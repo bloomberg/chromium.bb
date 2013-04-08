@@ -92,6 +92,8 @@ class WebContentsModalDialogHostObserverViews
       : host_(host),
         target_widget_(target_widget),
         native_window_property_(native_window_property) {
+    DCHECK(host_);
+    DCHECK(target_widget_);
     host_->AddObserver(this);
     target_widget_->AddObserver(this);
   }
