@@ -95,11 +95,6 @@ namespace WebCore {
 
 class InspectorFrontendChannel;
 
-// Both InspectorObject and InspectorArray may or may not be declared at this point as defined by ENABLED_INSPECTOR.
-// Double-check we have them at least as forward declaration.
-class InspectorArray;
-class InspectorObject;
-
 typedef String ErrorString;
 
 class InspectorFrontend {

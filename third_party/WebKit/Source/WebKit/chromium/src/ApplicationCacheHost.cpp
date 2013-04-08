@@ -210,10 +210,8 @@ void ApplicationCacheHost::setDOMApplicationCache(DOMApplicationCache* domApplic
 
 void ApplicationCacheHost::notifyDOMApplicationCache(EventID id, int total, int done)
 {
-#if ENABLE(INSPECTOR)
     if (id != PROGRESS_EVENT)
         InspectorInstrumentation::updateApplicationCacheStatus(m_documentLoader->frame());
-#endif
 
     if (m_defersEvents) {
         // Event dispatching is deferred until document.onload has fired.
@@ -223,7 +221,6 @@ void ApplicationCacheHost::notifyDOMApplicationCache(EventID id, int total, int 
     dispatchDOMEvent(id, total, done);
 }
 
-#if ENABLE(INSPECTOR)
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::applicationCacheInfo()
 {
     if (!m_internal)
@@ -247,7 +244,6 @@ void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources)
             webResources[i].isForeign, webResources[i].isExplicit, webResources[i].size));
     }
 }
-#endif
 
 void ApplicationCacheHost::stopDeferringEvents()
 {

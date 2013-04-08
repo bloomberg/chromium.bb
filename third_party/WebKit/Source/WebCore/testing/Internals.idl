@@ -211,13 +211,13 @@
     void setDeviceProximity(Document document, DOMString eventType, double value, double min, double max) raises (DOMException);
 #endif
 
-    [Conditional=INSPECTOR] unsigned long numberOfLiveNodes();
-    [Conditional=INSPECTOR] unsigned long numberOfLiveDocuments();
-    [Conditional=INSPECTOR] sequence<DOMString> consoleMessageArgumentCounts(Document document);
-    [Conditional=INSPECTOR] DOMWindow openDummyInspectorFrontend(DOMString url);
-    [Conditional=INSPECTOR] void closeDummyInspectorFrontend();
-    [Conditional=INSPECTOR] void setInspectorResourcesDataSizeLimits(long maximumResourcesContentSize, long maximumSingleResourceContentSize) raises(DOMException);
-    [Conditional=INSPECTOR] void setJavaScriptProfilingEnabled(boolean creates) raises(DOMException);
+    unsigned long numberOfLiveNodes();
+    unsigned long numberOfLiveDocuments();
+    sequence<DOMString> consoleMessageArgumentCounts(Document document);
+    DOMWindow openDummyInspectorFrontend(DOMString url);
+    void closeDummyInspectorFrontend();
+    void setInspectorResourcesDataSizeLimits(long maximumResourcesContentSize, long maximumSingleResourceContentSize) raises(DOMException);
+    void setJavaScriptProfilingEnabled(boolean creates) raises(DOMException);
 
     DOMString counterValue(Element element);
     long pageNumber(Element element, [Optional] float pageWidth, [Optional] float pageHeight);
