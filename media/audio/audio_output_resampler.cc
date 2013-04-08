@@ -124,6 +124,9 @@ static void RecordFallbackStats(const AudioParameters& output_params) {
   }
 }
 
+// Only Windows has a high latency output driver that is not the same as the low
+// latency path.
+#if defined(OS_WIN)
 // Converts low latency based |output_params| into high latency appropriate
 // output parameters in error situations.
 static AudioParameters SetupFallbackParams(
@@ -142,6 +145,7 @@ static AudioParameters SetupFallbackParams(
       input_params.sample_rate(), input_params.bits_per_sample(),
       frames_per_buffer);
 }
+#endif
 
 AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                                            const AudioParameters& input_params,
@@ -202,18 +206,23 @@ bool AudioOutputResampler::OpenStream() {
     return false;
   }
 
-  DLOG(ERROR) << "Unable to open audio device in low latency mode.  Falling "
-              << "back to high latency audio output.";
-
   // Record UMA statistics about the hardware which triggered the failure so
   // we can debug and triage later.
   RecordFallbackStats(output_params_);
+
+  // Only Windows has a high latency output driver that is not the same as the
+  // low latency path.
+#if defined(OS_WIN)
+  DLOG(ERROR) << "Unable to open audio device in low latency mode.  Falling "
+              << "back to high latency audio output.";
+
   output_params_ = SetupFallbackParams(params_, output_params_);
   Initialize();
   if (dispatcher_->OpenStream()) {
     streams_opened_ = true;
     return true;
   }
+#endif
 
   DLOG(ERROR) << "Unable to open audio device in high latency mode.  Falling "
               << "back to fake audio output.";

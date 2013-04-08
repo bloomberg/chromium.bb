@@ -628,8 +628,15 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenFailedFallback) {
 TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
   MockAudioOutputStream okay_stream(&manager_, params_);
 
+// Only Windows has a high latency output driver that is not the same as the low
+// latency path.
+#if defined(OS_WIN)
+  static const int kFallbackCount = 2;
+#else
+  static const int kFallbackCount = 1;
+#endif
   EXPECT_CALL(manager(), MakeAudioOutputStream(_))
-      .Times(2)
+      .Times(kFallbackCount)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
   // To prevent shared memory issues the sample rate and buffer size should
@@ -656,8 +663,15 @@ TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
 // stream, and the fake audio output stream and ensure AudioOutputResampler
 // terminates normally.
 TEST_F(AudioOutputResamplerTest, AllFallbackFailed) {
+// Only Windows has a high latency output driver that is not the same as the low
+// latency path.
+#if defined(OS_WIN)
+  static const int kFallbackCount = 3;
+#else
+  static const int kFallbackCount = 2;
+#endif
   EXPECT_CALL(manager(), MakeAudioOutputStream(_))
-      .Times(3)
+      .Times(kFallbackCount)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
   AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
