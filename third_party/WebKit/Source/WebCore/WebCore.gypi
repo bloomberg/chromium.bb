@@ -5200,7 +5200,6 @@
         ],
 
         'webcore_platform_support_files': [
-            'platform/chromium/support/GraphicsContext3DChromium.cpp',
             'platform/chromium/support/GraphicsContext3DPrivate.cpp',
             'platform/chromium/support/GraphicsContext3DPrivate.h',
             'platform/chromium/support/WebAudioBus.cpp',
