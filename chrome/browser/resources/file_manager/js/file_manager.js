@@ -785,6 +785,7 @@ DialogType.isModal = function(type) {
     this.searchBox_ = this.dialogDom_.querySelector('#search-box');
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
+    this.lastSearchQuery_ = '';
 
     var autocompleteList = new cr.ui.AutocompleteList();
     autocompleteList.id = 'autocomplete-list';
@@ -3061,8 +3062,8 @@ DialogType.isModal = function(type) {
       // the last directory by passing an empty string to
       // {@code DirectoryModel.search()}.
       if (this.directoryModel_.isSearching() &&
-          this.lastQuery_ != searchString) {
-        this.directoryModel_.search('', function() {}, function() {});
+          this.lastSearchQuery_ != searchString) {
+        this.doSearch('');
       }
 
       // On drive, incremental search is not invoked since we have an auto-
@@ -3099,9 +3100,27 @@ DialogType.isModal = function(type) {
       noResultsDiv.removeAttribute('show');
     };
 
-    this.directoryModel_.search(searchString,
-                                reportEmptySearchResults.bind(this),
-                                hideNoResultsDiv.bind(this));
+    this.doSearch(searchString,
+                  reportEmptySearchResults.bind(this),
+                  hideNoResultsDiv.bind(this));
+  };
+
+  /**
+   * Performs search and displays results.
+   *
+   * @param {string} query Query that will be searched for.
+   * @param {function()=} opt_onSearchRescan Function that will be called when
+   *     the search directory is rescanned (i.e. search results are displayed).
+   * @param {function()=} opt_onClearSearch Function to be called when search
+   *     state gets cleared.
+   */
+  FileManager.prototype.doSearch = function(
+      searchString, opt_onSearchRescan, opt_onClearSearch) {
+    var onSearchRescan = opt_onSearchRescan || function() {};
+    var onClearSearch = opt_onClearSearch || function() {};
+
+    this.lastSearchQuery_ = searchString;
+    this.directoryModel_.search(searchString, onSearchRescan, onClearSearch);
   };
 
   /**
