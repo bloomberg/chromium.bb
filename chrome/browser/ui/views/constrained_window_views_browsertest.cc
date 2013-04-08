@@ -306,8 +306,8 @@ void ForwardKeyEvent(content::RenderViewHost* host, ui::KeyboardCode key_code) {
 }
 
 // Tests that backspace is not processed before it's sent to the web contents.
-// Flaky on win aura. crbug.com/170331
-#if defined(OS_WIN) && defined(USE_AURA)
+// Flaky on Win Aura and Linux ChromiumOS. See http://crbug.com/170331
+#if defined(USE_AURA)
 #define MAYBE_BackspaceSentToWebContent DISABLED_BackspaceSentToWebContent
 #else
 #define MAYBE_BackspaceSentToWebContent BackspaceSentToWebContent
