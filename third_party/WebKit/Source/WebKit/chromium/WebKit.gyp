@@ -36,9 +36,6 @@
         'features.gypi',
     ],
     'variables': {
-        # FIXME: Replace with DEPTH.
-        'chromium_src_dir': '../../../../..',
-
         # If debug_devtools is set to 1, JavaScript files for DevTools are
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
@@ -51,25 +48,25 @@
             'dependencies': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
                 '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
-                '<(chromium_src_dir)/skia/skia.gyp:skia',
-                '<(chromium_src_dir)/third_party/angle/src/build_angle.gyp:translator_glsl',
-                '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
-                '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                '<(DEPTH)/skia/skia.gyp:skia',
+                '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+                '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+                '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                 'webkit_wtf_support',
             ],
             'export_dependent_settings': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
-                '<(chromium_src_dir)/skia/skia.gyp:skia',
-                '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
-                '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                '<(DEPTH)/skia/skia.gyp:skia',
+                '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+                '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'include_dirs': [
                 'public',
                 'src',
-                '<(chromium_src_dir)/third_party/angle/include',
-                '<(chromium_src_dir)/third_party/skia/include/utils',
+                '<(DEPTH)/third_party/angle/include',
+                '<(DEPTH)/third_party/skia/include/utils',
             ],
             'defines': [
                 'WEBKIT_IMPLEMENTATION=1',
@@ -590,19 +587,19 @@
                     'dependencies': [
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_bindings',
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
-                        '<(chromium_src_dir)/base/base.gyp:test_support_base',
-                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                        '<(chromium_src_dir)/testing/gtest.gyp:gtest',
-                        '<(chromium_src_dir)/testing/gmock.gyp:gmock',
-                        '<(chromium_src_dir)/third_party/icu/icu.gyp:*',
-                        '<(chromium_src_dir)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
-                        '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
-                        '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
-                        '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
-                        '<(chromium_src_dir)/third_party/modp_b64/modp_b64.gyp:modp_b64',
-                        '<(chromium_src_dir)/third_party/ots/ots.gyp:ots',
-                        '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
-                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                        '<(DEPTH)/base/base.gyp:test_support_base',
+                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(DEPTH)/testing/gtest.gyp:gtest',
+                        '<(DEPTH)/testing/gmock.gyp:gmock',
+                        '<(DEPTH)/third_party/icu/icu.gyp:*',
+                        '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
+                        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+                        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+                        '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+                        '<(DEPTH)/third_party/modp_b64/modp_b64.gyp:modp_b64',
+                        '<(DEPTH)/third_party/ots/ots.gyp:ots',
+                        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                         # We must not add webkit_support here because of cyclic dependency.
                     ],
                     'direct_dependent_settings': {
@@ -611,8 +608,8 @@
                         ],
                     },
                     'export_dependent_settings': [
-                        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
                     'include_dirs': [
                         # WARNING: Do not view this particular case as a precedent for
@@ -636,7 +633,7 @@
                     'conditions': [
                         ['OS=="win" or OS=="mac"', {
                             'dependencies': [
-                                '<(chromium_src_dir)/third_party/nss/nss.gyp:*',
+                                '<(DEPTH)/third_party/nss/nss.gyp:*',
                             ],
                         }],
                         ['clang==1', {
@@ -662,8 +659,8 @@
                 }],
                 ['use_x11 == 1', {
                     'dependencies': [
-                        '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
-                        '<(chromium_src_dir)/build/linux/system.gyp:x11',
+                        '<(DEPTH)/build/linux/system.gyp:fontconfig',
+                        '<(DEPTH)/build/linux/system.gyp:x11',
                     ],
                     'include_dirs': [
                         'public/x11',
@@ -677,7 +674,7 @@
                 }],
                 ['toolkit_uses_gtk == 1', {
                     'dependencies': [
-                        '<(chromium_src_dir)/build/linux/system.gyp:gtk',
+                        '<(DEPTH)/build/linux/system.gyp:gtk',
                     ],
                     'include_dirs': [
                         'public/gtk',
@@ -990,7 +987,7 @@
                 {
                     'target_name': 'copy_mesa',
                     'type': 'none',
-                    'dependencies': ['<(chromium_src_dir)/third_party/mesa/mesa.gyp:osmesa'],
+                    'dependencies': ['<(DEPTH)/third_party/mesa/mesa.gyp:osmesa'],
                     'copies': [{
                         'destination': '<(PRODUCT_DIR)/DumpRenderTree.app/Contents/MacOS/',
                         'files': ['<(PRODUCT_DIR)/osmesa.so'],

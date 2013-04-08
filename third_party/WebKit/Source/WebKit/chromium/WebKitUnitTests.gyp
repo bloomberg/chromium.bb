@@ -33,10 +33,6 @@
         'features.gypi',
         'WebKit.gypi',
     ],
-    'variables': {
-        # FIXME: Use DEPTH.
-        'chromium_src_dir': '../../../../..',
-    },
     'targets': [
         {
             'target_name': 'webkit_unit_tests',
@@ -46,15 +42,15 @@
             'dependencies': [
                 'WebKit.gyp:webkit',
                 '../../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_resources',
-                '<(chromium_src_dir)/base/base.gyp:base',
-                '<(chromium_src_dir)/base/base.gyp:base_i18n',
-                '<(chromium_src_dir)/base/base.gyp:test_support_base',
-                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                '<(chromium_src_dir)/testing/gmock.gyp:gmock',
-                '<(chromium_src_dir)/testing/gtest.gyp:gtest',
-                '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
-                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
+                '<(DEPTH)/base/base.gyp:base',
+                '<(DEPTH)/base/base.gyp:base_i18n',
+                '<(DEPTH)/base/base.gyp:test_support_base',
+                '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+                '<(DEPTH)/testing/gmock.gyp:gmock',
+                '<(DEPTH)/testing/gtest.gyp:gtest',
+                '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
             ],
             'sources': [
                 'tests/RunAllTests.cpp',
@@ -109,8 +105,8 @@
                 ['OS=="android" and gtest_target_type == "shared_library"', {
                     'type': 'shared_library',
                     'dependencies': [
-                        '<(chromium_src_dir)/testing/android/native_test.gyp:native_test_native_code',
-                        '<(chromium_src_dir)/tools/android/forwarder2/forwarder.gyp:forwarder2',
+                        '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
+                        '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
                     ],
                 }],
                 ['OS=="mac"', {
@@ -120,7 +116,7 @@
                 }],
                 [ 'os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
                     'dependencies': [
-                        '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
+                        '<(DEPTH)/base/allocator/allocator.gyp:allocator',
                     ],
                 }],
             ],
@@ -140,23 +136,23 @@
                 'target_name': 'webkit_unit_tests_apk',
                 'type': 'none',
                 'dependencies': [
-                    '<(chromium_src_dir)/base/base.gyp:base_java',
-                    '<(chromium_src_dir)/net/net.gyp:net_java',
+                    '<(DEPTH)/base/base.gyp:base_java',
+                    '<(DEPTH)/net/net.gyp:net_java',
                     'webkit_unit_tests',
                 ],
                 'variables': {
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_unit_tests<(SHARED_LIB_SUFFIX)',
                     'ant_build_to_chromium_src': '<(ant_build_out)/../../',
                 },
-                # Part of the following was copied from <(chromium_src_dir)/build/apk_test.gpyi.
+                # Part of the following was copied from <(DEPTH)/build/apk_test.gpyi.
                 # Not including it because gyp include doesn't support variable in path or under
                 # conditions. And we also have some different requirements.
                 'actions': [{
                     'action_name': 'apk_webkit_unit_tests',
                     'message': 'Building webkit_unit_tests test apk.',
                     'inputs': [
-                        '<(chromium_src_dir)/testing/android/AndroidManifest.xml',
-                        '<(chromium_src_dir)/testing/android/generate_native_test.py',
+                        '<(DEPTH)/testing/android/AndroidManifest.xml',
+                        '<(DEPTH)/testing/android/generate_native_test.py',
                         '<(input_shlib_path)',
                         '>@(input_jars_paths)',
                     ],
@@ -164,7 +160,7 @@
                         '<(PRODUCT_DIR)/webkit_unit_tests_apk/webkit_unit_tests-debug.apk',
                     ],
                     'action': [
-                        '<(chromium_src_dir)/testing/android/generate_native_test.py',
+                        '<(DEPTH)/testing/android/generate_native_test.py',
                         '--native_library',
                         '<(input_shlib_path)',
                         '--output',

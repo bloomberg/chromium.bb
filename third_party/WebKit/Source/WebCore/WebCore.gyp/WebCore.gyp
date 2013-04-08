@@ -42,9 +42,6 @@
     # size of the binary and increasing the speed of gdb.  gcc only.
     'remove_webcore_debug_symbols%': 0,
 
-    # FIXME: Replace with DEPTH.
-    'chromium_src_dir': '../../../../..',
-
     # If set to 0, doesn't build SVG support, reducing the size of the
     # binary and increasing the speed of gdb.
     'enable_svg%': 1,
@@ -326,7 +323,7 @@
               'action_name': 'Adjust Visibility',
               'inputs': [
                 'mac/adjust_visibility.sh',
-                '<(chromium_src_dir)/third_party/apple_webkit/libWebKitSystemInterfaceLeopard.a',
+                '<(DEPTH)/third_party/apple_webkit/libWebKitSystemInterfaceLeopard.a',
               ],
               'outputs': [
                 '<(adjusted_library_path)',
@@ -1251,17 +1248,17 @@
         'debugger_script_source',
         '../../JavaScriptCore/yarr/yarr.gyp:yarr',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(chromium_src_dir)/skia/skia.gyp:skia',
-        '<(chromium_src_dir)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
-        '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
-        '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
-        '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
-        '<(chromium_src_dir)/third_party/libwebp/libwebp.gyp:libwebp',
-        '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-        '<(chromium_src_dir)/third_party/qcms/qcms.gyp:qcms',
-        '<(chromium_src_dir)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+        '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+        '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
@@ -1339,7 +1336,7 @@
         }],
         ['OS=="mac"', {
           'include_dirs': [
-            '<(chromium_src_dir)/third_party/apple_webkit',
+            '<(DEPTH)/third_party/apple_webkit',
           ],
         }],
         ['OS=="win"', {
@@ -1379,41 +1376,41 @@
         '../../ThirdParty/glu/glu.gyp:libtess',
         '../../JavaScriptCore/yarr/yarr.gyp:yarr',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(chromium_src_dir)/skia/skia.gyp:skia',
-        '<(chromium_src_dir)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
-        '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '<(chromium_src_dir)/third_party/libwebp/libwebp.gyp:libwebp',
-        '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
-        '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
-        '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
-        '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-        '<(chromium_src_dir)/third_party/ots/ots.gyp:ots',
-        '<(chromium_src_dir)/third_party/qcms/qcms.gyp:qcms',
-        '<(chromium_src_dir)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(chromium_src_dir)/third_party/angle/src/build_angle.gyp:translator_glsl',
-        '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
-        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
+        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+        '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/ots/ots.gyp:ots',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'export_dependent_settings': [
         '../../JavaScriptCore/yarr/yarr.gyp:yarr',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(chromium_src_dir)/skia/skia.gyp:skia',
-        '<(chromium_src_dir)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
-        '<(chromium_src_dir)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '<(chromium_src_dir)/third_party/libwebp/libwebp.gyp:libwebp',
-        '<(chromium_src_dir)/third_party/libpng/libpng.gyp:libpng',
-        '<(chromium_src_dir)/third_party/libxml/libxml.gyp:libxml',
-        '<(chromium_src_dir)/third_party/libxslt/libxslt.gyp:libxslt',
-        '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-        '<(chromium_src_dir)/third_party/ots/ots.gyp:ots',
-        '<(chromium_src_dir)/third_party/qcms/qcms.gyp:qcms',
-        '<(chromium_src_dir)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(chromium_src_dir)/third_party/angle/src/build_angle.gyp:translator_glsl',
-        '<(chromium_src_dir)/third_party/zlib/zlib.gyp:zlib',
-        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
+        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+        '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/ots/ots.gyp:ots',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       # This is needed for mac because of webkit_system_interface. It'd be nice
@@ -1428,8 +1425,8 @@
           '../../Platform/chromium',
           '<(INTERMEDIATE_DIR)',
           '<@(webcore_include_dirs)',
-          '<(chromium_src_dir)/gpu',
-          '<(chromium_src_dir)/third_party/angle/include/GLSLANG',
+          '<(DEPTH)/gpu',
+          '<(DEPTH)/third_party/angle/include/GLSLANG',
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         ],
@@ -1454,18 +1451,18 @@
         }],
         ['use_accelerated_compositing==1', {
           'dependencies': [
-            '<(chromium_src_dir)/gpu/gpu.gyp:gles2_c_lib',
+            '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
           ],
           'export_dependent_settings': [
-            '<(chromium_src_dir)/gpu/gpu.gyp:gles2_c_lib',
+            '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
           ],
         }],
         ['use_x11 == 1', {
           'dependencies': [
-            '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
+            '<(DEPTH)/build/linux/system.gyp:fontconfig',
           ],
           'export_dependent_settings': [
-            '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
+            '<(DEPTH)/build/linux/system.gyp:fontconfig',
           ],
           'direct_dependent_settings': {
             'cflags': [
@@ -1477,10 +1474,10 @@
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
-            '<(chromium_src_dir)/build/linux/system.gyp:gtk',
+            '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'export_dependent_settings': [
-            '<(chromium_src_dir)/build/linux/system.gyp:gtk',
+            '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
         }],
         ['OS=="android"', {
@@ -1531,7 +1528,7 @@
               'WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation',
             ],
             'include_dirs': [
-              '<(chromium_src_dir)/third_party/apple_webkit',
+              '<(DEPTH)/third_party/apple_webkit',
             ],
             'postbuilds': [
               {
@@ -1576,27 +1573,27 @@
           # This directory needs to be on the include path for multiple sub-targets of webcore.
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(chromium_src_dir)/third_party/ffmpeg',
+              '<(DEPTH)/third_party/ffmpeg',
             ],
           },
           'dependencies': [
-            '<(chromium_src_dir)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
         }],
        ['"WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" in feature_defines', {
          'direct_dependent_settings': {
            'include_dirs': [
-             '<(chromium_src_dir)/third_party/openmax_dl',
+             '<(DEPTH)/third_party/openmax_dl',
            ],
          },
          'dependencies': [
-           '<(chromium_src_dir)/third_party/openmax_dl/dl/dl.gyp:openmax_dl',
+           '<(DEPTH)/third_party/openmax_dl/dl/dl.gyp:openmax_dl',
          ],
        }],
         # Windows shared builder needs extra help for linkage
         ['OS=="win" and "WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
           'export_dependent_settings': [
-            '<(chromium_src_dir)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
         }],
       ],
@@ -1721,7 +1718,7 @@
             ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
           ],
           'dependencies': [
-            '<(chromium_src_dir)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
+            '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
         }, { # use_x11==0 and OS!="android"
           'sources/': [
@@ -1746,11 +1743,11 @@
         ['OS=="mac"', {
           # Necessary for Mac .mm stuff.
           'include_dirs': [
-            '<(chromium_src_dir)/third_party/apple_webkit',
+            '<(DEPTH)/third_party/apple_webkit',
           ],
           'dependencies': [
             'webkit_system_interface',
-            '<(chromium_src_dir)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
+            '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
           'actions': [
             {
@@ -2061,7 +2058,7 @@
       'target_name': 'webcore_remaining',
       'type': 'static_library',
       'dependencies': [
-        '<(chromium_src_dir)/third_party/v8-i18n/build/all.gyp:v8-i18n',
+        '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         'webcore_prerequisites',
       ],
       # This is needed for mac because of webkit_system_interface. It'd be nice
@@ -2156,20 +2153,20 @@
         # Exported.
         'webcore_bindings',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(chromium_src_dir)/skia/skia.gyp:skia',
-        '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-        '<(chromium_src_dir)/third_party/qcms/qcms.gyp:qcms',
-        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
         'webcore_bindings',
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(chromium_src_dir)/skia/skia.gyp:skia',
-        '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-        '<(chromium_src_dir)/third_party/qcms/qcms.gyp:qcms',
-        '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -2185,7 +2182,7 @@
         ['OS=="mac"', {
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(chromium_src_dir)/third_party/apple_webkit',
+              '<(DEPTH)/third_party/apple_webkit',
               '../../WebKit/mac/WebCoreSupport',
             ],
           },

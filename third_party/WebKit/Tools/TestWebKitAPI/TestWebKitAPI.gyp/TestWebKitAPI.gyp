@@ -32,8 +32,6 @@
     'variables': {
         'tools_dir': '../..',
         'source_dir': '../../../Source',
-        # FIXME: Use DEPTH.
-        'chromium_src_dir': '<(tools_dir)/../../..',
     },
     'includes': [
         '../TestWebKitAPI.gypi',
@@ -47,12 +45,12 @@
                 '<(source_dir)/WebCore/WebCore.gyp/WebCore.gyp:webcore',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/WTF/WTF.gyp/WTF.gyp:wtf',
-                '<(chromium_src_dir)/build/temp_gyp/googleurl.gyp:googleurl',
-                '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-                '<(chromium_src_dir)/base/base.gyp:test_support_base',
-                '<(chromium_src_dir)/testing/gtest.gyp:gtest',
-                '<(chromium_src_dir)/testing/gmock.gyp:gmock',
-                '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
+                '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                '<(DEPTH)/base/base.gyp:test_support_base',
+                '<(DEPTH)/testing/gtest.gyp:gtest',
+                '<(DEPTH)/testing/gmock.gyp:gmock',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
             ],
             'include_dirs': [
                 '<(tools_dir)/TestWebKitAPI',
@@ -83,7 +81,7 @@
                 ['OS=="android" and gtest_target_type == "shared_library"', {
                     'type': 'shared_library',
                     'dependencies': [
-                        '<(chromium_src_dir)/testing/android/native_test.gyp:native_test_native_code',
+                        '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
                     ],
                 }],
             ],
@@ -96,22 +94,22 @@
                 'target_name': 'TestWebKitAPI_apk',
                 'type': 'none',
                 'dependencies': [
-                    '<(chromium_src_dir)/base/base.gyp:base_java',
+                    '<(DEPTH)/base/base.gyp:base_java',
                     'TestWebKitAPI',
                 ],
                 'variables': {
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)TestWebKitAPI<(SHARED_LIB_SUFFIX)',
                     'ant_build_to_chromium_src': '<(ant_build_out)/../../',
                 },
-                # Part of the following was copied from <(chromium_src_dir)/build/apk_test.gpyi.
+                # Part of the following was copied from <(DEPTH)/build/apk_test.gpyi.
                 # Not including it because gyp include doesn't support variable in path or under
                 # conditions. And we also have some different requirements.
                 'actions': [{
                     'action_name': 'apk_TestWebKitAPI',
                     'message': 'Building TestWebKitAPI test apk.',
                     'inputs': [
-                        '<(chromium_src_dir)/testing/android/AndroidManifest.xml',
-                        '<(chromium_src_dir)/testing/android/generate_native_test.py',
+                        '<(DEPTH)/testing/android/AndroidManifest.xml',
+                        '<(DEPTH)/testing/android/generate_native_test.py',
                         '<(input_shlib_path)',
                         '>@(input_jars_paths)',
                     ],
@@ -119,7 +117,7 @@
                         '<(PRODUCT_DIR)/TestWebKitAPI_apk/TestWebKitAPI-debug.apk',
                     ],
                     'action': [
-                        '<(chromium_src_dir)/testing/android/generate_native_test.py',
+                        '<(DEPTH)/testing/android/generate_native_test.py',
                         '--native_library',
                         '<(input_shlib_path)',
                         '--output',
