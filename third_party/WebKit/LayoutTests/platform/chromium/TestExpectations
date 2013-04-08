@@ -3814,3 +3814,4 @@ crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-out
 crbug.com/225883 [ Win Mac ] inspector/profiler/memory-instrumentation-external-array.html [ Failure ]
 
 crbug.com/229021 [ Mac ] inspector/styles/device-metrics-fit-window.html [ Failure ]
+crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Pass Failure ]
