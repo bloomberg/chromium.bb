@@ -19,6 +19,7 @@
 
   interface Functions {
     static void focus();
+    static void fullscreen();
     static void minimize();
     static void maximize();
     static void restore();

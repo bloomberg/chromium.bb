@@ -73,7 +73,11 @@ ShellWindow::CreateParams::CreateParams()
     frame(ShellWindow::FRAME_CHROME),
     transparent_background(false),
     bounds(INT_MIN, INT_MIN, 0, 0),
-    creator_process_id(0), hidden(false), resizable(true), focused(true) {
+    creator_process_id(0),
+    state(STATE_NORMAL),
+    hidden(false),
+    resizable(true),
+    focused(true) {
 }
 
 ShellWindow::CreateParams::~CreateParams() {
@@ -95,7 +99,9 @@ ShellWindow::ShellWindow(Profile* profile,
     : profile_(profile),
       extension_(extension),
       window_type_(WINDOW_TYPE_DEFAULT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)),
+      fullscreen_for_window_api_(false),
+      fullscreen_for_tab_(false) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -164,6 +170,20 @@ void ShellWindow::Init(const GURL& url,
 
   native_app_window_.reset(NativeAppWindow::Create(this, new_params));
   OnNativeWindowChanged();
+
+  switch (params.state) {
+    case CreateParams::STATE_NORMAL:
+      break;
+    case CreateParams::STATE_FULLSCREEN:
+      Fullscreen();
+      break;
+    case CreateParams::STATE_MAXIMIZED:
+      Maximize();
+      break;
+    case CreateParams::STATE_MINIMIZED:
+      Minimize();
+      break;
+  }
 
   if (!params.hidden) {
     if (window_type_is_panel())
@@ -382,6 +402,29 @@ void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
   extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
 }
 
+void ShellWindow::Fullscreen() {
+  fullscreen_for_window_api_ = true;
+  GetBaseWindow()->SetFullscreen(true);
+}
+
+void ShellWindow::Maximize() {
+  GetBaseWindow()->Maximize();
+}
+
+void ShellWindow::Minimize() {
+  GetBaseWindow()->Minimize();
+}
+
+void ShellWindow::Restore() {
+  fullscreen_for_window_api_ = false;
+  fullscreen_for_tab_ = false;
+  if (GetBaseWindow()->IsFullscreenOrPending()) {
+    GetBaseWindow()->SetFullscreen(false);
+  } else {
+    GetBaseWindow()->Restore();
+  }
+}
+
 //------------------------------------------------------------------------------
 // Private methods
 
@@ -455,18 +498,25 @@ void ShellWindow::NavigationStateChanged(
 
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                              bool enter_fullscreen) {
-  bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
+  if (!IsExtensionWithPermissionOrSuggestInConsole(
       APIPermission::kFullscreen,
       extension_,
-      source->GetRenderViewHost());
+      source->GetRenderViewHost())) {
+    return;
+  }
 
-  if (has_permission)
-    native_app_window_->SetFullscreen(enter_fullscreen);
+  fullscreen_for_tab_ = enter_fullscreen;
+
+  if (enter_fullscreen) {
+    native_app_window_->SetFullscreen(true);
+  } else if (!fullscreen_for_window_api_) {
+    native_app_window_->SetFullscreen(false);
+  }
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(
     const content::WebContents* source) const {
-  return native_app_window_->IsFullscreenOrPending();
+  return fullscreen_for_tab_;
 }
 
 void ShellWindow::Observe(int type,

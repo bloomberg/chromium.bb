@@ -10,6 +10,9 @@ namespace app.window {
     long? height;
   };
 
+  // State of a window: normal, fullscreen, maximized, minimized.
+  enum State { normal, fullscreen, maximized, minimized };
+
   // 'shell' is the default window type. 'panel' is managed by the OS
   // (Currently experimental, Ash only).
   [nodoc] enum WindowType { shell, panel };
@@ -75,6 +78,10 @@ namespace app.window {
     // Only supported in ash. Requires experimental API permission.
     boolean? transparentBackground;
 
+    // The initial state of the window, allowing it to be created already
+    // fullscreen, maximized, or minimized. Defaults to 'normal'.
+    State? state;
+
     // If true, the window will be created in a hidden state. Call show() on
     // the window to show it once it has been created. Defaults to false.
     boolean? hidden;
@@ -97,6 +104,9 @@ namespace app.window {
     // Focus the window.
     static void focus();
 
+    // Fullscreens the window.
+    static void fullscreen();
+
     // Is the window fullscreen?
     static boolean isFullscreen();
 
@@ -112,7 +122,7 @@ namespace app.window {
     // Is the window maximized?
     static boolean isMaximized();
 
-    // Restore the window, exiting a maximized or minimized state.
+    // Restore the window, exiting a maximized, minimized, or fullscreen state.
     static void restore();
 
     // Move the window to the position (|left|, |top|).

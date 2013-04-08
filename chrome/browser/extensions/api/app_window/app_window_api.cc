@@ -211,6 +211,23 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (options->resizable.get())
       create_params.resizable = *options->resizable.get();
+
+    if (options->type != extensions::api::app_window::WINDOW_TYPE_PANEL) {
+      switch (options->state) {
+        case extensions::api::app_window::STATE_NONE:
+        case extensions::api::app_window::STATE_NORMAL:
+          break;
+        case extensions::api::app_window::STATE_FULLSCREEN:
+          create_params.state = ShellWindow::CreateParams::STATE_FULLSCREEN;
+          break;
+        case extensions::api::app_window::STATE_MAXIMIZED:
+          create_params.state = ShellWindow::CreateParams::STATE_MAXIMIZED;
+          break;
+        case extensions::api::app_window::STATE_MINIMIZED:
+          create_params.state = ShellWindow::CreateParams::STATE_MINIMIZED;
+          break;
+      }
+    }
   }
 
   create_params.creator_process_id =
@@ -220,7 +237,7 @@ bool AppWindowCreateFunction::RunImpl() {
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
 
   if (chrome::ShouldForceFullscreenApp())
-    shell_window->GetBaseWindow()->SetFullscreen(true);
+    shell_window->Fullscreen();
 
   content::RenderViewHost* created_view =
       shell_window->web_contents()->GetRenderViewHost();

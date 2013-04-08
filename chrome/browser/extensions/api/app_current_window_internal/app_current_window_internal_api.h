@@ -33,6 +33,17 @@ class AppCurrentWindowInternalFocusFunction
   virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalFullscreenFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.fullscreen",
+                             APP_CURRENTWINDOWINTERNAL_FULLSCREEN)
+
+ protected:
+  virtual ~AppCurrentWindowInternalFullscreenFunction() {}
+  virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
+};
+
 class AppCurrentWindowInternalMaximizeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:

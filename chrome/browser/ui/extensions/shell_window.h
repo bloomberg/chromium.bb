@@ -102,6 +102,16 @@ class ShellWindow : public content::NotificationObserver,
     // The process ID of the process that requested the create.
     int32 creator_process_id;
 
+    enum State {
+      STATE_NORMAL,
+      STATE_FULLSCREEN,
+      STATE_MAXIMIZED,
+      STATE_MINIMIZED
+    };
+
+    // Initial state of the window.
+    State state;
+
     // If true, don't show the window after creation.
     bool hidden;
 
@@ -180,6 +190,13 @@ class ShellWindow : public content::NotificationObserver,
   // Updates the app image to |image|. Called internally from the image loader
   // callback. Also called externally for v1 apps using Ash Panels.
   void UpdateAppIcon(const gfx::Image& image);
+
+  // Transitions window into fullscreen, maximized, minimized or restores based
+  // on chrome.app.window API.
+  void Fullscreen();
+  void Maximize();
+  void Minimize();
+  void Restore();
 
   ShellWindowContents* shell_window_contents_for_test() {
     return shell_window_contents_.get();
@@ -284,6 +301,11 @@ class ShellWindow : public content::NotificationObserver,
   scoped_ptr<ShellWindowContents> shell_window_contents_;
 
   base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
+
+  // Fullscreen entered by app.window api.
+  bool fullscreen_for_window_api_;
+  // Fullscreen entered by HTML requestFullscreen.
+  bool fullscreen_for_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

@@ -51,21 +51,27 @@ bool AppCurrentWindowInternalFocusFunction::RunWithWindow(ShellWindow* window) {
   return true;
 }
 
+bool AppCurrentWindowInternalFullscreenFunction::RunWithWindow(
+    ShellWindow* window) {
+  window->Fullscreen();
+  return true;
+}
+
 bool AppCurrentWindowInternalMaximizeFunction::RunWithWindow(
     ShellWindow* window) {
-  window->GetBaseWindow()->Maximize();
+  window->Maximize();
   return true;
 }
 
 bool AppCurrentWindowInternalMinimizeFunction::RunWithWindow(
     ShellWindow* window) {
-  window->GetBaseWindow()->Minimize();
+  window->Minimize();
   return true;
 }
 
 bool AppCurrentWindowInternalRestoreFunction::RunWithWindow(
     ShellWindow* window) {
-  window->GetBaseWindow()->Restore();
+  window->Restore();
   return true;
 }
 
