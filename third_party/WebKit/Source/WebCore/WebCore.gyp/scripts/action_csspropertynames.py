@@ -137,7 +137,7 @@ def main(args):
     # scriptsPath is a Perl include directory, located relative to
     # makepropInput.
     scriptsPath = os.path.normpath(
-        os.path.join(os.path.dirname(makepropInput), os.pardir, 'bindings', 'scripts'))
+        os.path.join(os.path.dirname(makepropInput), os.pardir, 'scripts'))
 
     # Build up the command.
     command = ['perl', '-I', scriptsPath, makepropInput]

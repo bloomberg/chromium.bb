@@ -571,6 +571,7 @@
             '<(perl_exe)',
             '-w',
             '-I../bindings/scripts',
+            '-I../scripts',
             '../bindings/scripts/preprocess-idls.pl',
             '--defines',
             '<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING',
@@ -735,9 +736,9 @@
         {
           'action_name': 'HTMLNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../html/HTMLTagNames.in',
             '../html/HTMLAttributeNames.in',
           ],
@@ -764,9 +765,9 @@
         {
           'action_name': 'WebKitFontFamilyNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../css/WebKitFontFamilyNames.in',
           ],
           'outputs': [
@@ -787,9 +788,9 @@
         {
           'action_name': 'SVGNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../svg/svgtags.in',
             '../svg/svgattrs.in',
           ],
@@ -817,7 +818,7 @@
         {
           'action_name': 'EventFactory',
           'inputs': [
-            '../dom/make_event_factory.pl',
+            '../scripts/make_event_factory.pl',
             '../dom/EventNames.in',
           ],
           'outputs': [
@@ -837,7 +838,7 @@
         {
           'action_name': 'EventTargetFactory',
           'inputs': [
-            '../dom/make_event_factory.pl',
+            '../scripts/make_event_factory.pl',
             '../dom/EventTargetFactory.in',
           ],
           'outputs': [
@@ -856,7 +857,7 @@
         {
           'action_name': 'ExceptionCodeDescription',
           'inputs': [
-            '../dom/make_dom_exceptions.pl',
+            '../scripts/make_dom_exceptions.pl',
             '../dom/DOMExceptions.in',
           ],
           'outputs': [
@@ -877,9 +878,9 @@
         {
           'action_name': 'MathMLNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../mathml/mathtags.in',
             '../mathml/mathattrs.in',
           ],
@@ -906,7 +907,7 @@
           'variables': {
             'scripts': [
               '../css/make-css-file-arrays.pl',
-              '../bindings/scripts/preprocessor.pm',
+              '../scripts/preprocessor.pm',
             ],
             # The .css files are in the same order as ../DerivedSources.make.
             'stylesheets': [
@@ -1012,9 +1013,9 @@
         {
           'action_name': 'XLinkNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../svg/xlinkattrs.in',
           ],
           'outputs': [
@@ -1035,9 +1036,9 @@
         {
           'action_name': 'XMLNSNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../xml/xmlnsattrs.in',
           ],
           'outputs': [
@@ -1058,9 +1059,9 @@
         {
           'action_name': 'XMLNames',
           'inputs': [
-            '../bindings/scripts/Hasher.pm',
-            '../bindings/scripts/StaticString.pm',
-            '../dom/make_names.pl',
+            '../scripts/Hasher.pm',
+            '../scripts/StaticString.pm',
+            '../scripts/make_names.pl',
             '../xml/xmlattrs.in',
           ],
           'outputs': [
@@ -1106,8 +1107,7 @@
           ],
           'action': [
             '<(perl_exe)',
-            '-I',
-            '../bindings/scripts',
+            '-I../scripts',
             '../css/makegrammar.pl',
             '--outputDir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
@@ -1169,7 +1169,7 @@
             '../bindings/scripts/CodeGeneratorV8.pm',
             '../bindings/scripts/IDLParser.pm',
             '../bindings/scripts/IDLAttributes.txt',
-            '../bindings/scripts/preprocessor.pm',
+            '../scripts/preprocessor.pm',
             '<!@pymod_do_main(supplemental_idl_files <@(bindings_idl_files))',
           ],
           'outputs': [
@@ -1212,6 +1212,7 @@
             '<(perl_exe)',
             '-w',
             '-I../bindings/scripts',
+            '-I../scripts',
             '../bindings/scripts/generate-bindings.pl',
             '--outputHeadersDir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',

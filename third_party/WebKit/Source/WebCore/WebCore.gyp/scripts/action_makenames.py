@@ -142,7 +142,7 @@ def main(args):
     # scriptsPath is a Perl include directory, located relative to
     # makeNamesInput.
     scriptsPath = os.path.normpath(
-        os.path.join(os.path.dirname(makeNamesInput), os.pardir, 'bindings', 'scripts'))
+        os.path.join(os.path.dirname(makeNamesInput), os.pardir, 'scripts'))
 
     # Change to the output directory because make_names.pl puts output in its
     # working directory.
