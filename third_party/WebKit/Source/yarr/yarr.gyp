@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009, 2012 Google Inc. All rights reserved.
+# Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -30,8 +30,8 @@
 
 {
   'includes': [
-    '../../WebKit/chromium/WinPrecompile.gypi',
-    '../../WebKit/chromium/features.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
+    '../WebKit/chromium/features.gypi',
   ],
   'conditions': [
     ['os_posix == 1 and OS != "mac" and gcc_version>=46', {
@@ -47,14 +47,14 @@
       'target_name': 'yarr',
       'type': 'static_library',
       'dependencies': [
-        '../../WTF/WTF.gyp/WTF.gyp:wtf',
+        '../WTF/WTF.gyp/WTF.gyp:wtf',
       ],
       'variables': { 'optimize': 'max' },
       'actions': [
         {
-          'action_name': 'retgen',
+          'action_name': 'generate_regex_tables',
           'inputs': [
-            '../create_regex_tables',
+            'create_regex_tables',
           ],
           'arguments': [
             '--no-tables',
@@ -83,11 +83,11 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '../',
+          '..',
         ],
       },
       'export_dependent_settings': [
-        '../../WTF/WTF.gyp/WTF.gyp:wtf',
+        '../WTF/WTF.gyp/WTF.gyp:wtf',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -96,5 +96,5 @@
         }],
       ],
     },
-  ], # targets
+  ],
 }
