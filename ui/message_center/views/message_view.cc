@@ -215,9 +215,10 @@ MenuModel::MenuModel(message_center::NotificationChangeObserver* observer,
       observer_(observer),
       notification_id_(notification_id) {
   // Add 'disable notifications' menu item.
-  if (!extension_id.empty()) {
+  if (!extension_id.empty() && !display_source.empty()) {
     AddItem(kToggleExtensionCommand,
-            l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE));
+            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE,
+                                       display_source));
   } else if (!display_source.empty()) {
     AddItem(kTogglePermissionCommand,
             l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,

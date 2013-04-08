@@ -173,8 +173,10 @@ void MessageCenterNotificationManager::DisableExtension(
       FindProfileNotification(notification_id);
   std::string extension_id = profile_notification->GetExtensionId();
   DCHECK(!extension_id.empty());  // or UI should not have enabled the command.
-  profile_notification->profile()->GetExtensionService()->DisableExtension(
-      extension_id, extensions::Extension::DISABLE_USER_ACTION);
+  DesktopNotificationService* service =
+      DesktopNotificationServiceFactory::GetForProfile(
+          profile_notification->profile());
+  service->SetExtensionEnabled(extension_id, false);
 }
 
 void MessageCenterNotificationManager::DisableNotificationsFromSource(

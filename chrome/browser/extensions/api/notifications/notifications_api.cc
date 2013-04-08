@@ -149,7 +149,8 @@ void NotificationsApiFunction::CreateNotification(
       id));  // ownership is passed to Notification
   Notification notification(type, extension_->url(), icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
-                            string16(), UTF8ToUTF16(api_delegate->id()),
+                            UTF8ToUTF16(extension_->name()),
+                            UTF8ToUTF16(api_delegate->id()),
                             optional_fields.get(), api_delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile());
@@ -230,7 +231,8 @@ void NotificationsApiFunction::CreateNotification(
       id));  // ownership is passed to Notification
   Notification notification(type, extension_->url(), icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
-                            string16(), UTF8ToUTF16(api_delegate->id()),
+                            UTF8ToUTF16(extension_->name()),
+                            UTF8ToUTF16(api_delegate->id()),
                             optional_fields.get(), api_delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile());
