@@ -650,7 +650,10 @@ void ChromotingInstance::Disconnect() {
 }
 
 void ChromotingInstance::OnIncomingIq(const std::string& iq) {
-  xmpp_proxy_->OnIq(iq);
+  // Just ignore the message if it's received before Connect() is called. It's
+  // likely to be a leftover from a previous session, so it's safe to ignore it.
+  if (xmpp_proxy_)
+    xmpp_proxy_->OnIq(iq);
 }
 
 void ChromotingInstance::ReleaseAllKeys() {
