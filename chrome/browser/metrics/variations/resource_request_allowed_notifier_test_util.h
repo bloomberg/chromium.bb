@@ -21,9 +21,10 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   TestRequestAllowedNotifier();
   virtual ~TestRequestAllowedNotifier();
 
-#if defined(OS_CHROMEOS)
-  void SetNeedsEulaAcceptance(bool needs_acceptance);
-#endif
+  // A version of |Init()| that accepts a custom EulaAcceptedNotifier.
+  void InitWithEulaAcceptNotifier(
+      Observer* observer,
+      scoped_ptr<EulaAcceptedNotifier> eula_notifier);
 
   // Makes ResourceRequestsAllowed return |allowed| when it is called.
   void SetRequestsAllowedOverride(bool allowed);
@@ -32,17 +33,12 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   // the observer is expecting a notification.
   void NotifyObserver();
 
+  // ResourceRequestAllowedNotifier overrides:
   virtual bool ResourceRequestsAllowed() OVERRIDE;
-
- protected:
-#if defined(OS_CHROMEOS)
-  virtual bool NeedsEulaAcceptance() OVERRIDE;
-#endif
+  virtual EulaAcceptedNotifier* CreateEulaNotifier() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
-  bool needs_eula_acceptance_;
-#endif
+  scoped_ptr<EulaAcceptedNotifier> test_eula_notifier_;
   bool override_requests_allowed_;
   bool requests_allowed_;
 

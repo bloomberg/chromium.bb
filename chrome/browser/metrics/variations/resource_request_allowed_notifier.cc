@@ -5,21 +5,12 @@
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_service.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/wizard_controller.h"
-#endif
 
 ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier()
     : observer_requested_permission_(false),
-      was_waiting_for_network_(false),
-#if defined(OS_CHROMEOS)
-      was_waiting_for_user_to_accept_eula_(false),
-#endif
+      waiting_for_network_(false),
+      waiting_for_user_to_accept_eula_(false),
       observer_(NULL) {
 }
 
@@ -36,18 +27,13 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
 
   // Check this state during initialization. It is not expected to change until
   // the corresponding notification is received.
-  was_waiting_for_network_ = net::NetworkChangeNotifier::IsOffline();
-#if defined(OS_CHROMEOS)
-  was_waiting_for_user_to_accept_eula_ = NeedsEulaAcceptance();
-  if (was_waiting_for_user_to_accept_eula_) {
-    // Note that this must listen on AllSources due to the difficulty in knowing
-    // when the WizardController instance is created, and to avoid over-coupling
-    // the Chrome OS code with the VariationsService by directly attaching as an
-    // observer. This is OK because WizardController is essentially a singleton.
-    registrar_.Add(this, chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED,
-                   content::NotificationService::AllSources());
+  waiting_for_network_ = net::NetworkChangeNotifier::IsOffline();
+
+  eula_notifier_.reset(CreateEulaNotifier());
+  if (eula_notifier_) {
+    eula_notifier_->Init(this);
+    waiting_for_user_to_accept_eula_ = !eula_notifier_->IsEulaAccepted();
   }
-#endif
 }
 
 bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
@@ -60,24 +46,18 @@ bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
   // set a flag to remind this class to notify the observer once the criteria
   // is met.
   observer_requested_permission_ = true;
-  return
-#if defined(OS_CHROMEOS)
-      !was_waiting_for_user_to_accept_eula_ &&
-#endif
-      !was_waiting_for_network_;
+  return !waiting_for_user_to_accept_eula_ && !waiting_for_network_;
 }
 
-void ResourceRequestAllowedNotifier::
-    SetWasWaitingForNetworkForTesting(bool waiting) {
-  was_waiting_for_network_ = waiting;
+void ResourceRequestAllowedNotifier::SetWaitingForNetworkForTesting(
+    bool waiting) {
+  waiting_for_network_ = waiting;
 }
 
-#if defined(OS_CHROMEOS)
-void ResourceRequestAllowedNotifier::
-    SetWasWaitingForEulaForTesting(bool waiting) {
-  was_waiting_for_user_to_accept_eula_ = waiting;
+void ResourceRequestAllowedNotifier::SetWaitingForEulaForTesting(
+    bool waiting) {
+  waiting_for_user_to_accept_eula_ = waiting;
 }
-#endif
 
 void ResourceRequestAllowedNotifier::MaybeNotifyObserver() {
   // Need to ensure that all criteria are met before notifying observers.
@@ -90,16 +70,18 @@ void ResourceRequestAllowedNotifier::MaybeNotifyObserver() {
   }
 }
 
-#if defined(OS_CHROMEOS)
-bool ResourceRequestAllowedNotifier::NeedsEulaAcceptance() {
-#if defined(GOOGLE_CHROME_BUILD)
-  return !chromeos::WizardController::IsEulaAccepted();
-#else
-  // On unofficial builds, there is no notion of a EULA.
-  return false;
-#endif
+EulaAcceptedNotifier* ResourceRequestAllowedNotifier::CreateEulaNotifier() {
+  return EulaAcceptedNotifier::Create();
 }
-#endif
+
+void ResourceRequestAllowedNotifier::OnEulaAccepted() {
+  // This flag should have been set if this was waiting on the EULA
+  // notification.
+  DCHECK(waiting_for_user_to_accept_eula_);
+  DVLOG(1) << "EULA was accepted.";
+  waiting_for_user_to_accept_eula_ = false;
+  MaybeNotifyObserver();
+}
 
 void ResourceRequestAllowedNotifier::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
@@ -109,30 +91,10 @@ void ResourceRequestAllowedNotifier::OnConnectionTypeChanged(
   // waiting on the network, or if the network changes from one online state
   // to another (for example, Wifi to 3G, or Wifi to Wifi, if the network were
   // flaky).
-  if (was_waiting_for_network_ &&
+  if (waiting_for_network_ &&
       type != net::NetworkChangeNotifier::CONNECTION_NONE) {
-    was_waiting_for_network_ = false;
+    waiting_for_network_ = false;
     DVLOG(1) << "Network came back online.";
     MaybeNotifyObserver();
   }
 }
-
-#if defined(OS_CHROMEOS)
-void ResourceRequestAllowedNotifier::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED, type);
-  // This should only ever be received once. Remove it after this call.
-  DCHECK(!registrar_.IsEmpty());
-  registrar_.Remove(this, chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED,
-                    content::NotificationService::AllSources());
-
-  // This flag should have been set if this was waiting on the EULA
-  // notification.
-  DCHECK(was_waiting_for_user_to_accept_eula_);
-  DVLOG(1) << "EULA was accepted.";
-  was_waiting_for_user_to_accept_eula_ = false;
-  MaybeNotifyObserver();
-}
-#endif

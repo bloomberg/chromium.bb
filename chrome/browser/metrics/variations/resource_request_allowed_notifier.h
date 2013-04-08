@@ -5,12 +5,8 @@
 #ifndef CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 #define CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
+#include "chrome/browser/metrics/variations/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
-
-#if defined(OS_CHROMEOS)
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#endif
 
 // This class informs an interested observer when resource requests over the
 // network are permitted.
@@ -32,11 +28,9 @@
 // Note that this class handles the criteria state for a single service, so
 // services should keep their own instance of this class rather than sharing a
 // global instance.
-class ResourceRequestAllowedNotifier :
-#if defined(OS_CHROMEOS)
-    public content::NotificationObserver,
-#endif
-    public net::NetworkChangeNotifier::ConnectionTypeObserver {
+class ResourceRequestAllowedNotifier
+    : public EulaAcceptedNotifier::Observer,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Observes resource request allowed state changes.
   class Observer {
@@ -56,41 +50,28 @@ class ResourceRequestAllowedNotifier :
   // Returns true iff all resource request criteria are met. If not, this call
   // will set some flags so it knows to notify the observer if the criteria
   // changes. Note that the observer will never be notified unless it calls this
-  // method first. This is virtual so it can be overriden for tests.
+  // method first. This is virtual so it can be overridden for tests.
   virtual bool ResourceRequestsAllowed();
 
-  void SetWasWaitingForNetworkForTesting(bool waiting);
-#if defined(OS_CHROMEOS)
-  void SetWasWaitingForEulaForTesting(bool waiting);
-#endif
+  void SetWaitingForNetworkForTesting(bool waiting);
+  void SetWaitingForEulaForTesting(bool waiting);
 
  protected:
   // Notifies the observer if all criteria needed for resource requests are met.
   // This is protected so it can be called from subclasses for testing.
   void MaybeNotifyObserver();
 
-#if defined(OS_CHROMEOS)
-  // On official builds, returns true iff the EULA needs to be accepted. This
-  // always returns false on unofficial builds since there is no notion of a
-  // EULA.
-  //
-  // This is virtual so it can be overriden by test classes to avoid making them
-  // aware of the ChromeOS details. This is protected so it call be overriden in
-  // subclasses for testing.
-  virtual bool NeedsEulaAcceptance();
-#endif
-
  private:
+  // Creates the EulaAcceptNotifier or NULL if one is not needed. Virtual so
+  // that it can be overridden by test subclasses.
+  virtual EulaAcceptedNotifier* CreateEulaNotifier();
+
+  // EulaAcceptedNotifier::Observer overrides:
+  virtual void OnEulaAccepted() OVERRIDE;
+
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
-#if defined(OS_CHROMEOS)
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-#endif
 
   // Tracks whether or not the observer/service depending on this class actually
   // requested permission to make a request or not. If it did not, then this
@@ -98,15 +79,13 @@ class ResourceRequestAllowedNotifier :
   bool observer_requested_permission_;
 
   // Tracks network connectivity criteria.
-  bool was_waiting_for_network_;
+  bool waiting_for_network_;
 
-#if defined(OS_CHROMEOS)
   // Tracks EULA acceptance criteria.
-  bool was_waiting_for_user_to_accept_eula_;
+  bool waiting_for_user_to_accept_eula_;
 
-  // Used to listen for the EULA accepted notification.
-  content::NotificationRegistrar registrar_;
-#endif
+  // Platform-specific notifier of EULA acceptance, or NULL if not needed.
+  scoped_ptr<EulaAcceptedNotifier> eula_notifier_;
 
   // Observing service interested in request permissions.
   Observer* observer_;

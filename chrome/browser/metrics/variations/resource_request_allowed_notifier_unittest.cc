@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/prefs/testing_pref_service.h"
+#include "chrome/browser/metrics/variations/eula_accepted_notifier.h"
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -40,6 +41,33 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
 };
 
+// EulaAcceptedNotifier test class that allows mocking the EULA accepted state
+// and issuing simulated notifications.
+class TestEulaAcceptedNotifier : public EulaAcceptedNotifier {
+ public:
+  TestEulaAcceptedNotifier() : eula_accepted_(false) {
+  }
+  virtual ~TestEulaAcceptedNotifier() {
+  }
+
+  virtual bool IsEulaAccepted() OVERRIDE {
+    return eula_accepted_;
+  }
+
+  void SetEulaAcceptedForTesting(bool eula_accepted) {
+    eula_accepted_ = eula_accepted;
+  }
+
+  void SimulateEulaAccepted() {
+    NotifyObserver();
+  }
+
+ private:
+  bool eula_accepted_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEulaAcceptedNotifier);
+};
+
 // A test fixture class for ResourceRequestAllowedNotifier tests that require
 // network state simulations. This also acts as the service implementing the
 // ResourceRequestAllowedNotifier::Observer interface.
@@ -49,12 +77,10 @@ class ResourceRequestAllowedNotifierTest
  public:
   ResourceRequestAllowedNotifierTest()
     : ui_thread(content::BrowserThread::UI, &message_loop),
+      eula_notifier_(new TestEulaAcceptedNotifier),
       was_notified_(false) {
-#if defined(OS_CHROMEOS)
-    // Set this flag to true so the Init call sets up the wait on the EULA.
-    SetNeedsEulaAcceptance(true);
-#endif
-    resource_request_allowed_notifier_.Init(this);
+    resource_request_allowed_notifier_.InitWithEulaAcceptNotifier(
+        this, scoped_ptr<EulaAcceptedNotifier>(eula_notifier_));
   }
   virtual ~ResourceRequestAllowedNotifierTest() { }
 
@@ -66,9 +92,8 @@ class ResourceRequestAllowedNotifierTest
   }
 
   // Network manipulation methods:
-  void SetWasWaitingForNetwork(bool waiting) {
-    resource_request_allowed_notifier_.
-        SetWasWaitingForNetworkForTesting(waiting);
+  void SetWaitingForNetwork(bool waiting) {
+    resource_request_allowed_notifier_.SetWaitingForNetworkForTesting(waiting);
   }
 
   void SimulateNetworkConnectionChange(
@@ -81,44 +106,36 @@ class ResourceRequestAllowedNotifierTest
     resource_request_allowed_notifier_.ResourceRequestsAllowed();
   }
 
-#if defined(OS_CHROMEOS)
+  void SimulateEulaAccepted() {
+    eula_notifier_->SimulateEulaAccepted();
+  }
+
   // Eula manipulation methods:
   void SetNeedsEulaAcceptance(bool needs_acceptance) {
-    resource_request_allowed_notifier_.SetNeedsEulaAcceptance(needs_acceptance);
+    eula_notifier_->SetEulaAcceptedForTesting(!needs_acceptance);
   }
 
-  void SetWasWaitingForEula(bool waiting) {
-    resource_request_allowed_notifier_.SetWasWaitingForEulaForTesting(waiting);
-  }
-
-  void SimulateEulaAccepted() {
-    SetNeedsEulaAcceptance(false);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+  void SetWaitingForEula(bool waiting) {
+    resource_request_allowed_notifier_.SetWaitingForEulaForTesting(waiting);
   }
 
   // Used in tests involving the EULA. Disables both the EULA accepted state
   // and the network.
   void DisableEulaAndNetwork() {
-    SetWasWaitingForNetwork(true);
+    SetWaitingForNetwork(true);
     SimulateNetworkConnectionChange(
         net::NetworkChangeNotifier::CONNECTION_NONE);
-    SetWasWaitingForEula(true);
+    SetWaitingForEula(true);
     SetNeedsEulaAcceptance(true);
   }
-#endif
 
   virtual void SetUp() OVERRIDE {
     // Assume the test service has already requested permission, as all tests
     // just test that criteria changes notify the server.
-#if defined(OS_CHROMEOS)
     // Set default EULA state to done (not waiting and EULA accepted) to
     // simplify non-ChromeOS tests.
-    SetWasWaitingForEula(false);
+    SetWaitingForEula(false);
     SetNeedsEulaAcceptance(false);
-#endif
   }
 
  private:
@@ -126,6 +143,7 @@ class ResourceRequestAllowedNotifierTest
   content::TestBrowserThread ui_thread;
   TestNetworkChangeNotifier network_notifier;
   TestRequestAllowedNotifier resource_request_allowed_notifier_;
+  TestEulaAcceptedNotifier* eula_notifier_;  // Weak, owned by RRAN.
   bool was_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestAllowedNotifierTest);
@@ -133,14 +151,14 @@ class ResourceRequestAllowedNotifierTest
 
 TEST_F(ResourceRequestAllowedNotifierTest, DoNotNotifyIfOffline) {
   SimulateResourceRequest();
-  SetWasWaitingForNetwork(true);
+  SetWaitingForNetwork(true);
   SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_FALSE(was_notified());
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, DoNotNotifyIfOnlineToOnline) {
   SimulateResourceRequest();
-  SetWasWaitingForNetwork(false);
+  SetWaitingForNetwork(false);
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   EXPECT_FALSE(was_notified());
@@ -148,7 +166,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, DoNotNotifyIfOnlineToOnline) {
 
 TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnReconnect) {
   SimulateResourceRequest();
-  SetWasWaitingForNetwork(true);
+  SetWaitingForNetwork(true);
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   EXPECT_TRUE(was_notified());
@@ -156,7 +174,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnReconnect) {
 
 TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnWardriving) {
   SimulateResourceRequest();
-  SetWasWaitingForNetwork(false);
+  SetWaitingForNetwork(false);
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
@@ -173,7 +191,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnWardriving) {
 
 TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnFlakyConnection) {
   SimulateResourceRequest();
-  SetWasWaitingForNetwork(false);
+  SetWaitingForNetwork(false);
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
@@ -189,13 +207,12 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoRequestNoNotify) {
   // Ensure that if the observing service does not request access, it does not
   // get notified, even if the criteria is met. Note that this is done by not
   // calling SimulateResourceRequest here.
-  SetWasWaitingForNetwork(true);
+  SetWaitingForNetwork(true);
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   EXPECT_FALSE(was_notified());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(ResourceRequestAllowedNotifierTest, EulaOnlyNetworkOffline) {
   SimulateResourceRequest();
   DisableEulaAndNetwork();
@@ -241,4 +258,3 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoRequestNoNotifyEula) {
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
 }
-#endif  // OS_CHROMEOS

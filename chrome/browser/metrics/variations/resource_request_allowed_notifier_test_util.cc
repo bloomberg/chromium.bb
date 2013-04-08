@@ -4,22 +4,20 @@
 
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
 
-TestRequestAllowedNotifier::TestRequestAllowedNotifier() :
-#if defined(OS_CHROMEOS)
-      needs_eula_acceptance_(true),
-#endif
-      override_requests_allowed_(false),
+TestRequestAllowedNotifier::TestRequestAllowedNotifier()
+    : override_requests_allowed_(false),
       requests_allowed_(true) {
 }
 
 TestRequestAllowedNotifier::~TestRequestAllowedNotifier() {
 }
 
-#if defined(OS_CHROMEOS)
-void TestRequestAllowedNotifier::SetNeedsEulaAcceptance(bool needs_acceptance) {
-  needs_eula_acceptance_ = needs_acceptance;
+void TestRequestAllowedNotifier::InitWithEulaAcceptNotifier(
+    Observer* observer,
+    scoped_ptr<EulaAcceptedNotifier> eula_notifier) {
+  test_eula_notifier_.swap(eula_notifier);
+  Init(observer);
 }
-#endif
 
 void TestRequestAllowedNotifier::SetRequestsAllowedOverride(bool allowed) {
   override_requests_allowed_ = true;
@@ -45,8 +43,7 @@ bool TestRequestAllowedNotifier::ResourceRequestsAllowed() {
   return requests_allowed;
 }
 
-#if defined(OS_CHROMEOS)
-bool TestRequestAllowedNotifier::NeedsEulaAcceptance() {
-  return needs_eula_acceptance_;
+EulaAcceptedNotifier* TestRequestAllowedNotifier::CreateEulaNotifier() {
+  return test_eula_notifier_.release();
 }
-#endif
+
