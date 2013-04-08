@@ -32,7 +32,7 @@
     Conditional=FILE_SYSTEM
 ] interface DirectoryEntry : Entry {
     DirectoryReader createReader();
-    void getFile(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, in [Optional] Dictionary options, in [Optional, Callback] EntryCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);
-    void getDirectory(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, in [Optional] Dictionary options, in [Optional, Callback] EntryCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);
-    void removeRecursively(in [Callback] VoidCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);
+    void getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void getDirectory([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, [Optional] Dictionary options, [Optional, Callback] EntryCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void removeRecursively([Callback] VoidCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
 };

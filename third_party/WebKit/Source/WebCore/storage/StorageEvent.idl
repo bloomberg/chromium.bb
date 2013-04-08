@@ -32,16 +32,16 @@
     [InitializedByEventConstructor] readonly attribute DOMString url;
     [InitializedByEventConstructor] readonly attribute Storage storageArea;
 
-    void initStorageEvent(in [Optional=DefaultIsUndefined] DOMString typeArg, 
-                          in [Optional=DefaultIsUndefined] boolean canBubbleArg, 
-                          in [Optional=DefaultIsUndefined] boolean cancelableArg, 
-                          in [Optional=DefaultIsUndefined] DOMString keyArg, 
-                          in [Optional=DefaultIsUndefined,TreatNullAs=NullString] DOMString oldValueArg, 
-                          in [Optional=DefaultIsUndefined,TreatNullAs=NullString] DOMString newValueArg, 
-                          in [Optional=DefaultIsUndefined] DOMString urlArg, 
-                          in [Optional=DefaultIsUndefined] Storage storageAreaArg);
+    void initStorageEvent([Optional=DefaultIsUndefined] DOMString typeArg, 
+                          [Optional=DefaultIsUndefined] boolean canBubbleArg, 
+                          [Optional=DefaultIsUndefined] boolean cancelableArg, 
+                          [Optional=DefaultIsUndefined] DOMString keyArg, 
+                          [Optional=DefaultIsUndefined,TreatNullAs=NullString] DOMString oldValueArg, 
+                          [Optional=DefaultIsUndefined,TreatNullAs=NullString] DOMString newValueArg, 
+                          [Optional=DefaultIsUndefined] DOMString urlArg, 
+                          [Optional=DefaultIsUndefined] Storage storageAreaArg);
 
     // Needed once we support init<blank>EventNS
-    // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, in Storage storageAreaArg);
+    // void initStorageEventNS(DOMString namespaceURI, DOMString typeArg, boolean canBubbleArg, boolean cancelableArg, DOMString keyArg, DOMString oldValueArg, DOMString newValueArg, DOMString urlArg, Storage storageAreaArg);
 };
 

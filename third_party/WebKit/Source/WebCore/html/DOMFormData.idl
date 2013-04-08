@@ -36,8 +36,8 @@
 ] interface DOMFormData {
     // void append(DOMString name, DOMString value);
     // void append(DOMString name, Blob value, optional DOMString filename);
-    [Custom] void append(in [Optional=DefaultIsUndefined] DOMString name, 
-                         in [Optional=DefaultIsUndefined] DOMString value,
-                         in [Optional=DefaultIsUndefined] DOMString filename);
+    [Custom] void append([Optional=DefaultIsUndefined] DOMString name, 
+                         [Optional=DefaultIsUndefined] DOMString value,
+                         [Optional=DefaultIsUndefined] DOMString filename);
 };
 

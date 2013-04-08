@@ -38,12 +38,12 @@
     attribute DOMString channelInterpretation
         setter raises(DOMException);
 
-    void connect(in AudioNode? destination, in [Optional=DefaultIsUndefined] unsigned long output, in [Optional=DefaultIsUndefined] unsigned long input)
+    void connect(AudioNode? destination, [Optional=DefaultIsUndefined] unsigned long output, [Optional=DefaultIsUndefined] unsigned long input)
         raises(DOMException);
 
-    void connect(in AudioParam? destination, in [Optional=DefaultIsUndefined] unsigned long output)
+    void connect(AudioParam? destination, [Optional=DefaultIsUndefined] unsigned long output)
         raises(DOMException);
 
-    void disconnect(in [Optional=DefaultIsUndefined] unsigned long output)
+    void disconnect([Optional=DefaultIsUndefined] unsigned long output)
         raises(DOMException);
 };

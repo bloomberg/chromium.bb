@@ -32,9 +32,9 @@
 [
     Conditional=WEB_SOCKETS,
     ActiveDOMObject,
-    Constructor(in DOMString url),
-    Constructor(in DOMString url, in sequence<DOMString> protocols),
-    Constructor(in DOMString url, in DOMString protocol),
+    Constructor(DOMString url),
+    Constructor(DOMString url, sequence<DOMString> protocols),
+    Constructor(DOMString url, DOMString protocol),
     ConstructorRaisesException,
     CallWith=ScriptExecutionContext,
     EventTarget,
@@ -63,24 +63,24 @@
 
     attribute DOMString binaryType;
 
-    boolean send(in ArrayBuffer data)
+    boolean send(ArrayBuffer data)
         raises(DOMException);
-    boolean send(in ArrayBufferView data)
+    boolean send(ArrayBufferView data)
         raises(DOMException);
-    boolean send(in Blob data)
+    boolean send(Blob data)
         raises(DOMException);
-    boolean send(in DOMString data)
+    boolean send(DOMString data)
         raises(DOMException);
 
-    void close(in [Clamp, Optional] unsigned short code, in [Optional] DOMString reason) raises(DOMException);
+    void close([Clamp, Optional] unsigned short code, [Optional] DOMString reason) raises(DOMException);
 
     // EventTarget interface
-    void addEventListener(in DOMString type,
-                          in EventListener listener,
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type,
-                             in EventListener listener,
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 };

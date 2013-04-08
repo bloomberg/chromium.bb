@@ -27,5 +27,5 @@
     NamedGetter
 ] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
-    RTCStatsReport namedItem(in [Optional=DefaultIsUndefined] DOMString name);
+    RTCStatsReport namedItem([Optional=DefaultIsUndefined] DOMString name);
 };

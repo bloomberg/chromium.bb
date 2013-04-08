@@ -31,8 +31,8 @@
     OmitConstructor
 ] interface Database {
     readonly attribute DOMString version;
-    void changeVersion(in DOMString oldVersion, in DOMString newVersion, in [Callback, Optional] SQLTransactionCallback callback, in [Callback, Optional] SQLTransactionErrorCallback errorCallback, in [Callback, Optional] VoidCallback successCallback);
-    void transaction(in [Callback] SQLTransactionCallback callback, in [Callback, Optional] SQLTransactionErrorCallback errorCallback, in [Callback, Optional] VoidCallback successCallback);
-    void readTransaction(in [Callback] SQLTransactionCallback callback, in [Callback, Optional] SQLTransactionErrorCallback errorCallback, in [Callback, Optional] VoidCallback successCallback);
+    void changeVersion(DOMString oldVersion, DOMString newVersion, [Callback, Optional] SQLTransactionCallback callback, [Callback, Optional] SQLTransactionErrorCallback errorCallback, [Callback, Optional] VoidCallback successCallback);
+    void transaction([Callback] SQLTransactionCallback callback, [Callback, Optional] SQLTransactionErrorCallback errorCallback, [Callback, Optional] VoidCallback successCallback);
+    void readTransaction([Callback] SQLTransactionCallback callback, [Callback, Optional] SQLTransactionErrorCallback errorCallback, [Callback, Optional] VoidCallback successCallback);
 };
 

@@ -25,5 +25,5 @@
 [
     Callback
 ] interface PositionErrorCallback {
-    boolean handleEvent(in PositionError error);
+    boolean handleEvent(PositionError error);
 };

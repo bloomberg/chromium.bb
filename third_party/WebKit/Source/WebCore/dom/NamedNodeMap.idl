@@ -26,31 +26,31 @@
     ImplementationLacksVTable
 ] interface NamedNodeMap {
 
-    Node getNamedItem(in [Optional=DefaultIsUndefined] DOMString name);
+    Node getNamedItem([Optional=DefaultIsUndefined] DOMString name);
 
-    Node setNamedItem(in [Optional=DefaultIsUndefined] Node node)
+    Node setNamedItem([Optional=DefaultIsUndefined] Node node)
         raises(DOMException);
 
-    Node removeNamedItem(in [Optional=DefaultIsUndefined] DOMString name)
+    Node removeNamedItem([Optional=DefaultIsUndefined] DOMString name)
         raises(DOMException);
 
-    Node item(in [Optional=DefaultIsUndefined] unsigned long index);
+    Node item([Optional=DefaultIsUndefined] unsigned long index);
     
     readonly attribute unsigned long length;
 
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters] Node getNamedItemNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                       in [Optional=DefaultIsUndefined] DOMString localName)
+    [ObjCLegacyUnnamedParameters] Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+                                       [Optional=DefaultIsUndefined] DOMString localName)
         // FIXME: the implementation does take an exceptioncode parameter.
         /*raises(DOMException)*/;
 
-    Node setNamedItemNS(in [Optional=DefaultIsUndefined] Node node)
+    Node setNamedItemNS([Optional=DefaultIsUndefined] Node node)
         raises(DOMException);
 
-    [ObjCLegacyUnnamedParameters] Node removeNamedItemNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                          in [Optional=DefaultIsUndefined] DOMString localName)
+    [ObjCLegacyUnnamedParameters] Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+                                          [Optional=DefaultIsUndefined] DOMString localName)
         raises(DOMException);
 
 };

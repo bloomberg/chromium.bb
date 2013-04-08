@@ -25,6 +25,6 @@
 
 [
     Conditional=VIDEO,
-    NamedConstructor=Audio(in [Optional=DefaultIsNullString] DOMString src)
+    NamedConstructor=Audio([Optional=DefaultIsNullString] DOMString src)
 ] interface HTMLAudioElement : HTMLMediaElement {
 };

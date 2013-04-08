@@ -24,7 +24,7 @@
     InterfaceName=MimeTypeArray
 ] interface DOMMimeTypeArray {
     readonly attribute unsigned long length;
-    DOMMimeType item(in [Optional=DefaultIsUndefined] unsigned long index);
-    DOMMimeType namedItem(in [Optional=DefaultIsUndefined] DOMString name);
+    DOMMimeType item([Optional=DefaultIsUndefined] unsigned long index);
+    DOMMimeType namedItem([Optional=DefaultIsUndefined] DOMString name);
 };
 

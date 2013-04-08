@@ -69,15 +69,15 @@
 #endif
     attribute double valueAsNumber setter raises(DOMException);
 
-    void stepUp(in [Optional] long n) raises(DOMException);
-    void stepDown(in [Optional] long n) raises(DOMException);
+    void stepUp([Optional] long n) raises(DOMException);
+    void stepDown([Optional] long n) raises(DOMException);
 
     attribute unsigned long width;
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
-    void setCustomValidity(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString error);
+    void setCustomValidity([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString error);
 
     readonly attribute NodeList labels;
 
@@ -86,18 +86,18 @@
     [Custom] attribute long selectionEnd;
     [Custom] attribute DOMString selectionDirection;
 
-    void setRangeText(in DOMString replacement) raises(DOMException);
-    void setRangeText(in DOMString replacement,
-                        in unsigned long start,
-                        in unsigned long end,
-                        in [Optional=DefaultIsNullString] DOMString selectionMode) raises(DOMException);
+    void setRangeText(DOMString replacement) raises(DOMException);
+    void setRangeText(DOMString replacement,
+                        unsigned long start,
+                        unsigned long end,
+                        [Optional=DefaultIsNullString] DOMString selectionMode) raises(DOMException);
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Custom] void setSelectionRange(in long start, in long end);
+    [Custom] void setSelectionRange(long start, long end);
 #else
-    [Custom] void setSelectionRange(in [Optional=DefaultIsUndefined] long start, 
-                                    in [Optional=DefaultIsUndefined] long end, 
-                                    in [Optional] DOMString direction);
+    [Custom] void setSelectionRange([Optional=DefaultIsUndefined] long start, 
+                                    [Optional=DefaultIsUndefined] long end, 
+                                    [Optional] DOMString direction);
 #endif
 
     // Non-standard attributes
@@ -118,7 +118,7 @@
 #endif
 
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    void setValueForUser(in [TreatNullAs=NullString] DOMString value);
+    void setValueForUser([TreatNullAs=NullString] DOMString value);
 #endif
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C

@@ -46,15 +46,15 @@
              [TreatNullAs=NullString] attribute DOMString outerText
                  setter raises(DOMException);
 
-    Element insertAdjacentElement(in [Optional=DefaultIsUndefined] DOMString where,
-                                  in [Optional=DefaultIsUndefined] Element element)
+    Element insertAdjacentElement([Optional=DefaultIsUndefined] DOMString where,
+                                  [Optional=DefaultIsUndefined] Element element)
         raises(DOMException);
     [V8DeliverCustomElementCallbacks]
-    void insertAdjacentHTML(in [Optional=DefaultIsUndefined] DOMString where,
-                            in [Optional=DefaultIsUndefined] DOMString html)
+    void insertAdjacentHTML([Optional=DefaultIsUndefined] DOMString where,
+                            [Optional=DefaultIsUndefined] DOMString html)
         raises(DOMException);
-    void insertAdjacentText(in [Optional=DefaultIsUndefined] DOMString where,
-                            in [Optional=DefaultIsUndefined] DOMString text)
+    void insertAdjacentText([Optional=DefaultIsUndefined] DOMString where,
+                            [Optional=DefaultIsUndefined] DOMString text)
         raises(DOMException);
 
     readonly attribute HTMLCollection children;

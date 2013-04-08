@@ -43,13 +43,13 @@
     readonly attribute unsigned short readyState;
 
     // async read methods
-    void readAsArrayBuffer(in Blob blob)
+    void readAsArrayBuffer(Blob blob)
         raises(DOMException);
-    void readAsBinaryString(in Blob blob)
+    void readAsBinaryString(Blob blob)
         raises(DOMException);
-    void readAsText(in Blob blob, in [Optional] DOMString encoding)
+    void readAsText(Blob blob, [Optional] DOMString encoding)
         raises(DOMException);
-    void readAsDataURL(in Blob blob)
+    void readAsDataURL(Blob blob)
         raises(DOMException);
 
     void abort();
@@ -60,13 +60,13 @@
     readonly attribute FileError error;
 
     // EventTarget interface
-    void addEventListener(in DOMString type,
-                          in EventListener listener,
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type,
-                             in EventListener listener,
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 
     attribute EventListener onloadstart;

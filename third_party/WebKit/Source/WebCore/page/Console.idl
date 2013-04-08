@@ -39,7 +39,7 @@
     [CallWith=ScriptArguments|ScriptState] void dirxml();
     [CallWith=ScriptArguments|ScriptState] void table();
     [V8Custom, CallWith=ScriptArguments|ScriptState] void trace();
-    [V8Custom, CallWith=ScriptArguments|ScriptState, ImplementedAs=assertCondition] void assert(in boolean condition);
+    [V8Custom, CallWith=ScriptArguments|ScriptState, ImplementedAs=assertCondition] void assert(boolean condition);
     [CallWith=ScriptArguments|ScriptState] void count();
     [CallWith=ScriptArguments] void markTimeline();
 
@@ -48,12 +48,12 @@
     // "Sequences must not be used as the type of an attribute, constant or exception field."
     // FIXME: this will lead to BUG console.profiles !== console.profiles as profile will always returns new array.
     readonly attribute ScriptProfile[] profiles;
-    [Custom] void profile(in DOMString title);
-    [Custom] void profileEnd(in DOMString title);
+    [Custom] void profile(DOMString title);
+    [Custom] void profileEnd(DOMString title);
 #endif
 
-    void time(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
-    [CallWith=ScriptState] void timeEnd(in [TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
+    void time([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
+    [CallWith=ScriptState] void timeEnd([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString title);
     [CallWith=ScriptArguments] void timeStamp();
     [CallWith=ScriptArguments|ScriptState] void group();
     [CallWith=ScriptArguments|ScriptState] void groupCollapsed();

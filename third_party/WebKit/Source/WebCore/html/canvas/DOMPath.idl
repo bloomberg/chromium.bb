@@ -29,9 +29,9 @@
 interface [
     V8EnabledAtRuntime=canvasPath,
     Constructor,
-    Constructor(in DOMPath path),
+    Constructor(DOMPath path),
 #if defined(ENABLE_SVG) && ENABLE_SVG
-    Constructor(in DOMString text),
+    Constructor(DOMString text),
 #endif
     Conditional=CANVAS_PATH,
     InterfaceName=Path
@@ -39,35 +39,35 @@ interface [
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();
-    void moveTo(in [Optional=DefaultIsUndefined] float x,
-                in [Optional=DefaultIsUndefined] float y);
-    void lineTo(in [Optional=DefaultIsUndefined] float x,
-                in [Optional=DefaultIsUndefined] float y);
-    void quadraticCurveTo(in [Optional=DefaultIsUndefined] float cpx,
-                          in [Optional=DefaultIsUndefined] float cpy,
-                          in [Optional=DefaultIsUndefined] float x,
-                          in [Optional=DefaultIsUndefined] float y);
-    void bezierCurveTo(in [Optional=DefaultIsUndefined] float cp1x,
-                       in [Optional=DefaultIsUndefined] float cp1y,
-                       in [Optional=DefaultIsUndefined] float cp2x,
-                       in [Optional=DefaultIsUndefined] float cp2y,
-                       in [Optional=DefaultIsUndefined] float x,
-                       in [Optional=DefaultIsUndefined] float y);
-    void arcTo(in [Optional=DefaultIsUndefined] float x1,
-               in [Optional=DefaultIsUndefined] float y1,
-               in [Optional=DefaultIsUndefined] float x2,
-               in [Optional=DefaultIsUndefined] float y2,
-               in [Optional=DefaultIsUndefined] float radius)
+    void moveTo([Optional=DefaultIsUndefined] float x,
+                [Optional=DefaultIsUndefined] float y);
+    void lineTo([Optional=DefaultIsUndefined] float x,
+                [Optional=DefaultIsUndefined] float y);
+    void quadraticCurveTo([Optional=DefaultIsUndefined] float cpx,
+                          [Optional=DefaultIsUndefined] float cpy,
+                          [Optional=DefaultIsUndefined] float x,
+                          [Optional=DefaultIsUndefined] float y);
+    void bezierCurveTo([Optional=DefaultIsUndefined] float cp1x,
+                       [Optional=DefaultIsUndefined] float cp1y,
+                       [Optional=DefaultIsUndefined] float cp2x,
+                       [Optional=DefaultIsUndefined] float cp2y,
+                       [Optional=DefaultIsUndefined] float x,
+                       [Optional=DefaultIsUndefined] float y);
+    void arcTo([Optional=DefaultIsUndefined] float x1,
+               [Optional=DefaultIsUndefined] float y1,
+               [Optional=DefaultIsUndefined] float x2,
+               [Optional=DefaultIsUndefined] float y2,
+               [Optional=DefaultIsUndefined] float radius)
         raises (DOMException);
-    void rect(in [Optional=DefaultIsUndefined] float x,
-              in [Optional=DefaultIsUndefined] float y,
-              in [Optional=DefaultIsUndefined] float width,
-              in [Optional=DefaultIsUndefined] float height);
-    void arc(in [Optional=DefaultIsUndefined] float x,
-             in [Optional=DefaultIsUndefined] float y,
-             in [Optional=DefaultIsUndefined] float radius,
-             in [Optional=DefaultIsUndefined] float startAngle,
-             in [Optional=DefaultIsUndefined] float endAngle,
-             in [Optional=DefaultIsUndefined] boolean anticlockwise)
+    void rect([Optional=DefaultIsUndefined] float x,
+              [Optional=DefaultIsUndefined] float y,
+              [Optional=DefaultIsUndefined] float width,
+              [Optional=DefaultIsUndefined] float height);
+    void arc([Optional=DefaultIsUndefined] float x,
+             [Optional=DefaultIsUndefined] float y,
+             [Optional=DefaultIsUndefined] float radius,
+             [Optional=DefaultIsUndefined] float startAngle,
+             [Optional=DefaultIsUndefined] float endAngle,
+             [Optional=DefaultIsUndefined] boolean anticlockwise)
         raises (DOMException);
 };

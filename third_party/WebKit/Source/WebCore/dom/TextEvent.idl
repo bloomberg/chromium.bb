@@ -28,11 +28,11 @@ interface TextEvent : UIEvent {
 
     readonly attribute DOMString data;
 
-    void initTextEvent(in [Optional=DefaultIsUndefined] DOMString typeArg, 
-                       in [Optional=DefaultIsUndefined] boolean canBubbleArg, 
-                       in [Optional=DefaultIsUndefined] boolean cancelableArg, 
-                       in [Optional=DefaultIsUndefined] DOMWindow viewArg, 
-                       in [Optional=DefaultIsUndefined] DOMString dataArg);
+    void initTextEvent([Optional=DefaultIsUndefined] DOMString typeArg, 
+                       [Optional=DefaultIsUndefined] boolean canBubbleArg, 
+                       [Optional=DefaultIsUndefined] boolean cancelableArg, 
+                       [Optional=DefaultIsUndefined] DOMWindow viewArg, 
+                       [Optional=DefaultIsUndefined] DOMString dataArg);
 
 };
 

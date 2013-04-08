@@ -39,8 +39,8 @@
              [DoNotCheckSecurityOnSetter, CustomSetter, V8Unforgeable] attribute DOMString href;
 #endif
 
-    [Custom, V8Unforgeable] void assign(in [Optional=DefaultIsUndefined] DOMString url);
-    [Custom, V8Unforgeable] void replace(in [Optional=DefaultIsUndefined] DOMString url);
+    [Custom, V8Unforgeable] void assign([Optional=DefaultIsUndefined] DOMString url);
+    [Custom, V8Unforgeable] void replace([Optional=DefaultIsUndefined] DOMString url);
     [Custom, V8Unforgeable] void reload();
 
     // URI decomposition attributes

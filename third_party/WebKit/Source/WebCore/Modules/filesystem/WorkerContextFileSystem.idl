@@ -31,10 +31,10 @@
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 
-    [V8EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(in unsigned short type, in long long size, in [Callback, Optional] FileSystemCallback successCallback, in [Callback, Optional] ErrorCallback errorCallback);
-    [V8EnabledAtRuntime=FileSystem] DOMFileSystemSync webkitRequestFileSystemSync(in unsigned short type, in long long size) raises (FileException);
-    [V8EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(in DOMString url, in [Callback] EntryCallback successCallback, in [Callback, Optional] ErrorCallback errorCallback);
-    [V8EnabledAtRuntime=FileSystem] EntrySync webkitResolveLocalFileSystemSyncURL(in DOMString url) raises (FileException);
+    [V8EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size, [Callback, Optional] FileSystemCallback successCallback, [Callback, Optional] ErrorCallback errorCallback);
+    [V8EnabledAtRuntime=FileSystem] DOMFileSystemSync webkitRequestFileSystemSync(unsigned short type, long long size) raises (FileException);
+    [V8EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url, [Callback] EntryCallback successCallback, [Callback, Optional] ErrorCallback errorCallback);
+    [V8EnabledAtRuntime=FileSystem] EntrySync webkitResolveLocalFileSystemSyncURL(DOMString url) raises (FileException);
 
     [V8EnabledAtRuntime=FileSystem] attribute FileErrorConstructor FileError;
     [V8EnabledAtRuntime=FileSystem] attribute FileExceptionConstructor FileException;

@@ -31,8 +31,8 @@
     OmitConstructor,
     ImplementationLacksVTable
 ] interface SQLTransaction {
-    [Custom] void executeSql(in DOMString sqlStatement,
-                             in ObjectArray arguments,
-                             in [Optional, Callback] SQLStatementCallback callback,
-                             in [Optional, Callback] SQLStatementErrorCallback errorCallback);
+    [Custom] void executeSql(DOMString sqlStatement,
+                             ObjectArray arguments,
+                             [Optional, Callback] SQLStatementCallback callback,
+                             [Optional, Callback] SQLStatementErrorCallback errorCallback);
 };

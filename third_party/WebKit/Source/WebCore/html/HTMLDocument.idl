@@ -25,8 +25,8 @@
 ] interface HTMLDocument : Document {
     [V8Custom] void open();
     void close();
-    [Custom] void write(in [Optional=DefaultIsUndefined] DOMString text);
-    [Custom] void writeln(in [Optional=DefaultIsUndefined] DOMString text);
+    [Custom] void write([Optional=DefaultIsUndefined] DOMString text);
+    [Custom] void writeln([Optional=DefaultIsUndefined] DOMString text);
 
     readonly attribute HTMLCollection embeds;
     readonly attribute HTMLCollection plugins;

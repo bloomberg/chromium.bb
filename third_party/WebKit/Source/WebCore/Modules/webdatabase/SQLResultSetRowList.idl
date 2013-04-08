@@ -32,5 +32,5 @@
     ImplementationLacksVTable
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;
-    [Custom] any item(in unsigned long index);
+    [Custom] any item(unsigned long index);
 };

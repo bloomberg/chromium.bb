@@ -40,8 +40,8 @@
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
 
-    void collapse(in [Optional=DefaultIsUndefined] Node node, 
-                  in [Optional=DefaultIsUndefined] long index)
+    void collapse([Optional=DefaultIsUndefined] Node node, 
+                  [Optional=DefaultIsUndefined] long index)
         raises(DOMException);
     void collapseToEnd()
         raises(DOMException);
@@ -49,19 +49,19 @@
         raises(DOMException);
 
     void deleteFromDocument();
-    boolean containsNode(in [Optional=DefaultIsUndefined] Node node, 
-                         in [Optional=DefaultIsUndefined] boolean allowPartial);
-    void selectAllChildren(in [Optional=DefaultIsUndefined] Node node)
+    boolean containsNode([Optional=DefaultIsUndefined] Node node, 
+                         [Optional=DefaultIsUndefined] boolean allowPartial);
+    void selectAllChildren([Optional=DefaultIsUndefined] Node node)
         raises(DOMException);
 
-    void extend(in [Optional=DefaultIsUndefined] Node node, 
-                in [Optional=DefaultIsUndefined] long offset)
+    void extend([Optional=DefaultIsUndefined] Node node, 
+                [Optional=DefaultIsUndefined] long offset)
         raises(DOMException);
 
-    Range getRangeAt(in [Optional=DefaultIsUndefined] long index)
+    Range getRangeAt([Optional=DefaultIsUndefined] long index)
         raises(DOMException);
     void removeAllRanges();
-    void addRange(in [Optional=DefaultIsUndefined] Range range);
+    void addRange([Optional=DefaultIsUndefined] Range range);
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable] DOMString toString();
@@ -77,16 +77,16 @@
     // IE's type accessor returns "none", "text" and "control"
     readonly attribute DOMString type;
 
-    void modify(in [Optional=DefaultIsUndefined] DOMString alter, 
-                in [Optional=DefaultIsUndefined] DOMString direction, 
-                in [Optional=DefaultIsUndefined] DOMString granularity);
-    void setBaseAndExtent(in [Optional=DefaultIsUndefined] Node baseNode, 
-                          in [Optional=DefaultIsUndefined] long baseOffset, 
-                          in [Optional=DefaultIsUndefined] Node extentNode, 
-                          in [Optional=DefaultIsUndefined] long extentOffset)
+    void modify([Optional=DefaultIsUndefined] DOMString alter, 
+                [Optional=DefaultIsUndefined] DOMString direction, 
+                [Optional=DefaultIsUndefined] DOMString granularity);
+    void setBaseAndExtent([Optional=DefaultIsUndefined] Node baseNode, 
+                          [Optional=DefaultIsUndefined] long baseOffset, 
+                          [Optional=DefaultIsUndefined] Node extentNode, 
+                          [Optional=DefaultIsUndefined] long extentOffset)
         raises(DOMException);
-    void setPosition(in [Optional=DefaultIsUndefined] Node node, 
-                     in [Optional=DefaultIsUndefined] long offset)
+    void setPosition([Optional=DefaultIsUndefined] Node node, 
+                     [Optional=DefaultIsUndefined] long offset)
         raises(DOMException);
 
     // IE extentions

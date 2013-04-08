@@ -36,26 +36,26 @@
     attribute EventListener onerror;
     attribute EventListener onversionchange;
 
-    IDBObjectStore createObjectStore(in DOMString name, in [Optional] Dictionary options)
+    IDBObjectStore createObjectStore(DOMString name, [Optional] Dictionary options)
         raises (DOMException);
-    void deleteObjectStore(in DOMString name)
+    void deleteObjectStore(DOMString name)
         raises (DOMException);
-    [CallWith=ScriptExecutionContext] IDBTransaction transaction(in DOMStringList storeNames, in [Optional=DefaultIsNullString] DOMString mode)
+    [CallWith=ScriptExecutionContext] IDBTransaction transaction(DOMStringList storeNames, [Optional=DefaultIsNullString] DOMString mode)
         raises (DOMException);
-    [CallWith=ScriptExecutionContext] IDBTransaction transaction(in sequence<DOMString> storeNames, in [Optional=DefaultIsNullString] DOMString mode)
+    [CallWith=ScriptExecutionContext] IDBTransaction transaction(sequence<DOMString> storeNames, [Optional=DefaultIsNullString] DOMString mode)
         raises (DOMException);
-    [CallWith=ScriptExecutionContext] IDBTransaction transaction(in DOMString storeName, in [Optional=DefaultIsNullString] DOMString mode)
+    [CallWith=ScriptExecutionContext] IDBTransaction transaction(DOMString storeName, [Optional=DefaultIsNullString] DOMString mode)
         raises (DOMException);
 
     void close();
 
     // EventTarget interface
-    void addEventListener(in DOMString type,
-                          in EventListener listener,
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type,
-                             in EventListener listener,
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 };

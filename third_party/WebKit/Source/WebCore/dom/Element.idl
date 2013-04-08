@@ -27,17 +27,17 @@
 
     [TreatReturnedNullStringAs=Null, V8PerWorldBindings] readonly attribute DOMString tagName;
 
-    [TreatReturnedNullStringAs=Null] DOMString getAttribute(in [Optional=DefaultIsUndefined] DOMString name);
-    [ObjCLegacyUnnamedParameters] void setAttribute(in [Optional=DefaultIsUndefined] DOMString name,
-                                     in [Optional=DefaultIsUndefined] DOMString value)
+    [TreatReturnedNullStringAs=Null] DOMString getAttribute([Optional=DefaultIsUndefined] DOMString name);
+    [ObjCLegacyUnnamedParameters] void setAttribute([Optional=DefaultIsUndefined] DOMString name,
+                                     [Optional=DefaultIsUndefined] DOMString value)
         raises(DOMException);
-    void removeAttribute(in [Optional=DefaultIsUndefined] DOMString name);
-    Attr getAttributeNode(in [Optional=DefaultIsUndefined] DOMString name);
-    Attr setAttributeNode(in [Optional=DefaultIsUndefined] Attr newAttr)
+    void removeAttribute([Optional=DefaultIsUndefined] DOMString name);
+    Attr getAttributeNode([Optional=DefaultIsUndefined] DOMString name);
+    Attr setAttributeNode([Optional=DefaultIsUndefined] Attr newAttr)
         raises(DOMException);
-    Attr removeAttributeNode(in [Optional=DefaultIsUndefined] Attr oldAttr)
+    Attr removeAttributeNode([Optional=DefaultIsUndefined] Attr oldAttr)
         raises(DOMException);
-    [V8PerWorldBindings] NodeList getElementsByTagName(in [Optional=DefaultIsUndefined] DOMString name);
+    [V8PerWorldBindings] NodeList getElementsByTagName([Optional=DefaultIsUndefined] DOMString name);
 
 #if !defined(LANGUAGE_OBJECTIVE_C)
     // For ObjC this is defined on Node for legacy support.
@@ -47,23 +47,23 @@
 
     // DOM Level 2 Core
 
-    [ObjCLegacyUnnamedParameters] DOMString getAttributeNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                            in [Optional=DefaultIsUndefined] DOMString localName);
-    [ObjCLegacyUnnamedParameters] void setAttributeNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                       in [Optional=DefaultIsUndefined] DOMString qualifiedName, 
-                                       in [Optional=DefaultIsUndefined] DOMString value)
+    [ObjCLegacyUnnamedParameters] DOMString getAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                            [Optional=DefaultIsUndefined] DOMString localName);
+    [ObjCLegacyUnnamedParameters] void setAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                       [Optional=DefaultIsUndefined] DOMString qualifiedName, 
+                                       [Optional=DefaultIsUndefined] DOMString value)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters] void removeAttributeNS(in [TreatNullAs=NullString] DOMString namespaceURI,
-                                          in DOMString localName);
-    [ObjCLegacyUnnamedParameters] NodeList getElementsByTagNameNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                                   in [Optional=DefaultIsUndefined] DOMString localName);
-    [ObjCLegacyUnnamedParameters] Attr getAttributeNodeNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                           in [Optional=DefaultIsUndefined] DOMString localName);
-    Attr setAttributeNodeNS(in [Optional=DefaultIsUndefined] Attr newAttr)
+    [ObjCLegacyUnnamedParameters] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
+                                          DOMString localName);
+    [ObjCLegacyUnnamedParameters] NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                                   [Optional=DefaultIsUndefined] DOMString localName);
+    [ObjCLegacyUnnamedParameters] Attr getAttributeNodeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                           [Optional=DefaultIsUndefined] DOMString localName);
+    Attr setAttributeNodeNS([Optional=DefaultIsUndefined] Attr newAttr)
         raises(DOMException);
-    boolean hasAttribute(in DOMString name);
-    [ObjCLegacyUnnamedParameters] boolean hasAttributeNS(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                          in [Optional=DefaultIsUndefined] DOMString localName);
+    boolean hasAttribute(DOMString name);
+    [ObjCLegacyUnnamedParameters] boolean hasAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                          [Optional=DefaultIsUndefined] DOMString localName);
 
     [V8PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
@@ -85,16 +85,16 @@
 
     void focus();
     void blur();
-    void scrollIntoView(in [Optional] boolean alignWithTop);
+    void scrollIntoView([Optional] boolean alignWithTop);
 
     // WebKit extensions
 
-    void scrollIntoViewIfNeeded(in [Optional] boolean centerIfNeeded);
-    void scrollByLines(in [Optional=DefaultIsUndefined] long lines);
-    void scrollByPages(in [Optional=DefaultIsUndefined] long pages);
+    void scrollIntoViewIfNeeded([Optional] boolean centerIfNeeded);
+    void scrollByLines([Optional=DefaultIsUndefined] long lines);
+    void scrollByPages([Optional=DefaultIsUndefined] long pages);
 
     // HTML 5
-    NodeList getElementsByClassName(in [Optional=DefaultIsUndefined] DOMString name);
+    NodeList getElementsByClassName([Optional=DefaultIsUndefined] DOMString name);
 
     [Reflect=class, V8PerWorldBindings] attribute DOMString className;
     [V8PerWorldBindings] readonly attribute DOMTokenList classList;
@@ -104,13 +104,13 @@
 #endif
 
     // NodeSelector - Selector API
-    Element querySelector(in DOMString selectors)
+    Element querySelector(DOMString selectors)
         raises(DOMException);
-    NodeList querySelectorAll(in DOMString selectors)
+    NodeList querySelectorAll(DOMString selectors)
         raises(DOMException);
 
     // WebKit extension, pending specification.
-    boolean webkitMatchesSelector(in [Optional=DefaultIsUndefined] DOMString selectors)
+    boolean webkitMatchesSelector([Optional=DefaultIsUndefined] DOMString selectors)
         raises(DOMException);
 
     // ElementTraversal API
@@ -145,7 +145,7 @@
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [V8EnabledAtRuntime] void webkitRequestFullScreen(in [Optional=DefaultIsUndefined] unsigned short flags);
+    [V8EnabledAtRuntime] void webkitRequestFullScreen([Optional=DefaultIsUndefined] unsigned short flags);
 
     // W3C version
     [V8EnabledAtRuntime] void webkitRequestFullscreen();

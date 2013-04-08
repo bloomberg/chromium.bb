@@ -27,13 +27,13 @@
     V8NoWrapperCache,
     EventTarget
 ] interface EventTarget {
-    [ObjCLegacyUnnamedParameters] void addEventListener(in DOMString type, 
-                                         in EventListener listener, 
-                                         in [Optional] boolean useCapture);
-    [ObjCLegacyUnnamedParameters] void removeEventListener(in DOMString type, 
-                                            in EventListener listener, 
-                                            in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event event)
+    [ObjCLegacyUnnamedParameters] void addEventListener(DOMString type, 
+                                         EventListener listener, 
+                                         [Optional] boolean useCapture);
+    [ObjCLegacyUnnamedParameters] void removeEventListener(DOMString type, 
+                                            EventListener listener, 
+                                            [Optional] boolean useCapture);
+    boolean dispatchEvent(Event event)
         raises(EventException);
 };
 

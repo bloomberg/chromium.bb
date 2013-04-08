@@ -32,5 +32,5 @@
     Conditional=FILE_SYSTEM,
     Callback
 ] interface EntryCallback {
-    boolean handleEvent(in Entry entry);
+    boolean handleEvent(Entry entry);
 };

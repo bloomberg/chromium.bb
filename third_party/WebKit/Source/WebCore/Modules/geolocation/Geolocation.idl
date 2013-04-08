@@ -27,14 +27,14 @@
 [
     OmitConstructor
 ] interface Geolocation {
-    [Custom] void getCurrentPosition(in PositionCallback successCallback,
-                                     in [Optional] PositionErrorCallback errorCallback,
-                                     in [Optional] PositionOptions options);
+    [Custom] void getCurrentPosition(PositionCallback successCallback,
+                                     [Optional] PositionErrorCallback errorCallback,
+                                     [Optional] PositionOptions options);
 
-    [Custom] long watchPosition(in PositionCallback successCallback,
-                                in [Optional] PositionErrorCallback errorCallback,
-                                in [Optional] PositionOptions options);
+    [Custom] long watchPosition(PositionCallback successCallback,
+                                [Optional] PositionErrorCallback errorCallback,
+                                [Optional] PositionOptions options);
 
-    void clearWatch(in long watchID);
+    void clearWatch(long watchID);
 };
 

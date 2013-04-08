@@ -50,7 +50,7 @@
         
     Node iterateNext()
         raises (DOMException);
-    Node snapshotItem(in [Optional=DefaultIsUndefined] unsigned long index)
+    Node snapshotItem([Optional=DefaultIsUndefined] unsigned long index)
         raises (DOMException);
 };
 

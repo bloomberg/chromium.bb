@@ -40,30 +40,30 @@
 #endif /* defined(LANGUAGE_OBJECTIVE_C) */
 
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    void initWheelEvent(in [Optional=DefaultIsUndefined] long wheelDeltaX,
-                        in [Optional=DefaultIsUndefined] long wheelDeltaY, 
-                        in [Optional=DefaultIsUndefined] DOMWindow view, 
-                        in [Optional=DefaultIsUndefined] long screenX,
-                        in [Optional=DefaultIsUndefined] long screenY,
-                        in [Optional=DefaultIsUndefined] long clientX,
-                        in [Optional=DefaultIsUndefined] long clientY,
-                        in [Optional=DefaultIsUndefined] boolean ctrlKey,
-                        in [Optional=DefaultIsUndefined] boolean altKey,
-                        in [Optional=DefaultIsUndefined] boolean shiftKey,
-                        in [Optional=DefaultIsUndefined] boolean metaKey);
+    void initWheelEvent([Optional=DefaultIsUndefined] long wheelDeltaX,
+                        [Optional=DefaultIsUndefined] long wheelDeltaY, 
+                        [Optional=DefaultIsUndefined] DOMWindow view, 
+                        [Optional=DefaultIsUndefined] long screenX,
+                        [Optional=DefaultIsUndefined] long screenY,
+                        [Optional=DefaultIsUndefined] long clientX,
+                        [Optional=DefaultIsUndefined] long clientY,
+                        [Optional=DefaultIsUndefined] boolean ctrlKey,
+                        [Optional=DefaultIsUndefined] boolean altKey,
+                        [Optional=DefaultIsUndefined] boolean shiftKey,
+                        [Optional=DefaultIsUndefined] boolean metaKey);
 #endif /* !defined(LANGUAGE_JAVASCRIPT) */
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    void initWebKitWheelEvent(in [Optional=DefaultIsUndefined] long wheelDeltaX,
-                              in [Optional=DefaultIsUndefined] long wheelDeltaY, 
-                              in [Optional=DefaultIsUndefined] DOMWindow view, 
-                              in [Optional=DefaultIsUndefined] long screenX,
-                              in [Optional=DefaultIsUndefined] long screenY,
-                              in [Optional=DefaultIsUndefined] long clientX,
-                              in [Optional=DefaultIsUndefined] long clientY,
-                              in [Optional=DefaultIsUndefined] boolean ctrlKey,
-                              in [Optional=DefaultIsUndefined] boolean altKey,
-                              in [Optional=DefaultIsUndefined] boolean shiftKey,
-                              in [Optional=DefaultIsUndefined] boolean metaKey);
+    void initWebKitWheelEvent([Optional=DefaultIsUndefined] long wheelDeltaX,
+                              [Optional=DefaultIsUndefined] long wheelDeltaY, 
+                              [Optional=DefaultIsUndefined] DOMWindow view, 
+                              [Optional=DefaultIsUndefined] long screenX,
+                              [Optional=DefaultIsUndefined] long screenY,
+                              [Optional=DefaultIsUndefined] long clientX,
+                              [Optional=DefaultIsUndefined] long clientY,
+                              [Optional=DefaultIsUndefined] boolean ctrlKey,
+                              [Optional=DefaultIsUndefined] boolean altKey,
+                              [Optional=DefaultIsUndefined] boolean shiftKey,
+                              [Optional=DefaultIsUndefined] boolean metaKey);
 #endif /* defined(LANGUAGE_JAVASCRIPT) */
 };

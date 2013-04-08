@@ -31,6 +31,6 @@
 [
     Conditional=FILE_SYSTEM
 ] interface FileEntry : Entry {
-    void createWriter(in [Callback] FileWriterCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);
-    void file(in [Callback] FileCallback successCallback, in [Optional, Callback] ErrorCallback errorCallback);
+    void createWriter([Callback] FileWriterCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
+    void file([Callback] FileCallback successCallback, [Optional, Callback] ErrorCallback errorCallback);
 };

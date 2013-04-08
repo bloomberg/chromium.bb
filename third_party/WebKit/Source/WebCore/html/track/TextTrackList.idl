@@ -31,17 +31,17 @@
     V8GenerateIsReachable=ImplOwnerRoot
 ] interface TextTrackList {
     readonly attribute unsigned long length;
-    TextTrack item(in unsigned long index);
+    TextTrack item(unsigned long index);
 
     attribute EventListener onaddtrack;
 
-    void addEventListener(in DOMString type,
-                          in EventListener listener,
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type,
-                             in EventListener listener,
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 };
 

@@ -26,10 +26,10 @@
 interface [
     Conditional=ENCRYPTED_MEDIA_V2,
     V8EnabledAtRuntime=encryptedMedia,
-    Constructor(in DOMString keySystem),
+    Constructor(DOMString keySystem),
     ConstructorRaisesException,
 ] MediaKeys {
-    [CallWith=ScriptExecutionContext] MediaKeySession createSession(in [Optional=DefaultIsUndefined] DOMString type, in [Optional=DefaultIsUndefined] Uint8Array initData)
+    [CallWith=ScriptExecutionContext] MediaKeySession createSession([Optional=DefaultIsUndefined] DOMString type, [Optional=DefaultIsUndefined] Uint8Array initData)
         raises(DOMException);
 
     readonly attribute DOMString keySystem;

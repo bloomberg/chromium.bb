@@ -66,26 +66,26 @@
     void print();
     void stop();
 
-    [Custom] DOMWindow open(in DOMString url,
-                            in DOMString name,
-                            in [Optional] DOMString options);
+    [Custom] DOMWindow open(DOMString url,
+                            DOMString name,
+                            [Optional] DOMString options);
 
-    [Custom] any showModalDialog(in DOMString url,
-                                       in [Optional] any dialogArgs,
-                                       in [Optional] DOMString featureArgs);
+    [Custom] any showModalDialog(DOMString url,
+                                       [Optional] any dialogArgs,
+                                       [Optional] DOMString featureArgs);
 
-    void alert(in [Optional=DefaultIsUndefined] DOMString message);
-    boolean confirm(in [Optional=DefaultIsUndefined] DOMString message);
-    [TreatReturnedNullStringAs=Null] DOMString prompt(in [Optional=DefaultIsUndefined] DOMString message,
-                                                in [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString defaultValue);
+    void alert([Optional=DefaultIsUndefined] DOMString message);
+    boolean confirm([Optional=DefaultIsUndefined] DOMString message);
+    [TreatReturnedNullStringAs=Null] DOMString prompt([Optional=DefaultIsUndefined] DOMString message,
+                                                [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString defaultValue);
 
-    boolean find(in [Optional=DefaultIsUndefined] DOMString string,
-                 in [Optional=DefaultIsUndefined] boolean caseSensitive,
-                 in [Optional=DefaultIsUndefined] boolean backwards,
-                 in [Optional=DefaultIsUndefined] boolean wrap,
-                 in [Optional=DefaultIsUndefined] boolean wholeWord,
-                 in [Optional=DefaultIsUndefined] boolean searchInFrames,
-                 in [Optional=DefaultIsUndefined] boolean showDialog);
+    boolean find([Optional=DefaultIsUndefined] DOMString string,
+                 [Optional=DefaultIsUndefined] boolean caseSensitive,
+                 [Optional=DefaultIsUndefined] boolean backwards,
+                 [Optional=DefaultIsUndefined] boolean wrap,
+                 [Optional=DefaultIsUndefined] boolean wholeWord,
+                 [Optional=DefaultIsUndefined] boolean searchInFrames,
+                 [Optional=DefaultIsUndefined] boolean showDialog);
 
     [Replaceable] readonly attribute  boolean offscreenBuffering;
 
@@ -102,13 +102,13 @@
     readonly attribute long pageXOffset;
     readonly attribute long pageYOffset;
 
-    void scrollBy(in [Optional=DefaultIsUndefined] long x, in [Optional=DefaultIsUndefined] long y);
-    void scrollTo(in [Optional=DefaultIsUndefined] long x, in [Optional=DefaultIsUndefined] long y);
-    void scroll(in [Optional=DefaultIsUndefined] long x, in [Optional=DefaultIsUndefined] long y);
-    void moveBy(in [Optional=DefaultIsUndefined] float x, in [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
-    void moveTo(in [Optional=DefaultIsUndefined] float x, in [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
-    void resizeBy(in [Optional=DefaultIsUndefined] float x, in [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
-    void resizeTo(in [Optional=DefaultIsUndefined] float width, in [Optional=DefaultIsUndefined] float height); // FIXME: this should take longs not floats.
+    void scrollBy([Optional=DefaultIsUndefined] long x, [Optional=DefaultIsUndefined] long y);
+    void scrollTo([Optional=DefaultIsUndefined] long x, [Optional=DefaultIsUndefined] long y);
+    void scroll([Optional=DefaultIsUndefined] long x, [Optional=DefaultIsUndefined] long y);
+    void moveBy([Optional=DefaultIsUndefined] float x, [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
+    void moveTo([Optional=DefaultIsUndefined] float x, [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
+    void resizeBy([Optional=DefaultIsUndefined] float x, [Optional=DefaultIsUndefined] float y); // FIXME: this should take longs not floats.
+    void resizeTo([Optional=DefaultIsUndefined] float width, [Optional=DefaultIsUndefined] float height); // FIXME: this should take longs not floats.
 
     readonly attribute [DoNotCheckSecurity] boolean closed;
 
@@ -136,27 +136,27 @@
     readonly attribute Document document;
 
     // CSSOM View Module
-    MediaQueryList matchMedia(in DOMString query);
+    MediaQueryList matchMedia(DOMString query);
 
     // styleMedia has been removed from the CSSOM View specification.
     readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
-    [V8PerWorldBindings] CSSStyleDeclaration getComputedStyle(in [Optional=DefaultIsUndefined] Element element,
-                                                              in [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
+    [V8PerWorldBindings] CSSStyleDeclaration getComputedStyle([Optional=DefaultIsUndefined] Element element,
+                                                              [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
 
     // WebKit extensions
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    CSSRuleList getMatchedCSSRules(in [Optional=DefaultIsUndefined] Element element,
-                                   in [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
+    CSSRuleList getMatchedCSSRules([Optional=DefaultIsUndefined] Element element,
+                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
 #endif
 
     [Replaceable] readonly attribute double devicePixelRatio;
     
-    WebKitPoint webkitConvertPointFromPageToNode(in [Optional=DefaultIsUndefined] Node node, 
-                                                 in [Optional=DefaultIsUndefined] WebKitPoint p);
-    WebKitPoint webkitConvertPointFromNodeToPage(in [Optional=DefaultIsUndefined] Node node, 
-                                                 in [Optional=DefaultIsUndefined] WebKitPoint p);
+    WebKitPoint webkitConvertPointFromPageToNode([Optional=DefaultIsUndefined] Node node, 
+                                                 [Optional=DefaultIsUndefined] WebKitPoint p);
+    WebKitPoint webkitConvertPointFromNodeToPage([Optional=DefaultIsUndefined] Node node, 
+                                                 [Optional=DefaultIsUndefined] WebKitPoint p);
 
     readonly attribute [V8EnabledAtRuntime] DOMApplicationCache applicationCache;
 
@@ -176,11 +176,11 @@
 
     // cross-document messaging
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    [DoNotCheckSecurity, Custom] void postMessage(in SerializedScriptValue message, in DOMString targetOrigin, in [Optional] Array messagePorts)
+    [DoNotCheckSecurity, Custom] void postMessage(SerializedScriptValue message, DOMString targetOrigin, [Optional] Array messagePorts)
         raises(DOMException);
 #else
     // There's no good way to expose an array via the ObjC bindings, so for now just allow passing in a single port.
-    [DoNotCheckSecurity, Custom] void postMessage(in SerializedScriptValue message, in [Optional] MessagePort messagePort, in DOMString targetOrigin)
+    [DoNotCheckSecurity, Custom] void postMessage(SerializedScriptValue message, [Optional] MessagePort messagePort, DOMString targetOrigin)
         raises(DOMException);
 #endif
 
@@ -189,23 +189,23 @@
 #endif
 
     // Timers
-    [Custom] long setTimeout(in any handler, in [Optional=DefaultIsUndefined] long timeout);
-    void clearTimeout(in [Optional=DefaultIsUndefined] long handle);
-    [Custom] long setInterval(in any handler, in [Optional=DefaultIsUndefined] long timeout);
-    void clearInterval(in [Optional=DefaultIsUndefined] long handle);
+    [Custom] long setTimeout(any handler, [Optional=DefaultIsUndefined] long timeout);
+    void clearTimeout([Optional=DefaultIsUndefined] long handle);
+    [Custom] long setInterval(any handler, [Optional=DefaultIsUndefined] long timeout);
+    void clearInterval([Optional=DefaultIsUndefined] long handle);
 
 #if defined(ENABLE_REQUEST_ANIMATION_FRAME) && ENABLE_REQUEST_ANIMATION_FRAME
-    [V8MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(in [Callback] RequestAnimationFrameCallback callback);
-    void cancelAnimationFrame(in long id);
-    [V8MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(in [Callback] RequestAnimationFrameCallback callback);
-    [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(in long id);
-    [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(in long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
+    [V8MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
+    void cancelAnimationFrame(long id);
+    [V8MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
+    [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
+    [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
 #endif
 
     // Base64
-    DOMString atob(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString string)
+    DOMString atob([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString string)
         raises(DOMException);
-    DOMString btoa(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString string)
+    DOMString btoa([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString string)
         raises(DOMException);
 
     attribute [Replaceable,Conditional=CSS3_CONDITIONAL_RULES] DOMWindowCSS CSS;
@@ -303,13 +303,13 @@
     attribute [Conditional=PROXIMITY_EVENTS] EventListener onwebkitdeviceproximity;
 
     // EventTarget interface
-    [Custom] void addEventListener(in DOMString type,
-                                  in EventListener listener,
-                                  in [Optional] boolean useCapture);
-    [Custom] void removeEventListener(in DOMString type,
-                                      in EventListener listener,
-                                      in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    [Custom] void addEventListener(DOMString type,
+                                  EventListener listener,
+                                  [Optional] boolean useCapture);
+    [Custom] void removeEventListener(DOMString type,
+                                      EventListener listener,
+                                      [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 
     [V8Custom] void captureEvents(/*in long eventFlags*/);

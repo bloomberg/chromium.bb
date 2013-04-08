@@ -21,9 +21,9 @@
     Conditional=MEDIA_STREAM,
     Supplemental=Navigator
 ] interface NavigatorMediaStream {
-    [V8EnabledAtRuntime] void webkitGetUserMedia(in Dictionary options,
-                                                 in [Callback] NavigatorUserMediaSuccessCallback successCallback,
-                                                 in [Callback, Optional] NavigatorUserMediaErrorCallback errorCallback)
+    [V8EnabledAtRuntime] void webkitGetUserMedia(Dictionary options,
+                                                 [Callback] NavigatorUserMediaSuccessCallback successCallback,
+                                                 [Callback, Optional] NavigatorUserMediaErrorCallback errorCallback)
         raises(DOMException);
 };
 

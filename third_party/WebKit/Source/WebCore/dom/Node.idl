@@ -57,26 +57,26 @@
     readonly attribute [V8PerWorldBindings] Node             nextSibling;
     readonly attribute [V8PerWorldBindings] Document         ownerDocument;
 
-    [ObjCLegacyUnnamedParameters, Custom, V8PerWorldBindings] Node insertBefore(in [CustomReturn] Node newChild,
-                                                            in Node refChild)
+    [ObjCLegacyUnnamedParameters, Custom, V8PerWorldBindings] Node insertBefore([CustomReturn] Node newChild,
+                                                            Node refChild)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters, Custom] Node replaceChild(in Node newChild,
-                                                            in [CustomReturn] Node oldChild)
+    [ObjCLegacyUnnamedParameters, Custom] Node replaceChild(Node newChild,
+                                                            [CustomReturn] Node oldChild)
         raises(DOMException);
-    [Custom, V8PerWorldBindings] Node removeChild(in [CustomReturn] Node oldChild)
+    [Custom, V8PerWorldBindings] Node removeChild([CustomReturn] Node oldChild)
         raises(DOMException);
-    [Custom, V8PerWorldBindings] Node appendChild(in [CustomReturn] Node newChild)
+    [Custom, V8PerWorldBindings] Node appendChild([CustomReturn] Node newChild)
         raises(DOMException);
 
     boolean            hasChildNodes();
     [V8DeliverCustomElementCallbacks, V8PerWorldBindings]
-    Node               cloneNode(in [Optional=DefaultIsUndefined] boolean deep);
+    Node               cloneNode([Optional=DefaultIsUndefined] boolean deep);
     void               normalize();
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters] boolean isSupported(in [Optional=DefaultIsUndefined] DOMString feature, 
-                                       in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
+    [ObjCLegacyUnnamedParameters] boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
+                                       [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
 
     readonly attribute [TreatReturnedNullStringAs=Null, V8PerWorldBindings] DOMString        namespaceURI;
              attribute [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, V8PerWorldBindings] DOMString        prefix
@@ -97,11 +97,11 @@
              attribute [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, V8PerWorldBindings] DOMString       textContent
                  setter raises(DOMException);
 
-    boolean            isSameNode(in [Optional=DefaultIsUndefined] Node other);
-    boolean            isEqualNode(in [Optional=DefaultIsUndefined] Node other);
-    [TreatReturnedNullStringAs=Null] DOMString          lookupPrefix(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
-    boolean            isDefaultNamespace(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
-    [TreatReturnedNullStringAs=Null] DOMString          lookupNamespaceURI(in [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString prefix);
+    boolean            isSameNode([Optional=DefaultIsUndefined] Node other);
+    boolean            isEqualNode([Optional=DefaultIsUndefined] Node other);
+    [TreatReturnedNullStringAs=Null] DOMString          lookupPrefix([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
+    boolean            isDefaultNamespace([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI);
+    [TreatReturnedNullStringAs=Null] DOMString          lookupNamespaceURI([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString prefix);
 
     // DocumentPosition
     const unsigned short      DOCUMENT_POSITION_DISCONNECTED = 0x01;
@@ -111,10 +111,10 @@
     const unsigned short      DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const unsigned short      DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    unsigned short     compareDocumentPosition(in [Optional=DefaultIsUndefined] Node other);
+    unsigned short     compareDocumentPosition([Optional=DefaultIsUndefined] Node other);
 
     // Introduced in DOM4
-    boolean contains(in [Optional=DefaultIsUndefined] Node other);
+    boolean contains([Optional=DefaultIsUndefined] Node other);
 
     // IE extensions
     readonly attribute [V8PerWorldBindings] Element          parentElement;
@@ -128,25 +128,25 @@
 
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
-    void addEventListener(in DOMString type, 
-                          in EventListener listener, 
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type, 
-                             in EventListener listener, 
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event event)
+    void addEventListener(DOMString type, 
+                          EventListener listener, 
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type, 
+                             EventListener listener, 
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event event)
         raises(EventException);
 #endif
 #endif
 
 #if defined(LANGUAGE_CPP) && LANGUAGE_CPP
-    [Custom] void addEventListener(in DOMString type, 
-                                      in EventListener listener, 
-                                      in boolean useCapture);
-    [Custom] void removeEventListener(in DOMString type, 
-                                         in EventListener listener, 
-                                         in boolean useCapture);
-    boolean dispatchEvent(in Event event)
+    [Custom] void addEventListener(DOMString type, 
+                                      EventListener listener, 
+                                      boolean useCapture);
+    [Custom] void removeEventListener(DOMString type, 
+                                         EventListener listener, 
+                                         boolean useCapture);
+    boolean dispatchEvent(Event event)
         raises(EventException);
 #endif
 

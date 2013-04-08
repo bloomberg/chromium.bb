@@ -28,11 +28,11 @@
     V8SkipVTableValidation
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
-    Node item(in [Optional=DefaultIsUndefined] unsigned long index);
-    Node namedItem(in [Optional=DefaultIsUndefined] DOMString name);
+    Node item([Optional=DefaultIsUndefined] unsigned long index);
+    Node namedItem([Optional=DefaultIsUndefined] DOMString name);
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    NodeList tags(in [Optional=DefaultIsUndefined] DOMString name);
+    NodeList tags([Optional=DefaultIsUndefined] DOMString name);
 #endif
 };
 

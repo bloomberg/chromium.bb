@@ -30,7 +30,7 @@
     ImplementationLacksVTable
 ] interface SpeechGrammarList {
     readonly attribute unsigned long length;
-    SpeechGrammar item(in [IsIndex] unsigned long index);
-    [CallWith=ScriptExecutionContext] void addFromUri(in DOMString src, in [Optional] float weight);
-    void addFromString(in DOMString string, in [Optional] float weight);
+    SpeechGrammar item([IsIndex] unsigned long index);
+    [CallWith=ScriptExecutionContext] void addFromUri(DOMString src, [Optional] float weight);
+    void addFromString(DOMString string, [Optional] float weight);
 };

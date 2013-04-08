@@ -47,20 +47,20 @@
              [Replaceable] readonly attribute WorkerNavigator navigator;
 
     // Timers
-    [Custom] long setTimeout(in any handler, in [Optional=DefaultIsUndefined] long timeout);
-    void clearTimeout(in [Optional=DefaultIsUndefined] long handle);
-    [Custom] long setInterval(in any handler, in [Optional=DefaultIsUndefined] long timeout);
-    void clearInterval(in [Optional=DefaultIsUndefined] long handle);
+    [Custom] long setTimeout(any handler, [Optional=DefaultIsUndefined] long timeout);
+    void clearTimeout([Optional=DefaultIsUndefined] long handle);
+    [Custom] long setInterval(any handler, [Optional=DefaultIsUndefined] long timeout);
+    void clearInterval([Optional=DefaultIsUndefined] long handle);
 
 
     // EventTarget interface
-    void addEventListener(in DOMString type, 
-                          in EventListener listener, 
-                          in [Optional] boolean useCapture);
-    void removeEventListener(in DOMString type, 
-                             in EventListener listener, 
-                             in [Optional] boolean useCapture);
-    boolean dispatchEvent(in Event evt)
+    void addEventListener(DOMString type, 
+                          EventListener listener, 
+                          [Optional] boolean useCapture);
+    void removeEventListener(DOMString type, 
+                             EventListener listener, 
+                             [Optional] boolean useCapture);
+    boolean dispatchEvent(Event evt)
         raises(EventException);
 
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
