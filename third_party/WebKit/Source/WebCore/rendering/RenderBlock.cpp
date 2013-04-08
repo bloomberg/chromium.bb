@@ -4360,9 +4360,7 @@ LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUn
     LayoutUnit lineGridOffset = lineGrid->isHorizontalWritingMode() ? layoutState->lineGridOffset().width(): layoutState->lineGridOffset().height();
     LayoutUnit layoutOffset = lineGrid->isHorizontalWritingMode() ? layoutState->layoutOffset().width() : layoutState->layoutOffset().height();
     
-    // Push in to the nearest character width (truncated so that we pixel snap left).
-    // FIXME: Should be patched when subpixel layout lands, since this calculation doesn't have to pixel snap
-    // any more (https://bugs.webkit.org/show_bug.cgi?id=79946).
+    // Push in to the nearest character width.
     // FIXME: This is wrong for RTL (https://bugs.webkit.org/show_bug.cgi?id=79945).
     // FIXME: This doesn't work with columns or regions (https://bugs.webkit.org/show_bug.cgi?id=79942).
     // FIXME: This doesn't work when the inline position of the object isn't set ahead of time.
@@ -4419,16 +4417,14 @@ LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutU
     LayoutUnit lineGridOffset = lineGrid->isHorizontalWritingMode() ? layoutState->lineGridOffset().width(): layoutState->lineGridOffset().height();
     LayoutUnit layoutOffset = lineGrid->isHorizontalWritingMode() ? layoutState->layoutOffset().width() : layoutState->layoutOffset().height();
     
-    // Push in to the nearest character width (truncated so that we pixel snap right).
-    // FIXME: Should be patched when subpixel layout lands, since this calculation doesn't have to pixel snap
-    // any more (https://bugs.webkit.org/show_bug.cgi?id=79946).
+    // Push in to the nearest character width.
     // FIXME: This is wrong for RTL (https://bugs.webkit.org/show_bug.cgi?id=79945).
     // FIXME: This doesn't work with columns or regions (https://bugs.webkit.org/show_bug.cgi?id=79942).
     // FIXME: This doesn't work when the inline position of the object isn't set ahead of time.
     // FIXME: Dynamic changes to the font or to the inline position need to result in a deep relayout.
     // (https://bugs.webkit.org/show_bug.cgi?id=79944)
     float remainder = fmodf(fmodf(right + layoutOffset - lineGridOffset, maxCharWidth), maxCharWidth);
-    right -= ceilf(remainder);
+    right -= LayoutUnit::fromFloatCeil(remainder);
     return right;
 }
 

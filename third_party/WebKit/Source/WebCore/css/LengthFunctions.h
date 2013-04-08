@@ -34,7 +34,6 @@ int minimumIntValueForLength(const Length&, LayoutUnit maximumValue, RenderView*
 int intValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
 LayoutUnit minimumValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
 LayoutUnit valueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-float floatValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0);
 float floatValueForLength(const Length&, float maximumValue, RenderView* = 0);
 
 } // namespace WebCore

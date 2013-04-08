@@ -117,53 +117,6 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue, RenderV
     return 0;
 }
 
-// FIXME: when subpixel layout is supported this copy of floatValueForLength() can be removed. See bug 71143.
-float floatValueForLength(const Length& length, LayoutUnit maximumValue, RenderView* renderView)
-{
-    switch (length.type()) {
-    case Fixed:
-        return length.getFloatValue();
-    case Percent:
-        return static_cast<float>(maximumValue * length.percent() / 100.0f);
-    case FillAvailable:
-    case Auto:
-        return static_cast<float>(maximumValue);
-    case Calculated:
-        return length.nonNanCalculatedValue(maximumValue);                
-    case ViewportPercentageWidth:
-        if (renderView)
-            return static_cast<int>(renderView->viewportSize().width() * length.viewportPercentageLength() / 100.0f);
-        return 0;
-    case ViewportPercentageHeight:
-        if (renderView)
-            return static_cast<int>(renderView->viewportSize().height() * length.viewportPercentageLength() / 100.0f);
-        return 0;
-    case ViewportPercentageMin:
-        if (renderView) {
-            IntSize viewportSize = renderView->viewportSize();
-            return static_cast<int>(std::min(viewportSize.width(), viewportSize.height()) * length.viewportPercentageLength() / 100.0f);
-        }
-        return 0;
-    case ViewportPercentageMax:
-        if (renderView) {
-            IntSize viewportSize = renderView->viewportSize();
-            return static_cast<int>(std::max(viewportSize.width(), viewportSize.height()) * length.viewportPercentageLength() / 100.0f);
-        }
-        return 0;
-    case Relative:
-    case Intrinsic:
-    case MinIntrinsic:
-    case MinContent:
-    case MaxContent:
-    case FitContent:
-    case Undefined:
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 float floatValueForLength(const Length& length, float maximumValue, RenderView* renderView)
 {
     switch (length.type()) {
