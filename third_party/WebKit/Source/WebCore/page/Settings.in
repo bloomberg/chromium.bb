@@ -127,7 +127,6 @@ mediaPlaybackRequiresUserGesture initial=false
 mediaPlaybackAllowsInline initial=true
 passwordEchoEnabled initial=false
 suppressesIncrementalRendering initial=false
-backspaceKeyNavigationEnabled initial=true
 visualWordMovementEnabled initial=false
 shouldDisplaySubtitles initial=false, conditional=VIDEO_TRACK
 shouldDisplayCaptions initial=false, conditional=VIDEO_TRACK

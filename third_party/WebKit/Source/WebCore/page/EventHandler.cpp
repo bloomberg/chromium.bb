@@ -3568,9 +3568,6 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     if (!page)
         return;
 
-    if (!m_frame->settings()->backspaceKeyNavigationEnabled())
-        return;
-    
     bool handledEvent = false;
 
     if (event->shiftKey())
