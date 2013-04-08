@@ -121,6 +121,8 @@ public:
     void loadItem(HistoryItem*, FrameLoadType);
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
 
+    void retryAfterFailedCacheOnlyMainResourceLoad();
+
     static void reportLocalLoadFailed(Frame*, const String& url);
 
     // FIXME: These are all functions which stop loads. We have too many.
@@ -133,8 +135,10 @@ public:
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions (ideally with fewer raw Boolean parameters).
     void clear(Document* newDocument, bool clearWindowProperties = true, bool clearScriptObjects = true, bool clearFrameView = true);
 
+#if PLATFORM(CHROMIUM)
     void didAccessInitialDocument();
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
+#endif
 
     bool isLoading() const;
     bool frameHasLoaded() const;
@@ -431,8 +435,10 @@ private:
     Frame* m_opener;
     HashSet<Frame*> m_openedFrames;
 
+#if PLATFORM(CHROMIUM)
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
+#endif
     bool m_didPerformFirstNavigation;
     bool m_loadingFromCachedPage;
     bool m_suppressOpenerInNewFrame;

@@ -226,8 +226,10 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_shouldCallCheckCompleted(false)
     , m_shouldCallCheckLoadComplete(false)
     , m_opener(0)
+#if PLATFORM(CHROMIUM)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
+#endif
     , m_didPerformFirstNavigation(false)
     , m_loadingFromCachedPage(false)
     , m_suppressOpenerInNewFrame(false)
@@ -1550,6 +1552,7 @@ DocumentLoader* FrameLoader::activeDocumentLoader() const
     return m_documentLoader.get();
 }
 
+#if PLATFORM(CHROMIUM)
 void FrameLoader::didAccessInitialDocument()
 {
     // We only need to notify the client once, and only for the main frame.
@@ -1564,6 +1567,7 @@ void FrameLoader::didAccessInitialDocumentTimerFired(Timer<FrameLoader>*)
 {
     m_client->didAccessInitialDocument();
 }
+#endif
 
 bool FrameLoader::isLoading() const
 {
@@ -2047,6 +2051,10 @@ CachePolicy FrameLoader::subresourceCachePolicy() const
         return CachePolicyRevalidate;
 
     const ResourceRequest& request(documentLoader()->request());
+#if PLATFORM(MAC)
+    if (request.cachePolicy() == ReloadIgnoringCacheData && !equalIgnoringCase(request.httpMethod(), "post") && ResourceRequest::useQuickLookResourceCachingQuirks())
+        return CachePolicyRevalidate;
+#endif
 
     if (request.cachePolicy() == ReturnCacheDataElseLoad)
         return CachePolicyHistoryBuffer;
@@ -3137,6 +3145,22 @@ void FrameLoader::loadItem(HistoryItem* item, FrameLoadType loadType)
         loadSameDocumentItem(item);
     else
         loadDifferentDocumentItem(item, loadType, MayAttemptCacheOnlyLoadForFormSubmissionItem);
+}
+
+void FrameLoader::retryAfterFailedCacheOnlyMainResourceLoad()
+{
+    ASSERT(m_state == FrameStateProvisional);
+    ASSERT(!m_loadingFromCachedPage);
+    // We only use cache-only loads to avoid resubmitting forms.
+    ASSERT(isBackForwardLoadType(m_loadType));
+    ASSERT(m_history.provisionalItem()->formData());
+    ASSERT(m_history.provisionalItem() == m_requestedHistoryItem.get());
+
+    FrameLoadType loadType = m_loadType;
+    HistoryItem* item = m_history.provisionalItem();
+
+    stopAllLoaders(ShouldNotClearProvisionalItem);
+    loadDifferentDocumentItem(item, loadType, MayNotAttemptCacheOnlyLoadForFormSubmissionItem);
 }
 
 ResourceError FrameLoader::cancelledError(const ResourceRequest& request) const
