@@ -1604,9 +1604,6 @@
       'hard_dependency': 1,
       'sources': [
         '<@(webcore_platform_files)',
-
-        # For WebCoreSystemInterface, Mac-only.
-        '../../WebKit/mac/WebCoreSupport/WebSystemInterface.mm',
       ],
       'sources/': [
         ['exclude', '.*'],
@@ -1710,7 +1707,6 @@
           ],
           'sources': [
             '../editing/SmartReplaceCF.cpp',
-            '../../WebKit/mac/WebCoreSupport/WebSystemInterface.mm',
           ],
           'sources/': [
             # Additional files from the WebCore Mac build that are presently
@@ -1749,12 +1745,11 @@
             ['include', 'platform/mac/ThemeMac\\.mm$'],
             ['include', 'platform/mac/WebCoreSystemInterface\\.mm$'],
             ['include', 'platform/mac/WebCoreTextRenderer\\.mm$'],
+            ['include', 'platform/mac/WebSystemInterface\\.mm$'],
             ['include', 'platform/text/mac/ShapeArabic\\.c$'],
             ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
             # Use USE_NEW_THEME on Mac.
             ['include', 'platform/Theme\\.cpp$'],
-
-            ['include', 'WebKit/mac/WebCoreSupport/WebSystemInterface\\.mm$'],
 
             # We use LocaleMac.mm instead of LocaleICU.cpp in order to
             # apply system locales.

@@ -4108,6 +4108,8 @@
             'platform/mac/ThemeMac.mm',
             'platform/mac/WebCoreSystemInterface.mm',
             'platform/mac/WebFontCache.mm',
+            'platform/mac/WebSystemInterface.h',
+            'platform/mac/WebSystemInterface.mm',
             'platform/mediastream/MediaConstraints.h',
             'platform/mediastream/MediaStreamCenter.cpp',
             'platform/mediastream/MediaStreamCenter.h',
