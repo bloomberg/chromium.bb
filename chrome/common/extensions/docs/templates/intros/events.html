@@ -164,6 +164,59 @@ function getRules(rule_ids, function callback(details) {...});
 The <code>details</code> parameter passed to the <code>callback()</code> function
 refers to an array of rules including filled optional parameters.
 </p>
+
+<h3 id="performance">Performance</h3>
+
+<p>
+To achieve maximum performance, you should keep the following guidelines in
+mind:
+<ul>
+  <li><p>Register and unregister rules in bulk. After each
+  registration or unregistration, Chrome needs to update internal data
+  structures. This update is an expensive operation.</p>
+  <p>Instead of</p>
+  <pre>
+var rule1 = {...};
+var rule2 = {...};
+chrome.declarativeWebRequest.onRequest.addRules([rule1]);
+chrome.declarativeWebRequest.onRequest.addRules([rule2]);</pre>
+  <p>prefer to write</p>
+  <pre>
+var rule1 = {...};
+var rule2 = {...};
+chrome.declarativeWebRequest.onRequest.addRules([rule1, rule2]);</pre>
+  <li>Prefer substring matching over matching using regular expressions in a
+  $ref:events.UrlFilter.  Substring based matching is extremely fast.
+  <p>Instead of</p>
+  <pre>
+var match = new chrome.declarativeWebRequest.RequestMatcher({
+    url: {urlMatches: "example.com/[^?]*foo" } });</pre>
+  <p>prefer to write</p>
+  <pre>
+var match = new chrome.declarativeWebRequest.RequestMatcher({
+    url: {hostSuffix: "example.com", pathContains: "foo"} });</pre>
+  <li>If you have many rules that all share the same actions, you may merge
+  the rules into one because rules trigger their actions as soon as a single
+  condition is fulfilled. This speeds up the matching and reduces memory
+  consumption for duplicate action sets.
+  <p>Instead of</p>
+  <pre>
+var condition1 = new chrome.declarativeWebRequest.RequestMatcher({
+    url: { hostSuffix: 'example.com' } });
+var condition2 = new chrome.declarativeWebRequest.RequestMatcher({
+    url: { hostSuffix: 'foobar.com' } });
+var rule1 = { conditions: [condition1],
+              actions: [new chrome.declarativeWebRequest.CancelRequest()]};
+var rule2 = { conditions: [condition2],
+              actions: [new chrome.declarativeWebRequest.CancelRequest()]};
+chrome.declarativeWebRequest.onRequest.addRules([rule1, rule2]);</pre>
+  <p>prefer to write</p>
+  <pre>
+var rule = { conditions: [condition1, condition2],
+             actions: [new chrome.declarativeWebRequest.CancelRequest()]};
+chrome.declarativeWebRequest.onRequest.addRules([rule]);</pre>
+</ul>
+</p>
 </div>
 {{/is_apps}}
 
