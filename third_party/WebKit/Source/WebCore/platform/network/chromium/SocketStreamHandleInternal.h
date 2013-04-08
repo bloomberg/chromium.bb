@@ -31,8 +31,6 @@
 #ifndef SocketStreamHandleInternal_h
 #define SocketStreamHandleInternal_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "SocketStreamHandle.h"
 #include <public/WebSocketStreamHandleClient.h>
 #include <public/WebURL.h>
@@ -83,7 +81,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // SocketStreamHandleInternal_h

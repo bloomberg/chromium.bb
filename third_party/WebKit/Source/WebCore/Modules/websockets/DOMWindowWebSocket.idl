@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=WEB_SOCKETS,
     Supplemental=DOMWindow
 ] interface DOMWindowWebSocket {
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP

@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketDeflateFramer.h"
 
 #include <wtf/HashMap.h>
@@ -258,5 +256,3 @@ void WebSocketDeflateFramer::didFail()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

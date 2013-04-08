@@ -31,8 +31,6 @@
 #ifndef WebSocketChannelClient_h
 #define WebSocketChannelClient_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -59,7 +57,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketChannelClient_h

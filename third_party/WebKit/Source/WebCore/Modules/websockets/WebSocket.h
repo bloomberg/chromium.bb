@@ -31,8 +31,6 @@
 #ifndef WebSocket_h
 #define WebSocket_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "ActiveDOMObject.h"
 #include "EventListener.h"
 #include "EventNames.h"
@@ -147,7 +145,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocket_h

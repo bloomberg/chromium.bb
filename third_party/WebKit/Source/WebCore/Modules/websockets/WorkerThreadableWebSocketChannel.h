@@ -31,7 +31,7 @@
 #ifndef WorkerThreadableWebSocketChannel_h
 #define WorkerThreadableWebSocketChannel_h
 
-#if ENABLE(WEB_SOCKETS) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "ThreadableWebSocketChannel.h"
 #include "WebSocketChannelClient.h"
@@ -189,6 +189,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(WEB_SOCKETS)
+#endif // ENABLE(WORKERS)
 
 #endif // WorkerThreadableWebSocketChannel_h

@@ -31,8 +31,6 @@
 #ifndef WebSocketExtensionParser_h
 #define WebSocketExtensionParser_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
@@ -68,7 +66,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketExtensionParser_h

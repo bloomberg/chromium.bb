@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketHandshakeRequest.h"
 
 #include <cstring>
@@ -50,5 +48,3 @@ WebSocketHandshakeRequest::~WebSocketHandshakeRequest()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

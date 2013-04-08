@@ -31,8 +31,6 @@
 #ifndef WebSocketDeflater_h
 #define WebSocketDeflater_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -93,7 +91,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketDeflater_h

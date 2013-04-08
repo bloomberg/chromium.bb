@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "ThreadableWebSocketChannel.h"
 
 #include "Document.h"
@@ -69,5 +67,3 @@ PassRefPtr<ThreadableWebSocketChannel> ThreadableWebSocketChannel::create(Script
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

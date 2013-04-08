@@ -31,8 +31,6 @@
 #ifndef WebSocketDeflateFramer_h
 #define WebSocketDeflateFramer_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #if USE(ZLIB)
 #include "WebSocketDeflater.h"
 #endif
@@ -120,7 +118,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketDeflateFramer_h

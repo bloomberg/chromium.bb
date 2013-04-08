@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketChannel.h"
 
 #include "Blob.h"
@@ -807,5 +805,3 @@ bool WebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const char* data
 }
 
 }  // namespace WebCore
-
-#endif  // ENABLE(WEB_SOCKETS)

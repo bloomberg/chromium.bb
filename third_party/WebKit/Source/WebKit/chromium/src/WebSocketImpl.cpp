@@ -31,24 +31,17 @@
 #include "config.h"
 #include "WebSocketImpl.h"
 
-#include <wtf/ArrayBuffer.h>
 #include "Document.h"
 #include "KURL.h"
-#if ENABLE(WEB_SOCKETS)
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#else
-namespace WebCore {
-class WebSocketChannel {
-};
-} // namespace WebCore
-#endif
-
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
+#include "WebSocketChannel.h"
+#include "WebSocketChannelClient.h"
 #include "WebSocketClient.h"
+
 #include <public/WebString.h>
 #include <public/WebURL.h>
+#include <wtf/ArrayBuffer.h>
 
 using namespace WebCore;
 
@@ -58,20 +51,12 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     : m_client(client)
     , m_binaryType(BinaryTypeBlob)
 {
-#if ENABLE(WEB_SOCKETS)
     m_private = WebSocketChannel::create(PassRefPtr<Document>(document).get(), this);
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 WebSocketImpl::~WebSocketImpl()
 {
-#if ENABLE(WEB_SOCKETS)
     m_private->disconnect();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 WebSocket::BinaryType WebSocketImpl::binaryType() const
@@ -89,107 +74,62 @@ bool WebSocketImpl::setBinaryType(BinaryType binaryType)
 
 void WebSocketImpl::connect(const WebURL& url, const WebString& protocol)
 {
-#if ENABLE(WEB_SOCKETS)
     m_private->connect(url, protocol);
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 WebString WebSocketImpl::subprotocol()
 {
-#if ENABLE(WEB_SOCKETS)
     return m_private->subprotocol();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 WebString WebSocketImpl::extensions()
 {
-#if ENABLE(WEB_SOCKETS)
     return m_private->extensions();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 bool WebSocketImpl::sendText(const WebString& message)
 {
-#if ENABLE(WEB_SOCKETS)
     return m_private->send(message) == ThreadableWebSocketChannel::SendSuccess;
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
 {
-#if ENABLE(WEB_SOCKETS)
     return m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength()) == ThreadableWebSocketChannel::SendSuccess;
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 unsigned long WebSocketImpl::bufferedAmount() const
 {
-#if ENABLE(WEB_SOCKETS)
     return m_private->bufferedAmount();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::close(int code, const WebString& reason)
 {
-#if ENABLE(WEB_SOCKETS)
     m_private->close(code, reason);
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::fail(const WebString& reason)
 {
-#if ENABLE(WEB_SOCKETS)
     m_private->fail(reason);
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::disconnect()
 {
-#if ENABLE(WEB_SOCKETS)
     m_private->disconnect();
     m_client = 0;
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didConnect()
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didConnect();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didReceiveMessage(const String& message)
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didReceiveMessage(WebString(message));
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
 {
-#if ENABLE(WEB_SOCKETS)
     switch (m_binaryType) {
     case BinaryTypeBlob:
         // FIXME: Handle Blob after supporting WebBlob.
@@ -198,45 +138,26 @@ void WebSocketImpl::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
         m_client->didReceiveArrayBuffer(WebArrayBuffer(ArrayBuffer::create(binaryData->data(), binaryData->size())));
         break;
     }
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didReceiveMessageError()
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didReceiveMessageError();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didUpdateBufferedAmount(unsigned long bufferedAmount)
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didUpdateBufferedAmount(bufferedAmount);
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didStartClosingHandshake()
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didStartClosingHandshake();
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 void WebSocketImpl::didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason)
 {
-#if ENABLE(WEB_SOCKETS)
     m_client->didClose(bufferedAmount, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
-#else
-    ASSERT_NOT_REACHED();
-#endif
 }
 
 } // namespace WebKit

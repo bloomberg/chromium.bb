@@ -133,9 +133,7 @@ public:
     static bool sharedWorkerEnabled();
 #endif
 
-#if ENABLE(WEB_SOCKETS)
     static bool webSocketEnabled();
-#endif
 
 #if ENABLE(SQL_DATABASE)
     static bool openDatabaseEnabled();

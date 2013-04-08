@@ -31,8 +31,6 @@
 #ifndef WebSocketHandshakeRequest_h
 #define WebSocketHandshakeRequest_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "HTTPRequest.h"
 
 namespace WebCore {
@@ -47,7 +45,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketHandshakeRequest_h

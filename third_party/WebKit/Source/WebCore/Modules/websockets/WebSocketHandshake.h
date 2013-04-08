@@ -31,8 +31,6 @@
 #ifndef WebSocketHandshake_h
 #define WebSocketHandshake_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "KURL.h"
 #include "WebSocketExtensionDispatcher.h"
 #include "WebSocketExtensionProcessor.h"
@@ -118,7 +116,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketHandshake_h

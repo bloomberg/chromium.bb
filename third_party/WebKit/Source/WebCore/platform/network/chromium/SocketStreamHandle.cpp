@@ -32,8 +32,6 @@
 #include "SocketStreamHandle.h"
 #include "SocketStreamHandleInternal.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "Logging.h"
 #include "NotImplemented.h"
 #include "SocketStreamHandleClient.h"
@@ -211,5 +209,3 @@ void SocketStreamHandle::receivedRequestToContinueWithoutCredential(const Authen
 }
 
 }  // namespace WebCore
-
-#endif  // ENABLE(WEB_SOCKETS)

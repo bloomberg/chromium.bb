@@ -96,7 +96,6 @@ namespace WebCore {
 
         static void appendLayoutRoot(InspectorObject* data, const FloatQuad&);
 
-#if ENABLE(WEB_SOCKETS)
         static inline PassRefPtr<InspectorObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
         {
             RefPtr<InspectorObject> data = InspectorObject::create();
@@ -113,7 +112,6 @@ namespace WebCore {
             data->setNumber("identifier", identifier);
             return data.release();
         }
-#endif
     private:
         TimelineRecordFactory() { }
     };

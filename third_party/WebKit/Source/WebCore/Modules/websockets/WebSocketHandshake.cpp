@@ -31,8 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketHandshake.h"
 #include "WebSocket.h"
 
@@ -554,5 +552,3 @@ bool WebSocketHandshake::checkResponseHeaders()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

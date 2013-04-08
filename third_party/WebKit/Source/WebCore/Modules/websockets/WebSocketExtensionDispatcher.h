@@ -31,8 +31,6 @@
 #ifndef WebSocketExtensionDispatcher_h
 #define WebSocketExtensionDispatcher_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketExtensionProcessor.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -64,7 +62,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketExtensionDispatcher_h

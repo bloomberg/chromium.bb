@@ -31,8 +31,6 @@
 #ifndef ThreadableWebSocketChannel_h
 #define ThreadableWebSocketChannel_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
@@ -81,7 +79,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // ThreadableWebSocketChannel_h

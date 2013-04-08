@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocket.h"
 
 #include "Blob.h"
@@ -125,7 +123,7 @@ static unsigned long saturateAdd(unsigned long a, unsigned long b)
     return a + b;
 }
 
-static bool webSocketsAvailable = false;
+static bool webSocketsAvailable = true;
 
 void WebSocket::setIsAvailable(bool available)
 {
@@ -604,5 +602,3 @@ size_t WebSocket::getFramingOverhead(size_t payloadSize)
 }
 
 }  // namespace WebCore
-
-#endif

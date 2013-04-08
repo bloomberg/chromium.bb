@@ -114,18 +114,12 @@ bool WebRuntimeFeatures::isMediaPlayerEnabled()
 
 void WebRuntimeFeatures::enableSockets(bool enable)
 {
-#if ENABLE(WEB_SOCKETS)
     WebCore::WebSocket::setIsAvailable(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isSocketsEnabled()
 {
-#if ENABLE(WEB_SOCKETS)
     return WebSocket::isAvailable();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableNotifications(bool enable)

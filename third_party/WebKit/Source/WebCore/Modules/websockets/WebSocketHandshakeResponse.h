@@ -31,8 +31,6 @@
 #ifndef WebSocketHandshakeResponse_h
 #define WebSocketHandshakeResponse_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "HTTPHeaderMap.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
@@ -59,7 +57,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketHandshakeResponse_h

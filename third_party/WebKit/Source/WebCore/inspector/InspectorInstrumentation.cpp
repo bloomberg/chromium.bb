@@ -1117,7 +1117,6 @@ void InspectorInstrumentation::workerContextTerminatedImpl(InstrumentingAgents* 
 }
 #endif
 
-#if ENABLE(WEB_SOCKETS)
 void InspectorInstrumentation::didCreateWebSocketImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const KURL& requestURL, const KURL&, const String& protocol, Document* document)
 {
     InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent();
@@ -1168,7 +1167,6 @@ void InspectorInstrumentation::didSendWebSocketFrameImpl(InstrumentingAgents* in
     if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
         resourceAgent->didSendWebSocketFrame(identifier, frame);
 }
-#endif
 
 void InspectorInstrumentation::networkStateChangedImpl(InstrumentingAgents* instrumentingAgents)
 {

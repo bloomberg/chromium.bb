@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketExtensionDispatcher.h"
 
 #include "WebSocketExtensionParser.h"
@@ -152,5 +150,3 @@ String WebSocketExtensionDispatcher::failureReason() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

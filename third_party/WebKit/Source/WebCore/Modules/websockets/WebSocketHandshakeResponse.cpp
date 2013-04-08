@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "WebSocketHandshakeResponse.h"
 
 #include <wtf/Assertions.h>
@@ -86,5 +84,3 @@ void WebSocketHandshakeResponse::clearHeaderFields()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)

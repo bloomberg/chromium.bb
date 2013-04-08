@@ -71,11 +71,9 @@ class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
 
-#if ENABLE(WEB_SOCKETS)
 struct WebSocketFrame;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
-#endif
 
 typedef String ErrorString;
 
@@ -124,7 +122,6 @@ public:
 
     PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*);
 
-#if ENABLE(WEB_SOCKETS)
     void didCreateWebSocket(unsigned long identifier, const KURL& requestURL);
     void willSendWebSocketHandshakeRequest(unsigned long identifier, const WebSocketHandshakeRequest&);
     void didReceiveWebSocketHandshakeResponse(unsigned long identifier, const WebSocketHandshakeResponse&);
@@ -132,7 +129,6 @@ public:
     void didReceiveWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
     void didSendWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
-#endif
 
     // called from Internals for layout test purposes.
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);

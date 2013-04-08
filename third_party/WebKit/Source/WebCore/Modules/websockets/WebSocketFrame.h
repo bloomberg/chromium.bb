@@ -31,8 +31,6 @@
 #ifndef WebSocketFrame_h
 #define WebSocketFrame_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -75,7 +73,5 @@ struct WebSocketFrame {
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketFrame_h

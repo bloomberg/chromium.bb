@@ -137,12 +137,10 @@ bool RuntimeEnabledFeatures::sharedWorkerEnabled()
 }
 #endif
 
-#if ENABLE(WEB_SOCKETS)
 bool RuntimeEnabledFeatures::webSocketEnabled()
 {
     return WebSocket::isAvailable();
 }
-#endif
 
 #if ENABLE(SQL_DATABASE)
 bool RuntimeEnabledFeatures::openDatabaseEnabled()

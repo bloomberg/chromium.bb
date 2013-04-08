@@ -31,8 +31,6 @@
 #ifndef WebSocketExtensionProcessor_h
 #define WebSocketExtensionProcessor_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include <wtf/HashMap.h>
 #include <wtf/text/WTFString.h>
 
@@ -68,7 +66,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketExtensionProcessor_h

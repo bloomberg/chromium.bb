@@ -475,8 +475,6 @@ PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiat
         .release();
 }
 
-#if ENABLE(WEB_SOCKETS)
-
 void InspectorResourceAgent::didCreateWebSocket(unsigned long identifier, const KURL& requestURL)
 {
     m_frontend->webSocketCreated(IdentifiersFactory::requestId(identifier), requestURL.string());
@@ -525,8 +523,6 @@ void InspectorResourceAgent::didReceiveWebSocketFrameError(unsigned long identif
 {
     m_frontend->webSocketFrameError(IdentifiersFactory::requestId(identifier), currentTime(), errorMessage);
 }
-
-#endif // ENABLE(WEB_SOCKETS)
 
 // called from Internals for layout test purposes.
 void InspectorResourceAgent::setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize)

@@ -31,8 +31,6 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "FileReaderLoaderClient.h"
 #include "SocketStreamHandleClient.h"
 #include "ThreadableWebSocketChannel.h"
@@ -228,7 +226,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_SOCKETS)
 
 #endif // WebSocketChannel_h

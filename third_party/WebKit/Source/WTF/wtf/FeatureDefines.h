@@ -515,10 +515,6 @@
 #define ENABLE_WEB_AUDIO 0
 #endif
 
-#if !defined(ENABLE_WEB_SOCKETS)
-#define ENABLE_WEB_SOCKETS 1
-#endif
-
 #if !defined(ENABLE_WEB_TIMING)
 #define ENABLE_WEB_TIMING 0
 #endif
