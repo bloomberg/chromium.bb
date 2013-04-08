@@ -55,6 +55,7 @@
 #define RADEON_SURF_ZBUFFER                     (1 << 17)
 #define RADEON_SURF_SBUFFER                     (1 << 18)
 #define RADEON_SURF_HAS_SBUFFER_MIPTREE         (1 << 19)
+#define RADEON_SURF_HAS_TILE_MODE_INDEX         (1 << 20)
 
 #define RADEON_SURF_GET(v, field)   (((v) >> RADEON_SURF_ ## field ## _SHIFT) & RADEON_SURF_ ## field ## _MASK)
 #define RADEON_SURF_SET(v, field)   (((v) & RADEON_SURF_ ## field ## _MASK) << RADEON_SURF_ ## field ## _SHIFT)
@@ -74,6 +75,34 @@ struct radeon_surface_level {
     uint32_t                    nblk_z;
     uint32_t                    pitch_bytes;
     uint32_t                    mode;
+};
+
+enum si_tiling_mode {
+    SI_TILING_AUTO = 0,
+
+    SI_TILING_COLOR_1D,
+    SI_TILING_COLOR_1D_SCANOUT,
+    SI_TILING_COLOR_2D_8BPP,
+    SI_TILING_COLOR_2D_16BPP,
+    SI_TILING_COLOR_2D_32BPP,
+    SI_TILING_COLOR_2D_64BPP,
+    SI_TILING_COLOR_2D_SCANOUT_16BPP,
+    SI_TILING_COLOR_2D_SCANOUT_32BPP,
+    SI_TILING_COLOR_LINEAR,
+
+    SI_TILING_STENCIL_1D,
+    SI_TILING_STENCIL_2D,
+    SI_TILING_STENCIL_2D_2AA,
+    SI_TILING_STENCIL_2D_4AA,
+    SI_TILING_STENCIL_2D_8AA,
+
+    SI_TILING_DEPTH_1D,
+    SI_TILING_DEPTH_2D,
+    SI_TILING_DEPTH_2D_2AA,
+    SI_TILING_DEPTH_2D_4AA,
+    SI_TILING_DEPTH_2D_8AA,
+
+    SI_TILING_LAST_MODE,
 };
 
 struct radeon_surface {
@@ -104,6 +133,8 @@ struct radeon_surface {
     uint64_t                    stencil_offset;
     struct radeon_surface_level level[RADEON_SURF_MAX_LEVEL];
     struct radeon_surface_level stencil_level[RADEON_SURF_MAX_LEVEL];
+    uint32_t                    tiling_index[RADEON_SURF_MAX_LEVEL];
+    uint32_t                    stencil_tiling_index[RADEON_SURF_MAX_LEVEL];
 };
 
 struct radeon_surface_manager *radeon_surface_manager_new(int fd);
