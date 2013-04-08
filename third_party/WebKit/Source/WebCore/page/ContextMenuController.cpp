@@ -334,18 +334,8 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         FrameSelection* frameSelection = frame->selection();
         if (frame->editor()->shouldInsertText(item->title(), frameSelection->toNormalizedRange().get(), EditorInsertActionPasted)) {
             Document* document = frame->document();
-            ReplaceSelectionCommand::CommandOptions replaceOptions = ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting;
-
-            if (frame->editor()->behavior().shouldAllowSpellingSuggestionsWithoutSelection()) {
-                ASSERT(frameSelection->isCaretOrRange());
-                VisibleSelection wordSelection(frameSelection->base());
-                wordSelection.expandUsingGranularity(WordGranularity);
-                frameSelection->setSelection(wordSelection);
-            } else {
-                ASSERT(frame->editor()->selectedText().length());
-                replaceOptions |= ReplaceSelectionCommand::SelectReplacement;
-            }
-
+            ReplaceSelectionCommand::CommandOptions replaceOptions = ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting | ReplaceSelectionCommand::SelectReplacement;
+            ASSERT(frame->editor()->selectedText().length());
             RefPtr<ReplaceSelectionCommand> command = ReplaceSelectionCommand::create(document, createFragmentFromMarkup(document, item->title(), ""), replaceOptions);
             applyCommand(command);
             frameSelection->revealSelection(ScrollAlignment::alignToEdgeIfNeeded);
