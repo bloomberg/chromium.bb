@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=JAVASCRIPT_DEBUGGER,
     OmitConstructor,
     DoNotCheckConstants,
     ImplementationLacksVTable

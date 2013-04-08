@@ -43,10 +43,7 @@ import CodeGeneratorInspectorStrings
 
 DOMAIN_DEFINE_NAME_MAP = {
     "Database": "SQL_DATABASE",
-    "Debugger": "JAVASCRIPT_DEBUGGER",
-    "DOMDebugger": "JAVASCRIPT_DEBUGGER",
     "FileSystem": "FILE_SYSTEM",
-    "Profiler": "JAVASCRIPT_DEBUGGER",
     "Worker": "WORKERS",
 }
 
