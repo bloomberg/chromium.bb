@@ -56,7 +56,6 @@
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
 #include "SkiaImageFilterBuilder.h"
-#include "SystemTime.h"
 #include "TransformSkMatrix44Conversions.h"
 #include <public/Platform.h>
 #include <public/WebAnimation.h>
