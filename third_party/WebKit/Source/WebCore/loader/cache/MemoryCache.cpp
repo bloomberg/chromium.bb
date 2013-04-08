@@ -712,13 +712,11 @@ void MemoryCache::removeUrlFromCache(ScriptExecutionContext* context, const Stri
 
 void MemoryCache::removeRequestFromCache(ScriptExecutionContext* context, const ResourceRequest& request)
 {
-#if ENABLE(WORKERS)
     if (context->isWorkerContext()) {
         WorkerContext* workerContext = static_cast<WorkerContext*>(context);
         workerContext->thread()->workerLoaderProxy().postTaskToLoader(createCallbackTask(&crossThreadRemoveRequestFromCache, request));
         return;
     }
-#endif
 
     removeRequestFromCacheImpl(context, request);
 }

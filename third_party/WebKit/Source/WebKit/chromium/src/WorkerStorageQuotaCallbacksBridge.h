@@ -31,8 +31,6 @@
 #ifndef WorkerStorageQuotaCallbacksBridge_h
 #define WorkerStorageQuotaCallbacksBridge_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptExecutionContext.h"
 #include "StorageArea.h"
 #include <WebStorageQuotaError.h>
@@ -118,7 +116,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // WorkerStorageQuotaCallbacksBridge_h

@@ -51,8 +51,6 @@ using namespace WebKit;
 
 namespace WebCore {
 
-#if ENABLE(WORKERS)
-
 static void queryUsageAndQuotaFromWorker(WebCommonWorkerClient* commonClient, WebStorageQuotaType storageType, WebStorageQuotaCallbacksImpl* callbacks)
 {
     WorkerContext* workerContext = WorkerScriptController::controllerForContext()->workerContext();
@@ -66,8 +64,6 @@ static void queryUsageAndQuotaFromWorker(WebCommonWorkerClient* commonClient, We
     // The bridge is held by the task that is created in posted to the main thread by this method.
     bridge->postQueryUsageAndQuotaToMainThread(commonClient, storageType, mode);
 }
-
-#endif // ENABLE(WORKERS)
 
 void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
 {
@@ -83,13 +79,9 @@ void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionCon
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         webFrame->client()->queryStorageUsageAndQuota(webFrame, storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
     } else {
-#if ENABLE(WORKERS)
         WorkerContext* workerContext = static_cast<WorkerContext*>(scriptExecutionContext);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerContext->thread()->workerLoaderProxy().toWebWorkerBase());
         queryUsageAndQuotaFromWorker(webWorker->commonClient(), storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
-#else
-        ASSERT_NOT_REACHED();
-#endif
     }
 }
 

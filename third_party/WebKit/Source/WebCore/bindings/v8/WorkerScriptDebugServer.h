@@ -31,8 +31,6 @@
 #ifndef WorkerScriptDebugServer_h
 #define WorkerScriptDebugServer_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptDebugServer.h"
 
 namespace v8 {
@@ -68,7 +66,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerScriptDebugServer_h

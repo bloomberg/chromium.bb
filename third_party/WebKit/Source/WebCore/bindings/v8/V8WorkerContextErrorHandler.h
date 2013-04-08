@@ -31,8 +31,6 @@
 #ifndef V8WorkerContextErrorHandler_h
 #define V8WorkerContextErrorHandler_h
 
-#if ENABLE(WORKERS)
-
 #include "V8WorkerContextEventListener.h"
 #include <v8.h>
 #include <wtf/PassRefPtr.h>
@@ -54,7 +52,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // WORKERS
 
 #endif // V8WorkerContextErrorHandler_h

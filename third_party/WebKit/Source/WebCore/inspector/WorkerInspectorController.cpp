@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerInspectorController.h"
 
 #include "InjectedScriptHost.h"
@@ -177,5 +175,3 @@ void WorkerInspectorController::resume()
 }
 
 }
-
-#endif

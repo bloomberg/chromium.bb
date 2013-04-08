@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerScriptLoader.h"
 
 #include "CrossThreadTask.h"
@@ -193,5 +191,3 @@ void WorkerScriptLoader::notifyFinished()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

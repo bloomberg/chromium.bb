@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerConsoleAgent.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ void WorkerConsoleAgent::addInspectedNode(ErrorString* error, int)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

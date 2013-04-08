@@ -129,10 +129,8 @@ public:
     InspectorHeapProfilerAgent* inspectorHeapProfilerAgent() const { return m_inspectorHeapProfilerAgent; }
     void setInspectorHeapProfilerAgent(InspectorHeapProfilerAgent* agent) { m_inspectorHeapProfilerAgent = agent; }
 
-#if ENABLE(WORKERS)
     InspectorWorkerAgent* inspectorWorkerAgent() const { return m_inspectorWorkerAgent; }
     void setInspectorWorkerAgent(InspectorWorkerAgent* agent) { m_inspectorWorkerAgent = agent; }
-#endif
 
     InspectorCanvasAgent* inspectorCanvasAgent() const { return m_inspectorCanvasAgent; }
     void setInspectorCanvasAgent(InspectorCanvasAgent* agent) { m_inspectorCanvasAgent = agent; }
@@ -168,16 +166,12 @@ private:
     InspectorDOMDebuggerAgent* m_inspectorDOMDebuggerAgent;
     InspectorProfilerAgent* m_inspectorProfilerAgent;
     InspectorHeapProfilerAgent* m_inspectorHeapProfilerAgent;
-#if ENABLE(WORKERS)
     InspectorWorkerAgent* m_inspectorWorkerAgent;
-#endif
     InspectorCanvasAgent* m_inspectorCanvasAgent;
 };
 
 InstrumentingAgents* instrumentationForPage(Page*);
-#if ENABLE(WORKERS)
 InstrumentingAgents* instrumentationForWorkerContext(WorkerContext*);
-#endif
 
 }
 

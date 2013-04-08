@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerScriptController.h"
 
 #include "DOMTimer.h"
@@ -259,5 +257,3 @@ WorkerScriptController* WorkerScriptController::controllerForContext()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

@@ -31,8 +31,6 @@
 #ifndef WorkerScriptController_h
 #define WorkerScriptController_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptValue.h"
 #include "V8Binding.h"
 #include <v8.h>
@@ -111,7 +109,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerScriptController_h

@@ -58,7 +58,6 @@ inline void InspectorInstrumentation::addMessageToConsole(Page* page, MessageSou
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, scriptId, lineNumber, state, requestIdentifier);
 }
 
-#if ENABLE(WORKERS)
 inline void InspectorInstrumentation::addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerContext(workerContext))
@@ -70,7 +69,6 @@ inline void InspectorInstrumentation::addMessageToConsole(WorkerContext* workerC
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerContext(workerContext))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, scriptId, lineNumber, state, requestIdentifier);
 }
-#endif
 
 inline void InspectorInstrumentation::consoleCount(Page* page, ScriptState* state, PassRefPtr<ScriptArguments> arguments)
 {

@@ -66,14 +66,10 @@ public:
     static unsigned getHeapObjectId(const ScriptValue&);
     static void start(ScriptState* state, const String& title);
     static void startForPage(Page*, const String& title);
-#if ENABLE(WORKERS)
     static void startForWorkerContext(WorkerContext*, const String& title);
-#endif
     static PassRefPtr<ScriptProfile> stop(ScriptState* state, const String& title);
     static PassRefPtr<ScriptProfile> stopForPage(Page*, const String& title);
-#if ENABLE(WORKERS)
     static PassRefPtr<ScriptProfile> stopForWorkerContext(WorkerContext*, const String& title);
-#endif
     static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(const String& title, HeapSnapshotProgress*);
     static void initialize();
     static void visitNodeWrappers(WrappedNodeVisitor*);

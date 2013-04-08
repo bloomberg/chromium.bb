@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "AbstractWorker.h"
 
 #include "ContentSecurityPolicy.h"
@@ -98,5 +96,3 @@ EventTargetData* AbstractWorker::ensureEventTargetData()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

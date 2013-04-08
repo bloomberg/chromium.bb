@@ -31,8 +31,6 @@
 #ifndef WorkerFileSystemCallbacksBridge_h
 #define WorkerFileSystemCallbacksBridge_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptExecutionContext.h"
 #include <public/WebFileError.h>
 #include <public/WebFileSystem.h>
@@ -154,7 +152,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // WorkerFileSystemCallbacksBridge_h

@@ -46,11 +46,7 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
         return V8EventListenerList::findWrapper(value, isAttribute);
     if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info))
         return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute);
-#if ENABLE(WORKERS)
     return V8EventListenerList::findOrCreateWrapper<V8WorkerContextEventListener>(value, isAttribute);
-#else
-    return 0;
-#endif
 }
 
 } // namespace WebCore

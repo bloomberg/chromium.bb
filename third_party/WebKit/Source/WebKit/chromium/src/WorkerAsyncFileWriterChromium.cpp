@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WorkerAsyncFileWriterChromium.h"
 
-#if ENABLE(WORKERS)
-
 #include "AsyncFileSystem.h"
 #include "Blob.h"
 #include "ScriptExecutionContext.h"
@@ -84,5 +82,3 @@ void WorkerAsyncFileWriterChromium::abort()
 }
 
 }
-
-#endif // ENABLE(WORKERS)

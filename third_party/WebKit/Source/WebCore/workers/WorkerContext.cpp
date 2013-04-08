@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerContext.h"
 
 #include "ActiveDOMObject.h"
@@ -377,5 +375,3 @@ WorkerEventQueue* WorkerContext::eventQueue() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

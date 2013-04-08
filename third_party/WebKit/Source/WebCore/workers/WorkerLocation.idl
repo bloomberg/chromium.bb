@@ -27,7 +27,6 @@
  */
 
 [
-    Conditional=WORKERS,
     ImplementationLacksVTable
 ] interface WorkerLocation {
     readonly attribute DOMString href;

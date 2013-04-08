@@ -1085,7 +1085,6 @@ void InspectorInstrumentation::didDispatchDOMStorageEventImpl(InstrumentingAgent
         domStorageAgent->didDispatchDOMStorageEvent(key, oldValue, newValue, storageType, securityOrigin, page);
 }
 
-#if ENABLE(WORKERS)
 bool InspectorInstrumentation::shouldPauseDedicatedWorkerOnStartImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorWorkerAgent* workerAgent = instrumentingAgents->inspectorWorkerAgent())
@@ -1115,7 +1114,6 @@ void InspectorInstrumentation::workerContextTerminatedImpl(InstrumentingAgents* 
     if (InspectorWorkerAgent* workerAgent = instrumentingAgents->inspectorWorkerAgent())
         workerAgent->workerContextTerminated(proxy);
 }
-#endif
 
 void InspectorInstrumentation::didCreateWebSocketImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const KURL& requestURL, const KURL&, const String& protocol, Document* document)
 {
@@ -1292,7 +1290,6 @@ InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForRenderer(Re
     return instrumentingAgentsForFrame(renderer->frame());
 }
 
-#if ENABLE(WORKERS)
 InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForWorkerContext(WorkerContext* workerContext)
 {
     if (!workerContext)
@@ -1306,7 +1303,6 @@ InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForNonDocument
         return instrumentationForWorkerContext(static_cast<WorkerContext*>(context));
     return 0;
 }
-#endif
 
 GeolocationPosition* InspectorInstrumentation::overrideGeolocationPositionImpl(InstrumentingAgents* instrumentingAgents, GeolocationPosition* position)
 {

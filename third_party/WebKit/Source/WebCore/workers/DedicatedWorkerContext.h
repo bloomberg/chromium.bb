@@ -31,8 +31,6 @@
 #ifndef DedicatedWorkerContext_h
 #define DedicatedWorkerContext_h
 
-#if ENABLE(WORKERS)
-
 #include "ContentSecurityPolicy.h"
 #include "MessagePort.h"
 #include "WorkerContext.h"
@@ -68,7 +66,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // DedicatedWorkerContext_h

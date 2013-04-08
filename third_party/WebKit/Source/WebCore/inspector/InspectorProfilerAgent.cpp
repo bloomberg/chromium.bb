@@ -92,7 +92,6 @@ PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingA
     return adoptPtr(new PageProfilerAgent(instrumentingAgents, consoleAgent, inspectedPage, inspectorState, injectedScriptManager));
 }
 
-#if ENABLE(WORKERS)
 class WorkerProfilerAgent : public InspectorProfilerAgent {
 public:
     WorkerProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, WorkerContext* workerContext, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
@@ -117,7 +116,6 @@ PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingA
 {
     return adoptPtr(new WorkerProfilerAgent(instrumentingAgents, consoleAgent, workerContext, inspectorState, injectedScriptManager));
 }
-#endif
 
 InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorProfilerAgent>("Profiler", instrumentingAgents, inspectorState)

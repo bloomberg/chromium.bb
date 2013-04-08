@@ -84,13 +84,10 @@ void ScheduledAction::execute(ScriptExecutionContext* context)
         if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
             return;
         execute(frame);
-    }
-#if ENABLE(WORKERS)
-    else {
+    } else {
         ASSERT(context->isWorkerContext());
         execute(static_cast<WorkerContext*>(context));
     }
-#endif
 }
 
 void ScheduledAction::execute(Frame* frame)
@@ -114,7 +111,6 @@ void ScheduledAction::execute(Frame* frame)
     // The frame might be invalid at this point because JavaScript could have released it.
 }
 
-#if ENABLE(WORKERS)
 void ScheduledAction::execute(WorkerContext* worker)
 {
     ASSERT(worker->thread()->threadID() == currentThread());
@@ -134,6 +130,5 @@ void ScheduledAction::execute(WorkerContext* worker)
     } else
         worker->script()->evaluate(m_code);
 }
-#endif
 
 } // namespace WebCore

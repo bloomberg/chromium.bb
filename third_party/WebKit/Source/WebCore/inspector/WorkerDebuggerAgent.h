@@ -31,7 +31,6 @@
 #ifndef WorkerDebuggerAgent_h
 #define WorkerDebuggerAgent_h
 
-#if ENABLE(WORKERS)
 #include "InspectorDebuggerAgent.h"
 #include "WorkerScriptDebugServer.h"
 
@@ -65,7 +64,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // !defined(WorkerDebuggerAgent_h)

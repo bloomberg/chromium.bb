@@ -231,11 +231,9 @@ public:
     static void addMessageToConsole(Page*, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>, unsigned long requestIdentifier = 0);
     static void addMessageToConsole(Page*, MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long requestIdentifier = 0);
     static void addMessageToConsole(Page*, MessageSource, MessageType, MessageLevel, const String& message, const String&, unsigned lineNumber, ScriptState* = 0, unsigned long requestIdentifier = 0);
-#if ENABLE(WORKERS)
     // FIXME: Convert to ScriptArguments to match non-worker context.
     static void addMessageToConsole(WorkerContext*, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>, unsigned long requestIdentifier = 0);
     static void addMessageToConsole(WorkerContext*, MessageSource, MessageType, MessageLevel, const String& message, const String&, unsigned lineNumber, ScriptState* = 0, unsigned long requestIdentifier = 0);
-#endif
     static void consoleCount(Page*, ScriptState*, PassRefPtr<ScriptArguments>);
     static void startConsoleTiming(Frame*, const String& title);
     static void stopConsoleTiming(Frame*, const String& title, PassRefPtr<ScriptCallStack>);
@@ -257,12 +255,10 @@ public:
 
     static void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*, Page*);
 
-#if ENABLE(WORKERS)
     static bool shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext*);
     static void didStartWorkerContext(ScriptExecutionContext*, WorkerContextProxy*, const KURL&);
     static void workerContextTerminated(ScriptExecutionContext*, WorkerContextProxy*);
     static void willEvaluateWorkerScript(WorkerContext*, int workerThreadStartMode);
-#endif
 
     static void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol);
     static void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
@@ -439,11 +435,9 @@ private:
 
     static void didDispatchDOMStorageEventImpl(InstrumentingAgents*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*, Page*);
 
-#if ENABLE(WORKERS)
     static bool shouldPauseDedicatedWorkerOnStartImpl(InstrumentingAgents*);
     static void didStartWorkerContextImpl(InstrumentingAgents*, WorkerContextProxy*, const KURL&);
     static void workerContextTerminatedImpl(InstrumentingAgents*, WorkerContextProxy*);
-#endif
 
     static void didCreateWebSocketImpl(InstrumentingAgents*, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol, Document*);
     static void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents*, unsigned long identifier, const WebSocketHandshakeRequest&, Document*);
@@ -462,10 +456,8 @@ private:
     static InstrumentingAgents* instrumentingAgentsForDocument(Document*);
     static InstrumentingAgents* instrumentingAgentsForRenderer(RenderObject*);
 
-#if ENABLE(WORKERS)
     static InstrumentingAgents* instrumentingAgentsForWorkerContext(WorkerContext*);
     static InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext*);
-#endif
 
     static bool collectingHTMLParseErrors(InstrumentingAgents*);
     static void pauseOnNativeEventIfNeeded(InstrumentingAgents*, bool isDOMEvent, const String& eventName, bool synchronous);
@@ -1221,7 +1213,6 @@ inline void InspectorInstrumentation::didDispatchDOMStorageEvent(const String& k
         didDispatchDOMStorageEventImpl(instrumentingAgents, key, oldValue, newValue, storageType, securityOrigin, page);
 }
 
-#if ENABLE(WORKERS)
 inline bool InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext* context)
 {
     FAST_RETURN_IF_NO_FRONTENDS(false);
@@ -1241,9 +1232,6 @@ inline void InspectorInstrumentation::workerContextTerminated(ScriptExecutionCon
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
         workerContextTerminatedImpl(instrumentingAgents, proxy);
 }
-
-#endif
-
 
 inline void InspectorInstrumentation::didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol)
 {
@@ -1374,11 +1362,7 @@ inline InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForCont
         return 0;
     if (context->isDocument())
         return instrumentingAgentsForPage(toDocument(context)->page());
-#if ENABLE(WORKERS)
     return instrumentingAgentsForNonDocumentContext(context);
-#else
-    return 0;
-#endif
 }
 
 inline InstrumentingAgents* InspectorInstrumentation::instrumentingAgentsForFrame(Frame* frame)

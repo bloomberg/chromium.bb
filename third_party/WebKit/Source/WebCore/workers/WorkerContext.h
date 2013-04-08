@@ -27,8 +27,6 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
-#if ENABLE(WORKERS)
-
 #include "ContentSecurityPolicy.h"
 #include "EventListener.h"
 #include "EventNames.h"
@@ -183,7 +181,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerContext_h

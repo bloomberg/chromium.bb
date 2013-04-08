@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WorkerScriptDebugServer.h"
 
-#if ENABLE(WORKERS)
-
 #include "ScriptDebugListener.h"
 #include "WorkerContext.h"
 #include "WorkerDebuggerAgent.h"
@@ -115,5 +113,3 @@ void WorkerScriptDebugServer::quitMessageLoopOnPause()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

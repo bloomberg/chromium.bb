@@ -31,8 +31,6 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
-#if ENABLE(WORKERS)
-
 #include "InspectorBaseAgent.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
@@ -83,7 +81,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WORKERS)
 
 #endif // !defined(WorkerInspectorController_h)

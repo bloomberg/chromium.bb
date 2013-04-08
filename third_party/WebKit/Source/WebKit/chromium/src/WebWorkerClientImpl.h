@@ -31,8 +31,6 @@
 #ifndef WebWorkerClientImpl_h
 #define WebWorkerClientImpl_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptExecutionContext.h"
 #include "WorkerContextProxy.h"
 #include "WorkerLoaderProxy.h"
@@ -97,7 +95,5 @@ private:
 };
 
 } // namespace WebKit;
-
-#endif // ENABLE(WORKERS)
 
 #endif

@@ -27,7 +27,6 @@
  */
 
 [
-    Conditional=WORKERS,
     OmitConstructor
 ] interface WorkerNavigator {
     readonly attribute DOMString appName;

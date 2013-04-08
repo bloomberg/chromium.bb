@@ -45,10 +45,8 @@ PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* co
     ASSERT(client);
     ASSERT(context);
 
-#if ENABLE(WORKERS)
     if (context->isWorkerContext())
         return WorkerThreadableLoader::create(static_cast<WorkerContext*>(context), client, WorkerRunLoop::defaultMode(), request, options);
-#endif // ENABLE(WORKERS)
 
     return DocumentThreadableLoader::create(toDocument(context), client, request, options);
 }
@@ -57,12 +55,10 @@ void ThreadableLoader::loadResourceSynchronously(ScriptExecutionContext* context
 {
     ASSERT(context);
 
-#if ENABLE(WORKERS)
     if (context->isWorkerContext()) {
         WorkerThreadableLoader::loadResourceSynchronously(static_cast<WorkerContext*>(context), request, client, options);
         return;
     }
-#endif // ENABLE(WORKERS)
 
     DocumentThreadableLoader::loadResourceSynchronously(toDocument(context), request, client, options);
 }

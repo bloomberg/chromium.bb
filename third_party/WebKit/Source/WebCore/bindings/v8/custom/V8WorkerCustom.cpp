@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
 #include "V8Worker.h"
 
 #include "Worker.h"
@@ -69,5 +68,3 @@ v8::Handle<v8::Value> V8Worker::postMessageMethodCustom(const v8::Arguments& arg
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

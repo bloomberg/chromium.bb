@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WorkerContextProxyChromium.h"
 
-#if ENABLE(WORKERS)
-
 namespace WebCore {
 
 static WorkerContextProxyCreate* s_workerContextProxyCreateFunction = 0;
@@ -49,5 +47,3 @@ WorkerContextProxy* WorkerContextProxy::create(Worker* worker)
 }
 
 } // namespace WebCore
-
-#endif

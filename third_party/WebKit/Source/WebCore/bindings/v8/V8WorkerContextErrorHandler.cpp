@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "V8WorkerContextErrorHandler.h"
 
 #include "EventNames.h"
@@ -69,5 +67,3 @@ bool V8WorkerContextErrorHandler::shouldPreventDefault(v8::Local<v8::Value> retu
 }
 
 } // namespace WebCore
-
-#endif // WORKERS

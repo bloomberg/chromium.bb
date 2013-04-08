@@ -27,8 +27,6 @@
 #ifndef Worker_h
 #define Worker_h
 
-#if ENABLE(WORKERS)
-
 #include "AbstractWorker.h"
 #include "ActiveDOMObject.h"
 #include "EventListener.h"
@@ -83,7 +81,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // Worker_h

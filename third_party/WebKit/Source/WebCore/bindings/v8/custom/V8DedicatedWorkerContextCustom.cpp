@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
 #include "V8DedicatedWorkerContext.h"
 
 #include <wtf/ArrayBuffer.h>
@@ -65,5 +64,3 @@ v8::Handle<v8::Value> V8DedicatedWorkerContext::postMessageMethodCustom(const v8
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

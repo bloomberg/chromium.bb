@@ -27,8 +27,6 @@
 #ifndef WorkerContextIndexedDatabase_h
 #define WorkerContextIndexedDatabase_h
 
-#if ENABLE(WORKERS)
-
 #include "Supplementable.h"
 
 namespace WebCore {
@@ -55,7 +53,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerContextIndexedDatabase_h

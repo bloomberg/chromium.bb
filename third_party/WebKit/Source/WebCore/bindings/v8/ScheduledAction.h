@@ -53,9 +53,7 @@ public:
 
 private:
     void execute(Frame*);
-#if ENABLE(WORKERS)
     void execute(WorkerContext*);
-#endif
 
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Function> m_function;

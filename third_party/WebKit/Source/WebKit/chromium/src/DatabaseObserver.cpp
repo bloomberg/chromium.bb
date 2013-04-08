@@ -57,8 +57,6 @@ using namespace WebKit;
 
 namespace {
 
-#if ENABLE(WORKERS)
-
 static const char allowDatabaseMode[] = "allowDatabaseMode";
 
 // This class is used to route the result of the WebWorkerBase::allowDatabase
@@ -142,8 +140,6 @@ bool allowDatabaseForWorker(WebCommonWorkerClient* commonClient, WebFrame* frame
     return bridge->result();
 }
 
-#endif
-
 }
 
 namespace WebCore {
@@ -163,16 +159,12 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
         if (webView->permissionClient())
             return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
-#if ENABLE(WORKERS)
         WorkerContext* workerContext = static_cast<WorkerContext*>(scriptExecutionContext);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerContext->thread()->workerLoaderProxy().toWebWorkerBase());
         WebView* view = webWorker->view();
         if (!view)
             return false;
         return allowDatabaseForWorker(webWorker->commonClient(), view->mainFrame(), name, displayName, estimatedSize);
-#else
-        ASSERT_NOT_REACHED();
-#endif
     }
 
     return true;

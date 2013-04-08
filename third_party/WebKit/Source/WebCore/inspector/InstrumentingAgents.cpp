@@ -62,9 +62,7 @@ InstrumentingAgents::InstrumentingAgents()
     , m_pageDebuggerAgent(0)
     , m_inspectorDOMDebuggerAgent(0)
     , m_inspectorProfilerAgent(0)
-#if ENABLE(WORKERS)
     , m_inspectorWorkerAgent(0)
-#endif
     , m_inspectorCanvasAgent(0)
 {
 }
@@ -93,9 +91,7 @@ void InstrumentingAgents::reset()
     m_pageDebuggerAgent = 0;
     m_inspectorDOMDebuggerAgent = 0;
     m_inspectorProfilerAgent = 0;
-#if ENABLE(WORKERS)
     m_inspectorWorkerAgent = 0;
-#endif
     m_inspectorCanvasAgent = 0;
 }
 
@@ -107,13 +103,11 @@ InstrumentingAgents* instrumentationForPage(Page* page)
     return 0;
 }
 
-#if ENABLE(WORKERS)
 InstrumentingAgents* instrumentationForWorkerContext(WorkerContext* workerContext)
 {
     if (WorkerInspectorController* controller = workerContext->workerInspectorController())
         return controller->m_instrumentingAgents.get();
     return 0;
 }
-#endif
 
 } // namespace WebCore

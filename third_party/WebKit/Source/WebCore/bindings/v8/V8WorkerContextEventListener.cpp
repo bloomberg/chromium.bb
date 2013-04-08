@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "V8WorkerContextEventListener.h"
 
 #include "InspectorInstrumentation.h"
@@ -125,5 +123,3 @@ v8::Local<v8::Object> V8WorkerContextEventListener::getReceiverObject(ScriptExec
 }
 
 } // namespace WebCore
-
-#endif // WORKERS

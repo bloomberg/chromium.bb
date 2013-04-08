@@ -2,7 +2,7 @@ namespace="EventTarget"
 
 AudioContext conditional=WEB_AUDIO
 BatteryManager conditional=BATTERY_STATUS
-DedicatedWorkerContext conditional=WORKERS
+DedicatedWorkerContext
 DOMApplicationCache
 DOMWindow
 EventSource
@@ -39,6 +39,6 @@ TextTrackCue conditional=VIDEO_TRACK
 TextTrackList conditional=VIDEO_TRACK
 WebKitNamedFlow
 WebSocket
-Worker conditional=WORKERS
+Worker
 XMLHttpRequest
 XMLHttpRequestUpload

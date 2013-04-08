@@ -30,8 +30,6 @@
 
 #include "WorkerContextProxy.h"
 
-#if ENABLE(WORKERS)
-
 namespace WebCore {
 
 typedef WorkerContextProxy* WorkerContextProxyCreate(Worker*);
@@ -39,7 +37,5 @@ typedef WorkerContextProxy* WorkerContextProxyCreate(Worker*);
 void setWorkerContextProxyCreateFunction(WorkerContextProxyCreate);
 
 } // namespace WebCore
-
-#endif
 
 #endif // WorkerContextProxyChromium_h

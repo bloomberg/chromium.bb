@@ -51,7 +51,6 @@ WorldContextHandle::WorldContextHandle(WorldToUse worldToUse)
         CRASH();
 
     v8::Handle<v8::Context> context = v8::Context::GetCurrent();
-#if ENABLE(WORKERS)
     if (UNLIKELY(!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info))) {
 #if ENABLE(SHARED_WORKERS)
         ASSERT(V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context)->GetPrototype(), &V8DedicatedWorkerContext::info) || V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context)->GetPrototype(), &V8SharedWorkerContext::info));
@@ -61,7 +60,6 @@ WorldContextHandle::WorldContextHandle(WorldToUse worldToUse)
         m_worldToUse = UseWorkerWorld;
         return;
     }
-#endif
 
     if (DOMWrapperWorld::isolatedWorld(context)) {
         m_context = SharedPersistent<v8::Context>::create(context);

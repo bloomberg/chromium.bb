@@ -27,8 +27,6 @@
 #ifndef WorkerLocation_h
 #define WorkerLocation_h
 
-#if ENABLE(WORKERS)
-
 #include "KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -66,7 +64,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerLocation_h

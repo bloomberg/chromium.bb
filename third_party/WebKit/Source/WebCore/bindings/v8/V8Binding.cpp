@@ -312,11 +312,9 @@ ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context> context
     windowWrapper = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), IsolatedWorld));
     if (!windowWrapper.IsEmpty())
         return V8DOMWindow::toNative(windowWrapper)->scriptExecutionContext();
-#if ENABLE(WORKERS)
     v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerContext::GetTemplate(context->GetIsolate(), WorkerWorld));
     if (!workerWrapper.IsEmpty())
         return V8WorkerContext::toNative(workerWrapper)->scriptExecutionContext();
-#endif
     // FIXME: Is this line of code reachable?
     return 0;
 }
@@ -337,11 +335,9 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldC
     if (context->isDocument()) {
         if (Frame* frame = toDocument(context)->frame())
             return worldContext.adjustedContext(frame->script());
-#if ENABLE(WORKERS)
     } else if (context->isWorkerContext()) {
         if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())
             return script->context();
-#endif
     }
     return v8::Local<v8::Context>();
 }
@@ -357,11 +353,9 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWo
                 return frame->script()->mainWorldContext();
             return v8::Local<v8::Context>::New(frame->script()->windowShell(world)->context());
         }
-#if ENABLE(WORKERS)
     } else if (context->isWorkerContext()) {
         if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())
             return script->context();
-#endif
     }
     return v8::Local<v8::Context>();
 }

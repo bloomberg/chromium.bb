@@ -27,8 +27,6 @@
 #ifndef WorkerMessagingProxy_h
 #define WorkerMessagingProxy_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptExecutionContext.h"
 #include "WorkerContextProxy.h"
 #include "WorkerLoaderProxy.h"
@@ -115,7 +113,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerMessagingProxy_h

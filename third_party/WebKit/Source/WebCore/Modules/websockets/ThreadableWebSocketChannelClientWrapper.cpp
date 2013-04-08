@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(WORKERS)
 #include "ThreadableWebSocketChannelClientWrapper.h"
 
 #include "CrossThreadCopier.h"
@@ -288,5 +287,3 @@ void ThreadableWebSocketChannelClientWrapper::didReceiveMessageErrorCallback(Scr
 }
 
 } // namespace WebCore
-
-#endif  // ENABLE(WORKERS)

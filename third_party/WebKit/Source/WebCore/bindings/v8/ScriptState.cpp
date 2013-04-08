@@ -138,7 +138,6 @@ ScriptState* scriptStateFromPage(DOMWrapperWorld*, Page* page)
     return mainWorldScriptState(page->mainFrame());
 }
 
-#if ENABLE(WORKERS)
 ScriptState* scriptStateFromWorkerContext(WorkerContext* workerContext)
 {
     WorkerScriptController* script = workerContext->script();
@@ -148,6 +147,5 @@ ScriptState* scriptStateFromWorkerContext(WorkerContext* workerContext)
     v8::HandleScope handleScope;
     return ScriptState::forContext(script->context());
 }
-#endif
 
 }

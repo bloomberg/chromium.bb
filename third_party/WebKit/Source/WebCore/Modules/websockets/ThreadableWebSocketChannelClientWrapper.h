@@ -31,8 +31,6 @@
 #ifndef ThreadableWebSocketChannelClientWrapper_h
 #define ThreadableWebSocketChannelClientWrapper_h
 
-#if ENABLE(WORKERS)
-
 #include "ScriptExecutionContext.h"
 #include "ThreadableWebSocketChannel.h"
 #include "WebSocketChannelClient.h"
@@ -118,7 +116,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // ThreadableWebSocketChannelClientWrapper_h

@@ -42,8 +42,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-#if ENABLE(WORKERS)
-
 static void invokeTaskMethod(void* param)
 {
     ScriptExecutionContext::Task* task =
@@ -57,7 +55,5 @@ void WebWorkerBase::dispatchTaskToMainThread(PassOwnPtr<ScriptExecutionContext::
 {
     callOnMainThread(invokeTaskMethod, task.leakPtr());
 }
-
-#endif // ENABLE(WORKERS)
 
 } // namespace WebKit

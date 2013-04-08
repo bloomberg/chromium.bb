@@ -108,12 +108,10 @@ void WebFileSystemCallbacksImpl::didOpenFileSystem(const WebString& name, const 
     // This object is intended to delete itself on exit.
     OwnPtr<WebFileSystemCallbacksImpl> callbacks = adoptPtr(this);
 
-#if ENABLE(WORKERS)
     if (m_context && m_context->isWorkerContext()) {
         m_callbacks->didOpenFileSystem(name, rootURL, WorkerAsyncFileSystemChromium::create(m_context, m_synchronousType));
         return;
     }
-#endif
     m_callbacks->didOpenFileSystem(name, rootURL, AsyncFileSystemChromium::create());
 }
 

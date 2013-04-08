@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
 #include "V8WorkerContext.h"
 
 #include "ContentSecurityPolicy.h"
@@ -146,5 +145,3 @@ v8::Handle<v8::Value> toV8ForMainWorld(WorkerContext* impl, v8::Handle<v8::Objec
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

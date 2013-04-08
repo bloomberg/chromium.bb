@@ -31,8 +31,6 @@
 #ifndef WorkerRuntimeAgent_h
 #define WorkerRuntimeAgent_h
 
-#if ENABLE(WORKERS)
-
 #include "InspectorRuntimeAgent.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -63,7 +61,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // !defined(InspectorPagerAgent_h)

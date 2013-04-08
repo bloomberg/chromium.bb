@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerContextIndexedDatabase.h"
 
 #include "IDBFactory.h"
@@ -76,5 +74,3 @@ IDBFactory* WorkerContextIndexedDatabase::indexedDB()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

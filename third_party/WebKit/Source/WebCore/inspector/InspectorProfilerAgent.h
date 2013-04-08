@@ -59,9 +59,7 @@ class InspectorProfilerAgent : public InspectorBaseAgent<InspectorProfilerAgent>
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, Page*, InspectorCompositeState*, InjectedScriptManager*);
-#if ENABLE(WORKERS)
     static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, WorkerContext*, InspectorCompositeState*, InjectedScriptManager*);
-#endif
     virtual ~InspectorProfilerAgent();
 
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);

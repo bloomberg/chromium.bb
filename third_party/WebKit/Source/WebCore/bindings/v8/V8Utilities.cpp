@@ -152,10 +152,8 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
 
 ScriptExecutionContext* getScriptExecutionContext()
 {
-#if ENABLE(WORKERS)
     if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
         return controller->workerContext();
-#endif
 
     return currentDocument(BindingState::instance());
 }

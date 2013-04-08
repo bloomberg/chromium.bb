@@ -30,7 +30,6 @@
  */
 
 [
-    Conditional=WORKERS,
     ActiveDOMObject,
     EventTarget
 ] interface AbstractWorker {

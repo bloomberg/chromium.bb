@@ -129,10 +129,7 @@ ScriptState* mainWorldScriptState(Frame*);
 
 ScriptState* scriptStateFromNode(DOMWrapperWorld*, Node*);
 ScriptState* scriptStateFromPage(DOMWrapperWorld*, Page*);
-
-#if ENABLE(WORKERS)
 ScriptState* scriptStateFromWorkerContext(WorkerContext*);
-#endif
 
 inline DOMWrapperWorld* debuggerWorld() { return mainThreadNormalWorld(); }
 inline DOMWrapperWorld* pluginWorld() { return mainThreadNormalWorld(); }

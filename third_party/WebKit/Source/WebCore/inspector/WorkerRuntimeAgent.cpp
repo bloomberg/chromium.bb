@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerRuntimeAgent.h"
 
 #include "InjectedScript.h"
@@ -93,5 +91,3 @@ void WorkerRuntimeAgent::pauseWorkerContext(WorkerContext* context)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

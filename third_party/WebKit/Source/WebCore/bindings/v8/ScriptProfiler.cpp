@@ -66,12 +66,10 @@ void ScriptProfiler::startForPage(Page*, const String& title)
     return start(0, title);
 }
 
-#if ENABLE(WORKERS)
 void ScriptProfiler::startForWorkerContext(WorkerContext*, const String& title)
 {
     return start(0, title);
 }
-#endif
 
 PassRefPtr<ScriptProfile> ScriptProfiler::stop(ScriptState* state, const String& title)
 {
@@ -101,12 +99,10 @@ PassRefPtr<ScriptProfile> ScriptProfiler::stopForPage(Page*, const String& title
     return stop(0, title);
 }
 
-#if ENABLE(WORKERS)
 PassRefPtr<ScriptProfile> ScriptProfiler::stopForWorkerContext(WorkerContext*, const String& title)
 {
     return stop(0, title);
 }
-#endif
 
 void ScriptProfiler::collectGarbage()
 {

@@ -790,10 +790,8 @@ WebString WebDevToolsAgent::inspectorDetachedEvent(const WebString& reason)
 WebString WebDevToolsAgent::workerDisconnectedFromWorkerEvent()
 {
     SerializingFrontendChannel channel;
-#if ENABLE(WORKERS)
     InspectorFrontend::Worker inspector(&channel);
     inspector.disconnectedFromWorker();
-#endif
     return channel.m_message;
 }
 

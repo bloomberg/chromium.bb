@@ -26,7 +26,6 @@
  */
 
 [
-    Conditional=WORKERS,
     Constructor(DOMString scriptUrl),
     CallWith=ScriptExecutionContext,
     ConstructorRaisesException

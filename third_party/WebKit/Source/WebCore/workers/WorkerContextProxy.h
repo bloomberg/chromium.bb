@@ -31,8 +31,6 @@
 #ifndef WorkerContextProxy_h
 #define WorkerContextProxy_h
 
-#if ENABLE(WORKERS)
-
 #include "MessagePort.h"
 #include "WorkerThread.h"
 #include <wtf/Forward.h>
@@ -71,7 +69,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
 
 #endif // WorkerContextProxy_h

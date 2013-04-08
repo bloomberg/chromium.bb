@@ -31,8 +31,6 @@
 #ifndef WorkerFileWriterCallbacksBridge_h
 #define WorkerFileWriterCallbacksBridge_h
 
-#if ENABLE(WORKERS)
-
 #include "KURL.h"
 #include "WebFileWriterClient.h"
 #include "WorkerContext.h"
@@ -161,7 +159,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // WorkerFileWriterCallbacksBridge_h

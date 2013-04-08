@@ -69,8 +69,6 @@ enum CreationFlag {
     CreateIfNotPresent
 };
 
-#if ENABLE(WORKERS)
-
 static const char allowFileSystemMode[] = "allowFileSystemMode";
 static const char openFileSystemMode[] = "openFileSystemMode";
 
@@ -173,8 +171,6 @@ void openFileSystemForWorker(WebCommonWorkerClient* commonClient, WebFileSystemT
     }
 }
 
-#endif // ENABLE(WORKERS)
-
 } // namespace
 
 static void openFileSystemNotAllowed(ScriptExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
@@ -200,16 +196,12 @@ static void openFileSystemHelper(ScriptExecutionContext* context, FileSystemType
         else
             webFrame->client()->openFileSystem(webFrame, static_cast<WebFileSystemType>(type), size, create == CreateIfNotPresent, new WebFileSystemCallbacksImpl(callbacks));
     } else {
-#if ENABLE(WORKERS)
         WorkerContext* workerContext = static_cast<WorkerContext*>(context);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerContext->thread()->workerLoaderProxy().toWebWorkerBase());
         if (!allowFileSystemForWorker(webWorker->commonClient()))
             allowed = false;
         else
             openFileSystemForWorker(webWorker->commonClient(), static_cast<WebFileSystemType>(type), size, create == CreateIfNotPresent, new WebFileSystemCallbacksImpl(callbacks, context, synchronousType), synchronousType);
-#else
-        ASSERT_NOT_REACHED();
-#endif
     }
 
     if (!allowed) {

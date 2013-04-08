@@ -31,8 +31,6 @@
 #ifndef V8WorkerContextEventListener_h
 #define V8WorkerContextEventListener_h
 
-#if ENABLE(WORKERS)
-
 #include "V8EventListener.h"
 #include <v8.h>
 #include <wtf/PassRefPtr.h>
@@ -59,7 +57,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // WORKERS
 
 #endif // V8WorkerContextEventListener_h

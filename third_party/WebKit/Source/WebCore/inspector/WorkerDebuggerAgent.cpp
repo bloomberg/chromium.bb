@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
 #include "WorkerDebuggerAgent.h"
 
 #include "ScriptDebugServer.h"
@@ -145,5 +144,3 @@ void WorkerDebuggerAgent::unmuteConsole()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)

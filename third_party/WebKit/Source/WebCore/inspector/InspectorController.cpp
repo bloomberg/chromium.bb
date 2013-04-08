@@ -149,9 +149,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
 
 
-#if ENABLE(WORKERS)
     m_agents.append(InspectorWorkerAgent::create(m_instrumentingAgents.get(), m_state.get()));
-#endif
 
     m_agents.append(InspectorCanvasAgent::create(m_instrumentingAgents.get(), m_state.get(), pageAgent, m_injectedScriptManager.get()));
 

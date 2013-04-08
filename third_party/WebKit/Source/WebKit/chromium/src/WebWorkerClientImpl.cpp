@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebWorkerClientImpl.h"
 
-#if ENABLE(WORKERS)
-
 #include "CrossThreadTask.h"
 #include "DedicatedWorkerThread.h"
 #include "Document.h"
@@ -162,5 +160,3 @@ WebWorkerClientImpl::~WebWorkerClientImpl()
 }
 
 } // namespace WebKit
-
-#endif

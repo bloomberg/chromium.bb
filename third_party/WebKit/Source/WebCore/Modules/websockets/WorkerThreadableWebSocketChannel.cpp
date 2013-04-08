@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(WORKERS)
-
 #include "WorkerThreadableWebSocketChannel.h"
 
 #include "Blob.h"
@@ -655,5 +653,3 @@ void WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WORKERS)
