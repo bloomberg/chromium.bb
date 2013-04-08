@@ -878,7 +878,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {{type: WebInspector.NetworkRequest.InitiatorType, url: string, source: string, lineNumber: number}}
+     * @return {{type: WebInspector.NetworkRequest.InitiatorType, url: string, source: string, lineNumber: number, columnNumber: number}}
      */
     initiatorInfo: function()
     {
@@ -888,6 +888,7 @@ WebInspector.NetworkRequest.prototype = {
         var type = WebInspector.NetworkRequest.InitiatorType.Other;
         var url = "";
         var lineNumber = -Infinity;
+        var columnNumber = -Infinity;
 
         if (this.redirectSource) {
             type = WebInspector.NetworkRequest.InitiatorType.Redirect;
@@ -903,11 +904,12 @@ WebInspector.NetworkRequest.prototype = {
                     type = WebInspector.NetworkRequest.InitiatorType.Script;
                     url = topFrame.url;
                     lineNumber = topFrame.lineNumber;
+                    columnNumber = topFrame.columnNumber;
                 }
             }
         }
 
-        this._initiatorInfo = {type: type, url: url, source: WebInspector.displayNameForURL(url), lineNumber: lineNumber};
+        this._initiatorInfo = {type: type, url: url, source: WebInspector.displayNameForURL(url), lineNumber: lineNumber, columnNumber: columnNumber};
         return this._initiatorInfo;
     },
 

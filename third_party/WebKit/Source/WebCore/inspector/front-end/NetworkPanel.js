@@ -974,7 +974,7 @@ WebInspector.NetworkLogView.prototype = {
             var row = document.createElement("tr");
             row.createChild("td").textContent = stackFrame.functionName ? stackFrame.functionName : WebInspector.UIString("(anonymous function)");
             row.createChild("td").textContent = " @ ";
-            row.createChild("td").appendChild(this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1, 0));
+            row.createChild("td").appendChild(this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1));
             framesTable.appendChild(row);
         }
         return framesTable;
@@ -2253,7 +2253,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             break;
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
-            var urlElement = this._parentView._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, 0);
+            var urlElement = this._parentView._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
             urlElement.title = "";
             this._initiatorCell.appendChild(urlElement);
             this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Script"));
@@ -2453,6 +2453,11 @@ WebInspector.NetworkDataGridNode.InitiatorComparator = function(a, b)
     if (aInitiator.lineNumber < bInitiator.lineNumber)
         return -1;
     if (aInitiator.lineNumber > bInitiator.lineNumber)
+        return 1;
+
+    if (aInitiator.columnNumber < bInitiator.columnNumber)
+        return -1;
+    if (aInitiator.columnNumber > bInitiator.columnNumber)
         return 1;
 
     return 0;
