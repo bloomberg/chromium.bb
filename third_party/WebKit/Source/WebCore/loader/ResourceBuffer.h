@@ -32,10 +32,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSData;
-#endif
-
 namespace WebCore {
 
 class PurgeableBuffer;
@@ -56,17 +52,11 @@ public:
 
     void append(const char*, unsigned);
     void append(SharedBuffer*);
-#if USE(NETWORK_CFDATA_ARRAY_CALLBACK)
-    void append(CFDataRef);
-#endif
     void clear();
     
     unsigned getSomeData(const char*& data, unsigned position = 0) const;
     
     SharedBuffer* sharedBuffer() const;
-#if PLATFORM(MAC)
-    void tryReplaceSharedBufferContents(SharedBuffer*);
-#endif
     PassRefPtr<ResourceBuffer> copy() const;
 
     bool hasPurgeableBuffer() const;
@@ -75,9 +65,6 @@ public:
     // Ensure this buffer has no other clients before calling this.
     PassOwnPtr<PurgeableBuffer> releasePurgeableBuffer();
 
-#if PLATFORM(MAC)
-    NSData *createNSData();
-#endif
 #if USE(CF)
     CFDataRef createCFData();
 #endif

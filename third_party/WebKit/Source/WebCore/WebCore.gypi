@@ -3730,7 +3730,6 @@
             'platform/chromium/SoundChromiumWin.cpp',
             'platform/chromium/StatsCounterChromium.cpp',
             'platform/chromium/SuddenTerminationChromium.cpp',
-            'platform/chromium/TemporaryLinkStubs.cpp',
             'platform/chromium/TraceEvent.h',
             'platform/chromium/VisitedLinksChromium.cpp',
             'platform/chromium/WidgetChromium.cpp',

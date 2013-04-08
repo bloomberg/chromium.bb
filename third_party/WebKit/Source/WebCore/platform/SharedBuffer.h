@@ -37,10 +37,6 @@
 #include <wtf/RetainPtr.h>
 #endif
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSData;
-#endif
-
 namespace WebCore {
     
 class PurgeableBuffer;
@@ -52,8 +48,6 @@ public:
     static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
     static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
 
-    static PassRefPtr<SharedBuffer> createWithContentsOfFile(const String& filePath);
-
     static PassRefPtr<SharedBuffer> adoptVector(Vector<char>& vector);
     
     // The buffer must be in non-purgeable state before adopted to a SharedBuffer. 
@@ -62,10 +56,6 @@ public:
     
     ~SharedBuffer();
     
-#if PLATFORM(MAC)
-    NSData *createNSData();
-    static PassRefPtr<SharedBuffer> wrapNSData(NSData *data);
-#endif
 #if USE(CF)
     CFDataRef createCFData();
     static PassRefPtr<SharedBuffer> wrapCFData(CFDataRef);
@@ -88,10 +78,6 @@ public:
     void clear();
     const char* platformData() const;
     unsigned platformDataSize() const;
-
-#if USE(NETWORK_CFDATA_ARRAY_CALLBACK)
-    void append(CFDataRef);
-#endif
 
     PassRefPtr<SharedBuffer> copy() const;
     
@@ -141,12 +127,6 @@ private:
     mutable Vector<char> m_buffer;
     mutable Vector<char*> m_segments;
     mutable OwnPtr<PurgeableBuffer> m_purgeableBuffer;
-#if USE(NETWORK_CFDATA_ARRAY_CALLBACK)
-    mutable Vector<RetainPtr<CFDataRef> > m_dataArray;
-    void copyDataArrayAndClear(char *destination, unsigned bytesToCopy) const;
-    unsigned copySomeDataFromDataArray(const char*& someData, unsigned position) const;
-    const char *singleDataArrayBuffer() const;
-#endif
 #if USE(CF)
     explicit SharedBuffer(CFDataRef);
     RetainPtr<CFDataRef> m_cfData;

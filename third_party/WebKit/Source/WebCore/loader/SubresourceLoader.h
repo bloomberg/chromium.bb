@@ -68,13 +68,7 @@ private:
     virtual void willCancel(const ResourceError&) OVERRIDE;
     virtual void didCancel(const ResourceError&) OVERRIDE { }
 
-#if USE(NETWORK_CFDATA_ARRAY_CALLBACK)
-    virtual bool supportsDataArray() OVERRIDE { return true; }
-    virtual void didReceiveDataArray(CFArrayRef) OVERRIDE;
-#endif
-#if PLATFORM(CHROMIUM)
     virtual void didDownloadData(int) OVERRIDE;
-#endif
     virtual void releaseResources() OVERRIDE;
 
     bool checkForHTTPStatusCodeError();

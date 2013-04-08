@@ -76,14 +76,6 @@ void ResourceBuffer::append(SharedBuffer* buffer)
     m_sharedBuffer->append(buffer);
 }
 
-#if USE(NETWORK_CFDATA_ARRAY_CALLBACK)
-void ResourceBuffer::append(CFDataRef data)
-{
-    ASSERT(m_sharedBuffer);
-    m_sharedBuffer->append(data);
-}
-#endif
-
 void ResourceBuffer::clear()
 {
     m_sharedBuffer->clear();

@@ -434,7 +434,6 @@ private:
 
     Pagination m_pagination;
 
-    String m_userStyleSheetPath;
     mutable String m_userStyleSheet;
     mutable bool m_didLoadUserStyleSheet;
     mutable time_t m_userStyleSheetModificationTime;

@@ -876,12 +876,6 @@ void Page::userStyleSheetLocationChanged()
     // text instead of loading the URL ourselves.
     KURL url = m_settings->userStyleSheetLocation();
     
-    // Allow any local file URL scheme to be loaded.
-    if (SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
-        m_userStyleSheetPath = url.fileSystemPath();
-    else
-        m_userStyleSheetPath = String();
-
     m_didLoadUserStyleSheet = false;
     m_userStyleSheet = String();
     m_userStyleSheetModificationTime = 0;
@@ -904,42 +898,6 @@ void Page::userStyleSheetLocationChanged()
 
 const String& Page::userStyleSheet() const
 {
-    if (m_userStyleSheetPath.isEmpty())
-        return m_userStyleSheet;
-
-    time_t modTime;
-    if (!getFileModificationTime(m_userStyleSheetPath, modTime)) {
-        // The stylesheet either doesn't exist, was just deleted, or is
-        // otherwise unreadable. If we've read the stylesheet before, we should
-        // throw away that data now as it no longer represents what's on disk.
-        m_userStyleSheet = String();
-        return m_userStyleSheet;
-    }
-
-    // If the stylesheet hasn't changed since the last time we read it, we can
-    // just return the old data.
-    if (m_didLoadUserStyleSheet && modTime <= m_userStyleSheetModificationTime)
-        return m_userStyleSheet;
-
-    m_didLoadUserStyleSheet = true;
-    m_userStyleSheet = String();
-    m_userStyleSheetModificationTime = modTime;
-
-    // FIXME: It would be better to load this asynchronously to avoid blocking
-    // the process, but we will first need to create an asynchronous loading
-    // mechanism that is not tied to a particular Frame. We will also have to
-    // determine what our behavior should be before the stylesheet is loaded
-    // and what should happen when it finishes loading, especially with respect
-    // to when the load event fires, when Document::close is called, and when
-    // layout/paint are allowed to happen.
-    RefPtr<SharedBuffer> data = SharedBuffer::createWithContentsOfFile(m_userStyleSheetPath);
-    if (!data)
-        return m_userStyleSheet;
-
-    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/css");
-    m_userStyleSheet = decoder->decode(data->data(), data->size());
-    m_userStyleSheet.append(decoder->flush());
-
     return m_userStyleSheet;
 }
 
@@ -1379,7 +1337,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_featureObserver, "featureObserver");
     info.addMember(m_groupName, "groupName");
     info.addMember(m_pagination, "pagination");
-    info.addMember(m_userStyleSheetPath, "userStyleSheetPath");
     info.addMember(m_userStyleSheet, "userStyleSheet");
     info.addMember(m_singlePageGroup, "singlePageGroup");
     info.addMember(m_group, "group");

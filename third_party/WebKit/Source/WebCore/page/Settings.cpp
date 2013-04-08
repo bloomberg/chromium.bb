@@ -28,7 +28,6 @@
 
 #include "BackForwardController.h"
 #include "CachedResourceLoader.h"
-#include "CookieStorage.h"
 #include "DOMTimer.h"
 #include "Database.h"
 #include "Document.h"

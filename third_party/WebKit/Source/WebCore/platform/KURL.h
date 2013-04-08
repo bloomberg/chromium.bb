@@ -115,8 +115,6 @@ public:
 
     String baseAsString() const;
 
-    String fileSystemPath() const;
-
     // Returns true if the current URL's protocol is the same as the null-
     // terminated ASCII argument. The argument must be lower-case.
     bool protocolIs(const char*) const;
