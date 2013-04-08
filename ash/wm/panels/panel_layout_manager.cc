@@ -441,10 +441,11 @@ void PanelLayoutManager::Relayout() {
     gfx::Rect icon_bounds =
         launcher_->GetScreenBoundsOfItemIconForWindow(panel);
 
-    // An empty rect indicates that there is no icon for the panel in the
-    // launcher. Just use the current bounds, as there's no icon to draw the
-    // panel above.
-    if (icon_bounds.IsEmpty())
+    // If both the icon width and height are 0 then there is no icon in the
+    // launcher. If the launcher is hidden, one of the height or width will be
+    // 0 but the position in the launcher and major dimension is still reported
+    // correctly and the panel can be aligned above where the hidden icon is.
+    if (icon_bounds.width() == 0 && icon_bounds.height() == 0)
       continue;
 
     if (panel->HasFocus() ||

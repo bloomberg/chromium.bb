@@ -11,6 +11,7 @@
 #include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -121,7 +122,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     Launcher* launcher =
         RootWindowController::ForLauncher(panel)->shelf()->launcher();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
-    ASSERT_FALSE(icon_bounds.IsEmpty());
+    ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
     gfx::Rect launcher_bounds = launcher->shelf_widget()->
@@ -239,6 +240,15 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     return shell->GetShelfAlignment(root_window);
   }
 
+  void SetShelfAutoHideBehavior(aura::Window* window,
+                                ShelfAutoHideBehavior behavior) {
+    internal::ShelfLayoutManager* shelf =
+        RootWindowController::ForWindow(window)->shelf()->
+        shelf_layout_manager();
+    shelf->SetAutoHideBehavior(behavior);
+    shelf->UpdateAutoHideState();
+  }
+
  private:
   scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
 
@@ -254,6 +264,17 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 // layout manager.
 TEST_F(PanelLayoutManagerTest, AddOnePanel) {
   gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
+  EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
+  EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
+}
+
+// Tests that a created panel window is successfully aligned over a hidden
+// launcher icon.
+TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIcon) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  SetShelfAutoHideBehavior(Shell::GetPrimaryRootWindow(),
+                           SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
   EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
