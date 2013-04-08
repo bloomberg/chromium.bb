@@ -161,9 +161,7 @@ bool RuntimeEnabledFeatures::openDatabaseSyncEnabled()
 }
 #endif
 
-#if ENABLE(QUOTA)
 bool RuntimeEnabledFeatures::isQuotaEnabled = false;
-#endif
 
 bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
 

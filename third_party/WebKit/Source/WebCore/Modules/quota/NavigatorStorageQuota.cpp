@@ -31,8 +31,6 @@
 #include "config.h"
 #include "NavigatorStorageQuota.h"
 
-#if ENABLE(QUOTA)
-
 #include "Frame.h"
 #include "Navigator.h"
 #include "StorageQuota.h"
@@ -88,5 +86,3 @@ StorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)

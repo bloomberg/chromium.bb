@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(QUOTA)
-
 #include "StorageQuota.h"
 
 namespace WebCore {
@@ -46,5 +44,3 @@ StorageQuota::~StorageQuota()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)

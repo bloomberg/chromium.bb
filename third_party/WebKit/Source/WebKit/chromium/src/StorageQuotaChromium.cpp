@@ -31,8 +31,6 @@
 #include "config.h"
 #include "StorageQuota.h"
 
-#if ENABLE(QUOTA)
-
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "ScriptExecutionContext.h"
@@ -115,5 +113,3 @@ void StorageQuota::requestQuota(ScriptExecutionContext* scriptExecutionContext, 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(QUOTA)

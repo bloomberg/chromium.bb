@@ -18,7 +18,6 @@
  */
 
 [
-    Conditional=QUOTA,
     Supplemental=Navigator
 ] interface NavigatorStorageQuota {
     readonly attribute StorageQuota webkitTemporaryStorage;

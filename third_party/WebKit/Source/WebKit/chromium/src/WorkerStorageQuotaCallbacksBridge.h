@@ -31,7 +31,7 @@
 #ifndef WorkerStorageQuotaCallbacksBridge_h
 #define WorkerStorageQuotaCallbacksBridge_h
 
-#if ENABLE(QUOTA) && ENABLE(WORKERS)
+#if ENABLE(WORKERS)
 
 #include "ScriptExecutionContext.h"
 #include "StorageArea.h"
