@@ -32,12 +32,7 @@ is_validation_disabled = env.IsRunningUnderValgrind() and env.Bit('nacl_glibc')
 # due to MMX or x87 instructions that are included in shared runtime
 # components. The production fixed-function toolchain must remove these
 # problems.
-if env.Bit('running_on_valgrind'):
-  # Valgrind does not support SSE3 thus "sel_ldr -Z" always fails.
-  expect_null_Z_status=1
-  expect_sse_Z_status=1
-  expect_x87_Z_status=1
-elif env.Bit('tests_use_irt'):
+if env.Bit('tests_use_irt'):
   if (env.Bit('target_x86_64') and
       env.Bit('validator_ragel') and
       not env.Bit('nacl_glibc')):
