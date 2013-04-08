@@ -1965,19 +1965,17 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
 
 void SpdyFramer::SerializeNameValueBlockWithoutCompression(
     SpdyFrameBuilder* builder,
-    const SpdyFrameWithNameValueBlockIR& frame) const {
-  const SpdyNameValueBlock* name_value_block = &(frame.name_value_block());
-
+    const SpdyNameValueBlock& name_value_block) const {
   // Serialize number of headers.
   if (protocol_version() < 3) {
-    builder->WriteUInt16(name_value_block->size());
+    builder->WriteUInt16(name_value_block.size());
   } else {
-    builder->WriteUInt32(name_value_block->size());
+    builder->WriteUInt32(name_value_block.size());
   }
 
   // Serialize each header.
-  for (SpdyHeaderBlock::const_iterator it = name_value_block->begin();
-       it != name_value_block->end();
+  for (SpdyHeaderBlock::const_iterator it = name_value_block.begin();
+       it != name_value_block.end();
        ++it) {
     if (protocol_version() < 3) {
       builder->WriteString(it->first);
@@ -1993,14 +1991,16 @@ void SpdyFramer::SerializeNameValueBlock(
     SpdyFrameBuilder* builder,
     const SpdyFrameWithNameValueBlockIR& frame) {
   if (!enable_compression_) {
-    return SerializeNameValueBlockWithoutCompression(builder, frame);
+    return SerializeNameValueBlockWithoutCompression(builder,
+                                                     frame.name_value_block());
   }
 
   // First build an uncompressed version to be fed into the compressor.
   const size_t uncompressed_len = GetSerializedLength(
       protocol_version(), &(frame.name_value_block()));
   SpdyFrameBuilder uncompressed_builder(uncompressed_len);
-  SerializeNameValueBlockWithoutCompression(&uncompressed_builder, frame);
+  SerializeNameValueBlockWithoutCompression(&uncompressed_builder,
+                                            frame.name_value_block());
   scoped_ptr<SpdyFrame> uncompressed_payload(uncompressed_builder.take());
 
   z_stream* compressor = GetHeaderCompressor();

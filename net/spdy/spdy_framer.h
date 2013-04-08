@@ -504,6 +504,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyPriority GetLowestPriority() const { return spdy_version_ < 3 ? 3 : 7; }
   SpdyPriority GetHighestPriority() const { return 0; }
 
+  // Deliver the given control frame's compressed headers block to the visitor
+  // in decompressed form, in chunks. Returns true if the visitor has
+  // accepted all of the chunks.
+  bool IncrementallyDecompressControlFrameHeaderData(
+      SpdyStreamId stream_id,
+      const char* data,
+      size_t len);
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, BasicCompression);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameSizesAreValidated);
@@ -556,14 +564,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   z_stream* GetHeaderCompressor();
   z_stream* GetHeaderDecompressor();
 
-  // Deliver the given control frame's compressed headers block to the visitor
-  // in decompressed form, in chunks. Returns true if the visitor has
-  // accepted all of the chunks.
-  bool IncrementallyDecompressControlFrameHeaderData(
-      SpdyStreamId stream_id,
-      const char* data,
-      size_t len);
-
+ private:
   // Deliver the given control frame's uncompressed headers block to the
   // visitor in chunks. Returns true if the visitor has accepted all of the
   // chunks.
@@ -585,7 +586,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   void SerializeNameValueBlockWithoutCompression(
       SpdyFrameBuilder* builder,
-      const SpdyFrameWithNameValueBlockIR& frame) const;
+      const SpdyNameValueBlock& name_value_block) const;
 
   // Compresses automatically according to enable_compression_.
   void SerializeNameValueBlock(
