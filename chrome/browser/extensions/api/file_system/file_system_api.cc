@@ -485,21 +485,31 @@ bool FileSystemChooseEntryFunction::ShowPicker(
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
     EntryType entry_type) {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
-  DCHECK(registry);
-  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-      render_view_host());
-  if (!shell_window) {
-    error_ = kInvalidCallingPage;
-    return false;
+  // TODO(asargent/benwells) - As a short term remediation for crbug.com/179010
+  // we're adding the ability for a whitelisted extension to use this API since
+  // chrome.fileBrowserHandler.selectFile is ChromeOS-only. Eventually we'd
+  // like a better solution and likely this code will go back to being
+  // platform-app only.
+  content::WebContents* web_contents = NULL;
+  if (extension_->is_platform_app()) {
+    ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
+    DCHECK(registry);
+    ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
+        render_view_host());
+    if (!shell_window) {
+      error_ = kInvalidCallingPage;
+      return false;
+    }
+    web_contents = shell_window->web_contents();
+  } else {
+    web_contents = GetAssociatedWebContents();
   }
-
   // The file picker will hold a reference to this function instance, preventing
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
-  new FilePicker(this, shell_window->web_contents(), suggested_name,
-      file_type_info, picker_type, entry_type);
+  new FilePicker(this, web_contents, suggested_name, file_type_info,
+                 picker_type, entry_type);
   return true;
 }
 
