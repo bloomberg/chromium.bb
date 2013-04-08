@@ -56,40 +56,36 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
 }
 
 Status PrepareCommandLine(int port,
-                          const base::FilePath& exe,
-                          const base::ListValue* args,
-                          const base::ListValue* extensions,
-                          const base::DictionaryValue* prefs,
-                          const base::DictionaryValue* local_state,
+                          const Capabilities& capabilities,
                           CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
                           base::ScopedTempDir* extension_dir) {
-  base::FilePath program = exe;
+  CommandLine command = capabilities.command;
+  base::FilePath program = command.GetProgram();
   if (program.empty()) {
     if (!FindChrome(&program))
       return Status(kUnknownError, "cannot find Chrome binary");
+    command.SetProgram(program);
+  } else if (!file_util::PathExists(program)) {
+    return Status(kUnknownError,
+                  base::StringPrintf("no chrome binary at %" PRFilePath,
+                                     program.value().c_str()));
   }
   LOG(INFO) << "Using chrome from " << program.value();
 
-  CommandLine command(program);
   command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
   command.AppendSwitch("no-first-run");
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
   command.AppendArg("data:text/html;charset=utf-8,");
 
-  if (args) {
-    Status status = internal::ProcessCommandLineArgs(args, &command);
-    if (status.IsError())
-      return status;
-  }
-
   if (!command.HasSwitch("user-data-dir")) {
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
     command.AppendSwitchPath("user-data-dir", user_data_dir->path());
     Status status = internal::PrepareUserDataDir(
-        user_data_dir->path(), prefs, local_state);
+        user_data_dir->path(), capabilities.prefs.get(),
+        capabilities.local_state.get());
     if (status.IsError())
       return status;
   }
@@ -99,7 +95,7 @@ Status PrepareCommandLine(int port,
                   "cannot create temp dir for unpacking extensions");
   }
   Status status = internal::ProcessExtensions(
-      extensions, extension_dir->path(), true, &command);
+      capabilities.extensions, extension_dir->path(), true, &command);
   if (status.IsError())
     return status;
 
@@ -181,30 +177,24 @@ Status WaitForDevToolsAndCheckVersion(
   return Status(kUnknownError, "unable to discover open pages");
 }
 
-}  // namespace
-
 Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
                            int port,
                            const SyncWebSocketFactory& socket_factory,
-                           const base::FilePath& exe,
-                           const base::ListValue* args,
-                           const base::ListValue* extensions,
-                           const base::DictionaryValue* prefs,
-                           const base::DictionaryValue* local_state,
-                           const std::string& log_path,
+                           const Capabilities& capabilities,
                            scoped_ptr<Chrome>* chrome) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
-  PrepareCommandLine(port, exe, args, extensions, prefs, local_state,
+  PrepareCommandLine(port, capabilities,
                      &command, &user_data_dir, &extension_dir);
   base::LaunchOptions options;
 
 #if !defined(OS_WIN)
   base::EnvironmentVector environ;
-  if (!log_path.empty()) {
-    environ.push_back(base::EnvironmentVector::value_type("CHROME_LOG_FILE",
-                                                          log_path));
+  if (!capabilities.log_path.empty()) {
+    environ.push_back(
+        base::EnvironmentVector::value_type("CHROME_LOG_FILE",
+                                            capabilities.log_path));
     options.environ = &environ;
   }
 #endif
@@ -263,13 +253,13 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
 Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
                            int port,
                            const SyncWebSocketFactory& socket_factory,
-                           const std::string& package_name,
+                           const Capabilities& capabilities,
                            scoped_ptr<Chrome>* chrome) {
   // TODO(frankf): Figure out how this should be installed to
   // make this work for all platforms.
   base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
   CommandLine command(adb_commands);
-  command.AppendSwitchASCII("package", package_name);
+  command.AppendSwitchASCII("package", capabilities.android_package);
   command.AppendSwitch("launch");
   command.AppendSwitchASCII("port", base::IntToString(port));
 
@@ -297,46 +287,38 @@ Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
   return Status(kOk);
 }
 
-namespace internal {
+}  // namespace
 
-Status ProcessCommandLineArgs(const base::ListValue* args,
-                              CommandLine* command) {
-  for (size_t i = 0; i < args->GetSize(); ++i) {
-    std::string arg_string;
-    if (!args->GetString(i, &arg_string))
-      return Status(kUnknownError, "invalid chrome command line argument");
-    size_t separator_index = arg_string.find("=");
-    if (separator_index != std::string::npos) {
-      CommandLine::StringType arg_string_native;
-      if (!args->GetString(i, &arg_string_native))
-        return Status(kUnknownError, "invalid chrome command line argument");
-      command->AppendSwitchNative(
-          arg_string.substr(0, separator_index),
-          arg_string_native.substr(separator_index + 1));
-    } else {
-      command->AppendSwitch(arg_string);
-    }
+Status LaunchChrome(URLRequestContextGetter* context_getter,
+                    int port,
+                    const SyncWebSocketFactory& socket_factory,
+                    const Capabilities& capabilities,
+                    scoped_ptr<Chrome>* chrome) {
+  if (capabilities.IsAndroid()) {
+    return LaunchAndroidChrome(
+        context_getter, port, socket_factory, capabilities, chrome);
+  } else {
+    return LaunchDesktopChrome(
+        context_getter, port, socket_factory, capabilities, chrome);
   }
-  return Status(kOk);
 }
 
-Status ProcessExtensions(const base::ListValue* extensions,
+namespace internal {
+
+Status ProcessExtensions(const std::vector<std::string>& extensions,
                          const base::FilePath& temp_dir,
                          bool include_automation_extension,
                          CommandLine* command) {
   std::vector<base::FilePath::StringType> extension_paths;
-  for (size_t i = 0; i < (extensions ? extensions->GetSize() : 0); ++i) {
+  size_t count = 0;
+  for (std::vector<std::string>::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
     std::string extension_base64;
-    if (!extensions->GetString(i, &extension_base64)) {
-      return Status(kUnknownError,
-                    "each extension must be a base64 encoded string");
-    }
-
     // Decodes extension string.
     // Some WebDriver client base64 encoders follow RFC 1521, which require that
     // 'encoded lines be no more than 76 characters long'. Just remove any
     // newlines.
-    RemoveChars(extension_base64, "\n", &extension_base64);
+    RemoveChars(*it, "\n", &extension_base64);
     std::string decoded_extension;
     if (!base::Base64Decode(extension_base64, &decoded_extension))
       return Status(kUnknownError, "failed to base64 decode extension");
@@ -349,12 +331,14 @@ Status ProcessExtensions(const base::ListValue* extensions,
     base::FilePath extension_crx = temp_crx_dir.path().AppendASCII("temp.crx");
     int size = static_cast<int>(decoded_extension.length());
     if (file_util::WriteFile(extension_crx, decoded_extension.c_str(), size)
-        != size)
+        != size) {
       return Status(kUnknownError, "failed to write extension file");
+    }
 
     // Unzips the temporary .crx file.
+    count++;
     base::FilePath extension_dir = temp_dir.AppendASCII(
-        base::StringPrintf("extension%" PRIuS, i));
+        base::StringPrintf("extension%" PRIuS, count));
     if (!zip::Unzip(extension_crx, extension_dir))
       return Status(kUnknownError, "failed to unzip the extension CRX file");
     extension_paths.push_back(extension_dir.value());

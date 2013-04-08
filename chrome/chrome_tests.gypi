@@ -914,6 +914,8 @@
         '../third_party/webdriver/atoms.h',
         'test/chromedriver/basic_types.cc',
         'test/chromedriver/basic_types.h',
+        'test/chromedriver/capabilities.cc',
+        'test/chromedriver/capabilities.h',
         'test/chromedriver/chrome_launcher.cc',
         'test/chromedriver/chrome_launcher.h',
         'test/chromedriver/chromedriver.cc',
@@ -1016,6 +1018,7 @@
         '../ui/ui.gyp:ui',
       ],
       'sources': [
+        'test/chromedriver/capabilities_unittest.cc',
         'test/chromedriver/chrome/chrome_finder_unittest.cc',
         'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
         'test/chromedriver/chrome/devtools_http_client_unittest.cc',

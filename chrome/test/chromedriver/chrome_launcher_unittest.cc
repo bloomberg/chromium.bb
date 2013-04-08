@@ -15,69 +15,11 @@
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(ProcessCommandLineArgs, NoArgs) {
-  CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue switches;
-  ASSERT_TRUE(switches.empty());
-  Status status = internal::ProcessCommandLineArgs(&switches, &command);
-  ASSERT_TRUE(status.IsOk());
-  ASSERT_TRUE(command.GetSwitches().empty());
-}
-
-TEST(ProcessCommandLineArgs, SingleArgWithoutValue) {
-  CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue switches;
-  switches.AppendString("enable-nacl");
-  ASSERT_EQ(1u, switches.GetSize());
-  Status status = internal::ProcessCommandLineArgs(&switches, &command);
-  ASSERT_TRUE(status.IsOk());
-  ASSERT_EQ(1u, command.GetSwitches().size());
-  ASSERT_TRUE(command.HasSwitch("enable-nacl"));
-}
-
-TEST(ProcessCommandLineArgs, SingleArgWithValue) {
-  CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue switches;
-  switches.AppendString("load-extension=/test/extension");
-  ASSERT_EQ(1u, switches.GetSize());
-  Status status = internal::ProcessCommandLineArgs(&switches, &command);
-  ASSERT_TRUE(status.IsOk());
-  ASSERT_EQ(1u, command.GetSwitches().size());
-  ASSERT_TRUE(command.HasSwitch("load-extension"));
-  ASSERT_EQ("/test/extension", command.GetSwitchValueASCII("load-extension"));
-}
-
-TEST(ProcessCommandLineArgs, MultipleArgs) {
-  CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue switches;
-  switches.AppendString("disable-sync");
-  switches.AppendString("user-data-dir=/test/user/data");
-  ASSERT_EQ(2u, switches.GetSize());
-  Status status = internal::ProcessCommandLineArgs(&switches, &command);
-  ASSERT_TRUE(status.IsOk());
-  ASSERT_EQ(2u, command.GetSwitches().size());
-  ASSERT_TRUE(command.HasSwitch("disable-sync"));
-  ASSERT_TRUE(command.HasSwitch("user-data-dir"));
-  ASSERT_EQ("/test/user/data", command.GetSwitchValueASCII("user-data-dir"));
-}
-
-TEST(ProcessExtensions, AutomationExtension) {
-  CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue extensions;
-  base::FilePath extension_dir;
-  Status status = internal::ProcessExtensions(&extensions, extension_dir,
-                                              true, &command);
-  ASSERT_TRUE(status.IsOk()) << status.message();
-  ASSERT_TRUE(command.HasSwitch("load-extension"));
-  base::FilePath temp_ext_path = command.GetSwitchValuePath("load-extension");
-  ASSERT_TRUE(file_util::PathExists(temp_ext_path));
-}
-
 TEST(ProcessExtensions, NoExtension) {
   CommandLine command(CommandLine::NO_PROGRAM);
-  base::ListValue extensions;
+  std::vector<std::string> extensions;
   base::FilePath extension_dir;
-  Status status = internal::ProcessExtensions(&extensions, extension_dir,
+  Status status = internal::ProcessExtensions(extensions, extension_dir,
                                               false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_FALSE(command.HasSwitch("load-extension"));
@@ -91,16 +33,16 @@ TEST(ProcessExtensions, SingleExtension) {
   std::string crx_contents;
   ASSERT_TRUE(file_util::ReadFileToString(crx_file_path, &crx_contents));
 
-  base::ListValue extensions;
+  std::vector<std::string> extensions;
   std::string crx_encoded;
   ASSERT_TRUE(base::Base64Encode(crx_contents, &crx_encoded));
-  extensions.AppendString(crx_encoded);
+  extensions.push_back(crx_encoded);
 
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
 
   CommandLine command(CommandLine::NO_PROGRAM);
-  Status status = internal::ProcessExtensions(&extensions, extension_dir.path(),
+  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
                                               false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(command.HasSwitch("load-extension"));
@@ -120,18 +62,18 @@ TEST(ProcessExtensions, MultipleExtensions) {
   ASSERT_TRUE(file_util::ReadFileToString(test_crx_1, &crx_1_contents));
   ASSERT_TRUE(file_util::ReadFileToString(test_crx_2, &crx_2_contents));
 
-  base::ListValue extensions;
+  std::vector<std::string> extensions;
   std::string crx_1_encoded, crx_2_encoded;
   ASSERT_TRUE(base::Base64Encode(crx_1_contents, &crx_1_encoded));
   ASSERT_TRUE(base::Base64Encode(crx_2_contents, &crx_2_encoded));
-  extensions.AppendString(crx_1_encoded);
-  extensions.AppendString(crx_2_encoded);
+  extensions.push_back(crx_1_encoded);
+  extensions.push_back(crx_2_encoded);
 
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
 
   CommandLine command(CommandLine::NO_PROGRAM);
-  Status status = internal::ProcessExtensions(&extensions, extension_dir.path(),
+  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
                                               false, &command);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(command.HasSwitch("load-extension"));

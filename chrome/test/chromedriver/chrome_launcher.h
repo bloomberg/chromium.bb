@@ -6,9 +6,11 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class CommandLine;
@@ -16,34 +18,20 @@ class CommandLine;
 namespace base {
 class DictionaryValue;
 class FilePath;
-class ListValue;
 }
 
 class Chrome;
 class Status;
 class URLRequestContextGetter;
 
-Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
-                           int port,
-                           const SyncWebSocketFactory& socket_factory,
-                           const base::FilePath& exe,
-                           const base::ListValue* args,
-                           const base::ListValue* extensions,
-                           const base::DictionaryValue* prefs,
-                           const base::DictionaryValue* local_state,
-                           const std::string& log_path,
-                           scoped_ptr<Chrome>* chrome);
-
-Status LaunchAndroidChrome(URLRequestContextGetter* context_getter,
-                           int port,
-                           const SyncWebSocketFactory& socket_factory,
-                           const std::string& package_name,
-                           scoped_ptr<Chrome>* chrome);
+Status LaunchChrome(URLRequestContextGetter* context_getter,
+                    int port,
+                    const SyncWebSocketFactory& socket_factory,
+                    const Capabilities& capabilities,
+                    scoped_ptr<Chrome>* chrome);
 
 namespace internal {
-Status ProcessCommandLineArgs(const base::ListValue* args,
-                              CommandLine* command);
-Status ProcessExtensions(const base::ListValue* extensions,
+Status ProcessExtensions(const std::vector<std::string>& extensions,
                          const base::FilePath& temp_dir,
                          bool include_automation_extension,
                          CommandLine* command);

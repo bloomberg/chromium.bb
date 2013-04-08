@@ -4,11 +4,10 @@
 
 #include "chrome/test/chromedriver/commands.h"
 
-#include "base/callback.h"
-#include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
@@ -58,75 +57,19 @@ Status ExecuteNewSession(
   if (!params.GetDictionary("desiredCapabilities", &desired_caps))
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
+  Capabilities capabilities;
+  Status status = capabilities.Parse(*desired_caps);
+  if (status.IsError())
+    return status;
+
   scoped_ptr<Chrome> chrome;
-  std::string android_package;
-  if (desired_caps->GetString("chromeOptions.android_package",
-                              &android_package)) {
-    Status status = LaunchAndroidChrome(
-        context_getter, port, socket_factory, android_package, &chrome);
-    if (status.IsError())
-      return status;
-  } else {
-    base::FilePath::StringType path_str;
-    base::FilePath chrome_exe;
-    if (desired_caps->GetString("chromeOptions.binary", &path_str)) {
-      chrome_exe = base::FilePath(path_str);
-      if (!file_util::PathExists(chrome_exe)) {
-        std::string message = base::StringPrintf(
-            "no chrome binary at %" PRFilePath,
-            path_str.c_str());
-        return Status(kUnknownError, message);
-      }
-    }
-
-    const base::Value* args = NULL;
-    const base::ListValue* args_list = NULL;
-    if (desired_caps->Get("chromeOptions.args", &args) &&
-        !args->GetAsList(&args_list)) {
-      return Status(kUnknownError,
-                    "command line arguments for chrome must be a list");
-    }
-
-    const base::Value* prefs = NULL;
-    const base::DictionaryValue* prefs_dict = NULL;
-    if (desired_caps->Get("chromeOptions.prefs", &prefs) &&
-        !prefs->GetAsDictionary(&prefs_dict)) {
-      return Status(kUnknownError, "'prefs' must be a dictionary");
-    }
-
-    const base::Value* local_state = NULL;
-    const base::DictionaryValue* local_state_dict = NULL;
-    if (desired_caps->Get("chromeOptions.localState", &local_state) &&
-        !prefs->GetAsDictionary(&prefs_dict)) {
-      return Status(kUnknownError, "'localState' must be a dictionary");
-    }
-
-    const base::Value* extensions = NULL;
-    const base::ListValue* extensions_list = NULL;
-    if (desired_caps->Get("chromeOptions.extensions", &extensions)
-        && !extensions->GetAsList(&extensions_list)) {
-      return Status(kUnknownError,
-                    "chrome extensions must be a list");
-    }
-
-    const base::Value* log_path = NULL;
-    std::string chrome_log_path;
-    if (desired_caps->Get("chromeOptions.logPath", &log_path) &&
-        !log_path->GetAsString(&chrome_log_path)) {
-      return Status(kUnknownError,
-                    "chrome log path must be a string");
-    }
-
-    Status status = LaunchDesktopChrome(
-        context_getter, port, socket_factory,
-        chrome_exe, args_list, extensions_list,
-        prefs_dict, local_state_dict, chrome_log_path, &chrome);
-    if (status.IsError())
-      return status;
-  }
+  status = LaunchChrome(context_getter, port, socket_factory,
+                        capabilities, &chrome);
+  if (status.IsError())
+    return status;
 
   std::list<std::string> web_view_ids;
-  Status status = chrome->GetWebViewIds(&web_view_ids);
+  status = chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError() || web_view_ids.empty()) {
     chrome->Quit();
     return status.IsError() ? status :
