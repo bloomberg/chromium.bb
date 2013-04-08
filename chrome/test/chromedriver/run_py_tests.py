@@ -46,6 +46,9 @@ elif util.IsLinux():
   _DESKTOP_OS_SPECIFIC_FILTER = [
       # Xvfb doesn't support maximization.
       'ChromeDriverTest.testWindowMaximize',
+      # https://code.google.com/p/chromedriver/issues/detail?id=302
+      'ChromeDriverTest.testWindowPosition',
+      'ChromeDriverTest.testWindowSize',
   ]
 
 

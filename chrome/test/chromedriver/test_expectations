@@ -10,6 +10,8 @@ It is evaluated through Python.
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.*',
+    'PerformanceLoggingTest.*',
+    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'AuthenticatedPageLoadingTest.*',
     'AvailableLogsTest.browserLogShouldBeEnabledByDefault',
     'AvailableLogsTest.clientLogShouldBeEnabledByDefault',
@@ -95,6 +97,10 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 ]
 _REVISION_NEGATIVE_FILTER['26'] = [
     'UploadTest.testFileUploading',
+    'CorrectEventFiringTest.testUploadingFileShouldFireOnChangeEvent',
+    'FormHandlingTest.testShouldBeAbleToAlterTheContentsOfAFileUploadInputElement',
+    'FormHandlingTest.testShouldBeAbleToUploadTheSameFileTwice',
+    'FormHandlingTest.testShouldBeAbleToSendKeysToAFileUploadInputElementInAnXhtmlDocument',
 ] + _REVISION_NEGATIVE_FILTER['HEAD']
 
 _OS_NEGATIVE_FILTER = {}
