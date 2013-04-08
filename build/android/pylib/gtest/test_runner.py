@@ -207,6 +207,7 @@ def _GetOptionalDataFilesForTestSuite(test_suite_basename):
         'third_party/WebKit/LayoutTests/fast/workers',
         'third_party/WebKit/LayoutTests/http/tests',
         'third_party/WebKit/LayoutTests/storage/indexeddb',
+        'third_party/WebKit/LayoutTests/media',
         'content/test/data/layout_tests/LayoutTests/fast/events',
         'content/test/data/layout_tests/LayoutTests/fast/files',
         'content/test/data/layout_tests/LayoutTests/fast/filesystem',
@@ -214,6 +215,7 @@ def _GetOptionalDataFilesForTestSuite(test_suite_basename):
         'content/test/data/layout_tests/LayoutTests/fast/workers',
         'content/test/data/layout_tests/LayoutTests/http/tests',
         'content/test/data/layout_tests/LayoutTests/storage/indexeddb',
+        'content/test/data/layout_tests/LayoutTests/media',
     ]
   return []
 
