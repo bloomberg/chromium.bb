@@ -17,7 +17,7 @@ from driver_log import Log
 EXTRA_ENV = {
   'INPUTS'             : '',
   'OUTPUT'             : '',
-  'OPT_FLAGS'          : '-disable-opt -strip',
+  'OPT_FLAGS'          : '-disable-opt -strip -strip-metadata',
   'RUN_OPT'            : '${LLVM_OPT} ${OPT_FLAGS} ${input} -o ${output}',
 }
 
