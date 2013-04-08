@@ -449,6 +449,12 @@ DialogType.isModal = function(type) {
         stateChangeHandler);
     stateChangeHandler();
 
+    var driveConnectionChangedHandler =
+        this.onDriveConnectionChanged_.bind(this);
+    this.volumeManager_.addEventListener('drive-connection-changed',
+        driveConnectionChangedHandler);
+    driveConnectionChangedHandler();
+
     this.refocus();
 
     this.initDataTransferOperations_();

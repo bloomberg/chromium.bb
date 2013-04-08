@@ -307,9 +307,11 @@ div.sidebar-splitter {
 .dialog-header {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
+  -webkit-margin-end: 7px;
   -webkit-transition: all 180ms ease;
   display: -webkit-box;
-  margin: 7px 7px 7px 0;
+  margin-bottom: 7px;
+  margin-top: 7px;
 }
 
 body[maximized][type='full-page'] .dialog-header {
@@ -371,6 +373,42 @@ body[maximized][type='full-page'] .dialog-header {
 #dir-breadcrumbs {
   -webkit-margin-end: 5px;
   -webkit-margin-start: 10px;
+}
+
+/* The icon for offline mode */
+.offline-icon {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: 10px;
+  -webkit-transition-property: opacity;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/offline.png') 1x,
+    url('../images/files/ui/2x/offline.png') 2x);
+  height: 16px;
+  opacity: 0;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+  width: 16px;
+}
+
+/* Transition for '-webkit-margin-start' (or -end) property is not working.
+ * So I added .offline-icon-space to animate 'width' property. */
+.offline-icon-space {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: -26px; /* Clear width of .offline-icon */
+  -webkit-transition-property: width;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+  width: 0;
+}
+
+body[drive] .dialog-container[connection='offline'] .offline-icon,
+body[drive] .dialog-container[connection='metered'] .offline-icon {
+  opacity: 1;
+}
+
+body[drive] .dialog-container[connection='offline'] .offline-icon-space,
+body[drive] .dialog-container[connection='metered'] .offline-icon-space {
+  width: 26px;
 }
 
 #search-breadcrumbs {
@@ -1260,8 +1298,8 @@ body:not([type='saveas-file']) #filename-input-box {
 /* Dimmed items */
 
 body[type='folder'] .file,
-[drive][connection='offline'] .dim-offline,
-[drive][connection='metered'] .dim-metered {
+body[drive] .dialog-container[connection='offline'] .dim-offline,
+body[drive] .dialog-container[connection='metered'] .dim-metered {
   opacity: 0.4;
 }
 
