@@ -129,7 +129,7 @@
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
     'component%': '<(component)',
-    'nacl_validator_ragel%': 0,
+    'nacl_validator_ragel%': 1,
 
     'linux2%': 0,
       'conditions': [

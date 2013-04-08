@@ -333,7 +333,7 @@ def SetUpArgumentBits(env):
       'to run the specified test(s) without actually running them.  This '
       'argument is a counterpart to built_elsewhere.')
 
-  BitFromArgument(env, 'validator_ragel', default=False,
+  BitFromArgument(env, 'validator_ragel', default=True,
     desc='Use the R-DFA validator instead of the original validators.')
 
   # TODO(shcherbina): add support for other golden-based tests, not only

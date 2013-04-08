@@ -360,7 +360,7 @@ def BuildScript(status, context):
     # Build with ragel-based validator using GYP.
     gyp_defines_save = context.GetEnv('GYP_DEFINES')
     context.SetEnv('GYP_DEFINES',
-                   ' '.join([gyp_defines_save, 'nacl_validator_ragel=1']))
+                   ' '.join([gyp_defines_save, 'nacl_validator_ragel=0']))
     with Step('gyp_compile_ragel', status):
       # Clobber GYP build to recompile necessary files with new preprocessor macro
       # definitions.  It is done because some build systems (such as GNU Make,
@@ -371,12 +371,12 @@ def BuildScript(status, context):
     context.SetEnv('GYP_DEFINES', gyp_defines_save)
 
   # Build with ragel-based validator using scons.
-  with Step('scons_compile_ragel', status):
-    SCons(context, parallel=True, args=['validator_ragel=1'])
+  with Step('scons_compile_noragel', status):
+    SCons(context, parallel=True, args=['validator_ragel=0'])
 
   # Smoke tests for the R-DFA validator.
-  with Step('validator_ragel_tests', status):
-    args = ['validator_ragel=1',
+  with Step('validator_noragel_tests', status):
+    args = ['validator_ragel=0',
             'small_tests',
             'medium_tests',
             'large_tests',

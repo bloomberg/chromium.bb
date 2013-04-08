@@ -801,15 +801,15 @@ if env.Bit('target_x86_64'):
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_x32_test')
 
-# Test canned hello_world binary with validator_ragel.
-if env.Bit('validator_ragel') and env.Bit('target_x86'):
+# Test canned hello_world binary with obsolete, non-ragel based validator.
+if not env.Bit('validator_ragel') and env.Bit('target_x86'):
   node = env.CommandSelLdrTestNacl(
       'dfa_hwd.out',
       env.File(arch_testdata_dir + '/hello_world.nexe'),
       stdout_golden = env.File('testdata/hello_world.stdout'),
-      stderr_golden = env.File('testdata/dfa_validator_hello.stderr'),
+      stderr_golden = env.File('testdata/non_dfa_validator_hello.stderr'),
       filter_regex = '"^(Hello, World!)$' + '|' +
-        '^[[][^]]*[]] (DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!)$"',
+        '^[[][^]]*[]] (USING OBSOLETE NON-DFA-BASED VALIDATOR!)$"',
       filter_group_only = 'true',
       )
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
