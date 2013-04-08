@@ -45,9 +45,6 @@
 #if PLATFORM(MAC)
 #include "TextCodecMac.h"
 #endif
-#if OS(WINDOWS) && USE(WCHAR_UNICODE)
-#include "win/TextCodecWin.h"
-#endif
 
 #include <wtf/CurrentTime.h>
 #include <wtf/text/CString.h>
@@ -296,11 +293,6 @@ static void extendTextCodecMaps()
 #if PLATFORM(MAC)
     TextCodecMac::registerEncodingNames(addToTextEncodingNameMap);
     TextCodecMac::registerCodecs(addToTextCodecMap);
-#endif
-
-#if OS(WINDOWS) && USE(WCHAR_UNICODE)
-    TextCodecWin::registerExtendedEncodingNames(addToTextEncodingNameMap);
-    TextCodecWin::registerExtendedCodecs(addToTextCodecMap);
 #endif
 
     pruneBlacklistedCodecs();
