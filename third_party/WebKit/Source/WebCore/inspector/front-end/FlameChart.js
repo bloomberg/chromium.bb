@@ -511,8 +511,8 @@ WebInspector.FlameChart.prototype = {
         context.moveTo(0, height - 1);
         for (var x = 0; x < width; ++x)
             context.lineTo(x, height - drawData[x] * yScaleFactor - 1);
-        context.moveTo(width - 1, height - 1);
-        context.moveTo(0, height - 1);
+        context.lineTo(width - 1, height - 1);
+        context.lineTo(0, height - 1);
         context.fill();
         context.stroke();
         context.closePath();
