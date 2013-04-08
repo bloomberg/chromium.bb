@@ -28,9 +28,6 @@
 #define PlatformKeyboardEvent_h
 
 #include "PlatformEvent.h"
-#if OS(WINDOWS)
-#include "WindowsExtras.h"
-#endif
 #include <wtf/text/WTFString.h>
 
 #if PLATFORM(MAC)

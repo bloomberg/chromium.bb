@@ -28,9 +28,6 @@
 
 #include "IntPoint.h"
 #include "PlatformEvent.h"
-#if OS(WINDOWS)
-#include "WindowsExtras.h"
-#endif
 
 #if PLATFORM(GTK)
 typedef struct _GdkEventScroll GdkEventScroll;
