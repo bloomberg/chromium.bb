@@ -758,6 +758,7 @@ void RenderWidgetHostViewAura::WasHidden() {
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
   SetBounds(gfx::Rect(window_->bounds().origin(), size));
+  previous_damage_.op(RectToSkIRect(gfx::Rect(size)), SkRegion::kUnion_Op);
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
