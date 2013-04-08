@@ -51,7 +51,7 @@ int32_t sk_atomic_conditional_inc(int32_t* addr) {
         }
 
         int32_t before;
-        before = base::subtle::Aquire_CompareAndSwap(addr, value, value + 1);
+        before = base::subtle::Acquire_CompareAndSwap(addr, value, value + 1);
 
         if (before == value) {
             return value;
