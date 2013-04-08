@@ -4161,8 +4161,6 @@
             'platform/network/Credential.cpp',
             'platform/network/CredentialStorage.cpp',
             'platform/network/DNS.h',
-            'platform/network/DataURL.cpp',
-            'platform/network/DataURL.h',
             'platform/network/FormData.cpp',
             'platform/network/FormDataBuilder.cpp',
             'platform/network/FormDataBuilder.h',
