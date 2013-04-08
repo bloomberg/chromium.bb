@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+class AuthenticationChallenge;
 class DocumentLoader;
 class Frame;
 class Page;
@@ -46,6 +47,9 @@ class ResourceLoadNotifier {
     WTF_MAKE_NONCOPYABLE(ResourceLoadNotifier);
 public:
     ResourceLoadNotifier(Frame*);
+
+    void didReceiveAuthenticationChallenge(ResourceLoader*, const AuthenticationChallenge&);
+    void didCancelAuthenticationChallenge(ResourceLoader*, const AuthenticationChallenge&);
 
     void willSendRequest(ResourceLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
     void didReceiveResponse(ResourceLoader*, const ResourceResponse&);

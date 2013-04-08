@@ -410,6 +410,18 @@ bool FrameLoaderClientImpl::shouldUseCredentialStorage(
     return true;
 }
 
+void FrameLoaderClientImpl::dispatchDidReceiveAuthenticationChallenge(
+    DocumentLoader*, unsigned long identifier, const AuthenticationChallenge&)
+{
+    // FIXME
+}
+
+void FrameLoaderClientImpl::dispatchDidCancelAuthenticationChallenge(
+    DocumentLoader*, unsigned long identifier, const AuthenticationChallenge&)
+{
+    // FIXME
+}
+
 void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
                                                        unsigned long identifier,
                                                        const ResourceResponse& response)
@@ -1236,6 +1248,12 @@ void FrameLoaderClientImpl::didDetectXSS(const KURL& insecureURL, bool didBlockE
 {
     if (m_webFrame->client())
         m_webFrame->client()->didDetectXSS(m_webFrame, insecureURL, didBlockEntirePage);
+}
+
+ResourceError FrameLoaderClientImpl::blockedError(const ResourceRequest&)
+{
+    // FIXME
+    return ResourceError();
 }
 
 ResourceError FrameLoaderClientImpl::cancelledError(const ResourceRequest& request)

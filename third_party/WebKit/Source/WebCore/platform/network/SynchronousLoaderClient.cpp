@@ -24,34 +24,57 @@
  */
 
 #include "config.h"
-#include "ResourceHandleClient.h"
+#include "SynchronousLoaderClient.h"
 
+#include "AuthenticationChallenge.h"
 #include "ResourceHandle.h"
-#include "SharedBuffer.h"
+#include "ResourceRequest.h"
 
 namespace WebCore {
 
-ResourceHandleClient::ResourceHandleClient()
+SynchronousLoaderClient::~SynchronousLoaderClient()
 {
 }
 
-ResourceHandleClient::~ResourceHandleClient()
+void SynchronousLoaderClient::willSendRequest(ResourceHandle* handle, ResourceRequest& request, const ResourceResponse& /*redirectResponse*/)
 {
+    // FIXME: This needs to be fixed to follow the redirect correctly even for cross-domain requests.
+    if (protocolHostAndPortAreEqual(handle->firstRequest().url(), request.url()))
+        return;
+
+    ASSERT(m_error.isNull());
+    m_error = platformBadResponseError();
+    m_isDone = true;
+    request = 0;
 }
 
-void ResourceHandleClient::willSendRequestAsync(ResourceHandle* handle, const ResourceRequest& request, const ResourceResponse& /*redirectResponse*/)
+bool SynchronousLoaderClient::shouldUseCredentialStorage(ResourceHandle*)
 {
-    handle->continueWillSendRequest(request);
+    // FIXME: We should ask FrameLoaderClient whether using credential storage is globally forbidden.
+    return m_allowStoredCredentials;
 }
 
-void ResourceHandleClient::shouldUseCredentialStorageAsync(ResourceHandle* handle)
+void SynchronousLoaderClient::didReceiveResponse(ResourceHandle*, const ResourceResponse& response)
 {
-    handle->continueShouldUseCredentialStorage(false);
+    m_response = response;
 }
 
-void ResourceHandleClient::didReceiveBuffer(ResourceHandle* handle, PassRefPtr<SharedBuffer> buffer, int encodedDataLength)
+void SynchronousLoaderClient::didReceiveData(ResourceHandle*, const char* data, int length, int /*encodedDataLength*/)
 {
-    didReceiveData(handle, buffer->data(), buffer->size(), encodedDataLength);
+    m_data.append(data, length);
+}
+
+void SynchronousLoaderClient::didFinishLoading(ResourceHandle*, double)
+{
+    m_isDone = true;
+}
+
+void SynchronousLoaderClient::didFail(ResourceHandle*, const ResourceError& error)
+{
+    ASSERT(m_error.isNull());
+
+    m_error = error;
+    m_isDone = true;
 }
 
 }
