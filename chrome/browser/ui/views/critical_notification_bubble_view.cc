@@ -142,10 +142,8 @@ void CriticalNotificationBubbleView::GetAccessibleState(
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
-  if (is_add && child == this) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_ALERT, true);
-  }
+  if (is_add && child == this)
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
 }
 
 bool CriticalNotificationBubbleView::AcceleratorPressed(

@@ -314,12 +314,12 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
 }
 
 void InfoBarView::PlatformSpecificShow(bool animate) {
-  views::Widget* widget = GetWidget();
   views::FocusManager* focus_manager = GetFocusManager();
 #if defined(OS_WIN)
   // If we gain focus, we want to restore it to the previously-focused element
   // when we're hidden.  So when we're in a Widget, create a focus tracker so
   // that if we gain focus we'll know what the previously-focused element was.
+  views::Widget* widget = GetWidget();
   if (widget) {
     focus_tracker_.reset(
         new views::ExternalFocusTracker(this, focus_manager));
@@ -327,10 +327,7 @@ void InfoBarView::PlatformSpecificShow(bool animate) {
 #endif
   if (focus_manager)
     focus_manager->AddFocusChangeListener(this);
-  if (widget) {
-    widget->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_ALERT, true);
-  }
+  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
@@ -383,9 +380,8 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
   // This will trigger some screen readers to read the entire contents of this
   // infobar.
   if (focused_before && focused_now && !Contains(focused_before) &&
-      Contains(focused_now) && GetWidget()) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_ALERT, true);
+      Contains(focused_now)) {
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
   }
 }
 

@@ -165,8 +165,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  GetWidget()->NotifyAccessibilityEvent(
-      this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
+  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState state,

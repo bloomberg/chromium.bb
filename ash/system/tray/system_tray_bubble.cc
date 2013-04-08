@@ -264,8 +264,8 @@ void SystemTrayBubble::InitView(views::View* anchor,
   CreateItemViews(login_status);
 
   if (bubble_view_->CanActivate()) {
-    bubble_view_->GetWidget()->NotifyAccessibilityEvent(
-        bubble_view_, ui::AccessibilityTypes::EVENT_ALERT, true);
+    bubble_view_->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_ALERT, true);
   }
 }
 

@@ -132,8 +132,7 @@ void MessageBoxView::ViewHierarchyChanged(bool is_add,
     if (prompt_field_)
       prompt_field_->SelectAll(true);
 
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
   }
 }
 

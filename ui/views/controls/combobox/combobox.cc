@@ -58,10 +58,7 @@ void Combobox::SelectionChanged() {
   selected_index_ = native_wrapper_->GetSelectedIndex();
   if (listener_)
     listener_->OnSelectedIndexChanged(this);
-  if (GetWidget()) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);
-  }
+  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);
 }
 
 void Combobox::SetAccessibleName(const string16& name) {

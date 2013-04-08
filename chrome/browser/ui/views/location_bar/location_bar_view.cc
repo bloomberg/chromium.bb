@@ -498,8 +498,7 @@ void LocationBarView::OnFocus() {
   // Chrome OS.  It is noop on Win. This should be removed once
   // Chrome OS migrates to aura, which uses Views' textfield that receives
   // focus. See crbug.com/106428.
-  GetWidget()->NotifyAccessibilityEvent(
-      this, ui::AccessibilityTypes::EVENT_FOCUS, false);
+  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, false);
 
   // Then focus the native location view which implements accessibility for
   // Windows.

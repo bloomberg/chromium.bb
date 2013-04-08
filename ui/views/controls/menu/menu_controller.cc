@@ -812,8 +812,8 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   if (menu_item &&
       (MenuDepth(menu_item) != 1 ||
        menu_item->GetType() != MenuItemView::SUBMENU)) {
-    menu_item->GetWidget()->NotifyAccessibilityEvent(
-        menu_item, ui::AccessibilityTypes::EVENT_FOCUS, true);
+    menu_item->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
 }
 

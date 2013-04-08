@@ -103,8 +103,8 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
     SchedulePaint();
   }
   if (accessibility_events_enabled_ && GetWidget()) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
+    NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
   }
 }
 

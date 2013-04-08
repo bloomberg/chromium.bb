@@ -177,10 +177,8 @@ class NetworkTrayView : public TrayItemView,
     }
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;
-      if(!connection_status_string_.empty()) {
-        GetWidget()->NotifyAccessibilityEvent(
-            this, ui::AccessibilityTypes::EVENT_ALERT, true);
-      }
+      if(!connection_status_string_.empty())
+        NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
     }
   }
 

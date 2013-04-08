@@ -981,14 +981,12 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
   if (text_differs) {
     // Note that a TEXT_CHANGED event implies that the cursor/selection
     // probably changed too, so we don't need to send both.
-    native_view_host_->GetWidget()->NotifyAccessibilityEvent(
-        native_view_host_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+    native_view_host_->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   } else if (selection_differs) {
     // Notify assistive technology that the cursor or selection changed.
-    native_view_host_->GetWidget()->NotifyAccessibilityEvent(
-        native_view_host_,
-        ui::AccessibilityTypes::EVENT_SELECTION_CHANGED,
-        true);
+    native_view_host_->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
   } else if (delete_at_end_pressed_) {
     model()->OnChanged();
   }

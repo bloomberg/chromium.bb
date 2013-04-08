@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/native_widget_types.h"
@@ -587,17 +586,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Schedules an update to the root layers. The actual processing occurs when
   // GetRootLayers() is invoked.
   void UpdateRootLayers();
-
-  // Notifies assistive technology that an accessibility event has
-  // occurred on |view|, such as when the view is focused or when its
-  // value changes. Pass true for |send_native_event| except for rare
-  // cases where the view is a native control that's already sending a
-  // native accessibility event and the duplicate event would cause
-  // problems.
-  void NotifyAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type,
-      bool send_native_event);
 
   const NativeWidget* native_widget() const;
   NativeWidget* native_widget();

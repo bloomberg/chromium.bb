@@ -897,15 +897,6 @@ void Widget::UpdateRootLayers() {
   root_layers_dirty_ = true;
 }
 
-void Widget::NotifyAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type,
-    bool send_native_event) {
-  // TODO(dmazzoni): get rid of this method and have clients just use
-  // View::NotifyAccessibilityEvent directly.
-  view->NotifyAccessibilityEvent(event_type, send_native_event);
-}
-
 const NativeWidget* Widget::native_widget() const {
   return native_widget_;
 }

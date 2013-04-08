@@ -113,10 +113,8 @@ void NativeControlWin::OnFocus() {
       parent_view->HasFocus();
 
   // Send the accessibility focus notification.
-  if (parent_view->GetWidget()) {
-    parent_view->GetWidget()->NotifyAccessibilityEvent(
-        parent_view, ui::AccessibilityTypes::EVENT_FOCUS, send_native_event);
-  }
+  parent_view->NotifyAccessibilityEvent(
+      ui::AccessibilityTypes::EVENT_FOCUS, send_native_event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

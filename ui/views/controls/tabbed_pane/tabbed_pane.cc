@@ -359,8 +359,8 @@ void TabbedPane::OnFocus() {
 
   View* selected_tab = GetSelectedTab();
   if (selected_tab) {
-    selected_tab->GetWidget()->NotifyAccessibilityEvent(
-        selected_tab, ui::AccessibilityTypes::EVENT_FOCUS, true);
+    selected_tab->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
 }
 

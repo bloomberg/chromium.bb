@@ -313,12 +313,10 @@ void SubmenuView::ShowAt(Widget* parent,
     host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
   }
 
-  GetScrollViewContainer()->GetWidget()->NotifyAccessibilityEvent(
-      GetScrollViewContainer(),
+  GetScrollViewContainer()->NotifyAccessibilityEvent(
       ui::AccessibilityTypes::EVENT_MENUSTART,
       true);
-  GetWidget()->NotifyAccessibilityEvent(
-      this,
+  NotifyAccessibilityEvent(
       ui::AccessibilityTypes::EVENT_MENUPOPUPSTART,
       true);
 }
@@ -330,14 +328,9 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this,
-        ui::AccessibilityTypes::EVENT_MENUPOPUPEND,
-        true);
-    GetScrollViewContainer()->GetWidget()->NotifyAccessibilityEvent(
-        GetScrollViewContainer(),
-        ui::AccessibilityTypes::EVENT_MENUEND,
-        true);
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_MENUPOPUPEND, true);
+    GetScrollViewContainer()->NotifyAccessibilityEvent(
+        ui::AccessibilityTypes::EVENT_MENUEND, true);
 
     host_->DestroyMenuHost();
     host_ = NULL;
