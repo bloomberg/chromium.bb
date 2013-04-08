@@ -47,84 +47,40 @@ class Page;
 class InspectorFrontendClientLocal : public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(InspectorFrontendClientLocal); WTF_MAKE_FAST_ALLOCATED;
 public:
-    class Settings {
-    public:
-        Settings() { }
-        virtual ~Settings() { }
-        virtual String getProperty(const String& name);
-        virtual void setProperty(const String& name, const String& value);
-    };
-
-    InspectorFrontendClientLocal(InspectorController*, Page*, PassOwnPtr<Settings>);
+    InspectorFrontendClientLocal(InspectorController*, Page*);
     virtual ~InspectorFrontendClientLocal();
-    
+
     virtual void windowObjectCleared();
-    virtual void frontendLoaded();
 
-    virtual void moveWindowBy(float x, float y);
+    virtual void moveWindowBy(float x, float y) { }
 
-    virtual void requestSetDockSide(DockSide);
-    virtual void changeAttachedWindowHeight(unsigned);
-    virtual void changeAttachedWindowWidth(unsigned);
-    virtual void openInNewTab(const String& url);
-    virtual bool canSave() { return false; }
+    virtual void requestSetDockSide(DockSide) { }
+    virtual void changeAttachedWindowHeight(unsigned) { }
+    virtual void changeAttachedWindowWidth(unsigned) { }
+    virtual void openInNewTab(const String&) { }
     virtual void save(const String&, const String&, bool) { }
     virtual void append(const String&, const String&) { }
 
-    virtual void attachWindow(DockSide) = 0;
-    virtual void detachWindow() = 0;
+    virtual void bringToFront() OVERRIDE { }
+    virtual void closeWindow() OVERRIDE { }
+
+    virtual void attachWindow(DockSide) { }
+    virtual void detachWindow() { }
+
+    virtual void inspectedURLChanged(const String&) OVERRIDE { }
 
     virtual void sendMessageToBackend(const String& message);
 
-    virtual bool supportsFileSystems() { return false; }
     virtual void requestFileSystems() { }
     virtual void addFileSystem() { }
     virtual void removeFileSystem(const String&) { }
-    virtual bool isUnderTest();
-
-    bool canAttachWindow();
-    void setDockingUnavailable(bool);
-
-    static unsigned constrainedAttachedWindowHeight(unsigned preferredHeight, unsigned totalWindowHeight);
-    static unsigned constrainedAttachedWindowWidth(unsigned preferredWidth, unsigned totalWindowWidth);
-
-    // Direct Frontend API
-    bool isDebuggingEnabled();
-    void setDebuggingEnabled(bool);
-
-    bool isTimelineProfilingEnabled();
-    void setTimelineProfilingEnabled(bool);
-
-    bool isProfilingJavaScript();
-    void startProfilingJavaScript();
-    void stopProfilingJavaScript();
-
-    void showConsole();
-
-    void showMainResourceForFrame(Frame*);
-    
-    void showResources();
-
-    void setAttachedWindow(DockSide);
-
-protected:
-    virtual void setAttachedWindowHeight(unsigned) = 0;
-    virtual void setAttachedWindowWidth(unsigned) = 0;
-    void restoreAttachedWindowHeight();
+    virtual bool isUnderTest() { return true; }
 
 private:
-    bool evaluateAsBoolean(const String& expression);
-    void evaluateOnLoad(const String& expression);
-
-    friend class FrontendMenuProvider;
     InspectorController* m_inspectorController;
-    Page* m_frontendPage;    
+    Page* m_frontendPage;
     // TODO(yurys): this ref shouldn't be needed.
     RefPtr<InspectorFrontendHost> m_frontendHost;
-    OwnPtr<InspectorFrontendClientLocal::Settings> m_settings;
-    bool m_frontendLoaded;
-    DockSide m_dockSide;
-    Vector<String> m_evaluateOnLoad;
     OwnPtr<InspectorBackendDispatchTask> m_dispatchTask;
 };
 

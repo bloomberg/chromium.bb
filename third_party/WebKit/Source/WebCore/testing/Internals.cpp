@@ -158,30 +158,6 @@ static MockPagePopupDriver* s_pagePopupDriver = 0;
 
 using namespace HTMLNames;
 
-class InspectorFrontendClientDummy : public InspectorFrontendClientLocal {
-public:
-    InspectorFrontendClientDummy(InspectorController*, Page*);
-    virtual ~InspectorFrontendClientDummy() { }
-    virtual void attachWindow(DockSide) OVERRIDE { }
-    virtual void detachWindow() OVERRIDE { }
-
-    virtual String localizedStringsURL() OVERRIDE { return String(); }
-
-    virtual void bringToFront() OVERRIDE { }
-    virtual void closeWindow() OVERRIDE { }
-
-    virtual void inspectedURLChanged(const String&) OVERRIDE { }
-
-protected:
-    virtual void setAttachedWindowHeight(unsigned) OVERRIDE { }
-    virtual void setAttachedWindowWidth(unsigned) OVERRIDE { }
-};
-
-InspectorFrontendClientDummy::InspectorFrontendClientDummy(InspectorController* controller, Page* page)
-    : InspectorFrontendClientLocal(controller, page, adoptPtr(new InspectorFrontendClientLocal::Settings()))
-{
-}
-
 class InspectorFrontendChannelDummy : public InspectorFrontendChannel {
 public:
     explicit InspectorFrontendChannelDummy(Page*);
@@ -1563,7 +1539,7 @@ PassRefPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
     Page* frontendPage = m_frontendWindow->document()->page();
     ASSERT(frontendPage);
 
-    OwnPtr<InspectorFrontendClientDummy> frontendClient = adoptPtr(new InspectorFrontendClientDummy(page->inspectorController(), frontendPage));
+    OwnPtr<InspectorFrontendClientLocal> frontendClient = adoptPtr(new InspectorFrontendClientLocal(page->inspectorController(), frontendPage));
 
     frontendPage->inspectorController()->setInspectorFrontendClient(frontendClient.release());
 
