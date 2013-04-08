@@ -1010,7 +1010,7 @@ bool NativeTextfieldViews::GetTextFromRange(
 }
 
 void NativeTextfieldViews::OnInputMethodChanged() {
-  NOTIMPLEMENTED();
+  // TODO(msw): NOTIMPLEMENTED(); see http://crbug.com/140402
 }
 
 bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
