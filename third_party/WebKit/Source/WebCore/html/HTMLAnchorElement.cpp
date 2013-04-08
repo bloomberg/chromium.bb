@@ -507,7 +507,6 @@ void HTMLAnchorElement::handleClick(Event* event)
     appendServerMapMousePosition(url, event);
     KURL kurl = document()->completeURL(url.toString());
 
-#if ENABLE(DOWNLOAD_ATTRIBUTE)
     if (hasAttribute(downloadAttr)) {
         ResourceRequest request(kurl);
 
@@ -521,7 +520,6 @@ void HTMLAnchorElement::handleClick(Event* event)
 
         frame->loader()->client()->startDownload(request, fastGetAttribute(downloadAttr));
     } else
-#endif
         frame->loader()->urlSelected(kurl, target(), event, false, false, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
 
     sendPings(kurl);
