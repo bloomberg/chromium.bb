@@ -56,6 +56,7 @@
 
 #ifdef FILE_MANAGER_EXTENSION
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "extensions/common/constants.h"
 #endif
 
 using content::NavigationController;
@@ -184,12 +185,19 @@ TranslateManager* TranslateManager::GetInstance() {
 // static
 bool TranslateManager::IsTranslatableURL(const GURL& url) {
   // A URLs is translatable unless it is one of the following:
+  // - empty (can happen for popups created with window.open(""))
   // - an internal URL (chrome:// and others)
   // - the devtools (which is considered UI)
+  // - Chrome OS file manager extension
   // - an FTP page (as FTP pages tend to have long lists of filenames that may
   //   confuse the CLD)
-  return !url.SchemeIs(chrome::kChromeUIScheme) &&
+  return !url.is_empty() &&
+         !url.SchemeIs(chrome::kChromeUIScheme) &&
          !url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+#ifdef FILE_MANAGER_EXTENSION
+         !(url.SchemeIs(extensions::kExtensionScheme) &&
+           url.DomainIs(kFileBrowserDomain)) &&
+#endif
          !url.SchemeIs(chrome::kFtpScheme);
 }
 
@@ -487,13 +495,6 @@ TranslateManager::TranslateManager()
 
 void TranslateManager::InitiateTranslation(WebContents* web_contents,
                                            const std::string& page_lang) {
-#ifdef FILE_MANAGER_EXTENSION
-  const GURL& page_url = web_contents->GetURL();
-  if (page_url.SchemeIs("chrome-extension") &&
-      page_url.DomainIs(kFileBrowserDomain))
-    return;
-#endif
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
@@ -504,12 +505,6 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   // automated browser testing.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
     return;
-
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-  if (!entry) {
-    // This can happen for popups created with window.open("").
-    return;
-  }
 
   std::string target_lang = GetTargetLanguage(prefs);
   std::string language_code = GetLanguageCode(page_lang);
@@ -524,8 +519,10 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   // - similar languages (ex: en-US to en).
   // - any user black-listed URLs or user selected language combination.
   // - any language the user configured as accepted languages.
-  if (!IsTranslatableURL(entry->GetURL()) || language_code == target_lang ||
-      !TranslatePrefs::CanTranslate(prefs, language_code, entry->GetURL()) ||
+  GURL page_url = web_contents->GetURL();
+  if (!IsTranslatableURL(page_url) ||
+      language_code == target_lang ||
+      !TranslatePrefs::CanTranslate(prefs, language_code, page_url) ||
       IsAcceptLanguage(web_contents, language_code)) {
     return;
   }
