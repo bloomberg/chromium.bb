@@ -78,6 +78,7 @@
                   'loislo+blink@chromium.org',
                   'vsevik+blink@chromium.org',
                   'yurys+blink@chromium.org',
+                  'eustas+blink@chromium.org',
                   'caseq+blink@chromium.org'],
     'bindings': [ 'abarth@chromium.org',
                   'japhet@chromium.org',
