@@ -26,40 +26,19 @@
 #include "config.h"
 #include "ScriptedAnimationController.h"
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "FrameView.h"
 #include "InspectorInstrumentation.h"
 #include "RequestAnimationFrameCallback.h"
-#include "Settings.h"
-
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-#include <algorithm>
-#include <wtf/CurrentTime.h>
-
-using namespace std;
-
-// Allow a little more than 60fps to make sure we can at least hit that frame rate.
-#define MinimumAnimationInterval 0.015
-#endif
 
 namespace WebCore {
 
-ScriptedAnimationController::ScriptedAnimationController(Document* document, PlatformDisplayID displayID)
+ScriptedAnimationController::ScriptedAnimationController(Document* document)
     : m_document(document)
     , m_nextCallbackId(0)
     , m_suspendCount(0)
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-    , m_animationTimer(this, &ScriptedAnimationController::animationTimerFired)
-    , m_lastAnimationFrameTimeMonotonic(0)
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-    , m_useTimer(false)
-#endif
-#endif
 {
-    windowScreenDidChange(displayID);
 }
 
 ScriptedAnimationController::~ScriptedAnimationController()
@@ -110,7 +89,7 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
 
 void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
 {
-    if (!m_callbacks.size() || m_suspendCount || (m_document->settings() && !m_document->settings()->requestAnimationFrameEnabled()))
+    if (!m_callbacks.size() || m_suspendCount)
         return;
 
     double highResNowMs = 1000.0 * m_document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(monotonicTimeNow);
@@ -149,58 +128,13 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
         scheduleAnimation();
 }
 
-void ScriptedAnimationController::windowScreenDidChange(PlatformDisplayID displayID)
-{
-    if (m_document->settings() && !m_document->settings()->requestAnimationFrameEnabled())
-        return;
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-    DisplayRefreshMonitorManager::sharedManager()->windowScreenDidChange(displayID, this);
-#else
-    UNUSED_PARAM(displayID);
-#endif
-}
-
 void ScriptedAnimationController::scheduleAnimation()
 {
-    if (!m_document || (m_document->settings() && !m_document->settings()->requestAnimationFrameEnabled()))
+    if (!m_document)
         return;
 
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-    if (!m_useTimer) {
-        if (DisplayRefreshMonitorManager::sharedManager()->scheduleAnimation(this))
-            return;
-
-        m_useTimer = true;
-    }
-#endif
-    if (m_animationTimer.isActive())
-        return;
-
-    double scheduleDelay = max<double>(MinimumAnimationInterval - (monotonicallyIncreasingTime() - m_lastAnimationFrameTimeMonotonic), 0);
-    m_animationTimer.startOneShot(scheduleDelay);
-#else
     if (FrameView* frameView = m_document->view())
         frameView->scheduleAnimation();
-#endif
 }
 
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-void ScriptedAnimationController::animationTimerFired(Timer<ScriptedAnimationController>*)
-{
-    m_lastAnimationFrameTimeMonotonic = monotonicallyIncreasingTime();
-    serviceScriptedAnimations(m_lastAnimationFrameTimeMonotonic);
 }
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-void ScriptedAnimationController::displayRefreshFired(double monotonicTimeNow)
-{
-    serviceScriptedAnimations(monotonicTimeNow);
-}
-#endif
-#endif
-
-
-
-}
-
-#endif

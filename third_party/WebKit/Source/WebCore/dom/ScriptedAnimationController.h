@@ -26,15 +26,7 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 #include "DOMTimeStamp.h"
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-#include "DisplayRefreshMonitor.h"
-#endif
-#include "Timer.h"
-#endif
-#include "PlatformScreen.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
@@ -45,14 +37,11 @@ class Document;
 class RequestAnimationFrameCallback;
 
 class ScriptedAnimationController : public RefCounted<ScriptedAnimationController>
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-    , public DisplayRefreshMonitorClient
-#endif
 {
 public:
-    static PassRefPtr<ScriptedAnimationController> create(Document* document, PlatformDisplayID displayID)
+    static PassRefPtr<ScriptedAnimationController> create(Document* document)
     {
-        return adoptRef(new ScriptedAnimationController(document, displayID));
+        return adoptRef(new ScriptedAnimationController(document));
     }
     ~ScriptedAnimationController();
     void clearDocumentPointer() { m_document = 0; }
@@ -66,10 +55,8 @@ public:
     void suspend();
     void resume();
 
-    void windowScreenDidChange(PlatformDisplayID);
-
 private:
-    ScriptedAnimationController(Document*, PlatformDisplayID);
+    explicit ScriptedAnimationController(Document*);
 
     typedef Vector<RefPtr<RequestAnimationFrameCallback> > CallbackList;
     CallbackList m_callbacks;
@@ -79,23 +66,8 @@ private:
     int m_suspendCount;
 
     void scheduleAnimation();
-
-#if USE(REQUEST_ANIMATION_FRAME_TIMER)
-    void animationTimerFired(Timer<ScriptedAnimationController>*);
-    Timer<ScriptedAnimationController> m_animationTimer;
-    double m_lastAnimationFrameTimeMonotonic;
-
-#if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
-    // Override for DisplayRefreshMonitorClient
-    virtual void displayRefreshFired(double timestamp);
-
-    bool m_useTimer;
-#endif
-#endif
 };
 
 }
-
-#endif // ENABLE(REQUEST_ANIMATION_FRAME)
 
 #endif // ScriptedAnimationController_h

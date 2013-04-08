@@ -142,7 +142,7 @@ public:
 #if USE(TILED_BACKING_STORE)
     virtual void delegatedScrollRequested(const IntPoint&) { }
 #endif
-#if ENABLE(REQUEST_ANIMATION_FRAME) && !USE(REQUEST_ANIMATION_FRAME_TIMER)
+#if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual void scheduleAnimation() { }
 #endif
 
