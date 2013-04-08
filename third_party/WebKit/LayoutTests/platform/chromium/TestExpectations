@@ -3655,13 +3655,19 @@ crbug.com/225184 [ Mac ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyF
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/227473 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/227473 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Debu ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass ImageOnlyFailure ]
+crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/192172 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass ImageOnlyFailure ]
+crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
+crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass ImageOnlyFailure ]
+crbug.com/192172 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ImageOnlyFailure ]
 
 # These tests flakily reorder the scrollbars in debug, causing text failures
 webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
