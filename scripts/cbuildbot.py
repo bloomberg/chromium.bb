@@ -365,11 +365,16 @@ class SimpleBuilder(Builder):
           results_lib.Results.Record(stage.name, ex, str(ex))
       raise
 
-  def _RunBackgroundStagesForBoard(self, board):
+  def _RunBackgroundStagesForBoard(self, board, compilecheck):
     """Run background board-specific stages for the specified board."""
     archive_stage = self.archive_stages[board]
     configs = self.build_config['board_specific_configs']
     config = configs.get(board, self.build_config)
+    if compilecheck:
+      self._RunStage(stages.BuildPackagesStage, board, archive_stage,
+                     config=config)
+      self._RunStage(stages.UnitTestStage, board, config=config)
+      return
     stage_list = [[stages.VMTestStage, board, archive_stage],
                   [stages.SignerTestStage, board, archive_stage],
                   [stages.UnitTestStage, board],
@@ -425,30 +430,33 @@ class SimpleBuilder(Builder):
 
       # Set up a process pool to run test/archive stages in the background.
       # This process runs task(board) for each board added to the queue.
+      compilecheck = (self.build_config['compilecheck'] or
+                      self.options.compilecheck)
       task = self._RunBackgroundStagesForBoard
       with parallel.BackgroundTaskRunner(task) as queue:
         for board in self.build_config['boards']:
-          archive_stage = self.archive_stages[board]
-          config = configs.get(board, self.build_config)
+          if not compilecheck:
+            archive_stage = self.archive_stages[board]
+            config = configs.get(board, self.build_config)
 
-          # Run BuildPackages and BuildImage in the foreground, generating and
-          # using PGO data if requested.
-          built = False
-          for step in ('pgo_generate', 'pgo_use', None):
-            if config.get(step) or not step and not built:
-              kwargs = {step: True} if step else {}
-              self._RunStage(stages.BuildPackagesStage, board, archive_stage,
-                             config=config, **kwargs)
-              self._RunStage(stages.BuildImageStage, board, archive_stage,
-                             config=config, **kwargs)
-              if step == 'pgo_generate':
-                suite = cbuildbot_config.PGORecordTest()
-                self._RunStage(stages.HWTestStage, board, archive_stage,
-                               suite, config=config)
-              built = True
+            # Run BuildPackages and BuildImage in the foreground, generating and
+            # using PGO data if requested.
+            built = False
+            for step in ('pgo_generate', 'pgo_use', None):
+              if config.get(step) or not step and not built:
+                kwargs = {step: True} if step else {}
+                self._RunStage(stages.BuildPackagesStage, board, archive_stage,
+                               config=config, **kwargs)
+                self._RunStage(stages.BuildImageStage, board, archive_stage,
+                               config=config, **kwargs)
+                if step == 'pgo_generate':
+                  suite = cbuildbot_config.PGORecordTest()
+                  self._RunStage(stages.HWTestStage, board, archive_stage,
+                                 suite, config=config)
+                built = True
 
           # Kick off task(board) in the background.
-          queue.put([board])
+          queue.put([board, compilecheck])
 
 
 class DistributedBuilder(SimpleBuilder):
@@ -909,6 +917,8 @@ def _CreateParser():
                           help="Change the local saved build count limit.")
   parser.add_remote_option('--manifest-repo-url',
                            help=('Overrides the default manifest repo url.'))
+  group.add_remote_option('--compilecheck', action='store_true', default=False,
+                          help='Only verify compilation and unit tests.')
   group.add_remote_option('--noarchive', action='store_false', dest='archive',
                           default=True, help="Don't run archive stage.")
   group.add_remote_option('--nobootstrap', action='store_false',

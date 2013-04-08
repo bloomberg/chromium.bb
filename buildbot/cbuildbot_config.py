@@ -23,6 +23,8 @@ CONFIG_TYPE_FIRMWARE = 'firmware'
 
 CONFIG_TYPE_DUMP_ORDER = (
     'paladin',
+    'compilecheck-group',
+    'compilecheck',
     'incremental',
     CONFIG_TYPE_FULL,
     CONFIG_TYPE_RELEASE,
@@ -298,6 +300,9 @@ _settings = dict(
 
 # chrome_rev -- Uprev Chrome, values of 'tot', 'stable_release', or None.
   chrome_rev=None,
+
+# compilecheck -- Exit the builder right after checking compilation.
+  compilecheck=False,
 
 # signer_tests -- Runs the tests that the signer would run.
   signer_tests=False,
@@ -970,6 +975,19 @@ internal_paladin = internal.derive(paladin,
   overlays=constants.BOTH_OVERLAYS,
   vm_tests=None,
   description=paladin['description'] + ' (internal)',
+)
+
+internal_compilecheck = internal_paladin.derive(
+  build_type=constants.INCREMENTAL_TYPE,
+  compilecheck=True,
+  description='Verifies compilation and unit tests',
+)
+
+internal_compilecheck.add_group('compilecheck-group',
+  internal_compilecheck.add_config('parrot-compilecheck', boards=['parrot']),
+  internal_compilecheck.add_config('stout-compilecheck', boards=['stout']),
+  internal_compilecheck.add_config('daisy_spring-compilecheck',
+                                   boards=['daisy_spring']),
 )
 
 internal_incremental = internal.derive(
