@@ -388,6 +388,7 @@ CompositorImpl::OffscreenContextProviderForCompositorThread() {
 
 void CompositorImpl::OnViewContextSwapBuffersPosted() {
   TRACE_EVENT0("compositor", "CompositorImpl::OnViewContextSwapBuffersPosted");
+  client_->OnSwapBuffersPosted();
 }
 
 void CompositorImpl::OnViewContextSwapBuffersComplete() {

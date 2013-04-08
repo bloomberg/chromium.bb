@@ -33,6 +33,9 @@ class CONTENT_EXPORT Compositor {
 
     // The compositor has completed swapping a frame.
     virtual void OnSwapBuffersCompleted() {}
+
+    // The compositor will eventually swap a frame.
+    virtual void OnSwapBuffersPosted() {}
   };
 
   virtual ~Compositor() {}
