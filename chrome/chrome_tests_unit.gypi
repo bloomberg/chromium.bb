@@ -1786,18 +1786,6 @@
           ],
           # Bundle all the necessary resources into the test bundle.
           'includes': ['chrome_ios_bundle_resources.gypi'],
-          'actions': [
-            {
-              'action_name': 'copy_test_data',
-              'variables': {
-                'test_data_files': [
-                  'test/data/zip',
-                ],
-                'test_data_prefix': 'chrome',
-              },
-              'includes': [ '../build/copy_test_data_ios.gypi' ],
-            },
-          ],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
         }],
         ['enable_background==0', {
