@@ -142,7 +142,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (!token || !token.type)
             return null;
         var convertedType = null;
-        if (token.type.startsWith("variable") || token.type.startsWith("property")) {
+        if (token.type.startsWith("variable") || token.type.startsWith("property") || token.type === "def") {
             return {
                 startColumn: token.start,
                 endColumn: token.end - 1,
