@@ -74,10 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_EQ(NULL, GetTheme());
 
   // Set the same theme twice and undo to verify we go back to default theme.
-  // We set the |expected_change| to zero in these 'InstallExtensionWithUI'
-  // calls since the theme has already been installed above and this is an
-  // overinstall to set the active theme.
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());

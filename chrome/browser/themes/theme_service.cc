@@ -304,6 +304,8 @@ void ThemeService::ClearAllThemeData() {
 
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
   SaveThemeID(kDefaultThemeID);
+
+  RemoveUnusedThemes();
 }
 
 void ThemeService::LoadThemePrefs() {
