@@ -11,7 +11,10 @@ emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
 import os
+import re
 import sys
+from collections import namedtuple
+
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
@@ -21,6 +24,60 @@ import argparse
 
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
+
+
+# Data structure describing a single rsync filesystem change.
+#
+# change_description: An 11 character string, the rsync change description
+#                     for the particular file.
+# absolute_path: The absolute path of the created or modified file.
+ItemizedChange = namedtuple('ItemizedChange', ['change_description',
+                                               'absolute_path'])
+
+
+# Data structure describing the rsync new/modified files or directories.
+#
+# new_files: A list of ItemizedChange objects for new files.
+# modified_files: A list of ItemizedChange objects for modified files.
+# new_directories: A list of ItemizedChange objects for new directories.
+ItemizedChangeReport = namedtuple('ItemizedChangeReport',
+                                  ['new_files', 'modified_files',
+                                   'new_directories'])
+
+
+def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
+  """Convert the output of an rsync with `-i` to a ItemizedChangeReport object.
+
+  Arguments:
+    rsync_output: String stdout of rsync command that was run with `-i` option.
+    destination_path: String absolute path of the destination directory for the
+                      rsync operations. This argument is necessary because
+                      rsync's output only gives the relative path of
+                      touched/added files.
+
+  Returns:
+    ItemizedChangeReport object giving the absolute paths of files that were
+    created or modified by rsync.
+  """
+  modified_matches = re.findall(r'([.>]f[^+]{9}) (.*)', rsync_output)
+  new_matches = re.findall(r'(>f\+{9}) (.*)', rsync_output)
+  new_symlink_matches = re.findall(r'(cL\+{9}) (.*) -> .*', rsync_output)
+  new_dir_matches = re.findall(r'(cd\+{9}) (.*)', rsync_output)
+
+  absolute_modified = [ItemizedChange(c, os.path.join(destination_path, f))
+                       for (c, f) in modified_matches]
+
+  # Note: new symlinks are treated as new files.
+  absolute_new = [ItemizedChange(c, os.path.join(destination_path, f))
+                  for (c, f) in new_matches + new_symlink_matches]
+
+  absolute_new_dir = [ItemizedChange(c, os.path.join(destination_path, f))
+                      for (c, f) in new_dir_matches]
+
+  return ItemizedChangeReport(new_files=absolute_new,
+                              modified_files=absolute_modified,
+                              new_directories=absolute_new_dir)
+
 
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
                     include_pattern_file=None, pretend=False,
@@ -50,6 +107,10 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   command += ['--exclude=**.pyc']
   command += ['--exclude=**.pyo']
+
+  # Exclude files with a specific substring in their name, because
+  # they create an ambiguous itemized report. (see unit test file for details)
+  command += ['--exclude=** -> *']
 
   if include_pattern_file:
     command += ['--include-from=%s' % include_pattern_file]
