@@ -80,6 +80,8 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
                            int buf_size,
                            int *bytes_read) OVERRIDE;
 
+  void HandleAuthNeededResponse();
+
   RequestPriority priority_;
 
   ProxyInfo proxy_info_;
@@ -90,11 +92,11 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
 
   HttpRequestInfo http_request_info_;
   scoped_ptr<HttpTransaction> http_transaction_;
-  const HttpResponseInfo* response_info_;
+  const HttpResponseInfo* http_response_info_;
 
   bool read_in_progress_;
 
-  scoped_refptr<AuthData> server_auth_;
+  scoped_refptr<AuthData> auth_data_;
 
   base::WeakPtrFactory<URLRequestFtpJob> weak_factory_;
 

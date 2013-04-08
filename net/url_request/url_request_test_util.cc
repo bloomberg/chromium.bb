@@ -505,6 +505,7 @@ NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
   EXPECT_TRUE(next_states_[req_id] & kStageAuthRequired) <<
       event_order_[req_id];
   next_states_[req_id] = kStageBeforeSendHeaders |
+      kStageAuthRequired |  // For example, proxy auth followed by server auth.
       kStageHeadersReceived |  // Request canceled by delegate simulates empty
                                // response.
       kStageResponseStarted |  // data: URLs do not trigger sending headers

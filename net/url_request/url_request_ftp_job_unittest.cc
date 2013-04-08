@@ -242,7 +242,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
   EXPECT_EQ("test.html", request_delegate.data_received());
 }
 
-TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedAuth) {
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
               "Host: ftp.example.com\r\n"
@@ -271,8 +271,199 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedAuth) {
   EXPECT_TRUE(url_request.status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
-  EXPECT_FALSE(request_delegate.auth_required_called());
+  EXPECT_TRUE(request_delegate.auth_required_called());
   EXPECT_EQ("test.html", request_delegate.data_received());
+}
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthWithCredentials) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+    MockWrite(ASYNC, 5, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n"
+              "Proxy-Authorization: Basic bXl1c2VyOm15cGFzcw==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    // No credentials.
+    MockRead(ASYNC, 1, "HTTP/1.1 407 Proxy Authentication Required\r\n"),
+    MockRead(ASYNC, 2, "Proxy-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+
+    // Second response.
+    MockRead(ASYNC, 6, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 7, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 8, "test2.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  request_delegate.set_credentials(
+      AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(9);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_TRUE(request_delegate.auth_required_called());
+  EXPECT_EQ("test2.html", request_delegate.data_received());
+}
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthNoCredentials) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    // No credentials.
+    MockRead(ASYNC, 1, "HTTP/1.1 401 Unauthorized\r\n"),
+    MockRead(ASYNC, 2, "WWW-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(5);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_TRUE(request_delegate.auth_required_called());
+  EXPECT_EQ("test.html", request_delegate.data_received());
+}
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthWithCredentials) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+    MockWrite(ASYNC, 5, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n"
+              "Authorization: Basic bXl1c2VyOm15cGFzcw==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    // No credentials.
+    MockRead(ASYNC, 1, "HTTP/1.1 401 Unauthorized\r\n"),
+    MockRead(ASYNC, 2, "WWW-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+
+    // Second response.
+    MockRead(ASYNC, 6, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 7, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 8, "test2.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  request_delegate.set_credentials(
+      AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(9);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_TRUE(request_delegate.auth_required_called());
+  EXPECT_EQ("test2.html", request_delegate.data_received());
+}
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAndServerAuth) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+    MockWrite(ASYNC, 5, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n"
+              "Proxy-Authorization: Basic "
+              "cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n"),
+    MockWrite(ASYNC, 10, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n"
+              "Proxy-Authorization: Basic "
+              "cHJveHl1c2VyOnByb3h5cGFzcw==\r\n"
+              "Authorization: Basic bXl1c2VyOm15cGFzcw==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    // No credentials.
+    MockRead(ASYNC, 1, "HTTP/1.1 407 Proxy Authentication Required\r\n"),
+    MockRead(ASYNC, 2, "Proxy-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+
+    // Second response.
+    MockRead(ASYNC, 6, "HTTP/1.1 401 Unauthorized\r\n"),
+    MockRead(ASYNC, 7, "WWW-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 8, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 9, "test.html"),
+
+    // Third response.
+    MockRead(ASYNC, 11, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 12, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 13, "test2.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  GURL url("ftp://ftp.example.com");
+
+  // Make sure cached FTP credentials are not used for proxy authentication.
+  request_context()->ftp_auth_cache()->Add(
+      url.GetOrigin(),
+      AuthCredentials(ASCIIToUTF16("userdonotuse"),
+                      ASCIIToUTF16("passworddonotuse")));
+
+  TestDelegate request_delegate;
+  request_delegate.set_credentials(
+      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")));
+  URLRequest url_request(url,
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(5);
+
+  request_delegate.set_credentials(
+      AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
+  socket_data(0)->RunFor(9);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_TRUE(request_delegate.auth_required_called());
+  EXPECT_EQ("test2.html", request_delegate.data_received());
 }
 
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotSaveCookies) {

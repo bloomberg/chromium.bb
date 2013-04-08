@@ -30,7 +30,7 @@ URLRequestFtpJob::URLRequestFtpJob(
     : URLRequestJob(request, network_delegate),
       priority_(DEFAULT_PRIORITY),
       pac_request_(NULL),
-      response_info_(NULL),
+      http_response_info_(NULL),
       read_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       ftp_transaction_factory_(ftp_transaction_factory),
@@ -85,8 +85,8 @@ bool URLRequestFtpJob::GetMimeType(std::string* mime_type) const {
 }
 
 void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
-  if (response_info_)
-    *info = *response_info_;
+  if (http_response_info_)
+    *info = *http_response_info_;
 }
 
 HostPortPair URLRequestFtpJob::GetSocketAddress() const {
@@ -194,11 +194,9 @@ void URLRequestFtpJob::StartHttpTransaction() {
   DCHECK(!http_transaction_);
 
   // Do not cache FTP responses sent through HTTP proxy.
-  // Do not send HTTP auth data because this is really FTP.
   request_->set_load_flags(request_->load_flags() |
                            LOAD_DISABLE_CACHE |
                            LOAD_DO_NOT_SAVE_COOKIES |
-                           LOAD_DO_NOT_SEND_AUTH_DATA |
                            LOAD_DO_NOT_SEND_COOKIES);
 
   http_request_info_.url = request_->url();
@@ -235,27 +233,20 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
   }
 
   if (result == OK) {
-    if (http_transaction_)
-      response_info_ = http_transaction_->GetResponseInfo();
+    if (http_transaction_) {
+      http_response_info_ = http_transaction_->GetResponseInfo();
+
+      if (http_response_info_->headers->response_code() == 401 ||
+          http_response_info_->headers->response_code() == 407) {
+        HandleAuthNeededResponse();
+        return;
+      }
+    }
     NotifyHeadersComplete();
   } else if (ftp_transaction_ &&
              ftp_transaction_->GetResponseInfo()->needs_auth) {
-    GURL origin = request_->url().GetOrigin();
-    if (server_auth_ && server_auth_->state == AUTH_STATE_HAVE_AUTH) {
-      ftp_auth_cache_->Remove(origin, server_auth_->credentials);
-    } else if (!server_auth_) {
-      server_auth_ = new AuthData();
-    }
-    server_auth_->state = AUTH_STATE_NEED_AUTH;
-
-    FtpAuthCache::Entry* cached_auth = ftp_auth_cache_->Lookup(origin);
-    if (cached_auth) {
-      // Retry using cached auth data.
-      SetAuth(cached_auth->credentials);
-    } else {
-      // Prompt for a username/password.
-      NotifyHeadersComplete();
-    }
+    HandleAuthNeededResponse();
+    return;
   } else {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
@@ -282,17 +273,24 @@ void URLRequestFtpJob::OnReadCompleted(int result) {
 }
 
 void URLRequestFtpJob::RestartTransactionWithAuth() {
-  DCHECK(ftp_transaction_);
-  DCHECK(server_auth_ && server_auth_->state == AUTH_STATE_HAVE_AUTH);
+  DCHECK(auth_data_ && auth_data_->state == AUTH_STATE_HAVE_AUTH);
 
   // No matter what, we want to report our status as IO pending since we will
   // be notifying our consumer asynchronously via OnStartCompleted.
   SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
 
-  int rv = ftp_transaction_->RestartWithAuth(
-      server_auth_->credentials,
-      base::Bind(&URLRequestFtpJob::OnStartCompleted,
-                 base::Unretained(this)));
+  int rv;
+  if (proxy_info_.is_direct()) {
+    rv = ftp_transaction_->RestartWithAuth(
+        auth_data_->credentials,
+        base::Bind(&URLRequestFtpJob::OnStartCompleted,
+                   base::Unretained(this)));
+  } else {
+    rv = http_transaction_->RestartWithAuth(
+        auth_data_->credentials,
+        base::Bind(&URLRequestFtpJob::OnStartCompleted,
+                   base::Unretained(this)));
+  }
   if (rv == ERR_IO_PENDING)
     return;
 
@@ -310,21 +308,18 @@ LoadState URLRequestFtpJob::GetLoadState() const {
 }
 
 bool URLRequestFtpJob::NeedsAuth() {
-  // TODO(phajdan.jr): Implement proxy auth, http://crbug.com/171497 .
-  if (!ftp_transaction_)
-    return false;
-
-  // Note that we only have to worry about cases where an actual FTP server
-  // requires auth (and not a proxy), because connecting to FTP via proxy
-  // effectively means the browser communicates via HTTP, and uses HTTP's
-  // Proxy-Authenticate protocol when proxy servers require auth.
-  return server_auth_ && server_auth_->state == AUTH_STATE_NEED_AUTH;
+  return auth_data_ && auth_data_->state == AUTH_STATE_NEED_AUTH;
 }
 
 void URLRequestFtpJob::GetAuthChallengeInfo(
     scoped_refptr<AuthChallengeInfo>* result) {
-  DCHECK((server_auth_ != NULL) &&
-         (server_auth_->state == AUTH_STATE_NEED_AUTH));
+  DCHECK(NeedsAuth());
+
+  if (http_response_info_) {
+    *result = http_response_info_->auth_challenge;
+    return;
+  }
+
   scoped_refptr<AuthChallengeInfo> auth_info(new AuthChallengeInfo);
   auth_info->is_proxy = false;
   auth_info->challenger = HostPortPair::FromURL(request_->url());
@@ -335,20 +330,25 @@ void URLRequestFtpJob::GetAuthChallengeInfo(
 }
 
 void URLRequestFtpJob::SetAuth(const AuthCredentials& credentials) {
-  DCHECK(ftp_transaction_);
+  DCHECK(ftp_transaction_ || http_transaction_);
   DCHECK(NeedsAuth());
-  server_auth_->state = AUTH_STATE_HAVE_AUTH;
-  server_auth_->credentials = credentials;
 
-  ftp_auth_cache_->Add(request_->url().GetOrigin(), server_auth_->credentials);
+  auth_data_->state = AUTH_STATE_HAVE_AUTH;
+  auth_data_->credentials = credentials;
+
+  if (ftp_transaction_) {
+    ftp_auth_cache_->Add(request_->url().GetOrigin(),
+                         auth_data_->credentials);
+  }
 
   RestartTransactionWithAuth();
 }
 
 void URLRequestFtpJob::CancelAuth() {
-  DCHECK(ftp_transaction_);
+  DCHECK(ftp_transaction_ || http_transaction_);
   DCHECK(NeedsAuth());
-  server_auth_->state = AUTH_STATE_CANCELED;
+
+  auth_data_->state = AUTH_STATE_CANCELED;
 
   // Once the auth is cancelled, we proceed with the request as though
   // there were no auth.  Schedule this for later so that we don't cause
@@ -390,6 +390,34 @@ bool URLRequestFtpJob::ReadRawData(IOBuffer* buf,
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
   }
   return false;
+}
+
+void URLRequestFtpJob::HandleAuthNeededResponse() {
+  GURL origin = request_->url().GetOrigin();
+
+  if (auth_data_) {
+    if (auth_data_->state == AUTH_STATE_CANCELED) {
+      NotifyHeadersComplete();
+      return;
+    }
+
+    if (ftp_transaction_ && auth_data_->state == AUTH_STATE_HAVE_AUTH)
+      ftp_auth_cache_->Remove(origin, auth_data_->credentials);
+  } else {
+    auth_data_ = new AuthData;
+  }
+  auth_data_->state = AUTH_STATE_NEED_AUTH;
+
+  FtpAuthCache::Entry* cached_auth = NULL;
+  if (ftp_transaction_ && ftp_transaction_->GetResponseInfo()->needs_auth)
+    cached_auth = ftp_auth_cache_->Lookup(origin);
+  if (cached_auth) {
+    // Retry using cached auth data.
+    SetAuth(cached_auth->credentials);
+  } else {
+    // Prompt for a username/password.
+    NotifyHeadersComplete();
+  }
 }
 
 }  // namespace net
