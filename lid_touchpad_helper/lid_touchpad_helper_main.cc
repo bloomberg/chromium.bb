@@ -221,7 +221,7 @@ class MainLoop {
         lid_fd_(-1),
         x_fd_(ConnectionNumber(display_)),
         xiopcode_(GetXInputOpCode()) {}
-  void Run() {
+  void Run() __attribute__ ((noreturn)) {
     XIEventMask evmask;
     unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {0};
 

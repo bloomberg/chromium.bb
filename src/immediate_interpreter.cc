@@ -2158,17 +2158,6 @@ void ImmediateInterpreter::UpdateButtonsTimeout(stime_t now) {
                     0);
 }
 
-namespace {
-float IncreasingSpeed(float dist, float dt,
-                      float prev_dist, float prev_dt) {
-  return fabsf(dist) * prev_dt > fabsf(prev_dist) * dt;
-}
-float DecreasingSpeed(float dist, float dt,
-                      float prev_dist, float prev_dt) {
-  return fabsf(dist) * prev_dt < fabsf(prev_dist) * dt;
-}
-}  // namespace {}
-
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
     const FingerMap& fingers) {
