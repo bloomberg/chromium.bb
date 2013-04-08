@@ -29,12 +29,8 @@
   'includes': [
     '../../WebKit/chromium/WinPrecompile.gypi',
     '../../WebKit/chromium/features.gypi',
-    '../WTF.gypi',
+    '../wtf/wtf.gypi',
   ],
-  'variables': {
-    # FIXME: Use DEPTH.
-    'chromium_src_dir': '../../../../..',
-  },
   'conditions': [
     ['os_posix == 1 and OS != "mac" and gcc_version>=46', {
       'target_defaults': {
@@ -70,6 +66,7 @@
               '../wtf/os-win32',
             ],
           }],
+          # FIXME: This should go in a header, not in the GYP file.
           ['OS=="mac"', {
             'defines': [
               'WTF_USE_NEW_THEME=1',
@@ -82,45 +79,24 @@
       'target_name': 'wtf',
       'type': 'static_library',
       'include_dirs': [
-        '../',
+        '..',
         '../wtf',
         '../wtf/unicode',
       ],
       'dependencies': [
           'wtf_config',
-          '<(chromium_src_dir)/third_party/icu/icu.gyp:icui18n',
-          '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
+          '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+          '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
       'sources': [
-        '<@(wtf_privateheader_files)',
         '<@(wtf_files)',
-      ],
-      'sources/': [
-        # FIXME: This is clearly not sustainable.
-        ['exclude', '../wtf/efl'],
-        ['exclude', '../wtf/gobject'],
-        ['exclude', '../wtf/gtk'],
-        ['exclude', '../wtf/mac'],
-        ['exclude', '../wtf/qt'],
-        ['exclude', '../wtf/url'],
-        ['exclude', '../wtf/wince'],
-        ['exclude', '../wtf/wx'],
-        ['exclude', '../wtf/unicode/qt4'],
-        ['exclude', '../wtf/unicode/wchar'],
-        ['exclude', '/(gtk|gobject)/.*\\.(cpp|h)$'],
-        ['exclude', '(Default|CF|Gtk|Mac|None|Qt|Win|Wx|Efl)\\.(cpp|mm)$'],
-        ['exclude', 'wtf/OSRandomSource\\.cpp$'],
-        ['exclude', 'wtf/MainThread.cpp$'],
-        ['exclude', 'wtf/MetaAllocator\\.(cpp|h)$'],
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '../',
-          # FIXME: This is too broad, but is needed for runtime/JSExportMacros.h and yarr.
-          '../../JavaScriptCore',
+          '..',
         ],
-        # Some warnings occur in JSC headers, so they must also be disabled
-        # in targets that use JSC.
+        # Some warnings occur in WTF headers, so they must also be disabled
+        # in targets that use WTF.
         'msvs_disabled_warnings': [
           # Don't complain about calling specific versions of templatized
           # functions (e.g. in RefPtrHashMap.h).
@@ -134,8 +110,8 @@
       },
       'export_dependent_settings': [
         'wtf_config',
-        '<(chromium_src_dir)/third_party/icu/icu.gyp:icui18n',
-        '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706, 4068, 4267],
@@ -144,10 +120,7 @@
           'sources/': [
             ['exclude', 'ThreadIdentifierDataPthreads\\.(h|cpp)$'],
             ['exclude', 'ThreadingPthreads\\.cpp$'],
-            ['include', 'Thread(ing|Specific)Win\\.cpp$'],
             ['exclude', 'OSAllocatorPosix\\.cpp$'],
-            ['include', 'OSAllocatorWin\\.cpp$'],
-            ['include', 'win/OwnPtrWin\\.cpp$'],
           ],
           'include_dirs!': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
@@ -163,6 +136,10 @@
                 'msvs_disabled_warnings': [4291],
               },
             }],
+          ],
+        }, { # OS!="win"
+          'sources/': [
+            ['exclude', 'Win\\.cpp$'],
           ],
         }],
         ['OS!="mac"', {

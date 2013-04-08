@@ -81,6 +81,11 @@
         'YarrSyntaxChecker.cpp',
         'YarrSyntaxChecker.h',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../',
+        ],
+      },
       'export_dependent_settings': [
         '../../WTF/WTF.gyp/WTF.gyp:wtf',
       ],
