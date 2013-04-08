@@ -1118,8 +1118,10 @@ void InstantController::SetSuggestions(
   if (!suggestions.empty())
     suggestion = suggestions[0];
 
+  // TODO(samarth): allow InstantTabs to call SetSuggestions() from the NTP once
+  // that is better supported.
   bool can_use_instant_tab = UseInstantTabToShowSuggestions() &&
-      !search_mode_.is_default();
+      search_mode_.is_search();
   bool can_use_overlay = search_mode_.is_search_suggestions() &&
       !last_omnibox_text_.empty();
   if (!can_use_instant_tab && !can_use_overlay)
