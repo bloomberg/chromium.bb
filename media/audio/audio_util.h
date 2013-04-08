@@ -5,39 +5,11 @@
 #ifndef MEDIA_AUDIO_AUDIO_UTIL_H_
 #define MEDIA_AUDIO_AUDIO_UTIL_H_
 
-#include <string>
-
 #include "base/basictypes.h"
-#include "media/base/channel_layout.h"
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace media {
-class AudioBus;
-
-// For all audio functions 3 audio formats are supported:
-// 8 bits unsigned 0 to 255.
-// 16 bit signed (little endian).
-// 32 bit signed (little endian)
-
-// AdjustVolume() does a software volume adjustment of a sample buffer.
-// The samples are multiplied by the volume, which should range from
-// 0.0 (mute) to 1.0 (full volume).
-// Using software allows each audio and video to have its own volume without
-// affecting the master volume.
-// In the future the function may be used to adjust the sample format to
-// simplify hardware requirements and to support a wider variety of input
-// formats.
-// The buffer is modified in-place to avoid memory management, as this
-// function may be called in performance critical code.
-MEDIA_EXPORT bool AdjustVolume(void* buf,
-                               size_t buflen,
-                               int channels,
-                               int bytes_per_sample,
-                               float volume);
 
 // Returns user buffer size as specified on the command line or 0 if no buffer
 // size has been specified.

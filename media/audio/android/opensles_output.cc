@@ -5,7 +5,6 @@
 #include "media/audio/android/opensles_output.h"
 
 #include "base/logging.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/android/audio_manager_android.h"
 
 namespace media {
@@ -267,15 +266,9 @@ void OpenSLESOutputStream::FillBufferQueue() {
   DCHECK_LE(static_cast<size_t>(num_filled_bytes), buffer_size_bytes_);
   // Note: If this ever changes to output raw float the data must be clipped and
   // sanitized since it may come from an untrusted source such as NaCl.
+  audio_bus_->Scale(volume_);
   audio_bus_->ToInterleaved(
       frames_filled, format_.bitsPerSample / 8, audio_data_[active_queue_]);
-
-  // Perform in-place, software-volume adjustments.
-  media::AdjustVolume(audio_data_[active_queue_],
-                      num_filled_bytes,
-                      format_.numChannels,
-                      format_.bitsPerSample / 8,
-                      volume_);
 
   // Enqueue the buffer for playback.
   SLresult err = (*simple_buffer_queue_)->Enqueue(

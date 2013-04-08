@@ -178,11 +178,18 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
     if (it == transform_inputs_.begin()) {
       if (volume == 1.0f) {
         mixer_input_audio_bus_->CopyTo(temp_dest);
-        continue;
+      } else if (volume > 0) {
+        for (int i = 0; i < mixer_input_audio_bus_->channels(); ++i) {
+          vector_math::FMUL(
+              mixer_input_audio_bus_->channel(i), volume,
+              mixer_input_audio_bus_->frames(), temp_dest->channel(i));
+        }
+      } else {
+        // Zero |temp_dest| otherwise, so we're mixing into a clean buffer.
+        temp_dest->Zero();
       }
 
-      // Zero |temp_dest| otherwise, so we're mixing into a clean buffer.
-      temp_dest->Zero();
+      continue;
     }
 
     // Volume adjust and mix each mixer input into |temp_dest| after rendering.

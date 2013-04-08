@@ -283,8 +283,6 @@
         'base/stream_parser.h',
         'base/stream_parser_buffer.cc',
         'base/stream_parser_buffer.h',
-        'base/vector_math.cc',
-        'base/vector_math.h',
         'base/video_decoder.cc',
         'base/video_decoder.h',
         'base/video_decoder_config.cc',
@@ -551,6 +549,7 @@
             ['include', '^base/audio_bus\\.'],
             ['include', '^base/channel_layout\\.'],
             ['include', '^base/media_stub\\.cc$'],
+            ['include', '^base/vector_math\\.'],
           ],
           'link_settings': {
             'libraries': [
@@ -889,7 +888,6 @@
         'audio/audio_output_proxy_unittest.cc',
         'audio/audio_parameters_unittest.cc',
         'audio/audio_silence_detector_unittest.cc',
-        'audio/audio_util_unittest.cc',
         'audio/cross_process_notification_unittest.cc',
         'audio/fake_audio_consumer_unittest.cc',
         'audio/ios/audio_manager_ios_unittest.cc',
@@ -1264,6 +1262,13 @@
           ],
           'sources': [
             '<@(shared_memory_support_sources)',
+          ],
+          'conditions': [
+            [ 'target_arch == "ia32" or target_arch == "x64"', {
+              'dependencies': [
+                'media_sse',
+              ],
+            }],
           ],
         },
         {

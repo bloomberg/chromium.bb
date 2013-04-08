@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/pulse/pulse_util.h"
 
 namespace media {
@@ -143,10 +142,9 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
+    audio_bus_->Scale(volume_);
     audio_bus_->ToInterleaved(
         audio_bus_->frames(), params_.bits_per_sample() / 8, buffer);
-    media::AdjustVolume(buffer, bytes_to_fill, params_.channels(),
-                        params_.bits_per_sample() / 8, volume_);
 
     if (pa_stream_write(pa_stream_, buffer, bytes_to_fill, NULL, 0LL,
                         PA_SEEK_RELATIVE) < 0) {

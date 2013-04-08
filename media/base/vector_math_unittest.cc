@@ -103,6 +103,38 @@ TEST_F(VectorMathTest, FMAC) {
 #endif
 }
 
+// Ensure each optimized vector_math::FMUL() method returns the same value.
+TEST_F(VectorMathTest, FMUL) {
+  static const float kResult = kInputFillValue * kScale;
+
+  {
+    SCOPED_TRACE("FMUL");
+    FillTestVectors(kInputFillValue, kOutputFillValue);
+    vector_math::FMUL(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+    VerifyOutput(kResult);
+  }
+
+  {
+    SCOPED_TRACE("FMUL_C");
+    FillTestVectors(kInputFillValue, kOutputFillValue);
+    vector_math::FMUL_C(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+    VerifyOutput(kResult);
+  }
+
+#if defined(ARCH_CPU_X86_FAMILY)
+  {
+    ASSERT_TRUE(base::CPU().has_sse());
+    SCOPED_TRACE("FMUL_SSE");
+    FillTestVectors(kInputFillValue, kOutputFillValue);
+    vector_math::FMUL_SSE(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+    VerifyOutput(kResult);
+  }
+#endif
+}
+
 // Benchmark for each optimized vector_math::FMAC() method.  Original benchmarks
 // were run with --vector-fmac-iterations=200000.
 TEST_F(VectorMathTest, FMACBenchmark) {
@@ -151,6 +183,60 @@ TEST_F(VectorMathTest, FMACBenchmark) {
       (TimeTicks::HighResNow() - start).InMillisecondsF();
   printf("FMAC_SSE (aligned size) took %.2fms; which is %.2fx faster than"
          " FMAC_C and %.2fx faster than FMAC_SSE (unaligned size).\n",
+         total_time_sse_aligned_ms, total_time_c_ms / total_time_sse_aligned_ms,
+         total_time_sse_unaligned_ms / total_time_sse_aligned_ms);
+#endif
+}
+
+
+// Benchmark for each optimized vector_math::FMUL() method.  Original benchmarks
+// were run with --vector-math-iterations=200000.
+TEST_F(VectorMathTest, FMULBenchmark) {
+  static const int kBenchmarkIterations = BenchmarkIterations();
+
+  printf("Benchmarking %d iterations:\n", kBenchmarkIterations);
+
+  // Benchmark FMUL_C().
+  FillTestVectors(kInputFillValue, kOutputFillValue);
+  TimeTicks start = TimeTicks::HighResNow();
+  for (int i = 0; i < kBenchmarkIterations; ++i) {
+    vector_math::FMUL_C(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+  }
+  double total_time_c_ms = (TimeTicks::HighResNow() - start).InMillisecondsF();
+  printf("FMUL_C took %.2fms.\n", total_time_c_ms);
+
+#if defined(ARCH_CPU_X86_FAMILY)
+  ASSERT_TRUE(base::CPU().has_sse());
+
+  // Benchmark FMUL_SSE() with unaligned size.
+  ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
+            sizeof(float)), 0U);
+  FillTestVectors(kInputFillValue, kOutputFillValue);
+  start = TimeTicks::HighResNow();
+  for (int j = 0; j < kBenchmarkIterations; ++j) {
+    vector_math::FMUL_SSE(
+        input_vector.get(), kScale, kVectorSize - 1, output_vector.get());
+  }
+  double total_time_sse_unaligned_ms =
+      (TimeTicks::HighResNow() - start).InMillisecondsF();
+  printf("FMUL_SSE (unaligned size) took %.2fms; which is %.2fx faster than"
+         " FMUL_C.\n", total_time_sse_unaligned_ms,
+         total_time_c_ms / total_time_sse_unaligned_ms);
+
+  // Benchmark FMUL_SSE() with aligned size.
+  ASSERT_EQ(kVectorSize % (vector_math::kRequiredAlignment / sizeof(float)),
+            0U);
+  FillTestVectors(kInputFillValue, kOutputFillValue);
+  start = TimeTicks::HighResNow();
+  for (int j = 0; j < kBenchmarkIterations; ++j) {
+    vector_math::FMUL_SSE(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+  }
+  double total_time_sse_aligned_ms =
+      (TimeTicks::HighResNow() - start).InMillisecondsF();
+  printf("FMUL_SSE (aligned size) took %.2fms; which is %.2fx faster than"
+         " FMUL_C and %.2fx faster than FMUL_SSE (unaligned size).\n",
          total_time_sse_aligned_ms, total_time_c_ms / total_time_sse_aligned_ms,
          total_time_sse_unaligned_ms / total_time_sse_aligned_ms);
 #endif

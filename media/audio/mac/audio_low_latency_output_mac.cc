@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/media_switches.h"
 
@@ -284,16 +283,9 @@ OSStatus AUAudioOutputStream::Render(UInt32 number_of_frames,
 
   // Note: If this ever changes to output raw float the data must be clipped and
   // sanitized since it may come from an untrusted source such as NaCl.
+  audio_bus_->Scale(volume_);
   audio_bus_->ToInterleaved(
       frames_filled, format_.mBitsPerChannel / 8, audio_data);
-  uint32 filled = frames_filled * format_.mBytesPerFrame;
-
-  // Perform in-place, software-volume adjustments.
-  media::AdjustVolume(audio_data,
-                      filled,
-                      audio_bus_->channels(),
-                      format_.mBitsPerChannel / 8,
-                      volume_);
 
   return noErr;
 }

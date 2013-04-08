@@ -18,6 +18,8 @@
       'base/channel_layout.h',
       'base/limits.h',
       'base/media_export.h',
+      'base/vector_math.cc',
+      'base/vector_math.h',
     ],
   },
 }

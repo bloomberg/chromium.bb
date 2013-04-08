@@ -92,6 +92,10 @@ class MEDIA_EXPORT AudioBus {
   void ZeroFrames(int frames);
   void ZeroFramesPartial(int start_frame, int frames);
 
+  // Scale internal channel values by |volume| >= 0.  If an invalid value
+  // is provided, no adjustment is done.
+  void Scale(float volume);
+
  private:
   friend struct base::DefaultDeleter<AudioBus>;
   ~AudioBus();

@@ -42,7 +42,6 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/linux/alsa_util.h"
 #include "media/audio/linux/alsa_wrapper.h"
 #include "media/audio/linux/audio_manager_linux.h"
@@ -379,14 +378,9 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
 
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
+    output_bus->Scale(volume_);
     output_bus->ToInterleaved(
         frames_filled, bytes_per_sample_, packet->GetWritableData());
-
-    media::AdjustVolume(packet->GetWritableData(),
-                        packet_size,
-                        output_bus->channels(),
-                        bytes_per_sample_,
-                        volume_);
 
     if (packet_size > 0) {
       packet->SetDataSize(packet_size);

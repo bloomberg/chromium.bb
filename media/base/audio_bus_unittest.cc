@@ -356,4 +356,35 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
       kPartialFrames * sizeof(*kTestVectorInt16) * kTestVectorChannels), 0);
 }
 
+TEST_F(AudioBusTest, Scale) {
+  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
+
+  // Fill the bus with dummy data.
+  static const float kFillValue = 1;
+  for (int i = 0; i < bus->channels(); ++i)
+    std::fill(bus->channel(i), bus->channel(i) + bus->frames(), kFillValue);
+
+  // Adjust by an invalid volume and ensure volume is unchanged.
+  bus->Scale(-1);
+  for (int i = 0; i < bus->channels(); ++i) {
+    SCOPED_TRACE("Invalid Scale");
+    VerifyValue(bus->channel(i), bus->frames(), kFillValue);
+  }
+
+  // Verify correct volume adjustment.
+  static const float kVolume = 0.5;
+  bus->Scale(kVolume);
+  for (int i = 0; i < bus->channels(); ++i) {
+    SCOPED_TRACE("Half Scale");
+    VerifyValue(bus->channel(i), bus->frames(), kFillValue * kVolume);
+  }
+
+  // Verify zero volume case.
+  bus->Scale(0);
+  for (int i = 0; i < bus->channels(); ++i) {
+    SCOPED_TRACE("Zero Scale");
+    VerifyValue(bus->channel(i), bus->frames(), 0);
+  }
+}
+
 }  // namespace media

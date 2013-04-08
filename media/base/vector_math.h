@@ -17,6 +17,10 @@ enum { kRequiredAlignment = 16 };
 // |src| and |dest| must be aligned by kRequiredAlignment.
 MEDIA_EXPORT void FMAC(const float src[], float scale, int len, float dest[]);
 
+// Multiply each element of |src| by |scale| and store in |dest|.  |src| and
+// |dest| must be aligned by kRequiredAlignment.
+MEDIA_EXPORT void FMUL(const float src[], float scale, int len, float dest[]);
+
 }  // namespace vector_math
 }  // namespace media
 

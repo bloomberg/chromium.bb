@@ -178,8 +178,6 @@ void AUHALStream::Stop() {
 
 void AUHALStream::SetVolume(double volume) {
   volume_ = static_cast<float>(volume);
-
-  // TODO(crogers): set volume property
 }
 
 void AUHALStream::GetVolume(double* volume) {
@@ -251,6 +249,7 @@ OSStatus AUHALStream::Render(
         input_bus_.get(),
         output_bus_.get(),
         AudioBuffersState(0, hardware_pending_bytes));
+    output_bus_->Scale(volume_);
   }
 
   return noErr;

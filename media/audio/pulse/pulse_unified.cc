@@ -8,7 +8,6 @@
 #include "base/time.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/seekable_buffer.h"
 
@@ -175,10 +174,9 @@ void PulseAudioUnifiedStream::WriteData(size_t requested_bytes) {
 
   // Note: If this ever changes to output raw float the data must be clipped
   // and sanitized since it may come from an untrusted source such as NaCl.
+  output_bus_->Scale(volume_);
   output_bus_->ToInterleaved(
       output_bus_->frames(), params_.bits_per_sample() / 8, buffer);
-  media::AdjustVolume(buffer, requested_bytes, params_.channels(),
-                      params_.bits_per_sample() / 8, volume_);
 
   if (pa_stream_write(output_stream_, buffer, requested_bytes, NULL, 0LL,
                       PA_SEEK_RELATIVE) < 0) {

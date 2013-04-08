@@ -9,7 +9,6 @@
 #include "base/debug/trace_event.h"
 #include "base/time.h"
 #include "base/win/scoped_com_initializer.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -529,15 +528,9 @@ void WASAPIUnifiedStream::Run() {
 
           // Convert the audio bus content to interleaved integer data using
           // |audio_data| as destination.
+          render_bus_->Scale(volume_);
           render_bus_->ToInterleaved(
               packet_size_frames_, bytes_per_sample, audio_data);
-
-          // Perform in-place, software-volume adjustments.
-          media::AdjustVolume(audio_data,
-                              frames_filled * format_.Format.nBlockAlign,
-                              render_bus_->channels(),
-                              bytes_per_sample,
-                              volume_);
 
           // Release the buffer space acquired in the GetBuffer() call.
           audio_render_client_->ReleaseBuffer(packet_size_frames_, 0);

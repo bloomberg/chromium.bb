@@ -14,85 +14,16 @@
 
 #include "media/audio/audio_util.h"
 
-#include <algorithm>
-#include <limits>
-
-#include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
-#include "media/audio/audio_parameters.h"
-#include "media/base/audio_bus.h"
 #include "media/base/media_switches.h"
 
-#if defined(OS_MACOSX)
-#include "media/audio/mac/audio_low_latency_input_mac.h"
-#include "media/audio/mac/audio_low_latency_output_mac.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "media/audio/audio_manager_base.h"
-#include "media/audio/win/audio_low_latency_input_win.h"
-#include "media/audio/win/audio_low_latency_output_win.h"
-#include "media/audio/win/core_audio_util_win.h"
-#include "media/base/limits.h"
 #endif
 
 namespace media {
-
-// TODO(fbarchard): Convert to intrinsics for better efficiency.
-template<class Fixed>
-static int ScaleChannel(int channel, int volume) {
-  return static_cast<int>((static_cast<Fixed>(channel) * volume) >> 16);
-}
-
-template<class Format, class Fixed, int bias>
-static void AdjustVolume(Format* buf_out,
-                         int sample_count,
-                         int fixed_volume) {
-  for (int i = 0; i < sample_count; ++i) {
-    buf_out[i] = static_cast<Format>(ScaleChannel<Fixed>(buf_out[i] - bias,
-                                                         fixed_volume) + bias);
-  }
-}
-
-// AdjustVolume() does an in place audio sample change.
-bool AdjustVolume(void* buf,
-                  size_t buflen,
-                  int channels,
-                  int bytes_per_sample,
-                  float volume) {
-  DCHECK(buf);
-  if (volume < 0.0f || volume > 1.0f)
-    return false;
-  if (volume == 1.0f) {
-    return true;
-  } else if (volume == 0.0f) {
-    memset(buf, 0, buflen);
-    return true;
-  }
-  if (channels > 0 && channels <= 8 && bytes_per_sample > 0) {
-    int sample_count = buflen / bytes_per_sample;
-    const int fixed_volume = static_cast<int>(volume * 65536);
-    if (bytes_per_sample == 1) {
-      AdjustVolume<uint8, int32, 128>(reinterpret_cast<uint8*>(buf),
-                                      sample_count,
-                                      fixed_volume);
-      return true;
-    } else if (bytes_per_sample == 2) {
-      AdjustVolume<int16, int32, 0>(reinterpret_cast<int16*>(buf),
-                                    sample_count,
-                                    fixed_volume);
-      return true;
-    } else if (bytes_per_sample == 4) {
-      AdjustVolume<int32, int64, 0>(reinterpret_cast<int32*>(buf),
-                                    sample_count,
-                                    fixed_volume);
-      return true;
-    }
-  }
-  return false;
-}
 
 // Returns user buffer size as specified on the command line or 0 if no buffer
 // size has been specified.

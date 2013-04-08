@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/limits.h"
+#include "media/base/vector_math.h"
 
 namespace media {
 
@@ -305,6 +306,15 @@ void AudioBus::CopyTo(AudioBus* dest) const {
   // want to care), just copy using the public channel() accessors.
   for (int i = 0; i < channels(); ++i)
     memcpy(dest->channel(i), channel(i), sizeof(*channel(i)) * frames());
+}
+
+void AudioBus::Scale(float volume) {
+  if (volume > 0 && volume != 1) {
+    for (int i = 0; i < channels(); ++i)
+      vector_math::FMUL(channel(i), volume, frames(), channel(i));
+  } else if (volume == 0) {
+    Zero();
+  }
 }
 
 }  // namespace media

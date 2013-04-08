@@ -13,7 +13,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/win/audio_manager_win.h"
 
 namespace media {
@@ -360,14 +359,11 @@ void PCMWaveOutAudioOutputStream::QueueNextPacket(WAVEHDR *buffer) {
   if (used <= buffer_size_) {
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
+    audio_bus_->Scale(volume_);
     audio_bus_->ToInterleaved(
         frames_filled, format_.Format.wBitsPerSample / 8, buffer->lpData);
 
     buffer->dwBufferLength = used * format_.Format.nChannels / channels_;
-    media::AdjustVolume(buffer->lpData, used,
-                        format_.Format.nChannels,
-                        format_.Format.wBitsPerSample >> 3,
-                        volume_);
   } else {
     HandleError(0);
     return;

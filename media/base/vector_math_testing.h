@@ -11,12 +11,14 @@
 namespace media {
 namespace vector_math {
 
-// Optimized versions of FMAC() function exposed for testing.  See vector_math.h
-// for details.
+// Optimized versions exposed for testing.  See vector_math.h for details.
 MEDIA_EXPORT void FMAC_C(const float src[], float scale, int len, float dest[]);
+MEDIA_EXPORT void FMUL_C(const float src[], float scale, int len, float dest[]);
 
 #if defined(ARCH_CPU_X86_FAMILY)
 MEDIA_EXPORT void FMAC_SSE(const float src[], float scale, int len,
+                           float dest[]);
+MEDIA_EXPORT void FMUL_SSE(const float src[], float scale, int len,
                            float dest[]);
 #endif
 
