@@ -372,6 +372,13 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
+  if (util::IsSpecialResourceId(directory_fetch_info.resource_id())) {
+    // Load for a special directory is meaningless in the server.
+    // Let it succeed and use what we have locally.
+    callback.Run(DRIVE_FILE_OK);
+    return;
+  }
+
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
   params->directory_resource_id = directory_fetch_info.resource_id();
   LoadFromServer(
