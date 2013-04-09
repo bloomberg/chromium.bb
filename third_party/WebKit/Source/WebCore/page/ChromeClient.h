@@ -226,7 +226,6 @@ public:
     virtual PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color&) = 0;
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     //  - Date/time choosers for types for which RenderTheme::supportsCalendarPicker
@@ -234,7 +233,6 @@ public:
     //  - <datalist> UI for date/time input types regardless of
     //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
-#endif
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) = 0;
     // Asynchronous request to load an icon for specified filenames.

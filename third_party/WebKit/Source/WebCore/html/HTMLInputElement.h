@@ -296,9 +296,7 @@ public:
     bool hasImageLoader() const { return m_imageLoader; }
     HTMLImageLoader* imageLoader();
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     bool setupDateTimeChooserParameters(DateTimeChooserParameters&);
-#endif
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 protected:

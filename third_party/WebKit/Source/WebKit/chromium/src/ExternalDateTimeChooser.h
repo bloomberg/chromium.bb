@@ -26,7 +26,7 @@
 #ifndef ExternalDateTimeChooser_h
 #define ExternalDateTimeChooser_h
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES) && !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeChooser.h"
 
 namespace WebCore {

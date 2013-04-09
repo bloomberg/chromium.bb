@@ -380,13 +380,11 @@ void LocaleWin::ensureWeekDayShortLabels()
     }
 }
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 const Vector<String>& LocaleWin::monthLabels()
 {
     ensureMonthLabels();
     return m_monthLabels;
 }
-#endif
 
 #if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleWin::weekDayShortLabels()
@@ -407,7 +405,6 @@ bool LocaleWin::isRTL()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 String LocaleWin::dateFormat()
 {
     if (m_dateFormat.isNull())
@@ -510,7 +507,6 @@ const Vector<String>& LocaleWin::timeAMPMLabels()
     }
     return m_timeAMPMLabels;
 }
-#endif
 
 void LocaleWin::initializeLocaleData()
 {

@@ -450,13 +450,11 @@ PassOwnPtr<ColorChooser> Chrome::createColorChooser(ColorChooserClient* client, 
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 PassRefPtr<DateTimeChooser> Chrome::openDateTimeChooser(DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
     notifyPopupOpeningObservers();
     return m_client->openDateTimeChooser(client, parameters);
 }
-#endif
 
 void Chrome::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
 {

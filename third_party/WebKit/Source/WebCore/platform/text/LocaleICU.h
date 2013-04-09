@@ -54,7 +54,6 @@ public:
     virtual unsigned firstDayOfWeek() OVERRIDE;
     virtual bool isRTL() OVERRIDE;
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -67,7 +66,6 @@ public:
     virtual const Vector<String>& standAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& shortStandAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
-#endif
 
 private:
     explicit LocaleICU(const char*);
@@ -85,10 +83,8 @@ private:
     void initializeCalendar();
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     PassOwnPtr<Vector<String> > createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
     void initializeDateTimeFormat();
-#endif
 
     CString m_locale;
     UNumberFormat* m_numberFormat;
@@ -100,7 +96,6 @@ private:
     OwnPtr<Vector<String> > m_weekDayShortLabels;
     unsigned m_firstDayOfWeek;
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     OwnPtr<Vector<String> > m_monthLabels;
     String m_dateFormat;
     String m_monthFormat;
@@ -116,7 +111,6 @@ private:
     Vector<String> m_shortStandAloneMonthLabels;
     Vector<String> m_timeAMPMLabels;
     bool m_didCreateTimeFormat;
-#endif
 };
 
 } // namespace WebCore

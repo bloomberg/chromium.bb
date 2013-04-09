@@ -39,7 +39,6 @@ private:
 #if ENABLE(CALENDAR_PICKER)
     virtual bool isRTL() OVERRIDE;
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -56,7 +55,6 @@ private:
     Vector<String> m_timeAMPMLabels;
     Vector<String> m_shortMonthLabels;
     Vector<String> m_monthLabels;
-#endif
 };
 
 PassOwnPtr<Locale> Locale::create(const AtomicString&)
@@ -79,7 +77,6 @@ bool LocaleNone::isRTL()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 const Vector<String>& LocaleNone::monthLabels()
 {
     if (!m_monthLabels.isEmpty())
@@ -154,7 +151,5 @@ const Vector<String>& LocaleNone::timeAMPMLabels()
     m_timeAMPMLabels.append("PM");
     return m_timeAMPMLabels;
 }
-
-#endif
 
 } // namespace WebCore

@@ -58,11 +58,9 @@ LocaleICU::LocaleICU(const char* locale)
 #if ENABLE(CALENDAR_PICKER)
     , m_firstDayOfWeek(0)
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     , m_mediumTimeFormat(0)
     , m_shortTimeFormat(0)
     , m_didCreateTimeFormat(false)
-#endif
 {
 }
 
@@ -70,10 +68,8 @@ LocaleICU::~LocaleICU()
 {
     unum_close(m_numberFormat);
     udat_close(m_shortDateFormat);
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     udat_close(m_mediumTimeFormat);
     udat_close(m_shortTimeFormat);
-#endif
 }
 
 PassOwnPtr<LocaleICU> LocaleICU::create(const char* localeString)
@@ -155,7 +151,6 @@ UDateFormat* LocaleICU::openDateFormat(UDateFormatStyle timeStyle, UDateFormatSt
     return udat_open(timeStyle, dateStyle, m_locale.data(), gmtTimezone, WTF_ARRAY_LENGTH(gmtTimezone), 0, -1, &status);
 }
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 static String getDateFormatPattern(const UDateFormat* dateFormat)
 {
     if (!dateFormat)
@@ -196,7 +191,6 @@ PassOwnPtr<Vector<String> > LocaleICU::createLabelVector(const UDateFormat* date
     }
     return labels.release();
 }
-#endif
 
 #if ENABLE(CALENDAR_PICKER)
 static PassOwnPtr<Vector<String> > createFallbackWeekDayShortLabels()
@@ -231,7 +225,6 @@ void LocaleICU::initializeCalendar()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 static PassOwnPtr<Vector<String> > createFallbackMonthLabels()
 {
     OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
@@ -253,7 +246,6 @@ const Vector<String>& LocaleICU::monthLabels()
     m_monthLabels = createFallbackMonthLabels();
     return *m_monthLabels;
 }
-#endif
 
 #if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleICU::weekDayShortLabels()
@@ -275,7 +267,6 @@ bool LocaleICU::isRTL()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 static PassOwnPtr<Vector<String> > createFallbackAMPMLabels()
 {
     OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
@@ -436,8 +427,6 @@ const Vector<String>& LocaleICU::timeAMPMLabels()
     initializeDateTimeFormat();
     return m_timeAMPMLabels;
 }
-
-#endif
 
 } // namespace WebCore
 

@@ -31,7 +31,6 @@
 #ifndef DateTimeChooser_h
 #define DateTimeChooser_h
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 #include "IntRect.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -66,5 +65,4 @@ public:
 };
 
 } // namespace WebCore
-#endif
 #endif // DateTimeChooser_h

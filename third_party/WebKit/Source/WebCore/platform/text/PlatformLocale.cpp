@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
-
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
     WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);
 
@@ -177,8 +175,6 @@ String DateTimeStringBuilder::toString()
 {
     return m_builder.toString();
 }
-
-#endif
 
 Locale::~Locale()
 {
@@ -334,8 +330,6 @@ String Locale::localizedDecimalSeparator()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
-
 String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
 {
     if (date.type() == DateComponents::Invalid)
@@ -371,6 +365,5 @@ String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
     }
     return builder.toString();
 }
-#endif
 
 }

@@ -1919,7 +1919,6 @@ void HTMLInputElement::setRangeText(const String& replacement, unsigned start, u
     HTMLTextFormControlElement::setRangeText(replacement, start, end, selectionMode, ec);
 }
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
 {
     if (!document()->view())
@@ -1962,7 +1961,6 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
 #endif
     return true;
 }
-#endif
 
 void HTMLInputElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

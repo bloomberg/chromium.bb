@@ -173,9 +173,7 @@ public:
     virtual PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color&) OVERRIDE;
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) OVERRIDE;
-#endif
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) OVERRIDE;
     virtual void loadIconForFiles(const Vector<String>&, FileIconLoader*) { }

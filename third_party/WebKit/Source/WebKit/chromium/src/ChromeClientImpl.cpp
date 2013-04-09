@@ -723,7 +723,6 @@ PassOwnPtr<WebColorChooser> ChromeClientImpl::createWebColorChooser(WebColorChoo
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -732,7 +731,6 @@ PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChoose
     return ExternalDateTimeChooser::create(this, m_webView->client(), pickerClient, parameters);
 #endif
 }
-#endif
 
 void ChromeClientImpl::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
 {

@@ -98,12 +98,10 @@ PassOwnPtr<ColorChooser> EmptyChromeClient::createColorChooser(ColorChooserClien
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 PassRefPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
 {
     return PassRefPtr<DateTimeChooser>();
 }
-#endif
 
 void EmptyChromeClient::runOpenPanel(Frame*, PassRefPtr<FileChooser>)
 {

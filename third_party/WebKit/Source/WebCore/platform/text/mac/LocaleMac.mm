@@ -114,7 +114,6 @@ RetainPtr<NSDateFormatter> LocaleMac::shortDateFormatter()
     return createDateTimeFormatter(m_locale.get(), m_gregorianCalendar.get(), NSDateFormatterShortStyle, NSDateFormatterNoStyle);
 }
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 const Vector<String>& LocaleMac::monthLabels()
 {
     if (!m_monthLabels.isEmpty())
@@ -130,7 +129,6 @@ const Vector<String>& LocaleMac::monthLabels()
         m_monthLabels.append(WTF::monthFullName[i]);
     return m_monthLabels;
 }
-#endif
 
 #if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleMac::weekDayShortLabels()
@@ -165,7 +163,6 @@ bool LocaleMac::isRTL()
 }
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 RetainPtr<NSDateFormatter> LocaleMac::timeFormatter()
 {
     return createDateTimeFormatter(m_locale.get(), m_gregorianCalendar.get(), NSDateFormatterNoStyle, NSDateFormatterMediumStyle);
@@ -300,7 +297,6 @@ const Vector<String>& LocaleMac::timeAMPMLabels()
     m_timeAMPMLabels.append([formatter.get() PMSymbol]);
     return m_timeAMPMLabels;
 }
-#endif
 
 void LocaleMac::initializeLocaleData()
 {

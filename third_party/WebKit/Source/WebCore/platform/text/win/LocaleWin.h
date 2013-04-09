@@ -51,7 +51,6 @@ public:
     virtual unsigned firstDayOfWeek() OVERRIDE;
     virtual bool isRTL() OVERRIDE;
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -66,7 +65,6 @@ public:
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
 
     static String dateFormat(const String&);
-#endif
 
 private:
     explicit LocaleWin(LCID);
@@ -81,7 +79,6 @@ private:
     virtual void initializeLocaleData() OVERRIDE;
 
     LCID m_lcid;
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     Vector<String> m_shortMonthLabels;
     Vector<String> m_monthLabels;
     String m_dateFormat;
@@ -92,7 +89,6 @@ private:
     String m_dateTimeFormatWithSeconds;
     String m_dateTimeFormatWithoutSeconds;
     Vector<String> m_timeAMPMLabels;
-#endif
 #if ENABLE(CALENDAR_PICKER)
     Vector<String> m_weekDayShortLabels;
     unsigned m_firstDayOfWeek;

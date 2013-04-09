@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 #include "BaseDateAndTimeInputType.h"
 
 #include "HTMLInputElement.h"
@@ -179,4 +178,3 @@ bool BaseDateAndTimeInputType::valueMissing(const String& value) const
 }
 
 } // namespace WebCore
-#endif

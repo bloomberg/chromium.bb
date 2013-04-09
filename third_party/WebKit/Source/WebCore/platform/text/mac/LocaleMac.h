@@ -57,7 +57,6 @@ public:
     virtual bool isRTL() OVERRIDE;
 #endif
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -70,7 +69,6 @@ public:
     virtual const Vector<String>& standAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& shortStandAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
-#endif
 
 private:
     explicit LocaleMac(NSLocale*);
@@ -82,7 +80,6 @@ private:
 #if ENABLE(CALENDAR_PICKER)
     Vector<String> m_weekDayShortLabels;
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     Vector<String> m_monthLabels;
     RetainPtr<NSDateFormatter> timeFormatter();
     RetainPtr<NSDateFormatter> shortTimeFormatter();
@@ -100,7 +97,6 @@ private:
     Vector<String> m_standAloneMonthLabels;
     Vector<String> m_shortStandAloneMonthLabels;
     Vector<String> m_timeAMPMLabels;
-#endif
     bool m_didInitializeNumberData;
 };
 

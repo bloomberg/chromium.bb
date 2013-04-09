@@ -150,9 +150,7 @@ public:
 #if ENABLE(INPUT_TYPE_COLOR)
     PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color& initialColor);
 #endif
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
-#endif
 
     void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
     void loadIconForFiles(const Vector<String>&, FileIconLoader*);
