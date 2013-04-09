@@ -46,7 +46,7 @@ class OAuth2TokenServiceRequest::Core
   virtual ~Core();
 
   // Starts an OAuth2TokenService::Request on the UI thread.
-  void StartOnUIThread(OAuth2TokenService::ScopeSet scopes);
+  void StartOnUIThread(const OAuth2TokenService::ScopeSet& scopes);
   // Stops the OAuth2TokenService::Request on the UI thread.
   void StopOnUIThread();
 
@@ -123,7 +123,7 @@ void OAuth2TokenServiceRequest::Core::StopOnUIThread() {
 }
 
 void OAuth2TokenServiceRequest::Core::StartOnUIThread(
-    OAuth2TokenService::ScopeSet scopes) {
+    const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   OAuth2TokenService* service = OAuth2TokenServiceFactory::GetForProfile(
