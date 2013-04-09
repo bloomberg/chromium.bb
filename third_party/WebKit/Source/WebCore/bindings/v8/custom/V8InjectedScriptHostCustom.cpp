@@ -286,12 +286,10 @@ v8::Handle<v8::Value> V8InjectedScriptHost::databaseIdMethodCustom(const v8::Arg
 {
     if (args.Length() < 1)
         return v8::Undefined();
-#if ENABLE(SQL_DATABASE)
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
     Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(args[0]));
     if (database)
         return v8StringOrUndefined(host->databaseIdImpl(database), args.GetIsolate());
-#endif
     return v8::Undefined();
 }
 

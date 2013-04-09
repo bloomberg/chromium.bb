@@ -29,8 +29,6 @@
 #include "config.h"
 #include "SQLTransactionBackend.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLTransaction.h"
 #include "Database.h" // FIXME: Should only be used in the frontend.
 #include "DatabaseAuthorizer.h"
@@ -867,5 +865,3 @@ void SQLTransactionBackend::releaseOriginLockIfNeeded()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

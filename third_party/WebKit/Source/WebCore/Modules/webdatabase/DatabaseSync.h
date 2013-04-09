@@ -31,8 +31,6 @@
 #ifndef DatabaseSync_h
 #define DatabaseSync_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackendSync.h"
 #include "DatabaseBase.h"
 #include "DatabaseBasicTypes.h"
@@ -88,7 +86,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif

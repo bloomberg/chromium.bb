@@ -142,7 +142,6 @@ bool RuntimeEnabledFeatures::webSocketEnabled()
     return WebSocket::isAvailable();
 }
 
-#if ENABLE(SQL_DATABASE)
 bool RuntimeEnabledFeatures::openDatabaseEnabled()
 {
     return DatabaseManager::manager().isAvailable();
@@ -152,7 +151,6 @@ bool RuntimeEnabledFeatures::openDatabaseSyncEnabled()
 {
     return DatabaseManager::manager().isAvailable();
 }
-#endif
 
 bool RuntimeEnabledFeatures::isQuotaEnabled = false;
 

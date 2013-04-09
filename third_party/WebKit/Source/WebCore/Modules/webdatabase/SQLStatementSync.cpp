@@ -30,8 +30,6 @@
 #include "config.h"
 #include "SQLStatementSync.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseSync.h"
 #include "SQLException.h"
 #include "SQLResultSet.h"
@@ -133,5 +131,3 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

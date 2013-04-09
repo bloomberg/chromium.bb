@@ -29,8 +29,6 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLTransaction.h"
 #include "SQLCallbackWrapper.h"
 #include "SQLStatement.h"
@@ -106,7 +104,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // SQLTransaction_h

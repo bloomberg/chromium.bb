@@ -28,8 +28,6 @@
 #include "config.h"
 #include "DatabaseContext.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Database.h"
@@ -232,5 +230,3 @@ void DatabaseContext::databaseExceededQuota(const String& name, DatabaseDetails 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

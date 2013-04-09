@@ -58,18 +58,12 @@ bool WebRuntimeFeatures::isNativeValidationMessageEnabled()
 
 void WebRuntimeFeatures::enableDatabase(bool enable)
 {
-#if ENABLE(SQL_DATABASE)
     DatabaseManager::manager().setIsAvailable(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isDatabaseEnabled()
 {
-#if ENABLE(SQL_DATABASE)
     return DatabaseManager::manager().isAvailable();
-#else
-    return false;
-#endif
 }
 
 // FIXME: Remove the ability to enable this feature at runtime.

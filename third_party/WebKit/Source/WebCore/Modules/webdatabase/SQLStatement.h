@@ -28,8 +28,6 @@
 #ifndef SQLStatement_h
 #define SQLStatement_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLStatement.h"
 #include "SQLCallbackWrapper.h"
 #include "SQLResultSet.h"
@@ -72,7 +70,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // SQLStatement_h

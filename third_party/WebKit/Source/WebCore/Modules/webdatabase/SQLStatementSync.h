@@ -31,8 +31,6 @@
 #ifndef SQLStatementSync_h
 #define SQLStatementSync_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBasicTypes.h"
 #include "SQLValue.h"
 #include <wtf/Forward.h>
@@ -57,7 +55,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // SQLStatementSync_h

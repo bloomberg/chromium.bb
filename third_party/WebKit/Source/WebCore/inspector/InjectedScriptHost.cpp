@@ -31,6 +31,7 @@
 #include "config.h"
 #include "InjectedScriptHost.h"
 
+#include "Database.h"
 #include "Element.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -48,9 +49,6 @@
 #include "Pasteboard.h"
 #include "Storage.h"
 
-#if ENABLE(SQL_DATABASE)
-#include "Database.h"
-#endif
 
 #include "markup.h"
 
@@ -69,9 +67,7 @@ PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()
 InjectedScriptHost::InjectedScriptHost()
     : m_inspectorAgent(0)
     , m_consoleAgent(0)
-#if ENABLE(SQL_DATABASE)
     , m_databaseAgent(0)
-#endif
     , m_domStorageAgent(0)
     , m_domAgent(0)
 {
@@ -86,9 +82,7 @@ void InjectedScriptHost::disconnect()
 {
     m_inspectorAgent = 0;
     m_consoleAgent = 0;
-#if ENABLE(SQL_DATABASE)
     m_databaseAgent = 0;
-#endif
     m_domStorageAgent = 0;
     m_domAgent = 0;
 }
@@ -144,14 +138,12 @@ InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsig
     return m_inspectedObjects[num].get();
 }
 
-#if ENABLE(SQL_DATABASE)
 String InjectedScriptHost::databaseIdImpl(Database* database)
 {
     if (m_databaseAgent)
         return m_databaseAgent->databaseId(database);
     return String();
 }
-#endif
 
 String InjectedScriptHost::storageIdImpl(Storage* storage)
 {

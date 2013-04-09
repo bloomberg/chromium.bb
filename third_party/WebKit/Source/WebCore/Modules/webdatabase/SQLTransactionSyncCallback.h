@@ -31,8 +31,6 @@
 #ifndef SQLTransactionSyncCallback_h
 #define SQLTransactionSyncCallback_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -47,7 +45,5 @@ public:
 };
 
 }
-
-#endif
 
 #endif // SQLTransactionSyncCallback_h

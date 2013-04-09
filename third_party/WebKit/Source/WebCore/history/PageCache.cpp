@@ -141,12 +141,10 @@ static unsigned logCanCacheFrameDecision(Frame* frame, int indentLevel)
         PCLOG("   -Frame has an unload event listener");
         rejectReasons |= 1 << HasUnloadListener;
     }
-#if ENABLE(SQL_DATABASE)
     if (DatabaseManager::manager().hasOpenDatabases(frame->document())) {
         PCLOG("   -Frame has open database handles");
         rejectReasons |= 1 << HasDatabaseHandles;
     }
-#endif
 #if ENABLE(SHARED_WORKERS)
     if (SharedWorkerRepository::hasSharedWorkers(frame->document())) {
         PCLOG("   -Frame has associated SharedWorkers");
@@ -349,9 +347,7 @@ bool PageCache::canCachePageContainingThisFrame(Frame* frame)
         && (!frameLoader->subframeLoader()->containsPlugins() || frame->page()->settings()->pageCacheSupportsPlugins())
         && (!document->url().protocolIs("https") || (!documentLoader->response().cacheControlContainsNoCache() && !documentLoader->response().cacheControlContainsNoStore()))
         && (!document->domWindow() || !document->domWindow()->hasEventListeners(eventNames().unloadEvent))
-#if ENABLE(SQL_DATABASE)
         && !DatabaseManager::manager().hasOpenDatabases(document)
-#endif
 #if ENABLE(SHARED_WORKERS)
         && !SharedWorkerRepository::hasSharedWorkers(document)
 #endif

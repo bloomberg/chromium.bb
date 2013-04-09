@@ -29,7 +29,6 @@
 // This IDL file is for testing the bindings code generator with an interface
 // that has the "Callback" attribute and for tracking changes in its ouput.
 [
-    Conditional=SQL_DATABASE,
     Callback
 ] interface TestCallback {
   boolean callbackWithNoParam();

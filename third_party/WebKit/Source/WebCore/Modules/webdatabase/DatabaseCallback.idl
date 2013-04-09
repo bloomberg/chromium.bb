@@ -27,7 +27,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     Callback
 ] interface DatabaseCallback {
     boolean handleEvent(Database database);

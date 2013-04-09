@@ -40,19 +40,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 
-#if !ENABLE(SQL_DATABASE)
-namespace WebCore {
-class DatabaseBackendBase {
-public:
-    String stringIdentifier() const { return String(); }
-    String displayName() const { return String(); }
-    unsigned long long estimatedSize() const { return 0; }
-    SecurityOrigin* securityOrigin() const { return 0; }
-    bool isSyncDatabase() const { return false; }
-};
-}
-#endif // !ENABLE(SQL_DATABASE)
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -101,30 +88,22 @@ WebDatabaseObserver* WebDatabase::observer()
 
 void WebDatabase::updateDatabaseSize(const WebString& originIdentifier, const WebString& name, long long size)
 {
-#if ENABLE(SQL_DATABASE)
     QuotaTracker::instance().updateDatabaseSize(originIdentifier, name, size);
-#endif
 }
 
 void WebDatabase::updateSpaceAvailable(const WebString& originIdentifier, long long spaceAvailable)
 {
-#if ENABLE(SQL_DATABASE)
     QuotaTracker::instance().updateSpaceAvailableToOrigin(originIdentifier, spaceAvailable);
-#endif
 }
 
 void WebDatabase::resetSpaceAvailable(const WebString& originIdentifier)
 {
-#if ENABLE(SQL_DATABASE)
     QuotaTracker::instance().resetSpaceAvailableToOrigin(originIdentifier);
-#endif
 }
 
 void WebDatabase::closeDatabaseImmediately(const WebString& originIdentifier, const WebString& databaseName)
 {
-#if ENABLE(SQL_DATABASE)
     DatabaseManager::manager().closeDatabasesImmediately(originIdentifier, databaseName);
-#endif
 }
 
 WebDatabase::WebDatabase(const DatabaseBackendBase* database)

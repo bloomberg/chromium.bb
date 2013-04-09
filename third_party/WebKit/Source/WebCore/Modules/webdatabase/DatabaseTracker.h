@@ -29,8 +29,6 @@
 #ifndef DatabaseTracker_h
 #define DatabaseTracker_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseError.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -202,7 +200,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseTracker_h

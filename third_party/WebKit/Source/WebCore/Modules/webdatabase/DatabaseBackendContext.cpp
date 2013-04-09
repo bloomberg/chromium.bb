@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DatabaseBackendContext.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ScriptExecutionContext.h"
 
 namespace WebCore {
@@ -51,5 +49,3 @@ bool DatabaseBackendContext::isContextThread() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

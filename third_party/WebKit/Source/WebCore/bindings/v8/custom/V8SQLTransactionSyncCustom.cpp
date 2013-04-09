@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "V8SQLTransactionSync.h"
 
 #include "DatabaseSync.h"
@@ -94,5 +92,3 @@ v8::Handle<v8::Value> V8SQLTransactionSync::executeSqlMethodCustom(const v8::Arg
 }
 
 } // namespace WebCore
-
-#endif

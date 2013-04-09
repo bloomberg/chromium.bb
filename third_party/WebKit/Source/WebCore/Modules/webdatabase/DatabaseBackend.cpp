@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DatabaseBackend.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ChangeVersionData.h"
 #include "ChangeVersionWrapper.h"
 #include "DatabaseBackendContext.h"
@@ -176,5 +174,3 @@ SQLTransactionCoordinator* DatabaseBackend::transactionCoordinator() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

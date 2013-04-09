@@ -28,8 +28,6 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackend.h"
 #include "DatabaseBasicTypes.h"
 #include "DatabaseError.h"
@@ -178,7 +176,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseTask_h

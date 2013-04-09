@@ -28,8 +28,6 @@
 #ifndef SQLStatementBackend_h
 #define SQLStatementBackend_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLStatementBackend.h"
 #include "SQLValue.h"
 #include <wtf/Forward.h>
@@ -82,7 +80,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // SQLStatementBackend_h

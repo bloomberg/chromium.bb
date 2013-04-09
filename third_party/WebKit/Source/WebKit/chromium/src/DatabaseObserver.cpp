@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DatabaseObserver.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "CrossThreadCopier.h"
 #include "CrossThreadTask.h"
 #include "DatabaseBackendBase.h"
@@ -219,5 +217,3 @@ void DatabaseObserver::reportVacuumDatabaseResult(DatabaseBackendBase* database,
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

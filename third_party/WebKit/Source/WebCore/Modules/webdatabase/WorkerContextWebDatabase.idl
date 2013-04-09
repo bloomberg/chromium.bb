@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     Supplemental=WorkerContext
 ] interface WorkerContextWebDatabase {
     [EnabledAtRuntime] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)

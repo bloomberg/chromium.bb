@@ -31,8 +31,6 @@
 #ifndef QuotaTracker_h
 #define QuotaTracker_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "SecurityOrigin.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
@@ -63,7 +61,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // QuotaTracker_h

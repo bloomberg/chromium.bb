@@ -29,8 +29,6 @@
 #include "config.h"
 #include "Database.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ChangeVersionData.h"
 #include "CrossThreadTask.h"
 #include "DatabaseBackendContext.h"
@@ -296,5 +294,3 @@ void Database::reportCommitTransactionResult(int errorSite, int webSqlErrorCode,
 #endif
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

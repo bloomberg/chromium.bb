@@ -26,8 +26,6 @@
 #include "config.h"
 #include "OriginLock.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "FileSystem.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -97,5 +95,3 @@ void OriginLock::deleteLockFile(String originPath)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

@@ -21,7 +21,6 @@
 #ifndef V8TestCallback_h
 #define V8TestCallback_h
 
-#if ENABLE(SQL_DATABASE)
 #include "ActiveDOMCallback.h"
 #include "ScopedPersistent.h"
 #include "TestCallback.h"
@@ -66,5 +65,3 @@ private:
 }
 
 #endif // V8TestCallback_h
-
-#endif // ENABLE(SQL_DATABASE)

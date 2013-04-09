@@ -31,8 +31,6 @@
 #include "config.h"
 #include "DatabaseTracker.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackendBase.h"
 #include "DatabaseBackendContext.h"
 #include "DatabaseObserver.h"
@@ -285,5 +283,3 @@ void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier
 }
 
 }
-
-#endif // ENABLE(SQL_DATABASE)

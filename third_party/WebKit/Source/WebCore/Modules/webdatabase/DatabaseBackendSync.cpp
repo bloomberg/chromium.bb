@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DatabaseBackendSync.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackendContext.h"
 #include "DatabaseTracker.h"
 
@@ -61,5 +59,3 @@ bool DatabaseBackendSync::openAndVerifyVersion(bool setVersionInNewDatabase, Dat
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

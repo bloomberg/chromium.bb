@@ -135,10 +135,8 @@ public:
 
     static bool webSocketEnabled();
 
-#if ENABLE(SQL_DATABASE)
     static bool openDatabaseEnabled();
     static bool openDatabaseSyncEnabled();
-#endif
 
 #if ENABLE(WEB_AUDIO)
     static void setWebkitAudioContextEnabled(bool isEnabled) { isWebAudioEnabled = isEnabled; }

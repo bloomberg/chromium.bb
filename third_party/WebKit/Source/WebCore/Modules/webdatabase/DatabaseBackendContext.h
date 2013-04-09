@@ -26,8 +26,6 @@
 #ifndef DatabaseBackendContext_h
 #define DatabaseBackendContext_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseContext.h"
 
 namespace WebCore {
@@ -52,7 +50,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseBackendContext_h

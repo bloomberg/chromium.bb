@@ -103,10 +103,8 @@ public:
     InspectorDOMStorageAgent* inspectorDOMStorageAgent() const { return m_inspectorDOMStorageAgent; }
     void setInspectorDOMStorageAgent(InspectorDOMStorageAgent* agent) { m_inspectorDOMStorageAgent = agent; }
 
-#if ENABLE(SQL_DATABASE)
     InspectorDatabaseAgent* inspectorDatabaseAgent() const { return m_inspectorDatabaseAgent; }
     void setInspectorDatabaseAgent(InspectorDatabaseAgent* agent) { m_inspectorDatabaseAgent = agent; }
-#endif
 
     InspectorFileSystemAgent* inspectorFileSystemAgent() const { return m_inspectorFileSystemAgent; }
     void setInspectorFileSystemAgent(InspectorFileSystemAgent* agent) { m_inspectorFileSystemAgent = agent; }
@@ -156,9 +154,7 @@ private:
     WorkerRuntimeAgent* m_workerRuntimeAgent;
     InspectorTimelineAgent* m_inspectorTimelineAgent;
     InspectorDOMStorageAgent* m_inspectorDOMStorageAgent;
-#if ENABLE(SQL_DATABASE)
     InspectorDatabaseAgent* m_inspectorDatabaseAgent;
-#endif
     InspectorFileSystemAgent* m_inspectorFileSystemAgent;
     InspectorApplicationCacheAgent* m_inspectorApplicationCacheAgent;
     InspectorDebuggerAgent* m_inspectorDebuggerAgent;

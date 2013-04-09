@@ -40,9 +40,8 @@ except ImportError:
 
 import CodeGeneratorInspectorStrings
 
-
+# TODO(mkwst): Remove all of this logic.
 DOMAIN_DEFINE_NAME_MAP = {
-    "Database": "SQL_DATABASE",
 }
 
 

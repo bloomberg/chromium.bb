@@ -26,8 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DOMWindowWebDatabase.h"
 
 #include "DOMWindow.h"
@@ -59,5 +57,3 @@ PassRefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow* window, const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

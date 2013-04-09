@@ -100,11 +100,9 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorCSSAgent::create(m_instrumentingAgents.get(), m_state.get(), m_domAgent));
 
-#if ENABLE(SQL_DATABASE)
     OwnPtr<InspectorDatabaseAgent> databaseAgentPtr(InspectorDatabaseAgent::create(m_instrumentingAgents.get(), m_state.get()));
     InspectorDatabaseAgent* databaseAgent = databaseAgentPtr.get();
     m_agents.append(databaseAgentPtr.release());
-#endif
 
     m_agents.append(InspectorIndexedDBAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), pageAgent));
 
@@ -162,9 +160,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_inspectorAgent
         , consoleAgent
-#if ENABLE(SQL_DATABASE)
         , databaseAgent
-#endif
         , domStorageAgent
         , m_domAgent
         , m_debuggerAgent

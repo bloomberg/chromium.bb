@@ -28,8 +28,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "SQLException.h"
 
 namespace WebCore {
@@ -67,5 +65,3 @@ bool SQLException::initializeDescription(ExceptionCode ec, ExceptionCodeDescript
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

@@ -26,8 +26,6 @@
 #ifndef DatabaseError_h
 #define DatabaseError_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/EnumClass.h>
 
 namespace WebCore {
@@ -42,7 +40,5 @@ ENUM_CLASS(DatabaseError) {
 } ENUM_CLASS_END(DatabaseError);
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseError_h

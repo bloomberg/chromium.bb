@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DatabaseServer.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "Database.h"
 #include "DatabaseBackend.h"
 #include "DatabaseBackendContext.h"
@@ -182,5 +180,3 @@ PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseBa
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

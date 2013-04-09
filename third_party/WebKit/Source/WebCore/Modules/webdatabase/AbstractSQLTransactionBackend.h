@@ -26,8 +26,6 @@
 #ifndef AbstractSQLTransactionBackend_h
 #define AbstractSQLTransactionBackend_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLStatement.h"
 #include "SQLError.h"
 #include "SQLTransactionState.h"
@@ -55,7 +53,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // AbstractSQLTransactionBackend_h

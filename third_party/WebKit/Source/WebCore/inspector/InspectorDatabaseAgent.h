@@ -29,8 +29,6 @@
 #ifndef InspectorDatabaseAgent_h
 #define InspectorDatabaseAgent_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include <wtf/HashMap.h>
@@ -85,7 +83,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // !defined(InspectorDatabaseAgent_h)

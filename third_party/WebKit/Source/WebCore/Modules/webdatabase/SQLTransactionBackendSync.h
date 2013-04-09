@@ -32,8 +32,6 @@
 #ifndef SQLTransactionBackendSync_h
 #define SQLTransactionBackendSync_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBasicTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
@@ -80,7 +78,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // SQLTransactionBackendSync_h

@@ -26,8 +26,6 @@
 #ifndef DatabaseBackend_h
 #define DatabaseBackend_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackendBase.h"
 #include <wtf/Deque.h>
 #include <wtf/text/WTFString.h>
@@ -81,7 +79,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseBackend_h

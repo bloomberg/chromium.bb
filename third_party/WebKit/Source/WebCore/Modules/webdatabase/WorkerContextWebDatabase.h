@@ -27,8 +27,6 @@
 #ifndef WorkerContextWebDatabase_h
 #define WorkerContextWebDatabase_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ExceptionCode.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // WorkerContextWebDatabase_h

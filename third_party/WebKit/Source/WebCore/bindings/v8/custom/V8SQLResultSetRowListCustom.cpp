@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
 #include "V8SQLResultSetRowList.h"
 
 #include "SQLResultSetRowList.h"
@@ -80,5 +79,3 @@ v8::Handle<v8::Value> V8SQLResultSetRowList::itemMethodCustom(const v8::Argument
 }
 
 } // namespace WebCore
-
-#endif

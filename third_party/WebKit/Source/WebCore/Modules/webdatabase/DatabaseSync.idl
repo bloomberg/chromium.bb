@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     OmitConstructor
 ] interface DatabaseSync {
     readonly attribute DOMString version;

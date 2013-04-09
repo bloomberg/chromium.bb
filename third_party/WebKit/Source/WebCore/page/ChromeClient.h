@@ -26,6 +26,7 @@
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "Cursor.h"
+#include "DatabaseDetails.h"
 #include "FocusDirection.h"
 #include "FrameLoader.h"
 #include "GraphicsContext.h"
@@ -41,9 +42,6 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(SQL_DATABASE)
-#include "DatabaseDetails.h"
-#endif
 
 #ifndef __OBJC__
 class NSMenu;
@@ -189,9 +187,7 @@ public:
 
     virtual Color underlayColor() const { return Color(); }
 
-#if ENABLE(SQL_DATABASE)
     virtual void exceededDatabaseQuota(Frame*, const String& databaseName, DatabaseDetails) = 0;
-#endif
 
     // Callback invoked when the application cache fails to save a cache object
     // because storing it would grow the database file past its defined maximum

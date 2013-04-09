@@ -28,6 +28,8 @@
 
 #include "WorkerThread.h"
 
+#include "DatabaseManager.h"
+#include "DatabaseTask.h"
 #include "DedicatedWorkerContext.h"
 #include "InspectorInstrumentation.h"
 #include "KURL.h"
@@ -39,10 +41,6 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(SQL_DATABASE)
-#include "DatabaseManager.h"
-#include "DatabaseTask.h"
-#endif
 
 #if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
@@ -225,11 +223,9 @@ public:
         ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
         WorkerContext* workerContext = static_cast<WorkerContext*>(context);
 
-#if ENABLE(SQL_DATABASE)
         // FIXME: Should we stop the databases as part of stopActiveDOMObjects() below?
         DatabaseTaskSynchronizer cleanupSync;
         DatabaseManager::manager().stopDatabases(workerContext, &cleanupSync);
-#endif
 
         workerContext->stopActiveDOMObjects();
 
@@ -239,11 +235,9 @@ public:
         // which become dangling once Heap is destroyed.
         workerContext->removeAllEventListeners();
 
-#if ENABLE(SQL_DATABASE)
         // We wait for the database thread to clean up all its stuff so that we
         // can do more stringent leak checks as we exit.
         cleanupSync.waitForTaskCompletion();
-#endif
 
         // Stick a shutdown command at the end of the queue, so that we deal
         // with all the cleanup tasks the databases post first.
@@ -262,9 +256,7 @@ void WorkerThread::stop()
     if (m_workerContext) {
         m_workerContext->script()->scheduleExecutionTermination();
 
-#if ENABLE(SQL_DATABASE)
         DatabaseManager::manager().interruptAllDatabasesForContext(m_workerContext.get());
-#endif
         m_runLoop.postTaskAndTerminate(WorkerThreadShutdownStartTask::create());
         return;
     }

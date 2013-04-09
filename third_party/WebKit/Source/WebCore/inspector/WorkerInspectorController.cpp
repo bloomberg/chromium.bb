@@ -113,9 +113,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
 
     m_injectedScriptManager->injectedScriptHost()->init(0
         , 0
-#if ENABLE(SQL_DATABASE)
         , 0
-#endif
         , 0
         , 0
         , debuggerAgentPtr

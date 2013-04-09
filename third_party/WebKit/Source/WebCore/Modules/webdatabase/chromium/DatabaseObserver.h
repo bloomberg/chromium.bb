@@ -31,8 +31,6 @@
 #ifndef DatabaseObserver_h
 #define DatabaseObserver_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/Forward.h>
 
 namespace WebCore {
@@ -58,7 +56,5 @@ public:
 };
 
 }
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseObserver_h

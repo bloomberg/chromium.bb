@@ -26,8 +26,6 @@
 #ifndef AbstractSQLStatementBackend_h
 #define AbstractSQLStatementBackend_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "SQLError.h"
 #include "SQLResultSet.h"
 #include <wtf/ThreadSafeRefCounted.h>
@@ -43,7 +41,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // AbstractSQLStatementBackend_h

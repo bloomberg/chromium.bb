@@ -29,8 +29,6 @@
 #include "config.h"
 #include "SQLResultSet.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ExceptionCode.h"
 
 namespace WebCore {
@@ -80,5 +78,3 @@ void SQLResultSet::setRowsAffected(int count)
 }
 
 }
-
-#endif

@@ -64,9 +64,7 @@ public:
 
     void init(InspectorAgent* inspectorAgent
             , InspectorConsoleAgent* consoleAgent
-#if ENABLE(SQL_DATABASE)
             , InspectorDatabaseAgent* databaseAgent
-#endif
             , InspectorDOMStorageAgent* domStorageAgent
             , InspectorDOMAgent* domAgent
             , InspectorDebuggerAgent* debuggerAgent
@@ -74,9 +72,7 @@ public:
     {
         m_inspectorAgent = inspectorAgent;
         m_consoleAgent = consoleAgent;
-#if ENABLE(SQL_DATABASE)
         m_databaseAgent = databaseAgent;
-#endif
         m_domStorageAgent = domStorageAgent;
         m_domAgent = domAgent;
         m_debuggerAgent = debuggerAgent;
@@ -102,9 +98,7 @@ public:
 
     void clearConsoleMessages();
     void copyText(const String& text);
-#if ENABLE(SQL_DATABASE)
     String databaseIdImpl(Database*);
-#endif
     String storageIdImpl(Storage*);
 
     ScriptDebugServer& scriptDebugServer();
@@ -114,9 +108,7 @@ private:
 
     InspectorAgent* m_inspectorAgent;
     InspectorConsoleAgent* m_consoleAgent;
-#if ENABLE(SQL_DATABASE)
     InspectorDatabaseAgent* m_databaseAgent;
-#endif
     InspectorDOMStorageAgent* m_domStorageAgent;
     InspectorDOMAgent* m_domAgent;
     InspectorDebuggerAgent* m_debuggerAgent;

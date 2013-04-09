@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "V8SQLStatementErrorCallback.h"
 
 #include "ScriptExecutionContext.h"
@@ -77,5 +75,3 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
 }
 
 } // namespace WebCore
-
-#endif

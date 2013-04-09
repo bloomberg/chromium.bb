@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     Supplemental=DOMWindow
 ] interface DOMWindowWebDatabase {
     [EnabledAtRuntime, MeasureAs=OpenWebDatabase] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)

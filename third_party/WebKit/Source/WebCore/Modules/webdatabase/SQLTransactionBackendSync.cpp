@@ -32,8 +32,6 @@
 #include "config.h"
 #include "SQLTransactionBackendSync.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseAuthorizer.h"
 #include "DatabaseBackendContext.h"
 #include "DatabaseSync.h"
@@ -241,5 +239,3 @@ void SQLTransactionBackendSync::rollback()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

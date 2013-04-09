@@ -19,7 +19,6 @@
 */
 
 #include "config.h"
-#if ENABLE(SQL_DATABASE)
 #include "V8TestCallback.h"
 
 #include "ScriptExecutionContext.h"
@@ -228,5 +227,3 @@ bool V8TestCallback::callbackRequiresThisToPass(Class8* class8Param, ThisClass* 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

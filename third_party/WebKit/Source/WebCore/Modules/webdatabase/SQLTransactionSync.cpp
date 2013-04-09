@@ -32,8 +32,6 @@
 #include "config.h"
 #include "SQLTransactionSync.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseSync.h"
 #include "SQLTransactionSyncCallback.h"
 #include "ScriptExecutionContext.h"
@@ -57,5 +55,3 @@ SQLTransactionSync* SQLTransactionSync::from(SQLTransactionBackendSync* backend)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

@@ -154,9 +154,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-#if ENABLE(SQL_DATABASE)
     void setDatabaseContext(DatabaseContext*);
-#endif
 
 protected:
     class AddConsoleMessageTask : public Task {
@@ -214,9 +212,7 @@ private:
     OwnPtr<PublicURLManager> m_publicURLManager;
 #endif
 
-#if ENABLE(SQL_DATABASE)
     RefPtr<DatabaseContext> m_databaseContext;
-#endif
 };
 
 } // namespace WebCore

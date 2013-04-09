@@ -26,8 +26,6 @@
 #ifndef DatabaseBackendSync_h
 #define DatabaseBackendSync_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseBackendBase.h"
 #include <wtf/text/WTFString.h>
 
@@ -54,7 +52,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseBackendSync_h

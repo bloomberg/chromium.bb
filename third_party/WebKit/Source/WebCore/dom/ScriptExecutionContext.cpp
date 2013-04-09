@@ -31,6 +31,7 @@
 #include "CachedScript.h"
 #include "ContentSecurityPolicy.h"
 #include "DOMTimer.h"
+#include "DatabaseContext.h"
 #include "ErrorEvent.h"
 #include "EventListener.h"
 #include "EventTarget.h"
@@ -46,10 +47,6 @@
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
-
-#if ENABLE(SQL_DATABASE)
-#include "DatabaseContext.h"
-#endif
 
 namespace WTF {
 
@@ -402,12 +399,10 @@ ScriptExecutionContext::Task::~Task()
 {
 }
 
-#if ENABLE(SQL_DATABASE)
 void ScriptExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
 {
     ASSERT(!m_databaseContext);
     m_databaseContext = databaseContext;
 }
-#endif
 
 } // namespace WebCore

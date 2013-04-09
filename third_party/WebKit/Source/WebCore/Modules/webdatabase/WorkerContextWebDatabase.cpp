@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "WorkerContextWebDatabase.h"
 
 #include "Database.h"
@@ -72,5 +70,3 @@ PassRefPtr<DatabaseSync> WorkerContextWebDatabase::openDatabaseSync(WorkerContex
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

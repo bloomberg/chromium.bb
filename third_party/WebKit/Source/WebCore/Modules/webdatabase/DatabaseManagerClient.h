@@ -25,8 +25,6 @@
 #ifndef DatabaseManagerClient_h
 #define DatabaseManagerClient_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/Forward.h>
 
 namespace WebCore {
@@ -41,7 +39,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // DatabaseManagerClient_h

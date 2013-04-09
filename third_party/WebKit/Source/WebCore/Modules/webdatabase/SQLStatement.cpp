@@ -28,8 +28,6 @@
 #include "config.h"
 #include "SQLStatement.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractDatabaseServer.h"
 #include "AbstractSQLStatementBackend.h"
 #include "Database.h"
@@ -98,5 +96,3 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

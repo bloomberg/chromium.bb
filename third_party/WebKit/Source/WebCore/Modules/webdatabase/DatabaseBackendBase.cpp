@@ -30,8 +30,6 @@
 #include "config.h"
 #include "DatabaseBackendBase.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "DatabaseAuthorizer.h"
 #include "DatabaseBackendContext.h"
 #include "DatabaseBase.h"
@@ -655,5 +653,3 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
 #endif // PLATFORM(CHROMIUM)
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

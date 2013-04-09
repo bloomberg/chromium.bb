@@ -26,8 +26,6 @@
 #include "config.h"
 #include "DatabaseBase.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ScriptExecutionContext.h"
 #include <wtf/Assertions.h>
 
@@ -50,5 +48,3 @@ void DatabaseBase::logErrorMessage(const String& message)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

@@ -417,10 +417,6 @@
 #define ENABLE_SPELLCHECK 0
 #endif
 
-#if !defined(ENABLE_SQL_DATABASE)
-#define ENABLE_SQL_DATABASE 1
-#endif
-
 #if !defined(ENABLE_STYLE_SCOPED)
 #define ENABLE_STYLE_SCOPED 0
 #endif

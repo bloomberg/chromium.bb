@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "V8SQLTransaction.h"
 
 #include "Database.h"
@@ -110,5 +108,3 @@ v8::Handle<v8::Value> V8SQLTransaction::executeSqlMethodCustom(const v8::Argumen
 }
 
 } // namespace WebCore
-
-#endif

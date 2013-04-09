@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     Callback
 ] interface SQLTransactionSyncCallback {
     boolean handleEvent(SQLTransactionSync transaction);

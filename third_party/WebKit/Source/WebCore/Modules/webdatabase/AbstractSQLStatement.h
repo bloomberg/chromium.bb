@@ -26,8 +26,6 @@
 #ifndef AbstractSQLStatement_h
 #define AbstractSQLStatement_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
@@ -45,7 +43,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // AbstractSQLStatement_h

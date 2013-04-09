@@ -26,8 +26,6 @@
 #ifndef SQLTransactionState_h
 #define SQLTransactionState_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/EnumClass.h>
 
 namespace WebCore {
@@ -50,7 +48,5 @@ ENUM_CLASS(SQLTransactionState) {
 } ENUM_CLASS_END(SQLTransactionState);
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // SQLTransactionState_h

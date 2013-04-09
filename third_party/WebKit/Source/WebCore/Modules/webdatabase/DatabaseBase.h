@@ -26,8 +26,6 @@
 #ifndef DatabaseBase_h
 #define DatabaseBase_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -46,7 +44,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseBase_h

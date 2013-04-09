@@ -28,8 +28,6 @@
 #ifndef DatabaseContext_h
 #define DatabaseContext_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "ActiveDOMObject.h"
 #include "DatabaseDetails.h"
 #include <wtf/Assertions.h>
@@ -78,7 +76,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseContext_h

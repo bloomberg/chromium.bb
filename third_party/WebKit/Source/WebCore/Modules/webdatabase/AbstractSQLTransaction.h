@@ -26,8 +26,6 @@
 #ifndef AbstractSQLTransaction_h
 #define AbstractSQLTransaction_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "SQLTransactionState.h"
 #include <wtf/ThreadSafeRefCounted.h>
 
@@ -49,7 +47,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // AbstractSQLTransaction_h

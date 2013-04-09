@@ -31,8 +31,6 @@
 #ifndef DatabaseCallback_h
 #define DatabaseCallback_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
@@ -48,7 +46,5 @@ public:
 };
 
 }
-
-#endif
 
 #endif // DatabaseCallback_h

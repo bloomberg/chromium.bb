@@ -29,8 +29,6 @@
 #include "config.h"
 #include "SQLTransaction.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include "AbstractSQLTransactionBackend.h"
 #include "Database.h"
 #include "DatabaseAuthorizer.h"
@@ -300,5 +298,3 @@ void SQLTransaction::clearCallbackWrappers()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

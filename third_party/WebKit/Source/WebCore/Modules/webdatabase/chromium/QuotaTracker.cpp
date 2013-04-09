@@ -31,8 +31,6 @@
 #include "config.h"
 #include "QuotaTracker.h"
 
-#if ENABLE(SQL_DATABASE)
-
 #include <public/Platform.h>
 #include <wtf/StdLibExtras.h>
 
@@ -88,5 +86,3 @@ void QuotaTracker::resetSpaceAvailableToOrigin(const String& originIdentifier)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)

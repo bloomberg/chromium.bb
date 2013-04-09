@@ -27,7 +27,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     OmitConstructor
 ] interface Database {
     readonly attribute DOMString version;

@@ -53,9 +53,7 @@ InstrumentingAgents::InstrumentingAgents()
     , m_workerRuntimeAgent(0)
     , m_inspectorTimelineAgent(0)
     , m_inspectorDOMStorageAgent(0)
-#if ENABLE(SQL_DATABASE)
     , m_inspectorDatabaseAgent(0)
-#endif
     , m_inspectorFileSystemAgent(0)
     , m_inspectorApplicationCacheAgent(0)
     , m_inspectorDebuggerAgent(0)
@@ -82,9 +80,7 @@ void InstrumentingAgents::reset()
     m_workerRuntimeAgent = 0;
     m_inspectorTimelineAgent = 0;
     m_inspectorDOMStorageAgent = 0;
-#if ENABLE(SQL_DATABASE)
     m_inspectorDatabaseAgent = 0;
-#endif
     m_inspectorFileSystemAgent = 0;
     m_inspectorApplicationCacheAgent = 0;
     m_inspectorDebuggerAgent = 0;

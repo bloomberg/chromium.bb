@@ -32,8 +32,6 @@
 #ifndef SQLTransactionSync_h
 #define SQLTransactionSync_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include "SQLTransactionBackendSync.h"
 
 namespace WebCore {
@@ -50,7 +48,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif // SQLTransactionSync_h

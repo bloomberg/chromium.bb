@@ -27,7 +27,6 @@
  */
 
 [
-    Conditional=SQL_DATABASE,
     OmitConstructor,
     ImplementationLacksVTable
 ] interface SQLError {

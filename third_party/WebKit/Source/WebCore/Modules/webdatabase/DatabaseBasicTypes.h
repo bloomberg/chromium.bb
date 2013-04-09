@@ -26,8 +26,6 @@
 #ifndef DatabaseBasicTypes_h
 #define DatabaseBasicTypes_h
 
-#if ENABLE(SQL_DATABASE)
-
 #include <wtf/EnumClass.h>
 
 namespace WebCore {
@@ -41,7 +39,5 @@ ENUM_CLASS(DatabaseType) {
 } ENUM_CLASS_END(DatabaseType);
 
 } // namespace WebCore
-
-#endif // ENABLE(SQL_DATABASE)
 
 #endif // DatabaseBasicTypes_h
