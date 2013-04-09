@@ -91,10 +91,6 @@ double Settings::gHiddenPageDOMTimerAlignmentInterval = 1.0;
 bool Settings::gShouldPaintNativeControls = true;
 #endif
 
-#if USE(AVFOUNDATION)
-bool Settings::gAVFoundationEnabled = false;
-#endif
-
 bool Settings::gMockScrollbarsEnabled = false;
 bool Settings::gUsesOverlayScrollbars = false;
 
@@ -511,17 +507,6 @@ void Settings::setTiledBackingStoreEnabled(bool enabled)
         m_page->mainFrame()->setTiledBackingStoreEnabled(enabled);
 #endif
 }
-
-#if USE(AVFOUNDATION)
-void Settings::setAVFoundationEnabled(bool enabled)
-{
-    if (gAVFoundationEnabled == enabled)
-        return;
-
-    gAVFoundationEnabled = enabled;
-    HTMLMediaElement::resetMediaEngines();
-}
-#endif
 
 void Settings::setScrollingPerformanceLoggingEnabled(bool enabled)
 {

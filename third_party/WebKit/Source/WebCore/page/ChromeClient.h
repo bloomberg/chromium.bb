@@ -281,10 +281,6 @@ public:
     virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllTriggers); }
 #endif
 
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-    virtual GraphicsDeviceAdapter* graphicsDeviceAdapter() const { return 0; }
-#endif
-
     virtual bool supportsFullscreenForNode(const Node*) { return false; }
     virtual void enterFullscreenForNode(Node*) { }
     virtual void exitFullscreenForNode(Node*) { }

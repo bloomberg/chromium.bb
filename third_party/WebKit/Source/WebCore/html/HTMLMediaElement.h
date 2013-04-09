@@ -483,10 +483,6 @@ private:
     virtual IntRect mediaPlayerWindowClipRect() OVERRIDE;
     virtual CachedResourceLoader* mediaPlayerCachedResourceLoader() OVERRIDE;
 
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-    virtual GraphicsDeviceAdapter* mediaPlayerGraphicsDeviceAdapter(const MediaPlayer*) const OVERRIDE;
-#endif
-
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
     void playbackProgressTimerFired(Timer<HTMLMediaElement>*);

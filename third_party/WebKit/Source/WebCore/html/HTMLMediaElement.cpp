@@ -3530,16 +3530,6 @@ void HTMLMediaElement::mediaPlayerRenderingModeChanged(MediaPlayer*)
 }
 #endif
 
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-GraphicsDeviceAdapter* HTMLMediaElement::mediaPlayerGraphicsDeviceAdapter(const MediaPlayer*) const
-{
-    if (!document() || !document()->page())
-        return 0;
-
-    return document()->page()->chrome()->client()->graphicsDeviceAdapter();
-}
-#endif
-
 void HTMLMediaElement::mediaPlayerEngineUpdated(MediaPlayer*)
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerEngineUpdated");

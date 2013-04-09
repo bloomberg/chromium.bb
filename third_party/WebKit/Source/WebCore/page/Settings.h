@@ -201,11 +201,6 @@ namespace WebCore {
         void setTiledBackingStoreEnabled(bool);
         bool tiledBackingStoreEnabled() const { return m_tiledBackingStoreEnabled; }
 
-#if USE(AVFOUNDATION)
-        static void setAVFoundationEnabled(bool flag);
-        static bool isAVFoundationEnabled() { return gAVFoundationEnabled; }
-#endif
-
         static const unsigned defaultMaximumHTMLParserDOMTreeDepth = 512;
 
 #if USE(SAFARI_THEME)
@@ -294,10 +289,6 @@ namespace WebCore {
 
         static double gDefaultMinDOMTimerInterval;
         static double gDefaultDOMTimerAlignmentInterval;
-
-#if USE(AVFOUNDATION)
-        static bool gAVFoundationEnabled;
-#endif
 
         static bool gMockScrollbarsEnabled;
         static bool gUsesOverlayScrollbars;

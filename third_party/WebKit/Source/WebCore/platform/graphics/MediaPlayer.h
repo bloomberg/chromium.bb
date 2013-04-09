@@ -111,10 +111,6 @@ struct MediaPlayerFactory;
 class TimeRanges;
 class HostWindow;
 
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-struct GraphicsDeviceAdapter;
-#endif
-
 class MediaPlayerClient {
 public:
     enum CORSMode { Unspecified, Anonymous, UseCredentials };
@@ -179,10 +175,6 @@ public:
     // called when the media player's rendering mode changed, which indicates a change in the
     // availability of the platformLayer().
     virtual void mediaPlayerRenderingModeChanged(MediaPlayer*) { }
-#endif
-
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-    virtual GraphicsDeviceAdapter* mediaPlayerGraphicsDeviceAdapter(const MediaPlayer*) const { return 0; }
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
@@ -400,10 +392,6 @@ public:
     bool supportsAcceleratedRendering() const;
     // called when the rendering system flips the into or out of accelerated rendering mode.
     void acceleratedRenderingStateChanged();
-#endif
-
-#if PLATFORM(WIN) && USE(AVFOUNDATION)
-    GraphicsDeviceAdapter* graphicsDeviceAdapter() const;
 #endif
 
     bool hasSingleSecurityOrigin() const;
