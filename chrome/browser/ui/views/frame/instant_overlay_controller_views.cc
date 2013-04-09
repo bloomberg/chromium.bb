@@ -42,7 +42,8 @@ void InstantOverlayControllerViews::OverlayStateChanged(
     // Drop shadow is only needed if search mode is not |NTP| and overlay does
     // not fill up the entire contents page.
     bool draw_drop_shadow = !model.mode().is_ntp() &&
-        !(contents_->IsOverlayFullHeight(model.height(), model.height_units()));
+        !(contents_->WillOverlayBeFullHeight(model.height(),
+                                             model.height_units()));
     content::WebContents* web_contents = model.GetOverlayContents();
     contents_->SetOverlay(overlay_.get(), web_contents, model.height(),
                           model.height_units(), draw_drop_shadow);

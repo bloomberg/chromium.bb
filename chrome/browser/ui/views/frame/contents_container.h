@@ -66,9 +66,14 @@ class ContentsContainer : public views::View,
   // Returns the bounds the overlay would be shown at.
   gfx::Rect GetOverlayBounds() const;
 
-  // Returns true if overlay occupies full height of content page.
-  bool IsOverlayFullHeight(int overlay_height,
-                           InstantSizeUnits overlay_height_units) const;
+  // Returns true if overlay will occupy full height of content page based on
+  // |overlay_height| and |overlay_height_units|.
+  bool WillOverlayBeFullHeight(int overlay_height,
+                               InstantSizeUnits overlay_height_units) const;
+
+  // Returns true if |overlay_| is not NULL and it is occupying full height of
+  // the content page.
+  bool IsOverlayFullHeight() const;
 
  private:
   // Overridden from views::View:

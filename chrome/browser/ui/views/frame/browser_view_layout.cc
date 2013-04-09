@@ -302,13 +302,13 @@ void BrowserViewLayout::Layout(views::View* host) {
   // surprising (since from the user's perspective, we're "covering" rather than
   // "removing" the bookmark bar/infobars).  To prevent this, we save off the
   // content origin here, then once we finish laying things out, force the
-  // contents to continue to display from that origin.
-  const SearchMode& mode = browser()->search_model()->mode();
+  // contents to continue to display from that origin.  If suggestions
+  // completely obscure the tab's contents, there's no need to modify the
+  // content origin.
   views::WebView* contents = browser_view_->contents_container_;
   int overlay_height = contents_container_->overlay_height();
   gfx::Point old_contents_origin;
-  if (overlay_height > 0 && mode.is_search_suggestions() &&
-      mode.is_origin_default()) {
+  if (overlay_height > 0 && !contents_container_->IsOverlayFullHeight()) {
     old_contents_origin = contents->bounds().origin();
     views::View::ConvertPointToTarget(contents->parent(), browser_view_,
                                       &old_contents_origin);

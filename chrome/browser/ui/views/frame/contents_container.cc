@@ -234,12 +234,17 @@ gfx::Rect ContentsContainer::GetOverlayBounds() const {
   return gfx::Rect(screen_loc, size());
 }
 
-bool ContentsContainer::IsOverlayFullHeight(
+bool ContentsContainer::WillOverlayBeFullHeight(
     int overlay_height,
     InstantSizeUnits overlay_height_units) const {
   int height_in_pixels = OverlayHeightInPixels(height(), overlay_height,
                                                overlay_height_units);
   return height_in_pixels == height();
+}
+
+bool ContentsContainer::IsOverlayFullHeight() const {
+  return overlay_ && overlay_height_ == 100 &&
+      overlay_height_units_ == INSTANT_SIZE_PERCENT;
 }
 
 void ContentsContainer::Layout() {
