@@ -27,11 +27,11 @@
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [ReturnNewObject, V8DeliverCustomElementCallbacks, V8PerWorldBindings]
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings]
     Element createElement([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString tagName)
         raises (DOMException);
     DocumentFragment   createDocumentFragment();
-    [ReturnNewObject, V8PerWorldBindings] Text createTextNode([Optional=DefaultIsUndefined] DOMString data);
+    [ReturnNewObject, PerWorldBindings] Text createTextNode([Optional=DefaultIsUndefined] DOMString data);
     [ReturnNewObject] Comment createComment([Optional=DefaultIsUndefined] DOMString data);
     [ReturnNewObject] CDATASection createCDATASection([Optional=DefaultIsUndefined] DOMString data)
         raises(DOMException);
@@ -42,15 +42,15 @@
         raises (DOMException);
     [ReturnNewObject] EntityReference createEntityReference([Optional=DefaultIsUndefined] DOMString name)
         raises(DOMException);
-    [V8PerWorldBindings] NodeList           getElementsByTagName([Optional=DefaultIsUndefined] DOMString tagname);
+    [PerWorldBindings] NodeList           getElementsByTagName([Optional=DefaultIsUndefined] DOMString tagname);
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters, ReturnNewObject, V8DeliverCustomElementCallbacks]
+    [ObjCLegacyUnnamedParameters, ReturnNewObject, DeliverCustomElementCallbacks]
     Node importNode([Optional=DefaultIsUndefined] Node importedNode,
                     [Optional] boolean deep)
         raises (DOMException);
-    [ObjCLegacyUnnamedParameters, ReturnNewObject, V8DeliverCustomElementCallbacks]
+    [ObjCLegacyUnnamedParameters, ReturnNewObject, DeliverCustomElementCallbacks]
     Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                             [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName)
         raises (DOMException);
@@ -59,7 +59,7 @@
         raises (DOMException);
     [ObjCLegacyUnnamedParameters] NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                    [Optional=DefaultIsUndefined] DOMString localName);
-    [V8PerWorldBindings] Element            getElementById([Optional=DefaultIsUndefined] DOMString elementId);
+    [PerWorldBindings] Element            getElementById([Optional=DefaultIsUndefined] DOMString elementId);
 
     // DOM Level 3 Core
 
@@ -132,7 +132,7 @@
         raises(DOMException);
 
     // Common extensions
-    [V8DeliverCustomElementCallbacks]
+    [DeliverCustomElementCallbacks]
     boolean            execCommand([Optional=DefaultIsUndefined] DOMString command,
                                    [Optional=DefaultIsUndefined] boolean userInterface,
                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString value);
@@ -177,7 +177,7 @@
     readonly attribute HTMLCollection anchors;
     readonly attribute DOMString lastModified;
 
-    [V8PerWorldBindings] NodeList getElementsByName([Optional=DefaultIsUndefined] DOMString elementName);
+    [PerWorldBindings] NodeList getElementsByName([Optional=DefaultIsUndefined] DOMString elementName);
 
 #if defined(ENABLE_MICRODATA) && ENABLE_MICRODATA
     NodeList getItems([TreatNullAs=NullString, TreatUndefinedAs=NullString, Optional=DefaultIsUndefined] DOMString typeNames);
@@ -246,23 +246,23 @@
         raises(DOMException);
 
     // Mozilla version
-    [V8EnabledAtRuntime] readonly attribute boolean webkitIsFullScreen;
-    [V8EnabledAtRuntime] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
-    [V8EnabledAtRuntime] readonly attribute Element webkitCurrentFullScreenElement;
-    [V8EnabledAtRuntime] void webkitCancelFullScreen();
+    [EnabledAtRuntime] readonly attribute boolean webkitIsFullScreen;
+    [EnabledAtRuntime] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
+    [EnabledAtRuntime] readonly attribute Element webkitCurrentFullScreenElement;
+    [EnabledAtRuntime] void webkitCancelFullScreen();
 
     // W3C version
-    [V8EnabledAtRuntime] readonly attribute boolean webkitFullscreenEnabled;
-    [V8EnabledAtRuntime] readonly attribute Element webkitFullscreenElement;
-    [V8EnabledAtRuntime] void webkitExitFullscreen();
+    [EnabledAtRuntime] readonly attribute boolean webkitFullscreenEnabled;
+    [EnabledAtRuntime] readonly attribute Element webkitFullscreenElement;
+    [EnabledAtRuntime] void webkitExitFullscreen();
 
     [Conditional=POINTER_LOCK] void webkitExitPointerLock();
     [Conditional=POINTER_LOCK] readonly attribute Element webkitPointerLockElement;
 
-    [Conditional=CSS_REGIONS, V8EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
+    [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    [Conditional=FONT_LOAD_EVENTS, V8EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
+    [Conditional=FONT_LOAD_EVENTS, EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
 #endif
 
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
@@ -332,19 +332,19 @@
     [NotEnumerable] attribute EventListener onsearch;
     [NotEnumerable] attribute EventListener onselectstart;
     [NotEnumerable] attribute EventListener onselectionchange;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchmove;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchend;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchstart;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchmove;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchend;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
     [NotEnumerable] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable] attribute EventListener onwebkitfullscreenerror;
     [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockchange;
     [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockerror;
-    [NotEnumerable, V8EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
+    [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
 #endif
 
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
-    [ReturnNewObject, V8EnabledAtRuntime=touch] Touch createTouch([Optional=DefaultIsUndefined] DOMWindow window,
+    [ReturnNewObject, EnabledAtRuntime=touch] Touch createTouch([Optional=DefaultIsUndefined] DOMWindow window,
                                                      [Optional=DefaultIsUndefined] EventTarget target,
                                                      [Optional=DefaultIsUndefined] long identifier,
                                                      [Optional=DefaultIsUndefined] long pageX,
@@ -356,16 +356,16 @@
                                                      [Optional=DefaultIsUndefined] float webkitRotationAngle,
                                                      [Optional=DefaultIsUndefined] float webkitForce)
         raises (DOMException);
-    [ReturnNewObject, V8EnabledAtRuntime=touch, Custom] TouchList createTouchList()
+    [ReturnNewObject, EnabledAtRuntime=touch, Custom] TouchList createTouchList()
         raises (DOMException);
 #endif
 
 #if defined(ENABLE_CUSTOM_ELEMENTS) && ENABLE_CUSTOM_ELEMENTS
-    [V8EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, V8DeliverCustomElementCallbacks]
+    [EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks]
     CustomElementConstructor webkitRegister(DOMString name, [Optional] Dictionary options) raises(DOMException);
-    [ReturnNewObject, V8DeliverCustomElementCallbacks, V8PerWorldBindings]
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings]
     Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension) raises (DOMException);
-    [ReturnNewObject, V8DeliverCustomElementCallbacks]
+    [ReturnNewObject, DeliverCustomElementCallbacks]
     Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension) raises (DOMException);
 #endif
@@ -380,7 +380,7 @@
     readonly attribute boolean webkitHidden;
 
     // Security Policy API: http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#script-interfaces
-    [V8EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute DOMSecurityPolicy securityPolicy;
+    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute DOMSecurityPolicy securityPolicy;
 
 };
 

@@ -25,7 +25,7 @@
  
 interface [
     Conditional=ENCRYPTED_MEDIA_V2,
-    V8EnabledAtRuntime=encryptedMedia,
+    EnabledAtRuntime=encryptedMedia,
     Constructor(DOMString keySystem),
     ConstructorRaisesException,
 ] MediaKeys {

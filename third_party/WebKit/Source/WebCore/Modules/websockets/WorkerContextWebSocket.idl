@@ -27,6 +27,6 @@
 [
     Supplemental=WorkerContext
 ] interface WorkerContextWebSocket {
-    [V8EnabledAtRuntime] attribute WebSocketConstructor WebSocket; // Usable with the new operator
+    [EnabledAtRuntime] attribute WebSocketConstructor WebSocket; // Usable with the new operator
 };
 

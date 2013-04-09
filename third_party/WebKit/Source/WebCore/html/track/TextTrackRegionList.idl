@@ -25,7 +25,7 @@
 
 [
     Conditional=VIDEO_TRACK & WEBVTT_REGIONS,
-    V8EnabledAtRuntime=webkitVideoTrack,
+    EnabledAtRuntime=webkitVideoTrack,
     IndexedGetter,
     ImplementationLacksVTable
 ] interface TextTrackRegionList {

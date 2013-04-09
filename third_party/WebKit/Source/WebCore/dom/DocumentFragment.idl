@@ -18,7 +18,7 @@
  */
 
 [
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface DocumentFragment : Node {
     // NodeSelector - Selector API
     Element querySelector(DOMString selectors)

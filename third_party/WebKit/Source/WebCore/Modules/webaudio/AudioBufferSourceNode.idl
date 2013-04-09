@@ -44,16 +44,16 @@
     attribute double loopStart;
     attribute double loopEnd;
 
-    [V8MeasureAs=WebAudioStart] void start(double when);
-    [V8MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset);
-    [V8MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset, double grainDuration);
+    [MeasureAs=WebAudioStart] void start(double when);
+    [MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset);
+    [MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset, double grainDuration);
     void stop(double when);
 
 #if defined(ENABLE_LEGACY_WEB_AUDIO) && ENABLE_LEGACY_WEB_AUDIO
     attribute boolean looping; // This is an alias for the .loop attribute for backwards compatibility.
 
-    [V8MeasureAs=LegacyWebAudio] void noteOn(double when);
-    [V8MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
+    [MeasureAs=LegacyWebAudio] void noteOn(double when);
+    [MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
     void noteOff(double when);
 #endif
 };

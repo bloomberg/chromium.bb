@@ -55,7 +55,7 @@
     void cancelScheduledValues(float startTime);
 
 #if defined(ENABLE_LEGACY_WEB_AUDIO) && ENABLE_LEGACY_WEB_AUDIO
-    [V8MeasureAs=LegacyWebAudio, ImplementedAs=setTargetAtTime] void setTargetValueAtTime(float targetValue, float time, float timeConstant);
+    [MeasureAs=LegacyWebAudio, ImplementedAs=setTargetAtTime] void setTargetValueAtTime(float targetValue, float time, float timeConstant);
 #endif
 
 };

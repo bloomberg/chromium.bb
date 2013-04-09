@@ -25,7 +25,7 @@
 
 [
     Conditional=VIDEO_TRACK,
-    V8EnabledAtRuntime=webkitVideoTrack,
+    EnabledAtRuntime=webkitVideoTrack,
     ConstructorTemplate=Event
 ] interface TrackEvent : Event {
     [InitializedByEventConstructor, CustomGetter] readonly attribute object track;

@@ -25,7 +25,7 @@
 
 [
     Conditional=VIDEO_TRACK,
-    V8EnabledAtRuntime=webkitVideoTrack,
+    EnabledAtRuntime=webkitVideoTrack,
     IndexedGetter,
     ImplementationLacksVTable
 ] interface TextTrackCueList {

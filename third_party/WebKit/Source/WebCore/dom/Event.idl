@@ -23,7 +23,7 @@
     CustomToJSObject,
     ConstructorTemplate=Event,
     ObjCPolymorphic,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface Event {
 
     // DOM PhaseType

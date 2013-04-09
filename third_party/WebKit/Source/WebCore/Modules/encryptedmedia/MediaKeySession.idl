@@ -25,7 +25,7 @@
 
 interface [
     Conditional=ENCRYPTED_MEDIA_V2,
-    V8EnabledAtRuntime=encryptedMedia,
+    EnabledAtRuntime=encryptedMedia,
     EventTarget,
 ] MediaKeySession {
     // error state
@@ -41,9 +41,9 @@ interface [
     void close();
     
     // EventListeners
-    attribute [V8EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyadded;
-    attribute [V8EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyerror;
-    attribute [V8EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeymessage;
+    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyadded;
+    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyerror;
+    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeymessage;
 
     // EventTarget interface
     void addEventListener(DOMString type, 

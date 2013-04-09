@@ -21,7 +21,7 @@
 [
     EventTarget,
     Constructor,
-    V8DependentLifetime
+    DependentLifetime
 ] interface TestNode : Node {
 };
 

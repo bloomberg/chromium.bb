@@ -25,7 +25,7 @@
 
 [
     Conditional=VIDEO_TRACK,
-    V8EnabledAtRuntime=webkitVideoTrack
+    EnabledAtRuntime=webkitVideoTrack
 ] interface HTMLTrackElement : HTMLElement {
     attribute DOMString kind;
     [Reflect, URL] attribute DOMString src;

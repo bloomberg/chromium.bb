@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 [ 
-    V8SkipVTableValidation,
+    SkipVTableValidation,
 ] interface Text : CharacterData {
 
     // DOM Level 1
@@ -31,7 +31,7 @@
                                         raises(DOMException);
     // ShadowAware API
 #if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM && defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    [V8EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, V8PerWorldBindings] readonly attribute Node webkitInsertionParent;
+    [EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 #endif
 
 };

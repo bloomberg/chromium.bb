@@ -21,7 +21,7 @@
 // Introduced in Shadow DOM spec:
 [
     Conditional=SHADOW_DOM,
-    V8EnabledAtRuntime=shadowDOM
+    EnabledAtRuntime=shadowDOM
 ] interface CSSHostRule : CSSRule {
     readonly attribute CSSRuleList cssRules;
     

@@ -20,12 +20,12 @@
 
 [
     V8CustomToJSObject,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface Element : Node {
 
     // DOM Level 1 Core
 
-    [TreatReturnedNullStringAs=Null, V8PerWorldBindings] readonly attribute DOMString tagName;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute([Optional=DefaultIsUndefined] DOMString name);
     [ObjCLegacyUnnamedParameters] void setAttribute([Optional=DefaultIsUndefined] DOMString name,
@@ -37,11 +37,11 @@
         raises(DOMException);
     Attr removeAttributeNode([Optional=DefaultIsUndefined] Attr oldAttr)
         raises(DOMException);
-    [V8PerWorldBindings] NodeList getElementsByTagName([Optional=DefaultIsUndefined] DOMString name);
+    [PerWorldBindings] NodeList getElementsByTagName([Optional=DefaultIsUndefined] DOMString name);
 
 #if !defined(LANGUAGE_OBJECTIVE_C)
     // For ObjC this is defined on Node for legacy support.
-    [V8PerWorldBindings] readonly attribute NamedNodeMap     attributes;
+    [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
     boolean            hasAttributes();
 #endif
 
@@ -65,23 +65,23 @@
     [ObjCLegacyUnnamedParameters] boolean hasAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                           [Optional=DefaultIsUndefined] DOMString localName);
 
-    [V8PerWorldBindings] readonly attribute CSSStyleDeclaration style;
+    [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // Common extensions
 
-    [V8PerWorldBindings] readonly attribute long offsetLeft;
-    [V8PerWorldBindings] readonly attribute long offsetTop;
-    [V8PerWorldBindings] readonly attribute long offsetWidth;
-    [V8PerWorldBindings] readonly attribute long offsetHeight;
-    [ImplementedAs=bindingsOffsetParent, V8PerWorldBindings] readonly attribute Element offsetParent;
-    [V8PerWorldBindings] readonly attribute long clientLeft;
-    [V8PerWorldBindings] readonly attribute long clientTop;
-    [V8PerWorldBindings] readonly attribute long clientWidth;
-    [V8PerWorldBindings] readonly attribute long clientHeight;
-             [V8PerWorldBindings] attribute long scrollLeft;
-             [V8PerWorldBindings] attribute long scrollTop;
-    [V8PerWorldBindings] readonly attribute long scrollWidth;
-    [V8PerWorldBindings] readonly attribute long scrollHeight;
+    [PerWorldBindings] readonly attribute long offsetLeft;
+    [PerWorldBindings] readonly attribute long offsetTop;
+    [PerWorldBindings] readonly attribute long offsetWidth;
+    [PerWorldBindings] readonly attribute long offsetHeight;
+    [ImplementedAs=bindingsOffsetParent, PerWorldBindings] readonly attribute Element offsetParent;
+    [PerWorldBindings] readonly attribute long clientLeft;
+    [PerWorldBindings] readonly attribute long clientTop;
+    [PerWorldBindings] readonly attribute long clientWidth;
+    [PerWorldBindings] readonly attribute long clientHeight;
+             [PerWorldBindings] attribute long scrollLeft;
+             [PerWorldBindings] attribute long scrollTop;
+    [PerWorldBindings] readonly attribute long scrollWidth;
+    [PerWorldBindings] readonly attribute long scrollHeight;
 
     void focus();
     void blur();
@@ -96,11 +96,11 @@
     // HTML 5
     NodeList getElementsByClassName([Optional=DefaultIsUndefined] DOMString name);
 
-    [Reflect=class, V8PerWorldBindings] attribute DOMString className;
-    [V8PerWorldBindings] readonly attribute DOMTokenList classList;
+    [Reflect=class, PerWorldBindings] attribute DOMString className;
+    [PerWorldBindings] readonly attribute DOMTokenList classList;
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    [V8PerWorldBindings] readonly attribute DOMStringMap dataset;
+    [PerWorldBindings] readonly attribute DOMStringMap dataset;
 #endif
 
     // NodeSelector - Selector API
@@ -114,18 +114,18 @@
         raises(DOMException);
 
     // ElementTraversal API
-    [V8PerWorldBindings] readonly attribute Element firstElementChild;
-    [V8PerWorldBindings] readonly attribute Element lastElementChild;
-    [V8PerWorldBindings] readonly attribute Element previousElementSibling;
-    [V8PerWorldBindings] readonly attribute Element nextElementSibling;
-    [V8PerWorldBindings] readonly attribute unsigned long childElementCount;
+    [PerWorldBindings] readonly attribute Element firstElementChild;
+    [PerWorldBindings] readonly attribute Element lastElementChild;
+    [PerWorldBindings] readonly attribute Element previousElementSibling;
+    [PerWorldBindings] readonly attribute Element nextElementSibling;
+    [PerWorldBindings] readonly attribute unsigned long childElementCount;
 
     // ShadowAware API
 #if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM && defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    [Reflect=pseudo, V8EnabledAtRuntime=shadowDOM, ImplementedAs=pseudo, V8PerWorldBindings] attribute DOMString webkitPseudo;
-    [V8EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot] ShadowRoot webkitCreateShadowRoot() raises(DOMException);
-    [V8EnabledAtRuntime=shadowDOM, ImplementedAs=shadowRoot, V8PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
-    [V8EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, V8PerWorldBindings] readonly attribute Node webkitInsertionParent;
+    [Reflect=pseudo, EnabledAtRuntime=shadowDOM, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
+    [EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot] ShadowRoot webkitCreateShadowRoot() raises(DOMException);
+    [EnabledAtRuntime=shadowDOM, ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
+    [EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 #endif
 
     // DOM 4
@@ -140,54 +140,54 @@
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
     // Objective-C extensions
-    [V8PerWorldBindings] readonly attribute DOMString innerText;
+    [PerWorldBindings] readonly attribute DOMString innerText;
 #endif
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [V8EnabledAtRuntime] void webkitRequestFullScreen([Optional=DefaultIsUndefined] unsigned short flags);
+    [EnabledAtRuntime] void webkitRequestFullScreen([Optional=DefaultIsUndefined] unsigned short flags);
 
     // W3C version
-    [V8EnabledAtRuntime] void webkitRequestFullscreen();
+    [EnabledAtRuntime] void webkitRequestFullscreen();
 
     [Conditional=POINTER_LOCK] void webkitRequestPointerLock();
 
     // CSS Regions API
-    [Conditional=CSS_REGIONS, V8EnabledAtRuntime=cssRegions, V8PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
-    [Conditional=CSS_REGIONS, V8EnabledAtRuntime=cssRegions] sequence<Range> webkitGetRegionFlowRanges();
+    [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
+    [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] sequence<Range> webkitGetRegionFlowRanges();
 
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     // Event handler DOM attributes
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onabort;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onblur;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onchange;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onclick;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener oncontextmenu;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondblclick;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondrag;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondragend;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondragenter;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondragleave;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondragover;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondragstart;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener ondrop;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onerror;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onfocus;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener oninput;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener oninvalid;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onkeydown;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onkeypress;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onkeyup;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onload;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmousedown;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmousemove;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmouseout;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmouseover;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmouseup;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onmousewheel;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onscroll;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onselect;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onsubmit;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onabort;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onblur;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onchange;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onclick;
+    [NotEnumerable, PerWorldBindings] attribute EventListener oncontextmenu;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondblclick;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondrag;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondragend;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondragenter;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondragleave;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondragover;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondragstart;
+    [NotEnumerable, PerWorldBindings] attribute EventListener ondrop;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onerror;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onfocus;
+    [NotEnumerable, PerWorldBindings] attribute EventListener oninput;
+    [NotEnumerable, PerWorldBindings] attribute EventListener oninvalid;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onkeydown;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onkeypress;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onkeyup;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onload;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmousedown;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmousemove;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmouseout;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmouseover;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmouseup;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmousewheel;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onscroll;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onselect;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onsubmit;
 
     // attribute [NotEnumerable] EventListener oncanplay;
     // attribute [NotEnumerable] EventListener oncanplaythrough;
@@ -213,21 +213,21 @@
     // attribute [NotEnumerable] EventListener onwaiting;
 
     // WebKit extensions
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onbeforecut;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener oncut;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onbeforecopy;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener oncopy;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onbeforepaste;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onpaste;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onreset;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onsearch;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onselectstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchstart;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchmove;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchend;
-    [NotEnumerable,Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch, V8PerWorldBindings] attribute EventListener ontouchcancel;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
-    [NotEnumerable, V8PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onbeforecut;
+    [NotEnumerable, PerWorldBindings] attribute EventListener oncut;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onbeforecopy;
+    [NotEnumerable, PerWorldBindings] attribute EventListener oncopy;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onbeforepaste;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onpaste;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onreset;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onsearch;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onselectstart;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchstart;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchmove;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchend;
+    [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchcancel;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
 #endif
 };
 

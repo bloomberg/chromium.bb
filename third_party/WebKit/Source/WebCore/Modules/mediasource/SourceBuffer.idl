@@ -29,7 +29,7 @@
  */
  
 [
-    V8EnabledAtRuntime=mediaSource
+    EnabledAtRuntime=mediaSource
 ] interface SourceBuffer {
 
     // Returns the time ranges buffered.

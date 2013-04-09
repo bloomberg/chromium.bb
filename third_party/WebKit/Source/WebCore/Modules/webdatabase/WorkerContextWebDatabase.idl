@@ -28,10 +28,10 @@
     Conditional=SQL_DATABASE,
     Supplemental=WorkerContext
 ] interface WorkerContextWebDatabase {
-    [V8EnabledAtRuntime] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)
+    [EnabledAtRuntime] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)
         raises(DOMException);
 
-    [V8EnabledAtRuntime] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)
+    [EnabledAtRuntime] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback)
         raises(DOMException);
 };
 

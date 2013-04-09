@@ -29,7 +29,7 @@
  */
  
 [
-    V8EnabledAtRuntime=mediaSource,
+    EnabledAtRuntime=mediaSource,
     ActiveDOMObject,
     EventTarget,
     Constructor,

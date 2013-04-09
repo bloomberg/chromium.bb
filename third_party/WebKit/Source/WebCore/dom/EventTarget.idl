@@ -24,7 +24,7 @@
     CPPPureInterface,
     OmitConstructor,
     CustomToJSObject,
-    V8NoWrapperCache,
+    NoWrapperCache,
     EventTarget
 ] interface EventTarget {
     [ObjCLegacyUnnamedParameters] void addEventListener(DOMString type, 

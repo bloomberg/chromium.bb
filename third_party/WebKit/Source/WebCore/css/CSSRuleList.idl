@@ -26,8 +26,8 @@
 // Introduced in DOM Level 2:
 [
     IndexedGetter,
-    V8DependentLifetime,
-    V8SkipVTableValidation
+    DependentLifetime,
+    SkipVTableValidation
 ] interface CSSRuleList {
     readonly attribute unsigned long    length;
     CSSRule           item([Optional=DefaultIsUndefined] unsigned long index);

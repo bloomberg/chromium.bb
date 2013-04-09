@@ -24,7 +24,7 @@
 
 [
     IndexedGetter,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface DOMSettableTokenList : DOMTokenList {
     attribute DOMString value;
 };

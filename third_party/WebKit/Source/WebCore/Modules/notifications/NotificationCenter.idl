@@ -35,9 +35,9 @@
     OmitConstructor
 ] interface NotificationCenter {
 #if !defined(ENABLE_TEXT_NOTIFICATIONS_ONLY) || !ENABLE_TEXT_NOTIFICATIONS_ONLY
-   [V8EnabledPerContext=htmlNotifications, V8MeasureAs=LegacyHTMLNotifications] Notification createHTMLNotification(DOMString url) raises(DOMException);
+   [EnabledPerContext=htmlNotifications, MeasureAs=LegacyHTMLNotifications] Notification createHTMLNotification(DOMString url) raises(DOMException);
 #endif
-   [V8MeasureAs=LegacyTextNotifications] Notification createNotification(DOMString iconUrl, DOMString title, DOMString body) raises(DOMException);
+   [MeasureAs=LegacyTextNotifications] Notification createNotification(DOMString iconUrl, DOMString title, DOMString body) raises(DOMException);
 
    int checkPermission();
    void requestPermission([Optional, Callback] VoidCallback callback);

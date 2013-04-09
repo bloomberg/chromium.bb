@@ -24,7 +24,7 @@
 
 [
     Conditional=WEB_AUDIO,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface AudioDestinationNode : AudioNode {
     readonly attribute unsigned long maxChannelCount;
 };

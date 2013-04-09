@@ -29,7 +29,7 @@
  */
 
 [
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface MutationRecord {
     readonly attribute DOMString type;
     readonly attribute Node target;

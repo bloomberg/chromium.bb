@@ -22,8 +22,8 @@
 [
     CustomToJSObject,
     ObjCPolymorphic,
-    V8DependentLifetime,
-    V8SkipVTableValidation
+    DependentLifetime,
+    SkipVTableValidation
 ] interface CSSRule {
 
     // RuleType

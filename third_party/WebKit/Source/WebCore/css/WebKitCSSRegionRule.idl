@@ -29,7 +29,7 @@
 
 [
     Conditional=CSS_REGIONS,
-    V8EnabledAtRuntime=cssRegions,
+    EnabledAtRuntime=cssRegions,
 ] interface WebKitCSSRegionRule : CSSRule {
     readonly attribute CSSRuleList cssRules;
 };

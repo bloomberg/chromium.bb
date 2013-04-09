@@ -27,7 +27,7 @@
  */
 
 [
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface Clipboard {
              [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
              [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
@@ -41,6 +41,6 @@
     [Custom] void setDragImage(HTMLImageElement image, long x, long y)
         raises(DOMException);
 
-    [V8EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
+    [EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
 };
 

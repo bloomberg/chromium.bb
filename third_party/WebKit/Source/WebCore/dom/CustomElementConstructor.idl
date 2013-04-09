@@ -24,8 +24,8 @@
 
 [
     Conditional=CUSTOM_ELEMENTS,
-    V8EnabledAtRuntime=customDOMElements,
-    V8WrapAsFunction,
+    EnabledAtRuntime=customDOMElements,
+    WrapAsFunction,
     CustomCall
 ] interface CustomElementConstructor {
 };

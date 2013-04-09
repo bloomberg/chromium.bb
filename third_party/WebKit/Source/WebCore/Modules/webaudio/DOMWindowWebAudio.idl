@@ -29,8 +29,8 @@
     Supplemental=DOMWindow
 ] interface DOMWindowWebAudio {
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
-    [V8EnabledAtRuntime] attribute AudioContextConstructor webkitAudioContext;
-    [V8EnabledAtRuntime] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
+    [EnabledAtRuntime] attribute AudioContextConstructor webkitAudioContext;
+    [EnabledAtRuntime] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
     attribute PannerNodeConstructor webkitAudioPannerNode;
     attribute AudioProcessingEventConstructor AudioProcessingEvent;
     attribute OfflineAudioCompletionEventConstructor OfflineAudioCompletionEvent;

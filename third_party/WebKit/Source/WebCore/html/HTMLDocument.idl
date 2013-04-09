@@ -21,7 +21,7 @@
 [
     CustomNamedGetter,
     V8CustomToJSObject,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface HTMLDocument : Document {
     [V8Custom] void open();
     void close();

@@ -274,7 +274,7 @@ sub GenerateHeader
     # Ensure the IsDOMNodeType function is in sync.
     die("IsDOMNodeType is out of date with respect to $interfaceName") if IsDOMNodeType($interfaceName) != $codeGenerator->InheritsInterface($interface, "Node");
 
-    my $hasDependentLifetime = $interface->extendedAttributes->{"V8DependentLifetime"} || $codeGenerator->InheritsExtendedAttribute($interface, "ActiveDOMObject") || GetGenerateIsReachable($interface) || $v8InterfaceName =~ /SVG/;
+    my $hasDependentLifetime = $interface->extendedAttributes->{"DependentLifetime"} || $codeGenerator->InheritsExtendedAttribute($interface, "ActiveDOMObject") || GetGenerateIsReachable($interface) || $v8InterfaceName =~ /SVG/;
     if (!$hasDependentLifetime) {
         foreach (@{$interface->parents}) {
             my $parent = $_;
@@ -338,7 +338,7 @@ END
     if ($hasDependentLifetime) {
         push(@headerContent, "true;\n");
     } elsif (@{$interface->parents}) {
-        # Even if this type doesn't have the V8DependentLifetime attribute its parents may.
+        # Even if this type doesn't have the [DependentLifetime] attribute its parents may.
         # Let the compiler statically determine this for us.
         my $separator = "";
         foreach (@{$interface->parents}) {
@@ -354,7 +354,7 @@ END
 
     my $fromFunctionOpening = "";
     my $fromFunctionClosing = "";
-    if ($interface->extendedAttributes->{"V8WrapAsFunction"}) {
+    if ($interface->extendedAttributes->{"WrapAsFunction"}) {
         $fromFunctionOpening = "V8DOMWrapper::fromFunction(";
         $fromFunctionClosing = ")";
     }
@@ -408,7 +408,7 @@ END
 END
             push(@headerContent, "#endif // ${conditionalString}\n") if $conditionalString;
         }
-        if ($attrExt->{"V8EnabledPerContext"}) {
+        if ($attrExt->{"EnabledPerContext"}) {
             push(@enabledPerContextFunctions, $function);
         }
     }
@@ -440,7 +440,7 @@ END
 END
             push(@headerContent, "#endif // ${conditionalString}\n") if $conditionalString;
         }
-        if ($attrExt->{"V8EnabledPerContext"}) {
+        if ($attrExt->{"EnabledPerContext"}) {
             push(@enabledPerContextAttributes, $attribute);
         }
     }
@@ -503,7 +503,7 @@ private:
 END
 
     my $noToV8 = $interface->extendedAttributes->{"SuppressToJSObject"};
-    my $noWrap = $interface->extendedAttributes->{"V8NoWrapperCache"} || $noToV8;
+    my $noWrap = $interface->extendedAttributes->{"NoWrapperCache"} || $noToV8;
     if (!$noWrap) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         push(@headerContent, <<END);
@@ -548,9 +548,9 @@ END
     } else {
 
         my $createWrapperCall = $customWrap ? "${v8InterfaceName}::wrap" : "${v8InterfaceName}::createWrapper";
-        my $returningWrapper = $interface->extendedAttributes->{"V8WrapAsFunction"} ? "V8DOMWrapper::toFunction(wrapper)" : "wrapper";
-        my $returningCreatedWrapperOpening = $interface->extendedAttributes->{"V8WrapAsFunction"} ? "V8DOMWrapper::toFunction(" : "";
-        my $returningCreatedWrapperClosing = $interface->extendedAttributes->{"V8WrapAsFunction"} ? ", \"${interfaceName}\", isolate)" : "";
+        my $returningWrapper = $interface->extendedAttributes->{"WrapAsFunction"} ? "V8DOMWrapper::toFunction(wrapper)" : "wrapper";
+        my $returningCreatedWrapperOpening = $interface->extendedAttributes->{"WrapAsFunction"} ? "V8DOMWrapper::toFunction(" : "";
+        my $returningCreatedWrapperClosing = $interface->extendedAttributes->{"WrapAsFunction"} ? ", \"${interfaceName}\", isolate)" : "";
 
         if ($customWrap) {
             push(@headerContent, <<END);
@@ -813,7 +813,7 @@ sub IsReadonly
 {
     my $attribute = shift;
     my $attrExt = $attribute->signature->extendedAttributes;
-    return ($attribute->type =~ /readonly/ || $attrExt->{"V8ReadOnly"}) && !$attrExt->{"Replaceable"};
+    return ($attribute->type =~ /readonly/ || $attrExt->{"ReadOnly"}) && !$attrExt->{"Replaceable"};
 }
 
 sub GenerateDomainSafeFunctionGetter
@@ -825,7 +825,7 @@ sub GenerateDomainSafeFunctionGetter
     my $funcName = $function->signature->name;
 
     my $signature = "v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8InterfaceName . "::info, currentWorldType))";
-    if ($function->signature->extendedAttributes->{"V8DoNotCheckSignature"}) {
+    if ($function->signature->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
     }
 
@@ -936,7 +936,7 @@ sub GenerateNormalAttrGetterCallback
 
     push(@implContentInternals, "static v8::Handle<v8::Value> ${attrName}AttrGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
-    push(@implContentInternals, GenerateFeatureObservation($attrExt->{"V8MeasureAs"}));
+    push(@implContentInternals, GenerateFeatureObservation($attrExt->{"MeasureAs"}));
     if (HasCustomGetter($attrExt)) {
         push(@implContentInternals, "    return ${v8InterfaceName}::${attrName}AttrGetterCustom(name, info);\n");
     } else {
@@ -990,7 +990,7 @@ END
 END
             }
         }
-    } elsif ($attrExt->{"V8OnProto"} || $attrExt->{"V8Unforgeable"}) {
+    } elsif ($attrExt->{"V8OnProto"} || $attrExt->{"Unforgeable"}) {
         if ($interfaceName eq "DOMWindow") {
             push(@implContentInternals, <<END);
     v8::Handle<v8::Object> holder = info.Holder();
@@ -1117,7 +1117,7 @@ END
          && $returnType ne "EventTarget" && $returnType ne "SerializedScriptValue" && $returnType ne "DOMWindow"
          && $returnType ne "MessagePortArray"
          && $returnType !~ /SVG/ && $returnType !~ /HTML/ && !IsDOMNodeType($returnType))
-        || $attribute->signature->extendedAttributes->{"V8CacheAttributeForGC"}) {
+        || $attribute->signature->extendedAttributes->{"CacheAttributeForGC"}) {
 
         my $arrayType = $codeGenerator->GetArrayType($returnType);
         if ($arrayType) {
@@ -1226,7 +1226,7 @@ sub GenerateReplaceableAttrSetterCallback
 
     push(@implContentInternals, "static void ${interfaceName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
-    push(@implContentInternals, GenerateFeatureObservation($interface->extendedAttributes->{"V8MeasureAs"}));
+    push(@implContentInternals, GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"}));
     push(@implContentInternals, "    return ${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetter(name, value, info);\n");
     push(@implContentInternals, "}\n\n");
 }
@@ -1261,9 +1261,9 @@ sub GenerateCustomElementInvocationScopeIfNeeded
     my $out = shift;
     my $ext = shift;
 
-    if ($ext->{"V8DeliverCustomElementCallbacks"}) {
+    if ($ext->{"DeliverCustomElementCallbacks"}) {
         if ($ext->{"Reflect"}) {
-            die "IDL error: Reflect and V8DeliverCustomElementCallbacks cannot coexist yet";
+            die "IDL error: [Reflect] and [DeliverCustomElementCallbacks] cannot coexist yet";
         }
 
         AddToImplIncludes("CustomElementRegistry.h", "CUSTOM_ELEMENTS");
@@ -1291,7 +1291,7 @@ sub GenerateNormalAttrSetterCallback
 
     push(@implContentInternals, "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n");
     push(@implContentInternals, "{\n");
-    push(@implContentInternals, GenerateFeatureObservation($attrExt->{"V8MeasureAs"}));
+    push(@implContentInternals, GenerateFeatureObservation($attrExt->{"MeasureAs"}));
     if (HasCustomSetter($attrExt)) {
         push(@implContentInternals, "    ${v8InterfaceName}::${attrName}AttrSetterCustom(name, value, info);\n");
     } else {
@@ -1595,7 +1595,7 @@ sub GenerateOverloadedFunction
 static v8::Handle<v8::Value> ${name}Method${forMainWorldSuffix}(const v8::Arguments& args)
 {
 END
-    push(@implContentInternals, GenerateFeatureObservation($function->signature->extendedAttributes->{"V8MeasureAs"}));
+    push(@implContentInternals, GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"}));
 
     foreach my $overload (@{$function->{overloads}}) {
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($overload);
@@ -1631,7 +1631,7 @@ sub GenerateFunctionCallback
 static v8::Handle<v8::Value> ${name}MethodCallback${forMainWorldSuffix}(const v8::Arguments& args)
 {
 END
-    push(@implContentInternals, GenerateFeatureObservation($function->signature->extendedAttributes->{"V8MeasureAs"}));
+    push(@implContentInternals, GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"}));
     if (HasCustomMethod($function->signature->extendedAttributes)) {
         push(@implContentInternals, "    return ${v8InterfaceName}::${name}MethodCustom(args);\n");
     } else {
@@ -2148,7 +2148,7 @@ sub GenerateConstructorCallback
     my $interfaceName = $interface->name;
     push(@implContent, "v8::Handle<v8::Value> V8${interfaceName}::constructorCallback(const v8::Arguments& args)\n");
     push(@implContent, "{\n");
-    push(@implContent, GenerateFeatureObservation($interface->extendedAttributes->{"V8MeasureAs"}));
+    push(@implContent, GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"}));
     push(@implContent, GenerateConstructorHeader());
     if (HasCustomConstructor($interface)) {
         push(@implContent, "    return V8${interfaceName}::constructorCustom(args);\n");
@@ -2267,7 +2267,7 @@ sub GenerateNamedConstructor
         }
     }
 
-    my $maybeObserveFeature = GenerateFeatureObservation($function->signature->extendedAttributes->{"V8MeasureAs"});
+    my $maybeObserveFeature = GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
 
     my @beforeArgumentList;
     my @afterArgumentList;
@@ -2423,7 +2423,7 @@ sub GenerateSingleBatchedAttribute
             $accessControl .= " | v8::ALL_CAN_WRITE";
         }
     }
-    if ($attrExt->{"V8Unforgeable"}) {
+    if ($attrExt->{"Unforgeable"}) {
         $accessControl .= " | v8::PROHIBITS_OVERWRITING";
     }
     $accessControl = "static_cast<v8::AccessControl>(" . $accessControl . ")";
@@ -2444,7 +2444,7 @@ sub GenerateSingleBatchedAttribute
     if ($attrExt->{"NotEnumerable"}) {
         $propAttr .= " | v8::DontEnum";
     }
-    if ($attrExt->{"V8Unforgeable"}) {
+    if ($attrExt->{"Unforgeable"}) {
         $propAttr .= " | v8::DontDelete";
     }
 
@@ -2490,7 +2490,7 @@ sub GenerateSingleBatchedAttribute
         $on_proto = "1 /* on proto */";
     }
 
-    if (!$attrExt->{"V8PerWorldBindings"}) {
+    if (!$attrExt->{"PerWorldBindings"}) {
       $getterForMainWorld = "0";
       $setterForMainWorld = "0";
     }
@@ -2509,15 +2509,15 @@ sub IsStandardFunction
 
     my $interfaceName = $interface->name;
     my $attrExt = $function->signature->extendedAttributes;
-    return 0 if $attrExt->{"V8Unforgeable"};
+    return 0 if $attrExt->{"Unforgeable"};
     return 0 if $function->isStatic;
-    return 0 if $attrExt->{"V8EnabledAtRuntime"};
-    return 0 if $attrExt->{"V8EnabledPerContext"};
+    return 0 if $attrExt->{"EnabledAtRuntime"};
+    return 0 if $attrExt->{"EnabledPerContext"};
     return 0 if RequiresCustomSignature($function);
-    return 0 if $attrExt->{"V8DoNotCheckSignature"};
+    return 0 if $attrExt->{"DoNotCheckSignature"};
     return 0 if ($attrExt->{"DoNotCheckSecurity"} && ($interface->extendedAttributes->{"CheckSecurity"} || $interfaceName eq "DOMWindow"));
     return 0 if $attrExt->{"NotEnumerable"};
-    return 0 if $attrExt->{"V8ReadOnly"};
+    return 0 if $attrExt->{"ReadOnly"};
     return 1;
 }
 
@@ -2534,14 +2534,14 @@ sub GenerateNonStandardFunction
     if ($attrExt->{"NotEnumerable"}) {
         $property_attributes .= " | v8::DontEnum";
     }
-    if ($attrExt->{"V8ReadOnly"}) {
+    if ($attrExt->{"ReadOnly"}) {
         $property_attributes .= " | v8::ReadOnly";
     }
 
     my $commentInfo = "Function '$name' (ExtAttr: '" . join(' ', keys(%{$attrExt})) . "')";
 
     my $template = "proto";
-    if ($attrExt->{"V8Unforgeable"}) {
+    if ($attrExt->{"Unforgeable"}) {
         $template = "instance";
     }
     if ($function->isStatic) {
@@ -2549,12 +2549,12 @@ sub GenerateNonStandardFunction
     }
 
     my $conditional = "";
-    if ($attrExt->{"V8EnabledAtRuntime"}) {
+    if ($attrExt->{"EnabledAtRuntime"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
         my $enable_function = GetRuntimeEnableFunctionName($function->signature);
         $conditional = "if (${enable_function}())\n        ";
     }
-    if ($attrExt->{"V8EnabledPerContext"}) {
+    if ($attrExt->{"EnabledPerContext"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
         my $enable_function = GetContextEnableFunction($function->signature);
         $conditional = "if (${enable_function}(impl->document()))\n        ";
@@ -2574,7 +2574,7 @@ END
     }
 
     my $signature = "defaultSignature";
-    if ($attrExt->{"V8DoNotCheckSignature"} || $function->isStatic) {
+    if ($attrExt->{"DoNotCheckSignature"} || $function->isStatic) {
        $signature = "v8::Local<v8::Signature>()";
     }
 
@@ -2595,7 +2595,7 @@ END
 
     my $conditionalString = $codeGenerator->GenerateConditionalString($function->signature);
     push(@implContent, "#if ${conditionalString}\n") if $conditionalString;
-    if ($function->signature->extendedAttributes->{"V8PerWorldBindings"}) {
+    if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
         push(@implContent, "    if (currentWorldType == MainWorld) {\n");
         push(@implContent, "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature})$property_attributes);\n");
         push(@implContent, "    } else {\n");
@@ -2893,7 +2893,7 @@ END
 
         GenerateNormalAttrGetter($attribute, $interface, "");
         GenerateNormalAttrGetterCallback($attribute, $interface, "");
-        if ($attrExt->{"V8PerWorldBindings"}) {
+        if ($attrExt->{"PerWorldBindings"}) {
             GenerateNormalAttrGetter($attribute, $interface, "ForMainWorld");
             GenerateNormalAttrGetterCallback($attribute, $interface, "ForMainWorld");
         }
@@ -2902,7 +2902,7 @@ END
         } elsif (!IsReadonly($attribute)) {
             GenerateNormalAttrSetter($attribute, $interface, "");
             GenerateNormalAttrSetterCallback($attribute, $interface, "");
-            if ($attrExt->{"V8PerWorldBindings"}) {
+            if ($attrExt->{"PerWorldBindings"}) {
               GenerateNormalAttrSetter($attribute, $interface, "ForMainWorld");
               GenerateNormalAttrSetterCallback($attribute, $interface, "ForMainWorld");
             }
@@ -2949,18 +2949,18 @@ END
     # Generate methods for functions.
     foreach my $function (@{$interface->functions}) {
         GenerateFunction($function, $interface, "");
-        if ($function->signature->extendedAttributes->{"V8PerWorldBindings"}) {
+        if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
             GenerateFunction($function, $interface, "ForMainWorld");
         }
         if ($function->{overloadIndex} == @{$function->{overloads}}) {
             if ($function->{overloadIndex} > 1) {
                 GenerateOverloadedFunction($function, $interface, "");
-                if ($function->signature->extendedAttributes->{"V8PerWorldBindings"}) {
+                if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
                     GenerateOverloadedFunction($function, $interface, "ForMainWorld");
                 }
             }
             GenerateFunctionCallback($function, $interface, "");
-            if ($function->signature->extendedAttributes->{"V8PerWorldBindings"}) {
+            if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
                 GenerateFunctionCallback($function, $interface, "ForMainWorld");
             }
         }
@@ -2988,7 +2988,7 @@ END
         }
 
         # Separate out functions that are enabled per context so we can process them specially.
-        if ($function->signature->extendedAttributes->{"V8EnabledPerContext"}) {
+        if ($function->signature->extendedAttributes->{"EnabledPerContext"}) {
             push(@enabledPerContextFunctions, $function);
         } else {
             push(@normalFunctions, $function);
@@ -3011,11 +3011,11 @@ END
     my @normalAttributes;
     foreach my $attribute (@$attributes) {
 
-        if ($interfaceName eq "DOMWindow" && $attribute->signature->extendedAttributes->{"V8Unforgeable"}) {
+        if ($interfaceName eq "DOMWindow" && $attribute->signature->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
-        } elsif ($attribute->signature->extendedAttributes->{"V8EnabledAtRuntime"}) {
+        } elsif ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"}) {
             push(@enabledAtRuntimeAttributes, $attribute);
-        } elsif ($attribute->signature->extendedAttributes->{"V8EnabledPerContext"}) {
+        } elsif ($attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
             push(@enabledPerContextAttributes, $attribute);
         } else {
             push(@normalAttributes, $attribute);
@@ -3051,7 +3051,7 @@ END
         }
         my $name = $function->signature->name;
         my $methodForMainWorld = "0";
-        if ($function->signature->extendedAttributes->{"V8PerWorldBindings"}) {
+        if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
             $methodForMainWorld = "${interfaceName}V8Internal::${name}MethodCallbackForMainWorld";
         }
         my $conditionalString = $codeGenerator->GenerateConditionalString($function->signature);
@@ -3080,7 +3080,7 @@ END
         if ($implementedBy) {
             AddToImplIncludes("${implementedBy}.h");
         }
-        if ($attrExt->{"V8EnabledAtRuntime"}) {
+        if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
         } else {
             if ($conditional) {
@@ -3153,7 +3153,7 @@ static v8::Persistent<v8::FunctionTemplate> Configure${v8InterfaceName}Template(
 
     v8::Local<v8::Signature> defaultSignature;
 END
-    if ($interface->extendedAttributes->{"V8EnabledAtRuntime"}) {
+    if ($interface->extendedAttributes->{"EnabledAtRuntime"}) {
         my $enable_function = GetRuntimeEnableFunctionName($interface);
         push(@implContent, <<END);
     if (!${enable_function}())
@@ -3693,7 +3693,7 @@ sub GenerateToV8Converters
     my $nativeType = shift;
     my $interfaceName = $interface->name;
 
-    if ($interface->extendedAttributes->{"V8NoWrapperCache"} || $interface->extendedAttributes->{"SuppressToJSObject"}) {
+    if ($interface->extendedAttributes->{"NoWrapperCache"} || $interface->extendedAttributes->{"SuppressToJSObject"}) {
         return;
     }
 
@@ -3888,7 +3888,7 @@ sub GetImplementationLacksVTableForInterface
 sub GetV8SkipVTableValidationForInterface
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"V8SkipVTableValidation"};
+    return $interface->extendedAttributes->{"SkipVTableValidation"};
 }
 
 sub GenerateFunctionCallString
@@ -4576,8 +4576,8 @@ sub GetRuntimeEnableFunctionName
 {
     my $signature = shift;
 
-    # If a parameter is given (e.g. "V8EnabledAtRuntime=FeatureName") return the RuntimeEnabledFeatures::{FeatureName}Enabled() method.
-    return "RuntimeEnabledFeatures::" . $codeGenerator->WK_lcfirst($signature->extendedAttributes->{"V8EnabledAtRuntime"}) . "Enabled" if ($signature->extendedAttributes->{"V8EnabledAtRuntime"} && $signature->extendedAttributes->{"V8EnabledAtRuntime"} ne "VALUE_IS_MISSING");
+    # If a parameter is given (e.g. "EnabledAtRuntime=FeatureName") return the RuntimeEnabledFeatures::{FeatureName}Enabled() method.
+    return "RuntimeEnabledFeatures::" . $codeGenerator->WK_lcfirst($signature->extendedAttributes->{"EnabledAtRuntime"}) . "Enabled" if ($signature->extendedAttributes->{"EnabledAtRuntime"} && $signature->extendedAttributes->{"EnabledAtRuntime"} ne "VALUE_IS_MISSING");
 
     # Otherwise return a function named RuntimeEnabledFeatures::{methodName}Enabled().
     return "RuntimeEnabledFeatures::" . $codeGenerator->WK_lcfirst($signature->name) . "Enabled";
@@ -4587,9 +4587,9 @@ sub GetContextEnableFunction
 {
     my $signature = shift;
 
-    # If a parameter is given (e.g. "V8EnabledPerContext=FeatureName") return the {FeatureName}Allowed() method.
-    if ($signature->extendedAttributes->{"V8EnabledPerContext"} && $signature->extendedAttributes->{"V8EnabledPerContext"} ne "VALUE_IS_MISSING") {
-        return "ContextFeatures::" . $codeGenerator->WK_lcfirst($signature->extendedAttributes->{"V8EnabledPerContext"}) . "Enabled";
+    # If a parameter is given (e.g. "EnabledPerContext=FeatureName") return the {FeatureName}Allowed() method.
+    if ($signature->extendedAttributes->{"EnabledPerContext"} && $signature->extendedAttributes->{"EnabledPerContext"} ne "VALUE_IS_MISSING") {
+        return "ContextFeatures::" . $codeGenerator->WK_lcfirst($signature->extendedAttributes->{"EnabledPerContext"}) . "Enabled";
     }
 
     # Or it fallbacks to the attribute name if the parameter value is missing.

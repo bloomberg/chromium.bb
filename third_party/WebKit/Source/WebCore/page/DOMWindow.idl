@@ -34,7 +34,7 @@
     ExtendsDOMGlobalObject,
     ReplaceableConstructor,
     V8CustomToJSObject,
-    V8NoWrapperCache,
+    NoWrapperCache,
     V8CustomIndexedGetter,
     InterfaceName=Window
 ] interface DOMWindow {
@@ -51,7 +51,7 @@
     [Replaceable] readonly attribute Navigator clientInformation;
     readonly attribute Crypto crypto;
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
-    attribute [DoNotCheckSecurity, CustomSetter, V8Unforgeable] Location location;
+    attribute [DoNotCheckSecurity, CustomSetter, Unforgeable] Location location;
 #endif
     [Replaceable, CustomGetter, V8CustomSetter] readonly attribute Event event;
 
@@ -125,12 +125,12 @@
 
     // Self referential attributes
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow self;
-    [DoNotCheckSecurity, V8Unforgeable] readonly attribute DOMWindow window;
+    [DoNotCheckSecurity, Unforgeable] readonly attribute DOMWindow window;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  DOMWindow frames;
 
     [Replaceable, DoNotCheckSecurityOnGetter, V8CustomSetter] readonly attribute DOMWindow opener;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow parent;
-    [DoNotCheckSecurityOnGetter, V8Unforgeable] readonly attribute DOMWindow top;
+    [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute DOMWindow top;
 
     // DOM Level 2 AbstractView Interface
     readonly attribute Document document;
@@ -142,7 +142,7 @@
     readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
-    [V8PerWorldBindings] CSSStyleDeclaration getComputedStyle([Optional=DefaultIsUndefined] Element element,
+    [PerWorldBindings] CSSStyleDeclaration getComputedStyle([Optional=DefaultIsUndefined] Element element,
                                                               [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
 
     // WebKit extensions
@@ -158,11 +158,11 @@
     DOMPoint webkitConvertPointFromNodeToPage([Optional=DefaultIsUndefined] Node node,
                                               [Optional=DefaultIsUndefined] DOMPoint p);
 
-    readonly attribute [V8EnabledAtRuntime] DOMApplicationCache applicationCache;
+    readonly attribute [EnabledAtRuntime] DOMApplicationCache applicationCache;
 
-    readonly attribute [V8EnabledAtRuntime] Storage sessionStorage
+    readonly attribute [EnabledAtRuntime] Storage sessionStorage
         getter raises(DOMException);
-    readonly attribute [V8EnabledAtRuntime] Storage localStorage
+    readonly attribute [EnabledAtRuntime] Storage localStorage
         getter raises(DOMException);
 
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
@@ -195,9 +195,9 @@
     void clearInterval([Optional=DefaultIsUndefined] long handle);
 
 #if defined(ENABLE_REQUEST_ANIMATION_FRAME) && ENABLE_REQUEST_ANIMATION_FRAME
-    [V8MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
+    [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
     void cancelAnimationFrame(long id);
-    [V8MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
+    [MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
     [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
 #endif
@@ -292,13 +292,13 @@
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
     attribute EventListener onorientationchange;
 #endif
-    attribute [Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] EventListener ontouchstart;
-    attribute [Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] EventListener ontouchmove;
-    attribute [Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] EventListener ontouchend;
-    attribute [Conditional=TOUCH_EVENTS,V8EnabledAtRuntime=touch] EventListener ontouchcancel;
+    attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchstart;
+    attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchmove;
+    attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchend;
+    attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchcancel;
 
-    attribute [Conditional=DEVICE_ORIENTATION,V8EnabledAtRuntime] EventListener ondevicemotion;
-    attribute [Conditional=DEVICE_ORIENTATION,V8EnabledAtRuntime] EventListener ondeviceorientation;
+    attribute [Conditional=DEVICE_ORIENTATION,EnabledAtRuntime] EventListener ondevicemotion;
+    attribute [Conditional=DEVICE_ORIENTATION,EnabledAtRuntime] EventListener ondeviceorientation;
 
     attribute [Conditional=PROXIMITY_EVENTS] EventListener onwebkitdeviceproximity;
 
@@ -388,11 +388,11 @@
     attribute NotationConstructor Notation;
     attribute EntityConstructor Entity;
     attribute EntityReferenceConstructor EntityReference;
-    [Conditional=CANVAS_PATH, V8EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
+    [Conditional=CANVAS_PATH, EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
     attribute ProcessingInstructionConstructor ProcessingInstruction;
-    [Conditional=SHADOW_DOM, V8EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
-    [Conditional=SHADOW_DOM, V8EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;
-    [Conditional=SHADOW_DOM, V8EnabledAtRuntime=shadowDOM] attribute HTMLShadowElementConstructor HTMLShadowElement;
+    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
+    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;
+    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute HTMLShadowElementConstructor HTMLShadowElement;
 
     attribute DOMSelectionConstructor Selection;
     attribute DOMWindowConstructor Window;
@@ -410,7 +410,7 @@
     attribute HTMLCanvasElementConstructor HTMLCanvasElement;
     attribute HTMLDListElementConstructor HTMLDListElement;
     [Conditional=DATALIST_ELEMENT] attribute HTMLDataListElementConstructor HTMLDataListElement;
-    [Conditional=DIALOG_ELEMENT, V8EnabledPerContext=dialogElement] attribute HTMLDialogElementConstructor HTMLDialogElement;
+    [Conditional=DIALOG_ELEMENT, EnabledPerContext=dialogElement] attribute HTMLDialogElementConstructor HTMLDialogElement;
     attribute HTMLDirectoryElementConstructor HTMLDirectoryElement;
     attribute HTMLDivElementConstructor HTMLDivElement;
     attribute HTMLEmbedElementConstructor HTMLEmbedElement;
@@ -476,28 +476,28 @@
     [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator
     attribute HTMLOptionElementConstructorConstructor Option; // Usable with new operator
 
-    [Conditional=ENCRYPTED_MEDIA, V8EnabledAtRuntime=encryptedMedia] attribute MediaKeyEventConstructor MediaKeyEvent;
-    attribute [Conditional=ENCRYPTED_MEDIA_V2, V8EnabledAtRuntime=encryptedMedia] MediaKeysConstructor MediaKeys;
-    attribute [Conditional=ENCRYPTED_MEDIA_V2|ENCRYPTED_MEDIA, V8EnabledAtRuntime=encryptedMedia] MediaKeyErrorConstructor MediaKeyError;
-    attribute [Conditional=ENCRYPTED_MEDIA_V2, V8EnabledAtRuntime=encryptedMedia] MediaKeyMessageEventConstructor MediaKeyMessageEvent;
-    attribute [Conditional=ENCRYPTED_MEDIA_V2, V8EnabledAtRuntime=encryptedMedia] MediaKeyNeededEventConstructor MediaKeyNeededEvent;
+    [Conditional=ENCRYPTED_MEDIA, EnabledAtRuntime=encryptedMedia] attribute MediaKeyEventConstructor MediaKeyEvent;
+    attribute [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=encryptedMedia] MediaKeysConstructor MediaKeys;
+    attribute [Conditional=ENCRYPTED_MEDIA_V2|ENCRYPTED_MEDIA, EnabledAtRuntime=encryptedMedia] MediaKeyErrorConstructor MediaKeyError;
+    attribute [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=encryptedMedia] MediaKeyMessageEventConstructor MediaKeyMessageEvent;
+    attribute [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=encryptedMedia] MediaKeyNeededEventConstructor MediaKeyNeededEvent;
 
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute HTMLTrackElementConstructor HTMLTrackElement;
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackConstructor TextTrack;
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueConstructor TextTrackCue; // Usable with the new operator
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueListConstructor TextTrackCueList;
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackListConstructor TextTrackList;
-    [Conditional=VIDEO_TRACK & WEBVTT_REGIONS, V8EnabledAtRuntime=webkitVideoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
-    [Conditional=VIDEO_TRACK, V8EnabledAtRuntime=webkitVideoTrack] attribute TrackEventConstructor TrackEvent;
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute HTMLTrackElementConstructor HTMLTrackElement;
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackConstructor TextTrack;
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueConstructor TextTrackCue; // Usable with the new operator
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackCueListConstructor TextTrackCueList;
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackListConstructor TextTrackList;
+    [Conditional=VIDEO_TRACK & WEBVTT_REGIONS, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
+    [Conditional=VIDEO_TRACK, EnabledAtRuntime=webkitVideoTrack] attribute TrackEventConstructor TrackEvent;
 
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLAudioElementConstructor HTMLAudioElement;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLMediaElementConstructor HTMLMediaElement;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLVideoElementConstructor HTMLVideoElement;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute MediaErrorConstructor MediaError;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute TimeRangesConstructor TimeRanges;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute HTMLSourceElementConstructor HTMLSourceElement;
-    [Conditional=VIDEO, V8EnabledAtRuntime] attribute MediaControllerConstructor MediaController;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
+    [Conditional=VIDEO, EnabledAtRuntime] attribute HTMLAudioElementConstructor HTMLAudioElement;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute HTMLMediaElementConstructor HTMLMediaElement;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute HTMLVideoElementConstructor HTMLVideoElement;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute MediaErrorConstructor MediaError;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute TimeRangesConstructor TimeRanges;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute HTMLSourceElementConstructor HTMLSourceElement;
+    [Conditional=VIDEO, EnabledAtRuntime] attribute MediaControllerConstructor MediaController;
 
     attribute CanvasPatternConstructor CanvasPattern;
     attribute CanvasGradientConstructor CanvasGradient;
@@ -555,23 +555,23 @@
     attribute TransitionEventConstructor WebKitTransitionEvent;
     attribute WheelEventConstructor WheelEvent;
     attribute XMLHttpRequestProgressEventConstructor XMLHttpRequestProgressEvent;
-    [Conditional=DEVICE_ORIENTATION, V8EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
-    [Conditional=DEVICE_ORIENTATION, V8EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
-    [Conditional=TOUCH_EVENTS, V8EnabledAtRuntime=touch] attribute TouchConstructor Touch;
-    [Conditional=TOUCH_EVENTS, V8EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
-    [Conditional=TOUCH_EVENTS, V8EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
+    [Conditional=DEVICE_ORIENTATION, EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
+    [Conditional=DEVICE_ORIENTATION, EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
+    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchConstructor Touch;
+    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
+    [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
     attribute StorageEventConstructor StorageEvent;
     [Conditional=INPUT_SPEECH] attribute SpeechInputEventConstructor SpeechInputEvent;
     [Conditional=WEBGL] attribute WebGLContextEventConstructor WebGLContextEvent;
     [Conditional=PROXIMITY_EVENTS] attribute DeviceProximityEventConstructor DeviceProximityEvent;
     [Conditional=REQUEST_AUTOCOMPLETE] attribute AutocompleteErrorEventConstructor AutocompleteErrorEvent;
-    [V8EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute SecurityPolicyViolationEventConstructor SecurityPolicyViolationEvent;
+    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute SecurityPolicyViolationEventConstructor SecurityPolicyViolationEvent;
 
     attribute EventExceptionConstructor EventException;
 
     attribute WebKitCSSKeyframeRuleConstructor WebKitCSSKeyframeRule;
     attribute WebKitCSSKeyframesRuleConstructor WebKitCSSKeyframesRule;
-    [Conditional=CSS_REGIONS, V8EnabledAtRuntime=cssRegions] attribute WebKitCSSRegionRuleConstructor WebKitCSSRegionRule;
+    [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] attribute WebKitCSSRegionRuleConstructor WebKitCSSRegionRule;
 
     attribute WebKitCSSMatrixConstructor WebKitCSSMatrix; // Usable with the new operator
 
@@ -580,7 +580,7 @@
     attribute ClipboardConstructor Clipboard;
 
     attribute WorkerConstructor Worker; // Usable with the new operator
-    [Conditional=SHARED_WORKERS, V8EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
+    [Conditional=SHARED_WORKERS, EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
 
     attribute FileConstructor File;
     attribute FileListConstructor FileList;
@@ -792,15 +792,15 @@
     attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
     attribute MutationObserverConstructor MutationObserver;
 
-    [V8EnabledAtRuntime=mediaSource] attribute MediaSourceConstructor WebKitMediaSource;
-    [V8EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
-    [V8EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
+    [EnabledAtRuntime=mediaSource] attribute MediaSourceConstructor WebKitMediaSource;
+    [EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
+    [EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
 
 #endif // defined(LANGUAGE_JAVASCRIPT)
 
 #if defined(V8_BINDING) && V8_BINDING
     // window.toString() requires special handling in V8
-    [V8DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
+    [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
 #endif // defined(V8_BINDING)
 };
 

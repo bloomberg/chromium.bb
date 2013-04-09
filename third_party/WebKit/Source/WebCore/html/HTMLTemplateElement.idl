@@ -29,6 +29,6 @@
  */
 
 interface HTMLTemplateElement : HTMLElement {
-    [V8CacheAttributeForGC] readonly attribute DocumentFragment content;
+    [CacheAttributeForGC] readonly attribute DocumentFragment content;
 };
 

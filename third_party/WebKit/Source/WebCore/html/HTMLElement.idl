@@ -20,7 +20,7 @@
 
 [
     V8CustomToJSObject,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface HTMLElement : Element {
              // iht.com relies on id returning the empty string when no id is present. 
              // Other browsers do this as well. So we don't convert null to JS null.
@@ -37,11 +37,11 @@
              [Reflect] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, V8DeliverCustomElementCallbacks] attribute DOMString innerHTML
+             [TreatNullAs=NullString, DeliverCustomElementCallbacks] attribute DOMString innerHTML
                  setter raises(DOMException);
              [TreatNullAs=NullString] attribute DOMString innerText
                  setter raises(DOMException);
-             [TreatNullAs=NullString, V8DeliverCustomElementCallbacks] attribute DOMString outerHTML
+             [TreatNullAs=NullString, DeliverCustomElementCallbacks] attribute DOMString outerHTML
                  setter raises(DOMException);
              [TreatNullAs=NullString] attribute DOMString outerText
                  setter raises(DOMException);
@@ -49,7 +49,7 @@
     Element insertAdjacentElement([Optional=DefaultIsUndefined] DOMString where,
                                   [Optional=DefaultIsUndefined] Element element)
         raises(DOMException);
-    [V8DeliverCustomElementCallbacks]
+    [DeliverCustomElementCallbacks]
     void insertAdjacentHTML([Optional=DefaultIsUndefined] DOMString where,
                             [Optional=DefaultIsUndefined] DOMString html)
         raises(DOMException);

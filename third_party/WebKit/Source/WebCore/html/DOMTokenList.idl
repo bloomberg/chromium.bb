@@ -25,7 +25,7 @@
 [
     GenerateIsReachable=ImplElementRoot,
     IndexedGetter,
-    V8SkipVTableValidation
+    SkipVTableValidation
 ] interface DOMTokenList {
     readonly attribute unsigned long length;
     [TreatReturnedNullStringAs=Null] DOMString item(unsigned long index);

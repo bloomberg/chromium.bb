@@ -30,7 +30,7 @@
     IsWorkerContext,
     OmitConstructor,
     V8CustomToJSObject,
-    V8NoWrapperCache
+    NoWrapperCache
 ] interface WorkerContext {
 
     // WorkerGlobalScope

@@ -20,6 +20,6 @@
 [
     Supplemental=Navigator
 ] interface NavigatorGeolocation {
-    [V8EnabledAtRuntime] readonly attribute Geolocation geolocation;
+    [EnabledAtRuntime] readonly attribute Geolocation geolocation;
 };
 
