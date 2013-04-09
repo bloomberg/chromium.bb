@@ -25,6 +25,8 @@
 #ifndef PointerLockController_h
 #define PointerLockController_h
 
+#if ENABLE(POINTER_LOCK)
+
 #include <wtf/RefPtr.h>
 #include <wtf/text/AtomicString.h>
 
@@ -66,5 +68,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(POINTER_LOCK)
 
 #endif // PointerLockController_h

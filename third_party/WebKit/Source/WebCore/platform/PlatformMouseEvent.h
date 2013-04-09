@@ -67,7 +67,9 @@ namespace WebCore {
 
         const IntPoint& position() const { return m_position; }
         const IntPoint& globalPosition() const { return m_globalPosition; }
+#if ENABLE(POINTER_LOCK)
         const IntPoint& movementDelta() const { return m_movementDelta; }
+#endif
 
         MouseButton button() const { return m_button; }
         int clickCount() const { return m_clickCount; }
@@ -86,7 +88,9 @@ namespace WebCore {
     protected:
         IntPoint m_position;
         IntPoint m_globalPosition;
+#if ENABLE(POINTER_LOCK)
         IntPoint m_movementDelta;
+#endif
         MouseButton m_button;
         int m_clickCount;
         unsigned m_modifierFlags;

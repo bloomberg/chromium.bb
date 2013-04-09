@@ -183,7 +183,9 @@ public:
     ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
 #endif
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
+#if ENABLE(POINTER_LOCK)
     PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }
+#endif
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
 
     ScrollingCoordinator* scrollingCoordinator();
@@ -391,7 +393,9 @@ private:
     OwnPtr<ContextMenuController> m_contextMenuController;
 #endif
     OwnPtr<InspectorController> m_inspectorController;
+#if ENABLE(POINTER_LOCK)
     OwnPtr<PointerLockController> m_pointerLockController;
+#endif
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     OwnPtr<Settings> m_settings;

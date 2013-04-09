@@ -346,9 +346,11 @@ public:
         
     virtual bool isSVGImageChromeClient() const { return false; }
 
+#if ENABLE(POINTER_LOCK)
     virtual bool requestPointerLock() { return false; }
     virtual void requestPointerUnlock() { }
     virtual bool isPointerLocked() { return false; }
+#endif
 
     virtual void logDiagnosticMessage(const String& message, const String& description, const String& status) { UNUSED_PARAM(message); UNUSED_PARAM(description); UNUSED_PARAM(status); }
 

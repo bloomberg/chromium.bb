@@ -584,9 +584,11 @@ public:
 
     // Pointer Lock calls allow a page to capture all mouse events and
     // disable the system cursor.
+#if ENABLE(POINTER_LOCK)
     virtual bool requestPointerLock();
     virtual void requestPointerUnlock();
     virtual bool isPointerLocked();
+#endif
 
     // Heuristic-based function for determining if we should disable workarounds
     // for viewing websites that are not optimized for mobile devices.
@@ -668,7 +670,9 @@ private:
     WebRect widenRectWithinPageBounds(const WebRect& source, int targetMargin, int minimumMargin);
 #endif
 
+#if ENABLE(POINTER_LOCK)
     void pointerLockMouseEvent(const WebInputEvent&);
+#endif
 
     // PageWidgetEventHandler functions
     virtual void handleMouseLeave(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;

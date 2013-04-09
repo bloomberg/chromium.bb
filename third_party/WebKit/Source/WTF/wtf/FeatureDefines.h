@@ -346,6 +346,10 @@
 #define ENABLE_PLUGIN_PROXY_FOR_VIDEO 0
 #endif
 
+#if !defined(ENABLE_POINTER_LOCK)
+#define ENABLE_POINTER_LOCK 0
+#endif
+
 #if !defined(ENABLE_PROXIMITY_EVENTS)
 #define ENABLE_PROXIMITY_EVENTS 0
 #endif
