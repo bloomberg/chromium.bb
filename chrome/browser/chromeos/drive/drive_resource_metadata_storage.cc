@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -99,6 +100,17 @@ void DriveResourceMetadataStorageMemory::RemoveEntry(
 
   const size_t result = resource_map_.erase(resource_id);
   DCHECK_EQ(1u, result);  // resource_id was found in the map.
+}
+
+void DriveResourceMetadataStorageMemory::Iterate(
+    const IterateCallback& callback) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!callback.is_null());
+
+  for (ResourceMap::const_iterator iter = resource_map_.begin();
+       iter != resource_map_.end(); ++iter) {
+    callback.Run(iter->second);
+  }
 }
 
 void DriveResourceMetadataStorageMemory::PutChild(
@@ -306,6 +318,26 @@ void DriveResourceMetadataStorageDB::RemoveEntry(
       leveldb::WriteOptions(),
       leveldb::Slice(resource_id));
   DCHECK(status.ok());
+}
+
+void DriveResourceMetadataStorageDB::Iterate(const IterateCallback& callback) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<leveldb::Iterator> it(
+      resource_map_->NewIterator(leveldb::ReadOptions()));
+
+  // Skip the header entry.
+  // Note: The header entry comes before all other entries because its key
+  // starts with kDBKeyDelimeter. (i.e. '\0')
+  it->Seek(leveldb::Slice(GetHeaderDBKey()));
+  it->Next();
+
+  DriveEntryProto entry;
+  for (; it->Valid(); it->Next()) {
+    if (entry.ParseFromArray(it->value().data(), it->value().size()))
+      callback.Run(entry);
+  }
 }
 
 void DriveResourceMetadataStorageDB::PutChild(

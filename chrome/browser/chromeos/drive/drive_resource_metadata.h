@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -229,6 +230,12 @@ class DriveResourceMetadata {
   // Removes all files/directories under root (not including root).
   void RemoveAll(const base::Closure& callback);
 
+  // Iterates over entries and runs |iterate_callback| for each entry with
+  // |blocking_task_runner_|. Runs |completion_callback| after iterating over
+  // all entries.
+  void IterateEntries(const IterateCallback& iterate_callback,
+                      const base::Closure& completion_callback);
+
   // Saves metadata to the data directory when appropriate.
   void MaybeSave();
 
@@ -306,6 +313,9 @@ class DriveResourceMetadata {
 
   // Used to implement RemoveAll().
   void RemoveAllOnBlockingPool();
+
+  // Used to implement IterateEntries().
+  void IterateEntriesOnBlockingPool(const IterateCallback& callback);
 
   // Used to implement MaybeSave().
   void MaybeSaveOnBlockingPool();

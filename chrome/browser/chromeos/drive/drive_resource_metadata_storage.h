@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -21,6 +22,8 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveResourceMetadataHeader;
+
+typedef base::Callback<void(const DriveEntryProto& entry)> IterateCallback;
 
 // Interface of a storage for DriveResourceMetadata which is responsible to
 // manage entry info and child-parent relationships between entries.
@@ -49,6 +52,9 @@ class DriveResourceMetadataStorage {
 
   // Removes an entry from this storage.
   virtual void RemoveEntry(const std::string& resource_id) = 0;
+
+  // Iterates over entries stored in this storage.
+  virtual void Iterate(const IterateCallback& callback) = 0;
 
   // Puts child under the parent.
   virtual void PutChild(const std::string& parent_resource_id,
@@ -84,6 +90,7 @@ class DriveResourceMetadataStorageMemory
   virtual scoped_ptr<DriveEntryProto> GetEntry(
       const std::string& resource_id) OVERRIDE;
   virtual void RemoveEntry(const std::string& resource_id) OVERRIDE;
+  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
   virtual void PutChild(const std::string& parent_resource_id,
                         const std::string& child_name,
                         const std::string& child_resource_id) OVERRIDE;
@@ -135,6 +142,7 @@ class DriveResourceMetadataStorageDB
   virtual scoped_ptr<DriveEntryProto> GetEntry(
       const std::string& resource_id) OVERRIDE;
   virtual void RemoveEntry(const std::string& resource_id) OVERRIDE;
+  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
   virtual void PutChild(const std::string& parent_resource_id,
                         const std::string& child_name,
                         const std::string& child_resource_id) OVERRIDE;

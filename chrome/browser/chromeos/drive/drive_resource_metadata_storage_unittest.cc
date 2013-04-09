@@ -6,12 +6,23 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+
+namespace {
+
+// Stores the entry to the map.
+void StoreEntryToMap(std::map<std::string,DriveEntryProto>* out,
+                     const DriveEntryProto& entry) {
+  (*out)[entry.resource_id()] = entry;
+}
+
+}  // namespace
 
 class DriveResourceMetadataStorageTest : public testing::Test {
  protected:
@@ -68,6 +79,32 @@ TEST_F(DriveResourceMetadataStorageTest, PutEntry) {
   // Remove key1.
   storage_->RemoveEntry(key1);
   EXPECT_FALSE(storage_->GetEntry(key1));
+}
+
+TEST_F(DriveResourceMetadataStorageTest, Iterate) {
+  // Prepare data.
+  std::vector<DriveEntryProto> entries;
+  DriveEntryProto entry;
+
+  entry.set_resource_id("entry1");
+  entries.push_back(entry);
+  entry.set_resource_id("entry2");
+  entries.push_back(entry);
+  entry.set_resource_id("entry3");
+  entries.push_back(entry);
+  entry.set_resource_id("entry4");
+  entries.push_back(entry);
+
+  for (size_t i = 0; i < entries.size(); ++i)
+    storage_->PutEntry(entries[i]);
+
+  // Call Iterate and check the result.
+  std::map<std::string, DriveEntryProto> result;
+  storage_->Iterate(base::Bind(&StoreEntryToMap, base::Unretained(&result)));
+
+  EXPECT_EQ(entries.size(), result.size());
+  for (size_t i = 0; i < entries.size(); ++i)
+    EXPECT_EQ(1U, result.count(entries[i].resource_id()));
 }
 
 TEST_F(DriveResourceMetadataStorageTest, PutChild) {

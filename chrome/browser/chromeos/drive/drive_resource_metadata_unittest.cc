@@ -47,6 +47,12 @@ std::vector<std::string> GetSortedBaseNames(
   return base_names;
 }
 
+// Increments |count| if |entry| is a file.
+void CountFile(int* count, const DriveEntryProto& entry) {
+  if (!entry.file_info().is_directory())
+    ++*count;
+}
+
 }  // namespace
 
 class DriveResourceMetadataTest : public testing::Test {
@@ -1266,7 +1272,19 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/other"));
   ASSERT_TRUE(entries_in_other.get());
   EXPECT_TRUE(entries_in_other->empty());
+}
 
+TEST_F(DriveResourceMetadataTest, IterateEntries) {
+  int count = 0;
+  bool completed = false;
+  resource_metadata_->IterateEntries(
+      base::Bind(&CountFile, &count),
+      base::Bind(google_apis::test_util::CreateCopyResultCallback(&completed),
+                 true));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(7, count);
+  EXPECT_TRUE(completed);
 }
 
 TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {

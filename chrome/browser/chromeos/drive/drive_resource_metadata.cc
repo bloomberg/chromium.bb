@@ -533,6 +533,21 @@ void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {
       callback);
 }
 
+void DriveResourceMetadata::IterateEntries(
+    const IterateCallback& iterate_callback,
+    const base::Closure& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!iterate_callback.is_null());
+  DCHECK(!completion_callback.is_null());
+
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&DriveResourceMetadata::IterateEntriesOnBlockingPool,
+                 base::Unretained(this),
+                 iterate_callback),
+      completion_callback);
+}
+
 void DriveResourceMetadata::MaybeSave() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   blocking_task_runner_->PostTask(
@@ -926,6 +941,14 @@ void DriveResourceMetadata::RemoveAllOnBlockingPool() {
 
   RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
   SetUpDefaultEntries();
+}
+
+void DriveResourceMetadata::IterateEntriesOnBlockingPool(
+    const IterateCallback& callback) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!callback.is_null());
+
+  storage_->Iterate(callback);
 }
 
 void DriveResourceMetadata::MaybeSaveOnBlockingPool() {
