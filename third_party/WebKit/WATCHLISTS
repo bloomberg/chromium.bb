@@ -73,6 +73,15 @@
                   '|Source/WebCore/css/mediaControl' \
                   '|LayoutTests/media/track/'
     },
+    'media': {
+      'filepath': 'Source/WebCore/css/mediaControls.*' \
+                  '|Source/WebCore/platform/graphics/.*Media.*' \
+                  '|Source/WebCore/html/.*(Audio|Media|Video).*' \
+                  '|Source/WebCore/html/shadow/MediaControl.*' \
+                  '|Source/WebCore/rendering/RenderMedia.*' \
+                  '|Source/WebCore/Modules/(encryptedmedia|mediasource)' \
+                  '|Source/WebKit/chromium/.*Media.*' \
+    },
   },
 
   'WATCHLISTS': {
@@ -103,5 +112,6 @@
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': ['vcarbune@chromium.org'],
+    'media': [ 'feature-media-reviews@chromium.org' ],
   },
 }
