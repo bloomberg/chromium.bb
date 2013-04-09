@@ -863,6 +863,9 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
   LOG_INSTANT_DEBUG_EVENT(this, "TabDeactivated");
   if (extended_enabled_ && !contents->IsBeingDestroyed())
     CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
+
+  if (GetOverlayContents())
+    HideOverlay();
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled,

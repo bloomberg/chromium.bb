@@ -39,9 +39,6 @@ class SearchTabHelper : public content::NotificationObserver,
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
 
-  // Invoked from SearchDelegate::StopObservingTab().
-  void OnStopObservingTab();
-
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
 
