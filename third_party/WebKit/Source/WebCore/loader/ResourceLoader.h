@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-class AuthenticationChallenge;
 class CachedResource;
 class CachedResourceLoader;
 class DocumentLoader;

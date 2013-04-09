@@ -53,39 +53,19 @@ public:
 
     virtual ~ResourceHandle();
 
-    bool shouldContentSniff() const;
-    static bool shouldContentSniffURL(const KURL&);
-
-    static void forceContentSniffing();
-
-    // Used to work around the fact that you don't get any more NSURLConnection callbacks until you return from the one you're in.
-    static bool loadsBlocked();    
-
-    void clearAuthentication();
     virtual void cancel();
 
     // The client may be 0, in which case no callbacks will be made.
     ResourceHandleClient* client() const;
     void setClient(ResourceHandleClient*);
 
-    // Called in response to ResourceHandleClient::willSendRequestAsync().
-    void continueWillSendRequest(const ResourceRequest&);
-    // Called in response to ResourceHandleClient::shouldUseCredentialStorageAsync().
-    void continueShouldUseCredentialStorage(bool);
-
     void setDefersLoading(bool);
 
     void didChangePriority(ResourceLoadPriority);
 
     ResourceRequest& firstRequest();
-    const String& lastHTTPMethod() const;
-
-    void fireFailure(Timer<ResourceHandle>*);
 
     NetworkingContext* context() const;
-
-    using RefCounted<ResourceHandle>::ref;
-    using RefCounted<ResourceHandle>::deref;
 
     typedef PassRefPtr<ResourceHandle> (*BuiltinConstructor)(const ResourceRequest& request, ResourceHandleClient* client);
     static void registerBuiltinConstructor(const AtomicString& protocol, BuiltinConstructor);
@@ -97,22 +77,7 @@ protected:
     ResourceHandle(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
 
 private:
-    enum FailureType {
-        NoFailure,
-        BlockedFailure,
-        InvalidURLFailure
-    };
-
-    void platformSetDefersLoading(bool);
-
-    void scheduleFailure(FailureType);
-
     bool start();
-    static void platformLoadResourceSynchronously(NetworkingContext*, const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
-
-    virtual void refAuthenticationClient() { ref(); }
-    virtual void derefAuthenticationClient() { deref(); }
-
     friend class ResourceHandleInternal;
     OwnPtr<ResourceHandleInternal> d;
 };

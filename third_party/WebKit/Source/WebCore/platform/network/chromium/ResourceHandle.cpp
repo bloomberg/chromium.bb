@@ -222,18 +222,6 @@ void ResourceHandle::setClient(ResourceHandleClient* client)
     d->setClient(client);
 }
 
-void ResourceHandle::continueWillSendRequest(const ResourceRequest&)
-{
-    // ResourceHandle never uses async client calls on Chromium yet.
-    ASSERT_NOT_REACHED();
-}
-
-void ResourceHandle::continueShouldUseCredentialStorage(bool)
-{
-    // ResourceHandle never uses async client calls on Chromium yet.
-    ASSERT_NOT_REACHED();
-}
-
 void ResourceHandle::setDefersLoading(bool value)
 {
     d->setDefersLoading(value);
@@ -248,10 +236,6 @@ bool ResourceHandle::start()
     return true;
 }
 
-void ResourceHandle::clearAuthentication()
-{
-}
-
 void ResourceHandle::cancel()
 {
     d->cancel();
@@ -260,11 +244,6 @@ void ResourceHandle::cancel()
 ResourceHandle::~ResourceHandle()
 {
     d->setOwner(0);
-}
-
-bool ResourceHandle::loadsBlocked()
-{
-    return false; // This seems to be related to sync XMLHttpRequest...
 }
 
 // static

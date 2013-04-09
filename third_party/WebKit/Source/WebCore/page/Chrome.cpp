@@ -221,10 +221,7 @@ static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogTyp
 
 bool Chrome::canRunModalNow() const
 {
-    // If loads are blocked, we can't run modal because the contents
-    // of the modal dialog will never show up!
-    return canRunModal() && !ResourceHandle::loadsBlocked()
-           && canRunModalIfDuringPageDismissal(m_page, ChromeClient::HTMLDialog, String());
+    return canRunModal() && canRunModalIfDuringPageDismissal(m_page, ChromeClient::HTMLDialog, String());
 }
 
 void Chrome::runModal() const

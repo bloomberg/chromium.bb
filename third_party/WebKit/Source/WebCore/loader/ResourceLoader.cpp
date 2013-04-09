@@ -31,8 +31,6 @@
 #include "ResourceLoader.h"
 
 #include "ApplicationCacheHost.h"
-#include "AsyncFileStream.h"
-#include "AuthenticationChallenge.h"
 #include "CachedResourceLoader.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
@@ -45,7 +43,6 @@
 #include "ResourceError.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
-#include "Settings.h"
 #include "SharedBuffer.h"
 
 namespace WebCore {
@@ -368,9 +365,6 @@ void ResourceLoader::cancel(const ResourceError& error)
         
         if (FormData* data = m_request.httpBody())
             data->removeGeneratedFilesIfNeeded();
-
-        if (m_handle)
-            m_handle->clearAuthentication();
 
         m_documentLoader->cancelPendingSubstituteLoad(this);
         if (m_handle) {
