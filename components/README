@@ -27,4 +27,9 @@ components/foo/android/OWNERS, DEPS
 components/foo/android/java/src/org/chromium/components/foo/browser/
 components/foo/android/javatests/src/org/chromium/components/foo/browser/
 
-Code in this directory should be placed in the components:: namespace.
+Code in a component should be placed in a namespace corresponding to
+the name of the component; e.g. for a component living in
+//components/foo, code in that component should be in the foo::
+namespace. Note that it used to be the rule that all code under
+//components should be in the components:: namespace; this is being
+phased out.
