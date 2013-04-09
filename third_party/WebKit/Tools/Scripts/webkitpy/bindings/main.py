@@ -34,20 +34,19 @@ from webkitpy.common.system.executive import ScriptError
 
 class BindingsTests:
 
-    def __init__(self, reset_results, generators, executive):
+    def __init__(self, reset_results, executive):
         self.reset_results = reset_results
-        self.generators = generators
         self.executive = executive
 
-    def generate_from_idl(self, generator, idl_file, output_directory, supplemental_dependency_file):
+    def generate_from_idl(self, idl_file, output_directory, supplemental_dependency_file):
         cmd = ['perl', '-w',
                '-IWebCore/bindings/scripts',
                '-IWebCore/scripts',
                'WebCore/bindings/scripts/generate-bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
-               '--defines', 'TESTING_%s' % generator,
-               '--generator', generator,
+               '--defines', 'TESTING_V8',
+               '--generator', 'V8',
                '--outputDir', output_directory,
                '--supplementalDependencyFile', supplemental_dependency_file,
                idl_file]
@@ -89,7 +88,7 @@ class BindingsTests:
         os.remove(idl_files_list[1])
         return exit_code
 
-    def detect_changes(self, generator, work_directory, reference_directory):
+    def detect_changes(self, work_directory, reference_directory):
         changes_found = False
         for output_file in os.listdir(work_directory):
             cmd = ['diff',
@@ -106,14 +105,14 @@ class BindingsTests:
                 exit_code = e.exit_code
 
             if exit_code or output:
-                print 'FAIL: (%s) %s' % (generator, output_file)
+                print 'FAIL: %s' % (output_file)
                 print output
                 changes_found = True
             else:
-                print 'PASS: (%s) %s' % (generator, output_file)
+                print 'PASS: %s' % (output_file)
         return changes_found
 
-    def run_tests(self, generator, input_directory, reference_directory, supplemental_dependency_file):
+    def run_tests(self, input_directory, reference_directory, supplemental_dependency_file):
         work_directory = reference_directory
 
         passed = True
@@ -126,18 +125,17 @@ class BindingsTests:
             if not self.reset_results:
                 work_directory = tempfile.mkdtemp()
 
-            if self.generate_from_idl(generator,
-                                      os.path.join(input_directory, input_file),
+            if self.generate_from_idl(os.path.join(input_directory, input_file),
                                       work_directory,
                                       supplemental_dependency_file):
                 passed = False
 
             if self.reset_results:
-                print "Reset results: (%s) %s" % (generator, input_file)
+                print "Reset results: %s" % (input_file)
                 continue
 
             # Detect changes
-            if self.detect_changes(generator, work_directory, reference_directory):
+            if self.detect_changes(work_directory, reference_directory):
                 passed = False
             shutil.rmtree(work_directory)
 
@@ -156,11 +154,10 @@ class BindingsTests:
             os.remove(supplemental_dependency_file)
             return -1
 
-        for generator in self.generators:
-            input_directory = os.path.join('WebCore', 'bindings', 'tests', 'idls')
-            reference_directory = os.path.join('WebCore', 'bindings', 'tests', 'results')
-            if not self.run_tests(generator, input_directory, reference_directory, supplemental_dependency_file):
-                all_tests_passed = False
+        input_directory = os.path.join('WebCore', 'bindings', 'tests', 'idls')
+        reference_directory = os.path.join('WebCore', 'bindings', 'tests', 'results')
+        if not self.run_tests(input_directory, reference_directory, supplemental_dependency_file):
+            all_tests_passed = False
 
         os.remove(supplemental_dependency_file)
         print ''

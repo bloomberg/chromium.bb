@@ -41,13 +41,9 @@ def main(argv):
     """
     reset_results = "--reset-results" in argv
 
-    generators = [
-        'V8',
-    ]
-
     from webkitpy.bindings.main import BindingsTests
 
-    return BindingsTests(reset_results, generators, executive.Executive()).main()
+    return BindingsTests(reset_results, executive.Executive()).main()
 
 
 if __name__ == '__main__':
