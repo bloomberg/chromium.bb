@@ -89,8 +89,9 @@ WebInspector.TimelineGrid.prototype = {
         var divider = this._dividersElement.firstChild;
         var dividerLabelBar = this._dividersLabelBarElement.firstChild;
 
+        var firstDivider = calculator.paddingLeft > 0 ? 0 : 1;
         var sliceRemainder = (calculator.minimumBoundary() - calculator.zeroTime()) % slice;
-        for (var i = 0; i <= dividerCount; ++i) {
+        for (var i = firstDivider; i <= dividerCount; ++i) {
             if (!divider) {
                 divider = document.createElement("div");
                 divider.className = "resources-divider";
@@ -103,22 +104,6 @@ WebInspector.TimelineGrid.prototype = {
                 dividerLabelBar._labelElement = label;
                 dividerLabelBar.appendChild(label);
                 this._dividersLabelBarElement.appendChild(dividerLabelBar);
-            }
-
-            if (!i) {
-                divider.addStyleClass("first");
-                dividerLabelBar.addStyleClass("first");
-            } else {
-                divider.removeStyleClass("first");
-                dividerLabelBar.removeStyleClass("first");
-            }
-
-            if (i === dividerCount) {
-                divider.addStyleClass("last");
-                dividerLabelBar.addStyleClass("last");
-            } else {
-                divider.removeStyleClass("last");
-                dividerLabelBar.removeStyleClass("last");
             }
 
             var left;

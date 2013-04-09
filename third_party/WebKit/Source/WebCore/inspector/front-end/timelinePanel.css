@@ -554,7 +554,7 @@
     border-color: rgba(255, 178, 23, 0.5);
 }
 
-.resources-divider.last {
+.resources-divider:last-child {
     border-color: transparent;
 }
 

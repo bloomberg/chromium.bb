@@ -451,11 +451,11 @@
     top: 15px;
 }
 
-.network-timeline-grid .resources-divider.first .resources-divider-label {
+.network-timeline-grid .resources-divider:first-child .resources-divider-label {
     display: none;
 }
 
-.network-timeline-grid .resources-dividers-label-bar .resources-divider.first {
+.network-timeline-grid .resources-dividers-label-bar .resources-divider:first-child {
     background-color: transparent;
 }
 
