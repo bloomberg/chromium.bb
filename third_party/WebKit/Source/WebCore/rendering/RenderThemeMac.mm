@@ -409,11 +409,6 @@ bool RenderThemeMac::usesMediaControlVolumeSlider() const
     return mediaControllerTheme() == MediaControllerThemeQuickTime;
 }
 
-IntPoint RenderThemeMac::volumeSliderOffsetFromMuteButton(RenderBox* muteButtonBox, const IntSize& size) const
-{
-    return RenderMediaControls::volumeSliderOffsetFromMuteButton(muteButtonBox, size);
-}
-
 #endif // ENABLE(VIDEO)
 
 } // namespace WebCore

@@ -208,19 +208,6 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
 
 #endif
 
-IntPoint RenderMediaControls::volumeSliderOffsetFromMuteButton(RenderBox* muteButtonBox, const IntSize& size)
-{
-    static const int xOffset = -4;
-    static const int yOffset = 5;
-
-    float zoomLevel = muteButtonBox->style()->effectiveZoom();
-    int y = yOffset * zoomLevel + muteButtonBox->pixelSnappedOffsetHeight() - size.height();
-    FloatPoint absPoint = muteButtonBox->localToAbsolute(FloatPoint(muteButtonBox->pixelSnappedOffsetLeft(), y), IsFixed | UseTransforms);
-    if (absPoint.y() < 0)
-        y = muteButtonBox->pixelSnappedHeight();
-    return IntPoint(xOffset * zoomLevel, y);
-}
-
 }
 
 #endif

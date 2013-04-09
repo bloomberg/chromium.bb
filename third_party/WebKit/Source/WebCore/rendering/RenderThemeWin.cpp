@@ -1115,12 +1115,6 @@ bool RenderThemeWin::paintMediaVolumeSliderThumb(RenderObject* o, const PaintInf
     return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, o, paintInfo, r);
 }
 
-IntPoint RenderThemeWin::volumeSliderOffsetFromMuteButton(RenderBox* muteButtonBox, const IntSize& size) const
-{
-    return RenderMediaControls::volumeSliderOffsetFromMuteButton(muteButtonBox, size);
-}
-
-
 #endif
 
 }

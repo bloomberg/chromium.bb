@@ -68,7 +68,6 @@ protected:
     virtual bool usesMediaControlStatusDisplay();
     virtual bool usesMediaControlVolumeSlider() const;
     virtual void adjustMediaSliderThumbSize(RenderStyle*) const;
-    virtual IntPoint volumeSliderOffsetFromMuteButton(RenderBox*, const IntSize&) const OVERRIDE;
 #endif
 };
 

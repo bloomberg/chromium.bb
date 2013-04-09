@@ -48,7 +48,6 @@ protected:
     virtual bool paintMediaVolumeSliderContainer(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual IntPoint volumeSliderOffsetFromMuteButton(RenderBox*, const IntSize&) const OVERRIDE;
     virtual bool usesMediaControlStatusDisplay() { return false; }
     virtual bool hasOwnDisabledStateHandlingFor(ControlPart) const { return true; }
     virtual bool usesVerticalVolumeSlider() const { return false; }

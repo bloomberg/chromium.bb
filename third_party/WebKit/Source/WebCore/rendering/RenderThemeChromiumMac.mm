@@ -206,11 +206,6 @@ bool RenderThemeChromiumMac::paintMediaSliderThumb(RenderObject* object, const P
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
-IntPoint RenderThemeChromiumMac::volumeSliderOffsetFromMuteButton(RenderBox* muteButtonBox, const IntSize& size) const
-{
-    return RenderTheme::volumeSliderOffsetFromMuteButton(muteButtonBox, size);
-}
-
 String RenderThemeChromiumMac::formatMediaControlsTime(float time) const
 {
     return RenderMediaControlsChromium::formatMediaControlsTime(time);
