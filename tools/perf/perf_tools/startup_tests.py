@@ -4,12 +4,11 @@
 
 from telemetry.page import page_benchmark
 
-# TODO(jeremy): Discard results from first iteration of warm tests.
-
 # Test how long Chrome takes to load when warm.
 class PerfWarm(page_benchmark.PageBenchmark):
   def __init__(self):
-    super(PerfWarm, self).__init__(needs_browser_restart_after_each_run=True)
+    super(PerfWarm, self).__init__(needs_browser_restart_after_each_run=True,
+                                   discard_first_result=True)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--dom-automation')
