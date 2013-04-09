@@ -145,8 +145,8 @@ def generate(env):
 
       # Code coverage related.
       COVERAGE_CCFLAGS=['--coverage', '-DCOVERAGE'],
-      COVERAGE_LIBS='',
-      COVERAGE_LINKFLAGS=['--coverage', '-lprofile_rt'],
+      COVERAGE_LIBS=['profile_rt'],
+      COVERAGE_LINKFLAGS=['--coverage'],
       COVERAGE_STOP_CMD=[
           '$COVERAGE_MCOV --directory "$TARGET_ROOT" --output "$TARGET"',
           ('$COVERAGE_GENHTML --output-directory $COVERAGE_HTML_DIR '
