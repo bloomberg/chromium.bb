@@ -101,3 +101,19 @@ def CheckCallDie(args, suppress_output=False, cwd=None):
       print stdout,
     return stdout
 
+
+def GetModifiedTime(path):
+  # For a symlink, the modified time should be the greater of the link's
+  # modified time and the modified time of the target.
+  return max(os.lstat(path).st_mtime, os.stat(path).st_mtime)
+
+
+def IsTimeStale(output, inputs):
+  if not os.path.exists(output):
+    return True
+
+  output_time = GetModifiedTime(output)
+  for input in inputs:
+    if GetModifiedTime(input) > output_time:
+      return True
+  return False

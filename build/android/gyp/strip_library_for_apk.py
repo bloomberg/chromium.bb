@@ -13,10 +13,12 @@ from util import build_utils
 
 
 def StripLibrary(android_strip, android_strip_args, library_path, output_path):
-  strip_cmd = ([android_strip] +
-               android_strip_args +
-               ['-o', output_path, library_path])
-  build_utils.CheckCallDie(strip_cmd)
+  if build_utils.IsTimeStale(output_path, [library_path]):
+    strip_cmd = ([android_strip] +
+                 android_strip_args +
+                 ['-o', output_path, library_path])
+    build_utils.CheckCallDie(strip_cmd)
+
 
 
 def main(argv):
