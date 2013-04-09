@@ -25,6 +25,7 @@
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -1216,6 +1217,20 @@ bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
   return current_surface_ != NULL;
 }
 
+bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
+  return true;
+}
+
+void RenderWidgetHostViewAura::BeginFrameSubscription(
+    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  frame_subscriber_ = subscriber.Pass();
+}
+
+void RenderWidgetHostViewAura::EndFrameSubscription() {
+  frame_subscriber_.reset();
+}
+
+
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   // Delay processing the state change until we either get a software frame if
   // switching to software mode or receive a buffers swapped notification
@@ -1337,6 +1352,18 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
     const BufferPresentedCallback& ack_callback,
     const scoped_refptr<ui::Texture>& texture_to_return) {
   ui::Compositor* compositor = GetCompositor();
+
+  if (frame_subscriber() && current_surface_ != NULL) {
+    scoped_refptr<media::VideoFrame> frame;
+    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
+    if (frame_subscriber()->ShouldCaptureFrame(&frame, &callback)) {
+      CopyFromCompositingSurfaceToVideoFrame(
+          gfx::Rect(ConvertSizeToDIP(this, current_surface_->size())),
+          frame,
+          base::Bind(callback, base::Time::Now()));
+    }
+  }
+
   if (!compositor) {
     ack_callback.Run(false, texture_to_return);
   } else {
