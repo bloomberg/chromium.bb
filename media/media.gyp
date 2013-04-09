@@ -573,10 +573,16 @@
           ],
           'dependencies': [
             'media_android_jni_headers',
-            'media_java',
             'player_android',
             'video_capture_android_jni_headers',
           ],
+          'conditions': [
+            ['android_webview_build == 0', {
+              'dependencies': [
+                'media_java',
+              ],
+            }],
+          ]
         }],
         # A simple WebM encoder for animated avatars on ChromeOS.
         ['chromeos==1', {
