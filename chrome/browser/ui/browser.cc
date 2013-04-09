@@ -2119,19 +2119,23 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 
   // Bookmark bar may need to be hidden for |SEARCH_SUGGESTIONS| and
   // |SEARCH_RESULTS| modes as per SearchBox API or Instant overlay or if it's
-  // detached.
+  // detached when origin is not |NTP|.
   // TODO(sail): remove conditional MACOSX flag when bookmark bar is actually
   // hidden on mac; for now, mac keeps the bookmark bar shown but changes its
   // z-order to stack it below contents.
 #if !defined(OS_MACOSX)
   if (search_model_->mode().is_search() &&
-      (state == BookmarkBar::DETACHED || !search_model_->top_bars_visible())) {
+      ((state == BookmarkBar::DETACHED &&
+        !search_model_->mode().is_origin_ntp()) ||
+      !search_model_->top_bars_visible())) {
     state = BookmarkBar::HIDDEN;
   }
 #else
   // TODO(sail): remove this when the above block is enabled for mac.
-  if (state == BookmarkBar::DETACHED && search_model_->mode().is_search())
+  if (state == BookmarkBar::DETACHED && search_model_->mode().is_search() &&
+      !search_model_->mode().is_origin_ntp()) {
     state = BookmarkBar::HIDDEN;
+  }
 #endif  // !defined(OS_MACOSX)
 
   if (state == bookmark_bar_state_)
