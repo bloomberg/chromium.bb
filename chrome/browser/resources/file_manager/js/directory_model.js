@@ -1288,12 +1288,12 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
         query);
     dirEntry = DirectoryModel.fakeDriveOfflineEntry_;
   } else if (specialSearchType == RootType.DRIVE_SHARED_WITH_ME) {
-    newDirContents = new DirectoryContentsDriveSearch(
+    newDirContents = new DirectoryContentsDriveSearchMetadata(
         this.currentFileListContext_,
         driveRoot,
-        this.currentDirContents_.getLastNonSearchDirectoryEntry(),
+        DirectoryModel.fakeDriveSharedWithMeEntry_,
         query,
-        DirectoryContentsDriveSearch.SearchType.SEARCH_SHARED_WITH_ME);
+        DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME);
     dirEntry = DirectoryModel.fakeDriveSharedWithMeEntry_;
   } else {
     // Unknown path.
