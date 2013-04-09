@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserEventRouterBrowserTest,
                        ExternalStoragePolicyTest) {
   FileBrowserPrivateAPI* file_browser =
       FileBrowserPrivateAPIFactory::GetForProfile(browser()->profile());
-  scoped_refptr<FileBrowserEventRouter> event_router =
+  FileBrowserEventRouter* event_router =
       file_browser->event_router();
 
   DiskMountManager::DiskEvent event = DiskMountManager::DISK_ADDED;

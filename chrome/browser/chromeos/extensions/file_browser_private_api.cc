@@ -565,7 +565,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
 };
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
-    : event_router_(make_scoped_refptr(new FileBrowserEventRouter(profile))) {
+    : event_router_(new FileBrowserEventRouter(profile)) {
   (new FileBrowserHandlerParser)->Register();
 
   ExtensionFunctionRegistry* registry =
@@ -687,12 +687,16 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
   SendResponse(false);
 }
 
-void FileWatchBrowserFunctionBase::RespondOnUIThread(bool success) {
+void FileWatchBrowserFunctionBase::Respond(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   SetResult(Value::CreateBooleanValue(success));
   SendResponse(success);
 }
 
 bool FileWatchBrowserFunctionBase::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
@@ -707,45 +711,42 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
           GetFileSystemContext();
 
   FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread,
-          this,
-          FileBrowserPrivateAPI::Get(profile_)->event_router(),
-          file_watch_url,
-          extension_id()));
+  base::FilePath local_path = file_watch_url.path();
+  base::FilePath virtual_path = file_watch_url.virtual_path();
+  if (local_path.empty()) {
+    Respond(false);
+    return true;
+  }
+  PerformFileWatchOperation(local_path, virtual_path, extension_id());
 
   return true;
 }
 
-void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
-    scoped_refptr<FileBrowserEventRouter> event_router,
-    const FileSystemURL& file_url, const std::string& extension_id) {
-  base::FilePath local_path = file_url.path();
-  base::FilePath virtual_path = file_url.virtual_path();
-  bool result = !local_path.empty() && PerformFileWatchOperation(
-      event_router, local_path, virtual_path, extension_id);
+void AddFileWatchBrowserFunction::PerformFileWatchOperation(
+    const base::FilePath& local_path,
+    const base::FilePath& virtual_path,
+    const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &FileWatchBrowserFunctionBase::RespondOnUIThread, this, result));
+  FileBrowserEventRouter* event_router =
+      FileBrowserPrivateAPI::Get(profile_)->event_router();
+  event_router->AddFileWatch(
+      local_path,
+      virtual_path,
+      extension_id,
+      base::Bind(&AddFileWatchBrowserFunction::Respond, this));
 }
 
-bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
-    scoped_refptr<FileBrowserEventRouter> event_router,
-    const base::FilePath& local_path, const base::FilePath& virtual_path,
+void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
+    const base::FilePath& local_path,
+    const base::FilePath& unused,
     const std::string& extension_id) {
-  return event_router->AddFileWatch(local_path, virtual_path, extension_id);
-}
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
-    scoped_refptr<FileBrowserEventRouter> event_router,
-    const base::FilePath& local_path, const base::FilePath& unused,
-    const std::string& extension_id) {
+  FileBrowserEventRouter* event_router =
+      FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
-  return true;
+  Respond(true);
 }
 
 // static

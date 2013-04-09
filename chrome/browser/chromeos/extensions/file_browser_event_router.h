@@ -34,8 +34,7 @@ class DriveFileSystemInterface;
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class FileBrowserEventRouter
-    : public base::RefCountedThreadSafe<FileBrowserEventRouter>,
-      public chromeos::disks::DiskMountManager::Observer,
+    : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
       public chromeos::SystemKeyEventListener::ModifiersObserver,
       public drive::DriveFileSystemObserver,
@@ -57,16 +56,28 @@ class FileBrowserEventRouter
         const chromeos::disks::DiskMountManager::Disk& disk) const = 0;
   };
 
+  explicit FileBrowserEventRouter(Profile* profile);
+  virtual ~FileBrowserEventRouter();
+
   void Shutdown();
 
   // Starts observing file system change events.
   void ObserveFileSystemEvents();
 
-  // File watch setup routines.
-  bool AddFileWatch(const base::FilePath& file_path,
+  typedef base::Callback<void(bool success)> BoolCallback;
+
+  // Adds a file watch at |local_path|, associated with |virtual_path|, for
+  // an extension with |extension_id|.
+  //
+  // |callback| will be called with true on success, or false on failure.
+  // |callback| must not be null.
+  void AddFileWatch(const base::FilePath& local_path,
                     const base::FilePath& virtual_path,
-                    const std::string& extension_id);
-  void RemoveFileWatch(const base::FilePath& file_path,
+                    const std::string& extension_id,
+                    const BoolCallback& callback);
+
+  // Removes a file watch at |local_path| for an extension with |extension_id|.
+  void RemoveFileWatch(const base::FilePath& local_path,
                        const std::string& extension_id);
 
   // Mounts Drive on File browser. |callback| will be called after raising a
@@ -109,14 +120,12 @@ class FileBrowserEventRouter
   virtual void OnModifiersChange(int pressed_modifiers) OVERRIDE;
 
  private:
-  friend class FileBrowserPrivateAPI;
-  friend class base::RefCountedThreadSafe<FileBrowserEventRouter>;
-
   typedef std::map<std::string, int> ExtensionUsageRegistry;
 
+  // This class is used to remember what extensions are watching |virtual_path|.
   class FileWatcherExtensions {
    public:
-    FileWatcherExtensions(const base::FilePath& path,
+    FileWatcherExtensions(const base::FilePath& virtual_path,
         const std::string& extension_id,
         bool is_remote_file_system);
 
@@ -132,22 +141,34 @@ class FileBrowserEventRouter
 
     const base::FilePath& GetVirtualPath() const;
 
-    bool Watch(const base::FilePath& path,
-               const base::FilePathWatcher::Callback& callback);
+    // Starts a file watch at |local_path|. |file_watcher_callback| will be
+    // called when changes are notified.
+    //
+    // |callback| will be called with true, if the file watch is started
+    // successfully, or false if failed. |callback| must not be null.
+    void Watch(const base::FilePath& local_path,
+               const base::FilePathWatcher::Callback& file_watcher_callback,
+               const BoolCallback& callback);
 
    private:
-    linked_ptr<base::FilePathWatcher> file_watcher_;
+    // Called when a FilePathWatcher is created and started.
+    // |file_path_watcher| is NULL, if the watcher wasn't started successfully.
+    void OnWatcherStarted(const BoolCallback& callback,
+                          base::FilePathWatcher* file_path_watcher);
+
+    base::FilePathWatcher* file_watcher_;
     base::FilePath local_path_;
     base::FilePath virtual_path_;
     ExtensionUsageRegistry extensions_;
     unsigned int ref_count_;
     bool is_remote_file_system_;
+
+    // Note: This should remain the last member so it'll be destroyed and
+    // invalidate the weak pointers before any other members are destroyed.
+    base::WeakPtrFactory<FileWatcherExtensions> weak_ptr_factory_;
   };
 
   typedef std::map<base::FilePath, FileWatcherExtensions*> WatcherMap;
-
-  explicit FileBrowserEventRouter(Profile* profile);
-  virtual ~FileBrowserEventRouter();
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk* disk);
@@ -203,7 +224,6 @@ class FileBrowserEventRouter
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
-  base::Lock lock_;
 
   // Number of active update requests on the remote file system.
   int num_remote_update_requests_;

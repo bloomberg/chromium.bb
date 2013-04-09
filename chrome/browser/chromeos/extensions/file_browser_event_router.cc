@@ -228,6 +228,23 @@ void DirectoryExistsOnUIThread(const base::FilePath& directory_path,
                  failure_callback));
 };
 
+// Creates a base::FilePathWatcher and starts watching at |watch_path| with
+// |callback|. Returns NULL on failure.
+base::FilePathWatcher* CreateAndStartFilePathWatcher(
+    const base::FilePath& watch_path,
+    const base::FilePathWatcher::Callback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!callback.is_null());
+
+  base::FilePathWatcher* watcher(new base::FilePathWatcher);
+  if (!watcher->Watch(watch_path, false /* recursive */, callback)) {
+    delete watcher;
+    return NULL;
+  }
+
+  return watcher;
+}
+
 }  // namespace
 
 FileBrowserEventRouter::FileBrowserEventRouter(
@@ -240,12 +257,9 @@ FileBrowserEventRouter::FileBrowserEventRouter(
       shift_pressed_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Bind a weak reference back to |this| to avoid memory errors in case we
-  // shut down while a callback is in flight.
   file_watcher_callback_ =
-      base::Bind(&RelayFileWatcherCallbackToUIThread,
-          base::Bind(&FileBrowserEventRouter::HandleFileWatchNotification,
-                     weak_factory_.GetWeakPtr()));
+      base::Bind(&FileBrowserEventRouter::HandleFileWatchNotification,
+                 weak_factory_.GetWeakPtr());
 
   // Listen for the Shift modifier's state changes.
   chromeos::SystemKeyEventListener* key_event_listener =
@@ -324,11 +338,11 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Add(
       prefs::kExternalStorageDisabled,
       base::Bind(&FileBrowserEventRouter::OnExternalStorageDisabledChanged,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 
   base::Closure callback =
       base::Bind(&FileBrowserEventRouter::OnFileBrowserPrefsChanged,
-                 base::Unretained(this));
+                 weak_factory_.GetWeakPtr());
   pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, callback);
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
@@ -336,13 +350,14 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
 }
 
 // File watch setup routines.
-bool FileBrowserEventRouter::AddFileWatch(
+void FileBrowserEventRouter::AddFileWatch(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
-    const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    const std::string& extension_id,
+    const BoolCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  base::AutoLock lock(lock_);
   base::FilePath watch_path = local_path;
   bool is_remote_watch = false;
   // Tweak watch path for remote sources - we need to drop leading /special
@@ -351,10 +366,7 @@ bool FileBrowserEventRouter::AddFileWatch(
   if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = drive::util::ExtractDrivePath(watch_path);
     is_remote_watch = true;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
-                   this, true));
+    HandleRemoteUpdateRequestOnUIThread(true /* start */);
   }
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
@@ -363,33 +375,29 @@ bool FileBrowserEventRouter::AddFileWatch(
         watch(new FileWatcherExtensions(virtual_path,
                                         extension_id,
                                         is_remote_watch));
-
-    if (watch->Watch(watch_path, file_watcher_callback_))
-      file_watchers_[watch_path] = watch.release();
-    else
-      return false;
+    watch->Watch(watch_path,
+                 file_watcher_callback_,
+                 callback);
+    file_watchers_[watch_path] = watch.release();
   } else {
     iter->second->AddExtension(extension_id);
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
   }
-  return true;
 }
 
 void FileBrowserEventRouter::RemoveFileWatch(
     const base::FilePath& local_path,
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   base::FilePath watch_path = local_path;
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
   // their change notifications.
   if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = drive::util::ExtractDrivePath(watch_path);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
-                   this, false));
+    HandleRemoteUpdateRequestOnUIThread(false /* start */);
   }
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
@@ -655,7 +663,6 @@ void FileBrowserEventRouter::HandleFileWatchNotification(
     const base::FilePath& local_path, bool got_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   WatcherMap::const_iterator iter = file_watchers_.find(local_path);
   if (iter == file_watchers_.end()) {
     return;
@@ -901,21 +908,29 @@ void FileBrowserEventRouter::OnFormatCompleted(
 }
 
 FileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
-    const base::FilePath& path, const std::string& extension_id,
+    const base::FilePath& virtual_path,
+    const std::string& extension_id,
     bool is_remote_file_system)
-    : ref_count_(0),
-      is_remote_file_system_(is_remote_file_system) {
-  if (!is_remote_file_system_)
-    file_watcher_.reset(new base::FilePathWatcher());
+    : file_watcher_(NULL),
+      virtual_path_(virtual_path),
+      ref_count_(0),
+      is_remote_file_system_(is_remote_file_system),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  virtual_path_ = path;
   AddExtension(extension_id);
 }
 
-FileBrowserEventRouter::FileWatcherExtensions::~FileWatcherExtensions() {}
+FileBrowserEventRouter::FileWatcherExtensions::~FileWatcherExtensions() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, file_watcher_);
+}
 
 void FileBrowserEventRouter::FileWatcherExtensions::AddExtension(
     const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   ExtensionUsageRegistry::iterator it = extensions_.find(extension_id);
   if (it != extensions_.end()) {
     it->second++;
@@ -928,6 +943,8 @@ void FileBrowserEventRouter::FileWatcherExtensions::AddExtension(
 
 void FileBrowserEventRouter::FileWatcherExtensions::RemoveExtension(
     const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   ExtensionUsageRegistry::iterator it = extensions_.find(extension_id);
 
   if (it != extensions_.end()) {
@@ -949,16 +966,19 @@ void FileBrowserEventRouter::FileWatcherExtensions::RemoveExtension(
 
 const FileBrowserEventRouter::ExtensionUsageRegistry&
 FileBrowserEventRouter::FileWatcherExtensions::GetExtensions() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return extensions_;
 }
 
 unsigned int
 FileBrowserEventRouter::FileWatcherExtensions::GetRefCount() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return ref_count_;
 }
 
 const base::FilePath&
 FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return virtual_path_;
 }
 
@@ -970,11 +990,44 @@ FileBrowserEventRouter::GetRemoteFileSystem() const {
   return (system_service ? system_service->file_system() : NULL);
 }
 
-bool FileBrowserEventRouter::FileWatcherExtensions::Watch(
-    const base::FilePath& path,
-    const base::FilePathWatcher::Callback& callback) {
-  if (is_remote_file_system_)
-    return true;
+void FileBrowserEventRouter::FileWatcherExtensions::Watch(
+    const base::FilePath& local_path,
+    const base::FilePathWatcher::Callback& file_watcher_callback,
+    const BoolCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(!file_watcher_);
 
-  return file_watcher_->Watch(path, false, callback);
+  local_path_ = local_path;  // For error message in RemoveExtension().
+
+  if (is_remote_file_system_) {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
+    return;
+  }
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CreateAndStartFilePathWatcher,
+                 local_path,
+                 base::Bind(&RelayFileWatcherCallbackToUIThread,
+                            file_watcher_callback)),
+      base::Bind(
+          &FileBrowserEventRouter::FileWatcherExtensions::OnWatcherStarted,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback));
+}
+
+void FileBrowserEventRouter::FileWatcherExtensions::OnWatcherStarted(
+    const BoolCallback& callback,
+    base::FilePathWatcher* file_watcher) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (file_watcher) {
+    file_watcher_ = file_watcher;
+    callback.Run(true);
+  } else {
+    callback.Run(false);
+  }
 }
