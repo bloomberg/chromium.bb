@@ -356,7 +356,6 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     switch (updateType) {
     case CompositingUpdateAfterStyleChange:
     case CompositingUpdateAfterLayout:
-    case CompositingUpdateOnHitTest:
         checkForHierarchyUpdate = true;
         break;
     case CompositingUpdateOnScroll:

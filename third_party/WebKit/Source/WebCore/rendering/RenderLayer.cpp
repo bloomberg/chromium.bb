@@ -4381,7 +4381,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
     }
 
     // Ensure our lists and 3d status are up-to-date.
-    updateCompositingAndLayerListsIfNeeded();
+    updateLayerListsIfNeeded();
     update3DTransformedDescendantStatus();
 
     RefPtr<HitTestingTransformState> localTransformState;
@@ -5644,16 +5644,6 @@ void RenderLayer::updateLayerListsIfNeeded()
         updateZOrderLists();
         updateNormalFlowList();
     }
-}
-
-void RenderLayer::updateCompositingAndLayerListsIfNeeded()
-{
-    if (compositor()->inCompositingMode()) {
-        if (isDirtyStackingContainer() || m_normalFlowListDirty)
-            compositor()->updateCompositingLayers(CompositingUpdateOnHitTest, this);
-        return;
-    }
-    updateLayerListsIfNeeded();
 }
 
 void RenderLayer::repaintIncludingDescendants()
