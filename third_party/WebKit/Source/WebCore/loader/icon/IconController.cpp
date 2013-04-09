@@ -158,13 +158,6 @@ void IconController::startLoader()
         return;
     }
 
-    if (iconDatabase().supportsAsynchronousMode()) {
-        m_frame->loader()->documentLoader()->getIconLoadDecisionForIconURL(urlString);
-        // Commit the icon url mapping to the database just in case we don't end up loading later.
-        commitToDatabase(iconURL);
-        return;
-    }
-
     IconLoadDecision decision = iconDatabase().synchronousLoadDecisionForIconURL(urlString, m_frame->loader()->documentLoader());
 
     if (decision == IconLoadUnknown) {
@@ -202,10 +195,6 @@ void IconController::continueLoadWithDecision(IconLoadDecision iconLoadDecision)
 {
     ASSERT(iconLoadDecision != IconLoadUnknown);
 
-    //  FIXME (<rdar://problem/9168605>) - We should support in-memory-only private browsing icons in asynchronous icon database mode.
-    if (iconDatabase().supportsAsynchronousMode() && m_frame->page()->settings()->privateBrowsingEnabled())
-        return;
-
     if (iconLoadDecision == IconLoadNo) {
         KURL iconURL(url());
         String urlString(iconURL.string());
@@ -214,11 +203,6 @@ void IconController::continueLoadWithDecision(IconLoadDecision iconLoadDecision)
 
         LOG(IconDatabase, "IconController::startLoader() - Told not to load this icon, committing iconURL %s to database for pageURL mapping", urlString.ascii().data());
         commitToDatabase(iconURL);
-
-        if (iconDatabase().supportsAsynchronousMode()) {
-            m_frame->loader()->documentLoader()->getIconDataForIconURL(urlString);
-            return;
-        }
 
         // We were told not to load this icon - that means this icon is already known by the database
         // If the icon data hasn't been read in from disk yet, kick off the read of the icon from the database to make sure someone

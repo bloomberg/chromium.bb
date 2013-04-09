@@ -132,7 +132,6 @@ using namespace SVGNames;
 #endif
 
 static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-static double storedTimeOfLastCompletedLoad;
 
 bool isBackForwardLoadType(FrameLoadType type)
 {
@@ -1247,17 +1246,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         request.setSubstituteData(defaultSubstituteDataForURL(request.resourceRequest().url()));
 
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request.resourceRequest(), request.substituteData());
-    if (request.lockHistory() && m_documentLoader)
-        loader->setClientRedirectSourceForHistory(m_documentLoader->didCreateGlobalHistoryEntry() ? m_documentLoader->urlForHistory().string() : m_documentLoader->clientRedirectSourceForHistory());
     load(loader.get());
 }
 
 void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, bool lockHistory, FrameLoadType type, PassRefPtr<FormState> formState)
 {
     RefPtr<DocumentLoader> loader = m_client->createDocumentLoader(request, defaultSubstituteDataForURL(request.url()));
-    if (lockHistory && m_documentLoader)
-        loader->setClientRedirectSourceForHistory(m_documentLoader->didCreateGlobalHistoryEntry() ? m_documentLoader->urlForHistory().string() : m_documentLoader->clientRedirectSourceForHistory());
-
     loader->setTriggeringAction(action);
     if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
@@ -1628,23 +1622,14 @@ void FrameLoader::setProvisionalDocumentLoader(DocumentLoader* loader)
     m_provisionalDocumentLoader = loader;
 }
 
-double FrameLoader::timeOfLastCompletedLoad()
-{
-    return storedTimeOfLastCompletedLoad;
-}
-
 void FrameLoader::setState(FrameState newState)
 {    
     m_state = newState;
     
     if (newState == FrameStateProvisional)
         provisionalLoadStarted();
-    else if (newState == FrameStateComplete) {
+    else if (newState == FrameStateComplete)
         frameLoadCompleted();
-        storedTimeOfLastCompletedLoad = currentTime();
-        if (m_documentLoader)
-            m_documentLoader->stopRecordingResponses();
-    }
 }
 
 void FrameLoader::clearProvisionalLoad()
@@ -1723,21 +1708,6 @@ void FrameLoader::commitProvisionalLoad()
         
         // Force a layout to update view size and thereby update scrollbars.
         m_frame->view()->forceLayout();
-
-        const ResponseVector& responses = m_documentLoader->responses();
-        size_t count = responses.size();
-        for (size_t i = 0; i < count; i++) {
-            const ResourceResponse& response = responses[i];
-            // FIXME: If the WebKit client changes or cancels the request, this is not respected.
-            ResourceError error;
-            unsigned long identifier;
-            ResourceRequest request(response.url());
-            requestFromDelegate(request, identifier, error);
-            // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
-            // However, with today's computers and networking speeds, this won't happen in practice.
-            // Could be an issue with a giant local file.
-            notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, 0, static_cast<int>(response.expectedContentLength()), 0, error);
-        }
 
         // FIXME: Why only this frame and not parent frames?
         checkLoadCompleteForThisFrame();

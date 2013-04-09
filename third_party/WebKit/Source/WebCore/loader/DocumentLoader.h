@@ -34,7 +34,6 @@
 #include "CachedResourceHandle.h"
 #include "DocumentLoadTiming.h"
 #include "DocumentWriter.h"
-#include "IconDatabaseBase.h"
 #include "NavigationAction.h"
 #include "ResourceError.h"
 #include "ResourceLoaderOptions.h"
@@ -68,7 +67,6 @@ namespace WebCore {
     class SubstituteResource;
 
     typedef HashSet<RefPtr<ResourceLoader> > ResourceLoaderSet;
-    typedef Vector<ResourceResponse> ResponseVector;
 
     class DocumentLoader : public RefCounted<DocumentLoader>, private CachedRawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
@@ -107,7 +105,6 @@ namespace WebCore {
 
         const KURL& originalURL() const;
         const KURL& requestURL() const;
-        const KURL& responseURL() const;
         const String& responseMIMEType() const;
 
         void replaceRequestURLForSameDocumentNavigation(const KURL&);
@@ -128,30 +125,17 @@ namespace WebCore {
 
         void setArchive(PassRefPtr<Archive>);
         void addAllArchiveResources(Archive*);
-        void addArchiveResource(PassRefPtr<ArchiveResource>);
         PassRefPtr<Archive> popArchiveForSubframe(const String& frameName, const KURL&);
-        SharedBuffer* parsedArchiveData() const;
 
         bool scheduleArchiveLoad(ResourceLoader*, const ResourceRequest&);
 
         // Return the ArchiveResource for the URL only when loading an Archive
         ArchiveResource* archiveResourceForURL(const KURL&) const;
 
-        PassRefPtr<ArchiveResource> mainResource() const;
-
-        // Return an ArchiveResource for the URL, either creating from live data or
-        // pulling from the ArchiveResourceCollection
-        PassRefPtr<ArchiveResource> subresource(const KURL&) const;
-        void getSubresources(Vector<PassRefPtr<ArchiveResource> >&) const;
-
-
 #ifndef NDEBUG
         bool isSubstituteLoadPending(ResourceLoader*) const;
 #endif
-        void cancelPendingSubstituteLoad(ResourceLoader*);   
-        
-        void addResponse(const ResourceResponse&);
-        const ResponseVector& responses() const { return m_responses; }
+        void cancelPendingSubstituteLoad(ResourceLoader*);
 
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
@@ -159,23 +143,9 @@ namespace WebCore {
         void setLastCheckedRequest(const ResourceRequest& request) { m_lastCheckedRequest = request; }
         const ResourceRequest& lastCheckedRequest()  { return m_lastCheckedRequest; }
 
-        void stopRecordingResponses();
         const StringWithDirection& title() const { return m_pageTitle; }
 
         KURL urlForHistory() const;
-        bool urlForHistoryReflectsFailure() const;
-
-        // These accessors accommodate WebCore's somewhat fickle custom of creating history
-        // items for redirects, but only sometimes. For "source" and "destination",
-        // these accessors return the URL that would have been used if a history
-        // item were created. This allows WebKit to link history items reflecting
-        // redirects into a chain from start to finish.
-        String clientRedirectSourceForHistory() const { return m_clientRedirectSourceForHistory; } // null if no client redirect occurred.
-        String clientRedirectDestinationForHistory() const { return urlForHistory(); }
-        void setClientRedirectSourceForHistory(const String& clientRedirectSourceForHistory) { m_clientRedirectSourceForHistory = clientRedirectSourceForHistory; }
-        
-        String serverRedirectSourceForHistory() const { return (urlForHistory() == url() || url() == blankURL()) ? String() : urlForHistory().string(); } // null if no server redirect occurred.
-        String serverRedirectDestinationForHistory() const { return url(); }
 
         bool didCreateGlobalHistoryEntry() const { return m_didCreateGlobalHistoryEntry; }
         void setDidCreateGlobalHistoryEntry(bool didCreateGlobalHistoryEntry) { m_didCreateGlobalHistoryEntry = didCreateGlobalHistoryEntry; }
@@ -185,14 +155,6 @@ namespace WebCore {
 
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
-        
-        // Support iconDatabase in synchronous mode.
-        void iconLoadDecisionAvailable();
-        
-        // Support iconDatabase in asynchronous mode.
-        void continueIconLoadWithDecision(IconLoadDecision);
-        void getIconLoadDecisionForIconURL(const String&);
-        void getIconDataForIconURL(const String&);
 
         bool isLoadingMainResource() const { return m_loadingMainResource; }
         bool isLoadingMultipartContent() const { return m_isLoadingMultipartContent; }
@@ -337,12 +299,6 @@ namespace WebCore {
         // The last request that we checked click policy for - kept around
         // so we can avoid asking again needlessly.
         ResourceRequest m_lastCheckedRequest;
-
-        // We retain all the received responses so we can play back the
-        // WebResourceLoadDelegate messages if the item is loaded from the
-        // page cache.
-        ResponseVector m_responses;
-        bool m_stopRecordingResponses;
         
         typedef HashMap<RefPtr<ResourceLoader>, RefPtr<SubstituteResource> > SubstituteResourceMap;
         SubstituteResourceMap m_pendingSubstituteResources;
@@ -350,12 +306,9 @@ namespace WebCore {
 
         OwnPtr<ArchiveResourceCollection> m_archiveResourceCollection;
         RefPtr<Archive> m_archive;
-        RefPtr<SharedBuffer> m_parsedArchiveData;
 
         HashSet<String> m_resourcesClientKnowsAbout;
         Vector<String> m_resourcesLoadedFromMemoryCacheForClientNotification;
-        
-        String m_clientRedirectSourceForHistory;
         bool m_didCreateGlobalHistoryEntry;
 
         bool m_loadingMainResource;
@@ -366,9 +319,6 @@ namespace WebCore {
 
         DocumentLoaderTimer m_dataLoadTimer;
         bool m_waitingForContentPolicy;
-
-        RefPtr<IconLoadDecisionCallback> m_iconLoadDecisionCallback;
-        RefPtr<IconDataCallback> m_iconDataCallback;
 
         friend class ApplicationCacheHost;  // for substitute resource delivery
         OwnPtr<ApplicationCacheHost> m_applicationCacheHost;

@@ -182,7 +182,6 @@ public:
     virtual PassNativeImagePtr synchronousNativeIconForPageURL(const String&, const IntSize&) { return 0; }
 
     // Asynchronous calls we should use to replace the above when supported.
-    virtual bool supportsAsynchronousMode() { return false; }
     virtual void loadDecisionForIconURL(const String&, PassRefPtr<IconLoadDecisionCallback>) { }
     virtual void iconDataForIconURL(const String&, PassRefPtr<IconDataCallback>) { }
     

@@ -104,7 +104,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_isClientRedirect(false)
     , m_isLoadingMultipartContent(false)
     , m_wasOnloadHandled(false)
-    , m_stopRecordingResponses(false)
     , m_substituteResourceDeliveryTimer(this, &DocumentLoader::substituteResourceDeliveryTimerFired)
     , m_didCreateGlobalHistoryEntry(false)
     , m_loadingMainResource(false)
@@ -131,10 +130,6 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !isLoading());
-    if (m_iconLoadDecisionCallback)
-        m_iconLoadDecisionCallback->invalidate();
-    if (m_iconDataCallback)
-        m_iconDataCallback->invalidate();
     m_cachedResourceLoader->clearDocumentLoader();
     
     if (m_mainResource) {
@@ -734,23 +729,17 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_substituteData, "substituteData");
     info.addMember(m_pageTitle.string(), "pageTitle.string()");
     info.addMember(m_overrideEncoding, "overrideEncoding");
-    info.addMember(m_responses, "responses");
     info.addMember(m_originalRequest, "originalRequest");
     info.addMember(m_originalRequestCopy, "originalRequestCopy");
     info.addMember(m_request, "request");
     info.addMember(m_response, "response");
     info.addMember(m_lastCheckedRequest, "lastCheckedRequest");
-    info.addMember(m_responses, "responses");
     info.addMember(m_pendingSubstituteResources, "pendingSubstituteResources");
     info.addMember(m_substituteResourceDeliveryTimer, "substituteResourceDeliveryTimer");
     info.addMember(m_archiveResourceCollection, "archiveResourceCollection");
     info.addMember(m_archive, "archive");
-    info.addMember(m_parsedArchiveData, "parsedArchiveData");
     info.addMember(m_resourcesClientKnowsAbout, "resourcesClientKnowsAbout");
     info.addMember(m_resourcesLoadedFromMemoryCacheForClientNotification, "resourcesLoadedFromMemoryCacheForClientNotification");
-    info.addMember(m_clientRedirectSourceForHistory, "clientRedirectSourceForHistory");
-    info.addMember(m_iconLoadDecisionCallback, "iconLoadDecisionCallback");
-    info.addMember(m_iconDataCallback, "iconDataCallback");
     info.addMember(m_applicationCacheHost, "applicationCacheHost");
 }
 
@@ -864,7 +853,6 @@ bool DocumentLoader::maybeCreateArchive()
     
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
-    m_parsedArchiveData = mainResource->data();
     m_writer.setMIMEType(mainResource->mimeType());
     
     ASSERT(m_frame->document());
@@ -890,20 +878,6 @@ void DocumentLoader::addAllArchiveResources(Archive* archive)
     m_archiveResourceCollection->addAllResources(archive);
 }
 
-// FIXME: Adding a resource directly to a DocumentLoader/ArchiveResourceCollection seems like bad design, but is API some apps rely on.
-// Can we change the design in a manner that will let us deprecate that API without reducing functionality of those apps?
-void DocumentLoader::addArchiveResource(PassRefPtr<ArchiveResource> resource)
-{
-    if (!m_archiveResourceCollection)
-        m_archiveResourceCollection = adoptPtr(new ArchiveResourceCollection);
-        
-    ASSERT(resource);
-    if (!resource)
-        return;
-        
-    m_archiveResourceCollection->addResource(resource);
-}
-
 PassRefPtr<Archive> DocumentLoader::popArchiveForSubframe(const String& frameName, const KURL& url)
 {
     return m_archiveResourceCollection ? m_archiveResourceCollection->popSubframeArchive(frameName, url) : PassRefPtr<Archive>(0);
@@ -915,11 +889,6 @@ void DocumentLoader::clearArchiveResources()
     m_substituteResourceDeliveryTimer.stop();
 }
 
-SharedBuffer* DocumentLoader::parsedArchiveData() const
-{
-    return m_parsedArchiveData.get();
-}
-
 ArchiveResource* DocumentLoader::archiveResourceForURL(const KURL& url) const
 {
     if (!m_archiveResourceCollection)
@@ -928,58 +897,6 @@ ArchiveResource* DocumentLoader::archiveResourceForURL(const KURL& url) const
     ArchiveResource* resource = m_archiveResourceCollection->archiveResourceForURL(url);
 
     return resource && !resource->shouldIgnoreWhenUnarchiving() ? resource : 0;
-}
-
-PassRefPtr<ArchiveResource> DocumentLoader::mainResource() const
-{
-    const ResourceResponse& r = response();
-    
-    RefPtr<ResourceBuffer> mainResourceBuffer = mainResourceData();
-    RefPtr<SharedBuffer> data = mainResourceBuffer ? mainResourceBuffer->sharedBuffer() : 0;
-    if (!data)
-        data = SharedBuffer::create();
-        
-    return ArchiveResource::create(data, r.url(), r.mimeType(), r.textEncodingName(), frame()->tree()->uniqueName());
-}
-
-PassRefPtr<ArchiveResource> DocumentLoader::subresource(const KURL& url) const
-{
-    if (!isCommitted())
-        return 0;
-    
-    CachedResource* resource = m_cachedResourceLoader->cachedResource(url);
-    if (!resource || !resource->isLoaded())
-        return archiveResourceForURL(url);
-
-    if (resource->type() == CachedResource::MainResource)
-        return 0;
-
-    // FIXME: This has the side effect of making the resource non-purgeable.
-    // It would be better if it didn't have this permanent effect.
-    if (!resource->makePurgeable(false))
-        return 0;
-
-    ResourceBuffer* data = resource->resourceBuffer();
-    if (!data)
-        return 0;
-
-    return ArchiveResource::create(data->sharedBuffer(), url, resource->response());
-}
-
-void DocumentLoader::getSubresources(Vector<PassRefPtr<ArchiveResource> >& subresources) const
-{
-    if (!isCommitted())
-        return;
-
-    const CachedResourceLoader::DocumentResourceMap& allResources = m_cachedResourceLoader->allCachedResources();
-    CachedResourceLoader::DocumentResourceMap::const_iterator end = allResources.end();
-    for (CachedResourceLoader::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
-        RefPtr<ArchiveResource> subresource = this->subresource(KURL(ParsedURLString, it->value->url()));
-        if (subresource)
-            subresources.append(subresource.release());
-    }
-
-    return;
 }
 
 void DocumentLoader::deliverSubstituteResourcesAfterDelay()
@@ -1070,18 +987,6 @@ bool DocumentLoader::scheduleArchiveLoad(ResourceLoader* loader, const ResourceR
     }
 }
 
-void DocumentLoader::addResponse(const ResourceResponse& r)
-{
-    if (!m_stopRecordingResponses)
-        m_responses.append(r);
-}
-
-void DocumentLoader::stopRecordingResponses()
-{
-    m_stopRecordingResponses = true;
-    m_responses.shrinkToFit();
-}
-
 void DocumentLoader::setTitle(const StringWithDirection& title)
 {
     if (m_pageTitle == title)
@@ -1103,11 +1008,6 @@ KURL DocumentLoader::urlForHistory() const
     return m_originalRequestCopy.url();
 }
 
-bool DocumentLoader::urlForHistoryReflectsFailure() const
-{
-    return m_substituteData.isValid() || m_response.httpStatusCode() >= 400;
-}
-
 const KURL& DocumentLoader::originalURL() const
 {
     return m_originalRequestCopy.url();
@@ -1116,11 +1016,6 @@ const KURL& DocumentLoader::originalURL() const
 const KURL& DocumentLoader::requestURL() const
 {
     return request().url();
-}
-
-const KURL& DocumentLoader::responseURL() const
-{
-    return m_response.url();
 }
 
 KURL DocumentLoader::documentURL() const
@@ -1314,46 +1209,6 @@ void DocumentLoader::maybeFinishLoadingMultipartContent()
     m_committed = false;
     RefPtr<ResourceBuffer> resourceData = mainResourceData();
     commitLoad(resourceData->data(), resourceData->size());
-}
-
-void DocumentLoader::iconLoadDecisionAvailable()
-{
-    if (m_frame)
-        m_frame->loader()->icon()->loadDecisionReceived(iconDatabase().synchronousLoadDecisionForIconURL(frameLoader()->icon()->url(), this));
-}
-
-static void iconLoadDecisionCallback(IconLoadDecision decision, void* context)
-{
-    static_cast<DocumentLoader*>(context)->continueIconLoadWithDecision(decision);
-}
-
-void DocumentLoader::getIconLoadDecisionForIconURL(const String& urlString)
-{
-    if (m_iconLoadDecisionCallback)
-        m_iconLoadDecisionCallback->invalidate();
-    m_iconLoadDecisionCallback = IconLoadDecisionCallback::create(this, iconLoadDecisionCallback);
-    iconDatabase().loadDecisionForIconURL(urlString, m_iconLoadDecisionCallback);
-}
-
-void DocumentLoader::continueIconLoadWithDecision(IconLoadDecision decision)
-{
-    ASSERT(m_iconLoadDecisionCallback);
-    m_iconLoadDecisionCallback = 0;
-    if (m_frame)
-        m_frame->loader()->icon()->continueLoadWithDecision(decision);
-}
-
-static void iconDataCallback(SharedBuffer*, void*)
-{
-    // FIXME: Implement this once we know what parts of WebCore actually need the icon data returned.
-}
-
-void DocumentLoader::getIconDataForIconURL(const String& urlString)
-{   
-    if (m_iconDataCallback)
-        m_iconDataCallback->invalidate();
-    m_iconDataCallback = IconDataCallback::create(this, iconDataCallback);
-    iconDatabase().iconDataForIconURL(urlString, m_iconDataCallback);
 }
 
 void DocumentLoader::handledOnloadEvents()
