@@ -131,9 +131,6 @@ public:
     WEBKIT_EXPORT static void enableStyleScoped(bool);
     WEBKIT_EXPORT static bool isStyleScopedEnabled();
 
-    WEBKIT_EXPORT static void enableInputTypeDate(bool);
-    WEBKIT_EXPORT static bool isInputTypeDateEnabled();
-
     WEBKIT_EXPORT static void enableInputTypeDateTime(bool);
     WEBKIT_EXPORT static bool isInputTypeDateTimeEnabled();
 

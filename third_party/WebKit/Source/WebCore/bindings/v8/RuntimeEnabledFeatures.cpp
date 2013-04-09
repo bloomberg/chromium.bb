@@ -186,10 +186,6 @@ bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
 bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 #endif
 
-#if ENABLE(INPUT_TYPE_DATE)
-bool RuntimeEnabledFeatures::isInputTypeDateEnabled = true;
-#endif
-
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
 #endif

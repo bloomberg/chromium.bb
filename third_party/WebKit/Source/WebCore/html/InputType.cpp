@@ -97,10 +97,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
 #if ENABLE(INPUT_TYPE_COLOR)
     map->add(InputTypeNames::color(), ColorInputType::create);
 #endif
-#if ENABLE(INPUT_TYPE_DATE)
-    if (RuntimeEnabledFeatures::inputTypeDateEnabled())
-        map->add(InputTypeNames::date(), DateInputType::create);
-#endif
+    map->add(InputTypeNames::date(), DateInputType::create);
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     if (RuntimeEnabledFeatures::inputTypeDateTimeEnabled())
         map->add(InputTypeNames::datetime(), DateTimeInputType::create);

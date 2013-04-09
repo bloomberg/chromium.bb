@@ -31,7 +31,6 @@
 #ifndef DateInputType_h
 #define DateInputType_h
 
-#if ENABLE(INPUT_TYPE_DATE)
 #include "BaseChooserOnlyDateAndTimeInputType.h"
 #include "BaseMultipleFieldsDateAndTimeInputType.h"
 #include <wtf/RefPtr.h>
@@ -70,5 +69,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif // DateInputType_h
