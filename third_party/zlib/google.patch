@@ -1,3 +1,17 @@
+diff -ru zlib-1.2.5/gzlib.c zlib/gzlib.c
+--- zlib-1.2.5/gzlib.c
++++ zlib/gzlib.c
+@@ -5,7 +5,9 @@
+ 
+ #include "gzguts.h"
+ 
+-#if defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
++#if defined(_WIN32)
++#  define LSEEK _lseeki64
++#elif defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
+ #  define LSEEK lseek64
+ #else
+ #  define LSEEK lseek
 diff -ru zlib-1.2.5/mozzconf.h zlib/mozzconf.h
 --- zlib-1.2.5/mozzconf.h	2011-12-15 18:10:49.000000000 +0800
 +++ zlib/mozzconf.h	2011-12-16 16:08:00.000000000 +0800
@@ -183,7 +197,15 @@ diff -ru zlib-1.2.5/zconf.h zlib/zconf.h
  /*
   * If you *really* need a unique prefix for all types and library functions,
   * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
-diff -ru zlib-1.2.5/zlib.h zlib/zlib.h
+@@ -359,7 +359,7 @@ typedef uLong FAR uLongf;
+    typedef Byte       *voidp;
+ #endif
+ 
+-#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
++#if !defined(_WIN32)
+ #  define Z_HAVE_UNISTD_H
+ #endif
+ 
 --- zlib-1.2.5/zlib.h	2010-04-20 12:12:48.000000000 +0800
 +++ zlib/zlib.h	2011-12-16 16:08:48.000000000 +0800
 @@ -1572,12 +1572,14 @@
