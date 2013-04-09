@@ -1565,7 +1565,7 @@ class HWTestStage(ArchivingStage):
       return self.DealWithTimeout(exception)
 
 
-class AUTestStage(HWTestStage):
+class AUTestStage(HWTestStage, ForgivingBuilderStage):
   """Stage for au hw test suites that requires special pre-processing."""
 
   def _PerformStage(self):
