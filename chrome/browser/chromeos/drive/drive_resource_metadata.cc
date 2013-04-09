@@ -1033,6 +1033,7 @@ void DriveResourceMetadata::RemoveDirectoryChild(
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(child_resource_id);
   DCHECK(entry);
   DetachEntryFromDirectory(child_resource_id);
+  storage_->RemoveEntry(entry->resource_id());
   if (entry->file_info().is_directory())
     RemoveDirectoryChildren(child_resource_id);
 }
@@ -1048,10 +1049,7 @@ void DriveResourceMetadata::DetachEntryFromDirectory(
   DCHECK_EQ(entry->resource_id(),
             storage_->GetChild(entry->parent_resource_id(),
                                entry->base_name()));
-  // Remove entry from resource map first.
-  storage_->RemoveEntry(entry->resource_id());
 
-  // Then delete it from tree.
   storage_->RemoveChild(entry->parent_resource_id(), entry->base_name());
 }
 
