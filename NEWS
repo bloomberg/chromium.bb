@@ -36,6 +36,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Removed obsolete en-us-g1.utb, which has been replaced by en-us-g1.ctb.
    - en-ueb-g2.ctb, added dictionary harness tests.
    - Corrections to Nemeth character definitions thanks to Neil Soiffer.
+   - Corrections to the Esperanto table thanks to Aaron Cannon.
 
 ** Bug Fixes
    - Cursor position calculation is now based on the same code that
