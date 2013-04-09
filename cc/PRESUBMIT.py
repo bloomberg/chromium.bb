@@ -13,6 +13,24 @@ import re
 CC_SOURCE_FILES=(r'^cc/.*\.(cc|h)$',)
 CC_PERF_TEST =(r'^.*_perftest.*\.(cc|h)$',)
 
+def CheckChangeLintsClean(input_api, output_api):
+  import cpplint
+  cpplint._cpplint_state.ResetErrorCounts()  # reset global state
+  source_filter = lambda x: input_api.FilterSourceFile(
+    x, white_list=CC_SOURCE_FILES, black_list=None)
+  files = [f.AbsoluteLocalPath() for f in
+           input_api.AffectedSourceFiles(source_filter)]
+  level = 1  # strict, but just warn
+
+  for file_name in files:
+    cpplint.ProcessFile(file_name, level)
+
+  if not cpplint._cpplint_state.error_count:
+    return []
+
+  return [output_api.PresubmitPromptWarning(
+    'Changelist failed cpplint.py check.')]
+
 def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
@@ -68,6 +86,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckAsserts(input_api, output_api)
   results += CheckSpamLogging(input_api, output_api, black_list=CC_PERF_TEST)
+  results += CheckChangeLintsClean(input_api, output_api)
   return results
 
 def GetPreferredTrySlaves(project, change):
