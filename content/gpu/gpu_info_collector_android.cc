@@ -82,10 +82,16 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   bool is_nexus7 = model.find("nexus 7") != std::string::npos;
   bool is_nexus10 = model.find("nexus 10") != std::string::npos;
 
+  // Virtual contexts crash when switching surfaces, but only on SDK 16,
+  // so we us full context switching for now. If virtual contexts can
+  // avoid some of it's extra surface switches, or Qualcomm gives us
+  // a more directed work-around, we can remove this.
+  int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
+
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
   // QualComm, NVIDIA: Crashes with share groups
-  if (is_img || is_mali_t604 || is_qualcomm || is_nexus7) {
+  if (is_img || is_mali_t604 || is_nexus7 || (is_qualcomm && sdk_int != 16)) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableVirtualGLContexts);
   }
