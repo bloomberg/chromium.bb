@@ -409,6 +409,7 @@
             'chromium_builder_qa',  # needed for perf pyauto tests
             '../chrome/chrome.gyp:browser_tests',
             '../content/content.gyp:content_browsertests',
+            '../content/content.gyp:content_unittests',
             '../third_party/libjingle/libjingle.gyp:peerconnection_server',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
