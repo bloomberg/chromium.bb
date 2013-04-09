@@ -66,6 +66,8 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
 void ThreeDAPIInfoBarDelegate::Create(InfoBarService* infobar_service,
                                       const GURL& url,
                                       content::ThreeDAPIType requester) {
+  if (!infobar_service)
+    return;  // NULL for apps.
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new ThreeDAPIInfoBarDelegate(infobar_service, url, requester)));
 }
