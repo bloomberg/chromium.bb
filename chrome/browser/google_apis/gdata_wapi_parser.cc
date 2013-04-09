@@ -864,6 +864,14 @@ scoped_ptr<ResourceList> ResourceList::CreateFromChangeList(
     ++iter;
   }
   feed->largest_changestamp_ = largest_changestamp;
+
+  if (!changelist.next_link().is_empty()) {
+    Link* link = new Link();
+    link->set_type(Link::LINK_NEXT);
+    link->set_href(changelist.next_link());
+    feed->links_.push_back(link);
+  }
+
   return feed.Pass();
 }
 
