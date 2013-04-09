@@ -60,6 +60,8 @@
                   'outputs': [
                     '<(dest_dir)/chrome.dll',
                     '<(dest_dir)/chrome.dll.pdb',
+                    '<(dest_dir)/asan_rtl.dll',
+                    '<(dest_dir)/asan_rtl.dll.pdb',
                     '<(dest_dir)/win-syzyasan-filter.txt.json',
                   ],
                   'action': [

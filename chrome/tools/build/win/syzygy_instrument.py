@@ -5,6 +5,7 @@
 
 """A utility script to help building Syzygy-instrumented Chrome binaries."""
 
+import glob
 import logging
 import optparse
 import os
@@ -84,10 +85,21 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
 
 
 def _CopyAgentDLL(agent_dll, destination_dir):
-  """Copy the agent DLL to the destination directory."""
+  """Copy the agent DLL and PDB to the destination directory."""
   dirname, agent_name = os.path.split(agent_dll);
   agent_dst_name = os.path.join(destination_dir, agent_name);
   shutil.copyfile(agent_dll, agent_dst_name)
+
+  # Search for the corresponding PDB file. We use this approach because
+  # the naming convention for PDBs has changed recently (from 'foo.pdb'
+  # to 'foo.dll.pdb') and we want to support both conventions during the
+  # transition.
+  agent_pdbs = glob.glob(os.path.splitext(agent_dll)[0] + '*.pdb')
+  if len(agent_pdbs) != 1:
+    raise RuntimeError('Failed to locate PDB file for %s' % agent_name)
+  agent_pdb = agent_pdbs[0]
+  agent_dst_pdb = os.path.join(destination_dir, os.path.split(agent_pdb)[1])
+  shutil.copyfile(agent_pdb, agent_dst_pdb)
 
 
 def main(options):
@@ -114,7 +126,7 @@ def main(options):
                     options.destination_dir,
                     filter_file)
 
-  # Copy the agent DLL to the destination directory.
+  # Copy the agent DLL and PDB to the destination directory.
   _CopyAgentDLL(options.agent_dll, options.destination_dir);
 
 
