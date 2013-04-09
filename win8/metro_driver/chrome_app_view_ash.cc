@@ -5,6 +5,7 @@
 #include "win8/metro_driver/stdafx.h"
 #include "win8/metro_driver/chrome_app_view_ash.h"
 
+#include <corewindow.h>
 #include <windows.foundation.h>
 
 #include "base/bind.h"
@@ -54,9 +55,6 @@ typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
 
 // Global information used across the metro driver.
 struct Globals {
-  LPTHREAD_START_ROUTINE host_main;
-  HWND core_window;
-  DWORD main_thread_id;
   winapp::Activation::ApplicationExecutionState previous_state;
   winapp::Core::ICoreApplicationExit* app_exit;
   BreakpadExceptionHandler breakpad_exception_handler;
@@ -67,7 +65,6 @@ namespace {
 // TODO(robertshield): Share this with chrome_app_view.cc
 void MetroExit() {
   globals.app_exit->Exit();
-  globals.core_window = NULL;
 }
 
 class ChromeChannelListener : public IPC::Listener {
@@ -272,7 +269,9 @@ uint32 GetKeyboardEventFlags() {
 }  // namespace
 
 ChromeAppViewAsh::ChromeAppViewAsh()
-    : mouse_down_flags_(ui::EF_NONE), ui_channel_(nullptr) {
+    : mouse_down_flags_(ui::EF_NONE),
+      ui_channel_(nullptr),
+      core_window_hwnd_(NULL) {
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
 }
@@ -285,8 +284,6 @@ IFACEMETHODIMP
 ChromeAppViewAsh::Initialize(winapp::Core::ICoreApplicationView* view) {
   view_ = view;
   DVLOG(1) << __FUNCTION__;
-  globals.main_thread_id = ::GetCurrentThreadId();
-
   HRESULT hr = view_->add_Activated(mswr::Callback<ActivatedHandler>(
       this, &ChromeAppViewAsh::OnActivate).Get(),
       &activated_token_);
@@ -298,9 +295,17 @@ IFACEMETHODIMP
 ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   window_ = window;
   DVLOG(1) << __FUNCTION__;
+
+  // Retrieve the native window handle via the interop layer.
+  mswr::ComPtr<ICoreWindowInterop> interop;
+  HRESULT hr = window->QueryInterface(interop.GetAddressOf());
+  CheckHR(hr);
+  hr = interop->get_WindowHandle(&core_window_hwnd_);
+  CheckHR(hr);
+
   // Register for pointer and keyboard notifications. We forward
   // them to the browser process via IPC.
-  HRESULT hr = window_->add_PointerMoved(mswr::Callback<PointerEventHandler>(
+  hr = window_->add_PointerMoved(mswr::Callback<PointerEventHandler>(
       this, &ChromeAppViewAsh::OnPointerMoved).Get(),
       &pointermoved_token_);
   CheckHR(hr);
@@ -376,10 +381,9 @@ ChromeAppViewAsh::Run() {
   CheckHR(hr, "Dispatcher failed.");
 
   hr = window_->Activate();
-  if (SUCCEEDED(hr)) {
-    // TODO(cpu): Draw something here.
-  } else {
-    DVLOG(1) << "Activate failed, hr=" << hr;
+  if (FAILED(hr)) {
+    DLOG(WARNING) << "activation failed hr=" << hr;
+    return hr;
   }
 
   // Create a message loop to allow message passing into this thread.
@@ -410,9 +414,11 @@ ChromeAppViewAsh::Run() {
                                io_thread.message_loop_proxy());
   ui_channel_ = &ui_channel;
 
+  // Upon receipt of the MetroViewerHostMsg_SetTargetSurface message the
+  // browser will use D3D from the browser process to present to our Window.
   ui_channel_->Send(new MetroViewerHostMsg_SetTargetSurface(
-                    gfx::NativeViewId(globals.core_window)));
-  DVLOG(1) << "ICoreWindow sent " << globals.core_window;
+                    gfx::NativeViewId(core_window_hwnd_)));
+  DVLOG(1) << "ICoreWindow sent " << core_window_hwnd_;
 
   // And post the task that'll do the inner Metro message pumping to it.
   msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
@@ -427,6 +433,7 @@ ChromeAppViewAsh::Uninitialize() {
   DVLOG(1) << __FUNCTION__;
   window_ = nullptr;
   view_ = nullptr;
+  core_window_hwnd_ = NULL;
   return S_OK;
 }
 
@@ -526,20 +533,13 @@ HRESULT ChromeAppViewAsh::OnActivate(
     winapp::Core::ICoreApplicationView*,
     winapp::Activation::IActivatedEventArgs* args) {
   DVLOG(1) << __FUNCTION__;
-
+  // Note: If doing more work in this function, you migth need to call
+  // get_PreviousExecutionState() and skip the work if  the result is
+  // ApplicationExecutionState_Running and globals.previous_state is too.
   args->get_PreviousExecutionState(&globals.previous_state);
   DVLOG(1) << "Previous Execution State: " << globals.previous_state;
 
   window_->Activate();
-
-  if (globals.previous_state ==
-      winapp::Activation::ApplicationExecutionState_Running) {
-    DVLOG(1) << "Already running. Skipping rest of OnActivate.";
-    return S_OK;
-  }
-
-  globals.core_window =
-      winrt_utils::FindCoreWindow(globals.main_thread_id, 10);
   return S_OK;
 }
 

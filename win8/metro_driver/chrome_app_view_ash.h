@@ -114,9 +114,14 @@ class ChromeAppViewAsh
   // events do not contain that state, but Ash's MouseEvents need it.
   ui::EventFlags mouse_down_flags_;
 
+  // Set the D3D swap chain and nothing else.
   metro_driver::Direct3DHelper direct3d_helper_;
 
+  // The channel to Chrome, in particular to the MetroViewerProcessHost.
   IPC::ChannelProxy* ui_channel_;
+
+  // The actual window behind the view surface.
+  HWND core_window_hwnd_;
 };
 
 #endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_
