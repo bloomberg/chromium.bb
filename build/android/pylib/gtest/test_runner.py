@@ -30,7 +30,11 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   # Ideally, we'd just push all test data. However, it has >100MB, and a lot
   # of the files are not relevant (some are used for browser_tests, others for
   # features not supported, etc..).
-  if test_suite_basename in ['base_unittests', 'sql_unittests', 'unit_tests']:
+  if test_suite_basename == 'base_unittests':
+    return [
+        'base/test/data/',
+    ]
+  elif test_suite_basename == 'unit_tests':
     test_files = [
         'base/test/data/',
         'chrome/test/data/download-test1.lib',
@@ -56,28 +60,26 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/test/data/History/',
         'chrome/test/data/json_schema_validator/',
         'chrome/test/data/pref_service/',
+        'chrome/test/data/simple_open_search.xml',
         'chrome/test/data/top_sites/',
         'chrome/test/data/web_app_info/',
         'chrome/test/data/web_database',
         'chrome/test/data/webui/',
-        'components/test/data/zip',
         'chrome/third_party/mock4js/',
-        'content/browser/gpu/software_rendering_list.json',
-        'net/data/cache_tests/insert_load1',
-        'net/data/cache_tests/dirty_entry5',
-        'net/data/ssl/certificates/',
+        'net/data/ssl/certificates',
         'third_party/accessibility-developer-tools/gen/axs_testing.js',
-        'ui/base/test/data/data_pack_unittest',
     ]
-    if test_suite_basename == 'unit_tests':
-      test_files += ['chrome/test/data/simple_open_search.xml']
-      # The following are spell check data. Now only list the data under
-      # third_party/hunspell_dictionaries which are used by unit tests.
-      old_cwd = os.getcwd()
-      os.chdir(constants.CHROME_DIR)
-      test_files += glob.glob('third_party/hunspell_dictionaries/*.bdic')
-      os.chdir(old_cwd)
+    # The following are spell check data. Now only list the data under
+    # third_party/hunspell_dictionaries which are used by unit tests.
+    old_cwd = os.getcwd()
+    os.chdir(constants.CHROME_DIR)
+    test_files += glob.glob('third_party/hunspell_dictionaries/*.bdic')
+    os.chdir(old_cwd)
     return test_files
+  elif test_suite_basename == 'components_unittests':
+    return [
+        'components/test/data/zip',
+    ]
   elif test_suite_basename == 'media_unittests':
     return [
         'media/test/data',
@@ -91,9 +93,9 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'net/data/ftp',
         'net/data/proxy_resolver_v8_tracing_unittest',
         'net/data/proxy_resolver_v8_unittest',
+        'net/data/proxy_script_fetcher_unittest',
         'net/data/ssl/certificates',
         'net/data/url_request_unittest/',
-        'net/data/proxy_script_fetcher_unittest'
         ]
   elif test_suite_basename == 'ui_tests':
     return [
@@ -101,12 +103,17 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/test/data/json2.js',
         'chrome/test/data/sunspider',
         ]
+  elif test_suite_basename == 'ui_unittests':
+    return [
+        'ui/base/test/data/data_pack_unittest/truncated-header.pak',
+    ]
   elif test_suite_basename == 'content_unittests':
     return [
+        'content/browser/gpu/software_rendering_list.json',
         'content/test/data/gpu/webgl_conformance_test_expectations.txt',
         'net/data/ssl/certificates/',
-        'webkit/data/dom_storage/webcore_test_database.localstorage',
         'third_party/hyphen/hyph_en_US.dic',
+        'webkit/data/dom_storage/webcore_test_database.localstorage',
         ]
   elif test_suite_basename == 'cc_perftests':
     return [
