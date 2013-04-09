@@ -74,6 +74,9 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
   // is in icon_loader_[platform].cc.
   static IconGroupID ReadGroupIDFromFilepath(const base::FilePath& path);
 
+  // Some icons (exe's on windows) can change as they're loaded.
+  static bool IsIconMutableFromFilepath(const base::FilePath& path);
+
   void ReadGroup();
   void OnReadGroup();
   void ReadIcon();

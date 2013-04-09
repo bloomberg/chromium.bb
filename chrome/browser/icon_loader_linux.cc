@@ -23,6 +23,10 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return base::nix::GetFileMimeType(filepath);
 }
 
+bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
+  return false;
+}
+
 void IconLoader::ReadIcon() {
   int size_pixels = 0;
   switch (icon_size_) {

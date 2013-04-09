@@ -18,11 +18,14 @@
 // static
 IconGroupID IconLoader::ReadGroupIDFromFilepath(
     const base::FilePath& filepath) {
+  if (!IsIconMutableFromFilepath(filepath))
+    return filepath.Extension();
+  return filepath.value();
+}
+
+bool IconLoader::IsIconMutableFromFilepath(const base::FilePath& filepath) {
   base::FilePath::StringType extension = filepath.Extension();
-  if (extension != L".exe" && extension != L".dll" && extension != L".ico")
-    return extension;
-  else
-    return filepath.value();
+  return extension == L".exe" || extension == L".dll" || extension == L".ico";
 }
 
 void IconLoader::ReadIcon() {

@@ -12,6 +12,10 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return 0;
 }
 
+bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
+  return false;
+}
+
 void IconLoader::ReadIcon() {
   NOTIMPLEMENTED();
 }

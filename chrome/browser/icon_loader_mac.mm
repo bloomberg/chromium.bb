@@ -20,6 +20,10 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return filepath.Extension();
 }
 
+bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
+  return false;
+}
+
 void IconLoader::ReadIcon() {
   NSString* group = base::SysUTF8ToNSString(group_);
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];

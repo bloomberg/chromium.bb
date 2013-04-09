@@ -185,6 +185,10 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return StringToLowerASCII(filepath.Extension());
 }
 
+bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
+  return false;
+}
+
 void IconLoader::ReadIcon() {
   static base::LazyInstance<IconMapper>::Leaky icon_mapper =
       LAZY_INSTANCE_INITIALIZER;
