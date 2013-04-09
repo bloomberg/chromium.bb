@@ -29,8 +29,6 @@
 #include "InputTypeNames.h"
 #include "LayoutUnit.h"
 
-// FIXME: Merge this.
-
 namespace WebCore {
 
 bool RenderThemeChromiumCommon::supportsDataListUI(const AtomicString& type)
