@@ -225,6 +225,7 @@ node = env.CommandSelLdrTestNacl(
     filter_inverse=True,
     stdout_golden=temporary_file)
 
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_sysconf_nprocessors_test')
+if not env.Bit('coverage_enabled'):
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_sysconf_nprocessors_test')
