@@ -121,7 +121,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                 scopeRef = undefined;
             
 
-            var section = new WebInspector.ObjectPropertiesSection(WebInspector.RemoteObject.fromScopePayload(scope.object, scopeRef), title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
+            var section = new WebInspector.ObjectPropertiesSection(WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef), title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
             section.editInSelectedCallFrameWhenPaused = true;
             section.pane = this;
 

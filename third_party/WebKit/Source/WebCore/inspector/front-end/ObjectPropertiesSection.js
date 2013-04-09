@@ -574,7 +574,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                 else 
                     scopeRef = new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
 
-                var remoteObject = WebInspector.RemoteObject.fromScopePayload(scope.object, scopeRef);
+                var remoteObject = WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef);
                 if (isTrueObject) {
                     var property = WebInspector.RemoteObjectProperty.fromScopeValue(title, remoteObject);
                     property.parentObject = null;
