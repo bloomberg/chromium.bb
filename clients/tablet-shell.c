@@ -473,6 +473,9 @@ int main(int argc, char *argv[])
 	tablet.homescreen = homescreen_create(&tablet);
 	tablet_shell_set_homescreen(tablet.tablet_shell,
 			window_get_wl_surface(tablet.homescreen->window));
+
+	wl_display_roundtrip (display_get_display(tablet.display));
+
 	wl_list_init(&tablet.homescreen->launcher_list);
 
 	config_file = config_file_path("weston.ini");
