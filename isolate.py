@@ -1443,8 +1443,6 @@ class SavedState(Flattenable):
     if self.isolate_file:
       assert self.isolate_file == isolate_file, (
           self.isolate_file, isolate_file)
-    else:
-      assert not self.isolated_files
     self.isolate_file = isolate_file
     self.variables.update(variables)
 
