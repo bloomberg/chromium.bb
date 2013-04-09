@@ -27,15 +27,20 @@ class IOBuffer;
 namespace disk_cache {
 
 // Worker thread interface to the very simple cache. This interface is not
-// thread safe, and callers must insure that it is only ever accessed from
+// thread safe, and callers must ensure that it is only ever accessed from
 // a single thread between synchronization points.
 class SimpleSynchronousEntry {
  public:
-  typedef base::Callback<void(SimpleSynchronousEntry*)>
+  // Callback type for the completion of creation of SimpleSynchronousEntry
+  // objects, for instance after OpenEntry() or CreateEntry(). |new_entry| is
+  // the newly created SimpleSynchronousEntry, constructed on the worker pool
+  // thread. |new_entry| == NULL in the case of error.
+  typedef base::Callback<void(SimpleSynchronousEntry* /* new_entry */)>
       SynchronousCreationCallback;
 
-  typedef base::Callback<void(int)>
-      SynchronousOperationCallback;
+  // Callback type for IO operations on an entry not requiring special callback
+  // arguments (e.g. Write). |result| is a net::Error result code.
+  typedef base::Callback<void(int /* result */)> SynchronousOperationCallback;
 
   static void OpenEntry(
       const base::FilePath& path,
