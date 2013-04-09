@@ -140,6 +140,8 @@
             'SHA1.cpp',
             'SHA1.h',
             'SaturatedArithmetic.h',
+            'SegmentedVector.h',
+            'SentinelLinkedList.h',
             'SinglyLinkedList.h',
             'SizeLimits.cpp',
             'StackBounds.cpp',
