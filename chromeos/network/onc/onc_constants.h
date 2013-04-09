@@ -162,7 +162,7 @@ CHROMEOS_EXPORT extern const char kPattern[];
 CHROMEOS_EXPORT extern const char kRef[];
 CHROMEOS_EXPORT extern const char kServer[];
 CHROMEOS_EXPORT extern const char kSubject[];
-CHROMEOS_EXPORT extern const char kTrust[];
+CHROMEOS_EXPORT extern const char kTrustBits[];
 CHROMEOS_EXPORT extern const char kType[];
 CHROMEOS_EXPORT extern const char kWeb[];
 CHROMEOS_EXPORT extern const char kX509[];

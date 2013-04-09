@@ -259,7 +259,7 @@ const OncFieldSignature certificate_fields[] = {
   { certificate::kGUID, &kStringSignature },
   { certificate::kPKCS12, &kStringSignature },
   { kRemove, &kBoolSignature },
-  { certificate::kTrust, &kStringListSignature },
+  { certificate::kTrustBits, &kStringListSignature },
   { certificate::kType, &kStringSignature },
   { certificate::kX509, &kStringSignature },
   { NULL }

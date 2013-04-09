@@ -1670,7 +1670,7 @@
       should be set).
     </dd>
 
-    <dt class="field">Trust</dt>
+    <dt class="field">TrustBits</dt>
     <dd>
       <span class="field_meta">
         (optional if <span class="field">Type</span>
@@ -1679,13 +1679,14 @@
         [])
         <span class="type">array of string</span>
       </span>
-      A array of trust attributes. Trust can
-      include <span class="value">Web</span>. <span class="value">Web</span>
-      implies that the certificate is to be trusted for HTTPS SSL
-      identification. A typical web certificate authority would
-      have <span class="field">Type</span> set to
-      <span class="value">Authority</span> and <span class="field">Trust</span>
-      set to <span class="snippet">["Web"]</span>.
+      An array of trust flags. Clients should ignore unknown flags. For
+      backwards compatibility, each flag should only increase the trust and
+      never restrict. The trust flag <span class="value">Web</span> implies that
+      the certificate is to be trusted for HTTPS SSL identification. A typical
+      web certificate authority would have <span class="field">Type</span> set
+      to <span class="value">Authority</span> and
+      <span class="field">TrustBits</span> set to
+      <span class="snippet">["Web"]</span>.
     </dd>
 
     <dt class="field">Type</dt>
@@ -2040,7 +2041,6 @@
   "Certificates": [
     {
       "GUID": "{6ed8dce9-64c8-d568-d225d7e467e37828}",
-      "Trust": [],
       "Type": "Authority",
       "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw=="
     }
@@ -2071,7 +2071,7 @@
   "Certificates": [
     {
       "GUID": "{f31f2110-9f5f-61a7-a8bd7c00b94237af}",
-      "Trust": [ "Web" ],
+      "TrustBits": [ "Web" ],
       "Type": "Authority",
       "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw==" 
     }

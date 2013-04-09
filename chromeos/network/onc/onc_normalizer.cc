@@ -88,7 +88,7 @@ void Normalizer::NormalizeCertificate(base::DictionaryValue* cert) {
   std::string type;
   cert->GetStringWithoutPathExpansion(certificate::kType, &type);
   RemoveEntryUnless(cert, kPKCS12, type == kClient);
-  RemoveEntryUnless(cert, kTrust, type == kServer || type == kAuthority);
+  RemoveEntryUnless(cert, kTrustBits, type == kServer || type == kAuthority);
   RemoveEntryUnless(cert, kX509, type == kServer || type == kAuthority);
 }
 

@@ -223,22 +223,22 @@ TEST_F(ONCCertificateImporterTest, AddAuthorityCertificateWithoutWebTrust) {
   EXPECT_FALSE(pubkey_list);
 }
 
+struct CertParam {
+  CertParam(net::CertType certificate_type,
+            const char* original_filename,
+            const char* update_filename)
+      : cert_type(certificate_type),
+        original_file(original_filename),
+        update_file(update_filename) {}
+
+  net::CertType cert_type;
+  const char* original_file;
+  const char* update_file;
+};
+
 class ONCCertificateImporterTestWithParam :
       public ONCCertificateImporterTest,
-      public testing::WithParamInterface<
-          std::pair<net::CertType, std::pair<const char*, const char*> > > {
- protected:
-  net::CertType GetCertTypeParam() {
-    return GetParam().first;
-  }
-
-  std::string GetOriginalFilename() {
-    return GetParam().second.first;
-  }
-
-  std::string GetUpdatedFilename() {
-    return GetParam().second.second;
-  }
+      public testing::WithParamInterface<CertParam> {
 };
 
 TEST_P(ONCCertificateImporterTestWithParam, UpdateCertificate) {
@@ -246,7 +246,7 @@ TEST_P(ONCCertificateImporterTestWithParam, UpdateCertificate) {
   {
     SCOPED_TRACE("Import original certificate");
     std::string guid_original;
-    AddCertificateFromFile(GetOriginalFilename(), GetCertTypeParam(),
+    AddCertificateFromFile(GetParam().original_file, GetParam().cert_type,
                            &guid_original);
   }
 
@@ -255,7 +255,7 @@ TEST_P(ONCCertificateImporterTestWithParam, UpdateCertificate) {
   {
     SCOPED_TRACE("Import updated certificate");
     std::string guid_updated;
-    AddCertificateFromFile(GetUpdatedFilename(), GetCertTypeParam(),
+    AddCertificateFromFile(GetParam().update_file, GetParam().cert_type,
                            &guid_updated);
   }
 }
@@ -266,7 +266,7 @@ TEST_P(ONCCertificateImporterTestWithParam, ReimportCertificate) {
     SCOPED_TRACE("Import certificate, iteration " + base::IntToString(i));
 
     std::string guid_original;
-    AddCertificateFromFile(GetOriginalFilename(), GetCertTypeParam(),
+    AddCertificateFromFile(GetParam().original_file, GetParam().cert_type,
                            &guid_original);
   }
 }
@@ -275,16 +275,15 @@ INSTANTIATE_TEST_CASE_P(
     ONCCertificateImporterTestWithParam,
     ONCCertificateImporterTestWithParam,
     ::testing::Values(
-        std::make_pair(net::USER_CERT,
-                       std::make_pair("certificate-client.onc",
-                                      "certificate-client-update.onc")),
-        std::make_pair(net::SERVER_CERT,
-                       std::make_pair("certificate-server.onc",
-                                      "certificate-server-update.onc")),
-        std::make_pair(
-            net::CA_CERT,
-            std::make_pair("certificate-web-authority.onc",
-                           "certificate-web-authority-update.onc"))));
+        CertParam(net::USER_CERT,
+                  "certificate-client.onc",
+                  "certificate-client-update.onc"),
+        CertParam(net::SERVER_CERT,
+                  "certificate-server.onc",
+                  "certificate-server-update.onc"),
+        CertParam(net::CA_CERT,
+                  "certificate-web-authority.onc",
+                  "certificate-web-authority-update.onc")));
 
 }  // namespace onc
 }  // namespace chromeos

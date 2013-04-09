@@ -130,11 +130,11 @@ bool CertificateImporter::ParseAndStoreCertificate(
     net::CertificateList* onc_trusted_certificates) {
   // Get out the attributes of the given certificate.
   std::string guid;
-  certificate.GetString(certificate::kGUID, &guid);
+  certificate.GetStringWithoutPathExpansion(certificate::kGUID, &guid);
   DCHECK(!guid.empty());
 
   bool remove = false;
-  if (certificate.GetBoolean(kRemove, &remove) && remove) {
+  if (certificate.GetBooleanWithoutPathExpansion(kRemove, &remove) && remove) {
     if (!DeleteCertAndKeyByNickname(guid)) {
       ONC_LOG_ERROR("Unable to delete certificate");
       return false;
@@ -145,7 +145,7 @@ bool CertificateImporter::ParseAndStoreCertificate(
 
   // Not removing, so let's get the data we need to add this certificate.
   std::string cert_type;
-  certificate.GetString(certificate::kType, &cert_type);
+  certificate.GetStringWithoutPathExpansion(certificate::kType, &cert_type);
   if (cert_type == certificate::kServer ||
       cert_type == certificate::kAuthority) {
     return ParseServerOrCaCertificate(
@@ -165,10 +165,12 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     net::CertificateList* onc_trusted_certificates) {
   bool web_trust_flag = false;
   const base::ListValue* trust_list = NULL;
-  if (certificate.GetList(certificate::kTrust, &trust_list)) {
-    for (size_t i = 0; i < trust_list->GetSize(); ++i) {
+  if (certificate.GetListWithoutPathExpansion(certificate::kTrustBits,
+                                              &trust_list)) {
+    for (base::ListValue::const_iterator it = trust_list->begin();
+         it != trust_list->end(); ++it) {
       std::string trust_type;
-      if (!trust_list->GetString(i, &trust_type))
+      if (!(*it)->GetAsString(&trust_type))
         NOTREACHED();
 
       if (trust_type == certificate::kWeb) {
@@ -176,8 +178,10 @@ bool CertificateImporter::ParseServerOrCaCertificate(
         // identification.
         web_trust_flag = true;
       } else {
-        ONC_LOG_ERROR("Certificate contains unknown trust type " + trust_type);
-        return false;
+        // Trust bits should only increase trust and never restrict. Thus,
+        // ignoring unknown bits should be safe.
+        ONC_LOG_WARNING("Certificate contains unknown trust type " +
+                        trust_type);
       }
     }
   }
@@ -185,13 +189,14 @@ bool CertificateImporter::ParseServerOrCaCertificate(
   bool import_with_ssl_trust = false;
   if (web_trust_flag) {
     if (!allow_trust_imports_)
-      LOG(WARNING) << "Web trust not granted for certificate: " << guid;
+      ONC_LOG_WARNING("Web trust not granted for certificate: " + guid);
     else
       import_with_ssl_trust = true;
   }
 
   std::string x509_data;
-  if (!certificate.GetString(certificate::kX509, &x509_data) ||
+  if (!certificate.GetStringWithoutPathExpansion(certificate::kX509,
+                                                 &x509_data) ||
       x509_data.empty()) {
     ONC_LOG_ERROR(
         "Certificate missing appropriate certificate data for type: " +
@@ -257,11 +262,10 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     }
 
     // Reload the cert here to get an actual temporary cert instance.
-    x509_cert =
-        net::X509Certificate::CreateFromBytesWithNickname(
-            decoded_x509.data(),
-            decoded_x509.size(),
-            guid.c_str());
+    x509_cert = net::X509Certificate::CreateFromBytesWithNickname(
+        decoded_x509.data(),
+        decoded_x509.size(),
+        guid.c_str());
     if (!x509_cert.get()) {
       ONC_LOG_ERROR("Unable to create X509 certificate from bytes.");
       return false;
@@ -312,7 +316,8 @@ bool CertificateImporter::ParseClientCertificate(
     const std::string& guid,
     const base::DictionaryValue& certificate) {
   std::string pkcs12_data;
-  if (!certificate.GetString(certificate::kPKCS12, &pkcs12_data) ||
+  if (!certificate.GetStringWithoutPathExpansion(certificate::kPKCS12,
+                                                 &pkcs12_data) ||
       pkcs12_data.empty()) {
     ONC_LOG_ERROR("PKCS12 data is missing for client certificate.");
     return false;

@@ -37,7 +37,7 @@
         "Type": "Client"
     },
     {
-      "Trust": [
+      "TrustBits": [
         "Web"
       ],
       "GUID": "{f5f2c9c9-0079-a712-49da21137af62fdd}",

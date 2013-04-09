@@ -261,7 +261,7 @@
     "toplevel-with-server-and-ca-cert": {
       "Type": "UnencryptedConfiguration",
       "Certificates":
-      [ { "Trust": ["Web"],
+      [ { "TrustBits": ["Web"],
           "GUID": "1",
           "Type": "Authority",
           "X509": "abc" },

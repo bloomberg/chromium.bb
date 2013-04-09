@@ -39,7 +39,7 @@ class CHROMEOS_EXPORT CertificateImporter {
   };
 
   // During import with ParseCertificate(), Web trust is only applied to Server
-  // and Authority certificates with the Trust attribute "Web" if the
+  // and Authority certificates with the TrustBits attribute "Web" if the
   // |allow_trust_imports| permission is granted, otherwise the attribute is
   // ignored.
   explicit CertificateImporter(bool allow_trust_imports);
@@ -82,8 +82,8 @@ class CHROMEOS_EXPORT CertificateImporter {
   bool ParseClientCertificate(const std::string& guid,
                               const base::DictionaryValue& certificate);
 
-  // Whether certificates with Trust attribute "Web" should be stored with web
-  // trust.
+  // Whether certificates with TrustBits attribute "Web" should be stored with
+  // web trust.
   bool allow_trust_imports_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateImporter);

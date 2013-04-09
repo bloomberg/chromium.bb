@@ -2,7 +2,7 @@
   "Certificates": [
     {
       "GUID": "{f998f760-272b-6939-4c2beffe428697ac}",
-      "Trust": [
+      "TrustBits": [
         "Web"
       ],
       "Type": "Authority",

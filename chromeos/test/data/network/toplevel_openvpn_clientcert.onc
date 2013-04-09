@@ -7,7 +7,7 @@
     },
     {
       "GUID": "{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}",
-      "Trust": [
+      "TrustBits": [
         "Web"
       ],
       "Type": "Authority",
