@@ -504,6 +504,13 @@ void RenderWidgetHostViewMac::release_pepper_fullscreen_window_for_testing() {
   pepper_fullscreen_window_.reset();
 }
 
+int RenderWidgetHostViewMac::window_number() const {
+  NSWindow* window = [cocoa_view_ window];
+  if (!window)
+    return -1;
+  return [window windowNumber];
+}
+
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
@@ -894,7 +901,7 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
                                       location:location
                                  modifierFlags:0
                                      timestamp:0
-                                  windowNumber:[window windowNumber]
+                                  windowNumber:window_number()
                                        context:nil
                                    eventNumber:0
                                     clickCount:0
@@ -1041,7 +1048,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
     return true;
 
   NSWindow* window = [cocoa_view_ window];
-  if ([window windowNumber] <= 0) {
+  if (window_number() <= 0) {
     // There is no window to present so capturing during present won't work.
     // We check if frame subscriber wants this frame and capture manually.
     if (compositing_iosurface_.get() && frame_subscriber_.get()) {
@@ -1081,7 +1088,8 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
     CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
         CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
         CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
-    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(order));
+    compositing_iosurface_.reset(
+        CompositingIOSurfaceMac::Create(window_number(), order));
   }
 
   if (!compositing_iosurface_.get())
@@ -1103,6 +1111,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   if (!about_to_validate_and_paint_) {
     compositing_iosurface_->DrawIOSurface(cocoa_view_,
                                           ScaleFactor(cocoa_view_),
+                                          window_number(),
                                           frame_subscriber_.get());
   }
   return true;
@@ -2288,7 +2297,10 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     }
 
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
-        self, ScaleFactor(self), renderWidgetHostView_->frame_subscriber());
+        self,
+        ScaleFactor(self),
+        renderWidgetHostView_->window_number(),
+        renderWidgetHostView_->frame_subscriber());
     return;
   }
 
