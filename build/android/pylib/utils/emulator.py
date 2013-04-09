@@ -213,7 +213,7 @@ class Emulator(object):
         '--silent',
         'delete',
         'avd',
-        '--name', self.avd,
+        '--name', self.avd_name,
     ]
     avd_process = subprocess.Popen(args=avd_command,
                                    stdout=subprocess.PIPE,

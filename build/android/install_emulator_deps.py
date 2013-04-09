@@ -59,8 +59,10 @@ def CheckKVM():
   Returns:
     True if kvm-ok returns 0 (already enabled)
   """
-  rc = cmd_helper.RunCmd(['kvm-ok'])
-  return not rc
+  try:
+    return not cmd_helper.RunCmd(['kvm-ok'])
+  except OSError:
+    return False
 
 
 def GetSDK():

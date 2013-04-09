@@ -122,6 +122,7 @@ def _RunATestSuite(options, suite_name):
 
   if options.use_emulator:
     buildbot_emulators = emulator.LaunchEmulators(options.emulator_count,
+                                                  options.abi,
                                                   wait_for_boot=True)
     attached_devices = [e.device for e in buildbot_emulators]
   elif options.test_device:

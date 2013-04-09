@@ -126,6 +126,8 @@ def AddGTestOptions(option_parser):
   option_parser.add_option('--exe', action='store_true',
                            help='If set, use the exe test runner instead of '
                            'the APK.')
+  option_parser.add_option('--abi', default='armeabi-v7a',
+                           help='Platform of emulators to launch.')
 
 
 def AddCommonInstrumentationOptions(option_parser):
