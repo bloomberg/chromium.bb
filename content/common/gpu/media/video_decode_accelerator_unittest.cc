@@ -49,7 +49,6 @@
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
-#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #endif  // ARCH_CPU_ARMEL
@@ -376,19 +375,11 @@ void GLRenderingVDAClient::CreateDecoder() {
       static_cast<CGLContextObj>(rendering_helper_->GetGLContext()), this));
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda)) {
-    decoder_.reset(
-        new ExynosVideoDecodeAccelerator(
-            static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-            static_cast<EGLContext>(rendering_helper_->GetGLContext()),
-            this, base::Bind(&DoNothingReturnTrue)));
-  } else {
-    decoder_.reset(
-        new OmxVideoDecodeAccelerator(
-            static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-            static_cast<EGLContext>(rendering_helper_->GetGLContext()),
-            this, base::Bind(&DoNothingReturnTrue)));
-  }
+  decoder_.reset(
+      new ExynosVideoDecodeAccelerator(
+          static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+          static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+          this, base::Bind(&DoNothingReturnTrue)));
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
@@ -974,10 +965,6 @@ int main(int argc, char **argv) {
     }
     if (it->first == "v" || it->first == "vmodule")
       continue;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-    if (it->first == switches::kUseExynosVda)
-      continue;
-#endif
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 
@@ -988,10 +975,7 @@ int main(int argc, char **argv) {
   content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
-    content::ExynosVideoDecodeAccelerator::PreSandboxInitialization();
-  else
-    content::OmxVideoDecodeAccelerator::PreSandboxInitialization();
+  content::ExynosVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(ARCH_CPU_X86_FAMILY)
   content::VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif  // ARCH_CPU_ARMEL
