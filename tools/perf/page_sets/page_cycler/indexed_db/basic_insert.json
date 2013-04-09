@@ -1,8 +1,10 @@
 {
     "description": "Basic insert IndexedDB page_cycler benchmark",
-    "serving_dirs": ["../../../../../tools/page_cycler/indexed_db/basic_insert",
-                     "../../../../../tools/page_cycler/indexed_db/common.js"],
     "pages": [
-        { "url": "file:///../../../../../tools/page_cycler/indexed_db/basic_insert/" }
+        {
+            "url": "file:///../../../../../tools/page_cycler/indexed_db/basic_insert/start.html?iterations=5&auto=1",
+            "serving_dirs": ["../../../../../tools/page_cycler/common",
+                             "../../../../../tools/page_cycler/indexed_db"]
+        }
     ]
 }
