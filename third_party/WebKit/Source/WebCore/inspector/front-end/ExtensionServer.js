@@ -645,6 +645,9 @@ WebInspector.ExtensionServer.prototype = {
         extensions.forEach(this._addExtension, this);
     },
 
+    /**
+     * @param {ExtensionDescriptor} extensionInfo
+     */
     _addExtension: function(extensionInfo)
     {
         if (this._initDone) {
@@ -657,6 +660,9 @@ WebInspector.ExtensionServer.prototype = {
             this._pendingExtensions = [extensionInfo];
     },
 
+    /**
+     * @param {ExtensionDescriptor} extensionInfo
+     */
     _innerAddExtension: function(extensionInfo)
     {
         const urlOriginRegExp = new RegExp("([^:]+:\/\/[^/]*)\/"); // Can't use regexp literal here, MinJS chokes on it.

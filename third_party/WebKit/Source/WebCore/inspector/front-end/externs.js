@@ -308,6 +308,10 @@ WebInspector.showPanel = function(panel)
 {
 }
 
+/**
+ * @param {ExtensionDescriptor} extensionInfo
+ * @return {string}
+ */
 function buildPlatformExtensionAPI(extensionInfo) {}
 
 /**

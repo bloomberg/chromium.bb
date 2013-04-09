@@ -1007,6 +1007,10 @@ WebInspector.Zoom = {
 
 // Ex-DevTools.js content
 
+/**
+ * @param {ExtensionDescriptor} extensionInfo
+ * @return {string}
+ */
 function buildPlatformExtensionAPI(extensionInfo)
 {
     return "var extensionInfo = " + JSON.stringify(extensionInfo) + ";" +

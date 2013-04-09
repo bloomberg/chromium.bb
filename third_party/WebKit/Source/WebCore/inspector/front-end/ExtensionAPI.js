@@ -871,6 +871,10 @@ if (!extensionServer)
 return new InspectorExtensionAPI();
 }
 
+/**
+ * @param {ExtensionDescriptor} extensionInfo
+ * @return {string}
+ */
 function buildExtensionAPIInjectedScript(extensionInfo)
 {
     return "(function(injectedScriptId){ " +
