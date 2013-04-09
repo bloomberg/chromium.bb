@@ -221,9 +221,6 @@ const char kDisableWebAudio[]               = "disable-webaudio";
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
-// Disable Web Sockets support.
-const char kDisableWebSockets[]             = "disable-web-sockets";
-
 // Disables WebKit's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 

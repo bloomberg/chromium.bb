@@ -66,9 +66,6 @@ WorkerThread::WorkerThread() {
       !command_line.HasSwitch(switches::kDisableDesktopNotifications));
 #endif
 
-  WebRuntimeFeatures::enableSockets(
-      !command_line.HasSwitch(switches::kDisableWebSockets));
-
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
 

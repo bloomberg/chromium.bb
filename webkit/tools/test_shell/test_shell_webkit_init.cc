@@ -36,7 +36,6 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode)
   WebKit::WebSecurityPolicy::registerURLSchemeAsNoAccess(
       WebKit::WebString::fromUTF8("test-shell-resource"));
   WebKit::WebScriptController::enableV8SingleThreadMode();
-  WebKit::WebRuntimeFeatures::enableSockets(true);
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
   WebKit::WebRuntimeFeatures::enableDatabase(true);
   WebKit::WebRuntimeFeatures::enableNotifications(true);

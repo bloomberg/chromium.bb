@@ -673,9 +673,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
-  WebRuntimeFeatures::enableSockets(
-      !command_line.HasSwitch(switches::kDisableWebSockets));
-
   WebRuntimeFeatures::enableDatabase(
       !command_line.HasSwitch(switches::kDisableDatabases));
 
