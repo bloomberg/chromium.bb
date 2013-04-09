@@ -15,6 +15,8 @@
 
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -312,6 +314,12 @@ void RealOutputConfiguratorDelegate::ConfigureCTM(
     }
   }
   XIFreeDeviceInfo(info);
+}
+
+void RealOutputConfiguratorDelegate::SendProjectingStateToPowerManager(
+    bool projecting) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      SetIsProjecting(projecting);
 }
 
 void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(

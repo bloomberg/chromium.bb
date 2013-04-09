@@ -12,8 +12,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/real_output_configurator_delegate.h"
 
 namespace chromeos {
@@ -27,15 +25,6 @@ const char kInternal_eDP[] = "eDP";
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
 const int64 kConfigureDelayMs = 500;
-
-// Gap between screens so cursor at bottom of active display doesn't partially
-// appear on top of inactive display. Higher numbers guard against larger
-// cursors, but also waste more memory.
-// For simplicity, this is hard-coded to 60 to avoid the complexity of always
-// determining the DPI of the screen and rationalizing which screen we need to
-// use for the DPI calculation.
-// See crbug.com/130188 for initial discussion.
-const int kVerticalGap = 60;
 
 // Returns a string describing |state|.
 std::string DisplayPowerStateToString(DisplayPowerState state) {
@@ -95,7 +84,8 @@ OutputState InferCurrentState(
             (secondary_mode == None);
         if (primary_native && secondary_native) {
           // Just check the relative locations.
-          int secondary_offset = outputs[0].height + kVerticalGap;
+          int secondary_offset = outputs[0].height +
+              OutputConfigurator::kVerticalGap;
           if (outputs[0].y == 0 && outputs[1].y == secondary_offset) {
             state = STATE_DUAL_EXTENDED;
           } else {
@@ -166,6 +156,30 @@ OutputConfigurator::CrtcConfig::CrtcConfig(RRCrtc crtc,
       mode(mode),
       output(output) {}
 
+bool OutputConfigurator::TestApi::SendOutputChangeEvents(bool connected) {
+  XRRScreenChangeNotifyEvent screen_event;
+  memset(&screen_event, 0, sizeof(screen_event));
+  screen_event.type = xrandr_event_base_ + RRScreenChangeNotify;
+  configurator_->Dispatch(
+      reinterpret_cast<const base::NativeEvent>(&screen_event));
+
+  XRROutputChangeNotifyEvent notify_event;
+  memset(&notify_event, 0, sizeof(notify_event));
+  notify_event.type = xrandr_event_base_ + RRNotify;
+  notify_event.subtype = RRNotify_OutputChange;
+  notify_event.connection = connected ? RR_Connected : RR_Disconnected;
+  configurator_->Dispatch(
+      reinterpret_cast<const base::NativeEvent>(&notify_event));
+
+  if (!configurator_->configure_timer_->IsRunning()) {
+    LOG(ERROR) << "ConfigureOutputs() timer not running";
+    return false;
+  }
+
+  configurator_->ConfigureOutputs();
+  return true;
+}
+
 // static
 bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
   return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
@@ -173,7 +187,6 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 
 OutputConfigurator::OutputConfigurator()
     : state_controller_(NULL),
-      delegate_(new RealOutputConfiguratorDelegate()),
       configure_display_(base::chromeos::IsRunningOnChromeOS()),
       connected_output_count_(0),
       xrandr_event_base_(0),
@@ -183,10 +196,19 @@ OutputConfigurator::OutputConfigurator()
 
 OutputConfigurator::~OutputConfigurator() {}
 
+void OutputConfigurator::SetDelegateForTesting(
+    scoped_ptr<Delegate> delegate) {
+  delegate_ = delegate.Pass();
+  configure_display_ = true;
+}
+
 void OutputConfigurator::Init(bool is_panel_fitting_enabled,
                               uint32 background_color_argb) {
   if (!configure_display_)
     return;
+
+  if (!delegate_)
+    delegate_.reset(new RealOutputConfiguratorDelegate());
 
   // Cache the initial output state.
   delegate_->SetPanelFittingEnabled(is_panel_fitting_enabled);
@@ -198,8 +220,10 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled,
 }
 
 void OutputConfigurator::Start() {
+  if (!configure_display_)
+    return;
+
   delegate_->GrabServer();
-  // Detect our initial state.
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
   connected_output_count_ = outputs.size();
 
@@ -218,12 +242,8 @@ void OutputConfigurator::Start() {
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
   delegate_->ForceDPMSOn();
-
-  // Relinquish X resources.
   delegate_->UngrabServer();
-
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      SetIsProjecting(is_projecting);
+  delegate_->SendProjectingStateToPowerManager(is_projecting);
 }
 
 void OutputConfigurator::Stop() {
@@ -232,11 +252,11 @@ void OutputConfigurator::Stop() {
 
 bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
                                          int flags) {
-  VLOG(1) << "SetDisplayPower: power_state="
-          << DisplayPowerStateToString(power_state) << " flags=" << flags;
-
   if (!configure_display_)
     return false;
+
+  VLOG(1) << "SetDisplayPower: power_state="
+          << DisplayPowerStateToString(power_state) << " flags=" << flags;
   if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
     return true;
 
@@ -262,6 +282,9 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
 }
 
 bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
+  if (!configure_display_)
+    return false;
+
   if (output_state_ == STATE_INVALID ||
       output_state_ == STATE_HEADLESS ||
       output_state_ == STATE_SINGLE)
@@ -287,14 +310,17 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 }
 
 bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
-  if (event->type - xrandr_event_base_ == RRScreenChangeNotify)
+  if (!configure_display_)
+    return true;
+
+  if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     delegate_->UpdateXRandRConfiguration(event);
-  // Ignore this event if the Xrandr extension isn't supported, or
-  // the device is being shutdown.
-  if (!configure_display_ ||
-      (event->type - xrandr_event_base_ != RRNotify)) {
     return true;
   }
+
+  if (event->type - xrandr_event_base_ != RRNotify)
+    return true;
+
   XEvent* xevent = static_cast<XEvent*>(event);
   XRRNotifyEvent* notify_event =
       reinterpret_cast<XRRNotifyEvent*>(xevent);
@@ -319,36 +345,7 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  // Ignore the case of RR_UnknownConnection.
   return true;
-}
-
-void OutputConfigurator::ConfigureOutputs() {
-  configure_timer_.reset();
-
-  delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  int new_output_count = outputs.size();
-  // Don't skip even if the output counts didn't change because
-  // a display might have been swapped during the suspend.
-  connected_output_count_ = new_output_count;
-  OutputState new_state = GetNextState(outputs);
-  // When a display was swapped, the state moves from
-  // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED, so don't rely on
-  // the state chagne to tell if it was successful.
-  bool success = EnterState(new_state, power_state_, outputs);
-  bool is_projecting = IsProjecting(outputs);
-  delegate_->UngrabServer();
-
-  if (success) {
-    output_state_ = new_state;
-    NotifyOnDisplayChanged();
-  } else {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(new_state));
-  }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      SetIsProjecting(is_projecting);
 }
 
 void OutputConfigurator::AddObserver(Observer* observer) {
@@ -380,6 +377,33 @@ void OutputConfigurator::ResumeDisplays() {
   // Force probing to ensure that we pick up any changes that were made
   // while the system was suspended.
   SetDisplayPower(power_state_, kSetDisplayPowerForceProbe);
+}
+
+void OutputConfigurator::ConfigureOutputs() {
+  configure_timer_.reset();
+
+  delegate_->GrabServer();
+  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  int new_output_count = outputs.size();
+  // Don't skip even if the output counts didn't change because
+  // a display might have been swapped during the suspend.
+  connected_output_count_ = new_output_count;
+  OutputState new_state = GetNextState(outputs);
+  // When a display was swapped, the state moves from
+  // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED, so don't rely on
+  // the state chagne to tell if it was successful.
+  bool success = EnterState(new_state, power_state_, outputs);
+  bool is_projecting = IsProjecting(outputs);
+  delegate_->UngrabServer();
+
+  if (success) {
+    output_state_ = new_state;
+    NotifyOnDisplayChanged();
+  } else {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, OnDisplayModeChangeFailed(new_state));
+  }
+  delegate_->SendProjectingStateToPowerManager(is_projecting);
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
@@ -471,7 +495,7 @@ bool OutputConfigurator::EnterState(
           }
 
           configs[i] = CrtcConfig(
-              outputs[i].crtc, 0, height,
+              outputs[i].crtc, 0, (height ? height + kVerticalGap : 0),
               output_power[i] ? outputs[i].native_mode : None,
               outputs[i].output);
 

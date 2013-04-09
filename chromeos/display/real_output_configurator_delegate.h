@@ -52,6 +52,7 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void ConfigureCTM(
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;
+  virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
 
  private:
   // Destroys unused CRTCs and parks used CRTCs in a way which allows a

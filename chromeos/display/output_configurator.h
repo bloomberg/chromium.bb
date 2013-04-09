@@ -177,6 +177,31 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     // size for the corresponding offset.
     virtual void ConfigureCTM(int touch_device_id,
                               const CoordinateTransformation& ctm) = 0;
+
+    // Sends a D-Bus message to the power manager telling it that the
+    // machine is or is not projecting.
+    virtual void SendProjectingStateToPowerManager(bool projecting) = 0;
+  };
+
+  // Helper class used by tests.
+  class TestApi {
+   public:
+    TestApi(OutputConfigurator* configurator, int xrandr_event_base)
+        : configurator_(configurator),
+          xrandr_event_base_(xrandr_event_base) {}
+    ~TestApi() {}
+
+    // Dispatches RRScreenChangeNotify and RRNotify_OutputChange events to
+    // |configurator_| and runs ConfigureOutputs().  Returns false if
+    // |configure_timer_| wasn't started.
+    bool SendOutputChangeEvents(bool connected);
+
+   private:
+    OutputConfigurator* configurator_;  // not owned
+
+    int xrandr_event_base_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   // Flags that can be passed to SetDisplayPower().
@@ -186,6 +211,15 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Do not change the state if multiple displays are connected or if the
   // only connected display is external.
   static const int kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
+
+  // Gap between screens so cursor at bottom of active display doesn't
+  // partially appear on top of inactive display. Higher numbers guard
+  // against larger cursors, but also waste more memory.
+  // For simplicity, this is hard-coded to avoid the complexity of always
+  // determining the DPI of the screen and rationalizing which screen we
+  // need to use for the DPI calculation.
+  // See crbug.com/130188 for initial discussion.
+  static const int kVerticalGap = 60;
 
   // Returns true if an output named |name| is an internal display.
   static bool IsInternalOutputName(const std::string& name);
@@ -205,6 +239,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void set_state_controller(StateController* controller) {
     state_controller_ = controller;
   }
+
+  // Replaces |delegate_| with |delegate| and sets |configure_display_| to
+  // true.  Should be called before Init().
+  void SetDelegateForTesting(scoped_ptr<Delegate> delegate);
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
