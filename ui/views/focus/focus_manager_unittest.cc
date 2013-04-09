@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -533,15 +533,15 @@ class FocusManagerDtorTest : public FocusManagerTest {
     DISALLOW_COPY_AND_ASSIGN(TestFocusManagerFactory);
   };
 
-  class NativeButtonDtorTracked : public NativeTextButton {
+  class LabelButtonDtorTracked : public LabelButton {
    public:
-    NativeButtonDtorTracked(const string16& text,
-                            DtorTrackVector* dtor_tracker)
-        : NativeTextButton(NULL, text),
+    LabelButtonDtorTracked(const string16& text, DtorTrackVector* dtor_tracker)
+        : LabelButton(NULL, text),
           dtor_tracker_(dtor_tracker) {
+      SetStyle(STYLE_NATIVE_TEXTBUTTON);
     };
-    virtual ~NativeButtonDtorTracked() {
-      dtor_tracker_->push_back("NativeButtonDtorTracked");
+    virtual ~LabelButtonDtorTracked() {
+      dtor_tracker_->push_back("LabelButtonDtorTracked");
     }
 
     DtorTrackVector* dtor_tracker_;
@@ -588,7 +588,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Setup views hierarchy.
   GetContentsView()->AddChildView(new TestTextfield());
-  GetContentsView()->AddChildView(new NativeButtonDtorTracked(
+  GetContentsView()->AddChildView(new LabelButtonDtorTracked(
       ASCIIToUTF16("button"), &dtor_tracker_));
 
   // Close the window.
