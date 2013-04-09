@@ -106,6 +106,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+  virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;

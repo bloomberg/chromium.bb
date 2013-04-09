@@ -18,7 +18,10 @@
 #include "base/version.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/omaha_query_params.h"
@@ -116,21 +119,12 @@ void SetPnaclHash(CrxComponent* component) {
 // If we don't have Pnacl installed, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
 
-// Pnacl components have the version encoded in the path itself:
-// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
-// and the base directory will be:
-// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\.
-base::FilePath GetPnaclBaseDirectory() {
-  base::FilePath result;
-  CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
-  return result;
-}
-
-bool GetLatestPnaclDirectory(base::FilePath* latest_dir,
+bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
+                             base::FilePath* latest_dir,
                              Version* latest_version,
                              std::vector<base::FilePath>* older_dirs) {
   // Enumerate all versions starting from the base directory.
-  base::FilePath base_dir = GetPnaclBaseDirectory();
+  base::FilePath base_dir = pci->GetPnaclBaseDirectory();
   bool found = false;
   file_util::FileEnumerator
       file_enumerator(base_dir, false, file_util::FileEnumerator::DIRECTORIES);
@@ -210,28 +204,51 @@ bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
   return true;
 }
 
-class PnaclComponentInstaller : public ComponentInstaller {
- public:
-  explicit PnaclComponentInstaller(const Version& version);
+PnaclComponentInstaller::PnaclComponentInstaller()
+    : per_user_(false),
+      cus_(NULL) {
+#if defined(OS_CHROMEOS)
+  per_user_ = true;
+#endif
+}
 
-  virtual ~PnaclComponentInstaller() {}
-
-  virtual void OnUpdateError(int error) OVERRIDE;
-
-  virtual bool Install(base::DictionaryValue* manifest,
-                       const base::FilePath& unpack_path) OVERRIDE;
-
- private:
-  Version current_version_;
-};
-
-PnaclComponentInstaller::PnaclComponentInstaller(
-    const Version& version) : current_version_(version) {
-  DCHECK(version.IsValid());
+PnaclComponentInstaller::~PnaclComponentInstaller() {
 }
 
 void PnaclComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Pnacl update error: " << error;
+}
+
+// Pnacl components have the version encoded in the path itself:
+// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
+// and the base directory will be:
+// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\.
+base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
+  // For ChromeOS, temporarily make this user-dependent (for integrity) until
+  // we find a better solution.
+  // This is not ideal because of the following:
+  //   (a) We end up with per-user copies instead of a single copy
+  //   (b) The profile can change as users log in to different accounts
+  //   so we need to watch for user-login-events (see pnacl_profile_observer.h).
+  if (per_user_) {
+    DCHECK(!current_profile_path_.empty());
+    base::FilePath path = current_profile_path_.Append(
+        FILE_PATH_LITERAL("pnacl"));
+    return path;
+  } else {
+    base::FilePath result;
+    CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
+    return result;
+  }
+}
+
+void PnaclComponentInstaller::OnProfileChange() {
+  // On chromeos, we want to find the --login-profile=<foo> dir.
+  // Even though the path does vary between users, the content
+  // changes when logging out and logging in.
+  ProfileManager* pm = g_browser_process->profile_manager();
+  current_profile_path_ = pm->user_data_dir().Append(
+      pm->GetInitialProfileDir());
 }
 
 namespace {
@@ -265,7 +282,7 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   }
 
   // Don't install if the current version is actually newer.
-  if (current_version_.CompareTo(version) > 0)
+  if (current_version().CompareTo(version) > 0)
     return false;
 
   if (!PathContainsPnacl(unpack_path)) {
@@ -274,8 +291,8 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   }
 
   // Passed the basic tests. Time to install it.
-  base::FilePath path =
-      GetPnaclBaseDirectory().AppendASCII(version.GetString());
+  base::FilePath path = GetPnaclBaseDirectory().AppendASCII(
+      version.GetString());
   if (file_util::PathExists(path)) {
     LOG(WARNING) << "Target path already exists, not installing.";
     return false;
@@ -290,7 +307,7 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   // Pnacl webpage and Pnacl was just installed at this time. They should
   // then be able to reload the page and retry (or something).
   // See: http://code.google.com/p/chromium/issues/detail?id=107438
-  current_version_ = version;
+  set_current_version(version);
 
   PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
   return true;
@@ -306,17 +323,20 @@ void DoCheckForUpdate(ComponentUpdateService* cus,
 }
 
 // Finally, do the registration with the right version number.
-void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
-                                   const Version& current_version) {
+void FinishPnaclUpdateRegistration(const Version& current_version,
+                                   PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Note: the source is the default of BANDAID, even though the
-  // crxes are hosted from CWS.
-  CrxComponent pnacl;
-  pnacl.name = "pnacl";
-  pnacl.installer = new PnaclComponentInstaller(current_version);
-  pnacl.version = current_version;
-  SetPnaclHash(&pnacl);
-  if (cus->RegisterComponent(pnacl) != ComponentUpdateService::kOk) {
+  CrxComponent pnacl_component;
+  pnacl_component.version = current_version;
+  pnacl_component.name = "pnacl";
+  pnacl_component.installer = pci;
+  pci->set_current_version(current_version);
+  SetPnaclHash(&pnacl_component);
+
+  ComponentUpdateService::Status status =
+      pci->cus()->RegisterComponent(pnacl_component);
+  if (status != ComponentUpdateService::kOk
+      && status != ComponentUpdateService::kReplaced) {
     NOTREACHED() << "Pnacl component registration failed.";
   }
 
@@ -324,19 +344,19 @@ void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
   // we want it to be available "soon", so kick off an update check
   // earlier than usual.
   Version null_version(kNullVersion);
-  if (current_version.Equals(null_version)) {
+  if (pci->current_version().Equals(null_version)) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(DoCheckForUpdate, cus, pnacl),
+        base::Bind(DoCheckForUpdate, pci->cus(), pnacl_component),
         base::TimeDelta::FromSeconds(kInitialDelaySeconds));
   }
 }
 
 // Check if there is an existing version on disk first to know when
 // a hosted version is actually newer.
-void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
+void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath path = GetPnaclBaseDirectory();
+  base::FilePath path = pci->GetPnaclBaseDirectory();
   if (!file_util::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
       NOTREACHED() << "Could not create base Pnacl directory.";
@@ -346,7 +366,7 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
 
   Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
-  if (GetLatestPnaclDirectory(&path, &version, &older_dirs)) {
+  if (GetLatestPnaclDirectory(pci, &path, &version, &older_dirs)) {
     if (!PathContainsPnacl(path)) {
       version = Version(kNullVersion);
     } else {
@@ -356,7 +376,7 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FinishPnaclUpdateRegistration, cus, version));
+      base::Bind(&FinishPnaclUpdateRegistration, version, pci));
 
   // Remove older versions of PNaCl.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
@@ -365,15 +385,55 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
   }
 }
 
+void GetProfileInformation(PnaclComponentInstaller* pci) {
+  // Bail if not logged in yet.
+  if (!g_browser_process->profile_manager()->IsLoggedIn()) {
+    return;
+  }
+
+  pci->OnProfileChange();
+
+  BrowserThread::PostTask(
+     BrowserThread::FILE, FROM_HERE,
+     base::Bind(&StartPnaclUpdateRegistration, pci));
+}
+
+
 }  // namespace
 
-void RegisterPnaclComponent(ComponentUpdateService* cus,
+void PnaclComponentInstaller::RegisterPnaclComponent(
+                            ComponentUpdateService* cus,
                             const CommandLine& command_line) {
   // Only register when given the right flag.  This is important since
   // we do an early component updater check above (in DoCheckForUpdate).
   if (command_line.HasSwitch(switches::kEnablePnacl)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&StartPnaclUpdateRegistration, cus));
+    cus_ = cus;
+    // If per_user, create a profile observer to watch for logins.
+    // Only do so after cus_ is set to something non-null.
+    if (per_user_ && !profile_observer_) {
+      profile_observer_.reset(new PnaclProfileObserver(this));
+    }
+    if (per_user_) {
+      // Figure out profile information, before proceeding to look for files.
+      BrowserThread::PostTask(
+           BrowserThread::UI, FROM_HERE,
+           base::Bind(&GetProfileInformation, this));
+    } else {
+      BrowserThread::PostTask(
+           BrowserThread::FILE, FROM_HERE,
+           base::Bind(&StartPnaclUpdateRegistration, this));
+    }
   }
+}
+
+void PnaclComponentInstaller::ReRegisterPnacl() {
+  // No need to check the commandline flags again here.
+  // We could only have gotten here after RegisterPnaclComponent
+  // found --enable-pnacl, since that is where we create the profile_observer_,
+  // which in turn calls ReRegisterPnacl.
+  DCHECK(per_user_);
+  // Figure out profile information, before proceeding to look for files.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetProfileInformation, this));
 }

@@ -448,11 +448,11 @@ void RecordTouchEventState(const CommandLine& command_line) {
 
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
   ComponentUpdateService* cus = g_browser_process->component_updater();
-  if (!cus)
-    return;
-  // Registration can be before of after cus->Start() so it is ok to post
+
+  // Registration can be before or after cus->Start() so it is ok to post
   // a task to the UI thread to do registration once you done the necessary
   // file IO to know you existing component version.
+#if !defined(OS_CHROMEOS)
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
@@ -461,8 +461,10 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   // network.
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+#endif
 
-  RegisterPnaclComponent(cus, command_line);
+  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(
+      cus, command_line);
 
   cus->Start();
 }
