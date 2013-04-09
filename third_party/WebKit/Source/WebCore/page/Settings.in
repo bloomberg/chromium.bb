@@ -97,7 +97,6 @@ acceleratedCompositingForOverflowScrollEnabled initial=false
 acceleratedCompositingForScrollableFramesEnabled initial=false
 compositedScrollingForFramesEnabled initial=false
 
-experimentalNotificationsEnabled initial=false
 webGLEnabled initial=false
 webGLErrorsToConsoleEnabled initial=true
 openGLMultisamplingEnabled initial=true
