@@ -641,33 +641,33 @@ DriveResourceMetadata::RemoveEntryOnBlockingPool(
 scoped_ptr<DriveEntryProto> DriveResourceMetadata::FindEntryByPathSync(
     const base::FilePath& file_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  scoped_ptr<DriveEntryProto> current_dir =
+
+  // Start from the root.
+  scoped_ptr<DriveEntryProto> entry =
       storage_->GetEntry(util::kDriveGrandRootSpecialResourceId);
-  DCHECK(current_dir);
+  DCHECK(entry);
+  DCHECK(entry->parent_resource_id().empty());
 
-  if (file_path == GetFilePath(current_dir->resource_id()))
-      return current_dir.Pass();
-
+  // Check the first component.
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
+  if (components.empty() ||
+      base::FilePath(components[0]).AsUTF8Unsafe() != entry->base_name())
+    return scoped_ptr<DriveEntryProto>();
 
-  for (size_t i = 1; i < components.size() && current_dir; ++i) {
+  // Iterate over the remaining components.
+  for (size_t i = 1; i < components.size(); ++i) {
     const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
-    std::string resource_id =
-        storage_->GetChild(current_dir->resource_id(), component);
+    const std::string resource_id = storage_->GetChild(entry->resource_id(),
+                                                       component);
     if (resource_id.empty())
-      break;
+      return scoped_ptr<DriveEntryProto>();
 
-    scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
+    entry = storage_->GetEntry(resource_id);
     DCHECK(entry);
-
-    if (i == components.size() - 1)  // Last component.
-      return entry.Pass();
-    if (!entry->file_info().is_directory())
-      break;
-    current_dir = entry.Pass();
+    DCHECK_EQ(entry->base_name(), component);
   }
-  return scoped_ptr<DriveEntryProto>();
+  return entry.Pass();
 }
 
 scoped_ptr<DriveResourceMetadata::GetEntryInfoWithFilePathResult>

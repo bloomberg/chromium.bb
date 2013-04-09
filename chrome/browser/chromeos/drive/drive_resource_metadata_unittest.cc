@@ -400,6 +400,36 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
+
+  // Confirm that the root is found.
+  error = DRIVE_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  resource_metadata_->GetEntryInfoByPath(
+      base::FilePath::FromUTF8Unsafe("drive"),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_TRUE(entry_proto.get());
+
+  // Confirm that a non existing file is not found at the root level.
+  error = DRIVE_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  resource_metadata_->GetEntryInfoByPath(
+      base::FilePath::FromUTF8Unsafe("non_existing"),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
+
+  // Confirm that an entry is not found with a wrong root.
+  error = DRIVE_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  resource_metadata_->GetEntryInfoByPath(
+      base::FilePath::FromUTF8Unsafe("non_existing/root"),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
 }
 
 TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
