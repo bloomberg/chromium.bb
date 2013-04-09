@@ -404,8 +404,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   NotificationRegistrar notification_registrar_;
   scoped_ptr<EmbedderRenderViewHostObserver> embedder_rvh_observer_;
   WebContentsImpl* embedder_web_contents_;
-  typedef std::map<int, GeolocationCallback> GeolocationRequestsMap;
-  GeolocationRequestsMap geolocation_request_callback_map_;
+
+  // GeolocationRequestItem contains callback and bridge id for a request.
+  typedef std::pair<GeolocationCallback, int> GeolocationRequestItem;
+  typedef std::map<int, GeolocationRequestItem> GeolocationRequestsMap;
+  GeolocationRequestsMap geolocation_request_map_;
+  std::map<int, int> bridge_id_to_request_id_map_;
+
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;

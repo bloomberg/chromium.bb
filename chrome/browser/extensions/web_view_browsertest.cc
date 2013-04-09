@@ -352,6 +352,30 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
+  void GeolocationTestHelper(const std::string& test_name) {
+    ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    LoadAndLaunchPlatformApp("web_view/geolocation/embedder_has_permission");
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    content::WebContents* embedder_web_contents =
+        GetFirstShellWindowWebContents();
+    ASSERT_TRUE(embedder_web_contents);
+
+    ExtensionTestMessageListener done_listener("DoneGeolocationTest", false);
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    base::StringPrintf("runGeolocationTest('%s')",
+                                       test_name.c_str())));
+    done_listener.WaitUntilSatisfied();
+    bool has_test_passed;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+                    embedder_web_contents,
+                    "window.domAutomationController.send(hasTestPassed());",
+                    &has_test_passed));
+    ASSERT_TRUE(has_test_passed);
+  }
+
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 };
@@ -907,13 +931,38 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
           << message_;
 }
 
-// Embedder has geolocation permission for this test.
-// Note that the test name prefix must be "GeolocationAPI".
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationAPIEmbedderHasAccess) {
+// In following GeolocationAPIEmbedderHasAccess* tests, embedder (i.e. the
+// platform app) has geolocation permission
+//
+// Note that these test names must be "GeolocationAPI" prefixed (b/c we mock out
+// geolocation in this case).
+//
+// Also note that these are run separately because OverrideGeolocation() doesn't
+// mock out geolocation for multiple navigator.geolocation calls properly and
+// the tests become flaky.
+// GeolocationAPI* test 1 of 3.
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
+  GeolocationTestHelper("testAllow");
+}
+
+// GeolocationAPI* test 2 of 3.
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
+  GeolocationTestHelper("testDeny");
+}
+
+// GeolocationAPI* test 3 of 3.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
+  GeolocationTestHelper("testMultipleBridgeIdAllow");
+}
+
+// Tests that
+// BrowserPluginGeolocationPermissionContext::CancelGeolocationPermissionRequest
+// is handled correctly (and does not crash).
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/web_view/geolocation/embedder_has_permission"))
-          << message_;
+        "platform_apps/web_view/geolocation/cancel_request")) << message_;
 }
 
 // Disabled on win debug bots due to flaky timeouts.

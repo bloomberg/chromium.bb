@@ -539,14 +539,16 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     const GeolocationCallback& callback) {
-  if (geolocation_request_callback_map_.size() >=
-          kNumMaxOutstandingPermissionRequests) {
+  if (geolocation_request_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the geolocation request.
     callback.Run(false);
     return;
   }
   int request_id = next_permission_request_id_++;
-  geolocation_request_callback_map_[request_id] = callback;
+  geolocation_request_map_[request_id] = std::make_pair(callback, bridge_id);
+  DCHECK(bridge_id_to_request_id_map_.find(bridge_id) ==
+         bridge_id_to_request_id_map_.end());
+  bridge_id_to_request_id_map_[bridge_id] = request_id;
 
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kURL,
@@ -558,19 +560,27 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
 }
 
 void BrowserPluginGuest::CancelGeolocationRequest(int bridge_id) {
+  std::map<int, int>::iterator iter =
+      bridge_id_to_request_id_map_.find(bridge_id);
+  if (iter == bridge_id_to_request_id_map_.end())
+    return;
+
+  int request_id = iter->second;
   GeolocationRequestsMap::iterator callback_iter =
-      geolocation_request_callback_map_.find(bridge_id);
-  if (callback_iter != geolocation_request_callback_map_.end())
-    geolocation_request_callback_map_.erase(callback_iter);
+      geolocation_request_map_.find(request_id);
+  if (callback_iter != geolocation_request_map_.end())
+    geolocation_request_map_.erase(callback_iter);
 }
 
 void BrowserPluginGuest::SetGeolocationPermission(int request_id,
                                                   bool allowed) {
   GeolocationRequestsMap::iterator callback_iter =
-      geolocation_request_callback_map_.find(request_id);
-  if (callback_iter != geolocation_request_callback_map_.end()) {
-    callback_iter->second.Run(allowed);
-    geolocation_request_callback_map_.erase(callback_iter);
+      geolocation_request_map_.find(request_id);
+  if (callback_iter != geolocation_request_map_.end()) {
+    GeolocationRequestItem& item = callback_iter->second;
+    item.first.Run(allowed);
+    bridge_id_to_request_id_map_.erase(item.second);
+    geolocation_request_map_.erase(callback_iter);
   }
 }
 

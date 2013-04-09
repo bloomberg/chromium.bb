@@ -49,7 +49,6 @@ void BrowserPluginGeolocationPermissionContext::RequestGeolocationPermission(
   // have geolocation access.
   RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
                                                render_view_id);
-  DCHECK(rvh);
   if (rvh) {
     DCHECK(rvh->GetProcess()->IsGuest());
     WebContentsImpl* guest_web_contents =
