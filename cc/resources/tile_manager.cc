@@ -179,13 +179,6 @@ void TileManager::RegisterTile(Tile* tile) {
 }
 
 void TileManager::UnregisterTile(Tile* tile) {
-  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
-       it != tiles_with_image_decoding_tasks_.end(); it++) {
-    if (*it == tile) {
-      tiles_with_image_decoding_tasks_.erase(it);
-      break;
-    }
-  }
   for (TileVector::iterator it = tiles_that_need_to_be_rasterized_.begin();
        it != tiles_that_need_to_be_rasterized_.end(); it++) {
     if (*it == tile) {
@@ -492,14 +485,8 @@ void TileManager::AssignGpuMemoryToTiles() {
   // the needs-to-be-rasterized queue.
   tiles_that_need_to_be_rasterized_.clear();
 
-  // Reset the image decoding list so that we don't mess up with tile
-  // priorities. Tiles will be added to the image decoding list again
-  // when DispatchMoreTasks() is called.
-  tiles_with_image_decoding_tasks_.clear();
-
-  // By clearing the tiles_that_need_to_be_rasterized_ vector and
-  // tiles_with_image_decoding_tasks_ list above we move all tiles
-  // currently waiting for raster to idle state.
+  // By clearing the tiles_that_need_to_be_rasterized_ vector list
+  // above we move all tiles currently waiting for raster to idle state.
   // Some memory cannot be released. We figure out how much in this
   // loop as well.
   for (TileVector::iterator it = live_or_allocated_tiles_.begin();
@@ -594,31 +581,15 @@ bool TileManager::CanDispatchRasterTask(Tile* tile) const {
 }
 
 void TileManager::DispatchMoreTasks() {
-  // Because tiles in the image decoding list have higher priorities, we
-  // need to process those tiles first before we start to handle the tiles
-  // in the need_to_be_rasterized queue. Note that solid/transparent tiles
-  // will not be put into the decoding list.
-  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
-       it != tiles_with_image_decoding_tasks_.end(); ) {
-    ManagedTileState& managed_tile_state = (*it)->managed_state();
-    DispatchImageDecodeTasksForTile(*it);
-    if (managed_tile_state.pending_pixel_refs.empty()) {
-      if (!CanDispatchRasterTask(*it))
-        return;
-      DispatchOneRasterTask(*it);
-      tiles_with_image_decoding_tasks_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
+  TileVector tiles_with_image_decoding_tasks;
 
-  // Process all tiles in the need_to_be_rasterized queue. If a tile is
-  // solid/transparent, then we are done (we don't need to rasterize
-  // the tile). If a tile has image decoding tasks, put it to the back
-  // of the image decoding list.
+  // Process all tiles in the need_to_be_rasterized queue:
+  // 1. Analyze the tile and early out if it's solid color or transparent.
+  // 2. Dispatch image decode tasks.
+  // 3. If the image decode isn't done, save the tile for later processing.
+  // 4. Attempt to dispatch a raster task, or break out of the loop.
   while (!tiles_that_need_to_be_rasterized_.empty()) {
     Tile* tile = tiles_that_need_to_be_rasterized_.back();
-    ManagedTileState& mts = tile->managed_state();
 
     AnalyzeTile(tile);
     if (!tile->drawing_info().requires_resource()) {
@@ -627,15 +598,22 @@ void TileManager::DispatchMoreTasks() {
     }
 
     DispatchImageDecodeTasksForTile(tile);
-    if (!mts.pending_pixel_refs.empty()) {
-      tiles_with_image_decoding_tasks_.push_back(tile);
-    } else {
-      if (!CanDispatchRasterTask(tile))
+    if (!tile->managed_state().pending_pixel_refs.empty()) {
+      tiles_with_image_decoding_tasks.push_back(tile);
+    } else if (!CanDispatchRasterTask(tile)) {
         break;
+    } else {
       DispatchOneRasterTask(tile);
     }
     tiles_that_need_to_be_rasterized_.pop_back();
   }
+
+  // Put the saved tiles back into the queue. The order is reversed
+  // to preserve original ordering.
+  tiles_that_need_to_be_rasterized_.insert(
+      tiles_that_need_to_be_rasterized_.end(),
+      tiles_with_image_decoding_tasks.rbegin(),
+      tiles_with_image_decoding_tasks.rend());
 
   if (did_initialize_visible_tile_) {
     did_initialize_visible_tile_ = false;
@@ -739,8 +717,8 @@ void TileManager::OnImageDecodeTaskCompleted(
   pending_decode_tasks_.erase(pixel_ref_id);
   pending_tasks_--;
 
-  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
-      it != tiles_with_image_decoding_tasks_.end(); ++it) {
+  for (TileVector::iterator it = tiles_that_need_to_be_rasterized_.begin();
+       it != tiles_that_need_to_be_rasterized_.end(); ++it) {
     std::list<skia::LazyPixelRef*>& pixel_refs =
         (*it)->managed_state().pending_pixel_refs;
     for (std::list<skia::LazyPixelRef*>::iterator pixel_it =

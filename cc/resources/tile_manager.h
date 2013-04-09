@@ -185,11 +185,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   TileVector live_or_allocated_tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
-  typedef std::list<Tile*> TileList;
-  // Tiles with image decoding tasks. These tiles need to be rasterized
-  // when all the image decoding tasks finish.
-  TileList tiles_with_image_decoding_tasks_;
-
   typedef base::hash_map<uint32_t, skia::LazyPixelRef*> PixelRefMap;
   PixelRefMap pending_decode_tasks_;
 
