@@ -198,6 +198,7 @@ xkb:gb:dvorak:eng	gb(dvorak)	en-GB
 xkb:fi::fin	fi	fi	
 xkb:hu::hun	hu	hu	
 xkb:it::ita	it	it	
+xkb:is::ice	is	is
 xkb:no::nob	no	nb	
 xkb:pl::pol	pl	pl	
 xkb:pt::por	pt	pt-PT	
