@@ -658,6 +658,7 @@
             '../third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
+            'ext/convolver_SSE2.cc',
           ],
           'conditions': [
             # x86 Android doesn't support SSSE3 instructions.

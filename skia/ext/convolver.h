@@ -12,12 +12,11 @@
 #include "base/cpu.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
-#if defined(ARCH_CPU_X86_FAMILY)
-// TODO(hclam): SSE2 is disabled on Linux 32-bits because GCC requires -msse2.
-//              We should refactor the code in .cc and enable this.
-#if defined(ARCH_CPU_X86_64) || defined(OS_MACOSX) || defined(COMPILER_MSVC)
+// We can build SSE2 optimized versions for all x86 CPUs
+// except when building for the IOS emulator.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_IOS)
 #define SIMD_SSE2 1
-#endif
+#define SIMD_PADDING 8  // 8 * int16
 #endif
 
 // avoid confusion with Mac OS X's math library (Carbon)
@@ -108,14 +107,16 @@ class ConvolutionFilter1D {
   }
 
 
-  inline void PaddingForSIMD(int padding_count) {
+  inline void PaddingForSIMD() {
     // Padding |padding_count| of more dummy coefficients after the coefficients
     // of last filter to prevent SIMD instructions which load 8 or 16 bytes
     // together to access invalid memory areas. We are not trying to align the
     // coefficients right now due to the opaqueness of <vector> implementation.
     // This has to be done after all |AddFilter| calls.
-    for (int i = 0; i < padding_count; ++i)
+#ifdef SIMD_PADDING
+    for (int i = 0; i < SIMD_PADDING; ++i)
       filter_values_.push_back(static_cast<Fixed>(0));
+#endif
   }
 
  private:
@@ -167,7 +168,7 @@ SK_API void BGRAConvolve2D(const unsigned char* source_data,
                            const ConvolutionFilter1D& yfilter,
                            int output_byte_row_stride,
                            unsigned char* output,
-                           bool use_sse2);
+                           bool use_simd_if_possible);
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_H_

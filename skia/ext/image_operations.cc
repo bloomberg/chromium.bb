@@ -300,7 +300,7 @@ void ResizeFilter::ComputeFilters(int src_size,
                       static_cast<int>(fixed_filter_values->size()));
   }
 
-  output->PaddingForSIMD(8);
+  output->PaddingForSIMD();
 }
 
 ImageOperations::ResizeMethod ResizeMethodToAlgorithmMethod(
@@ -509,7 +509,6 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
       reinterpret_cast<const uint8*>(source.getPixels());
 
   // Convolve into the result.
-  base::CPU cpu;
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config,
                    dest_subset.width(), dest_subset.height());
@@ -521,7 +520,7 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
                  !source.isOpaque(), filter.x_filter(), filter.y_filter(),
                  static_cast<int>(result.rowBytes()),
                  static_cast<unsigned char*>(result.getPixels()),
-                 cpu.has_sse2());
+                 true);
 
   // Preserve the "opaque" flag for use as an optimization later.
   result.setIsOpaque(source.isOpaque());

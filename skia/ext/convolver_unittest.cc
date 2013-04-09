@@ -211,10 +211,6 @@ TEST(Convolver, AddFilter) {
 }
 
 TEST(Convolver, SIMDVerification) {
-#if defined(SIMD_SSE2)
-  base::CPU cpu;
-  if (!cpu.has_sse2()) return;
-
   int source_sizes[][2] = {
     {1,1}, {1,2}, {1,3}, {1,4}, {1,5},
     {2,1}, {2,2}, {2,3}, {2,4}, {2,5},
@@ -246,14 +242,14 @@ TEST(Convolver, SIMDVerification) {
                            std::min<int>(arraysize(filter),
                                          source_width - offset));
       }
-      x_filter.PaddingForSIMD(8);
+      x_filter.PaddingForSIMD();
       for (unsigned int p = 0; p < dest_height; ++p) {
         unsigned int offset = source_height * p / dest_height;
         y_filter.AddFilter(offset, filter,
                            std::min<int>(arraysize(filter),
                                          source_height - offset));
       }
-      y_filter.PaddingForSIMD(8);
+      y_filter.PaddingForSIMD();
 
       // Allocate input and output skia bitmap.
       SkBitmap source, result_c, result_sse;
@@ -326,7 +322,6 @@ TEST(Convolver, SIMDVerification) {
       }
     }
   }
-#endif
 }
 
 }  // namespace skia
