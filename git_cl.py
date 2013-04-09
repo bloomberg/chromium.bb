@@ -1635,7 +1635,7 @@ def CMDpatch(parser, args):
     cl = Changelist()
     cl.SetIssue(issue)
     cl.SetPatchset(patchset)
-    print "Committed patch."
+    print "Committed patch locally."
   else:
     print "Patch applied to index."
   return 0
