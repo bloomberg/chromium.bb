@@ -76,6 +76,11 @@ void LocallyManagedUserController::FinishCreation() {
   chrome::AttemptUserExit();
 }
 
+std::string LocallyManagedUserController::GetManagedUserId() {
+  DCHECK(creation_context_);
+  return creation_context_->user_id;
+}
+
 // CloudConnector::Delegate overrides
 void LocallyManagedUserController::NewUserIdGenerated(std::string& new_id) {
   DCHECK(creation_context_.get());

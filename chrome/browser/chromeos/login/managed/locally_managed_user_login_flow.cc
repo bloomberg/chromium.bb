@@ -50,7 +50,7 @@ bool LocallyManagedUserLoginFlow::ShouldLaunchBrowser() {
 }
 
 bool LocallyManagedUserLoginFlow::ShouldSkipPostLoginScreens() {
-  return false;
+  return true;
 }
 
 bool LocallyManagedUserLoginFlow::HandleLoginFailure(

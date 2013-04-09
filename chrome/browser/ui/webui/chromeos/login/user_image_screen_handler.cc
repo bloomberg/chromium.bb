@@ -299,4 +299,11 @@ void UserImageScreenHandler::OnDecodeImageFailed(const ImageDecoder* decoder) {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
+void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
+  base::FundamentalValue present_value(enabled);
+  web_ui()->
+      CallJavascriptFunction("oobe.UserImageScreen.setProfilePictureEnabled",
+                             present_value);
+}
+
 }  // namespace chromeos

@@ -48,9 +48,41 @@ UserImageScreen::~UserImageScreen() {
     actor_->SetDelegate(NULL);
 }
 
+void UserImageScreen::SetProfilePictureEnabled(bool profile_picture_enabled) {
+  if (profile_picture_enabled_ == profile_picture_enabled)
+    return;
+  profile_picture_enabled_ = profile_picture_enabled;
+  if (profile_picture_enabled) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+        content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+        content::NotificationService::AllSources());
+  } else {
+    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+        content::NotificationService::AllSources());
+    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+        content::NotificationService::AllSources());
+  }
+  if (actor_)
+    actor_->SetProfilePictureEnabled(profile_picture_enabled);
+}
+
+void UserImageScreen::SetUserID(const std::string& user_id) {
+  DCHECK(!user_id_.empty());
+  user_id_ = user_id;
+}
+
 void UserImageScreen::PrepareToShow() {
   if (actor_)
     actor_->PrepareToShow();
+}
+
+const User* UserImageScreen::GetUser() {
+  if (user_id_.empty())
+    return UserManager::Get()->GetLoggedInUser();
+  const User* user = UserManager::Get()->FindUser(user_id_);
+  DCHECK(user);
+  return user;
 }
 
 void UserImageScreen::Show() {
@@ -58,11 +90,15 @@ void UserImageScreen::Show() {
     return;
 
   actor_->Show();
-  actor_->SelectImage(UserManager::Get()->GetLoggedInUser()->image_index());
+  actor_->SetProfilePictureEnabled(profile_picture_enabled_);
 
-  // Start fetching the profile image.
-  UserManager::Get()->GetUserImageManager()->
-      DownloadProfileImage(kProfileDownloadReason);
+  actor_->SelectImage(GetUser()->image_index());
+
+  if (profile_picture_enabled_) {
+    // Start fetching the profile image.
+    UserManager::Get()->GetUserImageManager()->
+        DownloadProfileImage(kProfileDownloadReason);
+  }
 
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
@@ -80,7 +116,7 @@ std::string UserImageScreen::GetName() const {
 void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
   UserManager* user_manager = UserManager::Get();
   user_manager->GetUserImageManager()->SaveUserImage(
-      user_manager->GetLoggedInUser()->email(),
+      GetUser()->email(),
       UserImage::CreateAndEncode(image));
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
@@ -93,7 +129,7 @@ void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
 void UserImageScreen::OnProfileImageSelected() {
   UserManager* user_manager = UserManager::Get();
   user_manager->GetUserImageManager()->SaveUserImageFromProfileImage(
-      user_manager->GetLoggedInUser()->email());
+      GetUser()->email());
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -105,7 +141,7 @@ void UserImageScreen::OnProfileImageSelected() {
 void UserImageScreen::OnDefaultImageSelected(int index) {
   UserManager* user_manager = UserManager::Get();
   user_manager->GetUserImageManager()->SaveUserDefaultImageIndex(
-      user_manager->GetLoggedInUser()->email(), index);
+      GetUser()->email(), index);
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -122,6 +158,7 @@ void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {
 void UserImageScreen::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
+  DCHECK(profile_picture_enabled_);
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED: {
       // We've got a new profile image.

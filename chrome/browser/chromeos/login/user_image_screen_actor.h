@@ -52,6 +52,9 @@ class UserImageScreenActor {
   // Starts camera presence check.
   virtual void CheckCameraPresence() = 0;
 
+  // Enables or disables profile picture.
+  virtual void SetProfilePictureEnabled(bool enabled) = 0;
+
   // Inserts profile image in the list for user to select.
   virtual void AddProfileImage(const gfx::ImageSkia& image) {}
 

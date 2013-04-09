@@ -168,6 +168,11 @@ void LocallyManagedUserCreationScreenHandler::ShowProgressScreen() {
       "login.LocallyManagedUserCreationScreen.showProgressScreen");
 }
 
+void LocallyManagedUserCreationScreenHandler::ShowPostImageSelectionScreen() {
+  web_ui()->CallJavascriptFunction(
+      "login.LocallyManagedUserCreationScreen.showPostImageSelectionScreen");
+}
+
 void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
   web_ui()->CallJavascriptFunction(
       "login.LocallyManagedUserCreationScreen.showFinishedMessage");

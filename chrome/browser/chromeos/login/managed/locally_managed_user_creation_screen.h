@@ -64,6 +64,7 @@ class LocallyManagedUserCreationScreen
   virtual void AbortFlow() OVERRIDE;
   virtual void RetryLastStep() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
+  virtual void SelectPicture() OVERRIDE;
 
   // LocallyManagedUserController::StatusConsumer overrides.
   virtual void OnCreationError(LocallyManagedUserController::ErrorCode code,
@@ -80,6 +81,7 @@ class LocallyManagedUserCreationScreen
   scoped_ptr<LocallyManagedUserController> controller_;
 
   bool on_error_screen_;
+  bool on_image_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };

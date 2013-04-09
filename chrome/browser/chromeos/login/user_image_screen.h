@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,6 +21,11 @@ class UserImageScreen: public WizardScreen,
   UserImageScreen(ScreenObserver* screen_observer,
                   UserImageScreenActor* actor);
   virtual ~UserImageScreen();
+
+  // Indicates whether profile picture is enabled for given user.
+  void SetProfilePictureEnabled(bool support_profile_picture);
+  // Sets |user_id| of user that would have picture updated.
+  void SetUserID(const std::string& user_id);
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
@@ -39,9 +45,15 @@ class UserImageScreen: public WizardScreen,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  const User* GetUser();
+
   content::NotificationRegistrar registrar_;
 
   UserImageScreenActor* actor_;
+
+  bool profile_picture_enabled_;
+
+  std::string user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };

@@ -41,6 +41,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
     virtual void RetryLastStep() = 0;
+    virtual void SelectPicture() = 0;
   };
 
   LocallyManagedUserCreationScreenHandler();
@@ -55,6 +56,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowManagerPasswordError();
   void ShowInitialScreen();
   void ShowProgressScreen();
+  void ShowPostImageSelectionScreen();
   virtual void ShowSuccessMessage();
   virtual void ShowErrorMessage(string16 message, bool recoverable);
 

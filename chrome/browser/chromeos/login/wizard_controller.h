@@ -113,6 +113,11 @@ class WizardController : public ScreenObserver {
   // Advances to screen defined by |screen_name| and shows it.
   void AdvanceToScreen(const std::string& screen_name);
 
+  // Advances to screen defined by |screen_name| and shows it.
+  // Takes ownership of |screen_parameters|.
+  void AdvanceToScreenWithParams(const std::string& first_screen_name,
+                                 base::DictionaryValue* screen_parameters);
+
   // Advances to login screen. Should be used in for testing only.
   void SkipToLoginForTesting();
 
@@ -125,6 +130,10 @@ class WizardController : public ScreenObserver {
 
   // Skip update, go straight to enrollment after EULA is accepted.
   void SkipUpdateEnrollAfterEula();
+
+  // TODO(antrim) : temporary hack. Should be removed once screen system is
+  // reworked at hackaton.
+  void EnableUserImageScreenReturnToPreviousHack();
 
   // Lazy initializers and getters for screens.
   NetworkScreen* GetNetworkScreen();
@@ -304,6 +313,10 @@ class WizardController : public ScreenObserver {
   ObserverList<Observer> observer_list_;
 
   bool login_screen_started_;
+
+  // Indicates that once image selection screen finishes we should return to
+  // a previous screen instead of proceeding with usual flow.
+  bool user_image_screen_return_to_previous_hack_;
 
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);

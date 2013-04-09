@@ -159,7 +159,8 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
       skip_update_enroll_after_eula_(false),
-      login_screen_started_(false) {
+      login_screen_started_(false),
+      user_image_screen_return_to_previous_hack_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -312,11 +313,26 @@ void WizardController::ShowUserImageScreen() {
     return;
   }
   VLOG(1) << "Showing user image screen.";
+
+  bool profile_picture_enabled = true;
+  std::string user_id;
+  if (screen_parameters_.get()) {
+    screen_parameters_->GetBoolean("profile_picture_enabled",
+        &profile_picture_enabled);
+    screen_parameters_->GetString("user_id", &user_id);
+  }
+
   // Status area has been already shown at sign in screen so it
   // doesn't make sense to hide it here and then show again at user session as
   // this produces undesired UX transitions.
   SetStatusAreaVisible(true);
-  SetCurrentScreen(GetUserImageScreen());
+
+  UserImageScreen* screen = GetUserImageScreen();
+  if (!user_id.empty())
+    screen->SetUserID(user_id);
+  screen->SetProfilePictureEnabled(profile_picture_enabled);
+
+  SetCurrentScreen(screen);
   host_->SetShutdownButtonEnabled(false);
 }
 
@@ -492,7 +508,19 @@ void WizardController::OnUpdateErrorUpdating() {
   OnOOBECompleted();
 }
 
+void WizardController::EnableUserImageScreenReturnToPreviousHack() {
+  user_image_screen_return_to_previous_hack_ = true;
+}
+
 void WizardController::OnUserImageSelected() {
+  if (user_image_screen_return_to_previous_hack_) {
+    user_image_screen_return_to_previous_hack_ = false;
+    DCHECK(previous_screen_);
+    if (previous_screen_) {
+      SetCurrentScreen(previous_screen_);
+      return;
+    }
+  }
   // Launch browser and delete login host controller.
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -629,6 +657,13 @@ void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
 
 void WizardController::SetStatusAreaVisible(bool visible) {
   host_->SetStatusAreaVisible(visible);
+}
+
+void WizardController::AdvanceToScreenWithParams(
+    const std::string& screen_name,
+    base::DictionaryValue* screen_parameters) {
+  screen_parameters_.reset(screen_parameters);
+  AdvanceToScreen(screen_name);
 }
 
 void WizardController::AdvanceToScreen(const std::string& screen_name) {

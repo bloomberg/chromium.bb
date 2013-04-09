@@ -50,7 +50,8 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
     LocallyManagedUserCreationScreenHandler* actor)
     : WizardScreen(observer),
       actor_(actor),
-      on_error_screen_(false) {
+      on_error_screen_(false),
+      on_image_screen_(false) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -69,7 +70,13 @@ void LocallyManagedUserCreationScreen::PrepareToShow() {
 void LocallyManagedUserCreationScreen::Show() {
   if (actor_) {
     actor_->Show();
-    actor_->ShowInitialScreen();
+    // TODO(antrim) : temorary hack (until upcoming hackaton). Should be
+    // removed once we have screens reworked.
+    if (on_image_screen_) {
+      actor_->ShowPostImageSelectionScreen();
+    } else {
+      actor_->ShowInitialScreen();
+    }
   }
 
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
@@ -201,9 +208,20 @@ void LocallyManagedUserCreationScreen::OnCreationError(
     actor_->ShowErrorMessage(message, recoverable);
 }
 
+void LocallyManagedUserCreationScreen::SelectPicture() {
+  on_image_screen_ = true;
+  WizardController::default_controller()->
+      EnableUserImageScreenReturnToPreviousHack();
+  DictionaryValue* params = new DictionaryValue();
+  params->SetBoolean("profile_picture_enabled", false);
+  params->SetString("user_id", controller_->GetManagedUserId());
+
+  WizardController::default_controller()->
+      AdvanceToScreenWithParams(WizardController::kUserImageScreenName, params);
+}
+
 void LocallyManagedUserCreationScreen::OnCreationSuccess() {
-  if (actor_)
-    actor_->ShowSuccessMessage();
+  SelectPicture();
 }
 
 }  // namespace chromeos

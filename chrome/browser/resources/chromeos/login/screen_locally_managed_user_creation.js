@@ -704,6 +704,12 @@ cr.define('login', function() {
     screen.loadManagers(userList);
   };
 
+  LocallyManagedUserCreationScreen.showPostImageSelectionScreen =
+      function(userList) {
+    var screen = $('managed-user-creation-flow');
+    screen.setVisiblePage_('success');
+  };
+
   return {
     LocallyManagedUserCreationScreen: LocallyManagedUserCreationScreen
   };

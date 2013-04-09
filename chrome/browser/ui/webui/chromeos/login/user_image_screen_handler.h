@@ -45,6 +45,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void CheckCameraPresence() OVERRIDE;
   virtual void AddProfileImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void OnProfileImageAbsent() OVERRIDE;
+  virtual void SetProfilePictureEnabled(bool enabled) OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

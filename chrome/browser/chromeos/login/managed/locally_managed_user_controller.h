@@ -56,6 +56,7 @@ class LocallyManagedUserController
   void StartCreation();
   void RetryLastStep();
   void FinishCreation();
+  std::string GetManagedUserId();
 
  private:
   // Contains information necessary for new user creation.
