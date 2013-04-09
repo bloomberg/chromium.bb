@@ -6,20 +6,20 @@
 #define NET_SPDY_SPDY_SESSION_H_
 
 #include <deque>
-#include <list>
 #include <map>
-#include <queue>
 #include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -30,6 +30,7 @@
 #include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/spdy_write_queue.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -173,29 +174,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     FLOW_CONTROL_STREAM_AND_SESSION
   };
 
-  // Defines an interface for producing SpdyIOBuffers.
-  class NET_EXPORT_PRIVATE SpdyIOBufferProducer {
-   public:
-    SpdyIOBufferProducer() {}
-
-    // Returns a newly created SpdyIOBuffer, owned by the caller, or NULL
-    // if not buffer is ready to be produced.
-    virtual SpdyIOBuffer* ProduceNextBuffer(SpdySession* session) = 0;
-
-    virtual RequestPriority GetPriority() const = 0;
-
-    virtual ~SpdyIOBufferProducer() {}
-
-   protected:
-    // Activates |spdy_stream| in |spdy_session|.
-    static void ActivateStream(SpdySession* spdy_session,
-                               SpdyStream* spdy_stream);
-
-    static SpdyIOBuffer* CreateIOBuffer(SpdyFrame* frame,
-                                        RequestPriority priority,
-                                        SpdyStream* spdy_stream);
-  };
-
   // Create a new SpdySession.
   // |host_port_proxy_pair| is the host/port that this session connects to, and
   // the proxy configuration settings that it's using.
@@ -258,37 +236,41 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // authentication now.
   bool VerifyDomainAuthentication(const std::string& domain);
 
-  // Records that |stream| has a write available from |producer|.
-  // |producer| will be owned by this SpdySession.
-  void SetStreamHasWriteAvailable(SpdyStream* stream,
-                                  SpdyIOBufferProducer* producer);
+  // Pushes the given producer into the write queue for
+  // |stream|. |stream| is guaranteed to be activated before the
+  // producer is used to produce its frame.
+  void EnqueueStreamWrite(SpdyStream* stream,
+                          scoped_ptr<SpdyFrameProducer> producer);
 
-  // Send the SYN frame for |stream_id|. This also sends PING message to check
-  // the status of the connection.
-  SpdyFrame* CreateSynStream(
+  // Creates and returns a SYN frame for |stream_id|.
+  scoped_ptr<SpdyFrame> CreateSynStream(
       SpdyStreamId stream_id,
       RequestPriority priority,
       uint8 credential_slot,
       SpdyControlFlags flags,
       const SpdyHeaderBlock& headers);
 
-  // Write a CREDENTIAL frame to the session.
-  SpdyFrame* CreateCredentialFrame(const std::string& origin,
-                                   SSLClientCertType type,
-                                   const std::string& key,
-                                   const std::string& cert,
-                                   RequestPriority priority);
+  // Tries to create a CREDENTIAL frame. If successful, fills in
+  // |credential_frame| and returns OK. Returns the error (guaranteed
+  // to not be ERR_IO_PENDING) otherwise.
+  int CreateCredentialFrame(const std::string& origin,
+                            SSLClientCertType type,
+                            const std::string& key,
+                            const std::string& cert,
+                            RequestPriority priority,
+                            scoped_ptr<SpdyFrame>* credential_frame);
 
-  // Write a HEADERS frame to the stream.
-  SpdyFrame* CreateHeadersFrame(SpdyStreamId stream_id,
-                                const SpdyHeaderBlock& headers,
-                                SpdyControlFlags flags);
+  // Creates and returns a HEADERS frame.
+  scoped_ptr<SpdyFrame> CreateHeadersFrame(SpdyStreamId stream_id,
+                                           const SpdyHeaderBlock& headers,
+                                           SpdyControlFlags flags);
 
-  // Write a data frame to the stream.
-  // Used to create and queue a data frame for the given stream.
-  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id,
-                             net::IOBuffer* data, int len,
-                             SpdyDataFlags flags);
+  // Creates and returns a data frame. May return NULL if stalled by
+  // flow control.
+  scoped_ptr<SpdyFrame> CreateDataFrame(SpdyStreamId stream_id,
+                                        net::IOBuffer* data,
+                                        int len,
+                                        SpdyDataFlags flags);
 
   // Close a stream.
   void CloseStream(SpdyStreamId stream_id, int status);
@@ -471,19 +453,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> > PushedStreamMap;
 
   typedef std::set<scoped_refptr<SpdyStream> > CreatedStreamSet;
-  typedef std::map<SpdyIOBufferProducer*, SpdyStream*> StreamProducerMap;
-
-  class SpdyIOBufferProducerCompare {
-   public:
-    bool operator() (const SpdyIOBufferProducer* lhs,
-                     const SpdyIOBufferProducer* rhs) const {
-      return lhs->GetPriority() < rhs->GetPriority();
-    }
-  };
-
-  typedef std::priority_queue<SpdyIOBufferProducer*,
-                              std::vector<SpdyIOBufferProducer*>,
-                              SpdyIOBufferProducerCompare> WriteQueue;
 
   enum State {
     IDLE,
@@ -566,10 +535,16 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Get a new stream id.
   int GetNewStreamId();
 
-  // Queue a frame for sending.
-  // |frame| is the frame to send.
-  // |priority| is the priority for insertion into the queue.
-  void QueueFrame(SpdyFrame* frame, RequestPriority priority);
+  // Pushes the given frame with the given priority into the write
+  // queue for the session.
+  void EnqueueSessionWrite(RequestPriority priority,
+                           scoped_ptr<SpdyFrame> frame);
+
+  // Puts |producer| associated with |stream| onto the write queue
+  // with the given priority.
+  void EnqueueWrite(RequestPriority priority,
+                    scoped_ptr<SpdyFrameProducer> producer,
+                    const scoped_refptr<SpdyStream>& stream);
 
   // Track active streams in the active stream list.
   void ActivateStream(SpdyStream* stream);
@@ -753,13 +728,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Set of all created streams but that have not yet sent any frames.
   CreatedStreamSet created_streams_;
 
-  // As streams have data to be sent, we put them into the write queue.
-  WriteQueue write_queue_;
-
-  // Mapping from SpdyIOBufferProducers to their corresponding SpdyStream
-  // so that when a stream is destroyed, we can remove the corresponding
-  // producer from |write_queue_|.
-  StreamProducerMap stream_producers_;
+  // The write queue.
+  SpdyWriteQueue write_queue_;
 
   // The packet we are currently sending.
   bool write_pending_;            // Will be true when a write is in progress.
