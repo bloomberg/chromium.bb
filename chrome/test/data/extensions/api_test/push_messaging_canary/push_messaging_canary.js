@@ -16,8 +16,13 @@ function verifyDetails(details) {
 
 function startTestWithCredentials(paramClientId, paramClientSecret,
                                   paramRefreshToken) {
+  var callbackPassFunc = chrome.test.callbackPass(verifyDetails);
   chrome.pushMessaging.onMessage.addListener(
-      chrome.test.callbackPass(verifyDetails));
+      function(details) {
+        // We need to allow time for the invalidation service to ACK before we
+        // shutdown.
+        window.setTimeout(callbackPassFunc(details), 2000);
+      });
 
   clientId = paramClientId;
   clientSecret = paramClientSecret;

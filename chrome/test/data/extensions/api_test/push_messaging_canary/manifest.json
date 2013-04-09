@@ -8,6 +8,6 @@
   "permissions": [
     "pushMessaging",
     "https://accounts.google.com/o/oauth2/token",
-    "https://www.googleapis.com/gcmForChrome/v1/messages"
+    "https://www.googleapis.com/gcm_for_chrome/v1/messages"
   ]
 }
