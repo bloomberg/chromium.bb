@@ -71,7 +71,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void start(ErrorString* = 0);
-    virtual void stop(ErrorString* = 0);
+    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::ProfileHeader>& header);
 
     void disable();
     void enable(bool skipRecompile);
@@ -108,6 +108,7 @@ private:
 
     void resetFrontendProfiles();
     void restoreEnablement();
+    PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);
 
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createProfileHeader(const ScriptProfile&);
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createSnapshotHeader(const ScriptHeapSnapshot&);

@@ -360,17 +360,27 @@ void InspectorProfilerAgent::start(ErrorString*)
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
-void InspectorProfilerAgent::stop(ErrorString*)
+void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::Profiler::ProfileHeader>& header)
+{
+    header = stop(errorString);
+}
+
+PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::stop(ErrorString* errorString)
 {
     if (!m_recordingCPUProfile)
-        return;
+        return 0;
     m_recordingCPUProfile = false;
     String title = getCurrentUserInitiatedProfileName();
     RefPtr<ScriptProfile> profile = stopProfiling(title);
-    if (profile)
+    RefPtr<TypeBuilder::Profiler::ProfileHeader> profileHeader;
+    if (profile) {
         addProfile(profile, 0, String());
+        profileHeader = createProfileHeader(*profile);
+    } else if (errorString)
+        *errorString = "Profile wasn't found";
     toggleRecordButton(false);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
+    return profileHeader;
 }
 
 namespace {

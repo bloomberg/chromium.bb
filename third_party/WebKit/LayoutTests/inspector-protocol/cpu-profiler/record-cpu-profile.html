@@ -1,0 +1,76 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function test()
+{
+    InspectorTest.sendCommand("Profiler.start", {}, didStartFrontendProfile);
+    function checkExpectation(fail, name, messageObject)
+    {
+        if (fail === !!messageObject.error) {
+            InspectorTest.log("PASS: " + name);
+            return true;
+        }
+
+        InspectorTest.log("FAIL: " + name + ": " + JSON.stringify(messageObject));
+        InspectorTest.completeTest();
+        return false;
+    }
+    var pass = checkExpectation.bind(null, false);
+    var fail = checkExpectation.bind(null, true);
+
+    function didStartFrontendProfile(messageObject)
+    {
+        if (!pass("startFrontendProfile", messageObject))
+            return;
+        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profile('org.webkit.profiles.user-initiated.1');"}, didStartConsoleProfile);
+    }
+
+    function didStartConsoleProfile(messageObject)
+    {
+        if (!pass("startConsoleProfile", messageObject))
+            return;
+        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profileEnd('org.webkit.profiles.user-initiated.1');"}, didStopConsoleProfile);
+    }
+
+    function didStopConsoleProfile(messageObject)
+    {
+        if (!pass("stopConsoleProfile", messageObject))
+            return;
+        InspectorTest.sendCommand("Profiler.stop", {}, didStopFrontendProfile);
+    }
+
+    function didStopFrontendProfile(messageObject)
+    {
+        if (!fail("failToStopFrontendProfile", messageObject))
+            return;
+        InspectorTest.log("Error message was: " + JSON.stringify(messageObject.error));
+        InspectorTest.sendCommand("Profiler.start", {}, didStartFrontendProfile2);
+    }
+
+    function didStartFrontendProfile2(messageObject)
+    {
+        if (!pass("startFrontendProfileSecondTime", messageObject))
+            return;
+        InspectorTest.sendCommand("Profiler.stop", {}, didStopFrontendProfile2);
+    }
+
+    function didStopFrontendProfile2(messageObject)
+    {
+        pass("stopFrontendProfileSecondTime", messageObject)
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Test that profiler is able to record a profile.
+Also it tests that profiler returns an error when it unable to find the profile.
+</body>
+</html>
