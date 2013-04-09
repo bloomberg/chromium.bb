@@ -190,10 +190,6 @@ bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
 #endif
 
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
-bool RuntimeEnabledFeatures::isInputTypeDateTimeLocalEnabled = true;
-#endif
-
 #if ENABLE(INPUT_TYPE_MONTH)
 bool RuntimeEnabledFeatures::isInputTypeMonthEnabled = true;
 #endif

@@ -31,7 +31,6 @@
 #ifndef DateTimeLocalInputType_h
 #define DateTimeLocalInputType_h
 
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
 #include "BaseChooserOnlyDateAndTimeInputType.h"
 #include "BaseMultipleFieldsDateAndTimeInputType.h"
 
@@ -69,5 +68,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif // DateTimeLocalInputType_h

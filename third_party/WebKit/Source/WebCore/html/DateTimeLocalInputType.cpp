@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
 #include "DateTimeLocalInputType.h"
 
 #include "DateComponents.h"
@@ -178,5 +177,3 @@ bool DateTimeLocalInputType::isValidFormat(bool hasYear, bool hasMonth, bool has
 #endif
 
 } // namespace WebCore
-
-#endif

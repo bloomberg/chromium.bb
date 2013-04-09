@@ -490,24 +490,6 @@ bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
 #endif
 }
 
-void WebRuntimeFeatures::enableInputTypeDateTimeLocal(bool enable)
-{
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
-    RuntimeEnabledFeatures::setInputTypeDateTimeLocalEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
-}
-
-bool WebRuntimeFeatures::isInputTypeDateTimeLocalEnabled()
-{
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
-    return RuntimeEnabledFeatures::inputTypeDateTimeLocalEnabled();
-#else
-    return false;
-#endif
-}
-
 void WebRuntimeFeatures::enableInputTypeMonth(bool enable)
 {
 #if ENABLE(INPUT_TYPE_MONTH)

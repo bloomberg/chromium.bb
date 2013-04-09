@@ -102,10 +102,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     if (RuntimeEnabledFeatures::inputTypeDateTimeEnabled())
         map->add(InputTypeNames::datetime(), DateTimeInputType::create);
 #endif
-#if ENABLE(INPUT_TYPE_DATETIMELOCAL)
-    if (RuntimeEnabledFeatures::inputTypeDateTimeLocalEnabled())
-        map->add(InputTypeNames::datetimelocal(), DateTimeLocalInputType::create);
-#endif
+    map->add(InputTypeNames::datetimelocal(), DateTimeLocalInputType::create);
     map->add(InputTypeNames::email(), EmailInputType::create);
     map->add(InputTypeNames::file(), FileInputType::create);
     map->add(InputTypeNames::hidden(), HiddenInputType::create);

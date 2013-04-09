@@ -516,7 +516,7 @@ input[type="datetime"] {
     -webkit-padding-start: 1px;
 }
 #endif
-#if defined(ENABLE_INPUT_TYPE_DATETIMELOCAL) && ENABLE_INPUT_TYPE_DATETIMELOCAL
+
 input[type="datetime-local"] {
     -webkit-align-items: center;
     display: -webkit-inline-flex;
@@ -525,7 +525,7 @@ input[type="datetime-local"] {
     padding: 0;
     -webkit-padding-start: 1px;
 }
-#endif
+
 #if defined(ENABLE_INPUT_TYPE_MONTH) && ENABLE_INPUT_TYPE_MONTH
 input[type="month"] {
     -webkit-align-items: center;
@@ -653,7 +653,7 @@ input[type="datetime"] {
     width: 10em;
 }
 #endif
-#if defined(ENABLE_INPUT_TYPE_DATETIMELOCAL) && ENABLE_INPUT_TYPE_DATETIMELOCAL
+
 input[type="datetime-local"] {
     -webkit-align-items: center;
     -webkit-appearance: menulist-button;
@@ -661,7 +661,7 @@ input[type="datetime-local"] {
     overflow: hidden;
     width: 10em;
 }
-#endif
+
 #if defined(ENABLE_INPUT_TYPE_MONTH) && ENABLE_INPUT_TYPE_MONTH
 input[type="month"] {
     -webkit-align-items: center;
