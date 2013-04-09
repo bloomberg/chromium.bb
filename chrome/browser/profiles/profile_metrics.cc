@@ -65,14 +65,14 @@ enum ProfileAvatar {
   NUM_PROFILE_AVATAR_METRICS
 };
 
-void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager,
-                                         ProfileEvent startup) {
+void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
   size_t number_of_profiles = info_cache.GetNumberOfProfiles();
-  if (startup == STARTUP_PROFILE_EVENT) {
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesOnStartup",
-                             number_of_profiles);
+  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfiles",
+                            number_of_profiles);
 
+  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
+  if (number_of_profiles) {
     size_t number_of_managed_profiles = 0;
     size_t number_of_signed_in_profiles = 0;
     for (size_t i = 0; i < number_of_profiles; ++i) {
@@ -81,13 +81,12 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager,
       if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
         ++number_of_signed_in_profiles;
     }
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfilesOnStartup",
-                             number_of_managed_profiles);
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesOnStartup",
-                             number_of_signed_in_profiles);
-  } else {
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesAfterAddOrDelete",
-                             number_of_profiles);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfiles",
+                              number_of_managed_profiles);
+    UMA_HISTOGRAM_COUNTS_100("Profile.PercentageOfManagedProfiles",
+        100 * number_of_managed_profiles / number_of_profiles);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
+                              number_of_signed_in_profiles);
   }
 }
 

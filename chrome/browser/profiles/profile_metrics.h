@@ -65,14 +65,7 @@ class ProfileMetrics {
     NUM_PROFILE_GAIA_METRICS
   };
 
-  enum ProfileEvent {
-    STARTUP_PROFILE_EVENT = 0,
-    ADD_PROFILE_EVENT,
-    DELETE_PROFILE_EVENT
-  };
-
-  static void LogNumberOfProfiles(ProfileManager* manager,
-                                  ProfileEvent startup);
+  static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileNetUserCounts metric);

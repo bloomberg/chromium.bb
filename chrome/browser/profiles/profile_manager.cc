@@ -748,12 +748,11 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
 
-  ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
+  ProfileMetrics::LogNumberOfProfiles(this);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
-
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1062,9 +1061,6 @@ void ProfileManager::ScheduleProfileForDeletion(
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
-
-  ProfileMetrics::LogNumberOfProfiles(this,
-                                      ProfileMetrics::DELETE_PROFILE_EVENT);
 }
 
 // static
@@ -1099,8 +1095,6 @@ void ProfileManager::AutoloadProfiles() {
       GetProfile(cache.GetPathOfProfileAtIndex(p));
     }
   }
-  ProfileMetrics::LogNumberOfProfiles(this,
-                                      ProfileMetrics::STARTUP_PROFILE_EVENT);
 }
 
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
