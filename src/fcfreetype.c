@@ -1662,7 +1662,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     if (!FcPatternAddBool (pat, FC_DECORATIVE, decorative))
 	goto bail1;
 
-    hashstr = FcHashGetSHA256DigestFromFile (file);
+    hashstr = FcHashGetSHA256DigestFromFace (face);
     if (!hashstr)
 	goto bail1;
     if (!FcPatternAddString (pat, FC_HASH, hashstr))

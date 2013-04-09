@@ -29,6 +29,9 @@
 #include "fcint.h"
 #include <stdio.h>
 #include <string.h>
+#include <ft2build.h>
+#include FT_TRUETYPE_TABLES_H
+#include FT_TRUETYPE_TAGS_H
 
 #define ROTRN(w, v, n)	((((FcChar32)v) >> n) | (((FcChar32)v) << (w - n)))
 #define ROTR32(v, n)	ROTRN(32, v, n)
@@ -204,41 +207,50 @@ FcHashGetSHA256Digest (const FcChar8 *input_strings,
 }
 
 FcChar8 *
-FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
+FcHashGetSHA256DigestFromFace (const FT_Face face)
 {
-    FILE *fp = fopen ((const char *)filename, "rb");
-    char ibuf[64];
+    char ibuf[64], *buf = NULL;
     FcChar32 *ret;
-    size_t len;
-    struct stat st;
+    FT_Error err;
+    FT_ULong len = 0, alen, i = 0;
 
-    if (!fp)
+    err = FT_Load_Sfnt_Table (face, 0, 0, NULL, &len);
+    if (err != FT_Err_Ok)
 	return NULL;
-
-    if (FcStat (filename, &st))
+    alen = (len + 63) & ~63;
+    buf = malloc (alen);
+    if (!buf)
+	return NULL;
+    err = FT_Load_Sfnt_Table (face, 0, 0, (FT_Byte *)buf, &len);
+    if (err != FT_Err_Ok)
 	goto bail0;
+    memset (&buf[len], 0, alen - len);
 
     ret = FcHashInitSHA256Digest ();
     if (!ret)
 	goto bail0;
 
-    while (!feof (fp))
+    while (i <= len)
     {
-	if ((len = fread (ibuf, sizeof (char), 64, fp)) < 64)
+	if ((len - i) < 64)
 	{
 	    long v;
+	    int n;
 
 	    /* add a padding */
-	    memset (&ibuf[len], 0, 64 - len);
-	    ibuf[len] = 0x80;
-	    if ((64 - len) < 9)
+	    n = len - i;
+	    if (n > 0)
+		memcpy (ibuf, &buf[i], n);
+	    memset (&ibuf[n], 0, 64 - n);
+	    ibuf[n] = 0x80;
+	    if ((64 - n) < 9)
 	    {
 		/* process a block once */
 		FcHashComputeSHA256Digest (ret, ibuf);
 		memset (ibuf, 0, 64);
 	    }
 	    /* set input size at the end */
-	    v = (long)st.st_size * 8;
+	    v = len * 8;
 	    ibuf[63 - 0] =  v        & 0xff;
 	    ibuf[63 - 1] = (v >>  8) & 0xff;
 	    ibuf[63 - 2] = (v >> 16) & 0xff;
@@ -252,14 +264,18 @@ FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
 	}
 	else
 	{
-	    FcHashComputeSHA256Digest (ret, ibuf);
+	    FcHashComputeSHA256Digest (ret, &buf[i]);
 	}
+	i += 64;
     }
-    fclose (fp);
+    if (buf)
+	free (buf);
 
     return FcHashSHA256ToString (ret);
 
 bail0:
-    fclose (fp);
+    if (buf)
+	free (buf);
+
     return NULL;
 }

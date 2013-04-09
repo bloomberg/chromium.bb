@@ -47,6 +47,8 @@
 #include "fcdeprecate.h"
 #include "fcmutex.h"
 #include "fcatomic.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
@@ -819,7 +821,7 @@ FcPrivate FcChar8 *
 FcHashGetSHA256Digest (const FcChar8 *input_strings,
 		       size_t         len);
 FcPrivate FcChar8 *
-FcHashGetSHA256DigestFromFile (const FcChar8 *filename);
+FcHashGetSHA256DigestFromFace (const FT_Face face);
 
 /* fcinit.c */
 FcPrivate FcConfig *
