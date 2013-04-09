@@ -39,20 +39,14 @@
 
     long getNumberOfChars();
     float getComputedTextLength();
-    float getSubStringLength([Optional=DefaultIsUndefined,IsIndex] unsigned long offset, 
-                             [Optional=DefaultIsUndefined,IsIndex] unsigned long length)
-        raises(DOMException);
-    SVGPoint getStartPositionOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset)
-        raises(DOMException);
-    SVGPoint getEndPositionOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset)
-        raises(DOMException);
-    SVGRect getExtentOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset)
-        raises(DOMException);
-    float getRotationOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset)
-        raises(DOMException);
+    [RaisesException] float getSubStringLength([Optional=DefaultIsUndefined,IsIndex] unsigned long offset, 
+                             [Optional=DefaultIsUndefined,IsIndex] unsigned long length);
+    [RaisesException] SVGPoint getStartPositionOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset);
+    [RaisesException] SVGPoint getEndPositionOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset);
+    [RaisesException] SVGRect getExtentOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset);
+    [RaisesException] float getRotationOfChar([Optional=DefaultIsUndefined,IsIndex] unsigned long offset);
     long getCharNumAtPosition([Optional=DefaultIsUndefined] SVGPoint point);
-    void selectSubString([Optional=DefaultIsUndefined,IsIndex] unsigned long offset, 
-                         [Optional=DefaultIsUndefined,IsIndex] unsigned long length)
-        raises(DOMException);
+    [RaisesException] void selectSubString([Optional=DefaultIsUndefined,IsIndex] unsigned long offset, 
+                         [Optional=DefaultIsUndefined,IsIndex] unsigned long length);
 };
 

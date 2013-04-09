@@ -27,36 +27,25 @@
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings]
-    Element createElement([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString tagName)
-        raises (DOMException);
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString tagName);
     DocumentFragment   createDocumentFragment();
     [ReturnNewObject, PerWorldBindings] Text createTextNode([Optional=DefaultIsUndefined] DOMString data);
     [ReturnNewObject] Comment createComment([Optional=DefaultIsUndefined] DOMString data);
-    [ReturnNewObject] CDATASection createCDATASection([Optional=DefaultIsUndefined] DOMString data)
-        raises(DOMException);
-    [ReturnNewObject] ProcessingInstruction createProcessingInstruction([Optional=DefaultIsUndefined] DOMString target,
-                                                                                 [Optional=DefaultIsUndefined] DOMString data)
-        raises (DOMException);
-    [ReturnNewObject] Attr createAttribute([Optional=DefaultIsUndefined] DOMString name)
-        raises (DOMException);
-    [ReturnNewObject] EntityReference createEntityReference([Optional=DefaultIsUndefined] DOMString name)
-        raises(DOMException);
+    [ReturnNewObject, RaisesException] CDATASection createCDATASection([Optional=DefaultIsUndefined] DOMString data);
+    [ReturnNewObject, RaisesException] ProcessingInstruction createProcessingInstruction([Optional=DefaultIsUndefined] DOMString target,
+                                                                                 [Optional=DefaultIsUndefined] DOMString data);
+    [ReturnNewObject, RaisesException] Attr createAttribute([Optional=DefaultIsUndefined] DOMString name);
+    [ReturnNewObject, RaisesException] EntityReference createEntityReference([Optional=DefaultIsUndefined] DOMString name);
     [PerWorldBindings] NodeList           getElementsByTagName([Optional=DefaultIsUndefined] DOMString tagname);
 
     // Introduced in DOM Level 2:
 
-    [ReturnNewObject, DeliverCustomElementCallbacks]
-    Node importNode([Optional=DefaultIsUndefined] Node importedNode,
-                    [Optional] boolean deep)
-        raises (DOMException);
-    [ReturnNewObject, DeliverCustomElementCallbacks]
-    Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                            [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName)
-        raises (DOMException);
-    [ReturnNewObject] Attr createAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
-                                                                          [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName)
-        raises (DOMException);
+    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Node importNode([Optional=DefaultIsUndefined] Node importedNode,
+                    [Optional] boolean deep);
+    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                            [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName);
+    [ReturnNewObject, RaisesException] Attr createAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+                                                                          [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName);
      NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                    [Optional=DefaultIsUndefined] DOMString localName);
     [PerWorldBindings] Element            getElementById([Optional=DefaultIsUndefined] DOMString elementId);
@@ -66,13 +55,10 @@
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString inputEncoding;
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString xmlEncoding;
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString xmlVersion
-                setter raises (DOMException);
-             attribute boolean xmlStandalone
-                setter raises (DOMException);
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString xmlVersion;
+             [SetterRaisesException] attribute boolean xmlStandalone;
 
-    Node               adoptNode([Optional=DefaultIsUndefined] Node source)
-        raises (DOMException);
+    [RaisesException] Node               adoptNode([Optional=DefaultIsUndefined] Node source);
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C || defined(LANGUAGE_GOBJECT) && LANGUAGE_GOBJECT
     // document.documentURI was writable in DOM3 Core, but is read-only in DOM4
@@ -86,8 +72,7 @@
 
     // DOM Level 2 Events (DocumentEvents interface)
 
-    Event              createEvent([Optional=DefaultIsUndefined] DOMString eventType)
-        raises(DOMException);
+    [RaisesException] Event              createEvent([Optional=DefaultIsUndefined] DOMString eventType);
 
     // DOM Level 2 Tranversal and Range (DocumentRange interface)
 
@@ -95,16 +80,14 @@
 
     // DOM Level 2 Tranversal and Range (DocumentTraversal interface)
 
-     NodeIterator createNodeIterator([Optional=DefaultIsUndefined] Node root,
+     [RaisesException] NodeIterator createNodeIterator([Optional=DefaultIsUndefined] Node root,
                                                    [Optional=DefaultIsUndefined] unsigned long whatToShow,
                                                    [Optional=DefaultIsUndefined] NodeFilter filter,
-                                                   [Optional=DefaultIsUndefined] boolean expandEntityReferences)
-        raises(DOMException);
-     TreeWalker createTreeWalker([Optional=DefaultIsUndefined] Node root,
+                                                   [Optional=DefaultIsUndefined] boolean expandEntityReferences);
+     [RaisesException] TreeWalker createTreeWalker([Optional=DefaultIsUndefined] Node root,
                                                [Optional=DefaultIsUndefined] unsigned long whatToShow,
                                                [Optional=DefaultIsUndefined] NodeFilter filter,
-                                               [Optional=DefaultIsUndefined] boolean expandEntityReferences)
-        raises(DOMException);
+                                               [Optional=DefaultIsUndefined] boolean expandEntityReferences);
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 
@@ -120,16 +103,14 @@
                                                         [Optional=DefaultIsUndefined] DOMString pseudoElement);
 
     // DOM Level 3 XPath (XPathEvaluator interface)
-     XPathExpression createExpression([Optional=DefaultIsUndefined] DOMString expression,
-                                                    [Optional=DefaultIsUndefined] XPathNSResolver resolver)
-        raises(DOMException);
+     [RaisesException] XPathExpression createExpression([Optional=DefaultIsUndefined] DOMString expression,
+                                                    [Optional=DefaultIsUndefined] XPathNSResolver resolver);
     XPathNSResolver    createNSResolver(Node nodeResolver);
-    [Custom] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
+    [Custom, RaisesException] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
                                                   [Optional=DefaultIsUndefined] Node contextNode,
                                                   [Optional=DefaultIsUndefined] XPathNSResolver resolver,
                                                   [Optional=DefaultIsUndefined] unsigned short type,
-                                                  [Optional=DefaultIsUndefined] XPathResult inResult)
-        raises(DOMException);
+                                                  [Optional=DefaultIsUndefined] XPathResult inResult);
 
     // Common extensions
     [DeliverCustomElementCallbacks]
@@ -155,19 +136,15 @@
              [TreatNullAs=NullString] attribute DOMString title;
     readonly attribute DOMString referrer;
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-             [TreatNullAs=NullString] attribute DOMString domain
-                 setter raises (DOMException);
+             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString domain;
 #else
     readonly attribute DOMString domain;
 #endif
     readonly attribute DOMString URL;
 
-             [TreatNullAs=NullString] attribute DOMString cookie
-                 setter raises (DOMException),
-                 getter raises (DOMException);
+             [TreatNullAs=NullString, GetterRaisesException, SetterRaisesException] attribute DOMString cookie;
 
-             attribute HTMLElement body
-                 setter raises (DOMException);
+             [SetterRaisesException] attribute HTMLElement body;
 
     readonly attribute HTMLHeadElement head;
     readonly attribute HTMLCollection images;
@@ -225,10 +202,8 @@
     readonly attribute DOMString compatMode;
 
     // NodeSelector - Selector API
-    Element querySelector(DOMString selectors)
-        raises(DOMException);
-    NodeList querySelectorAll(DOMString selectors)
-        raises(DOMException);
+    [RaisesException] Element querySelector(DOMString selectors);
+    [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
     // Mozilla version
     [EnabledAtRuntime] readonly attribute boolean webkitIsFullScreen;
@@ -329,7 +304,7 @@
 #endif
 
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
-    [ReturnNewObject, EnabledAtRuntime=touch] Touch createTouch([Optional=DefaultIsUndefined] DOMWindow window,
+    [ReturnNewObject, EnabledAtRuntime=touch, RaisesException] Touch createTouch([Optional=DefaultIsUndefined] DOMWindow window,
                                                      [Optional=DefaultIsUndefined] EventTarget target,
                                                      [Optional=DefaultIsUndefined] long identifier,
                                                      [Optional=DefaultIsUndefined] long pageX,
@@ -339,20 +314,15 @@
                                                      [Optional=DefaultIsUndefined] long webkitRadiusX,
                                                      [Optional=DefaultIsUndefined] long webkitRadiusY,
                                                      [Optional=DefaultIsUndefined] float webkitRotationAngle,
-                                                     [Optional=DefaultIsUndefined] float webkitForce)
-        raises (DOMException);
-    [ReturnNewObject, EnabledAtRuntime=touch, Custom] TouchList createTouchList()
-        raises (DOMException);
+                                                     [Optional=DefaultIsUndefined] float webkitForce);
+    [ReturnNewObject, EnabledAtRuntime=touch, Custom, RaisesException] TouchList createTouchList();
 #endif
 
 #if defined(ENABLE_CUSTOM_ELEMENTS) && ENABLE_CUSTOM_ELEMENTS
-    [EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks]
-    CustomElementConstructor webkitRegister(DOMString name, [Optional] Dictionary options) raises(DOMException);
-    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings]
-    Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension) raises (DOMException);
-    [ReturnNewObject, DeliverCustomElementCallbacks]
-    Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
-                            [TreatNullAs=NullString] DOMString typeExtension) raises (DOMException);
+    [EnabledAtRuntime=customDOMElements, Conditional=CUSTOM_ELEMENTS, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, [Optional] Dictionary options);
+    [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
+    [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
+                            [TreatNullAs=NullString] DOMString typeExtension);
 #endif
 
 #if defined(LANGUAGE_CPP) && LANGUAGE_CPP

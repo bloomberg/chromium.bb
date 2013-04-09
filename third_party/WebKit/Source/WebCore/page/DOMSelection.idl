@@ -40,26 +40,20 @@
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
 
-    void collapse([Optional=DefaultIsUndefined] Node node, 
-                  [Optional=DefaultIsUndefined] long index)
-        raises(DOMException);
-    void collapseToEnd()
-        raises(DOMException);
-    void collapseToStart()
-        raises(DOMException);
+    [RaisesException] void collapse([Optional=DefaultIsUndefined] Node node, 
+                  [Optional=DefaultIsUndefined] long index);
+    [RaisesException] void collapseToEnd();
+    [RaisesException] void collapseToStart();
 
     void deleteFromDocument();
     boolean containsNode([Optional=DefaultIsUndefined] Node node, 
                          [Optional=DefaultIsUndefined] boolean allowPartial);
-    void selectAllChildren([Optional=DefaultIsUndefined] Node node)
-        raises(DOMException);
+    [RaisesException] void selectAllChildren([Optional=DefaultIsUndefined] Node node);
 
-    void extend([Optional=DefaultIsUndefined] Node node, 
-                [Optional=DefaultIsUndefined] long offset)
-        raises(DOMException);
+    [RaisesException] void extend([Optional=DefaultIsUndefined] Node node, 
+                [Optional=DefaultIsUndefined] long offset);
 
-    Range getRangeAt([Optional=DefaultIsUndefined] long index)
-        raises(DOMException);
+    [RaisesException] Range getRangeAt([Optional=DefaultIsUndefined] long index);
     void removeAllRanges();
     void addRange([Optional=DefaultIsUndefined] Range range);
 
@@ -80,14 +74,12 @@
     void modify([Optional=DefaultIsUndefined] DOMString alter, 
                 [Optional=DefaultIsUndefined] DOMString direction, 
                 [Optional=DefaultIsUndefined] DOMString granularity);
-    void setBaseAndExtent([Optional=DefaultIsUndefined] Node baseNode, 
+    [RaisesException] void setBaseAndExtent([Optional=DefaultIsUndefined] Node baseNode, 
                           [Optional=DefaultIsUndefined] long baseOffset, 
                           [Optional=DefaultIsUndefined] Node extentNode, 
-                          [Optional=DefaultIsUndefined] long extentOffset)
-        raises(DOMException);
-    void setPosition([Optional=DefaultIsUndefined] Node node, 
-                     [Optional=DefaultIsUndefined] long offset)
-        raises(DOMException);
+                          [Optional=DefaultIsUndefined] long extentOffset);
+    [RaisesException] void setPosition([Optional=DefaultIsUndefined] Node node, 
+                     [Optional=DefaultIsUndefined] long offset);
 
     // IE extentions
     // http://msdn.microsoft.com/en-us/library/ms535869(VS.85).aspx

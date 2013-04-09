@@ -31,5 +31,5 @@
 [
     ImplementationLacksVTable
 ] interface DirectoryReaderSync {
-    EntryArraySync readEntries() raises (FileException);
+    [RaisesException] EntryArraySync readEntries();
 };

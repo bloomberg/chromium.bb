@@ -1039,7 +1039,7 @@ END
         push(@implContentInternals, "    if (!BindingSecurity::shouldAllowAccessToNode(BindingState::instance(), imp->" . $attribute->signature->name . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n");
     }
 
-    my $useExceptions = 1 if @{$attribute->getterExceptions};
+    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"};
     my $isNullable = $attribute->signature->isNullable;
     if ($useExceptions) {
         AddToImplIncludes("ExceptionCode.h");
@@ -1425,7 +1425,7 @@ END
 
     GenerateCustomElementInvocationScopeIfNeeded(\@implContentInternals, $attribute->signature->extendedAttributes);
 
-    my $useExceptions = 1 if @{$attribute->setterExceptions};
+    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"SetterRaisesException"};
 
     if ($useExceptions) {
         AddToImplIncludes("ExceptionCode.h");
@@ -1738,7 +1738,7 @@ END
 END
     }
 
-    my $raisesExceptions = @{$function->raisesExceptions};
+    my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
             if ((!$parameter->extendedAttributes->{"Callback"} and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
@@ -2058,7 +2058,7 @@ sub GenerateSingleConstructorCallback
         $overloadedIndexString .= $function->{overloadedIndex};
     }
 
-    my $raisesExceptions = @{$function->raisesExceptions};
+    my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
     }
@@ -2255,7 +2255,7 @@ sub GenerateNamedConstructor
 
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
-    my $raisesExceptions = @{$function->raisesExceptions};
+    my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
     }
@@ -3958,7 +3958,7 @@ sub GenerateFunctionCallString
         $index++;
     }
 
-    if (@{$function->raisesExceptions}) {
+    if ($function->signature->extendedAttributes->{"RaisesException"}) {
         push @arguments, "ec";
     }
 
@@ -3969,7 +3969,7 @@ sub GenerateFunctionCallString
 
     if ($returnType eq "void") {
         $result .= $indent . "$functionString;\n";
-    } elsif ($codeGenerator->ExtendedAttributeContains($callWith, "ScriptState") or @{$function->raisesExceptions}) {
+    } elsif ($codeGenerator->ExtendedAttributeContains($callWith, "ScriptState") or $function->signature->extendedAttributes->{"RaisesException"}) {
         $result .= $indent . $nativeReturnType . " result = $functionString;\n";
     } else {
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
@@ -3981,7 +3981,7 @@ sub GenerateFunctionCallString
         }
     }
 
-    if (@{$function->raisesExceptions}) {
+    if ($function->signature->extendedAttributes->{"RaisesException"}) {
         $result .= $indent . "if (UNLIKELY(ec))\n";
         $result .= $indent . "    goto fail;\n";
     }

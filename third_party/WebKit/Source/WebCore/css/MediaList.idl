@@ -29,15 +29,12 @@
     ImplementationLacksVTable
 ] interface MediaList {
 
-             [TreatNullAs=NullString, TreatReturnedNullStringAs=Null] attribute DOMString mediaText
-                 setter raises(DOMException);
+             [TreatNullAs=NullString, TreatReturnedNullStringAs=Null, SetterRaisesException] attribute DOMString mediaText;
     readonly attribute unsigned long length;
 
     [TreatReturnedNullStringAs=Null] DOMString item([Optional=DefaultIsUndefined] unsigned long index);
-    void deleteMedium([Optional=DefaultIsUndefined] DOMString oldMedium)
-        raises(DOMException);
-    void appendMedium([Optional=DefaultIsUndefined] DOMString newMedium)
-        raises(DOMException);
+    [RaisesException] void deleteMedium([Optional=DefaultIsUndefined] DOMString oldMedium);
+    [RaisesException] void appendMedium([Optional=DefaultIsUndefined] DOMString newMedium);
 
 };
 

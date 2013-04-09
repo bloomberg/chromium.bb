@@ -41,29 +41,24 @@
     const unsigned short      DOCUMENT_FRAGMENT_NODE         = 11;
     const unsigned short      NOTATION_NODE                  = 12;
 
-    readonly attribute [TreatReturnedNullStringAs=Null, PerWorldBindings] DOMString        nodeName;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        nodeName;
 
              // FIXME: the spec says this can also raise on retrieval.
-             attribute [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings] DOMString        nodeValue
-                 setter raises(DOMException);
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        nodeValue;
 
-    readonly attribute [PerWorldBindings] unsigned short   nodeType;
-    readonly attribute [PerWorldBindings] Node             parentNode;
-    readonly attribute [PerWorldBindings] NodeList         childNodes;
-    readonly attribute [PerWorldBindings] Node             firstChild;
-    readonly attribute [PerWorldBindings] Node             lastChild;
-    readonly attribute [PerWorldBindings] Node             previousSibling;
-    readonly attribute [PerWorldBindings] Node             nextSibling;
-    readonly attribute [PerWorldBindings] Document         ownerDocument;
+    [PerWorldBindings] readonly attribute unsigned short   nodeType;
+    [PerWorldBindings] readonly attribute Node             parentNode;
+    [PerWorldBindings] readonly attribute NodeList         childNodes;
+    [PerWorldBindings] readonly attribute Node             firstChild;
+    [PerWorldBindings] readonly attribute Node             lastChild;
+    [PerWorldBindings] readonly attribute Node             previousSibling;
+    [PerWorldBindings] readonly attribute Node             nextSibling;
+    [PerWorldBindings] readonly attribute Document         ownerDocument;
 
-    [Custom, PerWorldBindings] Node insertBefore(Node newChild, Node refChild)
-        raises(DOMException);
-    [Custom] Node replaceChild(Node newChild, Node oldChild)
-        raises(DOMException);
-    [Custom, PerWorldBindings] Node removeChild(Node oldChild)
-        raises(DOMException);
-    [Custom, PerWorldBindings] Node appendChild(Node newChild)
-        raises(DOMException);
+    [Custom, PerWorldBindings, RaisesException] Node insertBefore(Node newChild, Node refChild);
+    [Custom, RaisesException] Node replaceChild(Node newChild, Node oldChild);
+    [Custom, PerWorldBindings, RaisesException] Node removeChild(Node oldChild);
+    [Custom, PerWorldBindings, RaisesException] Node appendChild(Node newChild);
 
     boolean            hasChildNodes();
     [DeliverCustomElementCallbacks, PerWorldBindings]
@@ -75,24 +70,22 @@
      boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
                                        [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
 
-    readonly attribute [TreatReturnedNullStringAs=Null, PerWorldBindings] DOMString        namespaceURI;
-             attribute [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings] DOMString        prefix
-                 setter raises(DOMException);
-    readonly attribute [TreatReturnedNullStringAs=Null, PerWorldBindings] DOMString        localName;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        namespaceURI;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        prefix;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        localName;
 
 #if defined(LANGUAGE_OBJECTIVE_C)
-    readonly attribute [PerWorldBindings] NamedNodeMap     attributes;
+    [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
     boolean            hasAttributes();
 #endif
 
 
     // Introduced in DOM Level 3:
 
-    readonly attribute [TreatReturnedNullStringAs=Null, PerWorldBindings] DOMString       baseURI;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;
 
              // FIXME: the spec says this can also raise on retrieval.
-             attribute [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings] DOMString       textContent
-                 setter raises(DOMException);
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString       textContent;
 
     boolean            isSameNode([Optional=DefaultIsUndefined] Node other);
     boolean            isEqualNode([Optional=DefaultIsUndefined] Node other);
@@ -114,11 +107,11 @@
     boolean contains([Optional=DefaultIsUndefined] Node other);
 
     // IE extensions
-    readonly attribute [PerWorldBindings] Element          parentElement;
+    [PerWorldBindings] readonly attribute Element          parentElement;
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
     // Objective-C extensions
-    readonly attribute [PerWorldBindings] boolean          isContentEditable;
+    [PerWorldBindings] readonly attribute boolean          isContentEditable;
 
     void inspect();
 #endif /* defined(LANGUAGE_OBJECTIVE_C) */
@@ -131,8 +124,7 @@
     void removeEventListener(DOMString type, 
                              EventListener listener, 
                              [Optional] boolean useCapture);
-    boolean dispatchEvent(Event event)
-        raises(EventException);
+    [RaisesException] boolean dispatchEvent(Event event);
 #endif
 #endif
 
@@ -143,8 +135,7 @@
     [Custom] void removeEventListener(DOMString type, 
                                          EventListener listener, 
                                          boolean useCapture);
-    boolean dispatchEvent(Event event)
-        raises(EventException);
+    [RaisesException] boolean dispatchEvent(Event event);
 #endif
 
 };

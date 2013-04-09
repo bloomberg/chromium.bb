@@ -31,11 +31,10 @@
     attribute boolean applyAuthorStyles;
     attribute boolean resetStyleInheritance;
 
-    [TreatNullAs=NullString, DeliverCustomElementCallbacks]
-    attribute DOMString innerHTML setter raises(DOMException);
+    [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString innerHTML;
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-    Node cloneNode([Optional=DefaultIsUndefined] boolean deep) raises(DOMException);
+    [RaisesException] Node cloneNode([Optional=DefaultIsUndefined] boolean deep);
 #endif
     DOMSelection getSelection();
     Element getElementById([Optional=DefaultIsUndefined] DOMString elementId);

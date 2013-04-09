@@ -29,18 +29,15 @@
     DependentLifetime,
     SkipVTableValidation
 ] interface CSSStyleDeclaration {
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString        cssText
-                 setter raises(DOMException);
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString        cssText;
 
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyValue([Optional=DefaultIsUndefined] DOMString propertyName);
     CSSValue           getPropertyCSSValue([Optional=DefaultIsUndefined] DOMString propertyName);
-    [TreatReturnedNullStringAs=Null] DOMString          removeProperty([Optional=DefaultIsUndefined] DOMString propertyName)
-        raises(DOMException);
+    [TreatReturnedNullStringAs=Null, RaisesException] DOMString          removeProperty([Optional=DefaultIsUndefined] DOMString propertyName);
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority([Optional=DefaultIsUndefined] DOMString propertyName);
-     void setProperty([Optional=DefaultIsUndefined] DOMString propertyName, 
+     [RaisesException] void setProperty([Optional=DefaultIsUndefined] DOMString propertyName, 
                                     [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString value, 
-                                    [Optional=DefaultIsUndefined] DOMString priority)
-        raises(DOMException);
+                                    [Optional=DefaultIsUndefined] DOMString priority);
 
     readonly attribute unsigned long    length;
     DOMString          item([Optional=DefaultIsUndefined] unsigned long index);

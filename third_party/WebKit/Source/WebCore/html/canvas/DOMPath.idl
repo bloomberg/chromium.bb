@@ -53,21 +53,19 @@ interface [
                        [Optional=DefaultIsUndefined] float cp2y,
                        [Optional=DefaultIsUndefined] float x,
                        [Optional=DefaultIsUndefined] float y);
-    void arcTo([Optional=DefaultIsUndefined] float x1,
+    [RaisesException] void arcTo([Optional=DefaultIsUndefined] float x1,
                [Optional=DefaultIsUndefined] float y1,
                [Optional=DefaultIsUndefined] float x2,
                [Optional=DefaultIsUndefined] float y2,
-               [Optional=DefaultIsUndefined] float radius)
-        raises (DOMException);
+               [Optional=DefaultIsUndefined] float radius);
     void rect([Optional=DefaultIsUndefined] float x,
               [Optional=DefaultIsUndefined] float y,
               [Optional=DefaultIsUndefined] float width,
               [Optional=DefaultIsUndefined] float height);
-    void arc([Optional=DefaultIsUndefined] float x,
+    [RaisesException] void arc([Optional=DefaultIsUndefined] float x,
              [Optional=DefaultIsUndefined] float y,
              [Optional=DefaultIsUndefined] float radius,
              [Optional=DefaultIsUndefined] float startAngle,
              [Optional=DefaultIsUndefined] float endAngle,
-             [Optional=DefaultIsUndefined] boolean anticlockwise)
-        raises (DOMException);
+             [Optional=DefaultIsUndefined] boolean anticlockwise);
 };

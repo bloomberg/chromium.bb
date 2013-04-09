@@ -62,16 +62,12 @@
 
     attribute DOMString binaryType;
 
-    boolean send(ArrayBuffer data)
-        raises(DOMException);
-    boolean send(ArrayBufferView data)
-        raises(DOMException);
-    boolean send(Blob data)
-        raises(DOMException);
-    boolean send(DOMString data)
-        raises(DOMException);
+    [RaisesException] boolean send(ArrayBuffer data);
+    [RaisesException] boolean send(ArrayBufferView data);
+    [RaisesException] boolean send(Blob data);
+    [RaisesException] boolean send(DOMString data);
 
-    void close([Clamp, Optional] unsigned short code, [Optional] DOMString reason) raises(DOMException);
+    [RaisesException] void close([Clamp, Optional] unsigned short code, [Optional] DOMString reason);
 
     // EventTarget interface
     void addEventListener(DOMString type,
@@ -80,6 +76,5 @@
     void removeEventListener(DOMString type,
                              EventListener listener,
                              [Optional] boolean useCapture);
-    boolean dispatchEvent(Event evt)
-        raises(EventException);
+    [RaisesException] boolean dispatchEvent(Event evt);
 };

@@ -37,30 +37,21 @@
              [Reflect] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, DeliverCustomElementCallbacks] attribute DOMString innerHTML
-                 setter raises(DOMException);
-             [TreatNullAs=NullString] attribute DOMString innerText
-                 setter raises(DOMException);
-             [TreatNullAs=NullString, DeliverCustomElementCallbacks] attribute DOMString outerHTML
-                 setter raises(DOMException);
-             [TreatNullAs=NullString] attribute DOMString outerText
-                 setter raises(DOMException);
+             [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString innerHTML;
+             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString innerText;
+             [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
+             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString outerText;
 
-    Element insertAdjacentElement([Optional=DefaultIsUndefined] DOMString where,
-                                  [Optional=DefaultIsUndefined] Element element)
-        raises(DOMException);
-    [DeliverCustomElementCallbacks]
-    void insertAdjacentHTML([Optional=DefaultIsUndefined] DOMString where,
-                            [Optional=DefaultIsUndefined] DOMString html)
-        raises(DOMException);
-    void insertAdjacentText([Optional=DefaultIsUndefined] DOMString where,
-                            [Optional=DefaultIsUndefined] DOMString text)
-        raises(DOMException);
+    [RaisesException] Element insertAdjacentElement([Optional=DefaultIsUndefined] DOMString where,
+                                  [Optional=DefaultIsUndefined] Element element);
+    [DeliverCustomElementCallbacks, RaisesException] void insertAdjacentHTML([Optional=DefaultIsUndefined] DOMString where,
+                            [Optional=DefaultIsUndefined] DOMString html);
+    [RaisesException] void insertAdjacentText([Optional=DefaultIsUndefined] DOMString where,
+                            [Optional=DefaultIsUndefined] DOMString text);
 
     readonly attribute HTMLCollection children;
 
-             [TreatNullAs=NullString] attribute DOMString contentEditable
-                 setter raises(DOMException);
+             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
              attribute boolean spellcheck;
@@ -80,8 +71,7 @@
 
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
-             [Conditional=MICRODATA, Custom] attribute any itemValue
-                 setter raises(DOMException);
+             [Conditional=MICRODATA, Custom, SetterRaisesException] attribute any itemValue;
 #endif
 #endif
 

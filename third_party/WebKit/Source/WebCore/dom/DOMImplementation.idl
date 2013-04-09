@@ -30,20 +30,17 @@
 
     // DOM Level 2
 
-     DocumentType createDocumentType([TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName,
+     [RaisesException] DocumentType createDocumentType([TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName,
                                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString publicId,
-                                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString systemId)
-        raises(DOMException);
-     Document createDocument([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+                                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString systemId);
+     [RaisesException] Document createDocument([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
                                            [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName, 
-                                           [TreatNullAs=NullString,Optional=DefaultIsUndefined] DocumentType doctype)
-        raises(DOMException);
+                                           [TreatNullAs=NullString,Optional=DefaultIsUndefined] DocumentType doctype);
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 
-     CSSStyleSheet createCSSStyleSheet([Optional=DefaultIsUndefined] DOMString title,
-                                                     [Optional=DefaultIsUndefined] DOMString media)
-        raises(DOMException);
+     [RaisesException] CSSStyleSheet createCSSStyleSheet([Optional=DefaultIsUndefined] DOMString title,
+                                                     [Optional=DefaultIsUndefined] DOMString media);
 
     // HTMLDOMImplementation interface from DOM Level 2 HTML
 

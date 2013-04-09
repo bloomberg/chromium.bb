@@ -51,18 +51,16 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     attribute float globalAlpha;
     [TreatNullAs=NullString] attribute DOMString globalCompositeOperation;
 
-    CanvasGradient createLinearGradient([Optional=DefaultIsUndefined] float x0,
+    [RaisesException] CanvasGradient createLinearGradient([Optional=DefaultIsUndefined] float x0,
                                         [Optional=DefaultIsUndefined] float y0,
                                         [Optional=DefaultIsUndefined] float x1,
-                                        [Optional=DefaultIsUndefined] float y1)
-        raises (DOMException);
-    CanvasGradient createRadialGradient([Optional=DefaultIsUndefined] float x0,
+                                        [Optional=DefaultIsUndefined] float y1);
+    [RaisesException] CanvasGradient createRadialGradient([Optional=DefaultIsUndefined] float x0,
                                         [Optional=DefaultIsUndefined] float y0,
                                         [Optional=DefaultIsUndefined] float r0,
                                         [Optional=DefaultIsUndefined] float x1,
                                         [Optional=DefaultIsUndefined] float y1,
-                                        [Optional=DefaultIsUndefined] float r1)
-        raises (DOMException);
+                                        [Optional=DefaultIsUndefined] float r1);
 
     attribute float lineWidth;
     [TreatNullAs=NullString] attribute DOMString lineCap;
@@ -115,23 +113,21 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
                        [Optional=DefaultIsUndefined] float cp2y,
                        [Optional=DefaultIsUndefined] float x,
                        [Optional=DefaultIsUndefined] float y);
-    void arcTo([Optional=DefaultIsUndefined] float x1,
+    [RaisesException] void arcTo([Optional=DefaultIsUndefined] float x1,
                [Optional=DefaultIsUndefined] float y1,
                [Optional=DefaultIsUndefined] float x2,
                [Optional=DefaultIsUndefined] float y2,
-               [Optional=DefaultIsUndefined] float radius)
-        raises (DOMException);
+               [Optional=DefaultIsUndefined] float radius);
     void rect([Optional=DefaultIsUndefined] float x,
               [Optional=DefaultIsUndefined] float y,
               [Optional=DefaultIsUndefined] float width,
               [Optional=DefaultIsUndefined] float height);
-    void arc([Optional=DefaultIsUndefined] float x,
+    [RaisesException] void arc([Optional=DefaultIsUndefined] float x,
              [Optional=DefaultIsUndefined] float y,
              [Optional=DefaultIsUndefined] float radius,
              [Optional=DefaultIsUndefined] float startAngle,
              [Optional=DefaultIsUndefined] float endAngle,
-             [Optional=DefaultIsUndefined] boolean anticlockwise)
-        raises (DOMException);
+             [Optional=DefaultIsUndefined] boolean anticlockwise);
 
     void fill([Optional] CanvasWindingRule winding);
     void stroke();
@@ -182,25 +178,16 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
                     [Optional=DefaultIsUndefined] float height,
                     [Optional] float lineWidth);
 
-    void drawImage(HTMLImageElement? image, float x, float y)
-        raises (DOMException);
-    void drawImage(HTMLImageElement? image, float x, float y, float width, float height)
-        raises (DOMException);
-    void drawImage(HTMLImageElement? image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh)
-        raises (DOMException);
-    void drawImage(HTMLCanvasElement? canvas, float x, float y)
-        raises (DOMException);
-    void drawImage(HTMLCanvasElement? canvas, float x, float y, float width, float height)
-        raises (DOMException);
-    void drawImage(HTMLCanvasElement? canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh)
-        raises (DOMException);
+    [RaisesException] void drawImage(HTMLImageElement? image, float x, float y);
+    [RaisesException] void drawImage(HTMLImageElement? image, float x, float y, float width, float height);
+    [RaisesException] void drawImage(HTMLImageElement? image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float x, float y);
+    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float x, float y, float width, float height);
+    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 #if defined(ENABLE_VIDEO) && ENABLE_VIDEO
-    void drawImage(HTMLVideoElement? video, float x, float y)
-        raises (DOMException);
-    void drawImage(HTMLVideoElement? video, float x, float y, float width, float height)
-        raises (DOMException);
-    void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh)
-        raises (DOMException);
+    [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y);
+    [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y, float width, float height);
+    [RaisesException] void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 #endif
 
     void drawImageFromRect(HTMLImageElement image,
@@ -213,36 +200,26 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     void setShadow(float width, float height, float blur, float r, float g, float b, float a);
     void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
 
-    void putImageData(ImageData? imagedata, float dx, float dy)
-        raises(DOMException);
-    void putImageData(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight)
-        raises(DOMException);
+    [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy);
+    [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
-    void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy)
-        raises(DOMException);
-    void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight)
-        raises(DOMException);
+    [RaisesException] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy);
+    [RaisesException] void webkitPutImageDataHD(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
-    CanvasPattern createPattern(HTMLCanvasElement? canvas, [TreatNullAs=NullString] DOMString repetitionType)
-        raises (DOMException);
-    CanvasPattern createPattern(HTMLImageElement? image, [TreatNullAs=NullString] DOMString repetitionType)
-        raises (DOMException);
-    ImageData createImageData(ImageData? imagedata)
-        raises (DOMException);
-    ImageData createImageData(float sw, float sh)
-        raises (DOMException);
+    [RaisesException] CanvasPattern createPattern(HTMLCanvasElement? canvas, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException] CanvasPattern createPattern(HTMLImageElement? image, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException] ImageData createImageData(ImageData? imagedata);
+    [RaisesException] ImageData createImageData(float sw, float sh);
 
     [Custom] attribute custom strokeStyle;
     [Custom] attribute custom fillStyle;
 
     // pixel manipulation
-    ImageData getImageData([Optional=DefaultIsUndefined] float sx, [Optional=DefaultIsUndefined] float sy,
-                           [Optional=DefaultIsUndefined] float sw, [Optional=DefaultIsUndefined] float sh)
-        raises(DOMException);
+    [RaisesException] ImageData getImageData([Optional=DefaultIsUndefined] float sx, [Optional=DefaultIsUndefined] float sy,
+                           [Optional=DefaultIsUndefined] float sw, [Optional=DefaultIsUndefined] float sh);
 
-    ImageData webkitGetImageDataHD([Optional=DefaultIsUndefined] float sx, [Optional=DefaultIsUndefined] float sy,
-                                   [Optional=DefaultIsUndefined] float sw, [Optional=DefaultIsUndefined] float sh)
-        raises(DOMException);
+    [RaisesException] ImageData webkitGetImageDataHD([Optional=DefaultIsUndefined] float sx, [Optional=DefaultIsUndefined] float sy,
+                                   [Optional=DefaultIsUndefined] float sw, [Optional=DefaultIsUndefined] float sh);
 
     readonly attribute float webkitBackingStorePixelRatio;
 

@@ -22,13 +22,11 @@
 
     // DOM Level 1
 
-    Text splitText([IsIndex,Optional=DefaultIsUndefined] unsigned long offset)
-        raises (DOMException);
+    [RaisesException] Text splitText([IsIndex,Optional=DefaultIsUndefined] unsigned long offset);
 
     // Introduced in DOM Level 3:
     readonly attribute DOMString       wholeText;
-    Text               replaceWholeText([Optional=DefaultIsUndefined] DOMString content)
-                                        raises(DOMException);
+    [RaisesException] Text               replaceWholeText([Optional=DefaultIsUndefined] DOMString content);
     // ShadowAware API
 #if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM && defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;

@@ -26,14 +26,12 @@
     DependentLifetime,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
-    [CustomSetter] attribute unsigned long length
-        setter raises (DOMException);
+    [CustomSetter, SetterRaisesException] attribute unsigned long length;
 
     [Custom] Node namedItem([Optional=DefaultIsUndefined] DOMString name);
 
-    [Custom] void add([Optional=DefaultIsUndefined] HTMLOptionElement option, 
-                      [Optional] unsigned long index)
-         raises (DOMException);
+    [Custom, RaisesException] void add([Optional=DefaultIsUndefined] HTMLOptionElement option, 
+                      [Optional] unsigned long index);
     [Custom] void remove([Optional=DefaultIsUndefined] unsigned long index);
 
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C

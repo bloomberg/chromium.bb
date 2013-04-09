@@ -36,29 +36,21 @@
     CallWith=ScriptExecutionContext,
     EventTarget
 ] interface RTCPeerConnection {
-    void createOffer([Callback] RTCSessionDescriptionCallback successCallback, [Callback,Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints)
-        raises(DOMException);
+    [RaisesException] void createOffer([Callback] RTCSessionDescriptionCallback successCallback, [Callback,Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints);
 
-    void createAnswer([Callback] RTCSessionDescriptionCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints)
-        raises(DOMException);
+    [RaisesException] void createAnswer([Callback] RTCSessionDescriptionCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback, [Optional] Dictionary mediaConstraints);
 
-    void setLocalDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback)
-        raises(DOMException);
-    readonly attribute RTCSessionDescription localDescription
-        getter raises(DOMException);
+    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback);
+    [GetterRaisesException] readonly attribute RTCSessionDescription localDescription;
 
-    void setRemoteDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback)
-        raises(DOMException);
-    readonly attribute RTCSessionDescription remoteDescription
-        getter raises(DOMException);
+    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Callback, Optional=DefaultIsUndefined] VoidCallback successCallback, [Callback, Optional=DefaultIsUndefined] RTCErrorCallback failureCallback);
+    [GetterRaisesException] readonly attribute RTCSessionDescription remoteDescription;
 
     readonly attribute DOMString signalingState;
 
-    void updateIce([Optional] Dictionary configuration, [Optional] Dictionary mediaConstraints)
-        raises(DOMException);
+    [RaisesException] void updateIce([Optional] Dictionary configuration, [Optional] Dictionary mediaConstraints);
 
-    void addIceCandidate(RTCIceCandidate candidate)
-        raises(DOMException);
+    [RaisesException] void addIceCandidate(RTCIceCandidate candidate);
 
     readonly attribute DOMString iceGatheringState;
     readonly attribute DOMString iceConnectionState;
@@ -67,21 +59,16 @@
     sequence<MediaStream> getRemoteStreams();
     MediaStream getStreamById(DOMString streamId);
 
-    [StrictTypeChecking] void addStream(MediaStream stream, [Optional] Dictionary mediaConstraints)
-        raises(DOMException);
-    [StrictTypeChecking] void removeStream(MediaStream stream)
-        raises(DOMException);
+    [StrictTypeChecking, RaisesException] void addStream(MediaStream stream, [Optional] Dictionary mediaConstraints);
+    [StrictTypeChecking, RaisesException] void removeStream(MediaStream stream);
 
     void getStats([Callback] RTCStatsCallback successCallback, [Optional=DefaultIsUndefined] MediaStreamTrack selector);
 
-    RTCDataChannel createDataChannel([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString label, [Optional] Dictionary options)
-         raises(DOMException);
+    [RaisesException] RTCDataChannel createDataChannel([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString label, [Optional] Dictionary options);
 
-    RTCDTMFSender createDTMFSender(MediaStreamTrack track)
-         raises(DOMException);
+    [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
 
-    void close()
-        raises(DOMException);
+    [RaisesException] void close();
 
     attribute EventListener onnegotiationneeded;
     attribute EventListener onicecandidate;
@@ -98,7 +85,6 @@
     void removeEventListener(DOMString type,
                              EventListener listener,
                              [Optional] boolean useCapture);
-    boolean dispatchEvent(Event event)
-        raises(EventException);
+    [RaisesException] boolean dispatchEvent(Event event);
 };
 

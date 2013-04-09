@@ -23,39 +23,24 @@
     ImplementationLacksVTable
 ] interface Range {
 
-    readonly attribute Node startContainer
-        getter raises(DOMException);
-    readonly attribute long startOffset
-        getter raises(DOMException);
-    readonly attribute Node endContainer
-        getter raises(DOMException);
-    readonly attribute long endOffset
-        getter raises(DOMException);
-    readonly attribute boolean collapsed
-        getter raises(DOMException);
-    readonly attribute Node commonAncestorContainer
-        getter raises(DOMException);
+    [GetterRaisesException] readonly attribute Node startContainer;
+    [GetterRaisesException] readonly attribute long startOffset;
+    [GetterRaisesException] readonly attribute Node endContainer;
+    [GetterRaisesException] readonly attribute long endOffset;
+    [GetterRaisesException] readonly attribute boolean collapsed;
+    [GetterRaisesException] readonly attribute Node commonAncestorContainer;
 
-     void setStart([Optional=DefaultIsUndefined] Node refNode, 
-                                 [Optional=DefaultIsUndefined] long offset)
-        raises(RangeException, DOMException);
-     void setEnd([Optional=DefaultIsUndefined] Node refNode, 
-                               [Optional=DefaultIsUndefined] long offset)
-        raises(RangeException, DOMException);
-    void setStartBefore([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
-    void setStartAfter([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
-    void setEndBefore([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
-    void setEndAfter([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
-    void collapse([Optional=DefaultIsUndefined] boolean toStart)
-        raises(DOMException);
-    void selectNode([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
-    void selectNodeContents([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
+     [RaisesException] void setStart([Optional=DefaultIsUndefined] Node refNode, 
+                                 [Optional=DefaultIsUndefined] long offset);
+     [RaisesException] void setEnd([Optional=DefaultIsUndefined] Node refNode, 
+                               [Optional=DefaultIsUndefined] long offset);
+    [RaisesException] void setStartBefore([Optional=DefaultIsUndefined] Node refNode);
+    [RaisesException] void setStartAfter([Optional=DefaultIsUndefined] Node refNode);
+    [RaisesException] void setEndBefore([Optional=DefaultIsUndefined] Node refNode);
+    [RaisesException] void setEndAfter([Optional=DefaultIsUndefined] Node refNode);
+    [RaisesException] void collapse([Optional=DefaultIsUndefined] boolean toStart);
+    [RaisesException] void selectNode([Optional=DefaultIsUndefined] Node refNode);
+    [RaisesException] void selectNodeContents([Optional=DefaultIsUndefined] Node refNode);
 
     // CompareHow
     const unsigned short START_TO_START = 0;
@@ -63,27 +48,18 @@
     const unsigned short END_TO_END     = 2;
     const unsigned short END_TO_START   = 3;
 
-     short compareBoundaryPoints([Optional=DefaultIsUndefined] CompareHow how,
-                                               [Optional=DefaultIsUndefined] Range sourceRange)
-        raises(DOMException);
+     [RaisesException] short compareBoundaryPoints([Optional=DefaultIsUndefined] CompareHow how,
+                                               [Optional=DefaultIsUndefined] Range sourceRange);
 
-    void deleteContents()
-        raises(DOMException);
-    DocumentFragment extractContents()
-        raises(DOMException);
-    DocumentFragment cloneContents()
-        raises(DOMException);
-    void insertNode([Optional=DefaultIsUndefined] Node newNode)
-        raises(DOMException, RangeException);
-    void surroundContents([Optional=DefaultIsUndefined] Node newParent)
-        raises(DOMException, RangeException);
-    Range cloneRange()
-        raises(DOMException);
-    DOMString toString()
-        raises(DOMException);
+    [RaisesException] void deleteContents();
+    [RaisesException] DocumentFragment extractContents();
+    [RaisesException] DocumentFragment cloneContents();
+    [RaisesException] void insertNode([Optional=DefaultIsUndefined] Node newNode);
+    [RaisesException] void surroundContents([Optional=DefaultIsUndefined] Node newParent);
+    [RaisesException] Range cloneRange();
+    [RaisesException] DOMString toString();
 
-    void detach()
-        raises(DOMException);
+    [RaisesException] void detach();
 
 #if defined(LANGUAGE_JAVASCRIPT) || LANGUAGE_JAVASCRIPT
     // CSSOM View Module API extensions
@@ -94,16 +70,13 @@
 
     // extensions
 
-    DocumentFragment createContextualFragment([Optional=DefaultIsUndefined] DOMString html)
-        raises(DOMException);
+    [RaisesException] DocumentFragment createContextualFragment([Optional=DefaultIsUndefined] DOMString html);
 
     // WebKit extensions
 
-    boolean intersectsNode([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
+    [RaisesException] boolean intersectsNode([Optional=DefaultIsUndefined] Node refNode);
 
-    short compareNode([Optional=DefaultIsUndefined] Node refNode)
-        raises(RangeException, DOMException);
+    [RaisesException] short compareNode([Optional=DefaultIsUndefined] Node refNode);
 
     // CompareResults
     const unsigned short NODE_BEFORE           = 0;
@@ -111,16 +84,13 @@
     const unsigned short NODE_BEFORE_AND_AFTER = 2;
     const unsigned short NODE_INSIDE           = 3;
 
-    short comparePoint([Optional=DefaultIsUndefined] Node refNode, 
-                       [Optional=DefaultIsUndefined] long offset)
-        raises(RangeException, DOMException);
+    [RaisesException] short comparePoint([Optional=DefaultIsUndefined] Node refNode, 
+                       [Optional=DefaultIsUndefined] long offset);
 
-    boolean isPointInRange([Optional=DefaultIsUndefined] Node refNode, 
-                           [Optional=DefaultIsUndefined] long offset)
-        raises(RangeException, DOMException);
+    [RaisesException] boolean isPointInRange([Optional=DefaultIsUndefined] Node refNode, 
+                           [Optional=DefaultIsUndefined] long offset);
 
-    void expand([Optional=DefaultIsUndefined] DOMString unit)
-        raises(RangeException, DOMException);
+    [RaisesException] void expand([Optional=DefaultIsUndefined] DOMString unit);
 
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
     readonly attribute DOMString text;

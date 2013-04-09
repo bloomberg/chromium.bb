@@ -26,7 +26,6 @@
     readonly attribute SVGSVGElement        rootElement;
 
     // Overwrite the one in events::DocumentEvent
-    Event createEvent([Optional=DefaultIsUndefined] DOMString eventType)
-        raises(DOMException);
+    [RaisesException] Event createEvent([Optional=DefaultIsUndefined] DOMString eventType);
 };
 

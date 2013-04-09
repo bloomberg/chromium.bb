@@ -25,20 +25,16 @@
     readonly attribute CSSRule          ownerRule;
     readonly attribute CSSRuleList      cssRules;
 
-    unsigned long insertRule([Optional=DefaultIsUndefined] DOMString rule, 
-                                            [Optional=DefaultIsUndefined] unsigned long index)
-        raises(DOMException);
-    void               deleteRule([Optional=DefaultIsUndefined] unsigned long index)
-        raises(DOMException);
+    [RaisesException] unsigned long insertRule([Optional=DefaultIsUndefined] DOMString rule, 
+                                            [Optional=DefaultIsUndefined] unsigned long index);
+    [RaisesException] void               deleteRule([Optional=DefaultIsUndefined] unsigned long index);
 
     // IE Extensions
     readonly attribute CSSRuleList      rules;
 
-    long addRule([Optional=DefaultIsUndefined] DOMString selector,
+    [RaisesException] long addRule([Optional=DefaultIsUndefined] DOMString selector,
                  [Optional=DefaultIsUndefined] DOMString style,
-                 [Optional] unsigned long index)
-        raises(DOMException);
-    void removeRule([Optional=DefaultIsUndefined] unsigned long index)
-        raises(DOMException);
+                 [Optional] unsigned long index);
+    [RaisesException] void removeRule([Optional=DefaultIsUndefined] unsigned long index);
 };
 

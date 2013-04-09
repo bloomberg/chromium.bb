@@ -36,14 +36,13 @@ interface [
     readonly attribute DOMString sessionId;
 
     // session operations
-    void update(Uint8Array key)
-        raises(DOMException);
+    [RaisesException] void update(Uint8Array key);
     void close();
     
     // EventListeners
-    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyadded;
-    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeyerror;
-    attribute [EnabledAtRuntime=encryptedMedia] EventListener onwebkitkeymessage;
+    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeyadded;
+    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeyerror;
+    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeymessage;
 
     // EventTarget interface
     void addEventListener(DOMString type, 
@@ -52,6 +51,5 @@ interface [
     void removeEventListener(DOMString type, 
                              EventListener listener, 
                              [Optional] boolean useCapture);
-    boolean dispatchEvent(Event evt)
-        raises(EventException);
+    [RaisesException] boolean dispatchEvent(Event evt);
 };

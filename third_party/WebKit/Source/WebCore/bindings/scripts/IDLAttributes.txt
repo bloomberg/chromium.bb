@@ -59,6 +59,7 @@ EnabledPerContext=*
 EnforceRange
 EventTarget
 GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
+GetterRaisesException
 Immutable
 ImplementationLacksVTable
 ImplementationNamespace=*
@@ -79,10 +80,12 @@ OmitConstructor
 Optional=|DefaultIsNullString|DefaultIsUndefined
 PassThisToCallback=*
 PerWorldBindings
+RaisesException
 ReadOnly
 Reflect=*
 Replaceable
 ReturnNewObject
+SetterRaisesException
 SkipVTableValidation
 StrictTypeChecking
 Supplemental=*

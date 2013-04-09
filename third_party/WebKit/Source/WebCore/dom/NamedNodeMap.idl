@@ -28,11 +28,9 @@
 
     Node getNamedItem([Optional=DefaultIsUndefined] DOMString name);
 
-    Node setNamedItem([Optional=DefaultIsUndefined] Node node)
-        raises(DOMException);
+    [RaisesException] Node setNamedItem([Optional=DefaultIsUndefined] Node node);
 
-    Node removeNamedItem([Optional=DefaultIsUndefined] DOMString name)
-        raises(DOMException);
+    [RaisesException] Node removeNamedItem([Optional=DefaultIsUndefined] DOMString name);
 
     Node item([Optional=DefaultIsUndefined] unsigned long index);
     
@@ -41,17 +39,14 @@
 
     // Introduced in DOM Level 2:
 
-     Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                       [Optional=DefaultIsUndefined] DOMString localName)
-        // FIXME: the implementation does take an exceptioncode parameter.
-        /*raises(DOMException)*/;
+    // FIXME: the implementation does take an exceptioncode parameter.
+    /*[RaisesException]*/ Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+                                              [Optional=DefaultIsUndefined] DOMString localName);
 
-    Node setNamedItemNS([Optional=DefaultIsUndefined] Node node)
-        raises(DOMException);
+    [RaisesException] Node setNamedItemNS([Optional=DefaultIsUndefined] Node node);
 
-     Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
-                                          [Optional=DefaultIsUndefined] DOMString localName)
-        raises(DOMException);
+     [RaisesException] Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+                                          [Optional=DefaultIsUndefined] DOMString localName);
 
 };
 

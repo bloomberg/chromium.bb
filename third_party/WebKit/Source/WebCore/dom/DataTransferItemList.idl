@@ -40,7 +40,7 @@
 
     void clear();
     void add(File? file);
-    void add([Optional=DefaultIsUndefined] DOMString data, 
-             [Optional=DefaultIsUndefined] DOMString type) raises(DOMException);
+    [RaisesException] void add([Optional=DefaultIsUndefined] DOMString data, 
+             [Optional=DefaultIsUndefined] DOMString type);
 };
 

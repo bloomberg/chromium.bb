@@ -26,6 +26,6 @@
 [
     Supplemental=DOMWindow
 ] interface DOMWindowQuota {
-    readonly attribute [MeasureAs=StorageInfo] StorageInfo webkitStorageInfo;
+    [MeasureAs=StorageInfo] readonly attribute StorageInfo webkitStorageInfo;
 };
 

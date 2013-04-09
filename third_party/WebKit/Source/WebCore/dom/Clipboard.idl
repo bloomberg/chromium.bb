@@ -34,12 +34,10 @@
     [CustomGetter] readonly attribute Array types;
     readonly attribute FileList files;
 
-    [Custom] void clearData([Optional] DOMString type)
-        raises(DOMException);
+    [Custom, RaisesException] void clearData([Optional] DOMString type);
     DOMString getData(DOMString type);
     boolean setData(DOMString type, DOMString data);
-    [Custom] void setDragImage(HTMLImageElement image, long x, long y)
-        raises(DOMException);
+    [Custom, RaisesException] void setDragImage(HTMLImageElement image, long x, long y);
 
     [EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
 };

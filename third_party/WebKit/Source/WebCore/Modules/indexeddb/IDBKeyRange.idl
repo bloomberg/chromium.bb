@@ -31,12 +31,8 @@
     readonly attribute boolean lowerOpen;
     readonly attribute boolean upperOpen;
 
-    [CallWith=ScriptExecutionContext] static IDBKeyRange only(any value)
-        raises (DOMException);
-    [CallWith=ScriptExecutionContext] static IDBKeyRange lowerBound(any bound, [Optional] boolean open)
-        raises (DOMException);
-    [CallWith=ScriptExecutionContext] static IDBKeyRange upperBound(any bound, [Optional] boolean open)
-        raises (DOMException);
-    [CallWith=ScriptExecutionContext] static IDBKeyRange bound(any lower, any upper, [Optional] boolean lowerOpen, [Optional] boolean upperOpen)
-        raises (DOMException);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange only(any value);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange lowerBound(any bound, [Optional] boolean open);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, [Optional] boolean open);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, [Optional] boolean lowerOpen, [Optional] boolean upperOpen);
 };

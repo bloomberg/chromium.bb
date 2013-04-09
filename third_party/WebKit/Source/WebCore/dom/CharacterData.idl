@@ -19,32 +19,25 @@
 
 interface CharacterData : Node {
 
-    [TreatNullAs=NullString] attribute DOMString data
-        setter raises(DOMException);
+    [TreatNullAs=NullString, SetterRaisesException] attribute DOMString data;
 
     readonly attribute unsigned long length;
     
-    [TreatReturnedNullStringAs=Null] DOMString substringData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, [IsIndex,Optional=DefaultIsUndefined] unsigned long length)
-        raises(DOMException);
+    [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, [IsIndex,Optional=DefaultIsUndefined] unsigned long length);
 
-    void appendData([Optional=DefaultIsUndefined] DOMString data)
-        raises(DOMException);
+    [RaisesException] void appendData([Optional=DefaultIsUndefined] DOMString data);
 
-     void insertData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
-                                   [Optional=DefaultIsUndefined] DOMString data)
-        raises(DOMException);
+     [RaisesException] void insertData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
+                                   [Optional=DefaultIsUndefined] DOMString data);
 
-     void deleteData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
-                                   [IsIndex,Optional=DefaultIsUndefined] unsigned long length)
-        raises(DOMException);
+     [RaisesException] void deleteData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
+                                   [IsIndex,Optional=DefaultIsUndefined] unsigned long length);
 
-     void replaceData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
+     [RaisesException] void replaceData([IsIndex,Optional=DefaultIsUndefined] unsigned long offset, 
                                     [IsIndex,Optional=DefaultIsUndefined] unsigned long length,
-                                    [Optional=DefaultIsUndefined] DOMString data)
-        raises(DOMException);
+                                    [Optional=DefaultIsUndefined] DOMString data);
 
     // DOM 4
-    void remove()
-        raises(DOMException);
+    [RaisesException] void remove();
 };
 

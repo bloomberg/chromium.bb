@@ -28,15 +28,12 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute([Optional=DefaultIsUndefined] DOMString name);
-     void setAttribute([Optional=DefaultIsUndefined] DOMString name,
-                                     [Optional=DefaultIsUndefined] DOMString value)
-        raises(DOMException);
+     [RaisesException] void setAttribute([Optional=DefaultIsUndefined] DOMString name,
+                                     [Optional=DefaultIsUndefined] DOMString value);
     void removeAttribute([Optional=DefaultIsUndefined] DOMString name);
     Attr getAttributeNode([Optional=DefaultIsUndefined] DOMString name);
-    Attr setAttributeNode([Optional=DefaultIsUndefined] Attr newAttr)
-        raises(DOMException);
-    Attr removeAttributeNode([Optional=DefaultIsUndefined] Attr oldAttr)
-        raises(DOMException);
+    [RaisesException] Attr setAttributeNode([Optional=DefaultIsUndefined] Attr newAttr);
+    [RaisesException] Attr removeAttributeNode([Optional=DefaultIsUndefined] Attr oldAttr);
     [PerWorldBindings] NodeList getElementsByTagName([Optional=DefaultIsUndefined] DOMString name);
 
 #if !defined(LANGUAGE_OBJECTIVE_C)
@@ -49,18 +46,16 @@
 
      DOMString getAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                             [Optional=DefaultIsUndefined] DOMString localName);
-     void setAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     [RaisesException] void setAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                        [Optional=DefaultIsUndefined] DOMString qualifiedName, 
-                                       [Optional=DefaultIsUndefined] DOMString value)
-        raises(DOMException);
+                                       [Optional=DefaultIsUndefined] DOMString value);
      void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
                                           DOMString localName);
      NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                    [Optional=DefaultIsUndefined] DOMString localName);
      Attr getAttributeNodeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                            [Optional=DefaultIsUndefined] DOMString localName);
-    Attr setAttributeNodeNS([Optional=DefaultIsUndefined] Attr newAttr)
-        raises(DOMException);
+    [RaisesException] Attr setAttributeNodeNS([Optional=DefaultIsUndefined] Attr newAttr);
     boolean hasAttribute(DOMString name);
      boolean hasAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                           [Optional=DefaultIsUndefined] DOMString localName);
@@ -104,14 +99,11 @@
 #endif
 
     // NodeSelector - Selector API
-    Element querySelector(DOMString selectors)
-        raises(DOMException);
-    NodeList querySelectorAll(DOMString selectors)
-        raises(DOMException);
+    [RaisesException] Element querySelector(DOMString selectors);
+    [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
     // WebKit extension, pending specification.
-    boolean webkitMatchesSelector([Optional=DefaultIsUndefined] DOMString selectors)
-        raises(DOMException);
+    [RaisesException] boolean webkitMatchesSelector([Optional=DefaultIsUndefined] DOMString selectors);
 
     // ElementTraversal API
     [PerWorldBindings] readonly attribute Element firstElementChild;
@@ -123,14 +115,13 @@
     // ShadowAware API
 #if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM && defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [Reflect=pseudo, EnabledAtRuntime=shadowDOM, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
-    [EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot] ShadowRoot webkitCreateShadowRoot() raises(DOMException);
+    [EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
     [EnabledAtRuntime=shadowDOM, ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
     [EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 #endif
 
     // DOM 4
-    void remove()
-        raises(DOMException);
+    [RaisesException] void remove();
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // CSSOM View Module API
