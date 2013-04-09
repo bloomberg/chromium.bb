@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterProgram.h"
 
 #include "CustomFilterCompiledProgram.h"
@@ -87,4 +86,3 @@ CustomFilterProgramInfo CustomFilterProgram::programInfo() const
 }
 
 } // namespace WebCore
-#endif // ENABLE(CSS_SHADERS)

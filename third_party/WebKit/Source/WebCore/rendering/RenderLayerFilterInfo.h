@@ -38,9 +38,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterProgramClient.h"
-#endif
 
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"
@@ -57,13 +55,9 @@ class RenderLayerFilterInfo;
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
     
 class RenderLayerFilterInfo
-#if ENABLE(CSS_SHADERS)
     : public CustomFilterProgramClient
 #if ENABLE(SVG)
     , public CachedSVGDocumentClient
-#endif
-#elif ENABLE(SVG)
-    : public CachedSVGDocumentClient
 #endif
 {
 public:
@@ -77,14 +71,12 @@ public:
     
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtr<FilterEffectRenderer>);
-    
-#if ENABLE(CSS_SHADERS)
+
     // Implementation of the CustomFilterProgramClient interface.
     virtual void notifyCustomFilterProgramLoaded(CustomFilterProgram*);
 
     void updateCustomFilterClients(const FilterOperations&);
     void removeCustomFilterClients();
-#endif
 
 #if ENABLE(SVG)
     void updateReferenceFilterClients(const FilterOperations&);
@@ -100,11 +92,9 @@ private:
     
     RefPtr<FilterEffectRenderer> m_renderer;
     LayoutRect m_dirtySourceRect;
-    
-#if ENABLE(CSS_SHADERS)
+
     typedef Vector<RefPtr<CustomFilterProgram> > CustomFilterProgramList;
     CustomFilterProgramList m_cachedCustomFilterPrograms;
-#endif
     
     static RenderLayerFilterInfoMap* s_filterMap;
 #if ENABLE(SVG)

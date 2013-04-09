@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterProgramInfo.h"
 
 #include <wtf/HashFunctions.h>
@@ -106,4 +105,3 @@ bool CustomFilterProgramInfo::operator==(const CustomFilterProgramInfo& o) const
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

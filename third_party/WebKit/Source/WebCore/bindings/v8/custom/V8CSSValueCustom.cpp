@@ -39,10 +39,8 @@
 #include "V8WebKitCSSFilterValue.h"
 #endif
 
-#if ENABLE(CSS_SHADERS)
 #include "V8WebKitCSSMixFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
-#endif
 
 #if ENABLE(SVG)
 #include "V8SVGColor.h"
@@ -60,10 +58,8 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
     if (impl->isWebKitCSSFilterValue())
         return wrap(static_cast<WebKitCSSFilterValue*>(impl), creationContext, isolate);
 #endif
-#if ENABLE(CSS_SHADERS)
     if (impl->isWebKitCSSMixFunctionValue())
         return wrap(static_cast<WebKitCSSMixFunctionValue*>(impl), creationContext, isolate);
-#endif
     if (impl->isValueList())
         return wrap(static_cast<CSSValueList*>(impl), creationContext, isolate);
     if (impl->isPrimitiveValue())

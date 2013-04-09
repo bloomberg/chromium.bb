@@ -30,7 +30,7 @@
 #ifndef CustomFilterCompiledProgram_h
 #define CustomFilterCompiledProgram_h
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 
 #include "CustomFilterProgramInfo.h"
 #include "GraphicsContext3D.h"
@@ -94,6 +94,6 @@ private:
 
 }
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)
 
 #endif

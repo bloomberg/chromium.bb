@@ -30,8 +30,6 @@
 #ifndef WebKitCSSArrayFunctionValue_h
 #define WebKitCSSArrayFunctionValue_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 
@@ -59,6 +57,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif

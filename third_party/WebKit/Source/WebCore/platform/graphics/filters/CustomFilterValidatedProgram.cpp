@@ -29,8 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CustomFilterValidatedProgram.h"
 
 #include "ANGLEWebKitBridge.h"
@@ -620,4 +618,3 @@ void CustomFilterValidatedProgram::platformDestroy()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

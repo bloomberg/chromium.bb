@@ -30,8 +30,6 @@
 #ifndef WebKitCSSShaderValue_h
 #define WebKitCSSShaderValue_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CSSValue.h"
 
 namespace WebCore {
@@ -78,6 +76,5 @@ inline WebKitCSSShaderValue* toWebKitCSSShaderValue(CSSValue* value)
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // WebKitCSSShaderValue_h

@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 #include "CustomFilterRenderer.h"
 
 #include "CustomFilterArrayParameter.h"
@@ -294,4 +294,4 @@ void CustomFilterRenderer::unbindVertexAttributes()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)

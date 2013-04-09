@@ -30,8 +30,6 @@
 #include "config.h"
 #include "WebKitCSSFilterRule.h"
 
-#if ENABLE(CSS_SHADERS)
-
 #include "PropertySetCSSStyleDeclaration.h"
 #include "StylePropertySet.h"
 #include "StyleRule.h"
@@ -96,4 +94,3 @@ void WebKitCSSFilterRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) 
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

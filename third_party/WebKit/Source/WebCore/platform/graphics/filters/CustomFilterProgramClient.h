@@ -30,8 +30,6 @@
 #ifndef CustomFilterProgramClient_h
 #define CustomFilterProgramClient_h
 
-#if ENABLE(CSS_SHADERS)
-
 namespace WebCore {
 
 class CustomFilterProgram;
@@ -47,6 +45,5 @@ public:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CustomFilterProgramClient_h

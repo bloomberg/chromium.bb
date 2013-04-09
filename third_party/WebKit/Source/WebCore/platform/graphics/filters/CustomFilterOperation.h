@@ -30,7 +30,6 @@
 #ifndef CustomFilterOperation_h
 #define CustomFilterOperation_h
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterConstants.h"
 #include "CustomFilterParameterList.h"
 #include "CustomFilterProgram.h"
@@ -93,6 +92,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CustomFilterOperation_h

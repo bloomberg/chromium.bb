@@ -82,9 +82,7 @@ public:
 #if ENABLE(VIDEO_TRACK)
         , TextTrackResource
 #endif
-#if ENABLE(CSS_SHADERS)
         , ShaderResource
-#endif
     };
 
     enum Status {

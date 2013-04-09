@@ -35,7 +35,7 @@ class RenderLayerCompositor;
 class RenderQuote;
 class RenderWidget;
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 class CustomFilterGlobalContext;
 #endif
 
@@ -182,7 +182,7 @@ public:
     RenderLayerCompositor* compositor();
     bool usesCompositing() const;
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
     CustomFilterGlobalContext* customFilterGlobalContext();
 #endif
 
@@ -316,7 +316,7 @@ private:
     LayoutState* m_layoutState;
     unsigned m_layoutStateDisableCount;
     OwnPtr<RenderLayerCompositor> m_compositor;
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
     OwnPtr<CustomFilterGlobalContext> m_customFilterGlobalContext;
 #endif
     OwnPtr<FlowThreadController> m_flowThreadController;

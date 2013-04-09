@@ -32,7 +32,7 @@
 #ifndef CustomFilterRenderer_h
 #define CustomFilterRenderer_h
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 
 #include "CustomFilterConstants.h"
 #include "CustomFilterParameterList.h"
@@ -97,6 +97,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterRenderer_h

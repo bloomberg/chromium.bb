@@ -42,7 +42,7 @@
 #include <algorithm>
 #include <wtf/MathExtras.h>
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 #include "CustomFilterGlobalContext.h"
 #include "CustomFilterOperation.h"
 #include "CustomFilterProgram.h"
@@ -85,7 +85,7 @@ inline bool isFilterSizeValid(FloatRect rect)
     return true;
 }
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Document* document, ValidatedCustomFilterOperation* operation)
 {
     if (!document)
@@ -104,9 +104,7 @@ static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Docum
 FilterEffectRenderer::FilterEffectRenderer()
     : m_graphicsBufferAttached(false)
     , m_hasFilterThatMovesPixels(false)
-#if ENABLE(CSS_SHADERS)
     , m_hasCustomShaderFilter(false)
-#endif
 {
     setFilterResolution(FloatSize(1, 1));
     m_sourceGraphic = SourceGraphic::create(this);
@@ -187,9 +185,7 @@ PassRefPtr<FilterEffect> FilterEffectRenderer::buildReferenceFilter(RenderObject
 
 bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
 {
-#if ENABLE(CSS_SHADERS)
     m_hasCustomShaderFilter = false;
-#endif
     m_hasFilterThatMovesPixels = operations.hasFilterThatMovesPixels();
     if (m_hasFilterThatMovesPixels)
         m_outsets = operations.outsets();
@@ -341,7 +337,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
                                                 dropShadowOperation->x(), dropShadowOperation->y(), dropShadowOperation->color(), 1);
             break;
         }
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
         case FilterOperation::CUSTOM:
             // CUSTOM operations are always converted to VALIDATED_CUSTOM before getting here.
             // The conversion happens in RenderLayer::computeFilterOperations.
@@ -423,13 +419,11 @@ void FilterEffectRenderer::apply()
 
 LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
 {
-#if ENABLE(CSS_SHADERS)
     if (hasCustomShaderFilter()) {
         // When we have at least a custom shader in the chain, we need to compute the whole source image, because the shader can
         // reference any pixel and we cannot control that.
         return filterBoxRect;
     }
-#endif
     // The result of this function is the area in the "filterBoxRect" that needs to be repainted, so that we fully cover the "dirtyRect".
     LayoutRect rectForRepaint = dirtyRect;
     if (hasFilterThatMovesPixels()) {

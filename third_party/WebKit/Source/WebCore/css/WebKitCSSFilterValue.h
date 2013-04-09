@@ -49,10 +49,8 @@ public:
         BrightnessFilterOperation,
         ContrastFilterOperation,
         BlurFilterOperation,
-        DropShadowFilterOperation
-#if ENABLE(CSS_SHADERS)
-        , CustomFilterOperation
-#endif
+        DropShadowFilterOperation,
+        CustomFilterOperation
     };
 
     static bool typeUsesSpaceSeparator(FilterOperationType);

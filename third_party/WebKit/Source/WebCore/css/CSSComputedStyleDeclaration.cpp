@@ -70,7 +70,6 @@
 #include "ExclusionShapeValue.h"
 #endif
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterArrayParameter.h"
 #include "CustomFilterNumberParameter.h"
 #include "CustomFilterOperation.h"
@@ -78,7 +77,6 @@
 #include "CustomFilterTransformParameter.h"
 #include "WebKitCSSArrayFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
-#endif
 
 #if ENABLE(CSS_FILTERS)
 #include "StyleCustomFilterProgram.h"
@@ -819,7 +817,6 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
     return list.release();
 }
 
-#if ENABLE(CSS_SHADERS)
 static PassRefPtr<CSSValue> valueForCustomFilterArrayParameter(const CustomFilterArrayParameter* arrayParameter)
 {
     RefPtr<WebKitCSSArrayFunctionValue> arrayParameterValue = WebKitCSSArrayFunctionValue::create();
@@ -861,14 +858,10 @@ static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* re
     ASSERT_NOT_REACHED();
     return 0;
 }
-#endif // ENABLE(CSS_SHADERS)
 
 #if ENABLE(CSS_FILTERS)
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObject* renderer, const RenderStyle* style) const
 {
-#if !ENABLE(CSS_SHADERS)
-    UNUSED_PARAM(renderer);
-#endif
     if (style->filter().operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
@@ -948,7 +941,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             filterValue->append(valueForShadow(&shadowData, CSSPropertyTextShadow, style));
             break;
         }
-#if ENABLE(CSS_SHADERS)
         case FilterOperation::VALIDATED_CUSTOM:
             // ValidatedCustomFilterOperation is not supposed to end up in the RenderStyle.
             ASSERT_NOT_REACHED();
@@ -1011,7 +1003,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             filterValue->append(parametersCSSValue.release());
             break;
         }
-#endif
         default:
             filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::UnknownFilterOperation);
             break;

@@ -43,10 +43,8 @@
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #endif
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterOperation.h"
 #include "CustomFilterProgram.h"
-#endif
 
 namespace WebCore {
 
@@ -101,9 +99,7 @@ RenderLayerFilterInfo::RenderLayerFilterInfo(RenderLayer* layer)
 
 RenderLayerFilterInfo::~RenderLayerFilterInfo()
 {
-#if ENABLE(CSS_SHADERS)
     removeCustomFilterClients();
-#endif
 #if ENABLE(SVG)
     removeReferenceFilterClients();
 #endif
@@ -164,7 +160,6 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
 }
 #endif
 
-#if ENABLE(CSS_SHADERS)
 void RenderLayerFilterInfo::notifyCustomFilterProgramLoaded(CustomFilterProgram*)
 {
     RenderObject* renderer = m_layer->renderer();
@@ -199,7 +194,6 @@ void RenderLayerFilterInfo::removeCustomFilterClients()
         m_cachedCustomFilterPrograms.at(i)->removeClient(this);
     m_cachedCustomFilterPrograms.clear();
 }
-#endif
 
 } // namespace WebCore
 

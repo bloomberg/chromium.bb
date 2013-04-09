@@ -144,9 +144,7 @@ static inline bool isCSSTokenAString(int yytype)
 #if ENABLE_CSS3_CONDITIONAL_RULES
 %token WEBKIT_SUPPORTS_CONDITION_SYM
 #endif
-#if ENABLE_CSS_SHADERS
 %token WEBKIT_FILTER_RULE_SYM
-#endif
 %token <marginBox> TOPLEFTCORNER_SYM
 %token <marginBox> TOPLEFT_SYM
 %token <marginBox> TOPCENTER_SYM
@@ -254,9 +252,7 @@ static inline bool isCSSTokenAString(int yytype)
 #if ENABLE_CSS_DEVICE_ADAPTATION
 %type <rule> viewport
 #endif
-#if ENABLE_CSS_SHADERS
 %type <rule> filter
-#endif
 
 %type <string> maybe_ns_prefix
 
@@ -480,9 +476,7 @@ valid_rule:
 #if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
 #endif
-#if ENABLE_CSS_SHADERS
   | filter
-#endif
   ;
 
 rule:
@@ -530,9 +524,7 @@ block_valid_rule:
 #if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
 #endif
-#if ENABLE_CSS_SHADERS
   | filter
-#endif
   ;
 
 block_rule:
@@ -1092,7 +1084,6 @@ region:
     }
 ;
 
-#if ENABLE_CSS_SHADERS
 before_filter_rule:
     /* empty */ {
         parser->markRuleHeaderStart(CSSRuleSourceData::FILTER_RULE);
@@ -1107,7 +1098,6 @@ filter:
         $$ = parser->createFilterRule($4);
     }
     ;
-#endif
 
 combinator:
     '+' maybe_space { $$ = CSSSelector::DirectAdjacent; }

@@ -258,11 +258,9 @@ SkImageFilter* SkiaImageFilterBuilder::build(const FilterOperations& operations)
             filter.reset(new DropShadowImageFilter(SkIntToScalar(drop->x()), SkIntToScalar(drop->y()), SkIntToScalar(drop->stdDeviation()), drop->color().rgb(), filter));
             break;
         }
-#if ENABLE(CSS_SHADERS)
         case FilterOperation::VALIDATED_CUSTOM:
         case FilterOperation::CUSTOM:
             // Not supported.
-#endif
         case FilterOperation::PASSTHROUGH:
         case FilterOperation::NONE:
             break;

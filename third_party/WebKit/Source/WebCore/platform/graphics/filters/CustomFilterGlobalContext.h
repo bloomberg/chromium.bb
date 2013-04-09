@@ -30,7 +30,7 @@
 #ifndef CustomFilterGlobalContext_h
 #define CustomFilterGlobalContext_h
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 #include "ANGLEWebKitBridge.h"
 #include "CustomFilterProgramInfo.h"
 #include <wtf/HashMap.h>
@@ -80,6 +80,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterGlobalContext_h

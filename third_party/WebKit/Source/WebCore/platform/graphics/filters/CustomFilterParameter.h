@@ -30,7 +30,6 @@
 #ifndef CustomFilterParameter_h
 #define CustomFilterParameter_h
 
-#if ENABLE(CSS_SHADERS)
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -74,6 +73,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CustomFilterParameter_h

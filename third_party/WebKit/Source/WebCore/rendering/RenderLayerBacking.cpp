@@ -60,9 +60,7 @@
 
 #if ENABLE(CSS_FILTERS)
 #include "FilterEffectRenderer.h"
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterOperation.h"
-#endif
 #endif
 
 #include "GraphicsContext3D.h"

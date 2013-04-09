@@ -30,7 +30,6 @@
 #ifndef ValidatedCustomFilterOperation_h
 #define ValidatedCustomFilterOperation_h
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterConstants.h"
 #include "CustomFilterParameterList.h"
 #include "FilterOperation.h"
@@ -90,6 +89,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // ValidatedCustomFilterOperation_h

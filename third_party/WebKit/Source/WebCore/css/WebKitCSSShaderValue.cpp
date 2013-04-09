@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
 #include "WebKitCSSShaderValue.h"
 
 #include "CSSParser.h"
@@ -112,4 +111,3 @@ void WebKitCSSShaderValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryO
     
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

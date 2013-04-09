@@ -28,7 +28,6 @@
  */
 
 [
-    Conditional=CSS_SHADERS,
     ImplementationLacksVTable
 ] interface WebKitCSSMixFunctionValue : CSSValueList {
 };

@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterOperation.h"
 
 #include "CustomFilterParameter.h"
@@ -76,4 +75,3 @@ PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* 
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

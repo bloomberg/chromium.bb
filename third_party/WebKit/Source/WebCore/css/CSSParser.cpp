@@ -102,11 +102,9 @@
 #endif
 #endif
 
-#if ENABLE(CSS_SHADERS)
 #include "WebKitCSSArrayFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
 #include "WebKitCSSShaderValue.h"
-#endif
 
 #define YYDEBUG 0
 
@@ -311,9 +309,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_hasFontFaceOnlyValues(false)
     , m_hadSyntacticallyValidCSSRule(false)
     , m_logErrors(false)
-#if ENABLE(CSS_SHADERS)
     , m_inFilterRule(false)
-#endif
     , m_defaultNamespace(starAtom)
     , m_parsedTextPrefixLength(0)
     , m_propertyRange(UINT_MAX, UINT_MAX)
@@ -2288,10 +2284,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertySrc: // Only used within @font-face and @-webkit-filter, so cannot use inherit | initial or be !important. This is a list of urls or local references.
-#if ENABLE(CSS_SHADERS)
         if (m_inFilterRule)
             return parseFilterRuleSrc();
-#endif
         return parseFontFaceSrc();
 
     case CSSPropertyUnicodeRange:
@@ -8174,13 +8168,10 @@ static void filterInfoForName(const CSSParserString& name, WebKitCSSFilterValue:
         filterType = WebKitCSSFilterValue::DropShadowFilterOperation;
         maximumArgumentCount = 4;  // x-offset, y-offset, blur-radius, color -- spread and inset style not allowed.
     }
-#if ENABLE(CSS_SHADERS)
     else if (equalIgnoringCase(name, "custom("))
         filterType = WebKitCSSFilterValue::CustomFilterOperation;
-#endif
 }
 
-#if ENABLE(CSS_SHADERS)
 static bool acceptCommaOperator(CSSParserValueList* argsList)
 {
     if (CSSParserValue* arg = argsList->current()) {
@@ -8597,7 +8588,6 @@ StyleRuleBase* CSSParser::createFilterRule(const CSSParserString& filterName)
     return result;
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParserValueList* args, WebKitCSSFilterValue::FilterOperationType filterType)
 {
@@ -8720,7 +8710,6 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
             if (filterType == WebKitCSSFilterValue::UnknownFilterOperation)
                 return 0;
 
-#if ENABLE(CSS_SHADERS)
             if (filterType == WebKitCSSFilterValue::CustomFilterOperation) {
                 // Make sure parsing fails if custom filters are disabled.
                 if (!m_context.isCSSCustomFilterEnabled)
@@ -8732,7 +8721,6 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
                 list->append(filterValue.release());
                 continue;
             }
-#endif
             CSSParserValueList* args = value->function->args.get();
             if (!args)
                 return 0;
@@ -10334,12 +10322,10 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
                 return;
             }
 #endif
-#if ENABLE(CSS_SHADERS)
             if (isASCIIAlphaCaselessEqual(name[14], 'r') && isEqualToCSSIdentifier(name + 2, "webkit-filte")) {
                 m_token = WEBKIT_FILTER_RULE_SYM;
                 return;
             }
-#endif
             return;
 
         case 17:

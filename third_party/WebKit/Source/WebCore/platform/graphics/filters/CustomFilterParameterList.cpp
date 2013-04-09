@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterParameterList.h"
 
 #include "CustomFilterParameter.h"
@@ -101,4 +100,3 @@ void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

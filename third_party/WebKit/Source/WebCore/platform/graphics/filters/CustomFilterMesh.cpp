@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 #include "CustomFilterMesh.h"
 #include "CustomFilterMeshGenerator.h"
 #include "GraphicsContext3D.h"
@@ -68,5 +68,5 @@ CustomFilterMesh::~CustomFilterMesh()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)
 

@@ -29,8 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CachedShader.h"
 #include "ResourceBuffer.h"
 #include "TextResourceDecoder.h"
@@ -78,4 +76,3 @@ void CachedShader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

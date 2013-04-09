@@ -30,8 +30,6 @@
 #ifndef StyleShader_h
 #define StyleShader_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
@@ -62,6 +60,5 @@ protected:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // StyleShader_h

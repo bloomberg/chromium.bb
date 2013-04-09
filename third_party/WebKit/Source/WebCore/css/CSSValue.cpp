@@ -227,7 +227,6 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case CalculationClass:
         static_cast<const CSSCalcValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#if ENABLE(CSS_FILTERS) && ENABLE(CSS_SHADERS)
     case WebKitCSSArrayFunctionValueClass:
         static_cast<const WebKitCSSArrayFunctionValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -237,7 +236,6 @@ void CSSValue::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case WebKitCSSShaderClass:
         static_cast<const WebKitCSSShaderValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
     case VariableClass:
         static_cast<const CSSVariableValue*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -344,14 +342,12 @@ bool CSSValue::equals(const CSSValue& other) const
 #if ENABLE(CSS_FILTERS)
         case WebKitCSSFilterClass:
             return compareCSSValues<WebKitCSSFilterValue>(*this, other);
-#if ENABLE(CSS_SHADERS)
         case WebKitCSSArrayFunctionValueClass:
             return compareCSSValues<WebKitCSSArrayFunctionValue>(*this, other);
         case WebKitCSSMixFunctionValueClass:
             return compareCSSValues<WebKitCSSMixFunctionValue>(*this, other);
         case WebKitCSSShaderClass:
             return compareCSSValues<WebKitCSSShaderValue>(*this, other);
-#endif
 #endif
         case VariableClass:
             return compareCSSValues<CSSVariableValue>(*this, other);
@@ -440,14 +436,12 @@ String CSSValue::cssText() const
 #if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         return static_cast<const WebKitCSSFilterValue*>(this)->customCssText();
-#if ENABLE(CSS_SHADERS)
     case WebKitCSSArrayFunctionValueClass:
         return static_cast<const WebKitCSSArrayFunctionValue*>(this)->customCssText();
     case WebKitCSSMixFunctionValueClass:
         return static_cast<const WebKitCSSMixFunctionValue*>(this)->customCssText();
     case WebKitCSSShaderClass:
         return static_cast<const WebKitCSSShaderValue*>(this)->customCssText();
-#endif
 #endif
     case VariableClass:
         return static_cast<const CSSVariableValue*>(this)->value();
@@ -574,7 +568,6 @@ void CSSValue::destroy()
     case WebKitCSSFilterClass:
         delete static_cast<WebKitCSSFilterValue*>(this);
         return;
-#if ENABLE(CSS_SHADERS)
     case WebKitCSSArrayFunctionValueClass:
         delete static_cast<WebKitCSSArrayFunctionValue*>(this);
         return;
@@ -584,7 +577,6 @@ void CSSValue::destroy()
     case WebKitCSSShaderClass:
         delete static_cast<WebKitCSSShaderValue*>(this);
         return;
-#endif
 #endif
     case VariableClass:
         delete static_cast<CSSVariableValue*>(this);
@@ -617,12 +609,10 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
 #if ENABLE(CSS_FILTERS)
     case WebKitCSSFilterClass:
         return static_cast<const WebKitCSSFilterValue*>(this)->cloneForCSSOM();
-#if ENABLE(CSS_SHADERS)
     case WebKitCSSArrayFunctionValueClass:
         return static_cast<const WebKitCSSArrayFunctionValue*>(this)->cloneForCSSOM();
     case WebKitCSSMixFunctionValueClass:
         return static_cast<const WebKitCSSMixFunctionValue*>(this)->cloneForCSSOM();
-#endif
 #endif
     case WebKitCSSTransformClass:
         return static_cast<const WebKitCSSTransformValue*>(this)->cloneForCSSOM();

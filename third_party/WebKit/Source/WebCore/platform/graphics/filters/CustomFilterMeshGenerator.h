@@ -30,7 +30,7 @@
 #ifndef CustomFilterMeshGenerator_h
 #define CustomFilterMeshGenerator_h
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 
 #include "CustomFilterConstants.h"
 #include "CustomFilterOperation.h"
@@ -120,6 +120,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterMeshGenerator_h

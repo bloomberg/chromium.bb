@@ -30,8 +30,6 @@
 #ifndef StyleCachedShader_h
 #define StyleCachedShader_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CachedResourceHandle.h"
 #include "StyleShader.h"
 
@@ -55,6 +53,5 @@ private:
 };
 
 }
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // StyleCachedShader_h

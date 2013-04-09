@@ -43,12 +43,7 @@ WebKitCSSFilterValue::WebKitCSSFilterValue(FilterOperationType operationType)
 
 bool WebKitCSSFilterValue::typeUsesSpaceSeparator(FilterOperationType operationType)
 {
-#if ENABLE(CSS_SHADERS)
     return operationType != CustomFilterOperation;
-#else
-    UNUSED_PARAM(operationType);
-    return true;
-#endif
 }
 
 String WebKitCSSFilterValue::customCssText() const
@@ -88,11 +83,9 @@ String WebKitCSSFilterValue::customCssText() const
     case DropShadowFilterOperation:
         result = "drop-shadow(";
         break;
-#if ENABLE(CSS_SHADERS)
     case CustomFilterOperation:
         result = "custom(";
         break;
-#endif
     default:
         break;
     }

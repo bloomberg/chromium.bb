@@ -32,8 +32,6 @@
 
 #include "CSSRule.h"
 
-#if ENABLE(CSS_SHADERS)
-
 namespace WebCore {
 
 class CSSStyleDeclaration;
@@ -62,6 +60,5 @@ private:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // WebKitCSSFilterRule_h

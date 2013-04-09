@@ -43,9 +43,7 @@
 #if ENABLE(CSS_FILTERS) && ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
 #endif
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterConstants.h"
-#endif
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
@@ -311,7 +309,6 @@ public:
 
 #if ENABLE(CSS_FILTERS)
     bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, FilterOperations& outOperations);
-#if ENABLE(CSS_SHADERS)
     StyleShader* styleShader(CSSValue*);
     StyleShader* cachedOrPendingStyleShaderFromValue(WebKitCSSShaderValue*);
     bool parseCustomFilterParameterList(CSSValue*, CustomFilterParameterList&);
@@ -325,7 +322,6 @@ public:
     void loadPendingShaders();
     PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShaderValue* vertexShader, WebKitCSSShaderValue* fragmentShader, 
         CustomFilterProgramType, const CustomFilterProgramMixSettings&, CustomFilterMeshType);
-#endif
 #if ENABLE(SVG)
     void loadPendingSVGDocuments();
 #endif
@@ -438,9 +434,7 @@ public:
         , m_elementAffectedByClassRules(false)
         , m_applyPropertyToRegularStyle(true)
         , m_applyPropertyToVisitedLinkStyle(false)
-#if ENABLE(CSS_SHADERS)
         , m_hasPendingShaders(false)
-#endif
         , m_lineHeightValue(0)
         , m_fontDirty(false)
         , m_hasUAAppearance(false)
@@ -477,10 +471,8 @@ public:
 #if ENABLE(CSS_FILTERS) && ENABLE(SVG)
         PendingSVGDocumentMap& pendingSVGDocuments() { return m_pendingSVGDocuments; }
 #endif
-#if ENABLE(CSS_SHADERS)
         void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
         bool hasPendingShaders() const { return m_hasPendingShaders; }
-#endif
 
         void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
         CSSValue* lineHeightValue() { return m_lineHeightValue; }
@@ -527,9 +519,7 @@ public:
         bool m_applyPropertyToVisitedLinkStyle;
 
         PendingImagePropertyMap m_pendingImageProperties;
-#if ENABLE(CSS_SHADERS)
         bool m_hasPendingShaders;
-#endif
 #if ENABLE(CSS_FILTERS) && ENABLE(SVG)
         PendingSVGDocumentMap m_pendingSVGDocuments;
 #endif
@@ -635,9 +625,7 @@ private:
 
     State m_state;
 
-#if ENABLE(CSS_SHADERS)
     OwnPtr<StyleCustomFilterProgramCache> m_customFilterProgramCache;
-#endif
 
     friend class StyleBuilder;
     friend bool operator==(const MatchedProperties&, const MatchedProperties&);

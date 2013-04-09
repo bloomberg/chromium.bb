@@ -30,8 +30,6 @@
 #ifndef StylePendingShader_h
 #define StylePendingShader_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CSSValue.h"
 #include "StyleShader.h"
 #include "WebKitCSSShaderValue.h"
@@ -58,6 +56,5 @@ private:
 };
 
 }
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // StylePendingShader_h

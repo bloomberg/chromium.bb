@@ -39,10 +39,8 @@ class ShadowData;
 class StylePropertySet;
 class StylePropertyShorthand;
 
-#if ENABLE(CSS_SHADERS)
 class CustomFilterNumberParameter;
 class CustomFilterParameter;
-#endif
 
 enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 

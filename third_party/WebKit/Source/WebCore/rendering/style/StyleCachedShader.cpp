@@ -29,8 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
-
 #include "StyleCachedShader.h"
 
 #include "CSSPrimitiveValue.h"
@@ -52,5 +50,4 @@ PassRefPtr<CSSValue> StyleCachedShader::cssValue() const
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 

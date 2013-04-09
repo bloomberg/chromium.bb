@@ -30,7 +30,6 @@
 #ifndef StyleCustomFilterProgramCache_h
 #define StyleCustomFilterProgramCache_h
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterProgramInfo.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/HashMap.h>
@@ -60,6 +59,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // StyleCustomFilterProgramCache_h

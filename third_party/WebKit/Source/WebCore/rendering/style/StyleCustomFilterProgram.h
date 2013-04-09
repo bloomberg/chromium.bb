@@ -30,7 +30,6 @@
 #ifndef StyleCustomFilterProgram_h
 #define StyleCustomFilterProgram_h
 
-#if ENABLE(CSS_SHADERS)
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "CachedShader.h"
@@ -182,6 +181,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // StyleCustomFilterProgram_h

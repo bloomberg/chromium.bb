@@ -91,11 +91,9 @@ public:
     bool isCalculationValue() const {return m_classType == CalculationClass; }
 #if ENABLE(CSS_FILTERS)
     bool isWebKitCSSFilterValue() const { return m_classType == WebKitCSSFilterClass; }
-#if ENABLE(CSS_SHADERS)
     bool isWebKitCSSArrayFunctionValue() const { return m_classType == WebKitCSSArrayFunctionValueClass; }
     bool isWebKitCSSMixFunctionValue() const { return m_classType == WebKitCSSMixFunctionValueClass; }
     bool isWebKitCSSShaderValue() const { return m_classType == WebKitCSSShaderClass; }
-#endif
 #endif // ENABLE(CSS_FILTERS)
     bool isVariableValue() const { return m_classType == VariableClass; }
 #if ENABLE(SVG)
@@ -161,9 +159,7 @@ protected:
         UnicodeRangeClass,
         LineBoxContainClass,
         CalculationClass,
-#if ENABLE(CSS_FILTERS) && ENABLE(CSS_SHADERS)
         WebKitCSSShaderClass,
-#endif
         VariableClass,
 #if ENABLE(SVG)
         SVGColorClass,
@@ -178,10 +174,8 @@ protected:
 #endif
 #if ENABLE(CSS_FILTERS)
         WebKitCSSFilterClass,
-#if ENABLE(CSS_SHADERS)
         WebKitCSSArrayFunctionValueClass,
         WebKitCSSMixFunctionValueClass,
-#endif
 #endif
         WebKitCSSTransformClass,
         // Do not append non-list class types here.

@@ -29,8 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(CSS_SHADERS)
-
 #include "StyleCustomFilterProgram.h"
 
 #include "StyleCustomFilterProgramCache.h"
@@ -45,5 +43,4 @@ StyleCustomFilterProgram::~StyleCustomFilterProgram()
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 

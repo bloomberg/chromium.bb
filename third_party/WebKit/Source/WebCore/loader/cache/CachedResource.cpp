@@ -140,10 +140,8 @@ static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type 
     case CachedResource::TextTrackResource:
         return ResourceLoadPriorityLow;
 #endif
-#if ENABLE(CSS_SHADERS)
     case CachedResource::ShaderResource:
         return ResourceLoadPriorityMedium;
-#endif
     }
     ASSERT_NOT_REACHED();
     return ResourceLoadPriorityLow;
@@ -166,9 +164,7 @@ static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource
         return ResourceRequest::TargetIsFontResource;
     case CachedResource::ImageResource:
         return ResourceRequest::TargetIsImage;
-#if ENABLE(CSS_SHADERS)
     case CachedResource::ShaderResource:
-#endif
     case CachedResource::RawResource:
         return ResourceRequest::TargetIsSubresource;    
 #if ENABLE(LINK_PREFETCH)

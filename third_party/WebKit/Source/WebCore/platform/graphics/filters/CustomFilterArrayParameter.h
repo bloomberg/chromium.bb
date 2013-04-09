@@ -30,7 +30,6 @@
 #ifndef CustomFilterArrayParameter_h
 #define CustomFilterArrayParameter_h
 
-#if ENABLE(CSS_SHADERS)
 #include "AnimationUtilities.h"
 #include "CustomFilterParameter.h"
 #include <wtf/Vector.h>
@@ -86,6 +85,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CustomFilterArrayParameter_h

@@ -32,8 +32,6 @@
 
 #include "WebCoreMemoryInstrumentation.h"
 
-#if ENABLE(CSS_SHADERS)
-
 namespace WebCore {
     
 WebKitCSSMixFunctionValue::WebKitCSSMixFunctionValue()
@@ -69,4 +67,3 @@ void WebKitCSSMixFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* me
 
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)

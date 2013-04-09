@@ -30,8 +30,6 @@
 #ifndef CustomFilterProgram_h
 #define CustomFilterProgram_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CustomFilterProgramInfo.h"
 
 #include <wtf/HashCountedSet.h>
@@ -90,6 +88,5 @@ private:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif

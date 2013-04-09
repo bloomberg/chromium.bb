@@ -30,8 +30,6 @@
 #ifndef WebKitCSSMixFunctionValue_h
 #define WebKitCSSMixFunctionValue_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 
@@ -59,6 +57,5 @@ private:
     
 } // namespace WebCore
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif

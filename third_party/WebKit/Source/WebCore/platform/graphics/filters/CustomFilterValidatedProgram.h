@@ -30,8 +30,6 @@
 #ifndef CustomFilterValidatedProgram_h
 #define CustomFilterValidatedProgram_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CustomFilterCompiledProgram.h"
 #include "CustomFilterProgramInfo.h"
 #include <wtf/PassRefPtr.h>
@@ -133,6 +131,5 @@ private:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif

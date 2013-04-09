@@ -30,8 +30,6 @@
 #ifndef CachedShader_h
 #define CachedShader_h
 
-#if ENABLE(CSS_SHADERS)
-
 #include "CachedResource.h"
 
 namespace WebCore {
@@ -55,6 +53,5 @@ private:
 
 }
 
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CachedShader_h

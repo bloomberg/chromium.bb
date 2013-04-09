@@ -65,11 +65,9 @@ class StyleKeyframe;
 class StyleSheetContents;
 class StyledElement;
 
-#if ENABLE(CSS_SHADERS)
 class WebKitCSSArrayFunctionValue;
 class WebKitCSSMixFunctionValue;
 class WebKitCSSShaderValue;
-#endif
 
 class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
@@ -240,7 +238,6 @@ public:
 #if ENABLE(CSS_FILTERS)
     PassRefPtr<CSSValueList> parseFilter();
     PassRefPtr<WebKitCSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, WebKitCSSFilterValue::FilterOperationType);
-#if ENABLE(CSS_SHADERS)
     PassRefPtr<WebKitCSSMixFunctionValue> parseMixFunction(CSSParserValue*);
     PassRefPtr<WebKitCSSArrayFunctionValue> parseCustomFilterArrayFunction(CSSParserValue*);
     PassRefPtr<CSSValueList> parseCustomFilterTransform(CSSParserValueList*);
@@ -250,7 +247,6 @@ public:
     PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
     bool parseFilterRuleSrc();
     PassRefPtr<WebKitCSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
-#endif
 #endif
 
     static bool isBlendMode(int ident);
@@ -322,9 +318,7 @@ public:
 #if ENABLE(SHADOW_DOM)
     StyleRuleBase* createHostRule(RuleList* rules);
 #endif
-#if ENABLE(CSS_SHADERS)
     StyleRuleBase* createFilterRule(const CSSParserString&);
-#endif
 
     void startDeclarationsForMarginBox();
     void endDeclarationsForMarginBox();
@@ -391,9 +385,7 @@ public:
     bool m_hadSyntacticallyValidCSSRule;
     bool m_logErrors;
 
-#if ENABLE(CSS_SHADERS)
     bool m_inFilterRule;
-#endif
 
     AtomicString m_defaultNamespace;
 

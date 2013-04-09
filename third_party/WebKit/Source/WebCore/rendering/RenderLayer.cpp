@@ -116,7 +116,7 @@
 #include "SVGNames.h"
 #endif
 
-#if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
+#if USE(3D_GRAPHICS)
 #include "CustomFilterGlobalContext.h"
 #include "CustomFilterOperation.h"
 #include "CustomFilterValidatedProgram.h"
@@ -1405,8 +1405,7 @@ void RenderLayer::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
     RenderLayerFilterInfo* filterInfo = this->filterInfo();
     ASSERT(filterInfo);
     filterInfo->expandDirtySourceRect(rectForRepaint);
-    
-#if ENABLE(CSS_SHADERS)
+
     ASSERT(filterInfo->renderer());
     if (filterInfo->renderer()->hasCustomShaderFilter()) {
         // If we have at least one custom shader, we need to update the whole bounding box of the layer, because the
@@ -1414,7 +1413,6 @@ void RenderLayer::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
         // Note: This is only for output rect, so there's no need to expand the dirty source rect.
         rectForRepaint.unite(calculateLayerBounds(this));
     }
-#endif
     
     RenderLayer* parentLayer = enclosingFilterRepaintLayer();
     ASSERT(parentLayer);
@@ -6180,21 +6178,16 @@ void RenderLayer::updateReflectionStyle()
     m_reflection->setStyle(newStyle.release());
 }
 
-#if ENABLE(CSS_SHADERS)
 bool RenderLayer::isCSSCustomFilterEnabled() const
 {
     // We only want to enable shaders if WebGL is also enabled on this platform.
     const Settings* settings = renderer()->document()->settings();
     return settings && settings->isCSSCustomFilterEnabled() && settings->webGLEnabled();
 }
-#endif
 
 #if ENABLE(CSS_FILTERS)
 FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
 {
-#if !ENABLE(CSS_SHADERS)
-    return style->filter();
-#else
     const FilterOperations& filters = style->filter();
     if (!filters.hasCustomFilter())
         return filters;
@@ -6230,7 +6223,6 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
         outputFilters.operations().append(filterOperation.release());
     }
     return outputFilters;
-#endif
 }
 
 void RenderLayer::updateOrRemoveFilterClients()
@@ -6240,12 +6232,10 @@ void RenderLayer::updateOrRemoveFilterClients()
         return;
     }
 
-#if ENABLE(CSS_SHADERS)
     if (renderer()->style()->filter().hasCustomFilter())
         ensureFilterInfo()->updateCustomFilterClients(renderer()->style()->filter());
     else if (hasFilterInfo())
         filterInfo()->removeCustomFilterClients();
-#endif
 
 #if ENABLE(SVG)
     if (renderer()->style()->filter().hasReferenceFilter())

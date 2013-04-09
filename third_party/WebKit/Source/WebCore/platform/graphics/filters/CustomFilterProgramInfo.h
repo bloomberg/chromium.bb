@@ -30,7 +30,6 @@
 #ifndef CustomFilterProgramInfo_h
 #define CustomFilterProgramInfo_h
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterConstants.h"
 #include "GraphicsTypes.h"
 
@@ -106,6 +105,5 @@ template<> struct DefaultHash<WebCore::CustomFilterProgramInfo> {
 };
 
 }
-#endif // ENABLE(CSS_SHADERS)
 
 #endif // CustomFilterProgramInfo_h

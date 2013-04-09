@@ -152,7 +152,6 @@
 #include "WebKitCSSSVGDocumentValue.h"
 #endif
 
-#if ENABLE(CSS_SHADERS)
 #include "CustomFilterArrayParameter.h"
 #include "CustomFilterConstants.h"
 #include "CustomFilterNumberParameter.h"
@@ -167,7 +166,6 @@
 #include "StyleShader.h"
 #include "WebKitCSSMixFunctionValue.h"
 #include "WebKitCSSShaderValue.h"
-#endif
 
 #if ENABLE(CSS_IMAGE_SET)
 #include "CSSImageSetValue.h"
@@ -225,9 +223,7 @@ inline void StyleResolver::State::clear()
     m_parentNode = 0;
     m_regionForStyling = 0;
     m_pendingImageProperties.clear();
-#if ENABLE(CSS_SHADERS)
     m_hasPendingShaders = false;
-#endif
 #if ENABLE(CSS_FILTERS) && ENABLE(SVG)
     m_pendingSVGDocuments.clear();
 #endif
@@ -3762,10 +3758,8 @@ static FilterOperation::OperationType filterOperationForType(WebKitCSSFilterValu
         return FilterOperation::BLUR;
     case WebKitCSSFilterValue::DropShadowFilterOperation:
         return FilterOperation::DROP_SHADOW;
-#if ENABLE(CSS_SHADERS)
     case WebKitCSSFilterValue::CustomFilterOperation:
         return FilterOperation::CUSTOM;
-#endif
     case WebKitCSSFilterValue::UnknownFilterOperation:
         return FilterOperation::NONE;
     }
@@ -3801,7 +3795,6 @@ void StyleResolver::loadPendingSVGDocuments()
 }
 #endif
 
-#if ENABLE(CSS_SHADERS)
 StyleShader* StyleResolver::styleShader(CSSValue* value)
 {
     if (value->isWebKitCSSShaderValue())
@@ -4112,7 +4105,6 @@ PassRefPtr<CustomFilterOperation> StyleResolver::createCustomFilterOperation(Web
     return isAtRuleReferenceSyntax ? createCustomFilterOperationWithAtRuleReferenceSyntax(filterValue) : createCustomFilterOperationWithInlineSyntax(filterValue);
 }
 
-#endif
 
 bool StyleResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style, RenderStyle* rootStyle, FilterOperations& outOperations)
 {
@@ -4140,7 +4132,6 @@ bool StyleResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style
         WebKitCSSFilterValue* filterValue = static_cast<WebKitCSSFilterValue*>(i.value());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->operationType());
 
-#if ENABLE(CSS_SHADERS)
         if (operationType == FilterOperation::VALIDATED_CUSTOM) {
             // ValidatedCustomFilterOperation is not supposed to end up in the RenderStyle.
             ASSERT_NOT_REACHED();
@@ -4154,7 +4145,6 @@ bool StyleResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style
             operations.operations().append(operation);
             continue;
         }
-#endif
         if (operationType == FilterOperation::REFERENCE) {
 #if ENABLE(SVG)
             if (filterValue->length() != 1)
@@ -4389,10 +4379,8 @@ void StyleResolver::loadPendingResources()
     // Start loading images referenced by this style.
     loadPendingImages();
 
-#if ENABLE(CSS_SHADERS)
     // Start loading the shaders referenced by this style.
     loadPendingShaders();
-#endif
     
 #if ENABLE(CSS_FILTERS) && ENABLE(SVG)
     // Start loading the SVG Documents referenced by this style.
