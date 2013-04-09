@@ -1107,8 +1107,6 @@ public:
     const TouchEventTargetSet* touchEventTargets() const { return 0; }
 #endif
 
-    bool visualUpdatesAllowed() const { return m_visualUpdatesAllowed; }
-
 #if ENABLE(MICRODATA)
     PassRefPtr<NodeList> getItems(const String& typeNames);
 #endif
@@ -1253,10 +1251,6 @@ private:
     void popFullscreenElementStack();
     void pushFullscreenElementStack(Element*);
     void addDocumentToFullScreenChangeEventQueue(Document*);
-
-    void setVisualUpdatesAllowed(ReadyState);
-    void setVisualUpdatesAllowed(bool);
-    void visualUpdatesSuppressionTimerFired(Timer<Document>*);
 
     void addListenerType(ListenerType listenerType) { m_listenerTypes |= listenerType; }
     void addMutationEventListenerTypeIfEnabled(ListenerType);
@@ -1521,9 +1515,6 @@ private:
 
     bool m_scheduledTasksAreSuspended;
     
-    bool m_visualUpdatesAllowed;
-    Timer<Document> m_visualUpdatesSuppressionTimer;
-
     RefPtr<NamedFlowCollection> m_namedFlows;
 
     RefPtr<DOMSecurityPolicy> m_domSecurityPolicy;

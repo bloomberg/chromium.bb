@@ -464,8 +464,6 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_lastHandledUserGestureTimestamp(0)
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
-    , m_visualUpdatesAllowed(true)
-    , m_visualUpdatesSuppressionTimer(this, &Document::visualUpdatesSuppressionTimerFired)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
@@ -1229,66 +1227,6 @@ void Document::setReadyState(ReadyState readyState)
 
     m_readyState = readyState;
     dispatchEvent(Event::create(eventNames().readystatechangeEvent, false, false));
-    
-    if (settings() && settings()->suppressesIncrementalRendering())
-        setVisualUpdatesAllowed(readyState);
-}
-
-void Document::setVisualUpdatesAllowed(ReadyState readyState)
-{
-    ASSERT(settings() && settings()->suppressesIncrementalRendering());
-    switch (readyState) {
-    case Loading:
-        ASSERT(!m_visualUpdatesSuppressionTimer.isActive());
-        ASSERT(m_visualUpdatesAllowed);
-        m_visualUpdatesSuppressionTimer.startOneShot(cDefaultIncrementalRenderingSuppressionTimeoutInSeconds);
-        setVisualUpdatesAllowed(false);
-        break;
-    case Interactive:
-        ASSERT(m_visualUpdatesSuppressionTimer.isActive() || m_visualUpdatesAllowed);
-        break;
-    case Complete:
-        if (m_visualUpdatesSuppressionTimer.isActive()) {
-            ASSERT(!m_visualUpdatesAllowed);
-            m_visualUpdatesSuppressionTimer.stop();
-            setVisualUpdatesAllowed(true);
-        } else
-            ASSERT(m_visualUpdatesAllowed);
-        break;
-    }
-}
-    
-void Document::setVisualUpdatesAllowed(bool visualUpdatesAllowed)
-{
-    if (m_visualUpdatesAllowed == visualUpdatesAllowed)
-        return;
-
-    m_visualUpdatesAllowed = visualUpdatesAllowed;
-
-    if (!visualUpdatesAllowed)
-        return;
-
-    FrameView* frameView = view();
-    bool needsLayout = frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout());
-    if (needsLayout) {
-        // There might be a layout pending, so make sure we don't update the screen with bogus data.
-        // The layout will actually update the compositing layers and repaint if needed.
-        return;
-    }
-
-#if USE(ACCELERATED_COMPOSITING)
-    if (view())
-        view()->updateCompositingLayersAfterLayout();
-#endif
-
-    if (renderer())
-        renderer()->repaint();
-}
-
-void Document::visualUpdatesSuppressionTimerFired(Timer<Document>*)
-{
-    ASSERT(!m_visualUpdatesAllowed);
-    setVisualUpdatesAllowed(true);
 }
 
 String Document::encoding() const
@@ -6002,7 +5940,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_scriptedAnimationController, "scriptedAnimationController");
     info.addMember(m_pendingTasksTimer, "pendingTasksTimer");
     info.addMember(m_textAutosizer, "textAutosizer");
-    info.addMember(m_visualUpdatesSuppressionTimer, "visualUpdatesSuppressionTimer");
     info.addMember(m_namedFlows, "namedFlows");
     info.addMember(m_domSecurityPolicy, "domSecurityPolicy");
     info.addMember(m_sharedObjectPoolClearTimer, "sharedObjectPoolClearTimer");

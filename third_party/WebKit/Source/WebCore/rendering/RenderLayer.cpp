@@ -3459,11 +3459,6 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
     if (layer->renderer()->document()->didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isRoot())
         return true;
 
-    // Avoid painting all layers if the document is in a state where visual updates aren't allowed.
-    // A full repaint will occur in Document::implicitClose() if painting is suppressed here.
-    if (!layer->renderer()->document()->visualUpdatesAllowed())
-        return true;
-
     return false;
 }
 

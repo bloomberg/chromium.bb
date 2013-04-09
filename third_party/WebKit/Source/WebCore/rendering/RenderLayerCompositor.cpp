@@ -336,10 +336,6 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 {
     m_updateCompositingLayersTimer.stop();
     
-    // Compositing layers will be updated in Document::implicitClose() if suppressed here.
-    if (!m_renderView->document()->visualUpdatesAllowed())
-        return;
-
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
         return;
