@@ -220,7 +220,7 @@ FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
 
     ret = FcHashInitSHA256Digest ();
     if (!ret)
-	return NULL;
+	goto bail0;
 
     while (!feof (fp))
     {
