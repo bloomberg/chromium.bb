@@ -49,6 +49,12 @@ class MockSessionManagerClient;
 class MockSMSClient;
 class MockSystemClockClient;
 class MockUpdateEngineClient;
+class MockIBusClient;
+class MockIBusConfigClient;
+class MockIBusEngineFactoryService;
+class MockIBusEngineService;
+class MockIBusInputContextClient;
+class MockIBusPanelService;
 class PowerPolicyController;
 
 // This class provides a mock DBusThreadManager with mock clients
@@ -200,6 +206,24 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockUpdateEngineClient* mock_update_engine_client() {
     return mock_update_engine_client_.get();
   }
+  MockIBusClient* mock_ibus_client() {
+    return mock_ibus_client_.get();
+  }
+  MockIBusConfigClient* mock_ibus_config_client() {
+    return mock_ibus_config_client_.get();
+  }
+  MockIBusInputContextClient* mock_ibus_input_context_client() {
+    return mock_ibus_input_context_client_.get();
+  }
+  MockIBusEngineService* mock_ibus_engine_service() {
+    return mock_ibus_engine_service_.get();
+  }
+  MockIBusEngineFactoryService* mock_ibus_engine_factory_service() {
+    return mock_ibus_engine_factory_service_.get();
+  }
+  MockIBusPanelService* mock_ibus_panel_service() {
+    return mock_ibus_panel_service_.get();
+  }
 
  private:
   // Note: Keep this before other members so they can call AddObserver() in
@@ -240,6 +264,12 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockSystemClockClient> mock_system_clock_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
+  scoped_ptr<MockIBusClient> mock_ibus_client_;
+  scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;
+  scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
+  scoped_ptr<MockIBusEngineService> mock_ibus_engine_service_;
+  scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
+  scoped_ptr<MockIBusPanelService> mock_ibus_panel_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

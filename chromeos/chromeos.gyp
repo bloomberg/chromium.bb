@@ -267,6 +267,7 @@
         '../build/linux/system.gyp:dbus',
         '../testing/gmock.gyp:gmock',
         'chromeos',
+        'chromeos_test_support_without_gmock',
         'power_manager_proto',
       ],
       'sources': [
