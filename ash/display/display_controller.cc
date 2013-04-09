@@ -24,6 +24,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -336,7 +337,8 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 // DisplayController
 
 DisplayController::DisplayController()
-    : primary_root_window_for_replace_(NULL) {
+    : primary_root_window_for_replace_(NULL),
+      in_bootstrap_(true) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if defined(OS_CHROMEOS)
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
@@ -374,6 +376,7 @@ DisplayController::~DisplayController() {
 
 void DisplayController::Start() {
   Shell::GetScreen()->AddObserver(this);
+  in_bootstrap_ = false;
 }
 
 void DisplayController::Shutdown() {
@@ -722,6 +725,82 @@ gfx::Display* DisplayController::GetSecondaryDisplay() {
       display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
 }
 
+void DisplayController::EnsurePointerInDisplays() {
+  // Don't try to move the pointer during the boot/startup.
+  if (!HasPrimaryDisplay())
+    return;
+  gfx::Point location_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
+  gfx::Point target_location;
+  int64 closest_distance_squared = -1;
+  internal::DisplayManager* display_manager = GetDisplayManager();
+
+  aura::RootWindow* dst_root_window = NULL;
+  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+    const gfx::Display* display = display_manager->GetDisplayAt(i);
+    aura::RootWindow* root_window = GetRootWindowForDisplayId(display->id());
+    if (display->bounds().Contains(location_in_screen)) {
+      dst_root_window = root_window;
+      target_location = location_in_screen;
+      break;
+    }
+    gfx::Point center = display->bounds().CenterPoint();
+    // Use the distance squared from the center of the dislay. This is not
+    // exactly "closest" display, but good enough to pick one
+    // appropriate (and there are at most two displays).
+    // We don't care about actual distance, only relative to other displays, so
+    // using the LengthSquared() is cheaper than Length().
+
+    int64 distance_squared = (center - location_in_screen).LengthSquared();
+    if (closest_distance_squared < 0 ||
+        closest_distance_squared > distance_squared) {
+      dst_root_window = root_window;
+      target_location = center;
+      closest_distance_squared = distance_squared;
+    }
+  }
+  DCHECK(dst_root_window);
+  aura::client::ScreenPositionClient* client =
+      aura::client::GetScreenPositionClient(dst_root_window);
+  client->ConvertPointFromScreen(dst_root_window, &target_location);
+  dst_root_window->MoveCursorTo(target_location);
+}
+
+gfx::Point DisplayController::GetNativeMouseCursorLocation() const {
+  if (in_bootstrap())
+    return gfx::Point();
+
+  gfx::Point location = Shell::GetScreen()->GetCursorScreenPoint();
+  const gfx::Display& display =
+      Shell::GetScreen()->GetDisplayNearestPoint(location);
+  const aura::RootWindow* root_window =
+      root_windows_.find(display.id())->second;
+  aura::client::ScreenPositionClient* client =
+      aura::client::GetScreenPositionClient(root_window);
+  client->ConvertPointFromScreen(root_window, &location);
+  root_window->ConvertPointToNativeScreen(&location);
+  return location;
+}
+
+void DisplayController::UpdateMouseCursor(const gfx::Point& point_in_native) {
+  if (in_bootstrap())
+    return;
+
+  std::vector<aura::RootWindow*> root_windows = GetAllRootWindows();
+  for (std::vector<aura::RootWindow*>::iterator iter = root_windows.begin();
+       iter != root_windows.end();
+       ++iter) {
+    aura::RootWindow* root_window = *iter;
+    gfx::Rect bounds_in_native(root_window->GetHostOrigin(),
+                               root_window->GetHostSize());
+    if (bounds_in_native.Contains(point_in_native)) {
+      gfx::Point point(point_in_native);
+      root_window->ConvertPointFromNativeScreen(&point);
+      root_window->MoveCursorTo(point);
+      break;
+    }
+  }
+}
+
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   if (limiter_.get())
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
@@ -895,15 +974,13 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
 }
 
 void DisplayController::NotifyDisplayConfigurationChanging() {
-  // |primary_display_id| is invalid during bootstrap.
-  if (primary_display_id == gfx::Display::kInvalidDisplayID)
+  if (in_bootstrap())
     return;
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
 }
 
 void DisplayController::NotifyDisplayConfigurationChanged() {
-  // |primary_display_id| is invalid during bootstrap.
-  if (primary_display_id == gfx::Display::kInvalidDisplayID)
+  if (in_bootstrap())
     return;
 
   internal::DisplayManager* display_manager = GetDisplayManager();

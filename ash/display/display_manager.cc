@@ -358,6 +358,8 @@ void DisplayManager::UpdateDisplays(
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();
 
   DisplayList new_displays;
+  bool update_mouse_location = false;
+
   while (curr_iter != displays_.end() ||
          new_info_iter != new_display_info_list.end()) {
     if (curr_iter == displays_.end()) {
@@ -371,6 +373,7 @@ void DisplayManager::UpdateDisplays(
       // more displays in current list.
       removed_displays.push_back(*curr_iter);
       ++curr_iter;
+      update_mouse_location = true;
     } else if (curr_iter->id() == new_info_iter->id()) {
       const gfx::Display& current_display = *curr_iter;
       // Copy the info because |CreateDisplayFromInfo| updates the instance.
@@ -380,17 +383,27 @@ void DisplayManager::UpdateDisplays(
       gfx::Display new_display =
           CreateDisplayFromDisplayInfoById(new_info_iter->id());
       const DisplayInfo& new_display_info = GetDisplayInfo(new_display.id());
+
+      bool host_window_bounds_changed =
+          current_display_info.bounds_in_pixel() !=
+          new_display_info.bounds_in_pixel();
+
       // TODO(oshima): Rotating square dislay doesn't work as the size
       // won't change. This doesn't cause a problem now as there is no
       // such display. This will be fixed by comparing the rotation as
       // well when the rotation variable is added to gfx::Display.
       if (force_bounds_changed_ ||
-          (current_display_info.bounds_in_pixel() !=
-           new_display_info.bounds_in_pixel()) ||
+          host_window_bounds_changed ||
           (current_display.device_scale_factor() !=
            new_display.device_scale_factor()) ||
           (current_display_info.size_in_pixel() !=
            new_display.GetSizeInPixel())) {
+
+        // Don't update mouse location if the display size has
+        // changed due to rotation or zooming.
+        if (host_window_bounds_changed)
+          update_mouse_location = true;
+
         changed_display_indices.push_back(new_displays.size());
       }
 
@@ -402,6 +415,7 @@ void DisplayManager::UpdateDisplays(
       // more displays in current list between ids, which means it is deleted.
       removed_displays.push_back(*curr_iter);
       ++curr_iter;
+      update_mouse_location = true;
     } else {
       // more displays in new list between ids, which means it is added.
       added_display_indices.push_back(new_displays.size());
@@ -420,6 +434,12 @@ void DisplayManager::UpdateDisplays(
     return;
   }
 
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  gfx::Point mouse_location_in_native;
+  display_controller->NotifyDisplayConfigurationChanging();
+  mouse_location_in_native = display_controller->GetNativeMouseCursorLocation();
+
   displays_ = new_displays;
 
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
@@ -428,11 +448,6 @@ void DisplayManager::UpdateDisplays(
   // being removed are accessed during shutting down the root.
   displays_.insert(displays_.end(), removed_displays.begin(),
                    removed_displays.end());
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  // |display_controller| is NULL during the bootstrap.
-  if (display_controller)
-    display_controller->NotifyDisplayConfigurationChanging();
 
   for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
        iter != removed_displays.rend(); ++iter) {
@@ -447,10 +462,12 @@ void DisplayManager::UpdateDisplays(
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
-  if (display_controller)
-    display_controller->NotifyDisplayConfigurationChanged();
+  display_controller->NotifyDisplayConfigurationChanged();
+  if (update_mouse_location)
+    display_controller->EnsurePointerInDisplays();
+  else
+    display_controller->UpdateMouseCursor(mouse_location_in_native);
 
-  EnsurePointerInDisplays();
 #if defined(USE_X11) && defined(OS_CHROMEOS)
   if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
     ui::ClearX11DefaultRootWindow();
@@ -653,44 +670,6 @@ void DisplayManager::AddDisplayFromSpec(const std::string& spec) {
   InsertAndUpdateDisplayInfo(display_info);
   gfx::Display display = CreateDisplayFromDisplayInfoById(display_info.id());
   displays_.push_back(display);
-}
-
-void DisplayManager::EnsurePointerInDisplays() {
-  // Don't try to move the pointer during the boot/startup.
-  if (!DisplayController::HasPrimaryDisplay())
-    return;
-  gfx::Point location_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Point target_location;
-  int64 closest_distance_squared = -1;
-
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    const gfx::Rect& display_bounds = iter->bounds();
-
-    if (display_bounds.Contains(location_in_screen)) {
-      target_location = location_in_screen;
-      break;
-    }
-    gfx::Point center = display_bounds.CenterPoint();
-    // Use the distance squared from the center of the dislay. This is not
-    // exactly "closest" display, but good enough to pick one
-    // appropriate (and there are at most two displays).
-    // We don't care about actual distance, only relative to other displays, so
-    // using the LengthSquared() is cheaper than Length().
-    int64 distance_squared = (center - location_in_screen).LengthSquared();
-    if (closest_distance_squared < 0 ||
-        closest_distance_squared > distance_squared) {
-      target_location = center;
-      closest_distance_squared = distance_squared;
-    }
-  }
-
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  aura::client::ScreenPositionClient* client =
-      aura::client::GetScreenPositionClient(root_window);
-  client->ConvertPointFromScreen(root_window, &target_location);
-
-  root_window->MoveCursorTo(target_location);
 }
 
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
