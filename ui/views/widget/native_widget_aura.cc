@@ -903,7 +903,11 @@ BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
   if (root_window) {
     Widget* widget = Widget::GetWidgetForNativeView(root_window);
     if (widget && widget->is_secondary_widget())
-      widget->Close();
+      // To avoid the delay in shutdown caused by using Close which may wait
+      // for animations, use CloseNow. Because this is only used on secondary
+      // widgets it seems relatively safe to skip the extra processing of
+      // Close.
+      widget->CloseNow();
   }
   return TRUE;
 }
