@@ -66,6 +66,78 @@ SystemTray* GetSystemTray() {
   return Shell::GetPrimaryRootWindowController()->GetSystemTray();
 }
 
+class ShelfDragCallback {
+ public:
+  ShelfDragCallback(const gfx::Rect& not_visible, const gfx::Rect& visible)
+      : not_visible_bounds_(not_visible),
+        visible_bounds_(visible),
+        was_visible_on_drag_start_(false) {
+    EXPECT_EQ(not_visible_bounds_.bottom(), visible_bounds_.bottom());
+  }
+
+  virtual ~ShelfDragCallback() {
+  }
+
+  void ProcessScroll(ui::EventType type, const gfx::Vector2dF& delta) {
+    if (GetShelfLayoutManager()->visibility_state() == ash::SHELF_HIDDEN)
+      return;
+
+    if (type == ui::ET_GESTURE_SCROLL_BEGIN) {
+      scroll_ = gfx::Vector2dF();
+      was_visible_on_drag_start_ = GetShelfLayoutManager()->IsVisible();
+      return;
+    }
+
+    // The state of the shelf at the end of the gesture is tested separately.
+    if (type == ui::ET_GESTURE_SCROLL_END)
+      return;
+
+    if (type == ui::ET_GESTURE_SCROLL_UPDATE)
+      scroll_.Add(delta);
+
+    gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+    EXPECT_EQ(not_visible_bounds_.bottom(), shelf_bounds.bottom());
+    EXPECT_EQ(visible_bounds_.bottom(), shelf_bounds.bottom());
+
+    // The shelf should never be smaller than the hidden state.
+    EXPECT_GE(shelf_bounds.height(), not_visible_bounds_.height());
+
+    if (was_visible_on_drag_start_) {
+      if (scroll_.y() < 0) {
+        // If dragging up from the visible state, then the shelf should increase
+        // in height, but not as much as the scroll delta.
+        EXPECT_LE(shelf_bounds.y(), visible_bounds_.y());
+        EXPECT_LE(abs(shelf_bounds.y() - visible_bounds_.y()),
+                  abs(scroll_.y()));
+      } else {
+        if (shelf_bounds.height() > not_visible_bounds_.height()) {
+          // If dragging down from the visible state, then the shelf should
+          // decrease in height, until it reaches the minimum height.
+          EXPECT_EQ(shelf_bounds.y(), visible_bounds_.y() + (scroll_.y()));
+        }
+      }
+    } else {
+      if (fabs(scroll_.y()) < not_visible_bounds_.y() - visible_bounds_.y()) {
+        // Tests that the shelf sticks with the touch point during the drag
+        // until the shelf is completely visible.
+        EXPECT_EQ(shelf_bounds.y(), not_visible_bounds_.y() + scroll_.y());
+      } else {
+        // Tests that after the shelf is completely visible, the shelf starts
+        // resisting the drag.
+        EXPECT_GT(shelf_bounds.y(), not_visible_bounds_.y() + scroll_.y());
+      }
+    }
+  }
+
+ private:
+  const gfx::Rect not_visible_bounds_;
+  const gfx::Rect visible_bounds_;
+  gfx::Vector2dF scroll_;
+  bool was_visible_on_drag_start_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfDragCallback);
+};
+
 class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
  public:
   ShelfLayoutObserverTest()
@@ -885,7 +957,19 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   gfx::Rect bounds_shelf = window->bounds();
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  gfx::Rect bounds_noshelf = window->bounds();
+  gfx::Rect shelf_hidden = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf->LayoutShelf();
+
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  const int kNumScrollSteps = 10;
+  ShelfDragCallback handler(shelf_hidden, shelf_shown);
 
   // Swipe up on the shelf. This should not change any state.
   gfx::Point start = GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
@@ -893,8 +977,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 
   // Swipe down on the shelf to hide it.
   end.set_y(start.y() + 100);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
@@ -902,12 +988,11 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_NE(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
-  gfx::Rect bounds_noshelf = window->bounds();
-  gfx::Rect shelf_hidden = GetShelfWidget()->GetWindowBoundsInScreen();
-
   // Swipe up to show the shelf.
-  generator.GestureScrollSequence(end, start,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(end, start,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
@@ -916,8 +1001,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 
   // Swipe up again. The shelf should hide.
   end.set_y(start.y() - 100);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
@@ -926,13 +1013,17 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 
   // Swipe up yet again to show it.
   end.set_y(start.y() + 100);
-  generator.GestureScrollSequence(end, start,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(end, start,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
 
   // Swipe down very little. It shouldn't change any state.
   end.set_y(start.y() + shelf_shown.height() * 3 / 10);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(100), 1);
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(100), 1,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
@@ -941,8 +1032,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 
   // Swipe down again to hide.
   end.set_y(start.y() + 100);
-  generator.GestureScrollSequence(start, end,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
@@ -958,8 +1051,10 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Swipe-up. This should not change anything.
-  generator.GestureScrollSequence(end, start,
-      base::TimeDelta::FromMilliseconds(10), 1);
+  generator.GestureScrollSequenceWithCallback(end, start,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());

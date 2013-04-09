@@ -651,19 +651,20 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
-    // Keep the launcher to its full height when dragging is in progress.
-    if (gesture_drag_status_ == GESTURE_DRAG_NONE) {
-      if (IsHorizontalAlignment())
-        shelf_height = kAutoHideSize;
-      else
-        shelf_width = kAutoHideSize;
-    }
+    // Auto-hidden shelf always starts with the default size. If a gesture-drag
+    // is in progress, then the call to UpdateTargetBoundsForGesture() below
+    // takes care of setting the height properly.
+    if (IsHorizontalAlignment())
+      shelf_height = kAutoHideSize;
+    else
+      shelf_width = kAutoHideSize;
   } else if (state.visibility_state == SHELF_HIDDEN) {
     if (IsHorizontalAlignment())
       shelf_height = 0;
     else
       shelf_width = 0;
   }
+
   target_bounds->shelf_bounds_in_root = SelectValueForShelfAlignment(
       gfx::Rect(available_bounds.x(), available_bounds.bottom() - shelf_height,
                     available_bounds.width(), shelf_height),
@@ -689,14 +690,6 @@ void ShelfLayoutManager::CalculateTargetBounds(
                     shelf_height - (status_size.height() + status_inset),
                     status_size.width(), status_size.height()));
 
-  target_bounds->launcher_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
-                    shelf_width - status_size.width(), shelf_height),
-      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
-      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
-      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
-                    shelf_width - status_size.width(), shelf_height));
-
   target_bounds->work_area_insets = SelectValueForShelfAlignment(
       gfx::Insets(0, 0, GetWorkAreaSize(state, shelf_height), 0),
       gfx::Insets(0, GetWorkAreaSize(state, shelf_width), 0, 0),
@@ -707,8 +700,21 @@ void ShelfLayoutManager::CalculateTargetBounds(
       (gesture_drag_status_ != GESTURE_DRAG_NONE ||
        state.visibility_state == SHELF_VISIBLE ||
        state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
+
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
     UpdateTargetBoundsForGesture(target_bounds);
+
+  // This needs to happen after calling UpdateTargetBoundsForGesture(), because
+  // that can change the size of the shelf.
+  target_bounds->launcher_bounds_in_shelf = SelectValueForShelfAlignment(
+      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
+                    shelf_width - status_size.width(),
+                    target_bounds->shelf_bounds_in_root.height()),
+      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
+      gfx::Rect(0, 0, shelf_width, shelf_height - status_size.height()),
+      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
+                    shelf_width - status_size.width(),
+                    target_bounds->shelf_bounds_in_root.height()));
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
@@ -748,13 +754,12 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   if (horizontal) {
     // Move and size the launcher with the gesture.
+    int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
+    shelf_height = std::max(shelf_height, kAutoHideSize);
+    target_bounds->shelf_bounds_in_root.set_height(shelf_height);
     if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
-      target_bounds->shelf_bounds_in_root.Offset(0, translate);
-      target_bounds->shelf_bounds_in_root.set_height(
-          available_bounds.bottom() - target_bounds->shelf_bounds_in_root.y());
-    } else {
-      target_bounds->shelf_bounds_in_root.set_height(
-          target_bounds->shelf_bounds_in_root.height() + translate);
+      target_bounds->shelf_bounds_in_root.set_y(
+          available_bounds.bottom() - shelf_height);
     }
 
     // The statusbar should be in the center of the shelf.
@@ -765,13 +770,12 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     target_bounds->status_bounds_in_shelf.set_y(status_y.y());
   } else {
     // Move and size the launcher with the gesture.
+    int shelf_width = target_bounds->shelf_bounds_in_root.width() - translate;
+    shelf_width = std::max(shelf_width, kAutoHideSize);
+    target_bounds->shelf_bounds_in_root.set_width(shelf_width);
     if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
-      target_bounds->shelf_bounds_in_root.Offset(translate, 0);
-      target_bounds->shelf_bounds_in_root.set_width(
-          available_bounds.right() - target_bounds->shelf_bounds_in_root.x());
-    } else {
-      target_bounds->shelf_bounds_in_root.set_width(
-          target_bounds->shelf_bounds_in_root.width() + translate);
+      target_bounds->shelf_bounds_in_root.set_y(
+          available_bounds.right() - shelf_width);
     }
 
     // The statusbar should be in the center of the shelf.
