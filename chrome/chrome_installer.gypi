@@ -516,6 +516,7 @@
           'installer/linux/internal/common/repo.cron',
           'installer/linux/internal/common/rpm.include',
           'installer/linux/internal/common/rpmrepo.cron',
+          'installer/linux/internal/common/symlinks.include',
           'installer/linux/internal/common/updater',
           'installer/linux/internal/common/variables.include',
           'installer/linux/internal/common/wrapper',
