@@ -22,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
 #include "grit/virtual_driver_setup_resources.h"
@@ -212,7 +213,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   if (install) {
     if (!GetExitCodeProcess(regsvr32_handle, &exit_code)) {
       LOG(ERROR) << "Unable to get regsvr32.exe exit code.";
-      return cloud_print::GetLastHResult();;
+      return cloud_print::GetLastHResult();
     }
     if (exit_code != 0) {
       LOG(ERROR) << "Regsvr32.exe failed with " << exit_code;

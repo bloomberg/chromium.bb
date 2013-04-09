@@ -13,14 +13,11 @@
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
 
 namespace {
-
-HRESULT HResultFromLastError() {
-  return GetLastError() ? HRESULT_FROM_WIN32(GetLastError()) : E_FAIL;
-}
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -53,7 +50,7 @@ HRESULT OpenServiceManager(ServiceHandle* service_manager) {
 
   service_manager->Set(::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
   if (!service_manager->IsValid())
-    return HResultFromLastError();
+    return cloud_print::GetLastHResult();
 
   return S_OK;
 }
@@ -71,7 +68,7 @@ HRESULT OpenService(const string16& name, DWORD access,
   service->Set(::OpenService(scm, name.c_str(), access));
 
   if (!service->IsValid())
-    return HResultFromLastError();
+    return cloud_print::GetLastHResult();
 
   return S_OK;
 }
@@ -91,7 +88,7 @@ HRESULT ServiceController::StartService() {
   if (FAILED(hr))
     return hr;
   if (!::StartService(service, 0, NULL))
-    return HResultFromLastError();
+    return cloud_print::GetLastHResult();
   return S_OK;
 }
 
@@ -103,7 +100,7 @@ HRESULT ServiceController::StopService() {
     return hr;
   SERVICE_STATUS status = {0};
   if (!::ControlService(service, SERVICE_CONTROL_STOP, &status))
-    return HResultFromLastError();
+    return cloud_print::GetLastHResult();
   while (::QueryServiceStatus(service, &status) &&
           status.dwCurrentState > SERVICE_STOPPED) {
     Sleep(500);
@@ -164,7 +161,7 @@ HRESULT ServiceController::InstallService(const string16& user,
 
   if (!service.IsValid()) {
     LOG(ERROR) << "Failed to install service as " << user << ".";
-    return HResultFromLastError();
+    return cloud_print::GetLastHResult();
   }
 
   return S_OK;
@@ -179,7 +176,7 @@ HRESULT ServiceController::UninstallService() {
   if (service) {
     if (!::DeleteService(service)) {
       LOG(ERROR) << "Failed to uninstall service";
-      hr = HResultFromLastError();
+      hr = cloud_print::GetLastHResult();
     }
   }
   UpdateRegistryAppId(false);

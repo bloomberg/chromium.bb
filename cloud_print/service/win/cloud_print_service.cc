@@ -19,6 +19,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
@@ -334,8 +335,7 @@ class CloudPrintServiceModule
                                                    new_contents.size());
             if (written != new_contents.size()) {
               LOG(ERROR) << "Failed to write file " << file.value() << ".";
-              DWORD last_error = GetLastError();
-              return last_error ? HRESULT_FROM_WIN32(last_error) : E_FAIL;
+              return cloud_print::GetLastHResult();
             }
           }
         }

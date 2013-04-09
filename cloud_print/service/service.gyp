@@ -71,7 +71,10 @@
         }],
       ],
       'sources': [
+        '<(DEPTH)/content/public/common/content_switches.h',
         '<(DEPTH)/content/public/common/content_switches.cc',
+        '<(DEPTH)/cloud_print/common/win/cloud_print_utils.cc',
+        '<(DEPTH)/cloud_print/common/win/cloud_print_utils.h',
         'service_state.cc',
         'service_state.h',
         'service_switches.cc',

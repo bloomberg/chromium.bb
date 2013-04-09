@@ -19,6 +19,8 @@
       'target_name': 'virtual_driver_lib<(virtual_driver_suffix)',
       'type': 'static_library',
       'sources': [
+        '<(DEPTH)/cloud_print/common/win/cloud_print_utils.cc',
+        '<(DEPTH)/cloud_print/common/win/cloud_print_utils.h',
         'virtual_driver_consts.cc',
         'virtual_driver_consts.h',
         'virtual_driver_helpers.cc',
