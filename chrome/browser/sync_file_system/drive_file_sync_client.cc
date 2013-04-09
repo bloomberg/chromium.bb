@@ -185,11 +185,11 @@ void DriveFileSyncClient::GetDriveDirectoryForSyncRoot(
   DVLOG(2) << "Getting Drive directory for SyncRoot";
 
   std::string directory_name(kSyncRootDirectoryName);
-  SearchFilesInDirectory(
-      std::string(),
+  drive_service_->Search(
       FormatTitleQuery(directory_name),
-      base::Bind(&DriveFileSyncClient::DidGetDirectory, AsWeakPtr(),
-                 std::string(), directory_name, callback));
+      base::Bind(&DriveFileSyncClient::DidGetResourceList, AsWeakPtr(),
+                 base::Bind(&DriveFileSyncClient::DidGetDirectory, AsWeakPtr(),
+                            std::string(), directory_name, callback)));
 }
 
 void DriveFileSyncClient::GetDriveDirectoryForOrigin(
@@ -357,12 +357,11 @@ void DriveFileSyncClient::SearchFilesInDirectory(
     const std::string& search_query,
     const ResourceListCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!directory_resource_id.empty());
   DVLOG(2) << "Searching resources in the directory [" << directory_resource_id
            << "] with query [" << search_query << "]";
 
-  drive_service_->GetResourceList(
-      GURL(),  // feed_url
-      0,  // start_changestamp
+  drive_service_->SearchInDirectory(
       search_query,
       directory_resource_id,
       base::Bind(&DriveFileSyncClient::DidGetResourceList,
@@ -375,9 +374,7 @@ void DriveFileSyncClient::ListFiles(const std::string& directory_resource_id,
   DVLOG(2) << "Listing resources in the directory ["
            << directory_resource_id << "]";
 
-  SearchFilesInDirectory(directory_resource_id,
-                         std::string() /* search_query */,
-                         callback);
+  drive_service_->GetResourceListInDirectory(directory_resource_id, callback);
 }
 
 void DriveFileSyncClient::ListChanges(int64 start_changestamp,
@@ -385,11 +382,8 @@ void DriveFileSyncClient::ListChanges(int64 start_changestamp,
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Listing changes since: " << start_changestamp;
 
-  drive_service_->GetResourceList(
-      GURL(),  // feed_url
+  drive_service_->GetChangeList(
       start_changestamp,
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
       base::Bind(&DriveFileSyncClient::DidGetResourceList,
                  AsWeakPtr(), callback));
 }
@@ -400,11 +394,8 @@ void DriveFileSyncClient::ContinueListing(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Continue listing on feed: " << feed_url;
 
-  drive_service_->GetResourceList(
+  drive_service_->ContinueGetResourceList(
       feed_url,
-      0,  // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
       base::Bind(&DriveFileSyncClient::DidGetResourceList,
                  AsWeakPtr(), callback));
 }
@@ -821,11 +812,28 @@ void DriveFileSyncClient::EnsureTitleUniqueness(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Checking if there's no conflict on entry creation";
 
-  SearchFilesInDirectory(
-      parent_resource_id,
-      FormatTitleQuery(expected_title),
+  const google_apis::GetResourceListCallback& bound_callback =
       base::Bind(&DriveFileSyncClient::DidListEntriesToEnsureUniqueness,
-                 AsWeakPtr(), parent_resource_id, expected_title, callback));
+                 AsWeakPtr(), parent_resource_id, expected_title, callback);
+
+  if (parent_resource_id.empty()) {
+    // Here, it is a part of process to create a sync root directory.
+    // The sync root directory may be orphan or be under mydrive directory,
+    // due to historical reason. So, it is necessary to search both just orphan
+    // resources and ones under mydrive.
+    // Unfortunately there is no way to search only from orphan resources,
+    // so here search all the resources. Unreleated results will be filtered
+    // out below.
+    drive_service_->Search(
+        FormatTitleQuery(expected_title),
+        base::Bind(&DriveFileSyncClient::DidGetResourceList, AsWeakPtr(),
+                   bound_callback));
+  } else {
+    SearchFilesInDirectory(
+        parent_resource_id,
+        FormatTitleQuery(expected_title),
+        bound_callback);
+  }
 }
 
 void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
