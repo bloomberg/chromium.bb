@@ -4,12 +4,11 @@
 
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 
-#include <leveldb/db.h>
-
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
 

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
 
-#include <leveldb/db.h>
-
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
@@ -13,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
 
