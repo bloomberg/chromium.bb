@@ -128,8 +128,8 @@ void ManagedUserPassphraseDialog::GetWebUIMessageHandlers(
 }
 
 void ManagedUserPassphraseDialog::GetDialogSize(gfx::Size* size) const {
-  const int kDialogWidth = 400;
-  const int kDialogHeight = 310;
+  const int kDialogWidth = 383;
+  const int kDialogHeight = 258;
   size->SetSize(kDialogWidth, kDialogHeight);
 }
 
