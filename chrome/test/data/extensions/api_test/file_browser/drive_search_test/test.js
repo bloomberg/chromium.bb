@@ -94,11 +94,12 @@ chrome.test.runTests([
         nextFeed: '',
         expectedPath: '/drive/root/test_dir/empty_test_dir',
         expectedType: 'dir',
-        expectedNextFeed: 'http://localhost/?start-offset=1&max-results=1',
+        expectedNextFeed:
+            'http://localhost/?start-offset=1&max-results=1&q=empty',
       },
       {
         // The same as the previous test case's expected next feed.
-        nextFeed: 'http://localhost/?start-offset=1&max-results=1',
+        nextFeed: 'http://localhost/?start-offset=1&max-results=1&q=empty',
         expectedPath: '/drive/root/test_dir/empty_test_file.foo',
         expectedType: 'file',
         expectedNextFeed: '',
