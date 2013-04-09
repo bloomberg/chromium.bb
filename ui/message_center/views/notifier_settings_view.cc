@@ -49,6 +49,7 @@ class EntryView : public views::View {
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryView);
@@ -63,12 +64,11 @@ EntryView::~EntryView() {
 
 void EntryView::Layout() {
   DCHECK_EQ(1, child_count());
-  views::View* contents = child_at(0);
-  gfx::Size size = contents->GetPreferredSize();
-  int y = 0;
-  if (size.height() < height())
-    y = (height() - size.height()) / 2;
-  contents->SetBounds(kMarginWidth, y, width() - kMarginWidth, size.height());
+  views::View* content = child_at(0);
+  int content_width = width() - kMarginWidth * 2;
+  int content_height = content->GetHeightForWidth(content_width);
+  int y = std::max((height() - content_height) / 2, 0);
+  content->SetBounds(kMarginWidth, y, content_width, content_height);
 }
 
 gfx::Size EntryView::GetPreferredSize() {
@@ -76,6 +76,10 @@ gfx::Size EntryView::GetPreferredSize() {
   gfx::Size size = child_at(0)->GetPreferredSize();
   size.ClampToMin(gfx::Size(kMinimumWindowWidth, kEntryHeight));
   return size;
+}
+
+void EntryView::OnFocus() {
+  ScrollRectToVisible(GetLocalBounds());
 }
 
 // The separator line between the title and the scroll view. Currently
@@ -141,7 +145,6 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
         views::BoxLayout::kHorizontal, 0, 0, kSpaceInButtonComponents));
     checkbox_->SetChecked(notifier_->enabled);
     checkbox_->set_listener(this);
-    checkbox_->set_focusable(true);
     AddChildView(checkbox_);
     UpdateIconImage(notifier_->icon);
     AddChildView(new views::Label(notifier_->name));
@@ -264,14 +267,16 @@ NotifierSettingsView::NotifierSettingsView(
       IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
-  top_label->SizeToFit(kMinimumWindowWidth - kMarginWidth);
+  top_label->SizeToFit(kMinimumWindowWidth - kMarginWidth * 2);
   contents_view->AddChildView(new EntryView(top_label));
 
   std::vector<Notifier*> notifiers;
   delegate_->GetNotifierList(&notifiers);
   for (size_t i = 0; i < notifiers.size(); ++i) {
     NotifierButton* button = new NotifierButton(notifiers[i], this);
-    contents_view->AddChildView(new EntryView(button));
+    EntryView* entry = new EntryView(button);
+    entry->set_focusable(true);
+    contents_view->AddChildView(entry);
     buttons_.insert(button);
   }
   scroller_->SetContents(contents_view);
@@ -299,6 +304,14 @@ bool NotifierSettingsView::CanResize() const {
 void NotifierSettingsView::Layout() {
   int title_height = title_entry_->GetPreferredSize().height();
   title_entry_->SetBounds(0, 0, width(), title_height);
+  views::View* contents_view = scroller_->contents();
+  int content_width = width();
+  int content_height = contents_view->GetHeightForWidth(content_width);
+  if (title_height + content_height > kMinimumWindowHeight) {
+    content_width -= scroller_->GetScrollBarWidth();
+    content_height = contents_view->GetHeightForWidth(content_width);
+  }
+  contents_view->SetBounds(0, 0, content_width, content_height);
   scroller_->SetBounds(0, title_height, width(), height() - title_height);
 }
 
