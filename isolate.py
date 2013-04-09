@@ -1503,6 +1503,7 @@ class SavedState(Flattenable):
         # since that's what the SavedState class users expect.
         base_path = os.path.dirname(out.isolated_files[0])
         out.isolate_file = os.path.join(base_path, unicode(out.isolate_file))
+        out.isolate_file = os.path.normpath(out.isolate_file)
         if not os.path.isfile(out.isolate_file):
           # It doesn't exist.
           out.isolate_file = None
