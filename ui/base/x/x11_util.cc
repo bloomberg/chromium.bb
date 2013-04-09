@@ -28,6 +28,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -628,6 +629,21 @@ int CoalescePendingMotionEvents(const XEvent* xev,
       }
     }
     break;
+  }
+
+  if (num_coalesed > 0) {
+    base::TimeDelta delta = ui::EventTimeFromNative(last_event) -
+        ui::EventTimeFromNative(const_cast<XEvent*>(xev));
+    if (event_type == XI_Motion) {
+      UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesed);
+      UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Mouse", delta);
+    } else {
+#if defined(USE_XI2_MT)
+      DCHECK_EQ(event_type, XI_TouchUpdate);
+#endif
+      UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Touch", num_coalesed);
+      UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Touch", delta);
+    }
   }
   return num_coalesed;
 }
