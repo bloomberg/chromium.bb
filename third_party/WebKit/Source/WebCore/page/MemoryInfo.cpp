@@ -139,7 +139,7 @@ MemoryInfo::MemoryInfo(Frame* frame)
 
     if (frame->settings()->memoryInfoEnabled())
         ScriptGCEvent::getHeapSize(m_info);
-    else if (true || frame->settings()->quantizedMemoryInfoEnabled()) {
+    else {
         DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());
         heapSizeCache.getCachedHeapSize(m_info);
     }

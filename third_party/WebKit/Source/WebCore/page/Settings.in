@@ -109,7 +109,6 @@ webAudioEnabled initial=false
 fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
 memoryInfoEnabled initial=false
-quantizedMemoryInfoEnabled initial=false
 
 # This feature requires an implementation of ValidationMessageClient.
 interactiveFormValidationEnabled initial=false
