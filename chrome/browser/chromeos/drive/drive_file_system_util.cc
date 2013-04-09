@@ -5,34 +5,23 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
-#include "net/base/network_change_notifier.h"
 #include "webkit/fileapi/file_system_url.h"
 
 using content::BrowserThread;
@@ -66,66 +55,10 @@ DriveFileSystemInterface* GetDriveFileSystem(Profile* profile) {
   return system_service ? system_service->file_system() : NULL;
 }
 
-DriveCache* GetDriveCache(Profile* profile) {
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile);
-  return system_service ? system_service->cache() : NULL;
-}
-
 FileWriteHelper* GetFileWriteHelper(Profile* profile) {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->file_write_helper() : NULL;
-}
-
-GURL GetHostedDocumentURLBlockingThread(
-    const base::FilePath& drive_cache_path) {
-  std::string json;
-  if (!file_util::ReadFileToString(drive_cache_path, &json)) {
-    NOTREACHED() << "Unable to read file " << drive_cache_path.value();
-    return GURL();
-  }
-  DVLOG(1) << "Hosted doc content " << json;
-  scoped_ptr<base::Value> val(base::JSONReader::Read(json));
-  base::DictionaryValue* dict_val;
-  if (!val.get() || !val->GetAsDictionary(&dict_val)) {
-    NOTREACHED() << "Parse failure for " << json;
-    return GURL();
-  }
-  std::string edit_url;
-  if (!dict_val->GetString("url", &edit_url)) {
-    NOTREACHED() << "url field doesn't exist in " << json;
-    return GURL();
-  }
-  GURL url(edit_url);
-  DVLOG(1) << "edit url " << url;
-  return url;
-}
-
-void OpenEditURLUIThread(Profile* profile, const GURL& edit_url) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  if (browser) {
-    browser->OpenURL(content::OpenURLParams(edit_url, content::Referrer(),
-        CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
-  }
-}
-
-// Invoked upon completion of GetEntryInfoByResourceId initiated by
-// ModifyDriveFileResourceUrl.
-void OnGetEntryInfoByResourceId(Profile* profile,
-                                const std::string& resource_id,
-                                DriveFileError error,
-                                const base::FilePath& drive_file_path,
-                                scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != DRIVE_FILE_OK)
-    return;
-
-  const GURL edit_url = FilePathToDriveURL(drive_file_path);
-  OpenEditURLUIThread(profile, edit_url);
-  DVLOG(1) << "OnGetEntryInfoByResourceId " << edit_url;
 }
 
 }  // namespace
@@ -193,42 +126,17 @@ base::FilePath DriveURLToFilePath(const GURL& url) {
   return base::FilePath::FromUTF8Unsafe(path_string);
 }
 
-void ModifyDriveFileResourceUrl(Profile* profile,
-                                const base::FilePath& drive_cache_path,
-                                GURL* url) {
+void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsUnderDriveMountPoint(path))
+    return;
 
   DriveFileSystemInterface* file_system = GetDriveFileSystem(profile);
   if (!file_system)
     return;
-  DriveCache* cache = GetDriveCache(profile);
-  if (!cache)
-    return;
 
-  if (cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOCUMENTS).
-      IsParent(drive_cache_path)) {
-    // Handle hosted documents. The edit url is in the temporary file, so we
-    // read it on a blocking thread.
-    base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
-        FROM_HERE,
-        base::Bind(&GetHostedDocumentURLBlockingThread, drive_cache_path),
-        base::Bind(&OpenEditURLUIThread, profile));
-    *url = GURL();
-  } else if (cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP).
-                 IsParent(drive_cache_path) ||
-             cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT).
-                 IsParent(drive_cache_path)) {
-    // Handle all other drive files.
-    const std::string resource_id =
-        drive_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
-    file_system->GetEntryInfoByResourceId(
-        resource_id,
-        base::Bind(&OnGetEntryInfoByResourceId,
-                   profile,
-                   resource_id));
-    *url = GURL();
-  }
+  *url = FilePathToDriveURL(util::ExtractDrivePath(path));
 }
 
 bool IsUnderDriveMountPoint(const base::FilePath& path) {

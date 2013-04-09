@@ -97,10 +97,8 @@ GURL FilePathToDriveURL(const base::FilePath& path);
 // Converts a drive: URL back to a path that can be passed to DriveFileSystem.
 base::FilePath DriveURLToFilePath(const GURL& url);
 
-// Given a profile and a drive_cache_path, return the file resource url.
-void ModifyDriveFileResourceUrl(Profile* profile,
-                                const base::FilePath& drive_cache_path,
-                                GURL* url);
+// Overwrites |url| with a Drive URL when appropriate.
+void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url);
 
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);

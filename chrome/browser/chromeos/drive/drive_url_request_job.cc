@@ -44,6 +44,7 @@ const net::UnescapeRule::Type kUrlPathUnescapeMask =
     net::UnescapeRule::CONTROL_CHARS;
 
 const int kHTTPOk = 200;
+const int kHTTPFound = 302;
 const int kHTTPNotAllowed = 403;
 const int kHTTPNotFound = 404;
 const int kHTTPInternalError = 500;
@@ -300,6 +301,16 @@ int DriveURLRequestJob::GetResponseCode() const {
   return response_info_->headers->response_code();
 }
 
+bool DriveURLRequestJob::IsRedirectResponse(GURL* location,
+                                            int* http_status_code) {
+  if (redirect_url_.is_empty())
+    return false;
+
+  *location = redirect_url_;
+  *http_status_code = kHTTPFound;
+  return true;
+}
+
 bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
                                      int dest_size,
                                      int* bytes_read) {
@@ -428,6 +439,13 @@ void DriveURLRequestJob::OnGetEntryInfoByPath(
     return;
   }
   DCHECK(entry_proto.get());
+
+  if (entry_proto->file_specific_info().is_hosted_document()) {
+    redirect_url_ = GURL(entry_proto->file_specific_info().alternate_url());
+    NotifySuccess();
+    return;
+  }
+  redirect_url_ = GURL();
   mime_type_ = entry_proto->file_specific_info().content_mime_type();
   drive_file_path_ = util::DriveURLToFilePath(request_->url());
   initial_file_size_ = entry_proto->file_info().size();

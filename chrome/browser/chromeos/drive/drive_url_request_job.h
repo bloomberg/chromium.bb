@@ -60,6 +60,8 @@ class DriveURLRequestJob : public net::URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
                            int* bytes_read) OVERRIDE;
@@ -126,6 +128,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
 
   base::FilePath local_file_path_;
   base::FilePath drive_file_path_;
+  GURL redirect_url_;
   std::string mime_type_;
   int64 initial_file_size_;
   int64 remaining_bytes_;

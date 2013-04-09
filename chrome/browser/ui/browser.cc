@@ -1705,25 +1705,22 @@ void Browser::FileSelected(const base::FilePath& path, int index,
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
 }
 
-void Browser::FileSelectedWithExtraInfo(
-    const ui::SelectedFileInfo& file_info,
-    int index,
-    void* params) {
+void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
+                                        int index,
+                                        void* params) {
   profile_->set_last_selected_directory(file_info.file_path.DirName());
 
-  const base::FilePath& path = file_info.local_path;
-  GURL file_url = net::FilePathToFileURL(path);
+  GURL url = net::FilePathToFileURL(file_info.local_path);
 
 #if defined(OS_CHROMEOS)
-  drive::util::ModifyDriveFileResourceUrl(profile_, path, &file_url);
+  drive::util::MaybeSetDriveURL(profile_, file_info.file_path, &url);
 #endif
 
-  if (file_url.is_empty())
+  if (url.is_empty())
     return;
 
   OpenURL(OpenURLParams(
-      file_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
-      false));
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

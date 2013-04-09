@@ -268,34 +268,6 @@ void ShowWarningMessageBox(Profile* profile, const base::FilePath& path) {
       chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
-// Called when a file on Drive was found. Opens the file found at |file_path|
-// in a new tab with a URL computed based on the |file_type|
-void OnDriveFileFound(Profile* profile,
-                      const base::FilePath& file_path,
-                      drive::DriveFileType file_type,
-                      drive::DriveFileError error,
-                      scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = drive::DRIVE_FILE_ERROR_NOT_FOUND;
-
-  if (error == drive::DRIVE_FILE_OK) {
-    GURL page_url;
-    if (file_type == drive::REGULAR_FILE) {
-      page_url = drive::util::FilePathToDriveURL(
-          drive::util::ExtractDrivePath(file_path));
-    } else if (file_type == drive::HOSTED_DOCUMENT) {
-      page_url = GURL(entry_proto->file_specific_info().alternate_url());
-    } else {
-      NOTREACHED();
-    }
-    OpenNewTab(page_url, profile);
-  } else {
-    ShowWarningMessageBox(profile, file_path);
-  }
-}
-
 void InstallCRX(Browser* browser, const base::FilePath& path) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(browser->profile())->extension_service();
@@ -890,36 +862,21 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
   if (IsSupportedBrowserExtension(file_extension.data()) ||
       ShouldBeOpenedWithPlugin(profile, file_extension.data())) {
     GURL page_url = net::FilePathToFileURL(path);
-    // Override gdata resource to point to internal handler instead of file:
-    // URL.
-    if (drive::util::GetSpecialRemoteRootPath().IsParent(path)) {
-      drive::DriveSystemService* system_service =
-          drive::DriveSystemServiceFactory::GetForProfile(profile);
-      if (!system_service)
-        return false;
-
-      // Open the file once the file is found.
-      system_service->file_system()->GetEntryInfoByPath(
-          drive::util::ExtractDrivePath(path),
-          base::Bind(&OnDriveFileFound, profile, path, drive::REGULAR_FILE));
-      return true;
+    // Override drive resource to point to internal handler instead of file URL.
+    if (drive::util::IsUnderDriveMountPoint(path)) {
+      page_url = drive::util::FilePathToDriveURL(
+          drive::util::ExtractDrivePath(path));
     }
     OpenNewTab(page_url, NULL);
     return true;
   }
 
   if (IsSupportedGDocsExtension(file_extension.data())) {
-    if (drive::util::GetSpecialRemoteRootPath().IsParent(path)) {
-      // The file is on Google Docs. Get the Docs from the Drive service.
-      drive::DriveSystemService* system_service =
-          drive::DriveSystemServiceFactory::GetForProfile(profile);
-      if (!system_service)
-        return false;
-
-      system_service->file_system()->GetEntryInfoByPath(
-          drive::util::ExtractDrivePath(path),
-          base::Bind(&OnDriveFileFound, profile, path,
-                     drive::HOSTED_DOCUMENT));
+    if (drive::util::IsUnderDriveMountPoint(path)) {
+      // The file is on Google Docs. Open with drive URL.
+      GURL url = drive::util::FilePathToDriveURL(
+          drive::util::ExtractDrivePath(path));
+      OpenNewTab(url, NULL);
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
