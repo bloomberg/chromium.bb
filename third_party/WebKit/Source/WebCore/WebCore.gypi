@@ -3538,8 +3538,6 @@
             'platform/PrerenderClient.h',
             'platform/PurgeableBuffer.h',
             'platform/ReferrerPolicy.h',
-            'platform/RuntimeApplicationChecks.cpp',
-            'platform/RuntimeApplicationChecks.h',
             'platform/SSLKeyGenerator.h',
             'platform/SchemeRegistry.cpp',
             'platform/ScrollAnimator.cpp',
