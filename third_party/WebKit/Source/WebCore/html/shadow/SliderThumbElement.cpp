@@ -203,6 +203,15 @@ void RenderSliderContainer::layout()
     else
         thumbLocation.setX(thumbLocation.x() - offset);
     thumb->setLocation(thumbLocation);
+    if (checkForRepaintDuringLayout() && parent()
+        && (parent()->style()->appearance() == MediaVolumeSliderPart || parent()->style()->appearance() == MediaSliderPart)) {
+        // This will sometimes repaint too much. However, it is necessary to
+        // correctly repaint media controls (volume and timeline sliders) -
+        // they have special painting code in RenderMediaControls.cpp:paintMediaVolumeSlider
+        // and paintMediaSlider that gets called via -webkit-appearance and RenderTheme,
+        // so nothing else would otherwise invalidate the slider.
+        repaint();
+    }
 }
 
 // --------------------------------
