@@ -123,14 +123,12 @@ public:
 
     void markContentsChanged() { m_contentsChanged = true; }
 
-#if USE(ACCELERATED_COMPOSITING)
     PlatformLayer* platformLayer();
     void prepareBackBuffer();
     bool requiresCopyFromBackToFrontBuffer() const;
     unsigned frontColorBuffer() const;
     void paintCompositedResultsToCanvas(ImageBuffer*);
     void clearPlatformLayer();
-#endif
 
     GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
 
@@ -172,13 +170,7 @@ private:
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
 
-#if PLATFORM(CHROMIUM)
     OwnPtr<DrawingBufferPrivate> m_private;
-#endif
-
-#if PLATFORM(MAC)
-    RetainPtr<WebGLLayer> m_platformLayer;
-#endif
 };
 
 } // namespace WebCore
