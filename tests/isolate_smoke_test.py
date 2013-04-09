@@ -264,9 +264,10 @@ class IsolateModeBase(IsolateBase):
     expected = {
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
-      u'isolate_file': isolate.trace_inputs.get_native_path_case(
-          unicode(self.filename())),
-      u'isolated_files': [self.isolated],
+      u'isolate_file': os.path.relpath(
+          isolate.trace_inputs.get_native_path_case(unicode(self.filename())),
+          unicode(os.path.dirname(self.isolated))),
+      u'isolated_files': [unicode(self.isolated)],
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
         u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',

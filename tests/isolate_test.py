@@ -61,7 +61,8 @@ class IsolateTest(IsolateBase):
 
   def test_savedstate_load(self):
     values = {
-      'isolate_file': os.path.join(ROOT_DIR, 'maybe'),
+      'isolate_file': 'maybe',
+      'isolated_files': [os.path.join(ROOT_DIR, 'random')],
       'variables': {
         'foo': 42,
         'OS': isolate.get_flavor(),
@@ -70,9 +71,8 @@ class IsolateTest(IsolateBase):
     expected = {
       'command': [],
       'files': {},
-      'isolate_file': isolate.trace_inputs.get_native_path_case(
-          os.path.join(ROOT_DIR, 'maybe')),
-      'isolated_files': [],
+      # isolate_file is not included because it doesn't exist.
+      'isolated_files': [os.path.join(ROOT_DIR, 'random')],
       'variables': {
         'foo': 42,
         'OS': isolate.get_flavor(),
@@ -1313,7 +1313,9 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
-      u'isolate_file': isolate.trace_inputs.get_native_path_case(isolate_file),
+      u'isolate_file': os.path.relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          unicode(os.path.dirname(options.isolated))),
       u'isolated_files': [
         unicode(options.isolated),
         unicode(options.isolated[:-len('.isolated')] + '.0.isolated'),

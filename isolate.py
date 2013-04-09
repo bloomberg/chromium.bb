@@ -1422,7 +1422,8 @@ class SavedState(Flattenable):
     super(SavedState, self).__init__()
     self.command = []
     self.files = {}
-    # Link back to the .isolate file.
+    # Link back to the .isolate file. It is stored internally as an absolute
+    # path.
     self.isolate_file = None
     # Used to support/remember 'slave' .isolated files.
     self.isolated_files = []
@@ -1436,6 +1437,14 @@ class SavedState(Flattenable):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
+    # The path is absolute here but will be stored as relative to the .isolated
+    # file.
+    assert os.path.isabs(isolate_file)
+    if self.isolate_file:
+      assert self.isolate_file == isolate_file, (
+          self.isolate_file, isolate_file)
+    else:
+      assert not self.isolated_files
     self.isolate_file = isolate_file
     self.variables.update(variables)
 
@@ -1486,9 +1495,33 @@ class SavedState(Flattenable):
       raise run_isolated.ConfigError(
           'The .isolated.state file was created on another platform')
     if out.isolate_file:
-      out.isolate_file = trace_inputs.get_native_path_case(
-          unicode(out.isolate_file))
+      if not out.isolated_files or os.path.isabs(out.isolate_file):
+        # Forget about it. The reason is that previous version of this code used
+        # to store it as an absolute path. On the next save, it'll be fixed.
+        out.isolate_file = None
+      else:
+        # isolate_file is loaded as a relative path, convert it to an absolute
+        # path. Internally, it's much easier to just keep it as an absolute path
+        # since that's what the SavedState class users expect.
+        base_path = os.path.dirname(out.isolated_files[0])
+        out.isolate_file = os.path.join(base_path, unicode(out.isolate_file))
+        if not os.path.isfile(out.isolate_file):
+          # It doesn't exist.
+          out.isolate_file = None
+        else:
+          out.isolate_file = trace_inputs.get_native_path_case(out.isolate_file)
     return out
+
+  def flatten(self):
+    data = super(SavedState, self).flatten()
+    # Store isolate_file as a relative path. The reason is that .state file
+    # could be moved across computers.  While this doesn't make sense in
+    # practice, it still happens and it's less "crashy" to store it as a
+    # relative path.
+    if data.get('isolate_file') and data.get('isolated_files'):
+      base_path = os.path.dirname(data['isolated_files'][0])
+      data['isolate_file'] = os.path.relpath(data['isolate_file'], base_path)
+    return data
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
