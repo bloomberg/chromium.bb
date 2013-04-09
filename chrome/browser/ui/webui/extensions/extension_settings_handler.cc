@@ -935,7 +935,7 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
       last_unpacked_directory_,
       NULL,
       kFileTypeIndex,
-      FILE_PATH_LITERAL(std::string()),
+      base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

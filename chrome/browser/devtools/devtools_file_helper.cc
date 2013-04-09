@@ -77,7 +77,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
                                     default_path,
                                     NULL,
                                     0,
-                                    FILE_PATH_LITERAL(std::string()),
+                                    base::FilePath::StringType(),
                                     NULL,
                                     NULL);
   }

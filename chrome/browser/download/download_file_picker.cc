@@ -91,7 +91,7 @@ void DownloadFilePicker::Init(
                                   suggested_path_,
                                   &file_type_info,
                                   0,
-                                  FILE_PATH_LITERAL(std::string()),
+                                  base::FilePath::StringType(),
                                   owning_window,
                                   NULL);
 }

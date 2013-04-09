@@ -426,7 +426,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       select_file_types_.get() && !select_file_types_->extensions.empty()
           ? 1
           : 0,  // 1-based index of default extension to show.
-      FILE_PATH_LITERAL(std::string()),
+      base::FilePath::StringType(),
       owning_window,
 #if defined(OS_ANDROID)
       &accept_types);

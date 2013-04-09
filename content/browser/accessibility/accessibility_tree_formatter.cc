@@ -80,13 +80,13 @@ void AccessibilityTreeFormatter::Initialize() {}
 // static
 const base::FilePath::StringType
 AccessibilityTreeFormatter::GetActualFileSuffix() {
-  return FILE_PATH_LITERAL(std::string());
+  return base::FilePath::StringType();
 }
 
 // static
 const base::FilePath::StringType
 AccessibilityTreeFormatter::GetExpectedFileSuffix() {
-  return FILE_PATH_LITERAL(std::string());
+  return base::FilePath::StringType();
 }
 
 // static

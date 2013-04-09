@@ -1196,7 +1196,7 @@ void BrowserOptionsHandler::HandleSelectDownloadLocation(
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
       &info,
       0,
-      FILE_PATH_LITERAL(std::string()),
+      base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

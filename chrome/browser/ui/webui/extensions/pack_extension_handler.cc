@@ -189,7 +189,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
       base::FilePath(),
       &info,
       file_type_index,
-      FILE_PATH_LITERAL(std::string()),
+      base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

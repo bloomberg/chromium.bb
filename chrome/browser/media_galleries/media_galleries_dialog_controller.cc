@@ -186,7 +186,7 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       user_data_dir,
       NULL,
       0,
-      FILE_PATH_LITERAL(std::string()),
+      base::FilePath::StringType(),
       web_contents_->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

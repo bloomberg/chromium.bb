@@ -196,7 +196,7 @@ std::string InProcessBrowserLayoutTest::SaveResults(const std::string& expected,
                                                     const std::string& actual) {
   base::FilePath cwd;
   EXPECT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL(std::string()), &cwd));
+      base::FilePath::StringType(), &cwd));
   base::FilePath expected_filename =
       cwd.Append(FILE_PATH_LITERAL("expected.txt"));
   base::FilePath actual_filename = cwd.Append(FILE_PATH_LITERAL("actual.txt"));

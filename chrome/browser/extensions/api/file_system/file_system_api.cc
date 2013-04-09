@@ -437,7 +437,7 @@ class FileSystemChooseEntryFunction::FilePicker
                                     suggested_name,
                                     &file_type_info,
                                     0,
-                                    FILE_PATH_LITERAL(std::string()),
+                                    base::FilePath::StringType(),
                                     owning_window,
                                     NULL);
   }

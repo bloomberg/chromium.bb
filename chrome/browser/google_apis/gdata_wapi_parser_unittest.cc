@@ -324,7 +324,7 @@ TEST(GDataWAPIParserTest, ResourceEntryHasDocumentExtension) {
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
       base::FilePath(FILE_PATH_LITERAL("Test"))));
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      base::FilePath(FILE_PATH_LITERAL(std::string()))));
+      base::FilePath()));
 }
 
 TEST(GDataWAPIParserTest, ResourceEntryClassifyEntryKind) {
