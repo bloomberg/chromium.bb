@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
@@ -15,7 +16,9 @@
 
 namespace {
 
-const char kCaptivePortalStartURL[] = "http://clients3.google.com/generate_204";
+const char* CaptivePortalStartURL() {
+  return captive_portal::CaptivePortalDetector::kDefaultURL;
+}
 
 }  // namespace
 
@@ -32,7 +35,7 @@ CaptivePortalView::~CaptivePortalView() {
 }
 
 void CaptivePortalView::StartLoad() {
-  SimpleWebViewDialog::StartLoad(GURL(kCaptivePortalStartURL));
+  SimpleWebViewDialog::StartLoad(GURL(CaptivePortalStartURL()));
 }
 
 bool CaptivePortalView::CanResize() const {
@@ -71,8 +74,8 @@ void CaptivePortalView::NavigationStateChanged(
   GURL url = source->GetURL();
   // Note, |url| will be empty for "client3.google.com/generate_204" page.
   if (!redirected_  && url != GURL::EmptyGURL() &&
-      url != GURL(kCaptivePortalStartURL)) {
-    DLOG(INFO) << kCaptivePortalStartURL << " vs " << url.spec();
+      url != GURL(CaptivePortalStartURL())) {
+    DLOG(INFO) << CaptivePortalStartURL() << " vs " << url.spec();
     redirected_ = true;
     proxy_->OnRedirected();
   }
