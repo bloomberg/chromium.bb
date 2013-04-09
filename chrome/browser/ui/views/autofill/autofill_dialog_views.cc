@@ -875,10 +875,12 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 
     group->container->SetActive(true);
     // Ignore the result since we don't need to handle a deleted menu specially.
+    gfx::Rect bounds = group->suggested_button->GetBoundsInScreen();
+    bounds.Inset(group->suggested_button->GetInsets());
     ignore_result(
         menu_runner_->RunMenuAt(sender->GetWidget(),
                                 NULL,
-                                group->suggested_button->GetBoundsInScreen(),
+                                bounds,
                                 views::MenuItemView::TOPRIGHT,
                                 0));
     group->container->SetActive(false);

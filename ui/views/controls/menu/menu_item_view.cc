@@ -838,9 +838,7 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
 
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
-  int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
-  if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_)
-    label_start += icon_view_->size().width() + config.icon_to_label_padding;
+  int label_start = GetLabelStartForThisItem();
 
   int width = this->width() - label_start - accel_width -
       (!delegate ||
@@ -989,7 +987,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
     left_icon_margin_ = 0;
     right_icon_margin_ = 0;
   }
-  int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
+  int label_start = GetLabelStartForThisItem();
 
   dimensions.standard_width = font.GetStringWidth(title_) + label_start +
       item_right_margin_;
@@ -1004,6 +1002,15 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
   dimensions.height = std::max(dimensions.height,
       GetMenuConfig().item_min_height);
   return dimensions;
+}
+
+int MenuItemView::GetLabelStartForThisItem() {
+  int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
+  if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_) {
+    label_start += icon_view_->size().width() +
+        GetMenuConfig().icon_to_label_padding;
+  }
+  return label_start;
 }
 
 string16 MenuItemView::GetAcceleratorText() {

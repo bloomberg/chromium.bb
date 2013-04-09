@@ -426,6 +426,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions();
 
+  // Get the horizontal position at which to draw the menu item's label.
+  int GetLabelStartForThisItem();
+
   // Used by MenuController to cache the menu position in use by the
   // active menu.
   MenuPosition actual_menu_position() const { return actual_menu_position_; }
