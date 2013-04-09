@@ -110,6 +110,12 @@ IntSize SVGImage::containerSize() const
         return IntSize(static_cast<int>(ceilf(currentSize.width())), static_cast<int>(ceilf(currentSize.height())));
 
     // As last resort, use CSS default intrinsic size.
+    return defaultIntrinsicSize();
+}
+
+IntSize SVGImage::defaultIntrinsicSize() const
+{
+    // CSS default intrinsic size, used as the last resort when it could not be determined.
     return IntSize(300, 150);
 }
 
@@ -342,7 +348,10 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_page->settings()->setPluginsEnabled(false);
 
         RefPtr<Frame> frame = Frame::create(m_page.get(), 0, dummyFrameLoaderClient);
-        frame->setView(FrameView::create(frame.get()));
+        // view->size() may be referred during loading, and if the size was
+        // (0, 0), it can cause zero-division. To avoid that, preset the CSS
+        // default intrinsic size.
+        frame->setView(FrameView::create(frame.get(), defaultIntrinsicSize()));
         frame->init();
         FrameLoader* loader = frame->loader();
         loader->forceSandboxFlags(SandboxAll);
