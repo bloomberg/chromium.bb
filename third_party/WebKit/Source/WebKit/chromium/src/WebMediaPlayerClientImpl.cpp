@@ -40,6 +40,14 @@
 #include <public/WebString.h>
 #include <public/WebURL.h>
 
+#if defined(OS_ANDROID)
+#include "GrContext.h"
+#include "GrTypes.h"
+#include "SkCanvas.h"
+#include "SkGrPixelRef.h"
+#include "SharedGraphicsContext3D.h"
+#endif
+
 #if USE(ACCELERATED_COMPOSITING)
 #include "RenderLayerCompositor.h"
 #endif
@@ -613,8 +621,16 @@ void WebMediaPlayerClientImpl::paintCurrentFrameInContext(GraphicsContext* conte
     // check.
     if (m_webMediaPlayer && !context->paintingDisabled()) {
         PlatformGraphicsContext* platformContext = context->platformContext();
+
+        // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
+        // paint the video frame into the context.
+#if defined(OS_ANDROID)
+        RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
+        paintOnAndroid(context, context3D.get(), rect, platformContext->getNormalizedAlpha());
+#else
         WebCanvas* canvas = platformContext->canvas();
         m_webMediaPlayer->paint(canvas, rect, platformContext->getNormalizedAlpha());
+#endif
     }
 }
 
@@ -759,6 +775,59 @@ MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& t
     }
     return MediaPlayer::IsNotSupported;
 }
+
+#if defined(OS_ANDROID)
+void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const IntRect& rect, uint8_t alpha)
+{
+    if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
+        return;
+
+    Extensions3D* extensions = context3D->getExtensions();
+    if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
+        || !context3D->makeContextCurrent())
+        return;
+
+    // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES
+    // which is not supported by Skia yet. The bitmap's size needs to be the same as the video.
+    int videoWidth = naturalSize().width();
+    int videoHeight = naturalSize().height();
+
+    // Check if we could reuse existing texture based bitmap.
+    // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
+    if (videoWidth != m_bitmap.width() || videoHeight != m_bitmap.height() || !m_texture.get()) {
+        GrTextureDesc desc;
+        desc.fConfig = kSkia8888_GrPixelConfig;
+        desc.fWidth = videoWidth;
+        desc.fHeight = videoHeight;
+        desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+        desc.fFlags = (kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit);
+        GrContext* ct = context3D->grContext();
+        if (!ct)
+            return;
+        m_texture.reset(ct->createUncachedTexture(desc, NULL, 0));
+        if (!m_texture.get())
+            return;
+        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, videoWidth, videoHeight);
+        m_bitmap.setPixelRef(new SkGrPixelRef(m_texture))->unref();
+    }
+
+    // Copy video texture to bitmap texture.
+    WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3DPrivate::extractWebGraphicsContext3D(context3D);
+    PlatformGraphicsContext* platformContext = context->platformContext();
+    WebCanvas* canvas = platformContext->canvas();
+    unsigned int textureId = static_cast<unsigned int>(m_texture->getTextureHandle());
+    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GraphicsContext3D::RGBA, true, false)) { return; }
+
+    // Draw the texture based bitmap onto the Canvas. If the canvas is hardware based, this will do a GPU-GPU texture copy. If the canvas is software based,
+    // the texture based bitmap will be readbacked to system memory then draw onto the canvas.
+    SkRect dest;
+    dest.set(rect.x(), rect.y(), rect.x() + rect.width(), rect.y() + rect.height());
+    SkPaint paint;
+    paint.setAlpha(alpha);
+    // It is not necessary to pass the dest into the drawBitmap call since all the context have been set up before calling paintCurrentFrameInContext.
+    canvas->drawBitmapRect(m_bitmap, NULL, dest, &paint);
+}
+#endif
 
 void WebMediaPlayerClientImpl::startDelayedLoad()
 {

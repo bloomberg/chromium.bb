@@ -35,6 +35,11 @@
 
 #include "AudioSourceProvider.h"
 #include "MediaPlayerPrivate.h"
+#if defined(OS_ANDROID)
+#include "GrTexture.h"
+#include "SkRefCnt.h"
+#include "SkBitmap.h"
+#endif
 #include "WebAudioSourceProviderClient.h"
 #include "WebMediaPlayerClient.h"
 #include <wtf/OwnPtr.h>
@@ -168,6 +173,15 @@ private:
 #endif
 #if USE(ACCELERATED_COMPOSITING)
     bool acceleratedRenderingInUse();
+#endif
+
+#if defined(OS_ANDROID)
+    // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
+    // texture internally. It should be removed and replaced by the normal paint path.
+    // https://code.google.com/p/skia/issues/detail?id=1189
+    void paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const WebCore::IntRect& rect, uint8_t alpha);
+    SkAutoTUnref<GrTexture> m_texture;
+    SkBitmap m_bitmap;
 #endif
 
     WebCore::MediaPlayer* m_mediaPlayer;
