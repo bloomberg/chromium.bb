@@ -15,6 +15,7 @@ class CC_EXPORT SchedulerSettings {
   ~SchedulerSettings();
 
   bool impl_side_painting;
+  bool timeout_and_draw_when_animation_checkerboards;
 };
 
 }  // namespace cc

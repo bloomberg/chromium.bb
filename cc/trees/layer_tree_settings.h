@@ -41,6 +41,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_color_estimator;
   bool use_memory_management;
   bool prediction_benchmarking;
+  bool timeout_and_draw_when_animation_checkerboards;
   float minimum_contents_scale;
   float low_res_contents_scale_factor;
   float top_controls_height;

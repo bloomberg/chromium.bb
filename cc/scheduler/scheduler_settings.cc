@@ -6,7 +6,9 @@
 
 namespace cc {
 
-SchedulerSettings::SchedulerSettings() : impl_side_painting(false) {}
+SchedulerSettings::SchedulerSettings()
+    : impl_side_painting(false),
+      timeout_and_draw_when_animation_checkerboards(true) {}
 
 SchedulerSettings::~SchedulerSettings() {}
 

@@ -370,7 +370,8 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {
     needs_redraw_ = true;
     needs_commit_ = true;
     consecutive_failed_draws_++;
-    if (consecutive_failed_draws_ >=
+    if (settings_.timeout_and_draw_when_animation_checkerboards &&
+        consecutive_failed_draws_ >=
         maximum_number_of_failed_draws_before_draw_is_forced_) {
       consecutive_failed_draws_ = 0;
       // We need to force a draw, but it doesn't make sense to do this until

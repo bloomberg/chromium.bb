@@ -1095,9 +1095,11 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
   } else {
     frame_rate_controller.reset(new FrameRateController(Proxy::ImplThread()));
   }
+  const LayerTreeSettings& settings = layer_tree_host_->settings();
   SchedulerSettings scheduler_settings;
-  scheduler_settings.impl_side_painting =
-      layer_tree_host_->settings().impl_side_painting;
+  scheduler_settings.impl_side_painting = settings.impl_side_painting;
+  scheduler_settings.timeout_and_draw_when_animation_checkerboards =
+      settings.timeout_and_draw_when_animation_checkerboards;
   scheduler_on_impl_thread_ = Scheduler::Create(this,
                                                 frame_rate_controller.Pass(),
                                                 scheduler_settings);

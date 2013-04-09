@@ -687,6 +687,12 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     layer_tree_host()->root_layer()->AddChild(content_);
   }
 
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    // Make sure that drawing many times doesn't cause a checkerboarded
+    // animation to start so we avoid flake in this test.
+    settings->timeout_and_draw_when_animation_checkerboards = false;
+  }
+
   virtual void BeginTest() OVERRIDE {
     added_animations_ = 0;
     started_times_ = 0;
