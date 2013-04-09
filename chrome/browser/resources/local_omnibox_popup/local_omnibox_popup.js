@@ -135,7 +135,9 @@ function renderSuggestions(nativeSuggestions) {
 
   for (var i = 0, length = nativeSuggestions.length;
        i < Math.min(MAX_SUGGESTIONS_TO_SHOW, length); ++i) {
-    addSuggestionToBox(nativeSuggestions[i], box, i == selectedIndex);
+    // Don't add the search-what-you-typed suggestion if it's the top match.
+    if (i > 0 || nativeSuggestions[i].type != VERBATIM_SEARCH_TYPE)
+      addSuggestionToBox(nativeSuggestions[i], box, i == selectedIndex);
   }
 }
 
