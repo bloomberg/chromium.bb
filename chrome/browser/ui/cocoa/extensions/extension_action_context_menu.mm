@@ -206,8 +206,7 @@ enum {
     }
     case kExtensionContextOptions: {
       DCHECK(!extensions::ManifestURL::GetOptionsPage(extension_).is_empty());
-      extensions::ExtensionSystem::Get(browser_->profile())->process_manager()->
-          OpenOptionsPage(extension_, browser_);
+      ExtensionTabUtil::OpenOptionsPage(extension_, browser_);
       break;
     }
     case kExtensionContextUninstall: {

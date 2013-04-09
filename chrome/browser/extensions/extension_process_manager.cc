@@ -21,8 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
@@ -46,9 +44,6 @@
 #include "chrome/browser/extensions/extension_host_mac.h"
 #endif
 
-using content::BrowserThread;
-using content::OpenURLParams;
-using content::Referrer;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
@@ -306,28 +301,6 @@ void ExtensionProcessManager::CreateBackgroundHost(
 
   host->CreateRenderViewSoon();
   OnExtensionHostCreated(host, true);
-}
-
-void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
-                                              Browser* browser) {
-  DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
-
-  // Force the options page to open in non-OTR window, because it won't be
-  // able to save settings from OTR.
-  if (browser->profile()->IsOffTheRecord()) {
-    Profile* profile = GetProfile();
-    browser = chrome::FindOrCreateTabbedBrowser(profile->GetOriginalProfile(),
-                                                browser->host_desktop_type());
-  }
-
-  OpenURLParams params(extensions::ManifestURL::GetOptionsPage(extension),
-                       Referrer(), SINGLETON_TAB,
-                       content::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
-  browser->window()->Show();
-  WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
 ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(

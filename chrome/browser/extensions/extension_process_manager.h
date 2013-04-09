@@ -73,12 +73,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   extensions::ExtensionHost* CreateInfobarHost(const GURL& url,
                                                Browser* browser);
 
-  // Open the extension's options page.
-  // TODO(yoz): Move this function to a more appropriate location.
-  // crbug.com/157279
-  void OpenOptionsPage(const extensions::Extension* extension,
-                       Browser* browser);
-
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
   virtual void CreateBackgroundHost(const extensions::Extension* extension,

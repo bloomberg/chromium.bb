@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -883,9 +884,8 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   if (!extension ||
       extensions::ManifestURL::GetOptionsPage(extension).is_empty())
     return;
-  extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
-      process_manager()->OpenOptionsPage(extension,
-          chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+  ExtensionTabUtil::OpenOptionsPage(extension,
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {

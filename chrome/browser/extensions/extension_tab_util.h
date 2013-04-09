@@ -126,6 +126,10 @@ class ExtensionTabUtil {
 
   static extensions::WindowController* GetWindowControllerOfTab(
       const content::WebContents* web_contents);
+
+  // Open the extension's options page.
+  static void OpenOptionsPage(const extensions::Extension* extension,
+                              Browser* browser);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__

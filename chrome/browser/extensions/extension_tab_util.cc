@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
@@ -322,4 +323,26 @@ extensions::WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
     return browser->extension_window_controller();
 
   return NULL;
+}
+
+void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
+                                       Browser* browser) {
+  DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
+
+  // Force the options page to open in non-OTR window, because it won't be
+  // able to save settings from OTR.
+  if (browser->profile()->IsOffTheRecord()) {
+    browser = chrome::FindOrCreateTabbedBrowser(
+        browser->profile()->GetOriginalProfile(), browser->host_desktop_type());
+  }
+
+  content::OpenURLParams params(
+      extensions::ManifestURL::GetOptionsPage(extension),
+      content::Referrer(), SINGLETON_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
+  browser->window()->Show();
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  web_contents->GetDelegate()->ActivateContents(web_contents);
 }
