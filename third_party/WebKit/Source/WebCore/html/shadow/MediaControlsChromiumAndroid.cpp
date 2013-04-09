@@ -90,6 +90,13 @@ void MediaControlsChromiumAndroid::playbackStopped()
     MediaControlsChromium::playbackStopped();
 }
 
+#if ENABLE(VIDEO_TRACK)
+void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
+{
+    // Insert it before the overlay play button so it always displays behind it.
+    m_overlayEnclosure->insertBefore(textTrackContainer, m_overlayPlayButton, ASSERT_NO_EXCEPTION, AttachLazily);
+}
+#endif
 }
 
 #endif
