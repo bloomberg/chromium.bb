@@ -58,9 +58,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     : MouseEvent(eventNames().mousewheelEvent,
                  true, true, view, 0, screenLocation.x(), screenLocation.y(),
                  pageLocation.x(), pageLocation.y(),
-#if ENABLE(POINTER_LOCK)
                  0, 0,
-#endif
                  ctrlKey, altKey, shiftKey, metaKey, 0, 0, 0, false)
     , m_wheelDelta(IntPoint(static_cast<int>(wheelTicks.x() * TickMultiplier), static_cast<int>(wheelTicks.y() * TickMultiplier)))
     , m_rawDelta(roundedIntPoint(rawDelta))

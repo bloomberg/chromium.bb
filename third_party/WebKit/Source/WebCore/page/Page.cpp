@@ -125,9 +125,7 @@ Page::Page(PageClients& pageClients)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
 #endif
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
-#if ENABLE(POINTER_LOCK)
     , m_pointerLockController(PointerLockController::create(this))
-#endif
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
     , m_backForwardController(BackForwardController::create(this, pageClients.backForwardClient))
@@ -1308,9 +1306,7 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_contextMenuController, "contextMenuController");
 #endif
     info.addMember(m_inspectorController, "inspectorController");
-#if ENABLE(POINTER_LOCK)
     info.addMember(m_pointerLockController, "pointerLockController");
-#endif
     info.addMember(m_scrollingCoordinator, "scrollingCoordinator");
     info.addMember(m_settings, "settings");
     info.addMember(m_progress, "progress");

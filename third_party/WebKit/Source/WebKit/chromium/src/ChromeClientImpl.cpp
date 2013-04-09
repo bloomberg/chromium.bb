@@ -1139,7 +1139,6 @@ void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
 }
 #endif // ENABLE(TOUCH_EVENTS)
 
-#if ENABLE(POINTER_LOCK)
 bool ChromeClientImpl::requestPointerLock()
 {
     return m_webView->requestPointerLock();
@@ -1154,7 +1153,6 @@ bool ChromeClientImpl::isPointerLocked()
 {
     return m_webView->isPointerLocked();
 }
-#endif
 
 void ChromeClientImpl::annotatedRegionsChanged()
 {
