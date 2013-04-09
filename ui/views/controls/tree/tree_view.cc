@@ -21,6 +21,8 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
+#include "ui/views/controls/tree/tree_view_selector.h"
+#include "ui/views/ime/input_method.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;
@@ -313,6 +315,28 @@ void TreeView::SetRootShown(bool root_shown) {
   DrawnNodesChanged();
 }
 
+int TreeView::GetRowCount() {
+  int row_count = root_.NumExpandedNodes();
+  if (!root_shown_)
+    row_count--;
+  return row_count;
+}
+
+ui::TreeModelNode* TreeView::GetNodeForRow(int row) {
+  int depth = 0;
+  InternalNode* node = GetNodeByRow(row, &depth);
+  return node ? node->model_node() : NULL;
+}
+
+int TreeView::GetRowForNode(ui::TreeModelNode* node) {
+  InternalNode* internal_node =
+      GetInternalNodeForModelNode(node, DONT_CREATE_IF_NOT_LOADED);
+  if (!internal_node)
+    return -1;
+  int depth = 0;
+  return GetRowForInternalNode(internal_node, &depth);
+}
+
 void TreeView::Layout() {
   int width = preferred_size_.width();
   int height = preferred_size_.height();
@@ -343,6 +367,12 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
   return OnClickOrTap(event);
 }
 
+ui::TextInputClient* TreeView::GetTextInputClient() {
+  if (!selector_)
+    selector_.reset(new TreeViewSelector(this));
+  return selector_.get();
+}
+
 void TreeView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     if (OnClickOrTap(*event))
@@ -359,7 +389,7 @@ void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
     gfx::Point local_point(p);
     ConvertPointToTarget(NULL, this, &local_point);
     int row = (local_point.y() - kVerticalInset) / row_height_;
-    int depth;
+    int depth = 0;
     InternalNode* node = GetNodeByRow(row, &depth);
     if (!node)
       return;
@@ -556,10 +586,16 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
 void TreeView::OnFocus() {
   View::OnFocus();
   SchedulePaintForNode(selected_node_);
+
+  // Notify the InputMethod so that it knows to query the TextInputClient.
+  if (GetInputMethod())
+    GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 void TreeView::OnBlur() {
   SchedulePaintForNode(selected_node_);
+  if (selector_)
+    selector_->OnTreeViewBlur();
 }
 
 bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
@@ -567,7 +603,7 @@ bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
   RequestFocus();
 
   int row = (event.y() - kVerticalInset) / row_height_;
-  int depth;
+  int depth = 0;
   InternalNode* node = GetNodeByRow(row, &depth);
   if (node) {
     gfx::Rect bounds(GetBoundsForNodeImpl(node, row, depth));
@@ -791,7 +827,7 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
 
 gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
   int row, depth;
-  row = GetRowForNode(node, &depth);
+  row = GetRowForInternalNode(node, &depth);
   return GetBoundsForNodeImpl(node, row, depth);
 }
 
@@ -807,14 +843,7 @@ gfx::Rect TreeView::GetBoundsForNodeImpl(InternalNode* node,
   return rect;
 }
 
-int TreeView::GetRowCount() {
-  int row_count = root_.NumExpandedNodes();
-  if (!root_shown_)
-    row_count--;
-  return row_count;
-}
-
-int TreeView::GetRowForNode(InternalNode* node, int* depth) {
+int TreeView::GetRowForInternalNode(InternalNode* node, int* depth) {
   DCHECK(!node->parent() || IsExpanded(node->parent()->model_node()));
   *depth = -1;
   int row = -1;
@@ -873,7 +902,7 @@ void TreeView::IncrementSelection(IncrementType type) {
       return;
     if (type == INCREMENT_PREVIOUS) {
       int row_count = GetRowCount();
-      int depth;
+      int depth = 0;
       DCHECK(row_count);
       InternalNode* node = GetNodeByRow(row_count - 1, &depth);
       SetSelectedNode(node->model_node());
@@ -885,9 +914,9 @@ void TreeView::IncrementSelection(IncrementType type) {
     return;
   }
 
-  int row, depth;
+  int depth = 0;
   int delta = type == INCREMENT_PREVIOUS ? -1 : 1;
-  row = GetRowForNode(selected_node_, &depth);
+  int row = GetRowForInternalNode(selected_node_, &depth);
   int new_row = std::min(GetRowCount() - 1, std::max(0, row + delta));
   if (new_row == row)
     return;  // At the end/beginning.

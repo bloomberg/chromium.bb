@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/tree/tree_view_selector.h"
 #include "ui/views/test/views_test_base.h"
 
 using ui::TreeModel;
@@ -33,9 +34,9 @@ class TestNode : public TreeNode<TestNode> {
 //   'b'
 //     'b1'
 //   'c'
-class TreeViewViewsTest : public ViewsTestBase {
+class TreeViewTest : public ViewsTestBase {
  public:
-  TreeViewViewsTest() : model_(new TestNode) {
+  TreeViewTest() : model_(new TestNode) {
     static_cast<TestNode*>(model_.GetRoot())->SetTitle(ASCIIToUTF16("root"));
     Add(model_.GetRoot(), 0, "a");
     Add(Add(model_.GetRoot(), 1, "b"), 0, "b1");
@@ -59,6 +60,7 @@ class TreeViewViewsTest : public ViewsTestBase {
   void CollapseOrSelectParent();
   void ExpandOrSelectChild();
   int GetRowCount();
+  TreeViewSelector* selector() { return tree_.selector_.get(); }
 
   ui::TreeNodeModel<TestNode > model_;
   TreeView tree_;
@@ -68,55 +70,55 @@ class TreeViewViewsTest : public ViewsTestBase {
 
   TestNode* GetNodeByTitleImpl(TestNode* node, const string16& title);
 
-  DISALLOW_COPY_AND_ASSIGN(TreeViewViewsTest);
+  DISALLOW_COPY_AND_ASSIGN(TreeViewTest);
 };
 
-TestNode* TreeViewViewsTest::Add(TestNode* parent,
-                                 int index,
-                                 const std::string& title) {
+TestNode* TreeViewTest::Add(TestNode* parent,
+                            int index,
+                            const std::string& title) {
   TestNode* new_node = new TestNode;
   new_node->SetTitle(ASCIIToUTF16(title));
   model_.Add(parent, new_node, index);
   return new_node;
 }
 
-std::string TreeViewViewsTest::TreeViewContentsAsString() {
+std::string TreeViewTest::TreeViewContentsAsString() {
   return InternalNodeAsString(&tree_.root_);
 }
 
-std::string TreeViewViewsTest::GetSelectedNodeTitle() {
+std::string TreeViewTest::GetSelectedNodeTitle() {
   TreeModelNode* model_node = tree_.GetSelectedNode();
   return model_node ? UTF16ToASCII(model_node->GetTitle()) : std::string();
 }
 
-std::string TreeViewViewsTest::GetEditingNodeTitle() {
+std::string TreeViewTest::GetEditingNodeTitle() {
   TreeModelNode* model_node = tree_.GetEditingNode();
   return model_node ? UTF16ToASCII(model_node->GetTitle()) : std::string();
 }
 
-TestNode* TreeViewViewsTest::GetNodeByTitle(const std::string& title) {
+TestNode* TreeViewTest::GetNodeByTitle(const std::string& title) {
   return GetNodeByTitleImpl(model_.GetRoot(), ASCIIToUTF16(title));
 }
 
-void TreeViewViewsTest::IncrementSelection(bool next) {
+void TreeViewTest::IncrementSelection(bool next) {
   tree_.IncrementSelection(next ? TreeView::INCREMENT_NEXT :
                            TreeView::INCREMENT_PREVIOUS);
 }
 
-void TreeViewViewsTest::CollapseOrSelectParent() {
+void TreeViewTest::CollapseOrSelectParent() {
   tree_.CollapseOrSelectParent();
 }
 
-void TreeViewViewsTest::ExpandOrSelectChild() {
+void TreeViewTest::ExpandOrSelectChild() {
   tree_.ExpandOrSelectChild();
 }
 
-int TreeViewViewsTest::GetRowCount() {
+int TreeViewTest::GetRowCount() {
   return tree_.GetRowCount();
 }
 
-TestNode* TreeViewViewsTest::GetNodeByTitleImpl(TestNode* node,
-                                                const string16& title) {
+TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
+                                           const string16& title) {
   if (node->GetTitle() == title)
     return node;
   for (int i = 0; i < node->child_count(); ++i) {
@@ -127,7 +129,7 @@ TestNode* TreeViewViewsTest::GetNodeByTitleImpl(TestNode* node,
   return NULL;
 }
 
-std::string TreeViewViewsTest::InternalNodeAsString(
+std::string TreeViewTest::InternalNodeAsString(
     TreeView::InternalNode* node) {
   std::string result = UTF16ToASCII(node->model_node()->GetTitle());
   if (node->is_expanded() && node->child_count()) {
@@ -143,7 +145,7 @@ std::string TreeViewViewsTest::InternalNodeAsString(
 }
 
 // Verifies setting model correctly updates internal state.
-TEST_F(TreeViewViewsTest, SetModel) {
+TEST_F(TreeViewTest, SetModel) {
   tree_.SetModel(&model_);
   EXPECT_EQ("root [a b c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
@@ -151,7 +153,7 @@ TEST_F(TreeViewViewsTest, SetModel) {
 }
 
 // Verifies SetSelectedNode works.
-TEST_F(TreeViewViewsTest, SetSelectedNode) {
+TEST_F(TreeViewTest, SetSelectedNode) {
   tree_.SetModel(&model_);
   EXPECT_EQ("root", GetSelectedNodeTitle());
 
@@ -170,7 +172,7 @@ TEST_F(TreeViewViewsTest, SetSelectedNode) {
 }
 
 // Makes sure SetRootShown doesn't blow up.
-TEST_F(TreeViewViewsTest, HideRoot) {
+TEST_F(TreeViewTest, HideRoot) {
   tree_.SetModel(&model_);
   tree_.SetRootShown(false);
   EXPECT_EQ("root [a b c]", TreeViewContentsAsString());
@@ -179,7 +181,7 @@ TEST_F(TreeViewViewsTest, HideRoot) {
 }
 
 // Expands a node and verifies the children are loaded correctly.
-TEST_F(TreeViewViewsTest, Expand) {
+TEST_F(TreeViewTest, Expand) {
   tree_.SetModel(&model_);
   tree_.Expand(GetNodeByTitle("b1"));
   EXPECT_EQ("root [a b [b1] c]", TreeViewContentsAsString());
@@ -188,7 +190,7 @@ TEST_F(TreeViewViewsTest, Expand) {
 }
 
 // Collapes a node and verifies state.
-TEST_F(TreeViewViewsTest, Collapse) {
+TEST_F(TreeViewTest, Collapse) {
   tree_.SetModel(&model_);
   tree_.Expand(GetNodeByTitle("b1"));
   EXPECT_EQ("root [a b [b1] c]", TreeViewContentsAsString());
@@ -203,7 +205,7 @@ TEST_F(TreeViewViewsTest, Collapse) {
 }
 
 // Verifies adding nodes works.
-TEST_F(TreeViewViewsTest, TreeNodesAdded) {
+TEST_F(TreeViewTest, TreeNodesAdded) {
   tree_.SetModel(&model_);
   EXPECT_EQ("root [a b c]", TreeViewContentsAsString());
   // Add a node between b and c.
@@ -233,7 +235,7 @@ TEST_F(TreeViewViewsTest, TreeNodesAdded) {
 }
 
 // Verifies removing nodes works.
-TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
+TEST_F(TreeViewTest, TreeNodesRemoved) {
   // Add c1 as a child of c and c11 as a child of c1.
   Add(Add(GetNodeByTitle("c"), 0, "c1"), 0, "c11");
   tree_.SetModel(&model_);
@@ -284,7 +286,7 @@ TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
 }
 
 // Verifies changing a node title works.
-TEST_F(TreeViewViewsTest, TreeNodeChanged) {
+TEST_F(TreeViewTest, TreeNodeChanged) {
   // Add c1 as a child of c and c11 as a child of c1.
   Add(Add(GetNodeByTitle("c"), 0, "c1"), 0, "c11");
   tree_.SetModel(&model_);
@@ -309,7 +311,7 @@ TEST_F(TreeViewViewsTest, TreeNodeChanged) {
 }
 
 // Verifies IncrementSelection() works.
-TEST_F(TreeViewViewsTest, IncrementSelection) {
+TEST_F(TreeViewTest, IncrementSelection) {
   tree_.SetModel(&model_);
 
   IncrementSelection(true);
@@ -333,7 +335,7 @@ TEST_F(TreeViewViewsTest, IncrementSelection) {
 }
 
 // Verifies CollapseOrSelectParent works.
-TEST_F(TreeViewViewsTest, CollapseOrSelectParent) {
+TEST_F(TreeViewTest, CollapseOrSelectParent) {
   tree_.SetModel(&model_);
 
   tree_.SetSelectedNode(GetNodeByTitle("root"));
@@ -358,7 +360,7 @@ TEST_F(TreeViewViewsTest, CollapseOrSelectParent) {
 }
 
 // Verifies ExpandOrSelectChild works.
-TEST_F(TreeViewViewsTest, ExpandOrSelectChild) {
+TEST_F(TreeViewTest, ExpandOrSelectChild) {
   tree_.SetModel(&model_);
 
   tree_.SetSelectedNode(GetNodeByTitle("root"));
@@ -382,8 +384,28 @@ TEST_F(TreeViewViewsTest, ExpandOrSelectChild) {
   EXPECT_EQ("b1", GetSelectedNodeTitle());
 }
 
+// Verify selection is properly updated on each keystroke.
+TEST_F(TreeViewTest, SelectOnKeyStroke) {
+  tree_.SetModel(&model_);
+  tree_.ExpandAll(model_.GetRoot());
+  tree_.GetTextInputClient();
+  selector()->InsertText(ASCIIToUTF16("b"));
+  EXPECT_EQ("b", GetSelectedNodeTitle());
+  selector()->InsertText(ASCIIToUTF16("1"));
+  EXPECT_EQ("b1", GetSelectedNodeTitle());
+
+  // Invoke OnTreeViewBlur() to reset time.
+  selector()->OnTreeViewBlur();
+  selector()->InsertText(ASCIIToUTF16("z"));
+  EXPECT_EQ("b1", GetSelectedNodeTitle());
+
+  selector()->OnTreeViewBlur();
+  selector()->InsertText(ASCIIToUTF16("a"));
+  EXPECT_EQ("a", GetSelectedNodeTitle());
+}
+
 // Verifies edits are committed when focus is lost.
-TEST_F(TreeViewViewsTest, CommitOnFocusLost) {
+TEST_F(TreeViewTest, CommitOnFocusLost) {
   tree_.SetModel(&model_);
 
   tree_.SetSelectedNode(GetNodeByTitle("root"));

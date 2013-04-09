@@ -228,6 +228,8 @@
         'controls/tree/tree_view.h',
         'controls/tree/tree_view_controller.cc',
         'controls/tree/tree_view_controller.h',
+        'controls/tree/tree_view_selector.cc',
+        'controls/tree/tree_view_selector.h',
         'corewm/base_focus_rules.cc',
         'corewm/base_focus_rules.h',
         'corewm/compound_event_filter.cc',

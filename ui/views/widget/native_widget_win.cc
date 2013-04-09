@@ -202,8 +202,7 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  return views::Textfield::IsViewsTextfieldEnabled() ?
-      new InputMethodWin(GetMessageHandler(), GetNativeWindow(), NULL) : NULL;
+  return new InputMethodWin(GetMessageHandler(), GetNativeWindow(), NULL);
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
