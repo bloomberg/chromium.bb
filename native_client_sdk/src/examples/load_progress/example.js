@@ -20,7 +20,7 @@ function domContentLoaded(name, tc, config, width, height) {
 // event is always triggered when an <EMBED> tag has a MIME type of
 // application/x-nacl.
 function moduleDidStartLoad() {
-  appendToEventLog('loadstart');
+  common.logMessage('loadstart\n');
 }
 
 // Progress event handler.  |event| contains a couple of interesting
@@ -44,8 +44,8 @@ function moduleLoadProgress(event) {
     loadPercent = -1.0;
     loadPercentString = 'Computing...';
   }
-  appendToEventLog('progress: ' + loadPercentString +
-                   ' (' + event.loaded + ' of ' + event.total + ' bytes)');
+  common.logMessage('progress: ' + loadPercentString +
+                   ' (' + event.loaded + ' of ' + event.total + ' bytes)\n');
 }
 
 // Handler that gets called if an error occurred while loading the NaCl
@@ -53,17 +53,17 @@ function moduleLoadProgress(event) {
 // the error, you have to check lastError on the <EMBED> element to find
 // out what happened.
 function moduleLoadError() {
-  appendToEventLog('error: ' + common.naclModule.lastError);
+  common.logMessage('error: ' + common.naclModule.lastError + '\n');
 }
 
 // Handler that gets called if the NaCl module load is aborted.
 function moduleLoadAbort() {
-  appendToEventLog('abort');
+  common.logMessage('abort\n');
 }
 
 // When the NaCl module has loaded indicate success.
 function moduleDidLoad() {
-  appendToEventLog('load');
+  common.logMessage('load\n');
   common.updateStatus('SUCCESS');
 }
 
@@ -74,27 +74,15 @@ function moduleDidLoad() {
 // that if the NaCl module loads successfully, you will get both a 'load'
 // event and a 'loadend' event.
 function moduleDidEndLoad() {
-  appendToEventLog('loadend');
+  common.logMessage('loadend\n');
   var lastError = event.target.lastError;
   if (lastError == undefined || lastError.length == 0) {
-    lastError = '&lt;none&gt;';
+    lastError = '<none>';
   }
-  appendToEventLog('lastError: ' + lastError);
+  common.logMessage('lastError: ' + lastError + '\n');
 }
 
 // Handle a message coming from the NaCl module.
 function handleMessage(message_event) {
-  alert(message_event.data);
-}
-
-// Append an event name to the 'log' element.  Event names
-// are separated by a <br> tag so they get listed one per line.
-// logMessage The message to append to the log.
-function appendToEventLog(logMessage) {
-  var eventLogField = document.getElementById('log');
-  if (eventLogField.innerHTML.length == 0) {
-    eventLogField.innerHTML = logMessage;
-  } else {
-    eventLogField.innerHTML = eventLogField.innerHTML + '<br>' + logMessage;
-  }
+  common.logMessage('Received PostMessage: ' + message_event.data + '\n');
 }

@@ -15,6 +15,8 @@
 <body data-width="200" data-height="200" data-custom-load="true" {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <p>The File IO example demonstrates saving, loading, and deleting files
+     from the persistent file store.</p>
 
   <textarea id="fileEditor"
     cols="40"
@@ -22,7 +24,7 @@
     wrap="hard"
     placeholder="Enter some text to save in a file..."></textarea>
   <br>File Name
-  <input type="text" id="fileName" action="">
+  <input type="text" id="fileName" action="" value="/filename.txt">
   <button id="saveButton" action="">Save</button>
   <button id="loadButton" action="">Load</button>
   <button id="deleteButton" action="">Delete</button>

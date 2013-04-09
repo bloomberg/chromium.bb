@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var kMaxArraySize = 20;
-var messageArray = new Array();
-
 // Called by the common.js module.
 function moduleDidLoad() {
   common.naclModule.style.backgroundColor = 'gray';
@@ -17,15 +14,7 @@ function attachListeners() {
 
 // Called by the common.js module.
 function handleMessage(message) {
-  // Show last |kMaxArraySize| events in html.
-  messageArray.push(message.data);
-  if (messageArray.length > kMaxArraySize) {
-    messageArray.shift();
-  }
-  var newData = messageArray.join('<BR>');
-  document.getElementById('eventString').innerHTML = newData;
-  // Print event to console.
-  console.log(message.data);
+  common.logMessage(message.data);
 }
 
 function cancelQueue() {

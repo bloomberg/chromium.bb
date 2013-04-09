@@ -40,6 +40,15 @@ ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
 
 
+# Architecture-specific flags
+X86_32_CFLAGS?=-DNACL_ARCH=x86_32
+X86_64_CFLAGS?=-DNACL_ARCH=x86_64
+ARM_CFLAGS?=-DNACL_ARCH=arm
+
+X86_32_CXXFLAGS?=-DNACL_ARCH=x86_32
+X86_64_CXXFLAGS?=-DNACL_ARCH=x86_64
+ARM_CXXFLAGS?=-DNACL_ARCH=arm
+
 #
 # Compile Macro
 #
@@ -49,29 +58,29 @@ ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_x86_32)
 $(call SRC_TO_OBJ,$(1),_x86_32): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC,$$@,$(X86_32_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
+	$(call LOG,CC,$$@,$(X86_32_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS) $(X86_32_CFLAGS))
 
 -include $(call SRC_TO_DEP,$(1),_x86_64)
 $(call SRC_TO_OBJ,$(1),_x86_64): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC,$$@,$(X86_64_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
+	$(call LOG,CC,$$@,$(X86_64_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS) $(X86_64_CFLAGS))
 
 -include $(call SRC_TO_DEP,$(1),_arm)
 $(call SRC_TO_OBJ,$(1),_arm): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC,$$@,$(ARM_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
+	$(call LOG,CC,$$@,$(ARM_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS) $(ARM_CFLAGS))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_x86_32)
 $(call SRC_TO_OBJ,$(1),_x86_32): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX,$$@,$(X86_32_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS))
+	$(call LOG,CXX,$$@,$(X86_32_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS) $(X86_32_CXXFLAGS))
 
 -include $(call SRC_TO_DEP,$(1),_x86_64)
 $(call SRC_TO_OBJ,$(1),_x86_64): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX,$$@,$(X86_64_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS))
+	$(call LOG,CXX,$$@,$(X86_64_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS) $(X86_64_CXXFLAGS))
 
 -include $(call SRC_TO_DEP,$(1),_arm)
 $(call SRC_TO_OBJ,$(1),_arm): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX,_$$@,$(ARM_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS))
+	$(call LOG,CXX,$$@,$(ARM_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS) $(ARM_CXXFLAGS))
 endef
 
 

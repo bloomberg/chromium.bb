@@ -15,23 +15,19 @@ found in the LICENSE file.
 <body {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <!-- The NaCl plugin will be embedded inside the element with id "listener".
-      See common.js.-->
-
-  <p>This example demonstrates using nacl_io ppapi_main to simplify the
-  creation of a PPAPI application.  The ppapi_main library handles the creation
-  and initialization of a pp::Instance object.  The nacl_io library
-  intercepts standard file IO, allowing the remapping of STDOUT, and
-  STDERR.</p>
+  <p>The Hello World Stdio example is the simplest one in the SDK.  It uses the
+     ppapi_main library which creates an Module and Instance, using default
+     values to simplify setup and communication with the PPAPI system.  In
+     addition, it uses the nacl_io library to remap IO to the Pepper API.  This
+     simplifies IO by providing a standard blocking API and allowing STDERR to
+     go to the JavaScript console by default.</p>
   <p>In main, we write to both STDOUT and STDERR, printing a hello world
-  message.</p>
+     message.</p>
 
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
+  <h2>Output:</h2>
+  <pre id="log" style="font-weight:bold"></pre>
   <div id="listener"></div>
-  <h1>OUTPUT</h1>
-  <pre>
-    <p><b id='outputString'></b></p>
-  </pre>
 </body>
 </html>

@@ -30,6 +30,16 @@
 #include "nacl_io/nacl_io.h"
 #include "reverse.h"
 
+#if defined(NACL_SDK_DEBUG)
+#define CONFIG_NAME "Debug"
+#else
+#define CONFIG_NAME "Release"
+#endif
+
+#define XSTRINGIFY(x) STRINGIFY(x)
+#define STRINGIFY(x) #x
+#define NACL_ARCH_STRING XSTRINGIFY(NACL_ARCH)
+
 
 class DlopenInstance : public pp::Instance {
  public:
@@ -57,7 +67,7 @@ class DlopenInstance : public pp::Instance {
     // server.
     mount("", "/http", "httpfs", 0, "");
 
-    logmsg("Spawning thread to cache .so files...");
+    logmsg("Spawning thread to cache .so files...\n");
     if (pthread_create(&tid_, NULL, LoadLibrariesOnWorker, this)) {
       logmsg("ERROR; pthread_create() failed.\n");
       return false;
@@ -69,9 +79,11 @@ class DlopenInstance : public pp::Instance {
   // the shared object.  In addition, note that this function does NOT call
   // dlclose, which would close the shared object and unload it from memory.
   void LoadLibrary() {
+    const char reverse_so_path[] =
+        "/http/glibc/" CONFIG_NAME "/libreverse_" NACL_ARCH_STRING ".so";
     const int32_t IMMEDIATELY = 0;
     eightball_so_ = dlopen("libeightball.so", RTLD_LAZY);
-    reverse_so_ = dlopen("/http/glibc/Debug/libreverse_x86_64.so", RTLD_LAZY);
+    reverse_so_ = dlopen(reverse_so_path, RTLD_LAZY);
     pp::CompletionCallback cc(LoadDoneCB, this);
     pp::Module::Get()->core()->CallOnMainThread(IMMEDIATELY, cc , 0);
   }
@@ -91,9 +103,9 @@ class DlopenInstance : public pp::Instance {
           return;
       }
 
-      logmsg("Loaded libeightball.so");
+      logmsg("Loaded libeightball.so\n");
     } else {
-      logmsg("libeightball.so did not load");
+      logmsg("libeightball.so did not load\n");
     }
 
 
@@ -107,34 +119,34 @@ class DlopenInstance : public pp::Instance {
           logmsg(message.c_str());
           return;
       }
-      logmsg("Loaded libreverse.so");
+      logmsg("Loaded libreverse.so\n");
     } else {
-      logmsg("libreverse.so did not load");
+      logmsg("libreverse.so did not load\n");
     }
   }
 
   // Called by the browser to handle the postMessage() call in Javascript.
   virtual void HandleMessage(const pp::Var& var_message) {
     if (!var_message.is_string()) {
-      logmsg("Message is not a string.");
+      logmsg("Message is not a string.\n");
       return;
     }
 
     std::string message = var_message.AsString();
     if (message == "eightball") {
       if (NULL == eightball_){
-        logmsg("Eightball library not loaded");
+        logmsg("Eightball library not loaded\n");
         return;
       }
 
       std::string ballmessage = "The Magic 8-Ball says: ";
       ballmessage += eightball_();
-      ballmessage += "!";
+      ballmessage += "!\n";
 
       logmsg(ballmessage.c_str());
     } else if (message.find("reverse:") == 0) {
       if (NULL == reverse_) {
-        logmsg("Reverse library not loaded");
+        logmsg("Reverse library not loaded\n");
         return;
       }
 
@@ -143,7 +155,7 @@ class DlopenInstance : public pp::Instance {
 
       std::string message = "Your string reversed: \"";
       message += result;
-      message += "\"";
+      message += "\"\n";
 
       free(result);
 

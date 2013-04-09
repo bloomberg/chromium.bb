@@ -15,12 +15,6 @@
   'DEST': 'examples',
   'NAME': 'geturl',
   'TITLE': 'Get URL',
-  'DESC': """
-The Get URL example demonstrates fetching an URL and then displaying
-its contents.  Clicking the GetURL button will cause a geturl_success.html
-file to get loaded asynchronously, then displayed in a text box when the
-load completes.""",
-  'FOCUS': 'URL loading.',
   'GROUP': 'API'
 }
 

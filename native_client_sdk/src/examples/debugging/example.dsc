@@ -37,10 +37,6 @@ CHROME_ENV+=NACL_UNTRUSTED_EXCEPTION_HANDLING=1
   'DEST': 'examples',
   'NAME': 'debugging',
   'TITLE': 'Debugging',
-  'DESC': """
-Debugging example shows how to use developer only features to enable
-catching an exception, and then using that to create a stacktrace.""",
-  'FOCUS': 'Debugging, Stacktraces.',
   'GROUP': 'Concepts'
 }
 

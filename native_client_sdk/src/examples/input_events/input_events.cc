@@ -27,11 +27,11 @@
 #endif
 
 namespace event_queue {
-const char* const kDidChangeView = "DidChangeView";
-const char* const kHandleInputEvent = "DidHandleInputEvent";
-const char* const kDidChangeFocus = "DidChangeFocus";
-const char* const kHaveFocus = "HaveFocus";
-const char* const kDontHaveFocus = "DontHaveFocus";
+const char* const kDidChangeView = "DidChangeView\n";
+const char* const kHandleInputEvent = "DidHandleInputEvent\n";
+const char* const kDidChangeFocus = "DidChangeFocus\n";
+const char* const kHaveFocus = "HaveFocus\n";
+const char* const kDontHaveFocus = "DontHaveFocus\n";
 const char* const kCancelMessage = "CANCEL";
 
 // Convert a pepper inputevent modifier value into a

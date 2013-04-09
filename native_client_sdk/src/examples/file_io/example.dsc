@@ -14,10 +14,6 @@
   'DEST': 'examples',
   'NAME': 'file_io',
   'TITLE': 'File I/O',
-  'DESC': """
-The File IO example demonstrates saving, loading, and deleting files
-from the persistent file store.""",
-  'FOCUS': 'File input and output.',
   'GROUP': 'API'
 }
 

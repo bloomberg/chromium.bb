@@ -53,7 +53,7 @@ std::string ModifierToString(uint32_t modifier) {
 
 std::string KeyEvent::ToString() const {
   std::ostringstream stream;
-  stream << " Key event:"
+  stream << "Key event:"
          << " modifier:" << string_event_modifiers()
          << " key_code:" << key_code_
          << " time:" << timestamp_
@@ -64,7 +64,7 @@ std::string KeyEvent::ToString() const {
 
 std::string MouseEvent::ToString() const {
   std::ostringstream stream;
-  stream << " Mouse event:"
+  stream << "Mouse event:"
          << " modifier:" << string_event_modifiers()
          << " button:" << MouseButtonToString(mouse_button_)
          << " x:" << x_position_
@@ -77,7 +77,7 @@ std::string MouseEvent::ToString() const {
 
 std::string WheelEvent::ToString() const {
   std::ostringstream stream;
-  stream << "Wheel event."
+  stream << "Wheel event:"
          << " modifier:" << string_event_modifiers()
          << " deltax:" << delta_x_
          << " deltay:" << delta_y_
@@ -144,7 +144,7 @@ void TouchEvent::AddTouch(uint32_t id, float x, float y, float radii_x,
 
 std::string TouchEvent::ToString() const {
   std::ostringstream stream;
-  stream << " Touch event:" << KindToString(kind_)
+  stream << "Touch event:" << KindToString(kind_)
          << " modifier:" << string_event_modifiers();
   for (size_t i = 0; i < touches.size(); ++i) {
     const Touch& touch = touches[i];

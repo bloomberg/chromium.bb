@@ -14,6 +14,15 @@ found in the LICENSE file.
 <body data-width="640" data-height="480" {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <p>
+    The Hello World instance3d example is similar to the Hello World GLES 2.0
+    example, but uses the ppapi_main and nacl_io libraries to simplify the code:
+    <ul>
+      <li>URL loading is handled by a synchronous read from an HTTP mount.</li>
+      <li>Instance creation is hidden; instead the functions ppapi_main and
+          PPAPIRender are used.</li>
+    </ul>
+  </p>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>

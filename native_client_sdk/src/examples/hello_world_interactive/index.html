@@ -15,13 +15,22 @@
 <body {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <!-- The NaCl plugin will be embedded inside the element with id "listener".
-      See common.js.-->
-  <div id="listener"></div>
+  <p>The Interactive Hello World C++ example demonstrates the basic structure
+     of all Native Client applications. This example loads a Native Client
+     module which uses two way interaction with JavaScript whenever a button
+     is clicked.  The NaCl module will respond with the number 42 or the
+     reversed version of the string in the text box when the appropriate
+     button is clicked.</p>
   <textarea id="inputBox" rows="4" cols="50">Hello World</textarea>
   <div>
     <button id="fortyTwo">Call fortyTwo()</button>
     <button id="reverseText">Call reverseText()</button>
   <div/>
+  <h2>Output:</h2>
+  <pre id="log" style="font-weight:bold"></pre>
+
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+  <div id="listener"></div>
 </body>
 </html>

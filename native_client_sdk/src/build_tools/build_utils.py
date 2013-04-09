@@ -31,8 +31,18 @@ def ChromeVersion():
   if info.url.startswith('/trunk/'):
     return 'trunk.%s' % info.revision
   else:
-    exec(open(VERSION_PATH).read())
-    return '%s.%s.%s.%s' % (MAJOR, MINOR, BUILD, PATCH)
+    return ChromeVersionNoTrunk()
+
+
+def ChromeVersionNoTrunk():
+  '''Extract the chrome version from src/chrome/VERSION.
+  Ignore whether this is a trunk build.
+
+  Returns:
+    Chrome version string.
+  '''
+  exec(open(VERSION_PATH).read())
+  return '%s.%s.%s.%s' % (MAJOR, MINOR, BUILD, PATCH)
 
 
 def ChromeMajorVersion():

@@ -77,7 +77,7 @@ void WebSocketInstance::Open(const std::string& url) {
   if (!websocket_)
     return;
   websocket_->Connect(pp::Var(url), NULL, 0, callback);
-  PostMessage(pp::Var("log:connecting..."));
+  PostMessage(pp::Var("connecting..."));
 }
 
 void WebSocketInstance::Close() {
@@ -92,7 +92,7 @@ void WebSocketInstance::Send(const std::string& message) {
   if (!IsConnected())
     return;
   websocket_->SendMessage(pp::Var(message));
-  PostMessage(pp::Var(std::string("log:send: ") + message));
+  PostMessage(pp::Var(std::string("send: ") + message));
 }
 
 void WebSocketInstance::Receive() {
@@ -104,25 +104,25 @@ void WebSocketInstance::Receive() {
 
 void WebSocketInstance::OnConnectCompletion(int32_t result) {
   if (result != PP_OK) {
-    PostMessage(pp::Var("alert:connection failed"));
+    PostMessage(pp::Var("connection failed"));
     return;
   }
-  PostMessage(pp::Var("log:connected"));
+  PostMessage(pp::Var("connected"));
   Receive();
 }
 
 void WebSocketInstance::OnCloseCompletion(int32_t result) {
   PostMessage(pp::Var(PP_OK == result ?
-        "log:closed" :
-        "alert:abnormally closed"));
+        "closed" :
+        "abnormally closed"));
 }
 
 void WebSocketInstance::OnReceiveCompletion(int32_t result) {
   if (result == PP_OK) {
     if (receive_var_.is_array_buffer())
-      PostMessage(pp::Var("log: receive: binary data"));
+      PostMessage(pp::Var("receive: binary data"));
     else
-      PostMessage(pp::Var(std::string("log:receive: ") +
+      PostMessage(pp::Var(std::string("receive: ") +
           receive_var_.AsString()));
   }
   Receive();

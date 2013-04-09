@@ -233,11 +233,14 @@ int MountNodeHttp::GetStat(struct stat* stat) {
 
 
     size_t entity_length;
-    if (ParseContentLength(response_headers, &entity_length))
+    if (ParseContentLength(response_headers, &entity_length)) {
       SetCachedSize(static_cast<off_t>(entity_length));
-    else
+    } else if (cache_content_ && !has_cached_size_) {
+      DownloadToCache();
+    } else {
       // Don't use SetCachedSize here -- it is actually unknown.
       stat_.st_size = 0;
+    }
 
     stat_.st_atime = 0; // TODO(binji): Use "Last-Modified".
     stat_.st_mtime = 0;

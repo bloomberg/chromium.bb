@@ -87,11 +87,14 @@ def GetProjectObjects(source_dict):
   return object_list
 
 
-def GetPlatforms(plat_list, plat_filter):
+def GetPlatforms(plat_list, plat_filter, first_toolchain):
   platforms = []
   for plat in plat_list:
     if plat in plat_filter:
       platforms.append(plat)
+
+  if first_toolchain:
+    return [platforms[0]]
   return platforms
 
 
@@ -103,7 +106,11 @@ DSC_FORMAT = {
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
-        'TYPE': (str, ['main', 'lib', 'so'], True),
+        # main = nexe target
+        # lib = library target
+        # so = shared object target, automatically added to NMF
+        # so-standalone =  shared object target, not put into NMF
+        'TYPE': (str, ['main', 'lib', 'so', 'so-standalone'], True),
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
@@ -124,8 +131,6 @@ DSC_FORMAT = {
     'NAME': (str, '', False),
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
-    'DESC': (str, '', False),
-    'FOCUS': (str, '', False),
     'GROUP': (str, '', False),
     'EXPERIMENTAL': (bool, [True, False], False)
 }
@@ -253,17 +258,16 @@ def IsNexe(desc):
   return False
 
 
-def ProcessHTML(srcroot, dstroot, desc, toolchains):
+def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
   name = desc['NAME']
   outdir = os.path.join(dstroot, desc['DEST'], name)
   srcfile = os.path.join(srcroot, 'index.html')
   dstfile = os.path.join(outdir, 'index.html')
-  tools = GetPlatforms(toolchains, desc['TOOLS'])
+  tools = GetPlatforms(toolchains, desc['TOOLS'], first_toolchain)
 
   if use_gyp and getos.GetPlatform() != 'win':
-    configs = ['debug', 'release']
-  else:
-    configs = ['Debug', 'Release']
+    # Make the config names lowercase when using gyp...
+    configs = [c.lower() for c in configs]
 
   if use_gyp:
     path = "build/{tc}-{config}"
@@ -323,7 +327,7 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
     buildbot_common.CopyFile(src_file, dst_file)
 
 
-def ProcessProject(srcroot, dstroot, desc, toolchains):
+def ProcessProject(srcroot, dstroot, desc, toolchains, first_toolchain):
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
@@ -366,25 +370,14 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
     else:
       template = os.path.join(SCRIPT_DIR, 'library.mk')
 
-    tools = {}
-    tool_list = []
-    for tool in desc['TOOLS']:
-      if ':' in tool:
-        tool, arch = tool.split(':')
-      else:
-        arch = None
-      # Ignore tools that are not enabled in this SDK build
-      if tool not in toolchains:
-        continue
-      tools.setdefault(tool, [])
-      if tool not in tool_list:
-        tool_list.append(tool)
-      if arch:
-        tools[tool].append(arch)
-
+    # Ensure the order of |tools| is the same as toolchains; that way if
+    # first_toolchain is set, it will choose based on the order of |toolchains|.
+    tools = [tool for tool in toolchains if tool in desc['TOOLS']]
+    if first_toolchain:
+      tools = [tools[0]]
     template_dict = {
       'pre': desc.get('PRE', ''),
-      'tools': tool_list,
+      'tools': tools,
       'targets': desc['TARGETS'],
     }
     RunTemplateFile(template, make_path, template_dict)
@@ -421,7 +414,12 @@ def main(argv):
       action='store_true')
   parser.add_option('--host', help='Create host examples.',
       action='store_true')
+  parser.add_option('--config', help='Add configuration (debug/release).',
+      action='append')
   parser.add_option('--experimental', help='Create experimental examples.',
+      action='store_true')
+  parser.add_option('--first-valid-toolchain',
+      help='Only build one toolchain, the first one that is valid.',
       action='store_true')
   parser.add_option('-v', '--verbose', help='Verbose output',
       action='store_true')
@@ -448,9 +446,19 @@ def main(argv):
   if not toolchains:
     toolchains = ['newlib', 'glibc', 'pnacl']
 
+  valid_configs = ['Debug', 'Release']
+  if options.config:
+    configs = []
+    for config in options.config:
+      if config in valid_configs:
+        configs.append(config)
+      else:
+        ErrorExit('Invalid config: %s' % config)
+  else:
+    configs = valid_configs
+
   master_projects = {}
 
-  landing_page = LandingPage()
   for i, filename in enumerate(args):
     if i:
       # Print two newlines between each dsc file we process
@@ -465,26 +473,39 @@ def main(argv):
       continue
 
     srcroot = os.path.dirname(os.path.abspath(filename))
-    if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
+    if not ProcessProject(srcroot, options.dstroot, desc, toolchains,
+        options.first_valid_toolchain):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
     # if this is an example update it's html file.
     if ShouldProcessHTML(desc):
-      ProcessHTML(srcroot, options.dstroot, desc, toolchains)
-
-    # if this is an example, update landing page html file.
-    if desc['DEST'] == 'examples':
-      Trace('Adding desc: %s' % filename)
-      landing_page.AddDesc(desc)
+      ProcessHTML(srcroot, options.dstroot, desc, toolchains, configs,
+                  options.first_valid_toolchain)
 
     # Create a list of projects for each DEST. This will be used to generate a
     # master makefile.
     master_projects.setdefault(desc['DEST'], []).append(desc)
 
-  # Generate the landing page text file.
-  index_html = os.path.join(options.dstroot, 'examples', 'index.html')
-  with open(index_html, 'w') as fh:
-    fh.write(landing_page.GeneratePage())
+
+  if master_projects.get('examples'):
+    landing_page = LandingPage()
+    for desc in master_projects.get('examples'):
+      landing_page.AddDesc(desc)
+
+    # Generate the landing page text file.
+    index_html = os.path.join(options.dstroot, 'examples', 'index.html')
+    example_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
+    index_template = os.path.join(example_resources_dir, 'index.html.template')
+    with open(index_html, 'w') as fh:
+      fh.write(landing_page.GeneratePage(index_template))
+
+    # Copy additional files needed for the landing page.
+    extra_files = ['index.css', 'index.js', 'button_close.png',
+                   'button_close_hover.png']
+    for filename in extra_files:
+      src_file = os.path.join(example_resources_dir, filename)
+      dst_file = os.path.join(options.dstroot, 'examples', filename)
+      buildbot_common.CopyFile(src_file, dst_file)
 
   if options.master:
     if use_gyp:

@@ -239,7 +239,7 @@ endif
 ifeq ($(CONFIG),Release)
 POSIX_FLAGS?=-g -O2 -pthread -MMD
 else
-POSIX_FLAGS?=-g -O0 -pthread -MMD
+POSIX_FLAGS?=-g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif
 
 NACL_CFLAGS?=-Wno-long-long -Werror

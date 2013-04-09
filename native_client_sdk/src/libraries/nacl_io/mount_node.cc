@@ -85,15 +85,15 @@ void* MountNode::MMap(void* addr, size_t length, int prot, int flags,
   void* new_addr = addr;
   int err = _real_mmap(&new_addr, length, prot | PROT_WRITE, flags |
                        MAP_ANONYMOUS, -1, 0);
-  if (addr == MAP_FAILED) {
-    _real_munmap(addr, length);
+  if (new_addr == MAP_FAILED) {
+    _real_munmap(new_addr, length);
     errno = err;
     return MAP_FAILED;
   }
 
-  ssize_t cnt = Read(offset, addr, length);
+  ssize_t cnt = Read(offset, new_addr, length);
   if (cnt == -1) {
-    _real_munmap(addr, length);
+    _real_munmap(new_addr, length);
     errno = ENOSYS;
     return MAP_FAILED;
   }

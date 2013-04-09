@@ -126,16 +126,25 @@ var common = (function () {
     return s.lastIndexOf(prefix, 0) === 0;
   }
 
+  /** Maximum length of logMessageArray. */
+  var kMaxLogMessageLength = 20;
+
+  /** An array of messages to display in the element with id "log". */
+  var logMessageArray = [];
+
   /**
-   * Add a message to an element with id "log", separated by a <br> element.
+   * Add a message to an element with id "log".
    *
    * This function is used by the default "log:" message handler.
    *
    * @param {string} message The message to log.
    */
   function logMessage(message) {
-    var logEl = document.getElementById('log');
-    logEl.innerHTML += message + '<br>';
+    logMessageArray.push(message);
+    if (logMessageArray.length > kMaxLogMessageLength)
+      logMessageArray.shift();
+
+    document.getElementById('log').textContent = logMessageArray.join('');
     console.log(message)
   }
 
@@ -236,6 +245,7 @@ var common = (function () {
     domContentLoaded: domContentLoaded,
     createNaClModule: createNaClModule,
     hideModule: hideModule,
+    logMessage: logMessage,
     updateStatus: updateStatus
   };
 

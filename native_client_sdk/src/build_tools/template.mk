@@ -91,6 +91,8 @@ $(foreach src,$({{name}}_SOURCES),$(eval $(call COMPILE_RULE,$(src),{{flags}})))
 [[  name = target['NAME'] ]]
 [[  if target['TYPE'] == 'so':]]
 $(eval $(call SO_RULE,{{name}},$({{name}}_SOURCES)))
+[[  elif target['TYPE'] == 'so-standalone':]]
+$(eval $(call SO_RULE,{{name}},$({{name}}_SOURCES),,,1))
 [[  else:]]
 $(eval $(call LINK_RULE,{{name}},$({{name}}_SOURCES),$(LIBS),$(DEPS)))
 [[]]

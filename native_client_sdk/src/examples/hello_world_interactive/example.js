@@ -25,7 +25,12 @@ function reverseText() {
   common.naclModule.postMessage('reverseText:' + inputBox.value);
 }
 
-// Called by the common.js module.
-function handleMessage(message_event) {
-  alert(message_event.data);
+function handleMessage(e) {
+  if (typeof e.data === 'string') {
+    // Received a reversed message.
+    common.logMessage('Received "' + e.data + '"\n');
+  } else if (typeof e.data === 'number') {
+    // Recived 42.
+    common.logMessage('Received "' + e.data + '"\n');
+  }
 }

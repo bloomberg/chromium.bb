@@ -13,12 +13,13 @@
 #include "ppapi_main/ppapi_main.h"
 
 
-// Have the Module object provided by ppapi_main create a basic
-// PPAPI instance with default arguments which mounts the dev
-// file system providing /dev/null, /dev/tty, and /devl/console3
-// for null STDIN, STDOUT directed to PostMessage and STDERR
-// directed to the JavaScript Console with LogLevel 'ERROR'
-PPAPI_MAIN_WITH_DEFAULT_ARGS
+// The default arguments to PPAPI_MAIN maps:
+//   STDIN -> /dev/stdin
+//   STDOUT -> /dev/stdout
+//   STDERR -> /dev/console3
+// We use our own args here so that stdout sends messages to JavaScript via
+// PostMessage (/dev/tty).
+PPAPI_MAIN_WITH_ARGS("pm_stdout", "/dev/tty", NULL, NULL)
 
 //
 // The "main" entry point called by PPAPIInstance once initialization

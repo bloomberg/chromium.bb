@@ -78,7 +78,7 @@ function fopen_result(filename, filehandle) {
   filehandle_map[filehandle] = filename;
 
   addFilenameToSelectElements(filehandle, filename)
-  logMessage('File ' + filename + ' opened successfully.');
+  common.logMessage('File ' + filename + ' opened successfully.\n');
 }
 
 function fclose(e) {
@@ -89,7 +89,7 @@ function fclose(e) {
 function fclose_result(filehandle) {
   var filename = filehandle_map[filehandle];
   removeFilenameFromSelectElements(filehandle, filename);
-  logMessage('File ' + filename + ' closed successfully.');
+  common.logMessage('File ' + filename + ' closed successfully.\n');
 }
 
 function fread(e) {
@@ -100,7 +100,7 @@ function fread(e) {
 
 function fread_result(filehandle, data) {
   var filename = filehandle_map[filehandle];
-  logMessage('Read "' + data + '" from file ' + filename + '.');
+  common.logMessage('Read "' + data + '" from file ' + filename + '.\n');
 }
 
 function fwrite(e) {
@@ -111,7 +111,8 @@ function fwrite(e) {
 
 function fwrite_result(filehandle, bytes_written) {
   var filename = filehandle_map[filehandle];
-  logMessage('Wrote ' + bytes_written + ' bytes to file ' + filename + '.');
+  common.logMessage('Wrote ' + bytes_written + ' bytes to file ' + filename +
+      '.\n');
 }
 
 function fseek(e) {
@@ -123,7 +124,8 @@ function fseek(e) {
 
 function fseek_result(filehandle, filepos) {
   var filename = filehandle_map[filehandle];
-  logMessage('Seeked to location ' + filepos + ' in file ' + filename + '.');
+  common.logMessage('Seeked to location ' + filepos + ' in file ' + filename +
+      '.\n');
 }
 
 /**
@@ -136,19 +138,6 @@ function startsWith(s, prefix) {
   // indexOf would search the entire string, lastIndexOf(p, 0) only checks at
   // the first index. See: http://stackoverflow.com/a/4579228
   return s.lastIndexOf(prefix, 0) === 0;
-}
-
-function logMessage(msg) {
-  var logEl = document.getElementById('log');
-
-  // Perform some basic escaping.
-  msg = msg.replace(/&/g, '&amp;')
-           .replace(/</g, '&lt;')
-           .replace(/>/g, '&gt;')
-           .replace(/"/g, '&quot;')
-           .replace(/'/g, '&apos;');
-
-  logEl.innerHTML += msg + '<br>';
 }
 
 function makeCall(func) {
@@ -164,7 +153,7 @@ function makeCall(func) {
 function handleMessage(message_event) {
   var msg = message_event.data;
   if (startsWith(msg, 'Error:')) {
-    logMessage(msg);
+    common.logMessage(msg + '\n');
   } else {
     // Result from a function call.
     var params = msg.split('\1');
@@ -173,7 +162,7 @@ function handleMessage(message_event) {
     var result_func = window[func_result_name];
 
     if (!result_func) {
-      logMessage('Error: Bad message received from NaCl module.');
+      common.logMessage('Error: Bad message received from NaCl module.\n');
       return;
     }
 

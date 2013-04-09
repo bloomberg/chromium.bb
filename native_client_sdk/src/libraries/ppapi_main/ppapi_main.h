@@ -41,15 +41,11 @@ void PPAPIRender(uint32_t width, uint32_t height);
 
 EXTERN_C_END
 
-#define PPAPI_MAIN_DEFAULT_ARGS       \
-  {                                   \
-    NULL, NULL                        \
-  }
+#define PPAPI_MAIN_DEFAULT_ARGS  NULL, NULL
 
-
-#define PPAPI_MAIN_USE(factory, args)                         \
+#define PPAPI_MAIN_USE(factory, ...)                          \
 void* UserCreateInstance(PP_Instance inst) {                  \
-  static const char *params[] = args;                         \
+  static const char *params[] = { __VA_ARGS__ };  \
   return factory(inst, params);                               \
 }
 
@@ -59,8 +55,8 @@ void* UserCreateInstance(PP_Instance inst) {                  \
 #define PPAPI_MAIN_3D_WITH_DEFAULT_ARGS \
   PPAPI_MAIN_USE(PPAPI_CreateInstance3D, PPAPI_MAIN_DEFAULT_ARGS)
 
-#define PPAPI_MAIN_WITH_ARGS(args) \
-  PPAPI_MAIN_USE(PPAPI_CreateInstance, args)
+#define PPAPI_MAIN_WITH_ARGS(...) \
+  PPAPI_MAIN_USE(PPAPI_CreateInstance, __VA_ARGS__)
 
 
 #endif  // PPAPI_MAIN_PPAPI_MAIN_H_

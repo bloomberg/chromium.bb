@@ -19,13 +19,6 @@
   'DEST': 'examples',
   'NAME': 'input_events',
   'TITLE': 'Input Events',
-  'DESC': """The Input Events example shows how to handle input events in a
-multi-threaded application.  The main thread converts input events to
-non-pepper events and puts them on a queue. The worker thread pulls them off of
-the queue, converts them to a string, and then uses CallOnMainThread so that
-PostMessage can be send the result of the worker thread to the browser.""",
-  'FOCUS': """Multi-threading, keyboard and mouse input, view change, and focus
-events.""",
   'GROUP': 'API',
 }
 

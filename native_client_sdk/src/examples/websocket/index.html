@@ -15,10 +15,12 @@ found in the LICENSE file.
 <body {{attrs}}>
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <div>Set a server URL, then push "Connect" button to establish a connection.
-    <br>"Send" button sends text message on the left text area.
-    <br>"Close" button closes the connection.
-  <div>
+  <p>The Websocket example demonstrates how to use the Websocket API.<br>
+     First set a server URL (or use the default), then push "Connect" button to
+     establish a connection.<br>
+     "Send" button sends text message on the left text area.<br>
+     "Close" button closes the connection.
+  </p>
   <form id="connectForm">
     <input type="text" id="url" style="width: 400px"
       value="ws://html5rocks.websocket.org/echo?encoding=text">
@@ -31,7 +33,7 @@ found in the LICENSE file.
   </form>
 
   <button id="closeButton">Close</button>
+  <pre id="log" style="font-weight: bold"></pre>
   <div id="listener"></div>
-  <div id="log"></div>
 </body>
 </html>

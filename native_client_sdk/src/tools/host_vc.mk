@@ -28,7 +28,7 @@ endif
 
 
 ifeq ('Debug','$(CONFIG)')
-WIN_OPT_FLAGS?=/Od /MTd /Z7
+WIN_OPT_FLAGS?=/Od /MTd /Z7 -D NACL_SDK_DEBUG
 else
 WIN_OPT_FLAGS?=/O2 /MT /Z7
 endif

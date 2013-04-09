@@ -34,3 +34,7 @@ function doClose() {
   // Send a request message. See also websocket.cc for the request format.
   common.naclModule.postMessage('c;');
 }
+
+function handleMessage(message) {
+  common.logMessage(message.data + '\n');
+}
