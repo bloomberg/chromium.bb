@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/chrome_version_info.h"
@@ -26,18 +27,32 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// Flaky. http://crbug.com/224249
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ApiTests) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
+
+#if defined(OS_WIN)
+  // TODO(justinlin): Disabled for WinXP due to timeout issues.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    return;
+  }
+#endif
+
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "api_tests.html")) << message_;
 }
 
-// Flaky. http://crbug.com/224249
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ApiTestsAudio) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
+
+#if defined(OS_WIN)
+  // TODO(justinlin): Disabled for WinXP due to timeout issues.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    return;
+  }
+#endif
+
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "api_tests_audio.html")) << message_;
 }
