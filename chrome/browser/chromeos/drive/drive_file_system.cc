@@ -1289,13 +1289,6 @@ void DriveFileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
                     OnDirectoryChanged(directory_path));
 }
 
-void DriveFileSystem::OnResourceListFetched(int num_accumulated_entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnResourceListFetched(num_accumulated_entries));
-}
-
 void DriveFileSystem::OnFeedFromServerLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

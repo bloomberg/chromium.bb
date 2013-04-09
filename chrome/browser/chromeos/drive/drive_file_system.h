@@ -149,7 +149,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Used to propagate events from ChangeListLoader.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
-  virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
   virtual void OnInitialFeedLoaded() OVERRIDE;
 

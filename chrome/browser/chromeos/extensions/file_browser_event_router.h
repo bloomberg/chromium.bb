@@ -112,7 +112,6 @@ class FileBrowserEventRouter
   // drive::DriveFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
-  virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 

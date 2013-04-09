@@ -28,11 +28,6 @@ class DriveFileSystemObserver {
   virtual void OnInitialLoadFinished() {
   }
 
-  // Triggered when a document feed is fetched. |num_accumulated_entries|
-  // tells the number of entries fetched so far.
-  virtual void OnResourceListFetched(int num_accumulated_entries) {
-  }
-
   // Triggered when the feed from the server is loaded.
   virtual void OnFeedFromServerLoaded() {
   }

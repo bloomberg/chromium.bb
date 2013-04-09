@@ -58,37 +58,6 @@ struct ChangeListLoader::LoadFeedParams {
   GURL feed_to_load;
   bool load_subsequent_feeds;
   ScopedVector<ChangeList> change_lists;
-  scoped_ptr<GetResourceListUiState> ui_state;
-};
-
-// Defines set of parameters sent to callback OnNotifyResourceListFetched().
-// This is a trick to update the number of fetched documents frequently on
-// UI. Due to performance reason, we need to fetch a number of files at
-// a time. However, it'll take long time, and a user has no way to know
-// the current update state. In order to make users comfortable,
-// we increment the number of fetched documents with more frequent but smaller
-// steps than actual fetching.
-struct ChangeListLoader::GetResourceListUiState {
-  explicit GetResourceListUiState(base::TimeTicks start_time)
-      : num_fetched_documents(0),
-        num_showing_documents(0),
-        start_time(start_time),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory(this)) {
-  }
-
-  // The number of fetched documents.
-  int num_fetched_documents;
-
-  // The number documents shown on UI.
-  int num_showing_documents;
-
-  // When the UI update has started.
-  base::TimeTicks start_time;
-
-  // Time elapsed since the feed fetching was started.
-  base::TimeDelta feed_fetching_elapsed_time;
-
-  base::WeakPtrFactory<GetResourceListUiState> weak_ptr_factory;
 };
 
 ChangeListLoader::ChangeListLoader(DriveResourceMetadata* resource_metadata,
@@ -502,33 +471,8 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
   // Add the current feed to the list of collected feeds for this directory.
   params->change_lists.push_back(new ChangeList(*resource_list));
 
-  // Compute and notify the number of entries fetched so far.
-  int num_accumulated_entries = 0;
-  for (size_t i = 0; i < params->change_lists.size(); ++i)
-    num_accumulated_entries += params->change_lists[i]->entries().size();
-
   // Check if we need to collect more data to complete the directory list.
   if (has_next_feed_url && !next_feed_url.is_empty()) {
-    // Post an UI update event to make the UI smoother.
-    GetResourceListUiState* ui_state = params->ui_state.get();
-    if (ui_state == NULL) {
-      ui_state = new GetResourceListUiState(base::TimeTicks::Now());
-      params->ui_state.reset(ui_state);
-    }
-    DCHECK(ui_state);
-
-    if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
-        < kFetchUiUpdateStep) {
-      // Currently the UI update is stopped. Start UI periodic callback.
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ChangeListLoader::OnNotifyResourceListFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ui_state->weak_ptr_factory.GetWeakPtr()));
-    }
-    ui_state->num_fetched_documents = num_accumulated_entries;
-    ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
-
     // |params| will be passed to the callback and thus nulled. Extract the
     // pointer so we can use it bellow.
     LoadFeedParams* params_ptr = params.get();
@@ -546,59 +490,11 @@ void ChangeListLoader::LoadFromServerAfterGetResourceList(
     return;
   }
 
-  // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                    OnResourceListFetched(num_accumulated_entries));
-
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
 
   // Run the callback so the client can process the retrieved feeds.
   callback.Run(params->change_lists.Pass(), DRIVE_FILE_OK);
-}
-
-void ChangeListLoader::OnNotifyResourceListFetched(
-    base::WeakPtr<GetResourceListUiState> ui_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!ui_state) {
-    // The ui state instance is already released, which means the fetching
-    // is done and we don't need to update any more.
-    return;
-  }
-
-  base::TimeDelta ui_elapsed_time =
-      base::TimeTicks::Now() - ui_state->start_time;
-
-  if (ui_state->num_showing_documents + kFetchUiUpdateStep <=
-      ui_state->num_fetched_documents) {
-    ui_state->num_showing_documents += kFetchUiUpdateStep;
-    FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
-                      OnResourceListFetched(ui_state->num_showing_documents));
-
-    int num_remaining_ui_updates =
-        (ui_state->num_fetched_documents - ui_state->num_showing_documents)
-        / kFetchUiUpdateStep;
-    if (num_remaining_ui_updates > 0) {
-      // Heuristically, we use fetched time duration to calculate the next
-      // UI update timing.
-      base::TimeDelta remaining_duration =
-          ui_state->feed_fetching_elapsed_time - ui_elapsed_time;
-      base::TimeDelta interval = remaining_duration / num_remaining_ui_updates;
-      // If UI update is slow for some reason, the interval can be
-      // negative, or very small. This rarely happens but should be handled.
-      const int kMinIntervalMs = 10;
-      if (interval.InMilliseconds() < kMinIntervalMs)
-        interval = base::TimeDelta::FromMilliseconds(kMinIntervalMs);
-
-      base::MessageLoopProxy::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ChangeListLoader::OnNotifyResourceListFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ui_state->weak_ptr_factory.GetWeakPtr()),
-          interval);
-    }
-  }
 }
 
 void ChangeListLoader::LoadIfNeeded(

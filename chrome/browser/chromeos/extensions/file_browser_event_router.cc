@@ -611,19 +611,6 @@ void FileBrowserEventRouter::OnDirectoryChanged(
   HandleFileWatchNotification(directory_path, false);
 }
 
-void FileBrowserEventRouter::OnResourceListFetched(
-    int num_accumulated_entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(base::Value::CreateIntegerValue(num_accumulated_entries));
-
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::event_names::kOnDocumentFeedFetched, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(kFileBrowserDomain, event.Pass());
-}
-
 void FileBrowserEventRouter::OnFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

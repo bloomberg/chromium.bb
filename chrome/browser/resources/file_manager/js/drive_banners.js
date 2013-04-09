@@ -586,12 +586,6 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
   var loading = create(panel, 'div', 'loading', str('DRIVE_LOADING'));
   var spinnerBox = create(loading, 'div', 'spinner-box');
   create(spinnerBox, 'div', 'spinner');
-  var progress = create(panel, 'div', 'progress');
-  chrome.fileBrowserPrivate.onDocumentFeedFetched.addListener(
-      function(fileCount) {
-        progress.textContent = strf('DRIVE_LOADING_PROGRESS', fileCount);
-      });
-
   create(panel, 'div', 'error', str('DRIVE_CANNOT_REACH'));
 
   var retryButton = create(panel, 'button', 'retry', str('DRIVE_RETRY'));

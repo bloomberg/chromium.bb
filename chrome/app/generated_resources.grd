@@ -12783,9 +12783,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DRIVE_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
         Hang with us. We’re fetching your files.
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_LOADING_PROGRESS" desc="The progress message displayed when loading content of Google Drive. Never displayed for file count below 10 so no pluralization issue should arise.">
-        <ph name="FILE_COUNT">$1<ex>100</ex></ph> files fetched
-      </message>
       <message name="IDS_FILE_BROWSER_DRIVE_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
         Google Drive cannot be reached at this time.
       </message>
