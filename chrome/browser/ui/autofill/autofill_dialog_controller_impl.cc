@@ -469,15 +469,14 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
 
   if (SignedInState() == SIGNED_IN)
-    return ASCIIToUTF16(current_username_);
+    return UTF8ToUTF16(current_username_);
 
   // In this case, the account chooser should be showing the signin link.
   return string16();
 }
 
 string16 AutofillDialogControllerImpl::SignInLinkText() const {
-  // TODO(estade): real strings and l10n.
-  return ASCIIToUTF16("Sign in to use Google Wallet");
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SIGN_IN);
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
@@ -1161,7 +1160,7 @@ std::vector<DialogNotification>
         DialogNotification::WALLET_ERROR,
         l10n_util::GetStringFUTF16(
             IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-            ASCIIToUTF16("Oops, [Wallet-Error]."))));
+            ASCIIToUTF16("[Wallet-Error]."))));
   }
 
   return notifications;

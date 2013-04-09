@@ -116,8 +116,8 @@ AccountChooserModel::AccountChooserModel(
       prefs::kAutofillDialogPayWithoutWallet,
       base::Bind(&AccountChooserModel::PrefChanged, base::Unretained(this)));
 
-  // TODO(estade): proper strings and l10n.
-  AddCheckItem(kWalletItemId, ASCIIToUTF16("Google Wallet"));
+  AddCheckItem(kWalletItemId,
+               l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_GOOGLE_WALLET));
   SetIcon(
       kWalletItemId,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_WALLET_ICON));
