@@ -114,7 +114,6 @@ memoryInfoEnabled initial=false
 interactiveFormValidationEnabled initial=false
 
 hyperlinkAuditingEnabled initial=false
-crossOriginCheckInGetMatchedCSSRulesDisabled initial=false
 forceCompositingMode initial=false
 shouldInjectUserScriptsInInitialEmptyDocument initial=false
 fixedElementsLayoutRelativeToFrame initial=false
