@@ -68,18 +68,15 @@ bool HTMLVideoElement::rendererIsNeeded(const NodeRenderingContext& context)
     return HTMLElement::rendererIsNeeded(context); 
 }
 
-#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 RenderObject* HTMLVideoElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
     return new (arena) RenderVideo(this);
 }
-#endif
 
 void HTMLVideoElement::attach()
 {
     HTMLMediaElement::attach();
 
-#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     updateDisplayState();
     if (shouldDisplayPosterImage()) {
         if (!m_imageLoader)
@@ -88,7 +85,6 @@ void HTMLVideoElement::attach()
         if (renderer())
             toRenderImage(renderer())->imageResource()->setCachedImage(m_imageLoader->image()); 
     }
-#endif
 }
 
 void HTMLVideoElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
@@ -114,7 +110,6 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // Force a poster recalc by setting m_displayMode to Unknown directly before calling updateDisplayState.
         HTMLMediaElement::setDisplayMode(Unknown);
         updateDisplayState();
-#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
         if (shouldDisplayPosterImage()) {
             if (!m_imageLoader)
                 m_imageLoader = adoptPtr(new HTMLImageLoader(this));
@@ -123,7 +118,6 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
             if (renderer())
                 toRenderImage(renderer())->imageResource()->setCachedImage(0); 
         }
-#endif
     } else
         HTMLMediaElement::parseAttribute(name, value);
 }
@@ -219,10 +213,8 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode)
             player()->setPoster(poster);
     }
 
-#if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     if (renderer() && displayMode() != oldMode)
         renderer()->updateFromElement();
-#endif
 }
 
 void HTMLVideoElement::updateDisplayState()

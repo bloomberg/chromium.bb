@@ -48,9 +48,6 @@ class HTMLFrameOwnerElement;
 class HTMLPlugInImageElement;
 class IntSize;
 class KURL;
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-class Node;
-#endif
 class Widget;
 
 // This is a slight misnomer. It handles the higher level logic of loading both subframes and plugins.
@@ -64,12 +61,6 @@ public:
     bool requestFrame(HTMLFrameOwnerElement*, const String& url, const AtomicString& frameName, bool lockHistory = true, bool lockBackForwardList = true);    
     bool requestObject(HTMLPlugInImageElement*, const String& url, const AtomicString& frameName,
         const String& serviceType, const Vector<String>& paramNames, const Vector<String>& paramValues);
-
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    // FIXME: This should take Element* instead of Node*, or better yet the
-    // specific type of Element which this code depends on.
-    PassRefPtr<Widget> loadMediaPlayerProxyPlugin(Node*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues);
-#endif
 
     PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const Vector<String>& paramNames, const Vector<String>& paramValues);
 

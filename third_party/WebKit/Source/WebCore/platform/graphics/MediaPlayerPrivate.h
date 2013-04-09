@@ -114,13 +114,7 @@ public:
     virtual bool canLoadPoster() const { return false; }
     virtual void setPoster(const String&) { }
 
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    virtual void deliverNotification(MediaPlayerProxyNotificationType) = 0;
-    virtual void setMediaPlayerProxy(WebMediaPlayerProxy*) = 0;
-    virtual void setControls(bool) { }
-#endif
-
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO) || USE(NATIVE_FULLSCREEN_VIDEO)
+#if USE(NATIVE_FULLSCREEN_VIDEO)
     virtual void enterFullscreen() { }
     virtual void exitFullscreen() { }
 #endif

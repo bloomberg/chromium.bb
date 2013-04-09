@@ -333,11 +333,6 @@ public:
     virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) OVERRIDE;
     virtual void recreatePlugin(Widget*) OVERRIDE;
     virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) OVERRIDE;
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    virtual PassRefPtr<Widget> createMediaPlayerProxyPlugin(const IntSize&, HTMLMediaElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&) OVERRIDE;
-    virtual void hideMediaPlayerProxyPlugin(Widget*) { }
-    virtual void showMediaPlayerProxyPlugin(Widget*) { }
-#endif
 
     virtual ObjectContentType objectContentType(const KURL&, const String&, bool) { return ObjectContentType(); }
     virtual String overrideMediaType() const { return String(); }

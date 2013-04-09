@@ -28,10 +28,6 @@
 
 #if ENABLE(VIDEO)
 #include "GraphicsTypes3D.h"
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-#include "MediaPlayerProxy.h"
-#endif
-
 #include "InbandTextTrackPrivate.h"
 #include "IntRect.h"
 #include "KURL.h"
@@ -366,13 +362,7 @@ public:
     bool canLoadPoster() const;
     void setPoster(const String&);
 
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    void deliverNotification(MediaPlayerProxyNotificationType notification);
-    void setMediaPlayerProxy(WebMediaPlayerProxy* proxy);
-    void setControls(bool);
-#endif
-
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO) || USE(NATIVE_FULLSCREEN_VIDEO)
+#if USE(NATIVE_FULLSCREEN_VIDEO)
     void enterFullscreen();
     void exitFullscreen();
 #endif
@@ -468,9 +458,6 @@ private:
     bool m_privateBrowsing;
     bool m_shouldPrepareToRender;
     bool m_contentMIMETypeWasInferredFromExtension;
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    WebMediaPlayerProxy* m_playerProxy;    // not owned or used, passed to m_private
-#endif
 
     RefPtr<MediaSource> m_mediaSource;
 };

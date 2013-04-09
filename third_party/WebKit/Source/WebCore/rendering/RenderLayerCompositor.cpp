@@ -62,10 +62,6 @@
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/TemporaryChange.h>
 
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-#include "HTMLMediaElement.h"
-#endif
-
 #if !LOG_DISABLED
 #include <wtf/CurrentTime.h>
 #endif
@@ -1784,19 +1780,6 @@ bool RenderLayerCompositor::requiresCompositingForVideo(RenderObject* renderer) 
         RenderVideo* video = toRenderVideo(renderer);
         return video->shouldDisplayVideo() && canAccelerateVideoRendering(video);
     }
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    else if (renderer->isRenderPart()) {
-        if (!m_hasAcceleratedCompositing)
-            return false;
-
-        Node* node = renderer->node();
-        if (!node || (!node->hasTagName(HTMLNames::videoTag) && !node->hasTagName(HTMLNames::audioTag)))
-            return false;
-
-        HTMLMediaElement* mediaElement = toMediaElement(node);
-        return mediaElement->player() ? mediaElement->player()->supportsAcceleratedRendering() : false;
-    }
-#endif // ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 #else
     UNUSED_PARAM(renderer);
 #endif

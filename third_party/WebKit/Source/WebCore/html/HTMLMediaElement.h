@@ -34,10 +34,6 @@
 #include "MediaControllerInterface.h"
 #include "MediaPlayer.h"
 
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-#include "MediaPlayerProxy.h"
-#endif
-
 #if ENABLE(VIDEO_TRACK)
 #include "PODIntervalTree.h"
 #include "TextTrack.h"
@@ -59,9 +55,6 @@ class MediaError;
 class KURL;
 class TextTrackList;
 class TimeRanges;
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-class Widget;
-#endif
 #if PLATFORM(MAC)
 class DisplaySleepDisabler;
 #endif
@@ -287,16 +280,6 @@ public:
     void setTextTrackRepresentation(TextTrackRepresentation*);
 #endif
 
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    void allocateMediaPlayerIfNecessary();
-    void setNeedWidgetUpdate(bool needWidgetUpdate) { m_needWidgetUpdate = needWidgetUpdate; }
-    void deliverNotification(MediaPlayerProxyNotificationType notification);
-    void setMediaPlayerProxy(WebMediaPlayerProxy* proxy);
-    void getPluginProxyParams(KURL& url, Vector<String>& names, Vector<String>& values);
-    void createMediaPlayerProxy();
-    void updateWidget(PluginCreationOption);
-#endif
-
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
     // causes an ambiguity error at compile time. This class's constructor
@@ -348,8 +331,6 @@ public:
     void setController(PassRefPtr<MediaController>);
 
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
-
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -410,8 +391,6 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void didRecalcStyle(StyleChange);
     
-    virtual void defaultEventHandler(Event*);
-
     virtual void didBecomeFullscreenElement();
     virtual void willStopBeingFullscreenElement();
 
@@ -623,9 +602,6 @@ private:
     RefPtr<Node> m_nextChildNodeToConsider;
 
     OwnPtr<MediaPlayer> m_player;
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    RefPtr<Widget> m_proxyWidget;
-#endif
 
     BehaviorRestrictions m_restrictions;
     
@@ -673,10 +649,6 @@ private:
 
     bool m_isFullscreen : 1;
     bool m_closedCaptionsVisible : 1;
-
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    bool m_needWidgetUpdate : 1;
-#endif
 
     bool m_dispatchingCanPlayEvent : 1;
     bool m_loadInitiatedByUserGesture : 1;

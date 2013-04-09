@@ -2357,13 +2357,7 @@ void FrameView::updateWidget(RenderObject* object)
             HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(ownerElement);
             if (pluginElement->needsWidgetUpdate())
                 pluginElement->updateWidget(CreateAnyWidgetType);
-        }
-        // FIXME: It is not clear that Media elements need or want this updateWidget() call.
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-        else if (ownerElement->isMediaElement())
-            static_cast<HTMLMediaElement*>(ownerElement)->updateWidget(CreateAnyWidgetType);
-#endif
-        else
+        } else
             ASSERT_NOT_REACHED();
 
         // Caution: it's possible the object was destroyed again, since loading a
