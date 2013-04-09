@@ -461,6 +461,12 @@ cr.define('options.managedUserSettings', function() {
       $('managed-user-settings-exceptions-overlay-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
     },
+
+    /** @override */
+    canShowPage: function() {
+      return ManagedUserSettings.getInstance().authenticationState ==
+          options.ManagedUserAuthentication.AUTHENTICATED;
+    },
   };
 
   return {

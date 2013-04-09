@@ -226,6 +226,11 @@ void ManagedUserSettingsHandler::OnLocalPassphraseChanged() {
 
 void ManagedUserSettingsHandler::RemoveManualException(
     const ListValue* args) {
+  // Check if the user is authenticated.
+  if (!ManagedModeNavigationObserver::FromWebContents(
+      web_ui()->GetWebContents())->is_elevated())
+    return;
+
   size_t arg_i = 0;
   std::string pattern;
   CHECK(args->GetString(arg_i++, &pattern));
@@ -259,6 +264,11 @@ void ManagedUserSettingsHandler::UpdateManualBehavior(
 
 void ManagedUserSettingsHandler::SetManualException(
     const ListValue* args) {
+  // Check if the user is authenticated.
+  if (!ManagedModeNavigationObserver::FromWebContents(
+      web_ui()->GetWebContents())->is_elevated())
+    return;
+
   size_t arg_i = 0;
   std::string pattern;
   CHECK(args->GetString(arg_i++, &pattern));

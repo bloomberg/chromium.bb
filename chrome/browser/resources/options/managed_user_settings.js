@@ -127,6 +127,7 @@ cr.define('options', function() {
           !enable || !$('use-passphrase-checkbox').checked;
       // TODO(sergiu): make $('get-content-packs-button') behave the same as
       // the other controls once the button actually does something.
+      $('manage-exceptions-button').disabled = !enable;
       $('contentpacks-allow').setDisabled('notManagedUserModifiable', !enable);
       $('contentpacks-warn').setDisabled('notManagedUserModifiable', !enable);
       $('contentpacks-block').setDisabled('notManagedUserModifiable', !enable);
