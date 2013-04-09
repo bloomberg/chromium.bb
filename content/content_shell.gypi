@@ -492,6 +492,23 @@
               ],
             },
           ],
+          'conditions': [
+            ['enable_webrtc==1', {
+              'variables': {
+                'libpeer_target_type%': 'static_library',
+              },
+              'conditions': [
+                ['libpeer_target_type=="shared_library"', {
+                  'copies': [{
+                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                   'files': [
+                      '<(PRODUCT_DIR)/Libraries/libpeerconnection.dylib',
+                    ],
+                  }],
+                }],
+              ],
+            }],
+          ],
         },  # target content_shell_framework
         {
           'target_name': 'content_shell_helper_app',

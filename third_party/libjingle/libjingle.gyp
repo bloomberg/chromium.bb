@@ -885,6 +885,7 @@
               'xcode_settings': {
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path/Libraries',
               },
+              'product_dir': '<(PRODUCT_DIR)/Libraries',
             }],
           ],
         },  # target peerconnection
