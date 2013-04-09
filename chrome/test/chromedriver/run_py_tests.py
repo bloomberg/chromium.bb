@@ -62,6 +62,9 @@ _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
         'ChromeDriverTest.testAlert',
     ]
 )
+_DESKTOP_NEGATIVE_FILTER['27'] = (
+    _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
+)
 _DESKTOP_NEGATIVE_FILTER['26'] = (
     _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
 )

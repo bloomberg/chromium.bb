@@ -96,6 +96,12 @@ def main():
   parser.add_option(
       '', '--android-package',
       help='Application package name, if running tests on Android.')
+  # Option 'chrome-version' is for desktop only.
+  parser.add_option(
+      '', '--chrome-version',
+      help='Version of chrome, e.g., \'HEAD\', \'27\', or \'26\'.'
+           'Default is to run tests against all of these versions.'
+           'Notice: this option only applies to desktop.')
   options, _ = parser.parse_args()
 
   chromedriver_map = {
@@ -149,12 +155,18 @@ def main():
 
     chrome_26 = continuous_archive.DownloadChrome(
         continuous_archive.CHROME_26_REVISION, util.MakeTempDir())
+    chrome_27 = continuous_archive.DownloadChrome(
+        continuous_archive.CHROME_27_REVISION, util.MakeTempDir())
     chrome_path_versions = [
         {'path': chrome_tip_of_tree, 'version': 'HEAD'},
+        {'path': chrome_27, 'version': '27'},
         {'path': chrome_26, 'version': '26'},
     ]
     code = 0
     for chrome in chrome_path_versions:
+      if options.chrome_version and chrome['version'] != options.chrome_version:
+        continue
+
       code1 = RunPythonTests(chromedriver, chrome=chrome['path'],
                              chrome_version=chrome['version'])
       code2 = RunJavaTests(chromedriver_server, chrome=chrome['path'],

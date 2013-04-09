@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 from common import util
 
 CHROME_26_REVISION = '181664'
+CHROME_27_REVISION = '190466'
 
 _SITE = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
 

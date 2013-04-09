@@ -95,6 +95,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'WebElementTest.testElementReturnsOriginDriver',
     'WindowTest.*',
 ]
+_REVISION_NEGATIVE_FILTER['27'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
 _REVISION_NEGATIVE_FILTER['26'] = [
     'UploadTest.testFileUploading',
     'CorrectEventFiringTest.testUploadingFileShouldFireOnChangeEvent',
@@ -107,6 +108,8 @@ _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=282
     'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+    # https://code.google.com/p/chromedriver/issues/detail?id=303
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=284
