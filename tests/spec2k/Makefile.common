@@ -244,7 +244,7 @@ PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator \
   $(EXTRA_TRANSLATOR_FLAGS)
 PNACL_CC=$(PNACL_BIN)/pnacl-clang
 PNACL_CXX=$(PNACL_BIN)/pnacl-clang++
-PNACL_STRIP=$(PNACL_BIN)/pnacl-strip
+PNACL_FINALIZE=$(PNACL_BIN)/pnacl-finalize
 PNACL_FLAGS=--pnacl-driver-verbose
 
 PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
@@ -270,7 +270,7 @@ $(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
-	$(PNACL_STRIP) $^ -o $@
+	$(PNACL_FINALIZE) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
@@ -279,7 +279,7 @@ $(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.stripped.pexe: $(IT).opt.pexe
-	$(PNACL_STRIP) $^ -o $@
+	$(PNACL_FINALIZE) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
