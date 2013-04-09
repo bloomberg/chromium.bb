@@ -64,10 +64,8 @@ public:
     // Script in the page tried to allocate too much memory.
     virtual void didExhaustMemoryAvailableForScript();
 
-#if USE(V8)
     virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId);
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId);
-#endif
 
     // Returns true if we should allow the given V8 extension to be added to
     // the script context at the currently loading page and given extension group.

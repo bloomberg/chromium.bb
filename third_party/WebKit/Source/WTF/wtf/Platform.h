@@ -658,10 +658,6 @@
 #define ENABLE_GC_VALIDATION 1
 #endif
 
-#if !defined(WTF_USE_V8)
-#define WTF_USE_V8 1
-#endif
-
 #if !defined(WTF_USE_ZLIB)
 #define WTF_USE_ZLIB 1
 #endif

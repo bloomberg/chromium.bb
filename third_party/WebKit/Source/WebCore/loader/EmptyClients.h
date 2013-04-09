@@ -43,9 +43,7 @@
 #include "Page.h"
 #include "ResourceError.h"
 
-#if USE(V8)
 #include <v8.h>
-#endif
 
 /*
  This file holds empty Client stubs for use by WebCore.
@@ -360,11 +358,9 @@ public:
 
     virtual void registerForIconNotification(bool) { }
 
-#if USE(V8)
     virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) { }
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) { return false; }
-#endif
 
 #if PLATFORM(MAC)
     virtual RemoteAXObjectRef accessibilityRemoteObject() { return 0; }
