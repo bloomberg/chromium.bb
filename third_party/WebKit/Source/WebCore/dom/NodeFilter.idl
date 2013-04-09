@@ -18,10 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
 [
-    
-    CPPPureInterface,
     ImplementationLacksVTable
 ] interface NodeFilter {
     // Constants returned by acceptNode

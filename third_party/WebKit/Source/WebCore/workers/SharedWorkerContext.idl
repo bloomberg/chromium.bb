@@ -30,7 +30,6 @@
 
 [
     Conditional=SHARED_WORKERS,
-    ExtendsDOMGlobalObject,
     IsWorkerContext,
     OmitConstructor
 ] interface SharedWorkerContext : WorkerContext {

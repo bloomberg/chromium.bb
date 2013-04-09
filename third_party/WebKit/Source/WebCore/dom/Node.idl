@@ -21,7 +21,6 @@
 [
     CustomToJSObject,
     EventTarget,
-    
     DependentLifetime
 ] interface Node
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
@@ -57,15 +56,13 @@
     readonly attribute [PerWorldBindings] Node             nextSibling;
     readonly attribute [PerWorldBindings] Document         ownerDocument;
 
-    [Custom, PerWorldBindings] Node insertBefore([CustomReturn] Node newChild,
-                                                            Node refChild)
+    [Custom, PerWorldBindings] Node insertBefore(Node newChild, Node refChild)
         raises(DOMException);
-    [Custom] Node replaceChild(Node newChild,
-                                                            [CustomReturn] Node oldChild)
+    [Custom] Node replaceChild(Node newChild, Node oldChild)
         raises(DOMException);
-    [Custom, PerWorldBindings] Node removeChild([CustomReturn] Node oldChild)
+    [Custom, PerWorldBindings] Node removeChild(Node oldChild)
         raises(DOMException);
-    [Custom, PerWorldBindings] Node appendChild([CustomReturn] Node newChild)
+    [Custom, PerWorldBindings] Node appendChild(Node newChild)
         raises(DOMException);
 
     boolean            hasChildNodes();

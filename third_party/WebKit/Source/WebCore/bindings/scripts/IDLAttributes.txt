@@ -19,7 +19,6 @@
 #
 
 ActiveDOMObject
-CPPPureInterface
 CachedAttribute
 CacheAttributeForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|CallStack
@@ -45,8 +44,6 @@ CustomIndexedSetter
 CustomIsReachable
 CustomNamedGetter
 CustomNamedSetter
-CustomPutFunction
-CustomReturn
 CustomSetter
 CustomToJSObject
 Deletable
@@ -61,7 +58,6 @@ EnabledAtRuntime=*
 EnabledPerContext=*
 EnforceRange
 EventTarget
-ExtendsDOMGlobalObject
 GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
 Immutable
 ImplementationLacksVTable
@@ -81,13 +77,11 @@ NotEnumerable
 NumericIndexedGetter
 OmitConstructor
 Optional=|DefaultIsNullString|DefaultIsUndefined
-PassContext
 PassThisToCallback=*
 PerWorldBindings
 ReadOnly
 Reflect=*
 Replaceable
-ReplaceableConstructor
 ReturnNewObject
 SkipVTableValidation
 StrictTypeChecking

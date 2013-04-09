@@ -29,7 +29,6 @@
  */
 
 [
-    ExtendsDOMGlobalObject,
     IsWorkerContext,
     OmitConstructor
 ] interface DedicatedWorkerContext : WorkerContext {
