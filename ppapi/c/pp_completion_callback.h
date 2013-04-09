@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_completion_callback.idl modified Thu Mar 28 09:51:08 2013. */
+/* From pp_completion_callback.idl modified Thu Mar 28 15:25:03 2013. */
 
 #ifndef PPAPI_C_PP_COMPLETION_CALLBACK_H_
 #define PPAPI_C_PP_COMPLETION_CALLBACK_H_
@@ -92,10 +92,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
  * ways:
  *   - Required: The callback will always be invoked asynchronously on the
  *               thread where the associated PPB method was invoked. The method
- *               will always return <code>PP_OK_COMPLETIONPENDING</code> when a
- *               required callback, and the callback will be invoked later
- *               (barring system or thread shutdown; see PPB_MessageLoop for
- *               details). Required callbacks are the default.
+ *               will always return PP_OK_COMPLETIONPENDING when a required
+ *               callback, and the callback will be invoked later (barring
+ *               system or thread shutdown; see PPB_MessageLoop for details).
+ *               Required callbacks are the default.
  *
  *               NOTE: If you use a required callback on a background thread,
  *               you must have created and attached a PPB_MessageLoop.
@@ -168,16 +168,16 @@ struct PP_CompletionCallback {
  *
  * <strong>Example, creating a Required callback:</strong>
  *
- * <code>
+ * @code
  * struct PP_CompletionCallback cc = PP_MakeCompletionCallback(Foo, NULL);
- * </code>
+ * @endcode
  *
  * <strong>Example, creating an Optional callback:</strong>
  *
- * <code>
+ * @code
  * struct PP_CompletionCallback cc = PP_MakeCompletionCallback(Foo, NULL);
  * cc.flags = cc.flags | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
- * </code>
+ * @endcode
  *
  * @param[in] func A <code>PP_CompletionCallback_Func</code> that will be
  * called.

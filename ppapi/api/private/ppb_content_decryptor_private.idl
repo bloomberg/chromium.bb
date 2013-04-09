@@ -33,7 +33,7 @@ interface PPB_ContentDecryptor_Private {
    *
    * The browser must notify the application that a key is needed, and, in
    * response, the web application must direct the browser to call
-   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private<code>
+   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private</code>
    * interface.
    *
    * @param[in] key_system A <code>PP_Var</code> of type

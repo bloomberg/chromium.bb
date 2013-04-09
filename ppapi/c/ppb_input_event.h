@@ -335,11 +335,11 @@ struct PPB_InputEvent_1_0 {
    * a crack at the message.
    *
    * <strong>Example:</strong>
-   * <code>
+   * @code
    *   RequestInputEvents(instance, PP_INPUTEVENT_CLASS_MOUSE);
    *   RequestFilteringInputEvents(instance,
    *       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
-   * </code>
+   * @endcode
    *
    * @param instance The <code>PP_Instance</code> of the instance requesting
    * the given events.
@@ -376,11 +376,11 @@ struct PPB_InputEvent_1_0 {
    * can have significant overhead.
    *
    * <strong>Example:</strong>
-   * <code>
+   * @code
    *   RequestInputEvents(instance, PP_INPUTEVENT_CLASS_MOUSE);
    *   RequestFilteringInputEvents(instance,
    *       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
-   * </code>
+   * @endcode
    *
    * @return <code>PP_OK</code> if the operation succeeded,
    * <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or

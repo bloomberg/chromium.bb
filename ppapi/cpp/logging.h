@@ -20,7 +20,7 @@
 ///
 /// <strong>Example:</strong>
 ///
-/// <code>
+/// @code
 /// if (!pointer) {
 /// // Pointer wasn't valid! This shouldn't happen.
 /// PP_NOTREACHED();
@@ -28,7 +28,7 @@
 /// }
 /// // Do stuff to the pointer, since you know it's valid.
 /// pointer->DoSomething();
-/// </code>
+/// @endcode
 #define PP_NOTREACHED() assert(false)
 
 #endif  // PPAPI_CPP_LOGGING_H_

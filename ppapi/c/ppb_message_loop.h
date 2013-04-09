@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_message_loop.idl modified Thu Mar 28 11:08:46 2013. */
+/* From ppb_message_loop.idl modified Mon Apr  1 12:14:25 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
 #define PPAPI_C_PPB_MESSAGE_LOOP_H_
@@ -55,6 +55,7 @@
  *    - Call Run() with the message loop resource.
  *
  *   Your callbacks should look like this:
+ *      @code
  *      void DoMyWork(void* user_data, int32_t status) {
  *        if (status != PP_OK) {
  *          Cleanup();  // e.g. free user_data.
@@ -62,6 +63,7 @@
  *        }
  *        ... do your work...
  *      }
+ *      @endcode
  * For a C++ example, see ppapi/utility/threading/simple_thread.h
  *
  * (You can also create the message loop resource on the background thread,

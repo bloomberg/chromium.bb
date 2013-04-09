@@ -24,25 +24,25 @@ label Chrome {
  * <strong>Example usage from plugin code:</strong>
  * 
  * <strong>Setup:</strong>
- * <code>
+ * @code
  * PP_Resource context;
  * int32_t attribs[] = {PP_GRAPHICS3DATTRIB_WIDTH, 800,
  *                      PP_GRAPHICS3DATTRIB_HEIGHT, 800,
  *                      PP_GRAPHICS3DATTRIB_NONE};
  * context = g3d->Create(instance, attribs, &context);
  * inst->BindGraphics(instance, context);
- * </code>
+ * @endcode
  *
  * <strong>Present one frame:</strong>
- * <code>
+ * @code
  * gles2->Clear(context, GL_COLOR_BUFFER);
  * g3d->SwapBuffers(context);
- * </code>
+ * @endcode
  *
  * <strong>Shutdown:</strong>
- * <code>
+ * @code
  * core->ReleaseResource(context);
- * </code>
+ * @endcode
  */
 [macro="PPB_GRAPHICS_3D_INTERFACE"]
 interface PPB_Graphics3D {
@@ -170,7 +170,7 @@ interface PPB_Graphics3D {
    *
    * <strong>Example usage:</strong> To get the values for rgb bits in the
    * color buffer, this function must be called as following:
-   * <code>
+   * @code
    * int attrib_list[] = {PP_GRAPHICS3DATTRIB_RED_SIZE, 0,
    *                      PP_GRAPHICS3DATTRIB_GREEN_SIZE, 0,
    *                      PP_GRAPHICS3DATTRIB_BLUE_SIZE, 0,
@@ -179,7 +179,7 @@ interface PPB_Graphics3D {
    * int red_bits = attrib_list[1];
    * int green_bits = attrib_list[3];
    * int blue_bits = attrib_list[5];
-   * </code>
+   * @endcode
    */
   int32_t GetAttribs(
       [in] PP_Resource context,

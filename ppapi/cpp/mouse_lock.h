@@ -26,16 +26,16 @@ class Instance;
 /// composition.
 ///
 /// <strong>Example (inheritance):</strong>
-/// <code>
+/// @code
 ///   class MyInstance : public pp::Instance, public pp::MouseLock {
 ///     class MyInstance() : pp::MouseLock(this) {
 ///     }
 ///     ...
 ///   };
-/// </code>
+/// @endcode
 ///
 /// <strong>Example (composition):</strong>
-/// <code>
+/// @code
 ///   class MyMouseLock : public pp::MouseLock {
 ///     ...
 ///   };
@@ -46,7 +46,7 @@ class Instance;
 ///
 ///     MyMouseLock mouse_lock_;
 ///   };
-/// </code>
+/// @endcode
 class MouseLock {
  public:
   /// A constructor for creating a <code>MouseLock</code>.

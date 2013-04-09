@@ -250,7 +250,7 @@ class Instance {
   /// the instance on which it was invoked, with <code>message</code> being a
   /// string <code>Var</code> containing "Hello world!"
   ///
-  /// <code>
+  /// @code{.html}
   ///
   /// <body>
   ///   <object id="plugin"
@@ -260,7 +260,7 @@ class Instance {
   ///   </script>
   /// </body>
   ///
-  /// </code>
+  /// @endcode
   ///
   /// Refer to PostMessage() for sending messages to JavaScript.
   ///
@@ -343,12 +343,12 @@ class Instance {
   ///
   /// <strong>Example:</strong>
   ///
-  /// <code>
+  /// @code
   ///   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   ///   RequestFilteringInputEvents(
   ///       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
   ///
-  /// </code>
+  /// @endcode
   ///
   /// @param event_classes A combination of flags from
   /// <code>PP_InputEvent_Class</code> that identifies the classes of events
@@ -381,13 +381,13 @@ class Instance {
   ///
   /// <strong>Example:</strong>
   ///
-  /// <code>
+  /// @code
   ///
   ///   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   ///   RequestFilteringInputEvents(
   ///       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
   ///
-  /// </code>
+  /// @endcode
   ///
   /// @param event_classes A combination of flags from
   /// <code>PP_InputEvent_Class</code> that identifies the classes of events
@@ -428,7 +428,7 @@ class Instance {
   ///
   /// <strong>Example:</strong>
   ///
-  /// <code>
+  /// @code{.html}
   ///
   /// <body>
   ///   <object id="plugin"
@@ -441,15 +441,15 @@ class Instance {
   ///   </script>
   /// </body>
   ///
-  /// </code>
+  /// @endcode
   ///
   /// The instance then invokes PostMessage() as follows:
   ///
-  /// <code>
+  /// @code
   ///
   ///  PostMessage(pp::Var("Hello world!"));
   ///
-  /// </code>
+  /// @endcode
   ///
   /// The browser will pop-up an alert saying "Hello world!"
   ///

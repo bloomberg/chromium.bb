@@ -109,7 +109,7 @@ class Graphics3D : public Resource {
   ///
   /// <strong>Example:</strong>
   ///
-  /// <code>
+  /// @code
   /// int attrib_list[] = {PP_GRAPHICS3DATTRIB_RED_SIZE, 0,
   ///                      PP_GRAPHICS3DATTRIB_GREEN_SIZE, 0,
   ///                      PP_GRAPHICS3DATTRIB_BLUE_SIZE, 0,
@@ -118,7 +118,7 @@ class Graphics3D : public Resource {
   /// int red_bits = attrib_list[1];
   /// int green_bits = attrib_list[3];
   /// int blue_bits = attrib_list[5];
-  /// </code>
+  /// @endcode
   ///
   /// This example retrieves the values for rgb bits in the color buffer.
   int32_t GetAttribs(int32_t attrib_list[]) const;

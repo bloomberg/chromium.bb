@@ -37,6 +37,7 @@ label Chrome {
  *    - Call Run() with the message loop resource.
  *
  *   Your callbacks should look like this:
+ *      @code
  *      void DoMyWork(void* user_data, int32_t status) {
  *        if (status != PP_OK) {
  *          Cleanup();  // e.g. free user_data.
@@ -44,6 +45,7 @@ label Chrome {
  *        }
  *        ... do your work...
  *      }
+ *      @endcode
  * For a C++ example, see ppapi/utility/threading/simple_thread.h
  *
  * (You can also create the message loop resource on the background thread,

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Dec 10 21:43:51 2012.
+ *   modified Thu Mar 28 15:22:02 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -53,7 +53,7 @@ struct PPB_ContentDecryptor_Private_0_6 {
    *
    * The browser must notify the application that a key is needed, and, in
    * response, the web application must direct the browser to call
-   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private<code>
+   * <code>AddKey()</code> on the <code>PPP_ContentDecryptor_Private</code>
    * interface.
    *
    * @param[in] key_system A <code>PP_Var</code> of type
