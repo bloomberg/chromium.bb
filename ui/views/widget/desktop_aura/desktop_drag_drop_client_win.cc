@@ -35,15 +35,19 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   drag_operation_ = operation;
 
   drag_source_ = new ui::DragSourceWin;
-  DWORD effects;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
-             drag_source_,
-             ui::DragDropTypes::DragOperationToDropEffect(operation),
-             &effects);
+  DWORD effect;
+  HRESULT result = DoDragDrop(
+      ui::OSExchangeDataProviderWin::GetIDataObject(data),
+      drag_source_,
+      ui::DragDropTypes::DragOperationToDropEffect(operation),
+      &effect);
 
   drag_drop_in_progress_ = false;
 
-  return drag_operation_;
+  if (result != DRAGDROP_S_DROP)
+    effect = DROPEFFECT_NONE;
+
+  return ui::DragDropTypes::DropEffectToDragOperation(effect);
 }
 
 void DesktopDragDropClientWin::DragUpdate(aura::Window* target,
