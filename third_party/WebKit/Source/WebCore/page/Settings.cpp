@@ -152,7 +152,6 @@ Settings::Settings(Page* page)
 #endif
     SETTINGS_INITIALIZER_LIST
     , m_isJavaEnabled(false)
-    , m_isJavaEnabledForLocalFiles(true)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
     , m_areImagesEnabled(true)
@@ -360,11 +359,6 @@ void Settings::setScriptEnabled(bool isScriptEnabled)
 void Settings::setJavaEnabled(bool isJavaEnabled)
 {
     m_isJavaEnabled = isJavaEnabled;
-}
-
-void Settings::setJavaEnabledForLocalFiles(bool isJavaEnabledForLocalFiles)
-{
-    m_isJavaEnabledForLocalFiles = isJavaEnabledForLocalFiles;
 }
 
 void Settings::setImagesEnabled(bool areImagesEnabled)

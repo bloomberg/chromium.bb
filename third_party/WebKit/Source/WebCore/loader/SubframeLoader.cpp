@@ -114,8 +114,6 @@ bool SubframeLoader::pluginIsLoadable(HTMLPlugInImageElement* pluginElement, con
     if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType)) {
         if (!settings->isJavaEnabled())
             return false;
-        if (document() && document()->securityOrigin()->isLocal() && !settings->isJavaEnabledForLocalFiles())
-            return false;
     }
 
     if (document()) {

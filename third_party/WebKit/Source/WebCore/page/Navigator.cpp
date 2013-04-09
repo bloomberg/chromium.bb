@@ -128,8 +128,6 @@ bool Navigator::javaEnabled() const
 
     if (!m_frame->settings()->isJavaEnabled())
         return false;
-    if (m_frame->document()->securityOrigin()->isLocal() && !m_frame->settings()->isJavaEnabledForLocalFiles())
-        return false;
 
     return true;
 }
