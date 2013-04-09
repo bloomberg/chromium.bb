@@ -1258,6 +1258,8 @@
         'browser/policy/cloud/device_management_service.h',
         'browser/policy/cloud/enterprise_metrics.cc',
         'browser/policy/cloud/enterprise_metrics.h',
+        'browser/policy/cloud/external_policy_data_updater.cc',
+        'browser/policy/cloud/external_policy_data_updater.h',
         'browser/policy/cloud/message_util.cc',
         'browser/policy/cloud/message_util.h',
         'browser/policy/cloud/rate_limiter.cc',

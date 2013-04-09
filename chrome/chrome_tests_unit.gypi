@@ -943,6 +943,7 @@
         'browser/policy/cloud/component_cloud_policy_store_unittest.cc',
         'browser/policy/cloud/component_cloud_policy_updater_unittest.cc',
         'browser/policy/cloud/device_management_service_unittest.cc',
+        'browser/policy/cloud/external_policy_data_updater_unittest.cc',
         'browser/policy/cloud/mock_device_management_service.cc',
         'browser/policy/cloud/mock_device_management_service.h',
         'browser/policy/cloud/mock_user_cloud_policy_store.cc',
