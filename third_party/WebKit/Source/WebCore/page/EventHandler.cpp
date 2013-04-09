@@ -1513,42 +1513,6 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     return swallowEvent;
 }
 
-// This method only exists for platforms that don't know how to deliver 
-bool EventHandler::handleMouseDoubleClickEvent(const PlatformMouseEvent& mouseEvent)
-{
-    RefPtr<FrameView> protector(m_frame->view());
-
-    m_frame->selection()->setCaretBlinkingSuspended(false);
-
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
-
-    // We get this instead of a second mouse-up 
-    m_mousePressed = false;
-    setLastKnownMousePosition(mouseEvent);
-
-    HitTestRequest request(HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
-    MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
-    Frame* subframe = subframeForHitTestResult(mev);
-    if (m_eventHandlerWillResetCapturingMouseEventsNode)
-        m_capturingMouseEventsNode = 0;
-    if (subframe && passMousePressEventToSubframe(mev, subframe))
-        return true;
-
-    m_clickCount = mouseEvent.clickCount();
-    bool swallowMouseUpEvent = !dispatchMouseEvent(eventNames().mouseupEvent, mev.targetNode(), true, m_clickCount, mouseEvent, false);
-
-    bool swallowClickEvent = mouseEvent.button() != RightButton && mev.targetNode() == m_clickNode && !dispatchMouseEvent(eventNames().clickEvent, mev.targetNode(), true, m_clickCount, mouseEvent, true);
-
-    if (m_lastScrollbarUnderMouse)
-        swallowMouseUpEvent = m_lastScrollbarUnderMouse->mouseUp(mouseEvent);
-
-    bool swallowMouseReleaseEvent = !swallowMouseUpEvent && handleMouseReleaseEvent(mev);
-
-    invalidateClick();
-
-    return swallowMouseUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
-}
-
 static RenderLayer* layerForNode(Node* node)
 {
     if (!node)

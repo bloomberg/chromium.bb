@@ -236,8 +236,6 @@ private:
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
 
-    bool handleMouseDoubleClickEvent(const PlatformMouseEvent&);
-
     bool handleMousePressEvent(const MouseEventWithHitTestResults&);
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
