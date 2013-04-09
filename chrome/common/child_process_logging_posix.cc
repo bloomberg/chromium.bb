@@ -66,7 +66,7 @@ void SetActiveURL(const GURL& url) {
 
 void SetClientId(const std::string& client_id) {
   std::string str(client_id);
-  ReplaceSubstringsAfterOffset(&str, 0, "-", "");
+  ReplaceSubstringsAfterOffset(&str, 0, "-", std::string());
 
   if (str.empty())
     return;

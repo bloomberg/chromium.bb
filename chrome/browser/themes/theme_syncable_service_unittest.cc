@@ -104,7 +104,7 @@ class FakeThemeService : public ThemeService {
     if (theme_extension_)
       return theme_extension_->id();
     else
-      return "";
+      return std::string();
   }
 
   const extensions::Extension* theme_extension() const {

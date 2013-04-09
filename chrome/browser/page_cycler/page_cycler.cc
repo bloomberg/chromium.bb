@@ -192,10 +192,12 @@ void PageCycler::PrepareResultsOnBackgroundThread() {
     base::ProcessId pid = base::GetCurrentProcId();
 #endif  // OS_WIN
     ChromeProcessList chrome_processes(GetRunningChromeProcesses(pid));
-    output += perf_test::MemoryUsageInfoToString("", chrome_processes, pid);
-    output += perf_test::IOPerfInfoToString("", chrome_processes, pid);
-    output += perf_test::SystemCommitChargeToString("",
-              base::GetSystemCommitCharge(), false);
+    output += perf_test::MemoryUsageInfoToString(
+        std::string(), chrome_processes, pid);
+    output +=
+        perf_test::IOPerfInfoToString(std::string(), chrome_processes, pid);
+    output += perf_test::SystemCommitChargeToString(
+        std::string(), base::GetSystemCommitCharge(), false);
     output.append("Pages: [" + urls_string_ + "]\n");
     output.append("*RESULT times: t_ref= [" + timings_string_ + "] ms\n");
   }

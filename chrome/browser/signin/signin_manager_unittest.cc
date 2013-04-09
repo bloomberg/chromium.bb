@@ -308,7 +308,8 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignIn("user@gmail.com", "password", "", "");
+  manager_->StartSignIn(
+      "user@gmail.com", "password", std::string(), std::string());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   SimulateValidResponseClientLogin(true);
@@ -340,7 +341,7 @@ TEST_F(SigninManagerTest, Prohibited) {
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername(""));
+  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
 }
 
 TEST_F(SigninManagerTest, TestAlternateWildcard) {
@@ -353,7 +354,7 @@ TEST_F(SigninManagerTest, TestAlternateWildcard) {
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername(""));
+  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
 }
 
 TEST_F(SigninManagerTest, ProhibitedAtStartup) {
@@ -421,7 +422,7 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordValidCookie) {
         net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, will verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", "");
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
 
   WaitUntilUIDone();
 
@@ -434,7 +435,7 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordNoValidCookie) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, will verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", "");
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
 
   WaitUntilUIDone();
 
@@ -458,7 +459,7 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordInValidCookie) {
         net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, must verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", "");
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
 
   WaitUntilUIDone();
 
@@ -471,7 +472,7 @@ TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   SimulateValidResponseClientLogin(false);
@@ -482,7 +483,7 @@ TEST_F(SigninManagerTest, ClearTransientSigninData) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   SimulateValidResponseClientLogin(false);
@@ -513,7 +514,7 @@ TEST_F(SigninManagerTest, ClearTransientSigninData) {
 
 TEST_F(SigninManagerTest, SignOutClientLogin) {
   manager_->Initialize(profile_.get());
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   SimulateValidResponseClientLogin(false);
   manager_->OnClientLoginSuccess(credentials_);
 
@@ -529,7 +530,7 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
 
 TEST_F(SigninManagerTest, SignInFailureClientLogin) {
   manager_->Initialize(profile_.get());
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
   manager_->OnClientLoginFailure(error);
 
@@ -547,7 +548,7 @@ TEST_F(SigninManagerTest, SignInFailureClientLogin) {
 
 TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
   manager_->Initialize(profile_.get());
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
   manager_->OnClientLoginFailure(error);
 
@@ -566,7 +567,7 @@ TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
 
 TEST_F(SigninManagerTest, ProvideSecondFactorFailure) {
   manager_->Initialize(profile_.get());
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   GoogleServiceAuthError error1(GoogleServiceAuthError::TWO_FACTOR);
   manager_->OnClientLoginFailure(error1);
 
@@ -596,7 +597,7 @@ TEST_F(SigninManagerTest, ProvideSecondFactorFailure) {
 
 TEST_F(SigninManagerTest, SignOutMidConnect) {
   manager_->Initialize(profile_.get());
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("username", "password", std::string(), std::string());
   manager_->SignOut();
   EXPECT_EQ(0U, google_login_success_.size());
   EXPECT_EQ(0U, google_login_failure_.size());

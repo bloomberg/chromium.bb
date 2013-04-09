@@ -2253,7 +2253,7 @@ TEST_F(SyncableClientTagTest, TestClientTagClear) {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
     MutableEntry me(&trans, GET_BY_CLIENT_TAG, test_tag_);
     EXPECT_TRUE(me.good());
-    me.Put(UNIQUE_CLIENT_TAG, "");
+    me.Put(UNIQUE_CLIENT_TAG, std::string());
   }
   {
     ReadTransaction trans(FROM_HERE, dir_.get());

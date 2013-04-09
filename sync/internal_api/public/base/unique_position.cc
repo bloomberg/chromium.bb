@@ -61,7 +61,7 @@ UniquePosition UniquePosition::FromInt64(
 UniquePosition UniquePosition::InitialPosition(
     const std::string& suffix) {
   DCHECK(IsValidSuffix(suffix));
-  return UniquePosition("", suffix);
+  return UniquePosition(std::string(), suffix);
 }
 
 // static.
@@ -175,7 +175,7 @@ std::string UniquePosition::FindSmallerWithSuffix(
 
   if (suffix_zeroes > ref_zeroes) {
     // Implies suffix < ref.
-    return "";
+    return std::string();
   }
 
   if (suffix.substr(suffix_zeroes) < reference.substr(ref_zeroes)) {
@@ -210,7 +210,7 @@ std::string UniquePosition::FindGreaterWithSuffix(
 
   if (suffix_FFs > ref_FFs) {
     // Implies suffix > reference.
-    return "";
+    return std::string();
   }
 
   if (suffix.substr(suffix_FFs) > reference.substr(ref_FFs)) {
@@ -244,7 +244,7 @@ std::string UniquePosition::FindBetweenWithSuffix(
 
   // Sometimes our suffix puts us where we want to be.
   if (before < suffix && suffix < after) {
-    return "";
+    return std::string();
   }
 
   size_t i = 0;

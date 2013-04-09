@@ -73,7 +73,7 @@ TEST_F(PushClientChannelTest, EncodeDecode) {
 TEST_F(PushClientChannelTest, EncodeDecodeNoContext) {
   const notifier::Notification& notification =
       PushClientChannel::EncodeMessageForTest(
-          kMessage, "", kSchedulingHash);
+          kMessage, std::string(), kSchedulingHash);
   std::string message;
   std::string service_context = kServiceContext;
   int64 scheduling_hash = kSchedulingHash + 1;

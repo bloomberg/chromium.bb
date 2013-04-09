@@ -282,8 +282,8 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 }
 
 void P2PPortAllocatorSession::AddConfig() {
-  cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(stun_server_address_, "", "");
+  cricket::PortConfiguration* config = new cricket::PortConfiguration(
+      stun_server_address_, std::string(), std::string());
 
   if (allocator_->config_.legacy_relay) {
     // Passing empty credentials for legacy google relay.

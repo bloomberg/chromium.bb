@@ -124,59 +124,59 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Test the support of LANGUAGE environment variable.
   base::i18n::SetICUDefaultLocale("en-US");
   env->SetVar("LANGUAGE", "xx:fr_CA");
-  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
 
   env->SetVar("LANGUAGE", "xx:yy:en_gb.utf-8@quot");
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 
   env->SetVar("LANGUAGE", "xx:zh-hk");
-  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
 
   // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
   // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
   // then just fallback to the default language, which is en-US for us.
   base::i18n::SetICUDefaultLocale("fr-FR");
   env->SetVar("LANGUAGE", "xx:yy");
-  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
 
   env->SetVar("LANGUAGE", "/fr:zh_CN");
-  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
 
   // Test prioritization of the different environment variables.
   env->SetVar("LANGUAGE", "fr");
   env->SetVar("LC_ALL", "es");
   env->SetVar("LC_MESSAGES", "he");
   env->SetVar("LANG", "nb");
-  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
   env->UnSetVar("LANGUAGE");
-  EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
   env->UnSetVar("LC_ALL");
-  EXPECT_EQ("he", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("he", l10n_util::GetApplicationLocale(std::string()));
   env->UnSetVar("LC_MESSAGES");
-  EXPECT_EQ("nb", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("nb", l10n_util::GetApplicationLocale(std::string()));
   env->UnSetVar("LANG");
 
   SetDefaultLocaleForTest("ca", env.get());
-  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("ca-ES", env.get());
-  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("ca", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("ca@valencia", env.get());
-  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("ca_ES@valencia", env.get());
-  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("ca_ES.UTF8@valencia", env.get());
-  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
 #endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetDefaultLocaleForTest("en-US", env.get());
-  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("xx", env.get());
-  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
 
 #if defined(OS_CHROMEOS)
   // ChromeOS honors preferred locale first in GetApplicationLocale(),
@@ -200,43 +200,43 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-ZA"));
 #else  // !defined(OS_CHROMEOS)
   SetDefaultLocaleForTest("en-GB", env.get());
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("fr-CA", env.get());
-  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("es-MX", env.get());
-  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("es-AR", env.get());
-  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("es-ES", env.get());
-  EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("es", env.get());
-  EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("zh-HK", env.get());
-  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("zh-MO", env.get());
-  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("zh-SG", env.get());
-  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("en-CA", env.get());
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("en-AU", env.get());
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("en-NZ", env.get());
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 
   SetDefaultLocaleForTest("en-ZA", env.get());
-  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -437,7 +437,7 @@ TEST_F(L10nUtilTest, IsValidLocaleSyntax) {
       "sr_Latn_RS_REVISED@currency=USD"));
 
   // Test invalid locales.
-  EXPECT_FALSE(l10n_util::IsValidLocaleSyntax(""));
+  EXPECT_FALSE(l10n_util::IsValidLocaleSyntax(std::string()));
   EXPECT_FALSE(l10n_util::IsValidLocaleSyntax("x"));
   EXPECT_FALSE(l10n_util::IsValidLocaleSyntax("12"));
   EXPECT_FALSE(l10n_util::IsValidLocaleSyntax("456"));

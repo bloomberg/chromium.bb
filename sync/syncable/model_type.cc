@@ -523,7 +523,7 @@ base::StringValue* ModelTypeToValue(ModelType model_type) {
     return new base::StringValue("Unspecified");
   }
   NOTREACHED();
-  return new base::StringValue("");
+  return new base::StringValue(std::string());
 }
 
 ModelType ModelTypeFromValue(const base::Value& value) {

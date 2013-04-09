@@ -24,7 +24,7 @@ TEST_F(StringInfoTest, ValidStringInfo) {
   };
   for (size_t i = 0; i < arraysize(op); ++i) {
     {
-      StringInfo info(op[i], "");
+      StringInfo info(op[i], std::string());
       EXPECT_TRUE(info.IsValid());
     }
     {

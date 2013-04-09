@@ -270,7 +270,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
         continue;
       }
 
-      ReplaceSubstringsAfterOffset(&mac, 0U, ":", "");
+      ReplaceSubstringsAfterOffset(&mac, 0U, ":", std::string());
       std::vector<uint8> mac_bytes;
       if (!base::HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
         LOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()

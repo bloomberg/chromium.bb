@@ -175,7 +175,7 @@ std::string WriterTagToString(WriterTag writer_tag) {
     ENUM_CASE(SYNCAPI);
   };
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 #undef ENUM_CASE

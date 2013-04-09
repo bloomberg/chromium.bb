@@ -272,7 +272,7 @@ TEST_F(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse) {
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
   {  // No body.
     TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString("");
+    url_fetcher.SetResponseString(std::string());
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
     flow_->ProcessApiCallSuccess(&url_fetcher);

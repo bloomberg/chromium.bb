@@ -85,7 +85,7 @@ void TestFileRef::RunTests(const std::string& filter) {
 std::string TestFileRef::TestCreate() {
   std::vector<std::string> invalid_paths;
   invalid_paths.push_back("invalid_path");  // no '/' at the first character
-  invalid_paths.push_back("");  // empty path
+  invalid_paths.push_back(std::string());   // empty path
   // The following are directory traversal checks
   invalid_paths.push_back("..");
   invalid_paths.push_back("/../invalid_path");

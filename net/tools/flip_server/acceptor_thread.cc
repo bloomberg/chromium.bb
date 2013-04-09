@@ -105,7 +105,9 @@ void SMAcceptorThread::HandleConnection(int server_fd,
                                       NULL,
                                       &epoll_server_,
                                       server_fd,
-                                      "", "", remote_ip,
+                                      std::string(),
+                                      std::string(),
+                                      remote_ip,
                                       use_ssl_);
   if (server_connection->initialized())
     active_server_connections_.push_back(server_connection);

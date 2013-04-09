@@ -9,7 +9,7 @@
 namespace net {
 
 std::string DhcpProxyScriptFetcher::GetFetcherName() const {
-  return "";
+  return std::string();
 }
 
 DhcpProxyScriptFetcher::DhcpProxyScriptFetcher() {}

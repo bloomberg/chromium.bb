@@ -162,11 +162,19 @@ bool KeyCodeFromShorthandKey(char16 key_utf16,
 namespace webdriver {
 
 WebKeyEvent CreateKeyDownEvent(ui::KeyboardCode key_code, int modifiers) {
-  return WebKeyEvent(automation::kRawKeyDownType, key_code, "", "", modifiers);
+  return WebKeyEvent(automation::kRawKeyDownType,
+                     key_code,
+                     std::string(),
+                     std::string(),
+                     modifiers);
 }
 
 WebKeyEvent CreateKeyUpEvent(ui::KeyboardCode key_code, int modifiers) {
-  return WebKeyEvent(automation::kKeyUpType, key_code, "", "", modifiers);
+  return WebKeyEvent(automation::kKeyUpType,
+                     key_code,
+                     std::string(),
+                     std::string(),
+                     modifiers);
 }
 
 WebKeyEvent CreateCharEvent(const std::string& unmodified_text,

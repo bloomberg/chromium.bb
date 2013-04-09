@@ -44,7 +44,7 @@ class ChromeLoggingTest : public testing::Test {
 
 // Tests the log file name getter without an environment variable.
 TEST_F(ChromeLoggingTest, LogFileName) {
-  SaveEnvironmentVariable("");
+  SaveEnvironmentVariable(std::string());
 
   base::FilePath filename = logging::GetLogFileName();
   ASSERT_NE(base::FilePath::StringType::npos,

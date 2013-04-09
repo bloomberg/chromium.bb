@@ -461,12 +461,24 @@ CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
     CertVerifier* /* cert_verifier */)
     : HttpProxyClientSocketPool(0, 0, NULL, host_resolver, NULL, NULL, NULL) {}
 
-template<>
+template <>
 CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
     HostResolver* host_resolver,
     CertVerifier* cert_verifier)
-    : SSLClientSocketPool(0, 0, NULL, host_resolver, cert_verifier, NULL,
-                          NULL, "", NULL, NULL, NULL, NULL, NULL, NULL) {}
+    : SSLClientSocketPool(0,
+                          0,
+                          NULL,
+                          host_resolver,
+                          cert_verifier,
+                          NULL,
+                          NULL,
+                          std::string(),
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL) {}
 
 //-----------------------------------------------------------------------------
 
@@ -8851,7 +8863,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   SSLClientSocketContext context;
   context.cert_verifier = session_deps.cert_verifier.get();
   ssl_connection->set_socket(session_deps.socket_factory->CreateSSLClientSocket(
-      connection.release(), HostPortPair("" , 443), ssl_config, context));
+      connection.release(),
+      HostPortPair(std::string(), 443),
+      ssl_config,
+      context));
   EXPECT_EQ(ERR_IO_PENDING,
             ssl_connection->socket()->Connect(callback.callback()));
   EXPECT_EQ(OK, callback.WaitForResult());

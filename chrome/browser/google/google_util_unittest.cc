@@ -53,7 +53,7 @@ TEST(GoogleUtilTest, GoodHomePagesSecure) {
 }
 
 TEST(GoogleUtilTest, BadHomePages) {
-  EXPECT_FALSE(IsGoogleHomePageUrl(""));
+  EXPECT_FALSE(IsGoogleHomePageUrl(std::string()));
 
   // If specified, only the "www" subdomain is OK.
   EXPECT_FALSE(IsGoogleHomePageUrl("http://maps.google.com"));
@@ -237,7 +237,7 @@ TEST(GoogleUtilTest, BadSearches) {
       "http://www.google.com/search/nogood?q=something"));
   EXPECT_FALSE(IsGoogleSearchUrl(
       "http://www.google.com/webhp/nogood#q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(""));
+  EXPECT_FALSE(IsGoogleSearchUrl(std::string()));
 
   // Case sensitive paths.
   EXPECT_FALSE(IsGoogleSearchUrl(

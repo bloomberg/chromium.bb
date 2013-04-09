@@ -125,7 +125,8 @@ void GetDownloadFilePath(
   base::FilePath file =
       directory.AppendASCII(id + "_" + random_number + ".crx");
 
-  int uniquifier = file_util::GetUniquePathNumber(file, FILE_PATH_LITERAL(""));
+  int uniquifier =
+      file_util::GetUniquePathNumber(file, FILE_PATH_LITERAL(std::string()));
   if (uniquifier > 0) {
     file = file.InsertBeforeExtensionASCII(
         base::StringPrintf(" (%d)", uniquifier));

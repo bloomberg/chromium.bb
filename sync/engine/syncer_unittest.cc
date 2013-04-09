@@ -1641,15 +1641,15 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
 
 TEST_F(SyncerTest, UpdateWithZeroLengthName) {
   // One illegal update
-  mock_server_->AddUpdateDirectory(1, 0, "", 1, 10,
-                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdateDirectory(
+      1, 0, std::string(), 1, 10, foreign_cache_guid(), "-1");
   // And one legal one that we're going to delete.
   mock_server_->AddUpdateDirectory(2, 0, "FOO", 1, 10,
                                    foreign_cache_guid(), "-2");
   SyncShareNudge();
   // Delete the legal one. The new update has a null name.
-  mock_server_->AddUpdateDirectory(2, 0, "", 2, 20,
-                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdateDirectory(
+      2, 0, std::string(), 2, 20, foreign_cache_guid(), "-2");
   mock_server_->SetLastUpdateDeleted();
   SyncShareNudge();
 }
@@ -4044,9 +4044,11 @@ TEST_F(SyncerTest, UniqueServerTagUpdates) {
   }
 
   // Now download some tagged items as updates.
-  mock_server_->AddUpdateDirectory(1, 0, "update1", 1, 10, "", "");
+  mock_server_->AddUpdateDirectory(
+      1, 0, "update1", 1, 10, std::string(), std::string());
   mock_server_->SetLastUpdateServerTag("alpha");
-  mock_server_->AddUpdateDirectory(2, 0, "update2", 2, 20, "", "");
+  mock_server_->AddUpdateDirectory(
+      2, 0, "update2", 2, 20, std::string(), std::string());
   mock_server_->SetLastUpdateServerTag("bob");
   SyncShareNudge();
 
@@ -4252,7 +4254,7 @@ TEST_F(SyncerTest, GetKeyEmpty) {
     EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
 
-  mock_server_->SetKeystoreKey("");
+  mock_server_->SetKeystoreKey(std::string());
   SyncShareConfigure();
 
   EXPECT_NE(session_->status_controller().last_get_key_result(), SYNCER_OK);

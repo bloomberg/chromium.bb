@@ -1826,7 +1826,7 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
         "max stream ID";
 
     SpdyHeaderBlock headers;
-    headers[""] = "foo";
+    headers[std::string()] = "foo";
     headers["foo"] = "bar";
 
     const unsigned char kV2FrameData[] = {
@@ -2103,7 +2103,7 @@ TEST_P(SpdyFramerTest, CreateSynReplyUncompressed) {
         "SYN_REPLY frame with a 0-length header name, FIN, max stream ID";
 
     SpdyHeaderBlock headers;
-    headers[""] = "foo";
+    headers[std::string()] = "foo";
     headers["foo"] = "bar";
 
     const unsigned char kV2FrameData[] = {
@@ -2619,7 +2619,7 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
         "HEADERS frame with a 0-length header name, FIN, max stream ID";
 
     SpdyHeaderBlock headers;
-    headers[""] = "foo";
+    headers[std::string()] = "foo";
     headers["foo"] = "bar";
 
     const unsigned char kV2FrameData[] = {

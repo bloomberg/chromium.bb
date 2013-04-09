@@ -172,8 +172,10 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   // because the connected state may change while this tab is open.  Having a
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
-  if (OneClickSigninHelper::CanOffer(
-          web_contents, OneClickSigninHelper::CAN_OFFER_FOR_ALL, "", NULL)) {
+  if (OneClickSigninHelper::CanOffer(web_contents,
+                                     OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+                                     std::string(),
+                                     NULL)) {
     OneClickSigninHelper::CreateForWebContents(web_contents);
   }
 #endif

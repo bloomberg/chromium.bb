@@ -78,7 +78,7 @@ void PepperDeviceEnumerationEventHandler::OnDeviceOpened(
 }
 
 void PepperDeviceEnumerationEventHandler::OnDeviceOpenFailed(int request_id) {
-  NotifyDeviceOpened(request_id, false, "");
+  NotifyDeviceOpened(request_id, false, std::string());
 }
 
 // static

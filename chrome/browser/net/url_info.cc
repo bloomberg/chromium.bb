@@ -361,7 +361,7 @@ std::string UrlInfo::GetAsciiMotivation() const {
       return RemoveJs(referring_url_.spec());
 
     default:
-      return "";
+      return std::string();
   }
 }
 

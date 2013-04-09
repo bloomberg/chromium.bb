@@ -305,8 +305,8 @@ void RecordDownloadContentDisposition(
     const std::string& content_disposition_string) {
   if (content_disposition_string.empty())
     return;
-  net::HttpContentDisposition content_disposition(
-      content_disposition_string, "");
+  net::HttpContentDisposition content_disposition(content_disposition_string,
+                                                  std::string());
   int result = content_disposition.parse_result_flags();
 
   bool is_valid = !content_disposition.filename().empty();

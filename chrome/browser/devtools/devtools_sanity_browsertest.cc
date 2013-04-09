@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
-  RunTest("waitForTestResultsInConsole", "");
+  RunTest("waitForTestResultsInConsole", std::string());
 }
 
 // Tests that chrome.devtools extension can communicate with background page
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestDevToolsExtensionMessaging) {
   LoadExtension("devtools_messaging");
-  RunTest("waitForTestResultsInConsole", "");
+  RunTest("waitForTestResultsInConsole", std::string());
 }
 
 // Tests that chrome.experimental.devtools extension is correctly exposed
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
                        TestDevToolsExperimentalExtensionAPI) {
   LoadExtension("devtools_experimental");
-  RunTest("waitForTestResultsInConsole", "");
+  RunTest("waitForTestResultsInConsole", std::string());
 }
 
 // Tests that a content script is in the scripts list.
@@ -478,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        MAYBE_TestRendererProcessNativeMemorySize) {
-  RunTest("testRendererProcessNativeMemorySize", "");
+  RunTest("testRendererProcessNativeMemorySize", std::string());
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.

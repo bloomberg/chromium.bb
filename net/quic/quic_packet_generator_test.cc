@@ -120,7 +120,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   }
 
   QuicGoAwayFrame* CreateGoAwayFrame() {
-    return new QuicGoAwayFrame(QUIC_NO_ERROR, 1, "");
+    return new QuicGoAwayFrame(QUIC_NO_ERROR, 1, std::string());
   }
 
   void CheckPacketContains(const PacketContents& contents,

@@ -52,8 +52,11 @@ Status AutomationExtension::GetWindowInfo(int* x,
                                           int* height) {
   base::ListValue args;
   scoped_ptr<base::Value> result;
-  Status status = web_view_->CallAsyncFunction(
-      "", "getWindowInfo", args, base::TimeDelta::FromSeconds(10), &result);
+  Status status = web_view_->CallAsyncFunction(std::string(),
+                                               "getWindowInfo",
+                                               args,
+                                               base::TimeDelta::FromSeconds(10),
+                                               &result);
   if (status.IsError())
     return status;
 
@@ -78,6 +81,9 @@ Status AutomationExtension::UpdateWindow(
   base::ListValue args;
   args.Append(update_info.DeepCopy());
   scoped_ptr<base::Value> result;
-  return web_view_->CallAsyncFunction(
-      "", "updateWindow", args, base::TimeDelta::FromSeconds(10), &result);
+  return web_view_->CallAsyncFunction(std::string(),
+                                      "updateWindow",
+                                      args,
+                                      base::TimeDelta::FromSeconds(10),
+                                      &result);
 }

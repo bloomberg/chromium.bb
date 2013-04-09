@@ -46,7 +46,7 @@ TEST_F(NumberInfoTest, ValidFloatInfo) {
     "-2.14",
   };
   for (size_t i = 0; i < arraysize(value); ++i) {
-    FloatInfo info("=", value[i], "");
+    FloatInfo info("=", value[i], std::string());
     EXPECT_TRUE(info.IsValid());
   }
 }
@@ -60,11 +60,11 @@ TEST_F(NumberInfoTest, InvalidFloatInfo) {
     ">=",
   };
   for (size_t i = 0; i < arraysize(op); ++i) {
-    FloatInfo info(op[i], "", "");
+    FloatInfo info(op[i], std::string(), std::string());
     EXPECT_FALSE(info.IsValid());
   }
   {
-    FloatInfo info("between", "3.14", "");
+    FloatInfo info("between", "3.14", std::string());
     EXPECT_FALSE(info.IsValid());
   }
   const std::string value[] = {
@@ -75,33 +75,33 @@ TEST_F(NumberInfoTest, InvalidFloatInfo) {
     "- 2.14",
   };
   for (size_t i = 0; i < arraysize(value); ++i) {
-    FloatInfo info("=", value[i], "");
+    FloatInfo info("=", value[i], std::string());
     EXPECT_FALSE(info.IsValid());
   }
 }
 
 TEST_F(NumberInfoTest, FloatComparison) {
   {
-    FloatInfo info("=", "3.14", "");
+    FloatInfo info("=", "3.14", std::string());
     EXPECT_TRUE(info.Contains(3.14f));
     EXPECT_TRUE(info.Contains(3.1400f));
     EXPECT_FALSE(info.Contains(3.1f));
     EXPECT_FALSE(info.Contains(3));
   }
   {
-    FloatInfo info(">", "3.14", "");
+    FloatInfo info(">", "3.14", std::string());
     EXPECT_FALSE(info.Contains(3.14f));
     EXPECT_TRUE(info.Contains(3.141f));
     EXPECT_FALSE(info.Contains(3.1f));
   }
   {
-    FloatInfo info("<=", "3.14", "");
+    FloatInfo info("<=", "3.14", std::string());
     EXPECT_TRUE(info.Contains(3.14f));
     EXPECT_FALSE(info.Contains(3.141f));
     EXPECT_TRUE(info.Contains(3.1f));
   }
   {
-    FloatInfo info("any", "", "");
+    FloatInfo info("any", std::string(), std::string());
     EXPECT_TRUE(info.Contains(3.14f));
   }
   {
@@ -140,7 +140,7 @@ TEST_F(NumberInfoTest, ValidIntInfo) {
     "-12",
   };
   for (size_t i = 0; i < arraysize(value); ++i) {
-    IntInfo info("=", value[i], "");
+    IntInfo info("=", value[i], std::string());
     EXPECT_TRUE(info.IsValid());
   }
 }
@@ -154,11 +154,11 @@ TEST_F(NumberInfoTest, InvalidIntInfo) {
     ">=",
   };
   for (size_t i = 0; i < arraysize(op); ++i) {
-    IntInfo info(op[i], "", "");
+    IntInfo info(op[i], std::string(), std::string());
     EXPECT_FALSE(info.IsValid());
   }
   {
-    IntInfo info("between", "3", "");
+    IntInfo info("between", "3", std::string());
     EXPECT_FALSE(info.IsValid());
   }
   const std::string value[] = {
@@ -169,31 +169,31 @@ TEST_F(NumberInfoTest, InvalidIntInfo) {
     "3.14"
   };
   for (size_t i = 0; i < arraysize(value); ++i) {
-    IntInfo info("=", value[i], "");
+    IntInfo info("=", value[i], std::string());
     EXPECT_FALSE(info.IsValid());
   }
 }
 
 TEST_F(NumberInfoTest, IntComparison) {
   {
-    IntInfo info("=", "3", "");
+    IntInfo info("=", "3", std::string());
     EXPECT_TRUE(info.Contains(3));
     EXPECT_FALSE(info.Contains(4));
   }
   {
-    IntInfo info(">", "3", "");
+    IntInfo info(">", "3", std::string());
     EXPECT_FALSE(info.Contains(2));
     EXPECT_FALSE(info.Contains(3));
     EXPECT_TRUE(info.Contains(4));
   }
   {
-    IntInfo info("<=", "3", "");
+    IntInfo info("<=", "3", std::string());
     EXPECT_TRUE(info.Contains(2));
     EXPECT_TRUE(info.Contains(3));
     EXPECT_FALSE(info.Contains(4));
   }
   {
-    IntInfo info("any", "", "");
+    IntInfo info("any", std::string(), std::string());
     EXPECT_TRUE(info.Contains(3));
   }
   {

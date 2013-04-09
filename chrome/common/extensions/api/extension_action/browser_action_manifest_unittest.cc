@@ -100,15 +100,13 @@ TEST_F(BrowserActionManifestTest,
 TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_InvalidDefaultIcon) {
   scoped_ptr<DictionaryValue> manifest_value = DictionaryBuilder()
-      .Set("name", "Invalid default icon")
-      .Set("version", "1.0.0")
+      .Set("name", "Invalid default icon").Set("version", "1.0.0")
       .Set("manifest_version", 2)
-      .Set("browser_action", DictionaryBuilder()
-          .Set("default_icon", DictionaryBuilder()
-              .Set("19", "")  // Invalid value.
-              .Set("24", "icon24.png")
-              .Set("38", "icon38.png")))
-     .Build();
+      .Set("browser_action",
+           DictionaryBuilder().Set(
+               "default_icon",
+               DictionaryBuilder().Set("19", std::string())  // Invalid value.
+                   .Set("24", "icon24.png").Set("38", "icon38.png"))).Build();
 
   string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");

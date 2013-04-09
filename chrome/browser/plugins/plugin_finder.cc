@@ -292,9 +292,11 @@ scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
   std::string identifier = GetIdentifier(plugin);
   PluginMetadata* metadata = new PluginMetadata(identifier,
                                                 GetGroupName(plugin),
-                                                false, GURL(), GURL(),
+                                                false,
+                                                GURL(),
+                                                GURL(),
                                                 plugin.name,
-                                                "");
+                                                std::string());
   for (size_t i = 0; i < plugin.mime_types.size(); ++i)
     metadata->AddMatchingMimeType(plugin.mime_types[i].mime_type);
 

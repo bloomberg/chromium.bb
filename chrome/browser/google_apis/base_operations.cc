@@ -186,7 +186,7 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
         request_type == URLFetcher::PATCH) {
       // Set empty upload content-type and upload content, so that
       // the request will have no "Content-type: " header and no content.
-      url_fetcher_->SetUploadData("", "");
+      url_fetcher_->SetUploadData(std::string(), std::string());
     }
   }
 

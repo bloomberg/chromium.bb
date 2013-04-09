@@ -26,7 +26,7 @@ std::string GetDefaultPort(const std::string& scheme) {
     return "80";
   if (scheme == chrome::kHttpsScheme)
     return "443";
-  return "";
+  return std::string();
 }
 
 // Returns true if |sub_domain| is a sub domain or equls |domain|.  E.g.
@@ -501,7 +501,7 @@ const std::string ContentSettingsPattern::ToString() const {
   if (IsValid())
     return content_settings::PatternParser::ToString(parts_);
   else
-    return "";
+    return std::string();
 }
 
 ContentSettingsPattern::Relation ContentSettingsPattern::Compare(

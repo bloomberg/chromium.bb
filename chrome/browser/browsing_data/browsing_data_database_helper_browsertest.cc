@@ -104,9 +104,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin1, db1, "");
-  helper->AddDatabase(origin1, db2, "");
-  helper->AddDatabase(origin2, db3, "");
+  helper->AddDatabase(origin1, db1, std::string());
+  helper->AddDatabase(origin1, db2, std::string());
+  helper->AddDatabase(origin2, db3, std::string());
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -136,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin, db, "");
-  helper->AddDatabase(origin, db, "");
+  helper->AddDatabase(origin, db, std::string());
+  helper->AddDatabase(origin, db, std::string());
 
   TestCompletionCallback callback;
   helper->StartFetching(

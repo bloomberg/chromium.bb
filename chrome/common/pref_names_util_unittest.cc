@@ -28,7 +28,7 @@ void ExpectParse(const std::string& path,
 }  // namespace
 
 TEST(PrefNamesUtilTest, Basic) {
-  ExpectNoParse("");
+  ExpectNoParse(std::string());
   ExpectNoParse(".");
   ExpectNoParse(".....");
   ExpectNoParse("webkit.webprefs.fonts.");
@@ -43,8 +43,8 @@ TEST(PrefNamesUtilTest, Basic) {
   // We don't particularly care about the parsed family and script for these
   // inputs, but just want to make sure it does something reasonable. Returning
   // false may also be an option.
-  ExpectParse("webkit.webprefs.fonts...", "", ".");
-  ExpectParse("webkit.webprefs.fonts....", "", "..");
+  ExpectParse("webkit.webprefs.fonts...", std::string(), ".");
+  ExpectParse("webkit.webprefs.fonts....", std::string(), "..");
 
   // Check that passing NULL output params is okay.
   EXPECT_TRUE(pref_names_util::ParseFontNamePrefPath(

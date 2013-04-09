@@ -574,9 +574,10 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       keys::kRequestBodyRawBytesKey,
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length),
       &raw);
-  extensions::subtle::AppendKeyValuePair(keys::kRequestBodyRawFileKey,
-                                         Value::CreateStringValue(""),
-                                         &raw);
+  extensions::subtle::AppendKeyValuePair(
+      keys::kRequestBodyRawFileKey,
+      Value::CreateStringValue(std::string()),
+      &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),
@@ -962,7 +963,7 @@ void TestInitFromValue(const std::string& values, bool expected_return_code,
 
 }
 TEST_F(ExtensionWebRequestTest, InitFromValue) {
-  TestInitFromValue("", true, 0);
+  TestInitFromValue(std::string(), true, 0);
 
   // Single valid values.
   TestInitFromValue(

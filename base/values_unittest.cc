@@ -599,7 +599,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   // Make sure we don't prune too much.
   root->SetBoolean("bool", true);
   root->Set("empty_dict", new DictionaryValue);
-  root->SetString("empty_string", "");
+  root->SetString("empty_string", std::string());
   root.reset(root->DeepCopyWithoutEmptyChildren());
   EXPECT_EQ(2U, root->size());
 

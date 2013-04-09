@@ -571,7 +571,7 @@ void PrintPreviewUI::OnClosePrintPreviewDialog() {
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
-  delegate->GetWebDialogDelegate()->OnDialogClosed("");
+  delegate->GetWebDialogDelegate()->OnDialogClosed(std::string());
   delegate->OnDialogCloseFromWebUI();
 }
 

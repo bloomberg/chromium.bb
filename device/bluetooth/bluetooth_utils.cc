@@ -21,18 +21,18 @@ namespace bluetooth_utils {
 
 std::string CanonicalUuid(std::string uuid) {
   if (uuid.empty())
-    return "";
+    return std::string();
 
   if (uuid.size() < 11 && uuid.find("0x") == 0)
     uuid = uuid.substr(2);
 
   if (!(uuid.size() == 4 || uuid.size() == 8 || uuid.size() == 36))
-    return "";
+    return std::string();
 
   if (uuid.size() == 4 || uuid.size() == 8) {
     for (size_t i = 0; i < uuid.size(); ++i) {
       if (!IsHexDigit(uuid[i]))
-        return "";
+        return std::string();
     }
 
     if (uuid.size() == 4)
@@ -45,10 +45,10 @@ std::string CanonicalUuid(std::string uuid) {
   for (int i = 0; i < kUuidSize; ++i) {
     if (i == 8 || i == 13 || i == 18 || i == 23) {
       if (uuid[i] != '-')
-        return "";
+        return std::string();
     } else {
       if (!IsHexDigit(uuid[i]))
-        return "";
+        return std::string();
       uuid_result[i] = tolower(uuid[i]);
     }
   }

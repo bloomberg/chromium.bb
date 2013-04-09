@@ -110,12 +110,11 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   ContentSettingsForOneType& script_setting_rules =
       content_setting_rules.script_rules;
   script_setting_rules.push_back(
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTING_BLOCK,
-          "",
-          false));
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_BLOCK,
+                                  std::string(),
+                                  false));
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettingRules(&content_setting_rules);
 
@@ -193,7 +192,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
       ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                   ContentSettingsPattern::Wildcard(),
                                   CONTENT_SETTING_BLOCK,
-                                  "",
+                                  std::string(),
                                   false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
@@ -211,7 +210,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
           ContentSettingsPattern::Wildcard(),
           ContentSettingsPattern::FromString(mock_observer.image_origin_),
           CONTENT_SETTING_ALLOW,
-          "",
+          std::string(),
           false));
 
   EXPECT_CALL(
@@ -236,7 +235,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
       ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                   ContentSettingsPattern::Wildcard(),
                                   CONTENT_SETTING_ALLOW,
-                                  "",
+                                  std::string(),
                                   false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
@@ -255,7 +254,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
           ContentSettingsPattern::Wildcard(),
           ContentSettingsPattern::FromString(mock_observer.image_origin_),
           CONTENT_SETTING_BLOCK,
-          "",
+          std::string(),
           false));
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
@@ -270,12 +269,11 @@ TEST_F(ChromeRenderViewTest, ContentSettingsBlockScripts) {
   ContentSettingsForOneType& script_setting_rules =
       content_setting_rules.script_rules;
   script_setting_rules.push_back(
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTING_BLOCK,
-          "",
-          false));
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_BLOCK,
+                                  std::string(),
+                                  false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettingRules(&content_setting_rules);
@@ -306,12 +304,11 @@ TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
   ContentSettingsForOneType& script_setting_rules =
       content_setting_rules.script_rules;
   script_setting_rules.push_back(
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTING_ALLOW,
-          "",
-          false));
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettingRules(&content_setting_rules);
@@ -343,18 +340,20 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   ContentSettingsForOneType& script_setting_rules =
       content_setting_rules.script_rules;
   script_setting_rules.push_back(
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTING_BLOCK, "", false));
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_BLOCK,
+                                  std::string(),
+                                  false));
   // Block images.
   ContentSettingsForOneType& image_setting_rules =
       content_setting_rules.image_rules;
   image_setting_rules.push_back(
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTING_BLOCK, "", false));
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_BLOCK,
+                                  std::string(),
+                                  false));
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettingRules(&content_setting_rules);

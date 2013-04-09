@@ -946,7 +946,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
                                   default_path,
                                   &file_type_info,
                                   0,
-                                  FILE_PATH_LITERAL(""),
+                                  FILE_PATH_LITERAL(std::string()),
                                   NULL,
                                   NULL);
 }

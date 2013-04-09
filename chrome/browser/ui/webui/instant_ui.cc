@@ -169,6 +169,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 void InstantUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix, "",
+  registry->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix,
+                               std::string(),
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

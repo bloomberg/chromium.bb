@@ -644,7 +644,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             test_cases[i].template_contents,
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
-            "",
+            std::string(),
             base::FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,

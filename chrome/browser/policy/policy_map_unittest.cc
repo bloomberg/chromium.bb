@@ -103,9 +103,13 @@ TEST(PolicyMapTest, MergeFrom) {
         Value::CreateBooleanValue(false));
   b.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true));
-  b.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, Value::CreateStringValue(""));
-  b.Set(key::kDisableSpdy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+  b.Set(key::kDefaultSearchProviderSearchURL,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        Value::CreateStringValue(std::string()));
+  b.Set(key::kDisableSpdy,
+        POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true));
 
   a.MergeFrom(b);
@@ -121,8 +125,10 @@ TEST(PolicyMapTest, MergeFrom) {
   c.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE, Value::CreateBooleanValue(true));
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
-  c.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, Value::CreateStringValue(""));
+  c.Set(key::kDefaultSearchProviderSearchURL,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        Value::CreateStringValue(std::string()));
   // Merge new ones.
   c.Set(key::kDisableSpdy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         Value::CreateBooleanValue(true));

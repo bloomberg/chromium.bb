@@ -25,7 +25,8 @@ AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
   for (size_t i = 0; i < kNumTokenPrefs; ++i) {
     signin_status_.token_info_map.insert(std::pair<std::string, TokenInfo>(
         kTokenPrefsArray[i],
-        TokenInfo("", "Not Loaded", "", kTokenPrefsArray[i])));
+        TokenInfo(
+            std::string(), "Not Loaded", std::string(), kTokenPrefsArray[i])));
   }
 }
 
@@ -170,7 +171,7 @@ void AboutSigninInternals::NotifyTokenReceivedFailure(
   const std::string value_pref = TokenPrefPath(token_name) + ".value";
   const std::string time_pref = TokenPrefPath(token_name) + ".time";
   const std::string status_pref = TokenPrefPath(token_name) + ".status";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), "");
+  profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());
   profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
   profile_->GetPrefs()->SetString(status_pref.c_str(), error);
 
@@ -186,7 +187,7 @@ void AboutSigninInternals::NotifyClearStoredToken(
   signin_status_.token_info_map[token_name].token.clear();
 
   const std::string value_pref = TokenPrefPath(token_name) + ".value";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), "");
+  profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());
 
   NotifyObservers();
 }

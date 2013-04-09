@@ -462,7 +462,7 @@ void InspectUI::OnAdbPages(
     targets.Append(target_data);
   }
 
-  std::string json_string = "";
+  std::string json_string;
   base::JSONWriter::Write(&targets, &json_string);
   callback.Run(base::RefCountedString::TakeString(&json_string));
 }

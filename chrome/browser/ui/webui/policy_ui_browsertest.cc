@@ -43,7 +43,7 @@ std::vector<std::string> PopulateExpectedPolicy(
         metadata->scope == policy::POLICY_SCOPE_MACHINE ?
             IDS_POLICY_SCOPE_DEVICE : IDS_POLICY_SCOPE_USER));
   } else {
-    expected_policy.push_back("");
+    expected_policy.push_back(std::string());
   }
 
   // Populate expected level.
@@ -52,7 +52,7 @@ std::vector<std::string> PopulateExpectedPolicy(
         metadata->level == policy::POLICY_LEVEL_RECOMMENDED ?
             IDS_POLICY_LEVEL_RECOMMENDED : IDS_POLICY_LEVEL_MANDATORY));
   } else {
-    expected_policy.push_back("");
+    expected_policy.push_back(std::string());
   }
 
   // Populate expected policy name.
@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {
   for (const policy::PolicyDefinitionList::Entry* policy = policies->begin;
       policy != policies->end; ++policy) {
     expected_policies.push_back(
-        PopulateExpectedPolicy(policy->name, "", NULL, false));
+        PopulateExpectedPolicy(policy->name, std::string(), NULL, false));
   }
 
   // Retrieve the contents of the policy table from the UI and verify that it
@@ -240,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
        policy != policies->end; ++policy) {
     std::map<std::string, std::string>::const_iterator it =
         expected_values.find(policy->name);
-    const std::string value = it == expected_values.end() ? "" : it->second;
+    const std::string value =
+        it == expected_values.end() ? std::string() : it->second;
     const policy::PolicyMap::Entry* metadata = values.Get(policy->name);
     expected_policies.insert(
         metadata ? expected_policies.begin() + first_unset_position++ :

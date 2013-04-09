@@ -49,7 +49,7 @@ std::string PermissionFeature::Parse(const DictionaryValue* value) {
   if (!GetContexts()->empty())
     return name() + ": Permission features do not support contexts.";
 
-  return "";
+  return std::string();
 }
 
 }  // namespace

@@ -424,7 +424,7 @@ bool ParsedCookie::SetBool(size_t* index,
     ClearAttributePair(*index);
     return true;
   } else {
-    return SetAttributePair(index, key, "");
+    return SetAttributePair(index, key, std::string());
   }
 }
 

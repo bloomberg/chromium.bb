@@ -178,7 +178,7 @@ void PluginServiceImpl::Init() {
   if (command_line->HasSwitch(switches::kSitePerProcess)) {
     webkit::WebPluginInfo webview_plugin(
         ASCIIToUTF16("WebView Tag"),
-        base::FilePath(FILE_PATH_LITERAL("")),
+        base::FilePath(FILE_PATH_LITERAL(std::string())),
         ASCIIToUTF16("1.2.3.4"),
         ASCIIToUTF16("Browser Plugin."));
     webview_plugin.type = webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI;

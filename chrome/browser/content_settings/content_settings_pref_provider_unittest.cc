@@ -121,7 +121,7 @@ TEST_F(PrefProviderTest, Observer) {
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   pref_content_settings_provider.ShutdownOnUIThread();
@@ -166,20 +166,26 @@ TEST_F(PrefProviderTest, Incognito) {
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   GURL host("http://example.com/");
   // The value should of course be visible in the regular PrefProvider.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider,
+                              host,
+                              host,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
   // And also in the OTR version.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            GetContentSetting(
-                &pref_content_settings_provider_incognito,
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider_incognito,
+                              host,
+                              host,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
   // But the value should not be overridden in the OTR user prefs accidentally.
   EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(
       prefs::kContentSettingsPatternPairs));
@@ -197,26 +203,40 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
       ContentSettingsPattern::FromString("[*.]example.com");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(&provider, primary_url, primary_url,
-                              CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&provider,
+                              primary_url,
+                              primary_url,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
 
   EXPECT_EQ(NULL,
-            GetContentSettingValue(
-                &provider, primary_url, primary_url,
-                CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSettingValue(&provider,
+                                   primary_url,
+                                   primary_url,
+                                   CONTENT_SETTINGS_TYPE_IMAGES,
+                                   std::string(),
+                                   false));
 
-  provider.SetWebsiteSetting(
-      primary_pattern,
-      primary_pattern,
-      CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  provider.SetWebsiteSetting(primary_pattern,
+                             primary_pattern,
+                             CONTENT_SETTINGS_TYPE_IMAGES,
+                             std::string(),
+                             Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(&provider, primary_url, primary_url,
-                              CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&provider,
+                              primary_url,
+                              primary_url,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
   scoped_ptr<Value> value_ptr(
-      GetContentSettingValue(&provider, primary_url, primary_url,
-                             CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+      GetContentSettingValue(&provider,
+                             primary_url,
+                             primary_url,
+                             CONTENT_SETTINGS_TYPE_IMAGES,
+                             std::string(),
+                             false));
   int int_value = -1;
   value_ptr->GetAsInteger(&int_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
@@ -224,12 +244,15 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
   provider.SetWebsiteSetting(primary_pattern,
                              primary_pattern,
                              CONTENT_SETTINGS_TYPE_IMAGES,
-                             "",
+                             std::string(),
                              NULL);
   EXPECT_EQ(NULL,
-            GetContentSettingValue(
-                &provider, primary_url, primary_url,
-                CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSettingValue(&provider,
+                                   primary_url,
+                                   primary_url,
+                                   CONTENT_SETTINGS_TYPE_IMAGES,
+                                   std::string(),
+                                   false));
   provider.ShutdownOnUIThread();
 }
 
@@ -250,53 +273,74 @@ TEST_F(PrefProviderTest, Patterns) {
       ContentSettingsPattern::FromString("file:///tmp/test.html");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider,
+                              host1,
+                              host1,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
   pref_content_settings_provider.SetWebsiteSetting(
       pattern1,
       pattern1,
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider,
+                              host1,
+                              host1,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
-
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
-  pref_content_settings_provider.SetWebsiteSetting(
-      pattern2,
-      pattern2,
-      CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider,
+                              host2,
+                              host2,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             GetContentSetting(&pref_content_settings_provider,
-                              host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, "",
+                              host3,
+                              host3,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
+  pref_content_settings_provider.SetWebsiteSetting(
+      pattern2,
+      pattern2,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      std::string(),
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(&pref_content_settings_provider,
+                              host3,
+                              host3,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            GetContentSetting(&pref_content_settings_provider,
+                              host4,
+                              host4,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
                               false));
   pref_content_settings_provider.SetWebsiteSetting(
       pattern3,
       pattern3,
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            GetContentSetting(
-                &pref_content_settings_provider,
-                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+            GetContentSetting(&pref_content_settings_provider,
+                              host4,
+                              host4,
+                              CONTENT_SETTINGS_TYPE_IMAGES,
+                              std::string(),
+                              false));
 
   pref_content_settings_provider.ShutdownOnUIThread();
 }

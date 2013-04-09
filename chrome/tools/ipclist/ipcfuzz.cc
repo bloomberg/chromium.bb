@@ -180,17 +180,17 @@ class DefaultFuzzer : public IPC::Fuzzer {
   }
 
   virtual void FuzzString(std::string* value) OVERRIDE {
-    FuzzStringType<std::string>(value, frequency_, "BORKED", "");
+    FuzzStringType<std::string>(value, frequency_, "BORKED", std::string());
   }
 
   virtual void FuzzWString(std::wstring* value) OVERRIDE {
-    FuzzStringType<std::wstring>(value, frequency_, L"BORKED", L"");
+    FuzzStringType<std::wstring>(value, frequency_, L"BORKED", std::wstring());
   }
 
   virtual void FuzzString16(string16* value) OVERRIDE {
     FuzzStringType<string16>(value, frequency_,
                              WideToUTF16(L"BORKED"),
-                             WideToUTF16(L""));
+                             WideToUTF16(std::wstring()));
   }
 
   virtual void FuzzData(char* data, int length) OVERRIDE {

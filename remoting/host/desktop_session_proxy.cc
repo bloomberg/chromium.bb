@@ -143,7 +143,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   // On posix: |desktop_pipe| is a valid file descriptor.
   DCHECK(desktop_pipe.auto_close);
 
-  IPC::ChannelHandle desktop_channel_handle("", desktop_pipe);
+  IPC::ChannelHandle desktop_channel_handle(std::string(), desktop_pipe);
 
 #else
 #error Unsupported platform.

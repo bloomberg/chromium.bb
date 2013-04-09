@@ -304,7 +304,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
   // Setup filesystem for testing.
   base::FilePath root_path;
   ASSERT_TRUE(file_util::CreateNewTempDirectory(
-        FILE_PATH_LITERAL(""), &root_path));
+      FILE_PATH_LITERAL(std::string()), &root_path));
   ASSERT_TRUE(file_util::AbsolutePath(&root_path));
 
   base::FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));

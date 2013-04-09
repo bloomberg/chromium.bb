@@ -120,9 +120,10 @@ class WalletSigninHelperTest : public testing::Test {
 
   void MockFailedOAuthLoginResponse404() {
     SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->client_login_url(), 404,
+        GaiaUrls::GetInstance()->client_login_url(),
+        404,
         net::ResponseCookies(),
-        "");
+        std::string());
   }
 
   void MockSuccessfulGaiaUserInfoResponse(const std::string& username) {
@@ -134,9 +135,10 @@ class WalletSigninHelperTest : public testing::Test {
 
   void MockFailedGaiaUserInfoResponse404() {
     SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->get_user_info_url(), 404,
+        GaiaUrls::GetInstance()->get_user_info_url(),
+        404,
         net::ResponseCookies(),
-        "");
+        std::string());
   }
 
   void MockSuccessfulGetAccountInfoResponse(const std::string& username) {
@@ -150,23 +152,24 @@ class WalletSigninHelperTest : public testing::Test {
 
   void MockFailedGetAccountInfoResponse404() {
     SetUpFetcherResponseAndCompleteRequest(
-        signin_helper_->GetGetAccountInfoUrlForTesting(), 404,
+        signin_helper_->GetGetAccountInfoUrlForTesting(),
+        404,
         net::ResponseCookies(),
-        "");
+        std::string());
   }
 
   void MockSuccessfulPassiveAuthUrlMergeAndRedirectResponse() {
-    SetUpFetcherResponseAndCompleteRequest(
-        wallet::GetPassiveAuthUrl().spec(), 200,
-        net::ResponseCookies(),
-        "");
+    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl().spec(),
+                                           200,
+                                           net::ResponseCookies(),
+                                           std::string());
   }
 
   void MockFailedPassiveAuthUrlMergeAndRedirectResponse404() {
-    SetUpFetcherResponseAndCompleteRequest(
-        wallet::GetPassiveAuthUrl().spec(), 404,
-        net::ResponseCookies(),
-        "");
+    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl().spec(),
+                                           404,
+                                           net::ResponseCookies(),
+                                           std::string());
   }
 
   WalletSigninHelperForTesting::State state() const {

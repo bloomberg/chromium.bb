@@ -243,7 +243,8 @@ public:
 
     // Get the JavaScript flags for a specific load
     static std::string GetJSFlagsForLoad(size_t load) {
-      if (load >= js_flags_.size()) return "";
+      if (load >= js_flags_.size())
+        return std::string();
       return js_flags_[load];
     }
 

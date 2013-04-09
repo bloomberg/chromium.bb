@@ -38,7 +38,8 @@ class NewTabUIStartupTest : public UIPerfTest {
     std::string times;
     for (int i = 0; i < kNumCycles; ++i)
       base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
-    perf_test::PrintResultList("new_tab", "", label, times, "ms", important);
+    perf_test::PrintResultList(
+        "new_tab", std::string(), label, times, "ms", important);
   }
 
   void InitProfile(UITestBase::ProfileType profile_type) {

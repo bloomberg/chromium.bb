@@ -1269,7 +1269,7 @@ bool DirectoryBackingStore::CreateTables() {
             "?);"));  // bag_of_chips
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
-    s.BindString(2, "");                          // store_birthday
+    s.BindString(2, std::string());               // store_birthday
     // TODO(akalin): Remove this unused db_create_version field. (Or
     // actually use it for something.) http://crbug.com/118356
     s.BindString(3, "Unknown");                   // db_create_version

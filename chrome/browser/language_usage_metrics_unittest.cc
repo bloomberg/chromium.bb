@@ -16,7 +16,7 @@ TEST(LanguageUsageMetricsTest, ParseAcceptLanguages) {
   EXPECT_EQ(JAPANESE, *language_set.begin());
 
   // Empty language.
-  LanguageUsageMetrics::ParseAcceptLanguages("", &language_set);
+  LanguageUsageMetrics::ParseAcceptLanguages(std::string(), &language_set);
   EXPECT_EQ(0U, language_set.size());
 
   // Country code is ignored.
@@ -86,6 +86,6 @@ TEST(LanguageUsageMetricsTest, ToLanguage) {
   EXPECT_EQ(JAPANESE, LanguageUsageMetrics::ToLanguage("ja-JP"));
 
   // Invalid locales are considered as unknown language.
-  EXPECT_EQ(UNKNOWN_LANGUAGE, LanguageUsageMetrics::ToLanguage(""));
+  EXPECT_EQ(UNKNOWN_LANGUAGE, LanguageUsageMetrics::ToLanguage(std::string()));
   EXPECT_EQ(UNKNOWN_LANGUAGE, LanguageUsageMetrics::ToLanguage("xx"));
 }

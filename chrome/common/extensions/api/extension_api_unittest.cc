@@ -97,7 +97,7 @@ TEST_F(ExtensionAPITest, IsPrivileged) {
   EXPECT_TRUE(extension_api->IsPrivileged("runtime.lastError"));
 
   // Default unknown names to privileged for paranoia's sake.
-  EXPECT_TRUE(extension_api->IsPrivileged(""));
+  EXPECT_TRUE(extension_api->IsPrivileged(std::string()));
   EXPECT_TRUE(extension_api->IsPrivileged("<unknown-namespace>"));
   EXPECT_TRUE(extension_api->IsPrivileged("extension.<unknown-member>"));
 
@@ -224,8 +224,8 @@ TEST(ExtensionAPI, APIFeatures) {
 TEST_F(ExtensionAPITest, LazyGetSchema) {
   scoped_ptr<ExtensionAPI> apis(ExtensionAPI::CreateWithDefaultConfiguration());
 
-  EXPECT_EQ(NULL, apis->GetSchema(""));
-  EXPECT_EQ(NULL, apis->GetSchema(""));
+  EXPECT_EQ(NULL, apis->GetSchema(std::string()));
+  EXPECT_EQ(NULL, apis->GetSchema(std::string()));
   EXPECT_EQ(NULL, apis->GetSchema("experimental"));
   EXPECT_EQ(NULL, apis->GetSchema("experimental"));
   EXPECT_EQ(NULL, apis->GetSchema("foo"));

@@ -77,7 +77,7 @@ void NeverCalled(int unused) {
 }  // namespace
 
 TEST_F(LocalFileStreamWriterTest, Write) {
-  base::FilePath path = CreateFileWithContent("file_a", "");
+  base::FilePath path = CreateFileWithContent("file_a", std::string());
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "bar"));
@@ -126,7 +126,7 @@ TEST_F(LocalFileStreamWriterTest, CancelBeforeOperation) {
 }
 
 TEST_F(LocalFileStreamWriterTest, CancelAfterFinishedOperation) {
-  base::FilePath path = CreateFileWithContent("file_a", "");
+  base::FilePath path = CreateFileWithContent("file_a", std::string());
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
 

@@ -77,7 +77,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
                                     default_path,
                                     NULL,
                                     0,
-                                    FILE_PATH_LITERAL(""),
+                                    FILE_PATH_LITERAL(std::string()),
                                     NULL,
                                     NULL);
   }
@@ -346,7 +346,7 @@ void DevToolsFileHelper::AddValidatedFileSystem(
                                                  file_system_id,
                                                  registered_name,
                                                  file_system_path);
-  callback.Run("", filesystem);
+  callback.Run(std::string(), filesystem);
 }
 
 void DevToolsFileHelper::RequestFileSystems(

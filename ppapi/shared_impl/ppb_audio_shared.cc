@@ -80,8 +80,11 @@ void PPB_Audio_Shared::SetStreamInfo(
 
   if (!shared_memory_->Map(
           media::TotalSharedMemorySizeInBytes(shared_memory_size_))) {
-    PpapiGlobals::Get()->LogWithSource(instance, PP_LOGLEVEL_WARNING, "",
-      "Failed to map shared memory for PPB_Audio_Shared.");
+    PpapiGlobals::Get()->LogWithSource(
+        instance,
+        PP_LOGLEVEL_WARNING,
+        std::string(),
+        "Failed to map shared memory for PPB_Audio_Shared.");
   } else {
     audio_bus_ = media::AudioBus::WrapMemory(
         kChannels, sample_frame_count, shared_memory_->memory());

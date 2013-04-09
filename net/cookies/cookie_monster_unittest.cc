@@ -233,20 +233,44 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                           base::Time(), false, false));
 
     // Host cookies
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_1,
-                                          "host_1", "X", "", "/",
-                                          base::Time(), false, false));
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "host_2", "X", "", "/",
-                                          base::Time(), false, false));
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_3,
-                                          "host_3", "X", "", "/",
-                                          base::Time(), false, false));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_1,
+                                           "host_1",
+                                           "X",
+                                           std::string(),
+                                           "/",
+                                           base::Time(),
+                                           false,
+                                           false));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_2,
+                                           "host_2",
+                                           "X",
+                                           std::string(),
+                                           "/",
+                                           base::Time(),
+                                           false,
+                                           false));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_3,
+                                           "host_3",
+                                           "X",
+                                           std::string(),
+                                           "/",
+                                           base::Time(),
+                                           false,
+                                           false));
 
     // Http_only cookie
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "httpo_check", "X", "", "/",
-                                          base::Time(), false, true));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_2,
+                                           "httpo_check",
+                                           "X",
+                                           std::string(),
+                                           "/",
+                                           base::Time(),
+                                           false,
+                                           true));
 
     // Secure cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
@@ -254,9 +278,14 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                          "sec_dom", "X", ".math.harvard.edu",
                                          "/", base::Time(), true, false));
     EXPECT_TRUE(this->SetCookieWithDetails(cm,
-                                          url_top_level_domain_plus_2_secure,
-                                          "sec_host", "X", "", "/",
-                                          base::Time(), true, false));
+                                           url_top_level_domain_plus_2_secure,
+                                           "sec_host",
+                                           "X",
+                                           std::string(),
+                                           "/",
+                                           base::Time(),
+                                           true,
+                                           false));
 
     // Domain path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
@@ -269,14 +298,24 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
                                           base::Time(), false, false));
 
     // Host path cookies
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "host_path_1", "X",
-                                          "", "/dir1",
-                                          base::Time(), false, false));
-    EXPECT_TRUE(this->SetCookieWithDetails(cm, url_top_level_domain_plus_2,
-                                          "host_path_2", "X",
-                                          "", "/dir1/dir2",
-                                          base::Time(), false, false));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_2,
+                                           "host_path_1",
+                                           "X",
+                                           std::string(),
+                                           "/dir1",
+                                           base::Time(),
+                                           false,
+                                           false));
+    EXPECT_TRUE(this->SetCookieWithDetails(cm,
+                                           url_top_level_domain_plus_2,
+                                           "host_path_2",
+                                           "X",
+                                           std::string(),
+                                           "/dir1/dir2",
+                                           base::Time(),
+                                           false,
+                                           false));
 
     EXPECT_EQ(13U, this->GetAllCookies(cm).size());
   }
@@ -2205,7 +2244,7 @@ TEST_F(CookieMonsterTest, PersisentCookieStorageTest) {
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[0].type);
   // Remove it.
   EXPECT_TRUE(SetCookie(cm, url_google_,"A=B; max-age=0"));
-  this->MatchCookieLines("", GetCookies(cm, url_google_));
+  this->MatchCookieLines(std::string(), GetCookies(cm, url_google_));
   ASSERT_EQ(2u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[1].type);
 

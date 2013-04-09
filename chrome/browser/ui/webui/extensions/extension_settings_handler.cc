@@ -930,9 +930,14 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
   load_extension_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   load_extension_dialog_->SelectFile(
-      kSelectType, select_title, last_unpacked_directory_, NULL,
-      kFileTypeIndex, FILE_PATH_LITERAL(""),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      kSelectType,
+      select_title,
+      last_unpacked_directory_,
+      NULL,
+      kFileTypeIndex,
+      FILE_PATH_LITERAL(std::string()),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+      NULL);
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {

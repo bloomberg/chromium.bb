@@ -98,7 +98,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_EQ(
       "default-src 'self' https://www.google.com",
-      CSPInfo::GetResourceContentSecurityPolicy(extension, ""));
+      CSPInfo::GetResourceContentSecurityPolicy(extension, std::string()));
 
   // But even whitelisted ones must specify a secure policy.
   LoadAndExpectError(

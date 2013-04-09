@@ -270,7 +270,7 @@ TEST_F(CloudPrintDataSenderTest, NoData) {
 TEST_F(CloudPrintDataSenderTest, EmptyData) {
   EXPECT_CALL(*mock_helper_, CallJavascriptFunction(_, _, _)).Times(0);
 
-  std::string data("");
+  std::string data;
   scoped_refptr<CloudPrintDataSender> print_data_sender(
       CreateSender(base::RefCountedString::TakeString(&data)));
   base::FilePath test_data_file_name = GetTestDataFileName();

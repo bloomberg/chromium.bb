@@ -130,9 +130,10 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
     if (matching_changes.empty()) {
       ADD_FAILURE() << "No matching changes for " << extension_id << "/" <<
           key << " (out of " << changes_.size() << ")";
-      return SettingSyncData(
-          syncer::SyncChange::ACTION_INVALID, "", "",
-          scoped_ptr<Value>(new DictionaryValue()));
+      return SettingSyncData(syncer::SyncChange::ACTION_INVALID,
+                             std::string(),
+                             std::string(),
+                             scoped_ptr<Value>(new DictionaryValue()));
     }
     if (matching_changes.size() != 1u) {
       ADD_FAILURE() << matching_changes.size() << " matching changes for " <<

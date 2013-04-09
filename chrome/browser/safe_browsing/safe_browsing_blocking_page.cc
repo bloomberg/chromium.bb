@@ -1004,8 +1004,8 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
 
   if (!CanShowMalwareDetailsOption()) {
     strings->SetBoolean(kDisplayCheckBox, false);
-    strings->SetString("confirm_text", "");
-    strings->SetString(kBoxChecked, "");
+    strings->SetString("confirm_text", std::string());
+    strings->SetString(kBoxChecked, std::string());
   } else {
     // Show the checkbox for sending malware details.
     strings->SetBoolean(kDisplayCheckBox, true);
@@ -1022,7 +1022,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled))
       strings->SetString(kBoxChecked, "yes");
     else
-      strings->SetString(kBoxChecked, "");
+      strings->SetString(kBoxChecked, std::string());
   }
 
   strings->SetString("report_error", string16());
@@ -1042,10 +1042,11 @@ void SafeBrowsingBlockingPageV2::PopulatePhishingStringDictionary(
       string16(),
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2));
 
-  strings->SetString("details", "");
-  strings->SetString("confirm_text", "");
-  strings->SetString(kBoxChecked, "");
-  strings->SetString("report_error",
+  strings->SetString("details", std::string());
+  strings->SetString("confirm_text", std::string());
+  strings->SetString(kBoxChecked, std::string());
+  strings->SetString(
+      "report_error",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR));
   strings->SetBoolean(kDisplayCheckBox, false);
   strings->SetString("learnMore",

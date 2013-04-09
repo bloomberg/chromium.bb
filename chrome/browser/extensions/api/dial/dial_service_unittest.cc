@@ -116,9 +116,7 @@ TEST_F(DialServiceTest, TestResponseParsing) {
   DialDeviceData not_parsed;
 
   // Empty, garbage
-  EXPECT_FALSE(DialServiceImpl::ParseResponse(
-    "",
-    now, &not_parsed));
+  EXPECT_FALSE(DialServiceImpl::ParseResponse(std::string(), now, &not_parsed));
   EXPECT_FALSE(DialServiceImpl::ParseResponse(
     "\r\n\r\n",
     now, &not_parsed));

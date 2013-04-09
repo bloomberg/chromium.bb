@@ -13,13 +13,18 @@ class StoragePartitionConfigTest : public testing::Test {
 // Test that the Less comparison function is implemented properly to uniquely
 // identify storage partitions used as keys in a std::map.
 TEST_F(StoragePartitionConfigTest, OperatorLess) {
-  StoragePartitionImplMap::StoragePartitionConfig c1("", "", false);
-  StoragePartitionImplMap::StoragePartitionConfig c2("", "", false);
-  StoragePartitionImplMap::StoragePartitionConfig c3("", "", true);
-  StoragePartitionImplMap::StoragePartitionConfig c4("a", "", true);
-  StoragePartitionImplMap::StoragePartitionConfig c5("b", "", true);
-  StoragePartitionImplMap::StoragePartitionConfig c6("", "abc", false);
-  StoragePartitionImplMap::StoragePartitionConfig c7("", "abc", true);
+  StoragePartitionImplMap::StoragePartitionConfig c1(
+      std::string(), std::string(), false);
+  StoragePartitionImplMap::StoragePartitionConfig c2(
+      std::string(), std::string(), false);
+  StoragePartitionImplMap::StoragePartitionConfig c3(
+      std::string(), std::string(), true);
+  StoragePartitionImplMap::StoragePartitionConfig c4("a", std::string(), true);
+  StoragePartitionImplMap::StoragePartitionConfig c5("b", std::string(), true);
+  StoragePartitionImplMap::StoragePartitionConfig c6(
+      std::string(), "abc", false);
+  StoragePartitionImplMap::StoragePartitionConfig c7(
+      std::string(), "abc", true);
   StoragePartitionImplMap::StoragePartitionConfig c8("a", "abc", false);
   StoragePartitionImplMap::StoragePartitionConfig c9("a", "abc", true);
 

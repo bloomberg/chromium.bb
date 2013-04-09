@@ -119,7 +119,7 @@ void EventRouter::LogExtensionEventMessage(void* profile_id,
         LOG(WARNING) << "Extension " << extension_id << " not found!";
       } else {
         extensions::ActivityLog::GetInstance(profile)->LogEventAction(
-            extension, event_name, event_args.get(), "");
+            extension, event_name, event_args.get(), std::string());
       }
     }
   }
@@ -243,10 +243,8 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
     scoped_ptr<ListValue> args(new ListValue());
     if (listener->filter)
       args->Append(listener->filter->DeepCopy());
-    activity_log_->LogAPIAction(extension,
-                                event_name + ".addListener",
-                                args.get(),
-                                "");
+    activity_log_->LogAPIAction(
+        extension, event_name + ".addListener", args.get(), std::string());
   }
 }
 
@@ -271,10 +269,8 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
                                             ExtensionService::INCLUDE_ENABLED);
   if (extension) {
     scoped_ptr<ListValue> args(new ListValue());
-    activity_log_->LogAPIAction(extension,
-                                event_name + ".removeListener",
-                                args.get(),
-                                "");
+    activity_log_->LogAPIAction(
+        extension, event_name + ".removeListener", args.get(), std::string());
   }
 }
 
@@ -384,7 +380,7 @@ bool EventRouter::HasEventListenerImpl(const ListenerMap& listener_map,
 }
 
 void EventRouter::BroadcastEvent(scoped_ptr<Event> event) {
-  DispatchEventImpl("", linked_ptr<Event>(event.release()));
+  DispatchEventImpl(std::string(), linked_ptr<Event>(event.release()));
 }
 
 void EventRouter::DispatchEventToExtension(const std::string& extension_id,

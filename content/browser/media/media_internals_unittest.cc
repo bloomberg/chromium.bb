@@ -41,7 +41,7 @@ class MediaInternalsTest : public testing::Test {
 
   void UpdateItem(const std::string& item, const std::string& property,
                   base::Value* value) {
-    internals_->UpdateItem("", item, property, value);
+    internals_->UpdateItem(std::string(), item, property, value);
   }
 
   void SendUpdate(const std::string& function, base::Value* value) {

@@ -188,22 +188,21 @@ void PrefProvider::ClearAllContentSettingsRules(
   {
     base::AutoLock auto_lock(lock_);
     scoped_ptr<RuleIterator> rule_iterator(
-        map_to_modify->GetRuleIterator(content_type, "", NULL));
+        map_to_modify->GetRuleIterator(content_type, std::string(), NULL));
     // Copy the rules; we cannot call |UpdatePref| while holding |lock_|.
     while (rule_iterator->HasNext())
       rules_to_delete.push_back(rule_iterator->Next());
 
-    map_to_modify->DeleteValues(content_type, "");
+    map_to_modify->DeleteValues(content_type, std::string());
   }
 
   for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
        it != rules_to_delete.end(); ++it) {
-    UpdatePref(
-        it->primary_pattern,
-        it->secondary_pattern,
-        content_type,
-        "",
-        NULL);
+    UpdatePref(it->primary_pattern,
+               it->secondary_pattern,
+               content_type,
+               std::string(),
+               NULL);
   }
   NotifyObservers(ContentSettingsPattern(),
                   ContentSettingsPattern(),
@@ -307,8 +306,8 @@ void PrefProvider::UpdatePref(
 void PrefProvider::MigrateObsoleteMediaContentSetting() {
   std::vector<Rule> rules_to_delete;
   {
-    scoped_ptr<RuleIterator> rule_iterator(
-        GetRuleIterator(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "", false));
+    scoped_ptr<RuleIterator> rule_iterator(GetRuleIterator(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM, std::string(), false));
     while (rule_iterator->HasNext()) {
       // Skip default setting and rules without a value.
       const content_settings::Rule& rule = rule_iterator->Next();
@@ -333,7 +332,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
       SetWebsiteSetting(it->primary_pattern,
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                        "",
+                        std::string(),
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
     }
     // Add the exception to the new camera content setting.
@@ -341,7 +340,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
       SetWebsiteSetting(it->primary_pattern,
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                        "",
+                        std::string(),
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
     }
 
@@ -349,7 +348,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
     SetWebsiteSetting(it->primary_pattern,
                       it->secondary_pattern,
                       CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-                      "",
+                      std::string(),
                       NULL);
   }
 }
@@ -455,7 +454,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
         value_map_.SetValue(pattern_pair.first,
                             pattern_pair.second,
                             content_type,
-                            ResourceIdentifier(""),
+                            ResourceIdentifier(),
                             value);
         if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
           ContentSetting s = ValueToContentSetting(value);

@@ -579,8 +579,11 @@ void ServerBoundCertService::GotServerBoundCert(
     delete worker;
     // TODO(rkn): Log to the NetLog.
     LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
-    HandleResult(ERR_INSUFFICIENT_RESOURCES, server_identifier,
-                 CLIENT_CERT_INVALID_TYPE, "", "");
+    HandleResult(ERR_INSUFFICIENT_RESOURCES,
+                 server_identifier,
+                 CLIENT_CERT_INVALID_TYPE,
+                 std::string(),
+                 std::string());
     return;
   }
 }
@@ -610,7 +613,11 @@ void ServerBoundCertService::GeneratedServerBoundCert(
     HandleResult(error, server_identifier, cert->type(), cert->private_key(),
                  cert->cert());
   } else {
-    HandleResult(error, server_identifier, CLIENT_CERT_INVALID_TYPE, "", "");
+    HandleResult(error,
+                 server_identifier,
+                 CLIENT_CERT_INVALID_TYPE,
+                 std::string(),
+                 std::string());
   }
 }
 

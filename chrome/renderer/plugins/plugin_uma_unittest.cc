@@ -118,9 +118,8 @@ TEST_F(PluginUMATest, WidevineCdm) {
 }
 
 TEST_F(PluginUMATest, BySrcExtension) {
-  ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "",
-                   GURL("file://file.mov"));
+  ExpectPluginType(
+      PluginUMAReporter::QUICKTIME, std::string(), GURL("file://file.mov"));
 
   // When plugin's mime type is given, we don't check extension.
   ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
@@ -128,40 +127,36 @@ TEST_F(PluginUMATest, BySrcExtension) {
                    GURL("http://file.mov"));
 
   ExpectPluginType(PluginUMAReporter::WINDOWS_MEDIA_PLAYER,
-                   "",
+                   std::string(),
                    GURL("file://file.asx"));
-  ExpectPluginType(PluginUMAReporter::REALPLAYER,
-                   "",
-                   GURL("file://file.rm"));
+  ExpectPluginType(
+      PluginUMAReporter::REALPLAYER, std::string(), GURL("file://file.rm"));
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "",
+                   std::string(),
                    GURL("http://aaa/file.mov?x=aaaa&y=b#c"));
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "",
+                   std::string(),
                    GURL("http://file.mov?x=aaaa&y=b#c"));
   ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
-                   "",
+                   std::string(),
                    GURL("http://file.swf?x=aaaa&y=b#c"));
   ExpectPluginType(PluginUMAReporter::SHOCKWAVE_FLASH,
-                   "",
+                   std::string(),
                    GURL("http://file.spl?x=aaaa&y=b#c"));
 
   ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
-                   "",
+                   std::string(),
                    GURL("http://file.unknown_extension"));
-  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
-                   "",
-                   GURL("http://"));
-  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_EXTENSION,
-                   "",
-                   GURL("mov"));
+  ExpectPluginType(
+      PluginUMAReporter::UNSUPPORTED_EXTENSION, std::string(), GURL("http://"));
+  ExpectPluginType(
+      PluginUMAReporter::UNSUPPORTED_EXTENSION, std::string(), GURL("mov"));
 }
 
 TEST_F(PluginUMATest, CaseSensitivity) {
   ExpectPluginType(PluginUMAReporter::QUICKTIME,
                    "video/QUICKTIME",
                    GURL("http://file.aaa"));
-  ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "",
-                   GURL("http://file.MoV"));
+  ExpectPluginType(
+      PluginUMAReporter::QUICKTIME, std::string(), GURL("http://file.MoV"));
 }

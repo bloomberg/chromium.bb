@@ -180,7 +180,7 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(1u, "", 0u, true, &frame);
   EXPECT_EQ(0u, consumed);
-  CheckStreamFrame(frame, 1u, "", 0u, true);
+  CheckStreamFrame(frame, 1u, std::string(), 0u, true);
   delete frame.stream_frame;
 }
 

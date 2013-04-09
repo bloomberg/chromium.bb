@@ -326,7 +326,7 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION));
   localized_strings->SetString("unknownCertsTabDeleteConfirm",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT));
-  localized_strings->SetString("unknownCertsTabDeleteImpact", "");
+  localized_strings->SetString("unknownCertsTabDeleteImpact", std::string());
 
   // Certificate Restore overlay strings.
   localized_strings->SetString("certificateRestorePasswordDescription",
@@ -614,7 +614,7 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
   chrome::UnlockCertSlotIfNecessary(
       selected_cert_list_[0].get(),
       chrome::kCryptoModulePasswordCertExport,
-      "",  // unused.
+      std::string(),  // unused.
       base::Bind(&CertificateManagerHandler::ExportPersonalSlotsUnlocked,
                  base::Unretained(this)));
 }
@@ -723,7 +723,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   chrome::UnlockSlotsIfNecessary(
       modules,
       chrome::kCryptoModulePasswordCertImport,
-      "",  // unused.
+      std::string(),  // unused.
       base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
                  base::Unretained(this)));
 }

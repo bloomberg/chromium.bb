@@ -198,7 +198,7 @@ std::string PatternParser::ToString(
       parts.is_port_wildcard)
     return "*";
 
-  std::string str = "";
+  std::string str;
   if (!parts.is_scheme_wildcard)
     str += parts.scheme + content::kStandardSchemeSeparator;
 

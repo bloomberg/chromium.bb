@@ -217,7 +217,10 @@ void AudioInputResource::SetStreamInfo(
   shared_memory_size_ = shared_memory_size;
 
   if (!shared_memory_->Map(shared_memory_size_)) {
-    PpapiGlobals::Get()->LogWithSource(pp_instance(), PP_LOGLEVEL_WARNING, "",
+    PpapiGlobals::Get()->LogWithSource(
+        pp_instance(),
+        PP_LOGLEVEL_WARNING,
+        std::string(),
         "Failed to map shared memory for PPB_AudioInput_Shared.");
   }
 

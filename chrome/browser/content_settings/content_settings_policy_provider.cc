@@ -276,7 +276,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
           pattern_pair.first,
           secondary_pattern,
           content_type,
-          ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
+          NO_RESOURCE_IDENTIFIER,
           base::Value::CreateIntegerValue(
               kPrefsForManagedContentSettingsMap[i].setting));
     }

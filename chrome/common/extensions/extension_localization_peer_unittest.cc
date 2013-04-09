@@ -144,8 +144,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
     net::ERR_ABORTED, false, "", base::TimeTicks()));
 
-  filter_peer->OnCompletedRequest(net::ERR_FAILED, false, "",
-                                  base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::ERR_FAILED, false, std::string(), base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
@@ -159,7 +159,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       net::OK, false, "", base::TimeTicks()));
 
-  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::OK, false, std::string(), base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
@@ -178,14 +179,16 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
           net::OK, false, "", base::TimeTicks())).Times(2);
 
-  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::OK, false, std::string(), base::TimeTicks());
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
   filter_peer =
       CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   SetData(filter_peer, "some text");
-  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::OK, false, std::string(), base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
@@ -213,7 +216,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       net::OK, false, "", base::TimeTicks()));
 
-  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::OK, false, std::string(), base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
@@ -241,5 +245,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       net::OK, false, "", base::TimeTicks()));
 
-  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(
+      net::OK, false, std::string(), base::TimeTicks());
 }

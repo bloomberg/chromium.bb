@@ -557,7 +557,7 @@ TEST(MessageTest, GetAndSetHeaders) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
 
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(""), message->GetPath());
+  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());
@@ -587,7 +587,7 @@ TEST(MessageTest, GetAndSetHeaders) {
 TEST(MessageTest, SetInvalidHeaders) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(""), message->GetPath());
+  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());
@@ -607,7 +607,7 @@ TEST(MessageTest, SetInvalidHeaders) {
   EXPECT_FALSE(message->SetSender("?!#*"));
 
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(""), message->GetPath());
+  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());

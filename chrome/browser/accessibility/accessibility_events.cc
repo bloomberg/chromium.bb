@@ -166,7 +166,6 @@ AccessibilityTextBoxInfo::AccessibilityTextBoxInfo(Profile* profile,
                                                    const std::string& context,
                                                    bool password)
     : AccessibilityControlInfo(profile, name),
-      value_(""),
       password_(password),
       selection_start_(0),
       selection_end_(0) {

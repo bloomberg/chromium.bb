@@ -59,7 +59,7 @@ SyncData SyncData::CreateLocalDelete(
     ModelType datatype) {
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(datatype, &specifics);
-  return CreateLocalData(sync_tag, "", specifics);
+  return CreateLocalData(sync_tag, std::string(), specifics);
 }
 
 // Static.

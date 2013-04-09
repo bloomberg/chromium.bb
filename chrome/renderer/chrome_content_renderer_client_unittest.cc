@@ -96,8 +96,8 @@ scoped_refptr<const extensions::Extension> CreateTestExtension(
 
 scoped_refptr<const extensions::Extension> CreateExtension(
     bool is_unrestricted, bool is_from_webstore) {
-  return CreateTestExtension(is_unrestricted, is_from_webstore, kNotHostedApp,
-                             "");
+  return CreateTestExtension(
+      is_unrestricted, is_from_webstore, kNotHostedApp, std::string());
 }
 
 scoped_refptr<const extensions::Extension> CreateHostedApp(

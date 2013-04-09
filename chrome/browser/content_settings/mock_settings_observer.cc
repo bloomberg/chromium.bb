@@ -35,5 +35,5 @@ void MockSettingsObserver::Observe(
   // This checks that calling a Get function from an observer doesn't
   // deadlock.
   GURL url("http://random-hostname.com/");
-  map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_IMAGES, "");
+  map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string());
 }

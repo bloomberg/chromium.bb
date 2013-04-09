@@ -942,9 +942,11 @@ Error* Session::GetElementRegionInView(
     // Find the frame element for the current frame path.
     FrameId frame_id(current_target_.view_id, frame_path.Parent());
     ElementId frame_element;
-    error = FindElement(
-        frame_id, ElementId(""),
-        LocatorType::kXpath, frame_path.BaseName().value(), &frame_element);
+    error = FindElement(frame_id,
+                        ElementId(std::string()),
+                        LocatorType::kXpath,
+                        frame_path.BaseName().value(),
+                        &frame_element);
     if (error) {
       std::string context = base::StringPrintf(
           "Could not find frame element (%s) in frame (%s)",

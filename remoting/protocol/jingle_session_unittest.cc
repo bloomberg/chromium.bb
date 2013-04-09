@@ -323,7 +323,7 @@ TEST_F(JingleSessionTest, Connect) {
       initiate_xml->FirstNamed(buzz::QName(kJingleNamespace, "jingle"));
   ASSERT_TRUE(jingle_element);
   ASSERT_EQ(kClientJid,
-            jingle_element->Attr(buzz::QName("", "initiator")));
+            jingle_element->Attr(buzz::QName(std::string(), "initiator")));
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.

@@ -1846,15 +1846,14 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // create the files
   FilePath dir2file = dir2.Append(FILE_PATH_LITERAL("dir2file.txt"));
-  CreateTextFile(dir2file, L"");
+  CreateTextFile(dir2file, std::wstring());
   FilePath dir2innerfile = dir2inner.Append(FILE_PATH_LITERAL("innerfile.txt"));
-  CreateTextFile(dir2innerfile, L"");
+  CreateTextFile(dir2innerfile, std::wstring());
   FilePath file1 = temp_dir_.path().Append(FILE_PATH_LITERAL("file1.txt"));
-  CreateTextFile(file1, L"");
-  FilePath file2_rel =
-      dir2.Append(FilePath::kParentDirectory)
-          .Append(FILE_PATH_LITERAL("file2.txt"));
-  CreateTextFile(file2_rel, L"");
+  CreateTextFile(file1, std::wstring());
+  FilePath file2_rel = dir2.Append(FilePath::kParentDirectory)
+      .Append(FILE_PATH_LITERAL("file2.txt"));
+  CreateTextFile(file2_rel, std::wstring());
   FilePath file2_abs = temp_dir_.path().Append(FILE_PATH_LITERAL("file2.txt"));
 
   // Only enumerate files.

@@ -208,8 +208,8 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   //   2) The first url on the same host as the candidate url (assuming that
   //      it's different from the candidate url).
   if (url_index != -1) {
-    AddNavigationFeatures("", controller, url_index, info->url_redirects,
-                          request);
+    AddNavigationFeatures(
+        std::string(), controller, url_index, info->url_redirects, request);
   }
   if (first_host_index != -1) {
     AddNavigationFeatures(features::kHostPrefix,

@@ -249,7 +249,11 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
   DVLOG(1) << "AddKey()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.AddKey("", key, key_size, key_id, key_id_size,
+  decryptor_.AddKey(std::string(),
+                    key,
+                    key_size,
+                    key_id,
+                    key_id_size,
                     std::string(session_id, session_id_size));
 
   if (client_.status() != Client::kKeyAdded)
@@ -268,7 +272,8 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
   DVLOG(1) << "CancelKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.CancelKeyRequest("", std::string(session_id, session_id_size));
+  decryptor_.CancelKeyRequest(std::string(),
+                              std::string(session_id, session_id_size));
   return cdm::kSuccess;
 }
 

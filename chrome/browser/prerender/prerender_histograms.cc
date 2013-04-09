@@ -92,9 +92,9 @@ bool OriginIsOmnibox(Origin origin) {
 #define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, HISTOGRAM, \
                                     histogram_name) { \
   { \
-    /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
-    std::string name = ComposeHistogramName("", histogram_name); \
-    HISTOGRAM; \
+    /* Do not rename.  HISTOGRAM expects a local variable "name". */           \
+    std::string name = ComposeHistogramName(std::string(), histogram_name);    \
+    HISTOGRAM;                                                                 \
   } \
   /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
   std::string name = GetHistogramName(origin, experiment, wash, \

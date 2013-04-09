@@ -505,14 +505,14 @@ class AutofillTest : public InProcessBrowserTest {
 
     // The previewed values should not be accessible to JavaScript.
     ExpectFieldValue("firstname", "M");
-    ExpectFieldValue("lastname", "");
-    ExpectFieldValue("address1", "");
-    ExpectFieldValue("address2", "");
-    ExpectFieldValue("city", "");
-    ExpectFieldValue("state", "");
-    ExpectFieldValue("zip", "");
-    ExpectFieldValue("country", "");
-    ExpectFieldValue("phone", "");
+    ExpectFieldValue("lastname", std::string());
+    ExpectFieldValue("address1", std::string());
+    ExpectFieldValue("address2", std::string());
+    ExpectFieldValue("city", std::string());
+    ExpectFieldValue("state", std::string());
+    ExpectFieldValue("zip", std::string());
+    ExpectFieldValue("country", std::string());
+    ExpectFieldValue("phone", std::string());
     // TODO(isherman): It would be nice to test that the previewed values are
     // displayed: http://crbug.com/57220
 
@@ -742,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillFormWithRepeatedField) {
 
   // Invoke Autofill.
   TryBasicFormFill();
-  ExpectFieldValue("state_freeform", "");
+  ExpectFieldValue("state_freeform", std::string());
 }
 
 // http://crbug.com/150084
@@ -1307,8 +1307,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_ComparePhoneNumbers) {
   ExpectFieldValue("PHONE_HOME_NUMBER_3-2", "555");
   ExpectFieldValue("PHONE_HOME_NUMBER_4-1", "4567");
   ExpectFieldValue("PHONE_HOME_NUMBER_4-2", "4567");
-  ExpectFieldValue("PHONE_HOME_EXT-1", "");
-  ExpectFieldValue("PHONE_HOME_EXT-2", "");
+  ExpectFieldValue("PHONE_HOME_EXT-1", std::string());
+  ExpectFieldValue("PHONE_HOME_EXT-2", std::string());
   ExpectFieldValue("PHONE_HOME_COUNTRY_CODE-1", "1");
 }
 
@@ -1447,7 +1447,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_NoAutofillForReadOnlyFields) {
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("firstname");
 
-  ExpectFieldValue("email", "");
+  ExpectFieldValue("email", std::string());
   ExpectFieldValue("address", addr_line1);
 }
 

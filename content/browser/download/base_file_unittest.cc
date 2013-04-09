@@ -54,7 +54,7 @@ class BaseFileTest : public testing::Test {
                                   GURL(),
                                   0,
                                   false,
-                                  "",
+                                  std::string(),
                                   scoped_ptr<net::FileStream>(),
                                   net::BoundNetLog()));
   }
@@ -105,7 +105,7 @@ class BaseFileTest : public testing::Test {
                                   GURL(),
                                   0,
                                   true,
-                                  "",
+                                  std::string(),
                                   scoped_ptr<net::FileStream>(),
                                   net::BoundNetLog()));
   }
@@ -145,7 +145,7 @@ class BaseFileTest : public testing::Test {
                   GURL(),
                   0,
                   false,
-                  "",
+                  std::string(),
                   scoped_ptr<net::FileStream>(),
                   net::BoundNetLog());
 
@@ -171,7 +171,7 @@ class BaseFileTest : public testing::Test {
                             GURL(),
                             0,
                             false,
-                            "",
+                            std::string(),
                             scoped_ptr<net::FileStream>(),
                             net::BoundNetLog());
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -503,7 +503,7 @@ TEST_F(BaseFileTest, MultipleWritesWithError) {
                                 GURL(),
                                 0,
                                 false,
-                                "",
+                                std::string(),
                                 mock_file_stream_scoped_ptr.Pass(),
                                 net::BoundNetLog()));
   ASSERT_TRUE(InitializeFile());
@@ -550,7 +550,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
                                 GURL(),
                                 kTestDataLength4,
                                 false,
-                                "",
+                                std::string(),
                                 scoped_ptr<net::FileStream>(),
                                 net::BoundNetLog()));
 
@@ -584,7 +584,7 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
                                 GURL(),
                                 0,
                                 false,
-                                "",
+                                std::string(),
                                 scoped_ptr<net::FileStream>(),
                                 net::BoundNetLog()));
 
@@ -609,7 +609,7 @@ TEST_F(BaseFileTest, IsEmptyHash) {
   EXPECT_TRUE(BaseFile::IsEmptyHash(empty));
   std::string not_empty(BaseFile::kSha256HashLen, '\x01');
   EXPECT_FALSE(BaseFile::IsEmptyHash(not_empty));
-  EXPECT_FALSE(BaseFile::IsEmptyHash(""));
+  EXPECT_FALSE(BaseFile::IsEmptyHash(std::string()));
 }
 
 // Test that calculating speed after no writes.

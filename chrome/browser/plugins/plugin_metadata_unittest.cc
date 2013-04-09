@@ -34,9 +34,11 @@ TEST(PluginMetadataTest, SecurityStatus) {
 
   PluginMetadata plugin_metadata("claybrick-writer",
                                  ASCIIToUTF16("ClayBrick Writer"),
-                                 true, GURL(), GURL(),
+                                 true,
+                                 GURL(),
+                                 GURL(),
                                  ASCIIToUTF16("ClayBrick"),
-                                 "");
+                                 std::string());
 #if defined(OS_LINUX)
   EXPECT_EQ(kRequiresAuthorization,
             GetSecurityStatus(&plugin_metadata, "1.2.3"));

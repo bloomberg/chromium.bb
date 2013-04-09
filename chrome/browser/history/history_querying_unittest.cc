@@ -468,7 +468,7 @@ TEST_F(HistoryQueryTest, Paging) {
   // Since results are fetched 1 and 2 at a time, entry #0 and #6 will not
   // be de-duplicated.
   int expected_results[] = { 4, 2, 3, 1, 7, 6, 5, 0 };
-  TestPaging("", expected_results, arraysize(expected_results));
+  TestPaging(std::string(), expected_results, arraysize(expected_results));
 }
 
 TEST_F(HistoryQueryTest, FTSPaging) {

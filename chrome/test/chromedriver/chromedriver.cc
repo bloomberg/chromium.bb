@@ -36,7 +36,7 @@ void SetError(const std::string& error_msg,
               std::string* response) {
   base::DictionaryValue value;
   value.SetString("message", error_msg);
-  SetResponse(kUnknownError, &value, "", response);
+  SetResponse(kUnknownError, &value, std::string(), response);
 }
 
 }  // namespace
@@ -120,6 +120,6 @@ void Shutdown() {
   scoped_ptr<base::Value> value;
   std::string session_id;
   g_command_executor->ExecuteCommand(
-      "quitAll", params, "", &status_code, &value, &session_id);
+      "quitAll", params, std::string(), &status_code, &value, &session_id);
   delete g_command_executor;
 }

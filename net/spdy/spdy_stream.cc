@@ -534,7 +534,7 @@ void SpdyStream::Cancel() {
 
   cancelled_ = true;
   if (session_->IsStreamActive(stream_id_))
-    session_->ResetStream(stream_id_, RST_STREAM_CANCEL, "");
+    session_->ResetStream(stream_id_, RST_STREAM_CANCEL, std::string());
   else if (stream_id_ == 0)
     session_->CloseCreatedStream(this, RST_STREAM_CANCEL);
 }

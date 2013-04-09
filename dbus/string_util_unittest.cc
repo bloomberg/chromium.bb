@@ -10,7 +10,7 @@ TEST(StringUtilTest, IsValidObjectPath) {
   EXPECT_TRUE(dbus::IsValidObjectPath("/foo/bar"));
   EXPECT_TRUE(dbus::IsValidObjectPath("/hoge_fuga/piyo123"));
   // Empty string.
-  EXPECT_FALSE(dbus::IsValidObjectPath(""));
+  EXPECT_FALSE(dbus::IsValidObjectPath(std::string()));
   // Emptyr elemnt.
   EXPECT_FALSE(dbus::IsValidObjectPath("//"));
   EXPECT_FALSE(dbus::IsValidObjectPath("/foo//bar"));

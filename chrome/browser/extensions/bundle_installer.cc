@@ -215,7 +215,7 @@ void BundleInstaller::ParseManifests() {
 
   for (ItemMap::iterator i = items_.begin(); i != items_.end(); ++i) {
     scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-        this, i->first, i->second.manifest, "", GURL(), NULL);
+        this, i->first, i->second.manifest, std::string(), GURL(), NULL);
     helper->Start();
   }
 }

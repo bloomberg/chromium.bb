@@ -217,9 +217,9 @@ void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
-          fetcher_->throttler_manager(), "", 200, 3, 1, 2.0, 0.0, 256));
+  scoped_refptr<net::URLRequestThrottlerEntry>
+  entry(new net::URLRequestThrottlerEntry(
+      fetcher_->throttler_manager(), std::string(), 200, 3, 1, 2.0, 0.0, 256));
   fetcher_->throttler_manager()->OverrideEntryForTests(url, entry);
 
   max_retries_ = max_retries;

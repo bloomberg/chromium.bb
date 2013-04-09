@@ -87,7 +87,7 @@ void CloudPrintSetupSource::StartDataRequest(
 
     // None of the strings used here currently have sync-specific wording in
     // them.  There is a unit test to catch if that happens.
-    dict->SetString("introduction", "");
+    dict->SetString("introduction", std::string());
     AddString(dict, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
     AddString(dict, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
     AddString(dict, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);

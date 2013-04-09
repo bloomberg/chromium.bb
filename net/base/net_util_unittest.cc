@@ -2596,10 +2596,14 @@ TEST(NetUtilTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // View-source case.
-  formatted = FormatUrl(
-      GURL("view-source:http://user:passwd@host:81/path?query#ref"),
-      "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, &parsed,
-      NULL, NULL);
+  formatted =
+      FormatUrl(GURL("view-source:http://user:passwd@host:81/path?query#ref"),
+                std::string(),
+                kFormatUrlOmitUsernamePassword,
+                UnescapeRule::NORMAL,
+                &parsed,
+                NULL,
+                NULL);
   EXPECT_EQ(WideToUTF16(L"view-source:http://host:81/path?query#ref"),
       formatted);
   EXPECT_EQ(WideToUTF16(L"view-source:http"),
@@ -2618,9 +2622,13 @@ TEST(NetUtilTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http case.
-  formatted = FormatUrl(
-      GURL("http://host:8000/a?b=c#d"),
-      "", kFormatUrlOmitHTTP, UnescapeRule::NORMAL, &parsed, NULL, NULL);
+  formatted = FormatUrl(GURL("http://host:8000/a?b=c#d"),
+                        std::string(),
+                        kFormatUrlOmitHTTP,
+                        UnescapeRule::NORMAL,
+                        &parsed,
+                        NULL,
+                        NULL);
   EXPECT_EQ(WideToUTF16(L"host:8000/a?b=c#d"), formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -2637,9 +2645,13 @@ TEST(NetUtilTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with ftp case.
-  formatted = FormatUrl(
-      GURL("http://ftp.host:8000/a?b=c#d"),
-      "", kFormatUrlOmitHTTP, UnescapeRule::NORMAL, &parsed, NULL, NULL);
+  formatted = FormatUrl(GURL("http://ftp.host:8000/a?b=c#d"),
+                        std::string(),
+                        kFormatUrlOmitHTTP,
+                        UnescapeRule::NORMAL,
+                        &parsed,
+                        NULL,
+                        NULL);
   EXPECT_EQ(WideToUTF16(L"http://ftp.host:8000/a?b=c#d"), formatted);
   EXPECT_TRUE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -2658,9 +2670,13 @@ TEST(NetUtilTest, FormatUrlParsed) {
       formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with 'f' case.
-  formatted = FormatUrl(
-      GURL("http://f/"),
-      "", kFormatUrlOmitHTTP, UnescapeRule::NORMAL, &parsed, NULL, NULL);
+  formatted = FormatUrl(GURL("http://f/"),
+                        std::string(),
+                        kFormatUrlOmitHTTP,
+                        UnescapeRule::NORMAL,
+                        &parsed,
+                        NULL,
+                        NULL);
   EXPECT_EQ(WideToUTF16(L"f/"), formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
@@ -2682,9 +2698,13 @@ TEST(NetUtilTest, FormatUrlRoundTripPathASCII) {
     GURL url(std::string("http://www.google.com/") +
              static_cast<char>(test_char));
     size_t prefix_len;
-    base::string16 formatted = FormatUrl(
-        url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
-        &prefix_len, NULL);
+    base::string16 formatted = FormatUrl(url,
+                                         std::string(),
+                                         kFormatUrlOmitUsernamePassword,
+                                         UnescapeRule::NORMAL,
+                                         NULL,
+                                         &prefix_len,
+                                         NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -2699,9 +2719,13 @@ TEST(NetUtilTest, FormatUrlRoundTripPathEscaped) {
 
     GURL url(original_url);
     size_t prefix_len;
-    base::string16 formatted = FormatUrl(
-        url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
-        &prefix_len, NULL);
+    base::string16 formatted = FormatUrl(url,
+                                         std::string(),
+                                         kFormatUrlOmitUsernamePassword,
+                                         UnescapeRule::NORMAL,
+                                         NULL,
+                                         &prefix_len,
+                                         NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -2713,9 +2737,13 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryASCII) {
     GURL url(std::string("http://www.google.com/?") +
              static_cast<char>(test_char));
     size_t prefix_len;
-    base::string16 formatted = FormatUrl(
-        url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
-        &prefix_len, NULL);
+    base::string16 formatted = FormatUrl(url,
+                                         std::string(),
+                                         kFormatUrlOmitUsernamePassword,
+                                         UnescapeRule::NORMAL,
+                                         NULL,
+                                         &prefix_len,
+                                         NULL);
     EXPECT_EQ(url.spec(), GURL(formatted).spec());
   }
 }
@@ -2734,9 +2762,13 @@ TEST(NetUtilTest, FormatUrlRoundTripQueryEscaped) {
 
     GURL url(original_url);
     size_t prefix_len;
-    base::string16 formatted = FormatUrl(
-        url, "", kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
-        &prefix_len, NULL);
+    base::string16 formatted = FormatUrl(url,
+                                         std::string(),
+                                         kFormatUrlOmitUsernamePassword,
+                                         UnescapeRule::NORMAL,
+                                         NULL,
+                                         &prefix_len,
+                                         NULL);
 
     if (test_char &&
         strchr(kUnescapedCharacters, static_cast<char>(test_char))) {
@@ -3036,7 +3068,7 @@ TEST(NetUtilTest, ParseIPLiteralToNumber_FailParse) {
 
   EXPECT_FALSE(ParseIPLiteralToNumber("bad value", &number));
   EXPECT_FALSE(ParseIPLiteralToNumber("bad:value", &number));
-  EXPECT_FALSE(ParseIPLiteralToNumber("", &number));
+  EXPECT_FALSE(ParseIPLiteralToNumber(std::string(), &number));
   EXPECT_FALSE(ParseIPLiteralToNumber("192.168.0.1:30", &number));
   EXPECT_FALSE(ParseIPLiteralToNumber("  192.168.0.1  ", &number));
   EXPECT_FALSE(ParseIPLiteralToNumber("[::1]", &number));

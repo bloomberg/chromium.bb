@@ -89,7 +89,7 @@ bool GLSurface::DeferDraws() {
 }
 
 std::string GLSurface::GetExtensions() {
-  return std::string("");
+  return std::string();
 }
 
 bool GLSurface::HasExtension(const char* name) {

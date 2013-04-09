@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
                                    EXPECT_ORIGIN_AS_REFERRER);
 
   // Navigate to C.
-  ui_test_utils::NavigateToURL(browser(), test_server_->GetURL(""));
+  ui_test_utils::NavigateToURL(browser(), test_server_->GetURL(std::string()));
 
   string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);

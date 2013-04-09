@@ -459,7 +459,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                       content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
                       webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
-    SendJson(connection_id, net::HTTP_OK, &version, "");
+    SendJson(connection_id, net::HTTP_OK, &version, std::string());
     return;
   }
 
@@ -506,7 +506,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     }
     std::string host = info.headers["Host"];
     scoped_ptr<base::DictionaryValue> dictionary(SerializePageInfo(rvh, host));
-    SendJson(connection_id, net::HTTP_OK, dictionary.get(), "");
+    SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
     return;
   }
 
@@ -552,7 +552,7 @@ void DevToolsHttpHandlerImpl::CollectWorkerInfo(ListValue* target_list,
 
 void DevToolsHttpHandlerImpl::SendTargetList(int connection_id,
                                              ListValue* target_list) {
-  SendJson(connection_id, net::HTTP_OK, target_list, "");
+  SendJson(connection_id, net::HTTP_OK, target_list, std::string());
   delete target_list;
   Release();  // Balanced OnJsonRequestUI.
 }

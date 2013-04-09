@@ -38,7 +38,7 @@ std::string GetContentTypeFromFetcher(const net::URLFetcher& fetcher) {
     if (headers->GetMimeType(&content_type))
       return content_type;
   }
-  return "";
+  return std::string();
 }
 
 }  // namespace

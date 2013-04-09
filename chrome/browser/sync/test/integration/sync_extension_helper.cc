@@ -63,7 +63,7 @@ std::string SyncExtensionHelper::InstallExtension(
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
   if (!extension.get()) {
     NOTREACHED() << "Could not install extension " << name;
-    return "";
+    return std::string();
   }
   profile->GetExtensionService()->OnExtensionInstalled(
       extension, syncer::StringOrdinal(), false /* no requirement errors */,

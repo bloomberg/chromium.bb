@@ -203,8 +203,9 @@ bool CookiesGetFunction::RunImpl() {
   if (!ParseUrl(parsed_args_->details.url, &url_, true))
     return false;
 
-  std::string store_id = parsed_args_->details.store_id.get() ?
-      *parsed_args_->details.store_id : "";
+  std::string store_id =
+      parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
+                                           : std::string();
   net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(&store_id, &store_context))
     return false;
@@ -276,8 +277,9 @@ bool CookiesGetAllFunction::RunImpl() {
     return false;
   }
 
-  std::string store_id = parsed_args_->details.store_id.get() ?
-      *parsed_args_->details.store_id : "";
+  std::string store_id =
+      parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
+                                           : std::string();
   net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(&store_id, &store_context))
     return false;
@@ -339,8 +341,9 @@ bool CookiesSetFunction::RunImpl() {
   if (!ParseUrl(parsed_args_->details.url, &url_, true))
       return false;
 
-  std::string store_id = parsed_args_->details.store_id.get() ?
-      *parsed_args_->details.store_id : "";
+  std::string store_id =
+      parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
+                                           : std::string();
   net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(&store_id, &store_context))
     return false;
@@ -374,17 +377,19 @@ void CookiesSetFunction::SetCookieOnIOThread() {
 
   cookie_monster->SetCookieWithDetailsAsync(
       url_,
-      parsed_args_->details.name.get() ? *parsed_args_->details.name : "",
-      parsed_args_->details.value.get() ? *parsed_args_->details.value : "",
-      parsed_args_->details.domain.get() ? *parsed_args_->details.domain : "",
-      parsed_args_->details.path.get() ? *parsed_args_->details.path : "",
+      parsed_args_->details.name.get() ? *parsed_args_->details.name
+                                       : std::string(),
+      parsed_args_->details.value.get() ? *parsed_args_->details.value
+                                        : std::string(),
+      parsed_args_->details.domain.get() ? *parsed_args_->details.domain
+                                         : std::string(),
+      parsed_args_->details.path.get() ? *parsed_args_->details.path
+                                       : std::string(),
       expiration_time,
-      parsed_args_->details.secure.get() ?
-          *parsed_args_->details.secure.get() :
-          false,
-      parsed_args_->details.http_only.get() ?
-          *parsed_args_->details.http_only :
-          false,
+      parsed_args_->details.secure.get() ? *parsed_args_->details.secure.get()
+                                         : false,
+      parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
+                                            : false,
       base::Bind(&CookiesSetFunction::PullCookie, this));
 }
 
@@ -406,8 +411,9 @@ void CookiesSetFunction::PullCookieCallback(
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
-    std::string name = parsed_args_->details.name.get() ?
-        *parsed_args_->details.name : "";
+    std::string name =
+        parsed_args_->details.name.get() ? *parsed_args_->details.name
+                                         : std::string();
     if (it->Name() == name) {
       scoped_ptr<Cookie> cookie(
           cookies_helpers::CreateCookie(*it, *parsed_args_->details.store_id));
@@ -425,10 +431,10 @@ void CookiesSetFunction::PullCookieCallback(
 void CookiesSetFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success_) {
-    std::string name = parsed_args_->details.name.get() ?
-        *parsed_args_->details.name : "";
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kCookieSetFailedError, name);
+    std::string name =
+        parsed_args_->details.name.get() ? *parsed_args_->details.name
+                                         : std::string();
+    error_ = ErrorUtils::FormatErrorMessage(keys::kCookieSetFailedError, name);
   }
   SendResponse(success_);
 }
@@ -447,8 +453,9 @@ bool CookiesRemoveFunction::RunImpl() {
   if (!ParseUrl(parsed_args_->details.url, &url_, true))
     return false;
 
-  std::string store_id = parsed_args_->details.store_id.get() ?
-      *parsed_args_->details.store_id : "";
+  std::string store_id =
+      parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
+                                           : std::string();
   net::URLRequestContextGetter* store_context = NULL;
   if (!ParseStoreContext(&store_id, &store_context))
     return false;

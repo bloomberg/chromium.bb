@@ -106,11 +106,13 @@ TEST(HttpAuthCacheTest, Basic) {
       new MockAuthHandler(HttpAuth::AUTH_SCHEME_BASIC,
                           kRealm3,
                           HttpAuth::AUTH_PROXY));
-  cache.Add(origin, realm3_basic_handler->realm(),
-            realm3_basic_handler->auth_scheme(), "Basic realm=Realm3",
-            CreateASCIICredentials("realm3-basic-user",
-                                   "realm3-basic-password"),
-            "");
+  cache.Add(
+      origin,
+      realm3_basic_handler->realm(),
+      realm3_basic_handler->auth_scheme(),
+      "Basic realm=Realm3",
+      CreateASCIICredentials("realm3-basic-user", "realm3-basic-password"),
+      std::string());
 
   scoped_ptr<HttpAuthHandler> realm3_digest_handler(
       new MockAuthHandler(HttpAuth::AUTH_SCHEME_DIGEST,
@@ -205,7 +207,7 @@ TEST(HttpAuthCacheTest, Basic) {
   // Negative tests:
   entry = cache.LookupByPath(origin, "/foo3/index.html");
   EXPECT_FALSE(realm2_entry == entry);
-  entry = cache.LookupByPath(origin, "");
+  entry = cache.LookupByPath(origin, std::string());
   EXPECT_FALSE(realm2_entry == entry);
 
   // Confirm we find the same realm, different auth scheme by path lookup
@@ -231,7 +233,7 @@ TEST(HttpAuthCacheTest, Basic) {
   EXPECT_FALSE(realm3DigestEntry == entry);
 
   // Lookup using empty path (may be used for proxy).
-  entry = cache.LookupByPath(origin, "");
+  entry = cache.LookupByPath(origin, std::string());
   EXPECT_FALSE(NULL == entry);
   EXPECT_EQ(HttpAuth::AUTH_SCHEME_BASIC, entry->scheme());
   EXPECT_EQ(kRealm3, entry->realm());
@@ -540,7 +542,10 @@ class HttpAuthCacheEvictionTest : public testing::Test {
   }
 
   void AddPathToRealm(int realm_i, int path_i) {
-    cache_.Add(origin_, GenerateRealm(realm_i), HttpAuth::AUTH_SCHEME_BASIC, "",
+    cache_.Add(origin_,
+               GenerateRealm(realm_i),
+               HttpAuth::AUTH_SCHEME_BASIC,
+               std::string(),
                AuthCredentials(kUsername, kPassword),
                GeneratePath(realm_i, path_i));
   }

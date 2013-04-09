@@ -65,7 +65,7 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
 }
 
 TEST_F(SpdyServerPropertiesTest, SupportsSpdyTest) {
-  HostPortPair spdy_server_empty("", 443);
+  HostPortPair spdy_server_empty(std::string(), 443);
   EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_empty));
 
   // Add www.google.com:443 as supporting SPDY.
@@ -89,7 +89,7 @@ TEST_F(SpdyServerPropertiesTest, SupportsSpdyTest) {
 }
 
 TEST_F(SpdyServerPropertiesTest, SetSupportsSpdy) {
-  HostPortPair spdy_server_empty("", 443);
+  HostPortPair spdy_server_empty(std::string(), 443);
   impl_.SetSupportsSpdy(spdy_server_empty, true);
   EXPECT_FALSE(impl_.SupportsSpdy(spdy_server_empty));
 
@@ -134,7 +134,7 @@ TEST_F(SpdyServerPropertiesTest, GetSpdyServerList) {
   EXPECT_EQ(0U, spdy_server_list.GetSize());
 
   // Check empty server is not added.
-  HostPortPair spdy_server_empty("", 443);
+  HostPortPair spdy_server_empty(std::string(), 443);
   impl_.SetSupportsSpdy(spdy_server_empty, true);
   impl_.GetSpdyServerList(&spdy_server_list);
   EXPECT_EQ(0U, spdy_server_list.GetSize());
@@ -303,7 +303,7 @@ TEST_F(SpdySettingsServerPropertiesTest, Initialize) {
 }
 
 TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
-  HostPortPair spdy_server_empty("", 443);
+  HostPortPair spdy_server_empty(std::string(), 443);
   const SettingsMap& settings_map0 = impl_.GetSpdySettings(spdy_server_empty);
   EXPECT_EQ(0U, settings_map0.size());  // Returns kEmptySettingsMap.
 

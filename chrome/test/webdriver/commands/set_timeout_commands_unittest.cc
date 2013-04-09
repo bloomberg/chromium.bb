@@ -55,7 +55,7 @@ TEST(ImplicitWaitCommandTest, SettingImplicitWaits) {
   ASSERT_EQ(0, test_session.implicit_wait()) << "Sanity check failed";
 
   std::vector<std::string> path_segments;
-  path_segments.push_back("");
+  path_segments.push_back(std::string());
   path_segments.push_back("session");
   path_segments.push_back(test_session.id());
   path_segments.push_back("timeouts");

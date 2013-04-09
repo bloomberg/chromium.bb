@@ -335,11 +335,16 @@ int main (int argc, char**argv)
     std::string value = cl.GetSwitchValueASCII("spdy-server");
     std::vector<std::string> valueArgs = split(value, ',');
     while (valueArgs.size() < 4)
-      valueArgs.push_back("");
+      valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_SPDY_SERVER,
-                               valueArgs[0], valueArgs[1],
-                               valueArgs[2], valueArgs[3],
-                               "", "", "", "",
+                               valueArgs[0],
+                               valueArgs[1],
+                               valueArgs[2],
+                               valueArgs[3],
+                               std::string(),
+                               std::string(),
+                               std::string(),
+                               std::string(),
                                0,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
@@ -356,11 +361,16 @@ int main (int argc, char**argv)
     std::string value = cl.GetSwitchValueASCII("http-server");
     std::vector<std::string> valueArgs = split(value, ',');
     while (valueArgs.size() < 4)
-      valueArgs.push_back("");
+      valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_HTTP_SERVER,
-                               valueArgs[0], valueArgs[1],
-                               valueArgs[2], valueArgs[3],
-                               "", "", "", "",
+                               valueArgs[0],
+                               valueArgs[1],
+                               valueArgs[2],
+                               valueArgs[3],
+                               std::string(),
+                               std::string(),
+                               std::string(),
+                               std::string(),
                                0,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,

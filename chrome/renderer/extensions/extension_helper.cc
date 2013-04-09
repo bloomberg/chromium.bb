@@ -313,8 +313,12 @@ void ExtensionHelper::OnExecuteCode(
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
     ListValue val;
-    Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, "No main frame", -1, GURL(""), val));
+    Send(new ExtensionHostMsg_ExecuteCodeFinished(routing_id(),
+                                                  params.request_id,
+                                                  "No main frame",
+                                                  -1,
+                                                  GURL(std::string()),
+                                                  val));
     return;
   }
 

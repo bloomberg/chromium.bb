@@ -445,7 +445,8 @@ void CannedSyncableFileSystem::ClearChangeForURLInTracker(
 }
 
 FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
-  return file_system_context_->CreateFileSystemOperation(URL(""), NULL);
+  return file_system_context_->CreateFileSystemOperation(URL(std::string()),
+                                                         NULL);
 }
 
 void CannedSyncableFileSystem::OnSyncEnabled(const FileSystemURL& url) {

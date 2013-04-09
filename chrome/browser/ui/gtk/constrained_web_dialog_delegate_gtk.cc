@@ -127,7 +127,7 @@ ConstrainedWebDialogDelegateViewGtk::ConstrainedWebDialogDelegateViewGtk(
 
 void ConstrainedWebDialogDelegateViewGtk::OnDestroy(GtkWidget* widget) {
   if (!impl_->closed_via_webui())
-    GetWebDialogDelegate()->OnDialogClosed("");
+    GetWebDialogDelegate()->OnDialogClosed(std::string());
   delete this;
 }
 

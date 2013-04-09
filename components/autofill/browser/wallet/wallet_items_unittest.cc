@@ -418,7 +418,7 @@ TEST_F(WalletItemsTest, CreateMaskedInstrument) {
                                           ASCIIToUTF16("state"),
                                           ASCIIToUTF16("postal_code"),
                                           ASCIIToUTF16("phone_number"),
-                                          ""));
+                                          std::string()));
   std::vector<string16> supported_currencies;
   supported_currencies.push_back(ASCIIToUTF16("currency"));
   WalletItems::MaskedInstrument masked_instrument(
@@ -520,7 +520,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                                                   ASCIIToUTF16("state"),
                                                   ASCIIToUTF16("postal_code"),
                                                   ASCIIToUTF16("phone_number"),
-                                                  ""));
+                                                  std::string()));
   std::vector<string16> supported_currencies;
   supported_currencies.push_back(ASCIIToUTF16("currency"));
   scoped_ptr<WalletItems::MaskedInstrument> masked_instrument(

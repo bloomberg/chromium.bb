@@ -270,12 +270,12 @@ bool HttpAuthHandlerDigest::ParseChallengeProperty(const std::string& name,
 std::string HttpAuthHandlerDigest::QopToString(QualityOfProtection qop) {
   switch (qop) {
     case QOP_UNSPECIFIED:
-      return "";
+      return std::string();
     case QOP_AUTH:
       return "auth";
     default:
       NOTREACHED();
-      return "";
+      return std::string();
   }
 }
 
@@ -284,14 +284,14 @@ std::string HttpAuthHandlerDigest::AlgorithmToString(
     DigestAlgorithm algorithm) {
   switch (algorithm) {
     case ALGORITHM_UNSPECIFIED:
-      return "";
+      return std::string();
     case ALGORITHM_MD5:
       return "MD5";
     case ALGORITHM_MD5_SESS:
       return "MD5-sess";
     default:
       NOTREACHED();
-      return "";
+      return std::string();
   }
 }
 

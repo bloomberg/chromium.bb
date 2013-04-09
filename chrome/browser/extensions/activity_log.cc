@@ -27,7 +27,7 @@ namespace {
 
 // Concatenate arguments.
 std::string MakeArgList(const ListValue* args) {
-  std::string call_signature = "";
+  std::string call_signature;
   ListValue::const_iterator it = args->begin();
   for (; it != args->end(); ++it) {
     std::string arg;
@@ -395,9 +395,10 @@ void ActivityLog::OnScriptsExecuted(
     // of content scripts will be empty.  We don't want to log it because
     // the call to tabs.executeScript will have already been logged anyway.
     if (!it->second.empty()) {
-      std::string ext_scripts_str = "";
+      std::string ext_scripts_str;
       for (std::set<std::string>::const_iterator it2 = it->second.begin();
-           it2 != it->second.end(); ++it2) {
+           it2 != it->second.end();
+           ++it2) {
         ext_scripts_str += *it2;
         ext_scripts_str += " ";
       }
@@ -406,9 +407,9 @@ void ActivityLog::OnScriptsExecuted(
       LogDOMActionInternal(extension,
                            on_url,
                            web_contents->GetTitle(),
-                           "",   // no api call here
+                           std::string(),  // no api call here
                            script_names.get(),
-                           "",   // no extras either
+                           std::string(),  // no extras either
                            DOMAction::INSERTED);
     }
   }

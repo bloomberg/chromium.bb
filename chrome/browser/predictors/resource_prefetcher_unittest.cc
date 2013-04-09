@@ -111,7 +111,8 @@ class ResourcePrefetcherTest : public testing::Test {
 
 
   void OnReceivedRedirect(const std::string& url) {
-    prefetcher_->OnReceivedRedirect(GetInFlightRequest(url), GURL(""), NULL);
+    prefetcher_->OnReceivedRedirect(
+        GetInFlightRequest(url), GURL(std::string()), NULL);
   }
   void OnAuthRequired(const std::string& url) {
     prefetcher_->OnAuthRequired(GetInFlightRequest(url), NULL);

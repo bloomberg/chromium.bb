@@ -201,7 +201,7 @@ void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
   ScopedClipboardWriterGlue scw(client_);
 
   scw.WriteBookmark(title, url.spec());
-  scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), "");
+  scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), std::string());
   scw.WriteText(UTF8ToUTF16(std::string(url.spec())));
 }
 
@@ -225,7 +225,7 @@ void WebClipboardImpl::writeImage(
     // We also don't want to write HTML on a Mac, since Mail.app prefers to use
     // the image markup over attaching the actual image. See
     // http://crbug.com/33016 for details.
-    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), "");
+    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), std::string());
 #endif
   }
 }
@@ -238,7 +238,7 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
   if (!data_object.text.is_null())
     scw.WriteText(data_object.text.string());
   if (!data_object.html.is_null())
-    scw.WriteHTML(data_object.html.string(), "");
+    scw.WriteHTML(data_object.html.string(), std::string());
   // If there is no custom data, avoid calling WritePickledData. This ensures
   // that ScopedClipboardWriterGlue's dtor remains a no-op if the page didn't
   // modify the DataTransfer object, which is important to avoid stomping on

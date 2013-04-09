@@ -69,9 +69,9 @@ class HostChangeNotificationListenerTest : public testing::Test {
                                                std::string hostId,
                                                std::string botJid) {
     scoped_ptr<XmlElement> stanza(new XmlElement(buzz::QN_IQ));
-    stanza->AddAttr(QName("", "type"), "set");
-    XmlElement* host_changed = new XmlElement(
-        QName(kChromotingXmlNamespace, "host-changed"));
+    stanza->AddAttr(QName(std::string(), "type"), "set");
+    XmlElement* host_changed =
+        new XmlElement(QName(kChromotingXmlNamespace, "host-changed"));
     host_changed->AddAttr(QName(kChromotingXmlNamespace, "operation"),
                           operation);
     host_changed->AddAttr(QName(kChromotingXmlNamespace, "hostid"), hostId);

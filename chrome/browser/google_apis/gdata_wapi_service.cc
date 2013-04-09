@@ -199,15 +199,14 @@ void GDataWapiService::GetAllResourceList(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          GURL(),  // No override url
-          0,  // start changestamp
-          "",  // empty search query
-          "",  // no directory resource id
-          callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   GURL(),         // No override url
+                                   0,              // start changestamp
+                                   std::string(),  // empty search query
+                                   std::string(),  // no directory resource id
+                                   callback));
 }
 
 void GDataWapiService::GetResourceListInDirectory(
@@ -218,15 +217,14 @@ void GDataWapiService::GetResourceListInDirectory(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          GURL(),  // No override url
-          0,  // start changestamp
-          "",  // empty search query
-          directory_resource_id,
-          callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   GURL(),         // No override url
+                                   0,              // start changestamp
+                                   std::string(),  // empty search query
+                                   directory_resource_id,
+                                   callback));
 }
 
 void GDataWapiService::Search(const std::string& search_query,
@@ -236,15 +234,14 @@ void GDataWapiService::Search(const std::string& search_query,
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          GURL(),  // No override url
-          0,  // start changestamp
-          search_query,
-          "",  // no directory resource id
-          callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   GURL(),         // No override url
+                                   0,              // start changestamp
+                                   search_query,
+                                   std::string(),  // no directory resource id
+                                   callback));
 }
 
 void GDataWapiService::SearchInDirectory(
@@ -274,15 +271,14 @@ void GDataWapiService::GetChangeList(int64 start_changestamp,
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          GURL(),  // No override url
-          start_changestamp,
-          "",  // empty search query
-          "",  // no directory resource id
-          callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   GURL(),         // No override url
+                                   start_changestamp,
+                                   std::string(),  // empty search query
+                                   std::string(),  // no directory resource id
+                                   callback));
 }
 
 void GDataWapiService::ContinueGetResourceList(
@@ -293,15 +289,14 @@ void GDataWapiService::ContinueGetResourceList(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          override_url,
-          0,  // start changestamp
-          "",  // empty search query
-          "",  // no directory resource id
-          callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   override_url,
+                                   0,              // start changestamp
+                                   std::string(),  // empty search query
+                                   std::string(),  // no directory resource id
+                                   callback));
 }
 
 void GDataWapiService::GetResourceEntry(

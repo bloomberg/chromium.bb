@@ -441,11 +441,16 @@ class CancelTestURLRequestContextGetter
       // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
       // Maximum retries allowed is set to 2.
       scoped_refptr<URLRequestThrottlerEntry> entry(
-          new URLRequestThrottlerEntry(
-              context_->throttler_manager(),
-              "", 200, 3, 2000, 2.0, 0.0, 4000));
-      context_->throttler_manager()->OverrideEntryForTests(
-          throttle_for_url_, entry);
+          new URLRequestThrottlerEntry(context_->throttler_manager(),
+                                       std::string(),
+                                       200,
+                                       3,
+                                       2000,
+                                       2.0,
+                                       0.0,
+                                       4000));
+      context_->throttler_manager()
+          ->OverrideEntryForTests(throttle_for_url_, entry);
 
       context_created_.Signal();
     }
@@ -553,7 +558,7 @@ void URLFetcherEmptyPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
-  fetcher_->SetUploadData("text/plain", "");
+  fetcher_->SetUploadData("text/plain", std::string());
   fetcher_->Start();
 }
 
@@ -1163,9 +1168,14 @@ TEST_F(URLFetcherProtectTest, Overload) {
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
   scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(
-          request_context()->throttler_manager(),
-          "", 200, 3, 1, 2.0, 0.0, 256));
+      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
+                                   std::string(),
+                                   200,
+                                   3,
+                                   1,
+                                   2.0,
+                                   0.0,
+                                   256));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
@@ -1186,9 +1196,14 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(
-          request_context()->throttler_manager(),
-          "", 200, 3, 1, 2.0, 0.0, 256));
+      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
+                                   std::string(),
+                                   200,
+                                   3,
+                                   1,
+                                   2.0,
+                                   0.0,
+                                   256));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
@@ -1209,9 +1224,14 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(
-          request_context()->throttler_manager(),
-          "", 200, 3, 100, 2.0, 0.0, 150000));
+      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
+                                   std::string(),
+                                   200,
+                                   3,
+                                   100,
+                                   2.0,
+                                   0.0,
+                                   150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
@@ -1268,9 +1288,14 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   // Using a sliding window of 4 seconds, and max of 1 request, under a fast
   // run we expect to have a 4 second delay when posting the Start task.
   scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(
-          request_context()->throttler_manager(),
-          "", 4000, 1, 2000, 2.0, 0.0, 4000));
+      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
+                                   std::string(),
+                                   4000,
+                                   1,
+                                   2000,
+                                   2.0,
+                                   0.0,
+                                   4000));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
   // Fake that a request has just started.
   entry->ReserveSendingTimeForNextRequest(base::TimeTicks());

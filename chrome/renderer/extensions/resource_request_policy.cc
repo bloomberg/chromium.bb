@@ -51,7 +51,8 @@ bool ResourceRequestPolicy::CanRequestResource(
   // some extensions want to be able to do things like create their own
   // launchers.
   std::string resource_root_relative_path =
-      resource_url.path().empty() ? "" : resource_url.path().substr(1);
+      resource_url.path().empty() ? std::string()
+                                  : resource_url.path().substr(1);
   if (extension->is_hosted_app() &&
       !IconsInfo::GetIcons(extension)
           .ContainsPath(resource_root_relative_path)) {

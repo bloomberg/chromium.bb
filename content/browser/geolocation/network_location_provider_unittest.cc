@@ -344,7 +344,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
-  CheckRequestIsValid(*fetcher, 0, 0, 0, "");
+  CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
@@ -353,9 +353,8 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
-  CheckRequestIsValid(*fetcher, 0, 0, 0, "");
+  CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
 }
-
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
@@ -369,7 +368,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   // in length by not including access points with the lowest signal strength
   // in the request.
   EXPECT_LT(fetcher->GetOriginalURL().spec().size(), size_t(2048));
-  CheckRequestIsValid(*fetcher, 0, 16, 4, "");
+  CheckRequestIsValid(*fetcher, 0, 16, 4, std::string());
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {
@@ -418,7 +417,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   // The request should have the wifi data.
-  CheckRequestIsValid(*fetcher, 0, kFirstScanAps, 0, "");
+  CheckRequestIsValid(*fetcher, 0, kFirstScanAps, 0, std::string());
 
   // Send a reply with good position fix.
   const char* kReferenceNetworkResponse =
@@ -472,7 +471,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher->set_url(test_server_url_);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));
   fetcher->set_response_code(200);  // should be ignored
-  fetcher->SetResponseString("");
+  fetcher->SetResponseString(std::string());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Error means we now no longer have a fix.

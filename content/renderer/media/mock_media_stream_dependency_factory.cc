@@ -203,7 +203,7 @@ cricket::VideoRenderer* MockLocalVideoTrack::FrameInput() {
 
 std::string MockLocalVideoTrack::kind() const {
   NOTIMPLEMENTED();
-  return "";
+  return std::string();
 }
 
 std::string MockLocalVideoTrack::id() const { return id_; }
@@ -239,7 +239,7 @@ VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
 
 std::string MockLocalAudioTrack::kind() const {
   NOTIMPLEMENTED();
-  return "";
+  return std::string();
 }
 
 std::string MockLocalAudioTrack::id() const { return id_; }
@@ -292,11 +292,11 @@ class MockSessionDescription : public SessionDescriptionInterface {
   }
   virtual std::string session_id() const OVERRIDE {
     NOTIMPLEMENTED();
-    return "";
+    return std::string();
   }
   virtual std::string session_version() const OVERRIDE {
     NOTIMPLEMENTED();
-    return "";
+    return std::string();
   }
   virtual std::string type() const OVERRIDE {
     return type_;

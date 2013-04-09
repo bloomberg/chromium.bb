@@ -569,7 +569,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_RootLoop) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
-  MakeHierarchyLink(0, 0, FPL(""));
+  MakeHierarchyLink(0, 0, FPL(std::string()));
   EXPECT_FALSE(db()->IsFileSystemConsistent());
 }
 

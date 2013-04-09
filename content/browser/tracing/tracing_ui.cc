@@ -317,8 +317,11 @@ void TracingMessageHandler::OnLoadTraceFile(const base::ListValue* list) {
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
       base::FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL,
+      0,
+      FILE_PATH_LITERAL(std::string()),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+      NULL);
 }
 
 void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
@@ -367,8 +370,11 @@ void TracingMessageHandler::OnSaveTraceFile(const base::ListValue* list) {
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       base::FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL,
+      0,
+      FILE_PATH_LITERAL(std::string()),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+      NULL);
 }
 
 void TracingMessageHandler::SaveTraceFileComplete() {

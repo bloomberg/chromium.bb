@@ -84,9 +84,9 @@ TEST_F(AutomationRendererHelperTest, RTLSnapshot) {
 }
 
 TEST_F(AutomationRendererHelperTest, ScriptChain) {
-  ScriptEvaluationRequest request("({'result': 10})", "");
-  ScriptEvaluationRequest request_plus1(
-      "({'result': arguments[0].result + 1})", "");
+  ScriptEvaluationRequest request("({'result': 10})", std::string());
+  ScriptEvaluationRequest request_plus1("({'result': arguments[0].result + 1})",
+                                        std::string());
   std::vector<ScriptEvaluationRequest> script_chain;
   script_chain.push_back(request);
   script_chain.push_back(request_plus1);
@@ -102,10 +102,10 @@ TEST_F(AutomationRendererHelperTest, ScriptChain) {
 }
 
 TEST_F(AutomationRendererHelperTest, ScriptChainError) {
-  ScriptEvaluationRequest request("({'result': 10})", "");
+  ScriptEvaluationRequest request("({'result': 10})", std::string());
   ScriptEvaluationRequest error_request(
       "({'result': arguments[0].result + 1, 'error': {'msg': 'some msg'}})",
-      "");
+      std::string());
   std::vector<ScriptEvaluationRequest> script_chain;
   script_chain.push_back(request);
   script_chain.push_back(error_request);

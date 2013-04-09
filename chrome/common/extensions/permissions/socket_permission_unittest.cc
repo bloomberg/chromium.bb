@@ -48,7 +48,7 @@ TEST_F(SocketPermissionTest, General) {
 TEST_F(SocketPermissionTest, Parse) {
   SocketPermissionData data;
 
-  EXPECT_FALSE(data.ParseForTest(""));
+  EXPECT_FALSE(data.ParseForTest(std::string()));
   EXPECT_FALSE(data.ParseForTest("*"));
   EXPECT_FALSE(data.ParseForTest("\00\00*"));
   EXPECT_FALSE(data.ParseForTest("\01*"));

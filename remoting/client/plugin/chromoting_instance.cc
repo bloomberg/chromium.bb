@@ -81,7 +81,7 @@ std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
       return "FAILED";
   }
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 // TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
@@ -115,7 +115,7 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
       return "NETWORK_FAILURE";
   }
   DLOG(FATAL) << "Unknown error code" << error;
-  return  "";
+  return std::string();
 }
 
 // This flag blocks LOGs to the UI if we're already in the middle of logging

@@ -41,7 +41,7 @@ void ProxyEventRouter::OnProxyError(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, true);
   dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
-  dict->SetString(keys::kProxyEventDetails, "");
+  dict->SetString(keys::kProxyEventDetails, std::string());
   args->Append(dict);
 
   if (profile) {

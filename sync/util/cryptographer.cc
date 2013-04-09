@@ -110,12 +110,12 @@ std::string Cryptographer::DecryptToString(
   NigoriMap::const_iterator it = nigoris_.find(encrypted.key_name());
   if (nigoris_.end() == it) {
     NOTREACHED() << "Cannot decrypt message";
-    return std::string("");  // Caller should have called CanDecrypt(encrypt).
+    return std::string();  // Caller should have called CanDecrypt(encrypt).
   }
 
   std::string plaintext;
   if (!it->second->Decrypt(encrypted.blob(), &plaintext)) {
-    return std::string("");
+    return std::string();
   }
 
   return plaintext;
@@ -271,18 +271,18 @@ bool Cryptographer::GetBootstrapToken(std::string* token) const {
 std::string Cryptographer::UnpackBootstrapToken(
     const std::string& token) const {
   if (token.empty())
-    return "";
+    return std::string();
 
   std::string encrypted_data;
   if (!base::Base64Decode(token, &encrypted_data)) {
     DLOG(WARNING) << "Could not decode token.";
-    return "";
+    return std::string();
   }
 
   std::string unencrypted_token;
   if (!encryptor_->DecryptString(encrypted_data, &unencrypted_token)) {
     DLOG(WARNING) << "Decryption of bootstrap token failed.";
-    return "";
+    return std::string();
   }
   return unencrypted_token;
 }
@@ -328,15 +328,15 @@ bool Cryptographer::KeybagIsStale(
 
 std::string Cryptographer::GetDefaultNigoriKey() const {
   if (!is_initialized())
-    return "";
+    return std::string();
   NigoriMap::const_iterator iter = nigoris_.find(default_nigori_name_);
   if (iter == nigoris_.end())
-    return "";
+    return std::string();
   sync_pb::NigoriKey key;
   if (!iter->second->ExportKeys(key.mutable_user_key(),
                                 key.mutable_encryption_key(),
                                 key.mutable_mac_key()))
-    return "";
+    return std::string();
   return key.SerializeAsString();
 }
 

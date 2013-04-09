@@ -48,7 +48,7 @@ std::string MockURLRequestThrottlerHeaderAdapter::GetNormalizedValue(
     return fake_opt_out_value_;
   }
 
-  return "";
+  return std::string();
 }
 
 int MockURLRequestThrottlerHeaderAdapter::GetResponseCode() const {

@@ -68,7 +68,7 @@ void ProfileImportHandler::OnImportItemFinished(uint16 item) {
   items_to_import_ ^= item;  // Remove finished item from mask.
   // If we've finished with all items, notify the browser process.
   if (items_to_import_ == 0) {
-    Send(new ProfileImportProcessHostMsg_Import_Finished(true, ""));
+    Send(new ProfileImportProcessHostMsg_Import_Finished(true, std::string()));
     ImporterCleanup();
   }
 }

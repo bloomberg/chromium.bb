@@ -98,22 +98,25 @@ class APIKeyCache {
 
     api_key_ = CalculateKeyValue(GOOGLE_API_KEY,
                                  STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY),
-                                 NULL, "",
+                                 NULL,
+                                 std::string(),
                                  environment.get(),
                                  command_line);
 
-    std::string default_client_id = CalculateKeyValue(
-        GOOGLE_DEFAULT_CLIENT_ID,
-        STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_ID),
-        NULL, "",
-        environment.get(),
-        command_line);
-    std::string default_client_secret = CalculateKeyValue(
-        GOOGLE_DEFAULT_CLIENT_SECRET,
-        STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_SECRET),
-        NULL, "",
-        environment.get(),
-        command_line);
+    std::string default_client_id =
+        CalculateKeyValue(GOOGLE_DEFAULT_CLIENT_ID,
+                          STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_ID),
+                          NULL,
+                          std::string(),
+                          environment.get(),
+                          command_line);
+    std::string default_client_secret =
+        CalculateKeyValue(GOOGLE_DEFAULT_CLIENT_SECRET,
+                          STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_SECRET),
+                          NULL,
+                          std::string(),
+                          environment.get(),
+                          command_line);
 
     // We currently only allow overriding the baked-in values for the
     // default OAuth2 client ID and secret using a command-line

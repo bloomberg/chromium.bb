@@ -279,11 +279,11 @@ void MediaStreamDevicesController::HandleTabMediaRequest() {
 
     if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
+          content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
     }
     if (request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
+          content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
     }
 
     callback_.Run(devices);

@@ -91,9 +91,13 @@ TEST_F(ExtensionSimpleFeatureTest, Whitelist) {
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToManifest(
       kIdBaz, Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
       Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::NOT_FOUND_IN_WHITELIST,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToManifest(
@@ -133,19 +137,35 @@ TEST_F(ExtensionSimpleFeatureTest, PackageType) {
   feature.extension_types()->insert(Manifest::TYPE_EXTENSION);
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
 
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_EXTENSION, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_LEGACY_PACKAGED_APP, Feature::UNSPECIFIED_LOCATION,
-      -1, Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_EXTENSION,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 
-  EXPECT_EQ(Feature::INVALID_TYPE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::INVALID_TYPE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_THEME, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_TYPE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_TYPE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_THEME,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 }
 
 TEST_F(ExtensionSimpleFeatureTest, Context) {
@@ -220,64 +240,107 @@ TEST_F(ExtensionSimpleFeatureTest, Location) {
   // If the feature specifies "component" as its location, then only component
   // extensions can access it.
   feature.set_location(Feature::COMPONENT_LOCATION);
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::COMPONENT_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::COMPONENT_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_LOCATION,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 
   // But component extensions can access anything else, whatever their location.
   feature.set_location(Feature::UNSPECIFIED_LOCATION);
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::COMPONENT_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::COMPONENT_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 }
 
 TEST_F(ExtensionSimpleFeatureTest, Platform) {
   SimpleFeature feature;
   feature.set_platform(Feature::CHROMEOS_PLATFORM);
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::CHROMEOS_PLATFORM).result());
-  EXPECT_EQ(Feature::INVALID_PLATFORM, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION, -1,
-      Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            feature.IsAvailableToManifest(std::string(),
+                                          Manifest::TYPE_UNKNOWN,
+                                          Feature::UNSPECIFIED_LOCATION,
+                                          -1,
+                                          Feature::CHROMEOS_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_PLATFORM,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    -1,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 }
 
 TEST_F(ExtensionSimpleFeatureTest, Version) {
   SimpleFeature feature;
   feature.set_min_manifest_version(5);
 
-  EXPECT_EQ(Feature::INVALID_MIN_MANIFEST_VERSION,
-            feature.IsAvailableToManifest(
-                "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-                0, Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::INVALID_MIN_MANIFEST_VERSION,
-            feature.IsAvailableToManifest(
-                "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-                4, Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_MIN_MANIFEST_VERSION,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    0,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_MIN_MANIFEST_VERSION,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    4,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-      5, Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-      10, Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    5,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    10,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 
   feature.set_max_manifest_version(8);
 
-  EXPECT_EQ(Feature::INVALID_MAX_MANIFEST_VERSION,
-            feature.IsAvailableToManifest(
-                "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-                10, Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE,
-            feature.IsAvailableToManifest(
-                "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-                8, Feature::UNSPECIFIED_PLATFORM).result());
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
-      "", Manifest::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-      7, Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::INVALID_MAX_MANIFEST_VERSION,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    10,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    8,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature.IsAvailableToManifest(std::string(),
+                                    Manifest::TYPE_UNKNOWN,
+                                    Feature::UNSPECIFIED_LOCATION,
+                                    7,
+                                    Feature::UNSPECIFIED_PLATFORM).result());
 }
 
 TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
@@ -549,15 +612,15 @@ TEST_F(ExtensionSimpleFeatureTest, SupportedChannel) {
 
   // Default supported channel (trunk).
   EXPECT_EQ(Feature::IS_AVAILABLE,
-      IsAvailableInChannel("", VersionInfo::CHANNEL_UNKNOWN));
+            IsAvailableInChannel(std::string(), VersionInfo::CHANNEL_UNKNOWN));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("", VersionInfo::CHANNEL_CANARY));
+            IsAvailableInChannel(std::string(), VersionInfo::CHANNEL_CANARY));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("", VersionInfo::CHANNEL_DEV));
+            IsAvailableInChannel(std::string(), VersionInfo::CHANNEL_DEV));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("", VersionInfo::CHANNEL_BETA));
+            IsAvailableInChannel(std::string(), VersionInfo::CHANNEL_BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
-      IsAvailableInChannel("", VersionInfo::CHANNEL_STABLE));
+            IsAvailableInChannel(std::string(), VersionInfo::CHANNEL_STABLE));
 }
 
 }  // namespace

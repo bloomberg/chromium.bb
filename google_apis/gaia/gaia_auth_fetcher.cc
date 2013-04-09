@@ -617,7 +617,7 @@ void GaiaAuthFetcher::StartClientLogin(
                                       allow_hosted_accounts);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    client_login_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -635,7 +635,7 @@ void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
   request_body_ = MakeIssueAuthTokenBody(sid, lsid, service);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    issue_auth_token_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -669,7 +669,7 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
   request_body_ = MakeRevokeTokenBody(auth_token);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    oauth2_revoke_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -692,7 +692,7 @@ void GaiaAuthFetcher::StartCookieForOAuthLoginTokenExchange(
 
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    client_login_to_oauth2_gurl_,
                                    net::LOAD_NORMAL,
                                    this));
@@ -708,7 +708,7 @@ void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
   request_body_ = MakeGetTokenPairBody(auth_code);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    oauth2_token_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -723,7 +723,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
   request_body_ = MakeGetUserInfoBody(lsid);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    get_user_info_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -748,7 +748,7 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token) {
   request_body_ = MakeMergeSessionBody(uber_token, continue_url, source_);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    merge_session_gurl_,
                                    net::LOAD_NORMAL,
                                    this));
@@ -765,7 +765,7 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
   std::string authentication_header =
       base::StringPrintf(kOAuthHeaderFormat, access_token.c_str());
   fetcher_.reset(CreateGaiaFetcher(getter_,
-                                   "",
+                                   std::string(),
                                    authentication_header,
                                    uberauth_token_gurl_,
                                    kLoadFlagsIgnoreCookies,
@@ -785,7 +785,7 @@ void GaiaAuthFetcher::StartClientOAuth(const std::string& username,
                                       source_, locale);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    client_oauth_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));
@@ -814,7 +814,7 @@ void GaiaAuthFetcher::StartClientOAuthChallengeResponse(
   request_body_ = MakeClientOAuthChallengeResponseBody(name, token, solution);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   "",
+                                   std::string(),
                                    client_oauth_gurl_,
                                    kLoadFlagsIgnoreCookies,
                                    this));

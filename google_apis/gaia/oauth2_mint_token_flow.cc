@@ -89,17 +89,16 @@ OAuth2MintTokenFlow::Parameters::Parameters(
 
 OAuth2MintTokenFlow::Parameters::~Parameters() {}
 
-OAuth2MintTokenFlow::OAuth2MintTokenFlow(
-    URLRequestContextGetter* context,
-    Delegate* delegate,
-    const Parameters& parameters)
-    : OAuth2ApiCallFlow(
-          context, parameters.login_refresh_token,
-          "", std::vector<std::string>()),
+OAuth2MintTokenFlow::OAuth2MintTokenFlow(URLRequestContextGetter* context,
+                                         Delegate* delegate,
+                                         const Parameters& parameters)
+    : OAuth2ApiCallFlow(context,
+                        parameters.login_refresh_token,
+                        std::string(),
+                        std::vector<std::string>()),
       delegate_(delegate),
       parameters_(parameters),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 

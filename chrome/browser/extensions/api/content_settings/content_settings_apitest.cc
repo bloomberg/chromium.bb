@@ -74,16 +74,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(url, url));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+                url, url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+                url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
 #if 0
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
 #endif
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+                url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 }
 
 // Flaky on the trybots. See http://crbug.com/96725.

@@ -48,7 +48,7 @@ std::string GetDefaultPort(const std::string& scheme) {
   if (scheme == chrome::kHttpsScheme)
     return "443";
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 }  // namespace

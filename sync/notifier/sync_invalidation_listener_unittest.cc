@@ -148,7 +148,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
 
   std::string GetPayload(const ObjectId& id) const {
     ObjectIdInvalidationMap::const_iterator it = invalidations_.find(id);
-    return (it == invalidations_.end()) ? "" : it->second.payload;
+    return (it == invalidations_.end()) ? std::string() : it->second.payload;
   }
 
   InvalidatorState GetInvalidatorState() const {

@@ -519,8 +519,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
       // set by policy.
       PolicyMap policies;
       UpdateProviderPolicy(policies);
-      VerifyControlledSettingIndicators(browser(), indicator_selector,
-                                        "", "", false);
+      VerifyControlledSettingIndicators(
+          browser(), indicator_selector, std::string(), std::string(), false);
       // Check that the appropriate controlled setting indicator is shown when a
       // value is enforced by policy.
       policies.LoadFrom(&(*indicator_test_case)->policy(),

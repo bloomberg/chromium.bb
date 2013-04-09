@@ -51,15 +51,15 @@ std::string BSDiffMemoryTest::GenerateSyntheticInput(size_t length, int seed)
 }
 
 TEST_F(BSDiffMemoryTest, TestEmpty) {
-  GenerateAndTestPatch("", "");
+  GenerateAndTestPatch(std::string(), std::string());
 }
 
 TEST_F(BSDiffMemoryTest, TestEmptyVsNonempty) {
-  GenerateAndTestPatch("", "xxx");
+  GenerateAndTestPatch(std::string(), "xxx");
 }
 
 TEST_F(BSDiffMemoryTest, TestNonemptyVsEmpty) {
-  GenerateAndTestPatch("xxx", "");
+  GenerateAndTestPatch("xxx", std::string());
 }
 
 TEST_F(BSDiffMemoryTest, TestSmallInputsWithSmallChanges) {

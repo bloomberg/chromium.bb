@@ -18,7 +18,7 @@ namespace {
 
 std::string FirstAddress(const AddressList& address_list) {
   if (address_list.empty())
-    return "";
+    return std::string();
   return address_list.front().ToString();
 }
 
@@ -171,7 +171,7 @@ TEST(MappedHostResolverTest, ParseInvalidRules) {
       new MappedHostResolver(scoped_ptr<HostResolver>()));
 
   EXPECT_FALSE(resolver->AddRuleFromString("xyz"));
-  EXPECT_FALSE(resolver->AddRuleFromString(""));
+  EXPECT_FALSE(resolver->AddRuleFromString(std::string()));
   EXPECT_FALSE(resolver->AddRuleFromString(" "));
   EXPECT_FALSE(resolver->AddRuleFromString("EXCLUDE"));
   EXPECT_FALSE(resolver->AddRuleFromString("EXCLUDE foo bar"));

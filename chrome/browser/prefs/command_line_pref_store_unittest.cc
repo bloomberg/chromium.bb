@@ -116,7 +116,7 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
   ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
 
-  std::string string_result = "";
+  std::string string_result;
 
   ASSERT_TRUE(dict.GetProxyServer(&string_result));
   EXPECT_EQ("proxy", string_result);
@@ -172,9 +172,9 @@ TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
   store2->VerifyProxyMode(ProxyPrefs::MODE_PAC_SCRIPT);
 
   CommandLine cl3(CommandLine::NO_PROGRAM);
-  cl3.AppendSwitchASCII(switches::kProxyServer, "");
+  cl3.AppendSwitchASCII(switches::kProxyServer, std::string());
   scoped_refptr<TestCommandLinePrefStore> store3 =
-        new TestCommandLinePrefStore(&cl3);
+      new TestCommandLinePrefStore(&cl3);
   store3->VerifyProxyMode(ProxyPrefs::MODE_DIRECT);
 }
 

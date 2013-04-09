@@ -967,7 +967,7 @@ const std::string GetIANAMediaType(const std::string& mime_type) {
       return kIanaMediaTypes[i].name;
     }
   }
-  return "";
+  return std::string();
 }
 
 CertificateMimeType GetCertificateMimeTypeForMimeType(

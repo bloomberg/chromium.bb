@@ -813,9 +813,13 @@ void Browser::OpenFile() {
   ui::SelectFileDialog::FileTypeInfo file_types;
   file_types.support_drive = true;
   select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                                  string16(), directory,
-                                  &file_types, 0, FILE_PATH_LITERAL(""),
-                                  parent_window, NULL);
+                                  string16(),
+                                  directory,
+                                  &file_types,
+                                  0,
+                                  FILE_PATH_LITERAL(std::string()),
+                                  parent_window,
+                                  NULL);
 }
 
 void Browser::UpdateDownloadShelfVisibility(bool visible) {

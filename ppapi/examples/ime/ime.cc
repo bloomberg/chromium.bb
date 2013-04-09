@@ -245,7 +245,7 @@ class MyTextField {
       int32_t target_segment,
       const std::pair<uint32_t, uint32_t>& selection) {
     if (HasSelection() && !text.empty())
-      InsertText("");
+      InsertText(std::string());
     composition_ = text;
     segments_ = segments;
     target_segment_ = target_segment;
@@ -344,7 +344,7 @@ class MyTextField {
     if (!Focused())
       return;
     if (HasSelection()) {
-      InsertText("");
+      InsertText(std::string());
     } else {
       size_t i = GetNextCharOffsetUtf8(utf8_text_, caret_pos_);
       utf8_text_.erase(caret_pos_, i - caret_pos_);
@@ -356,7 +356,7 @@ class MyTextField {
     if (!Focused())
       return;
     if (HasSelection()) {
-      InsertText("");
+      InsertText(std::string());
     } else if (caret_pos_ != 0) {
       size_t i = GetPrevCharOffsetUtf8(utf8_text_, caret_pos_);
       utf8_text_.erase(i, caret_pos_ - i);
@@ -565,8 +565,10 @@ class MyInstance : public pp::Instance {
          it != textfield_.end();
          ++it) {
       if (it->Focused()) {
-        it->SetComposition("", std::vector< std::pair<uint32_t, uint32_t> >(),
-                           0, std::make_pair(0, 0));
+        it->SetComposition(std::string(),
+                           std::vector<std::pair<uint32_t, uint32_t> >(),
+                           0,
+                           std::make_pair(0, 0));
         return true;
       }
     }

@@ -141,7 +141,7 @@ TEST_F(ComponentLoaderTest, ParseManifest) {
   // Test manifests that are valid JSON, but don't have an object literal
   // at the root. ParseManifest() should always return NULL.
 
-  manifest.reset(component_loader_.ParseManifest(""));
+  manifest.reset(component_loader_.ParseManifest(std::string()));
   EXPECT_FALSE(manifest.get());
 
   manifest.reset(component_loader_.ParseManifest("[{ \"foo\": 3 }]"));

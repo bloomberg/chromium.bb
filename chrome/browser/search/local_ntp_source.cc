@@ -74,7 +74,7 @@ std::string LocalNtpSource::GetMimeType(
       path == kCloseBarActiveFilename) {
     return "image/png";
   }
-  return "";
+  return std::string();
 }
 
 bool LocalNtpSource::ShouldServiceRequest(

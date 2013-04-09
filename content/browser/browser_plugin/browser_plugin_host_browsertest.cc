@@ -388,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
       TestShortHangTimeoutGuestFactory::GetInstance());
   const char kEmbedderURL[] =
       "files/browser_plugin_embedder_guest_unresponsive.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestBusyLoop, true, "");
+  StartBrowserPluginTest(
+      kEmbedderURL, kHTMLForGuestBusyLoop, true, std::string());
   // Wait until the busy loop starts.
   {
     const string16 expected_title = ASCIIToUTF16("start");
@@ -453,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
   const char kEmbedderURL[] = "files/browser_plugin_focus.html";
   const char* kGuestURL = "files/browser_plugin_focus_child.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
 
   SimulateMouseClick(test_embedder()->web_contents(), 0,
       WebKit::WebMouseEvent::ButtonLeft);
@@ -484,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
 
   // 1. Load an embedder page with one guest in it.
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   // 2. Navigate to a URL in https, so we trigger a RenderViewHost swap.
   GURL test_https_url(https_server.GetURL(
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
 // web_contents.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderSameAfterNav) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   WebContentsImpl* embedder_web_contents = test_embedder()->web_contents();
 
   // Navigate to another page in same host and port, so RenderViewHost swap
@@ -535,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderSameAfterNav) {
 // This test verifies that hiding the embedder also hides the guest.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BrowserPluginVisibilityChanged) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   // Hide the Browser Plugin.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
@@ -549,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BrowserPluginVisibilityChanged) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderVisibilityChanged) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   // Hide the embedder.
   test_embedder()->web_contents()->WasHidden();
@@ -561,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderVisibilityChanged) {
 // This test verifies that calling the reload method reloads the guest.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadGuest) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   test_guest()->ResetUpdateRectCount();
 
@@ -575,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadGuest) {
 // to the guest's WebContents.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, StopGuest) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
@@ -587,7 +588,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, StopGuest) {
 // plugin correctly updates the touch-event handling state in the embedder.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestTouchHandler, true, "");
+  StartBrowserPluginTest(
+      kEmbedderURL, kHTMLForGuestTouchHandler, true, std::string());
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
@@ -615,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(
-      kEmbedderURL, GetHTMLForGuestWithTitle("P1"), true, "");
+      kEmbedderURL, GetHTMLForGuestWithTitle("P1"), true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
 
@@ -710,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 // and that the guest is reset.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
 
@@ -761,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
@@ -776,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(
-      kEmbedderURL, GetHTMLForGuestWithTitle("P1"), true, "");
+      kEmbedderURL, GetHTMLForGuestWithTitle("P1"), true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
 
@@ -818,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
 
   const string16 expected_title = ASCIIToUTF16(kHTMLForGuest);
   content::TitleWatcher title_watcher(test_embedder()->web_contents(),
@@ -835,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
 
   {
     // Navigate the guest to "close-socket".
@@ -882,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
 
   const string16 expected_title = ASCIIToUTF16("redirected");
   content::TitleWatcher title_watcher(test_embedder()->web_contents(),
@@ -922,7 +924,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
 // correctly.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
   const char kEmbedderURL[] = "files/browser_plugin_dragging.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestAcceptDrag, true, "");
+  StartBrowserPluginTest(
+      kEmbedderURL, kHTMLForGuestAcceptDrag, true, std::string());
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
@@ -978,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
   const char* kTesting = "testing123";
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   {
@@ -1006,7 +1009,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
   const char* kTesting = "testing123";
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   {
@@ -1052,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
 
   const string16 expected_title = ASCIIToUTF16("loadStop");
   content::TitleWatcher title_watcher(
@@ -1069,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
 
   const string16 expected_title = ASCIIToUTF16(
       base::StringPrintf("loadCommit:%s", kHTMLForGuest));
@@ -1105,7 +1108,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, HiddenBeforeNavigation) {
 // the new guest will inherit the visibility state of the old guest.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VisibilityPreservation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   // Hide the BrowserPlugin.
@@ -1145,7 +1148,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
 // crbug.com/170249
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_FocusPreservation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
@@ -1184,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_FocusPreservation) {
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
@@ -1229,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeBeforeNavigation) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AutoSizeAfterNavigation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuestWithSize, true, "");
+      kEmbedderURL, kHTMLForGuestWithSize, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
 
@@ -1283,7 +1286,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
   const char kEmbedderURL[] = "files/browser_plugin_naming_embedder.html";
   const char* kGuestURL = "files/browser_plugin_naming_guest.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());

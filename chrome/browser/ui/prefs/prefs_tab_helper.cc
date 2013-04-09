@@ -152,7 +152,7 @@ ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
       // We haven't already set a default value for this font preference, so set
       // an empty string as the default.
       registry->RegisterStringPref(
-          pref_name, "", PrefRegistrySyncable::UNSYNCABLE_PREF);
+          pref_name, std::string(), PrefRegistrySyncable::UNSYNCABLE_PREF);
     }
   }
 }
@@ -587,7 +587,7 @@ void PrefsTabHelper::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                         IDS_STATIC_ENCODING_LIST,
                                         PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kRecentlySelectedEncoding,
-                               "",
+                               std::string(),
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   RegisterPrefsToMigrate(registry);
@@ -666,7 +666,7 @@ void PrefsTabHelper::OnWebPrefChanged(const std::string& pref_name) {
     if (pref_value.empty()) {
       WebPreferences web_prefs =
           web_contents_->GetRenderViewHost()->GetWebkitPreferences();
-      OverrideFontFamily(&web_prefs, generic_family, script, "");
+      OverrideFontFamily(&web_prefs, generic_family, script, std::string());
       web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
       return;
     }

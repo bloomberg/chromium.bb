@@ -527,7 +527,8 @@ uint64 GetUInt64ValueForFlagWithDefault(const std::string& flag,
                                         uint64 default_value,
                                         const FieldTrialFlags& flags) {
   uint64 value;
-  std::string str_value = GetStringValueForFlagWithDefault(flag, "", flags);
+  std::string str_value =
+      GetStringValueForFlagWithDefault(flag, std::string(), flags);
   if (base::StringToUint64(str_value, &value))
     return value;
   return default_value;

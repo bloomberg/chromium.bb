@@ -35,7 +35,7 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {
       new CannedBrowsingDataDatabaseHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin, db, "");
+  helper->AddDatabase(origin, db, std::string());
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -52,9 +52,9 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, IgnoreExtensionsAndDevTools) {
       new CannedBrowsingDataDatabaseHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin1, db, "");
+  helper->AddDatabase(origin1, db, std::string());
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin2, db, "");
+  helper->AddDatabase(origin2, db, std::string());
   ASSERT_TRUE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());

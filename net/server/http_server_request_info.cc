@@ -16,7 +16,7 @@ std::string HttpServerRequestInfo::GetHeaderValue(
       headers.find(header_name);
   if (it != headers.end())
     return it->second;
-  return "";
+  return std::string();
 }
 
 }  // namespace net

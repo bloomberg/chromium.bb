@@ -166,22 +166,31 @@ TEST_F(BookmarkUtilsTest, ApplyEditsWithNoFolderChange) {
   {
     BookmarkEditor::EditDetails detail(
         BookmarkEditor::EditDetails::AddFolder(bookmarkbar, 1));
-    ApplyEditsWithNoFolderChange(&model, bookmarkbar, detail,
-                                 ASCIIToUTF16("folder0"), GURL(""));
+    ApplyEditsWithNoFolderChange(&model,
+                                 bookmarkbar,
+                                 detail,
+                                 ASCIIToUTF16("folder0"),
+                                 GURL(std::string()));
     EXPECT_EQ(ASCIIToUTF16("folder0"), bookmarkbar->GetChild(1)->GetTitle());
   }
   {
     BookmarkEditor::EditDetails detail(
         BookmarkEditor::EditDetails::AddFolder(bookmarkbar, -1));
-    ApplyEditsWithNoFolderChange(&model, bookmarkbar, detail,
-                                 ASCIIToUTF16("folder1"), GURL(""));
+    ApplyEditsWithNoFolderChange(&model,
+                                 bookmarkbar,
+                                 detail,
+                                 ASCIIToUTF16("folder1"),
+                                 GURL(std::string()));
     EXPECT_EQ(ASCIIToUTF16("folder1"), bookmarkbar->GetChild(3)->GetTitle());
   }
   {
     BookmarkEditor::EditDetails detail(
         BookmarkEditor::EditDetails::AddFolder(bookmarkbar, 10));
-    ApplyEditsWithNoFolderChange(&model, bookmarkbar, detail,
-                                 ASCIIToUTF16("folder2"), GURL(""));
+    ApplyEditsWithNoFolderChange(&model,
+                                 bookmarkbar,
+                                 detail,
+                                 ASCIIToUTF16("folder2"),
+                                 GURL(std::string()));
     EXPECT_EQ(ASCIIToUTF16("folder2"), bookmarkbar->GetChild(4)->GetTitle());
   }
 }

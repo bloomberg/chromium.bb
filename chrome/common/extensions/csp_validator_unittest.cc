@@ -23,10 +23,10 @@ TEST(ExtensionCSPValidator, IsLegal) {
 }
 
 TEST(ExtensionCSPValidator, IsSecure) {
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "", Manifest::TYPE_EXTENSION));
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "img-src https://google.com", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(
+      ContentSecurityPolicyIsSecure(std::string(), Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure("img-src https://google.com",
+                                             Manifest::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src *", Manifest::TYPE_EXTENSION));
@@ -146,9 +146,10 @@ TEST(ExtensionCSPValidator, IsSecure) {
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
-  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed("", Manifest::TYPE_EXTENSION));
-  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
-      "img-src https://google.com", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(std::string(),
+                                                Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed("img-src https://google.com",
+                                                Manifest::TYPE_EXTENSION));
 
   // Sandbox directive is required.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(

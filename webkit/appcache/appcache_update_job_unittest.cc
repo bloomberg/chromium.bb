@@ -2649,7 +2649,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // First test against a cache attempt. Will start manifest fetch
     // synchronously.
-    HttpHeadersRequestTestJob::Initialize("", "");
+    HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     MockFrontend mock_frontend;
     AppCacheHost host(1, &mock_frontend, service_.get());
     update->StartUpdate(&host, GURL());
@@ -2666,7 +2666,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
-    HttpHeadersRequestTestJob::Initialize("", "");
+    HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
@@ -2687,7 +2687,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info = new net::HttpResponseInfo();
     response_info->headers = headers2;
 
-    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT", "");
+    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
+                                          std::string());
     update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
@@ -2703,7 +2704,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfModifiedSinceUpgradeTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT", "");
+    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
+                                          std::string());
     net::URLRequestJobFactoryImpl* new_factory(
         new net::URLRequestJobFactoryImpl);
     new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
@@ -2765,7 +2767,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfNoneMatchUpgradeTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
+    HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
     net::URLRequestJobFactoryImpl* new_factory(
         new net::URLRequestJobFactoryImpl);
     new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
@@ -2827,7 +2829,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfNoneMatchRefetchTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
+    HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
     net::URLRequestJobFactoryImpl* new_factory(
         new net::URLRequestJobFactoryImpl);
     new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);

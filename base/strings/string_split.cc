@@ -107,7 +107,8 @@ bool SplitStringIntoKeyValuePairs(
       success = false;
     }
     DCHECK_LE(value.size(), 1U);
-    kv_pairs->push_back(make_pair(key, value.empty()? "" : value[0]));
+    kv_pairs->push_back(
+        make_pair(key, value.empty() ? std::string() : value[0]));
   }
   return success;
 }

@@ -316,7 +316,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
         scw.WriteText(UTF8ToUTF16(data[i]));
         break;
       case PP_FLASH_CLIPBOARD_FORMAT_HTML:
-        scw.WriteHTML(UTF8ToUTF16(data[i]), "");
+        scw.WriteHTML(UTF8ToUTF16(data[i]), std::string());
         break;
       case PP_FLASH_CLIPBOARD_FORMAT_RTF:
         scw.WriteRTF(data[i]);

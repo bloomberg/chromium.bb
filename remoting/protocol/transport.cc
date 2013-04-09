@@ -20,7 +20,7 @@ std::string TransportRoute::GetTypeString(RouteType type) {
       return "relay";
   }
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 TransportRoute::TransportRoute() : type(DIRECT) {

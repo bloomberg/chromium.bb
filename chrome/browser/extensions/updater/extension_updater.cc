@@ -106,10 +106,7 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
       download_url(u),
       request_ids(request_ids) {}
 
-ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
-    : extension_id(""),
-      path(),
-      download_url() {}
+ExtensionUpdater::FetchedCRXFile::FetchedCRXFile() : path(), download_url() {}
 
 ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
 

@@ -45,7 +45,7 @@ int* StatsCounter::GetPtr() {
   if (counter_id_ == -1) {
     counter_id_ = table->FindCounter(name_);
     if (table->GetSlot() == 0) {
-      if (!table->RegisterThread("")) {
+      if (!table->RegisterThread(std::string())) {
         // There is no room for this thread.  This thread
         // cannot use counters.
         counter_id_ = 0;

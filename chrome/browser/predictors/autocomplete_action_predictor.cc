@@ -148,7 +148,7 @@ void AutocompleteActionPredictor::StartPrerendering(
           prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
     content::SessionStorageNamespace* session_storage_namespace = NULL;
     content::SessionStorageNamespaceMap::const_iterator it =
-        session_storage_namespace_map.find("");
+        session_storage_namespace_map.find(std::string());
     if (it != session_storage_namespace_map.end())
       session_storage_namespace = it->second;
     prerender_handle_.reset(

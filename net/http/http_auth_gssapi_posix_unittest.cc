@@ -76,7 +76,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
   // TODO(ahendrickson): Manipulate the libraries and paths to test each of the
   // libraries we expect, and also whether or not they have the interface
   // functions we want.
-  scoped_ptr<GSSAPILibrary> gssapi(new GSSAPISharedLibrary(""));
+  scoped_ptr<GSSAPILibrary> gssapi(new GSSAPISharedLibrary(std::string()));
   DCHECK(gssapi.get());
   EXPECT_TRUE(gssapi.get()->Init());
 }

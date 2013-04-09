@@ -190,10 +190,10 @@ ContentSetting GetContentSetting(const ProviderInterface* provider,
 
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules) {
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "",
-                             &(rules->image_rules));
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "",
-                             &(rules->script_rules));
+  map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), &(rules->image_rules));
+  map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), &(rules->script_rules));
 }
 
 }  // namespace content_settings

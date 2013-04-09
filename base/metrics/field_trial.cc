@@ -318,7 +318,7 @@ std::string FieldTrialList::FindFullName(const std::string& name) {
   FieldTrial* field_trial = Find(name);
   if (field_trial)
     return field_trial->group_name();
-  return "";
+  return std::string();
 }
 
 // static

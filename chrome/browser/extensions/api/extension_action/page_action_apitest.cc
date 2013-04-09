@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), *action, tab_id, "", 0);
+        browser()->profile(), *action, tab_id, std::string(), 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, AddPopup) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, "", 1);
+        browser()->profile(), *page_action, tab_id, std::string(), 1);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, OldPageActions) {
         browser()->profile())->extension_service();
     ExtensionAction* page_action = GetPageAction(*extension);
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, "", 1);
+        browser()->profile(), *page_action, tab_id, std::string(), 1);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 }
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, "", 0);
+        browser()->profile(), *page_action, tab_id, std::string(), 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -273,11 +273,9 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
       "window.domAutomationController.send(document.body.style."
       "backgroundColor);";
   std::string result;
-  const std::string frame_xpath = "";
-  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(tab,
-                                                            frame_xpath,
-                                                            script,
-                                                            &result));
+  const std::string frame_xpath;
+  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(
+      tab, frame_xpath, script, &result));
   EXPECT_EQ(result, "red");
 }
 

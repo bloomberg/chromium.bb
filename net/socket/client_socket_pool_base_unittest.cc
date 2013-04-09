@@ -274,7 +274,7 @@ class TestConnectJob : public ConnectJob {
       // Set all of the additional error state fields in some way.
       handle->set_is_ssl_error(true);
       HttpResponseInfo info;
-      info.headers = new HttpResponseHeaders("");
+      info.headers = new HttpResponseHeaders(std::string());
       handle->set_ssl_error_response_info(info);
     }
   }
@@ -846,7 +846,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   // Set the additional error state members to ensure that they get cleared.
   handle.set_is_ssl_error(true);
   HttpResponseInfo info;
-  info.headers = new HttpResponseHeaders("");
+  info.headers = new HttpResponseHeaders(std::string());
   handle.set_ssl_error_response_info(info);
   EXPECT_EQ(ERR_CONNECTION_FAILED,
             handle.Init("a",
@@ -1720,7 +1720,7 @@ TEST_F(ClientSocketPoolBaseTest,
   // Set the additional error state members to ensure that they get cleared.
   handle.set_is_ssl_error(true);
   HttpResponseInfo info;
-  info.headers = new HttpResponseHeaders("");
+  info.headers = new HttpResponseHeaders(std::string());
   handle.set_ssl_error_response_info(info);
   EXPECT_EQ(ERR_IO_PENDING, handle.Init("a",
                                         params_,

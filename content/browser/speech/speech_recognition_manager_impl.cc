@@ -100,7 +100,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.interim_results = config.interim_results;
   remote_engine_config.max_hypotheses = config.max_hypotheses;
   remote_engine_config.hardware_info = hardware_info;
-  remote_engine_config.origin_url = can_report_metrics ? config.origin_url : "";
+  remote_engine_config.origin_url =
+      can_report_metrics ? config.origin_url : std::string();
 
   SpeechRecognitionEngine* google_remote_engine;
   if (config.is_legacy_api) {

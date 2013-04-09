@@ -380,7 +380,9 @@ void PepperUDPSocketPrivateMessageFilter::SendBindError(
 void PepperUDPSocketPrivateMessageFilter::SendRecvFromError(
     const ppapi::host::ReplyMessageContext& context,
     int32_t result) {
-  SendRecvFromReply(context, result, "",
+  SendRecvFromReply(context,
+                    result,
+                    std::string(),
                     NetAddressPrivateImpl::kInvalidNetAddress);
 }
 

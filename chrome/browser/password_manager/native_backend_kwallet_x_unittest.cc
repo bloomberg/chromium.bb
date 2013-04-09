@@ -315,7 +315,7 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendInt32(klauncher_ret_);
-  writer.AppendString("");   // dbus_name
+  writer.AppendString(std::string());  // dbus_name
   writer.AppendString(klauncher_error_);
   writer.AppendInt32(1234);  // pid
   return response.release();

@@ -96,9 +96,9 @@ TEST(DialDeviceDataTest, TestIsDeviceDescriptionUrl) {
       GURL("https://192.168.1.1:1234/dd.xml")));
 
   EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(GURL()));
-  EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(GURL("")));
-  EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(
-      GURL("file://path/to/file")));
+  EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(GURL(std::string())));
+  EXPECT_FALSE(
+      DialDeviceData::IsDeviceDescriptionUrl(GURL("file://path/to/file")));
 }
 
 }  // namespace extensions

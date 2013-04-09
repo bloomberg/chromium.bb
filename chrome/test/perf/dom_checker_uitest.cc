@@ -143,20 +143,24 @@ class DomCheckerTest : public UITest {
   }
 
   bool WaitUntilTestCompletes(TabProxy* tab) {
-    return WaitUntilJavaScriptCondition(tab, L"",
+    return WaitUntilJavaScriptCondition(
+        tab,
+        std::wstring(),
         L"window.domAutomationController.send(automation.IsDone());",
         TestTimeouts::large_test_timeout());
   }
 
   bool GetTestCount(TabProxy* tab, int* test_count) {
-    return tab->ExecuteAndExtractInt(L"",
+    return tab->ExecuteAndExtractInt(
+        std::wstring(),
         L"window.domAutomationController.send(automation.GetTestCount());",
         test_count);
   }
 
   bool GetTestsFailed(TabProxy* tab, ResultsSet* tests_failed) {
     std::wstring json_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
+    bool succeeded = tab->ExecuteAndExtractString(
+        std::wstring(),
         L"window.domAutomationController.send("
         L"    JSON.stringify(automation.GetFailures()));",
         &json_wide);

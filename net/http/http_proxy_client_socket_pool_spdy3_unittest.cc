@@ -47,26 +47,37 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
  protected:
   HttpProxyClientSocketPoolSpdy3Test()
       : ssl_config_(),
-        ignored_transport_socket_params_(new TransportSocketParams(
-            HostPortPair("proxy", 80), LOWEST, false, false,
-            OnHostResolutionCallback())),
-        ignored_ssl_socket_params_(new SSLSocketParams(
-            ignored_transport_socket_params_, NULL, NULL,
-            ProxyServer::SCHEME_DIRECT, HostPortPair("www.google.com", 443),
-            ssl_config_, 0, false, false)),
+        ignored_transport_socket_params_(
+            new TransportSocketParams(HostPortPair("proxy", 80),
+                                      LOWEST,
+                                      false,
+                                      false,
+                                      OnHostResolutionCallback())),
+        ignored_ssl_socket_params_(
+            new SSLSocketParams(ignored_transport_socket_params_,
+                                NULL,
+                                NULL,
+                                ProxyServer::SCHEME_DIRECT,
+                                HostPortPair("www.google.com", 443),
+                                ssl_config_,
+                                0,
+                                false,
+                                false)),
         tcp_histograms_("MockTCP"),
         transport_socket_pool_(
-            kMaxSockets, kMaxSocketsPerGroup,
+            kMaxSockets,
+            kMaxSocketsPerGroup,
             &tcp_histograms_,
             session_deps_.deterministic_socket_factory.get()),
         ssl_histograms_("MockSSL"),
-        ssl_socket_pool_(kMaxSockets, kMaxSocketsPerGroup,
+        ssl_socket_pool_(kMaxSockets,
+                         kMaxSocketsPerGroup,
                          &ssl_histograms_,
                          session_deps_.host_resolver.get(),
                          session_deps_.cert_verifier.get(),
                          NULL /* server_bound_cert_store */,
                          NULL /* transport_security_state */,
-                         ""   /* ssl_session_cache_shard */,
+                         std::string() /* ssl_session_cache_shard */,
                          session_deps_.deterministic_socket_factory.get(),
                          &transport_socket_pool_,
                          NULL,
@@ -77,13 +88,13 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
         http_proxy_histograms_("HttpProxyUnitTest"),
         ssl_data_(NULL),
         data_(NULL),
-        pool_(kMaxSockets, kMaxSocketsPerGroup,
+        pool_(kMaxSockets,
+              kMaxSocketsPerGroup,
               &http_proxy_histograms_,
               NULL,
               &transport_socket_pool_,
               &ssl_socket_pool_,
-              NULL) {
-  }
+              NULL) {}
 
   virtual ~HttpProxyClientSocketPoolSpdy3Test() {
   }
@@ -115,17 +126,16 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
   // Returns the a correctly constructed HttpProxyParms
   // for the HTTP or HTTPS proxy.
   scoped_refptr<HttpProxySocketParams> GetParams(bool tunnel) {
-    return scoped_refptr<HttpProxySocketParams>(
-        new HttpProxySocketParams(
-            GetTcpParams(),
-            GetSslParams(),
-            GURL(tunnel ? "https://www.google.com/" : "http://www.google.com"),
-            "",
-            HostPortPair("www.google.com", tunnel ? 443 : 80),
-            session_->http_auth_cache(),
-            session_->http_auth_handler_factory(),
-            session_->spdy_session_pool(),
-            tunnel));
+    return scoped_refptr<HttpProxySocketParams>(new HttpProxySocketParams(
+        GetTcpParams(),
+        GetSslParams(),
+        GURL(tunnel ? "https://www.google.com/" : "http://www.google.com"),
+        std::string(),
+        HostPortPair("www.google.com", tunnel ? 443 : 80),
+        session_->http_auth_cache(),
+        session_->http_auth_handler_factory(),
+        session_->spdy_session_pool(),
+        tunnel));
   }
 
   scoped_refptr<HttpProxySocketParams> GetTunnelParams() {

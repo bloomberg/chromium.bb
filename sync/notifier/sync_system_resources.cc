@@ -181,14 +181,15 @@ void SyncStorage::SetSystemResources(
 
 void SyncStorage::RunAndDeleteWriteKeyCallback(
     invalidation::WriteKeyCallback* callback) {
-  callback->Run(invalidation::Status(invalidation::Status::SUCCESS, ""));
+  callback->Run(
+      invalidation::Status(invalidation::Status::SUCCESS, std::string()));
   delete callback;
 }
 
 void SyncStorage::RunAndDeleteReadKeyCallback(
     invalidation::ReadKeyCallback* callback, const std::string& value) {
   callback->Run(std::make_pair(
-      invalidation::Status(invalidation::Status::SUCCESS, ""),
+      invalidation::Status(invalidation::Status::SUCCESS, std::string()),
       value));
   delete callback;
 }

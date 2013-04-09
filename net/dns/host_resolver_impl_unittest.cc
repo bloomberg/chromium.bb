@@ -107,7 +107,7 @@ class MockHostResolverProc : public HostResolverProc {
   void AddRule(const std::string& hostname, AddressFamily family,
                const std::string& ip_list) {
     AddressList result;
-    int rv = ParseAddressList(ip_list, "", &result);
+    int rv = ParseAddressList(ip_list, std::string(), &result);
     DCHECK_EQ(OK, rv);
     AddRule(hostname, family, result);
   }
@@ -115,7 +115,7 @@ class MockHostResolverProc : public HostResolverProc {
   void AddRuleForAllFamilies(const std::string& hostname,
                              const std::string& ip_list) {
     AddressList result;
-    int rv = ParseAddressList(ip_list, "", &result);
+    int rv = ParseAddressList(ip_list, std::string(), &result);
     DCHECK_EQ(OK, rv);
     AddRule(hostname, ADDRESS_FAMILY_UNSPECIFIED, result);
     AddRule(hostname, ADDRESS_FAMILY_IPV4, result);
@@ -137,7 +137,7 @@ class MockHostResolverProc : public HostResolverProc {
     --num_slots_available_;
     --num_requests_waiting_;
     if (rules_.empty()) {
-      int rv = ParseAddressList("127.0.0.1", "", addrlist);
+      int rv = ParseAddressList("127.0.0.1", std::string(), addrlist);
       DCHECK_EQ(OK, rv);
       return OK;
     }
@@ -527,7 +527,8 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
 }
 
 TEST_F(HostResolverImplTest, FailedAsynchronousLookup) {
-  proc_->AddRuleForAllFamilies("", "0.0.0.0");  // Default to failures.
+  proc_->AddRuleForAllFamilies(std::string(),
+                               "0.0.0.0");  // Default to failures.
   proc_->SignalMultiple(1u);
 
   Request* req = CreateRequest("just.testing", 80);
@@ -582,7 +583,7 @@ TEST_F(HostResolverImplTest, NumericIPv6Address) {
 }
 
 TEST_F(HostResolverImplTest, EmptyHost) {
-  Request* req = CreateRequest("", 5555);
+  Request* req = CreateRequest(std::string(), 5555);
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
 }
 
@@ -1344,7 +1345,8 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
   DnsConfig config = CreateValidDnsConfig();
   ChangeDnsConfig(config);
 
-  proc_->AddRuleForAllFamilies("", "");  // Default to failures.
+  proc_->AddRuleForAllFamilies(std::string(),
+                               std::string());  // Default to failures.
   proc_->SignalMultiple(1u);  // For the first request which misses.
 
   Request* req0 = CreateRequest("er_ipv4", 80);
@@ -1396,7 +1398,8 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
 TEST_F(HostResolverImplDnsTest, BypassDnsTask) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  proc_->AddRuleForAllFamilies("", "");  // Default to failures.
+  proc_->AddRuleForAllFamilies(std::string(),
+                               std::string());  // Default to failures.
 
   EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok.local", 80)->Resolve());
   EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok.local.", 80)->Resolve());
@@ -1416,7 +1419,8 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask) {
 TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  proc_->AddRuleForAllFamilies("", "");  // Default to failures.
+  proc_->AddRuleForAllFamilies(std::string(),
+                               std::string());  // Default to failures.
 
   // Check that DnsTask works.
   Request* req = CreateRequest("ok_1", 80);
@@ -1470,7 +1474,7 @@ TEST_F(HostResolverImplDnsTest, DontDisableDnsClientOnSporadicFailure) {
     EXPECT_EQ(OK, requests_[i]->WaitForResult()) << i;
 
   // Make |proc_| default to failures.
-  proc_->AddRuleForAllFamilies("", "");
+  proc_->AddRuleForAllFamilies(std::string(), std::string());
 
   // DnsTask should still be enabled.
   Request* req = CreateRequest("ok_last", 80);

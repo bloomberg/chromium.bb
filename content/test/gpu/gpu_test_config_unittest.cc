@@ -148,7 +148,7 @@ TEST_F(GPUTestConfigTest, StringMatches) {
   config.set_gpu_device_id(0x0640);
   EXPECT_TRUE(config.IsValid());
 
-  EXPECT_TRUE(config.Matches(""));
+  EXPECT_TRUE(config.Matches(std::string()));
 
   // os matching
   EXPECT_TRUE(config.Matches("WIN"));

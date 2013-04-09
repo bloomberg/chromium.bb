@@ -258,7 +258,7 @@ void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
     }
   }
   if (notify_observers)
-    NotifyChangeObservers("");
+    NotifyChangeObservers(std::string());
 }
 
 void MediaGalleriesPreferences::NotifyChangeObservers(

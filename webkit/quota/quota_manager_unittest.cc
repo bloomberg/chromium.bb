@@ -1368,7 +1368,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   MessageLoop::current()->RunUntilIdle();
   int64 predelete_host_pers = usage();
 
-  DeleteHostData("", kTemp, kAllClients);
+  DeleteHostData(std::string(), kTemp, kAllClients);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
 

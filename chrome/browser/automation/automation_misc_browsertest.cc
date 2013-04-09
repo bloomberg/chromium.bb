@@ -82,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
       "  window.didClick = true;"
       "}, true);"));
   AutomationMouseEvent automation_event;
-  automation_event.location_script_chain.push_back(
-      ScriptEvaluationRequest("{'x': 5, 'y': 10}", ""));
+  automation_event.location_script_chain
+      .push_back(ScriptEvaluationRequest("{'x': 5, 'y': 10}", std::string()));
   WebKit::WebMouseEvent& mouse_event = automation_event.mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;

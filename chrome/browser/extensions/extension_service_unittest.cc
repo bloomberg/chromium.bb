@@ -1192,7 +1192,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
-  EXPECT_EQ(std::string(""), loaded_[1]->description());
+  EXPECT_EQ(std::string(), loaded_[1]->description());
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
             extensions::BackgroundInfo::GetBackgroundURL(loaded_[1]));
   EXPECT_EQ(
@@ -1220,7 +1220,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   int index = expected_num_extensions - 1;
   EXPECT_EQ(std::string(good2), loaded_[index]->id());
   EXPECT_EQ(std::string("My extension 3"), loaded_[index]->name());
-  EXPECT_EQ(std::string(""), loaded_[index]->description());
+  EXPECT_EQ(std::string(), loaded_[index]->description());
   EXPECT_EQ(
       0u,
       extensions::ContentScriptsInfo::GetContentScripts(loaded_[index]).size());
@@ -3313,8 +3313,8 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   // UNPACKED is for extensions loaded from a directory. We use it here, even
   // though we're testing loading from prefs, so that we don't need to provide
   // an extension key.
-  extensions::ExtensionInfo extension_info(&manifest, "", path,
-                                           Manifest::UNPACKED);
+  extensions::ExtensionInfo extension_info(
+      &manifest, std::string(), path, Manifest::UNPACKED);
 
   // Ensure we can load it with no management policy in place.
   management_policy_->UnregisterAllProviders();

@@ -298,7 +298,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      "",  // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();
@@ -330,7 +330,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      "",  // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();
@@ -363,7 +363,7 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      "",  // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();
@@ -429,7 +429,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      "",  // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();
@@ -508,7 +508,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      "",  // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();
@@ -528,7 +528,7 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
-      "",  // etag
+      std::string(),             // etag
       test_util::CreateCopyResultCallback(
           &error, &drive_path, &file_path, &resource_entry));
   test_util::RunBlockingPoolTask();

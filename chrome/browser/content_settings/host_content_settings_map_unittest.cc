@@ -81,16 +81,16 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
        ContentSettingsPattern::FromString("[*.]example.com");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -99,10 +99,10 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
 
   // Check returning all settings for a host.
   host_content_settings_map->SetContentSetting(
@@ -113,7 +113,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -122,7 +122,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -131,22 +131,23 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, ""));
+                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
 
   // Check returning all hosts for a setting.
   ContentSettingsPattern pattern2 =
@@ -164,18 +165,16 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       std::string(),
       CONTENT_SETTING_BLOCK);
   ContentSettingsForOneType host_settings;
-  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
-                                                   "",
-                                                   &host_settings);
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), &host_settings);
   // |host_settings| contains the default setting and an exception.
   EXPECT_EQ(2U, host_settings.size());
   host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PLUGINS, "", &host_settings);
+      CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), &host_settings);
   // |host_settings| contains the default setting and 2 exceptions.
   EXPECT_EQ(3U, host_settings.size());
-  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS,
-                                                   "",
-                                                   &host_settings);
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
   // |host_settings| contains only the default setting.
   EXPECT_EQ(1U, host_settings.size());
 }
@@ -217,13 +216,12 @@ TEST_F(HostContentSettingsMapTest, Clear) {
   host_content_settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES);
   ContentSettingsForOneType host_settings;
-  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
-                                                   "",
-                                                   &host_settings);
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), &host_settings);
   // |host_settings| contains only the default setting.
   EXPECT_EQ(1U, host_settings.size());
   host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PLUGINS, "", &host_settings);
+      CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), &host_settings);
   // |host_settings| contains the default setting and an exception.
   EXPECT_EQ(2U, host_settings.size());
 }
@@ -242,7 +240,7 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
        ContentSettingsPattern::FromString("example.org");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern1,
       ContentSettingsPattern::Wildcard(),
@@ -251,13 +249,13 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   host_content_settings_map->SetContentSetting(
       pattern2,
       ContentSettingsPattern::Wildcard(),
@@ -266,7 +264,7 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, Observer) {
@@ -327,7 +325,7 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -337,13 +335,13 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
   prefs->Set(prefs::kDefaultContentSettings, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kDefaultContentSettings, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
@@ -363,7 +361,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   host_content_settings_map->SetContentSetting(
       pattern,
@@ -373,7 +371,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -383,13 +381,13 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   prefs->Set(prefs::kContentSettingsPatternPairs, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kContentSettingsPatternPairs, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
@@ -413,26 +411,26 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot,
-                host_ending_with_dot,
-                CONTENT_SETTINGS_TYPE_IMAGES,
-                ""));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(host_ending_with_dot,
+                                                   host_ending_with_dot,
+                                                   CONTENT_SETTINGS_TYPE_IMAGES,
+                                                   std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot,
-                host_ending_with_dot,
-                CONTENT_SETTINGS_TYPE_IMAGES,
-                ""));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(host_ending_with_dot,
+                                                   host_ending_with_dot,
+                                                   CONTENT_SETTINGS_TYPE_IMAGES,
+                                                   std::string()));
 
   EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
       host_ending_with_dot, host_ending_with_dot));
@@ -440,7 +438,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
   EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
       host_ending_with_dot, host_ending_with_dot));
@@ -448,7 +446,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(cookie_settings->IsSettingCookieAllowed(
       host_ending_with_dot, host_ending_with_dot));
@@ -458,93 +456,93 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                ""));
+                std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                ""));
+                std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                ""));
+                std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_PLUGINS,
-                ""));
+                std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_PLUGINS,
-                ""));
+                std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
                 CONTENT_SETTINGS_TYPE_PLUGINS,
-                ""));
+                std::string()));
 
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot,
-                host_ending_with_dot,
-                CONTENT_SETTINGS_TYPE_POPUPS,
-                ""));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(host_ending_with_dot,
+                                                   host_ending_with_dot,
+                                                   CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_POPUPS,
-      "",
+      std::string(),
       CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot,
-                host_ending_with_dot,
-                CONTENT_SETTINGS_TYPE_POPUPS,
-                ""));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(host_ending_with_dot,
+                                                   host_ending_with_dot,
+                                                   CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   std::string()));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_POPUPS,
-      "",
+      std::string(),
       CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host_ending_with_dot,
-                host_ending_with_dot,
-                CONTENT_SETTINGS_TYPE_POPUPS,
-                ""));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(host_ending_with_dot,
+                                                   host_ending_with_dot,
+                                                   CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, NestedSettings) {
@@ -564,52 +562,53 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       pattern1,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
 
   host_content_settings_map->SetContentSetting(
       pattern2,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
 
   host_content_settings_map->SetContentSetting(
       pattern3,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      host_content_settings_map->GetContentSetting(
+          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, ""));
+                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
@@ -626,10 +625,10 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Changing content settings on the main map should also affect the
   // incognito map.
@@ -637,27 +636,28 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Changing content settings on the incognito map should NOT affect the
   // main map.
-  otr_map->SetContentSetting(
-      pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_IMAGES, "", CONTENT_SETTING_ALLOW);
+  otr_map->SetContentSetting(pattern,
+                             ContentSettingsPattern::Wildcard(),
+                             CONTENT_SETTINGS_TYPE_IMAGES,
+                             std::string(),
+                             CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   otr_map->ShutdownOnUIThread();
 }
@@ -738,7 +738,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
           CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
   EXPECT_EQ(default_plugin_setting,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
 
   // If no resource-specific content settings are defined, the setting should be
   // DEFAULT.
@@ -865,7 +865,7 @@ TEST_F(HostContentSettingsMapTest,
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      "",
+      std::string(),
       CONTENT_SETTING_BLOCK);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -875,14 +875,14 @@ TEST_F(HostContentSettingsMapTest,
   GURL host("http://example.com/");
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
 
   // Set managed-default-content-setting for content-settings-type JavaScript.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
 }
 
 // Managed default content setting should have higher priority
@@ -906,7 +906,7 @@ TEST_F(HostContentSettingsMapTest,
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      "",
+      std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -915,20 +915,20 @@ TEST_F(HostContentSettingsMapTest,
   GURL host("http://example.com/");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
 
   // Set managed-default-content-settings-preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
 
   // Remove managed-default-content-settings-preferences.
   prefs->RemoveManagedPref(prefs::kManagedDefaultJavaScriptSetting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
 }
 
 // If a default-content-setting is set to managed setting, the user defined
@@ -1004,10 +1004,10 @@ TEST_F(HostContentSettingsMapTest, GetContentSetting) {
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
-                embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+                embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
