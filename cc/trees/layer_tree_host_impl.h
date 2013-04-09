@@ -114,9 +114,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_port) OVERRIDE;
 
   // TopControlsManagerClient implementation.
-  virtual void setActiveTreeNeedsUpdateDrawProperties() OVERRIDE;
-  virtual void setNeedsRedraw() OVERRIDE;
-  virtual bool haveRootScrollLayer() const OVERRIDE;
+  virtual void DidChangeTopControlsPosition() OVERRIDE;
+  virtual bool HaveRootScrollLayer() const OVERRIDE;
 
   void StartScrollbarAnimation(base::TimeTicks now);
 
@@ -233,6 +232,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   bool visible() const { return visible_; }
 
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
+  void SetNeedsRedraw() { client_->SetNeedsRedrawOnImplThread(); }
 
   size_t memory_allocation_limit_bytes() const {
     return managed_memory_policy_.bytes_limit_when_visible;

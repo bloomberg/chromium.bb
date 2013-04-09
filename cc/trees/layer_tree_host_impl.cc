@@ -1160,7 +1160,7 @@ void LayerTreeHostImpl::Readback(void* pixels,
   renderer_->GetFramebufferPixels(pixels, rect_in_device_viewport);
 }
 
-bool LayerTreeHostImpl::haveRootScrollLayer() const {
+bool LayerTreeHostImpl::HaveRootScrollLayer() const {
   return !!RootScrollLayer();
 }
 
@@ -1383,6 +1383,7 @@ void LayerTreeHostImpl::SetViewportSize(gfx::Size layout_viewport_size,
     renderer_->ViewportChanged();
 
   client_->OnCanDrawStateChanged(CanDraw());
+  SetFullRootLayerDamage();
 }
 
 static void AdjustScrollsForPageScaleChange(LayerImpl* layer_impl,
@@ -1408,6 +1409,7 @@ void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
   overdraw_bottom_height_ = overdraw_bottom_height;
 
   UpdateMaxScrollOffset();
+  SetFullRootLayerDamage();
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
@@ -1416,18 +1418,17 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
 
   UpdateMaxScrollOffset();
+  SetFullRootLayerDamage();
 }
 
 void LayerTreeHostImpl::UpdateMaxScrollOffset() {
   active_tree_->UpdateMaxScrollOffset();
 }
 
-void LayerTreeHostImpl::setActiveTreeNeedsUpdateDrawProperties() {
-  active_tree_->set_needs_update_draw_properties();
-}
-
-void LayerTreeHostImpl::setNeedsRedraw() {
+void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   client_->SetNeedsRedrawOnImplThread();
+  active_tree_->set_needs_update_draw_properties();
+  SetFullRootLayerDamage();
 }
 
 bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {

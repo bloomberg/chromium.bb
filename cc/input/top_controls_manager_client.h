@@ -11,9 +11,8 @@ class LayerTreeImpl;
 
 class CC_EXPORT TopControlsManagerClient {
  public:
-  virtual void setNeedsRedraw() = 0;
-  virtual void setActiveTreeNeedsUpdateDrawProperties() = 0;
-  virtual bool haveRootScrollLayer() const = 0;
+  virtual void DidChangeTopControlsPosition() = 0;
+  virtual bool HaveRootScrollLayer() const = 0;
 
  protected:
   virtual ~TopControlsManagerClient() {}

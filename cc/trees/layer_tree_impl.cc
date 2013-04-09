@@ -508,7 +508,7 @@ void LayerTreeImpl::SetNeedsCommit() {
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {
-  layer_tree_host_impl_->setNeedsRedraw();
+  layer_tree_host_impl_->SetNeedsRedraw();
 }
 
 const LayerTreeDebugState& LayerTreeImpl::debug_state() const {

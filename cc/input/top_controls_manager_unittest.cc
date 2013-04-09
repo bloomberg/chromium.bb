@@ -34,15 +34,12 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
 
   virtual ~MockTopControlsManagerClient() {}
 
-  virtual void setNeedsRedraw() OVERRIDE {
+  virtual void DidChangeTopControlsPosition() OVERRIDE {
     redraw_needed_ = true;
-  }
-
-  virtual void setActiveTreeNeedsUpdateDrawProperties() OVERRIDE {
     update_draw_properties_needed_ = true;
   }
 
-  virtual bool haveRootScrollLayer() const OVERRIDE {
+  virtual bool HaveRootScrollLayer() const OVERRIDE {
     return true;
   }
 

@@ -496,7 +496,7 @@ class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     // Manual vsync tick.
     if (impl->pending_tree())
-      impl->setNeedsRedraw();
+      impl->SetNeedsRedraw();
   }
 };
 
@@ -541,7 +541,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     // We force a second draw here of the first commit before activating
     // the second commit.
     if (impl->active_tree()->source_frame_number() == 0)
-      impl->setNeedsRedraw();
+      impl->SetNeedsRedraw();
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {

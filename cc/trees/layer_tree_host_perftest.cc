@@ -49,7 +49,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         return;
       }
     }
-    impl->setNeedsRedraw();
+    impl->SetNeedsRedraw();
     if (full_damage_each_frame_)
       impl->SetFullRootLayerDamage();
   }

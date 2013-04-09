@@ -78,7 +78,7 @@ void TopControlsManager::UpdateTopControlsState(bool enable_hiding,
     } else {
       controls_top_offset_ = final_controls_position;
     }
-    client_->setNeedsRedraw();
+    client_->DidChangeTopControlsPosition();
   }
 }
 
@@ -126,12 +126,11 @@ void TopControlsManager::SetControlsTopOffset(float controls_top_offset) {
 
   controls_top_offset_ = controls_top_offset;
 
-  client_->setNeedsRedraw();
-  client_->setActiveTreeNeedsUpdateDrawProperties();
+  client_->DidChangeTopControlsPosition();
 }
 
 gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
-  if (!top_controls_animation_ || !client_->haveRootScrollLayer())
+  if (!top_controls_animation_ || !client_->HaveRootScrollLayer())
     return gfx::Vector2dF();
 
   double time = (monotonic_time - base::TimeTicks()).InMillisecondsF();
@@ -191,7 +190,7 @@ void TopControlsManager::StartAnimationIfNecessary() {
     if (show_controls != NO_ANIMATION &&
         (!top_controls_animation_ || animation_direction_ != show_controls)) {
       SetupAnimation(show_controls);
-      client_->setNeedsRedraw();
+      client_->DidChangeTopControlsPosition();
     }
   }
 }

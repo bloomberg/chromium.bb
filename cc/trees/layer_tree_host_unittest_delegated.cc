@@ -262,9 +262,8 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        // Before the layer has a frame to display it should not
-        // be visible at all, and not damage anything.
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
+        // First frame is damaged because of viewport resize.
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
                   damage_rect.ToString());
         break;
       case 1:
