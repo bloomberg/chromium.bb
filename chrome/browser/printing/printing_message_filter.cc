@@ -114,6 +114,7 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
                         OnTempFileForPrintingWritten)
 #endif
+    IPC_MESSAGE_HANDLER(PrintHostMsg_IsPrintingEnabled, OnIsPrintingEnabled)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
@@ -226,6 +227,11 @@ void PrintingMessageFilter::GetPrintSettingsForRenderView(
                  params.ask_user_for_settings, wc->GetView()->GetNativeView(),
                  params.expected_page_count, params.has_selection,
                  params.margin_type, callback));
+}
+
+void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  *is_enabled = profile_io_data_->printing_enabled()->GetValue();
 }
 
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {

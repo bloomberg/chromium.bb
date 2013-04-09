@@ -148,6 +148,10 @@ PP_Bool PDFResource::IsFeatureEnabled(PP_PDFFeature feature) {
     case PP_PDFFEATURE_HIDPI:
       result = PP_TRUE;
       break;
+    case PP_PDFFEATURE_PRINTING:
+      // TODO(raymes): Use PrintWebViewHelper::IsPrintingEnabled.
+      result = PP_FALSE;
+      break;
   }
   return result;
 }

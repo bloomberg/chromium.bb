@@ -134,6 +134,40 @@ static const ResourceImageInfo kResourceImageMap[] = {
   { PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON },
 };
 
+#if defined(ENABLE_PRINTING)
+
+WebKit::WebElement GetWebElement(PP_Instance instance_id) {
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  if (!instance)
+    return WebKit::WebElement();
+  return instance->container()->element();
+}
+
+printing::PrintWebViewHelper* GetPrintWebViewHelper(
+    const WebKit::WebElement& element) {
+  if (element.isNull())
+    return NULL;
+  WebKit::WebView* view = element.document().frame()->view();
+  content::RenderView* render_view = content::RenderView::FromWebView(view);
+  return printing::PrintWebViewHelper::Get(render_view);
+}
+
+bool IsPrintingEnabled(PP_Instance instance_id) {
+  WebKit::WebElement element = GetWebElement(instance_id);
+  printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
+  return helper && helper->IsPrintingEnabled();
+}
+
+#else  // ENABLE_PRINTING
+
+bool IsPrintingEnabled(PP_Instance instance_id) {
+  return false;
+}
+
+#endif  // ENABLE_PRINTING
+
+
+
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
   PluginInstance* instance =
@@ -315,14 +349,14 @@ void SaveAs(PP_Instance instance_id) {
   instance->delegate()->SaveURLAs(instance->plugin_url());
 }
 
-PP_Bool IsFeatureEnabled(PP_Instance /*instance*/, PP_PDFFeature feature) {
-  PP_Bool result = PP_FALSE;
+PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
   switch (feature) {
     case PP_PDFFEATURE_HIDPI:
-      result = PP_TRUE;
-      break;
+      return PP_TRUE;
+    case PP_PDFFEATURE_PRINTING:
+      return IsPrintingEnabled(instance) ? PP_TRUE : PP_FALSE;
   }
-  return result;
+  return PP_FALSE;
 }
 
 PP_Resource GetResourceImageForScale(PP_Instance instance_id,
@@ -413,17 +447,9 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
 #if defined(ENABLE_PRINTING)
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
-  if (!instance)
-    return;
-
-  WebKit::WebElement element = instance->container()->element();
-  WebKit::WebView* view = element.document().frame()->view();
-  content::RenderView* render_view = content::RenderView::FromWebView(view);
-
-  using printing::PrintWebViewHelper;
-  PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
-  if (print_view_helper)
-    print_view_helper->PrintNode(element);
-#endif
+  WebKit::WebElement element = GetWebElement(instance_id);
+  printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
+  if (helper)
+    helper->PrintNode(element);
+#endif  // ENABLE_PRINTING
 }

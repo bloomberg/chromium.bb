@@ -47,6 +47,8 @@ class PrintWebViewHelper
   explicit PrintWebViewHelper(content::RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
+  bool IsPrintingEnabled();
+
   void PrintNode(const WebKit::WebNode& node);
 
  private:

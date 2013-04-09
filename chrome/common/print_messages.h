@@ -327,6 +327,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DuplicateSection,
                            base::SharedMemoryHandle /* browser handle */)
 #endif
 
+// Check if printing is enabled.
+IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_IsPrintingEnabled,
+                           bool /* is_enabled */)
+
 // Tells the browser that the renderer is done calculating the number of
 // rendered pages according to the specified settings.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPrintedPagesCount,

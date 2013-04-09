@@ -1148,6 +1148,12 @@ void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {
   }
 }
 
+bool PrintWebViewHelper::IsPrintingEnabled() {
+  bool result = false;
+  Send(new PrintHostMsg_IsPrintingEnabled(routing_id(), &result));
+  return result;
+}
+
 void PrintWebViewHelper::PrintNode(const WebKit::WebNode& node) {
   if (node.isNull() || !node.document().frame()) {
     // This can occur when the context menu refers to an invalid WebNode.

@@ -73,7 +73,8 @@ typedef enum {
 } PP_ResourceImage;
 
 typedef enum {
-  PP_PDFFEATURE_HIDPI = 0
+  PP_PDFFEATURE_HIDPI = 0,
+  PP_PDFFEATURE_PRINTING = 1
 } PP_PDFFeature;
 
 struct PP_PrivateFontFileDescription {
