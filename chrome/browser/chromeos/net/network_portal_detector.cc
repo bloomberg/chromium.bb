@@ -238,7 +238,8 @@ void NetworkPortalDetector::ForcePortalDetection() {
 
 // static
 NetworkPortalDetector* NetworkPortalDetector::CreateInstance() {
-  DCHECK(!g_network_portal_detector);
+  CHECK(!g_network_portal_detector);
+  CHECK(NetworkPortalDetector::IsEnabled());
   g_network_portal_detector = new NetworkPortalDetector(
       g_browser_process->system_request_context());
   return g_network_portal_detector;
@@ -246,6 +247,8 @@ NetworkPortalDetector* NetworkPortalDetector::CreateInstance() {
 
 // static
 NetworkPortalDetector* NetworkPortalDetector::GetInstance() {
+  if (!NetworkPortalDetector::IsEnabled())
+    return NULL;
   if (!g_network_portal_detector)
     return CreateInstance();
   return g_network_portal_detector;

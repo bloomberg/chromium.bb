@@ -172,7 +172,8 @@ void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     const Network* network) {
   DCHECK(network);
-  if (NetworkPortalDetector::IsEnabled()) {
+  if (NetworkPortalDetector::IsEnabled() &&
+      NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
