@@ -11,7 +11,7 @@
 
 #connection-history-options {
   margin-top: 30px;
-  display: -webkit-box;
+  display: -webkit-flex;
 }
 
 #connection-history-scroller {

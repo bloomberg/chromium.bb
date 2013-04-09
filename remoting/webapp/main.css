@@ -247,7 +247,7 @@ section > h2 {
 }
 
 header {
-  display: -webkit-box;
+  display: -webkit-flex;
   width: 100%;
 }
 
@@ -279,7 +279,7 @@ section {
 }
 
 .box-spacer {
-  -webkit-box-flex: 1;
+  -webkit-flex: 1;
 }
 
 .centered {
@@ -291,7 +291,7 @@ section {
 }
 
 .box {
-  display: -webkit-box;
+  display: -webkit-flex;
 }
 
 .host-list-empty-instructions {
@@ -315,8 +315,8 @@ section {
 }
 
 .section-row {
-  display: -webkit-box;
-  -webkit-box-align: center;
+  display: -webkit-flex;
+  -webkit-align-items: center;
   padding: 10px 0;
   border-top: 1px solid #EBEBEB;
 }
@@ -573,7 +573,7 @@ button {
   top: 200px;
   left: 0;
   width: 100%;
-  display: -webkit-box;
+  display: -webkit-flex;
 }
 
 .dialog-screen {
