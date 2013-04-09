@@ -69,7 +69,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {
   // Use default URL, if |override_url| is empty.
   // Do not add q parameter if |search_string| is empty.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
-            url_generator_.GetFilelistUrl(GURL(), std::string()).spec());
+            url_generator_.GetFilelistUrl(GURL(), "").spec());
 
   // Set q parameter if non-empty |search_string| is given.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files?q=query",
@@ -77,10 +77,9 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {
 
   // Use the |override_url| for the base URL if given.
   // The behavior for the |search_string| should be as same as above cases.
-  EXPECT_EQ(
-      "https://localhost/drive/v2/files",
-      url_generator_.GetFilelistUrl(GURL("https://localhost/drive/v2/files"),
-                                    std::string()).spec());
+  EXPECT_EQ("https://localhost/drive/v2/files",
+            url_generator_.GetFilelistUrl(
+                GURL("https://localhost/drive/v2/files"), "").spec());
   EXPECT_EQ("https://localhost/drive/v2/files?q=query",
             url_generator_.GetFilelistUrl(
                 GURL("https://localhost/drive/v2/files"), "query").spec());

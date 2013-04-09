@@ -248,7 +248,7 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
             function.get(), kEmptyArgs, browser()));
     ASSERT_TRUE(result);
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
-    std::string webgl_status;
+    std::string webgl_status = "";
     EXPECT_TRUE(result->GetAsString(&webgl_status));
     EXPECT_STREQ(webgl_allowed ? kWebGLStatusAllowed : kWebGLStatusBlocked,
                  webgl_status.c_str());

@@ -173,7 +173,7 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
 
 TEST(NavigationTracker, UnknownStateForcesStart) {
   base::DictionaryValue params;
-  DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
+  DeterminingLoadStateDevToolsClient client(true, "", &params);
   NavigationTracker tracker(&client);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
 }

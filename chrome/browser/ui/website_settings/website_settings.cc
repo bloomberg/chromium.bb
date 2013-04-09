@@ -143,18 +143,12 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
       secondary_pattern = ContentSettingsPattern::Wildcard();
       // Set permission for both microphone and camera.
       content_settings_->SetContentSetting(
-          primary_pattern,
-          secondary_pattern,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          std::string(),
-          setting);
+          primary_pattern, secondary_pattern,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "", setting);
 
       content_settings_->SetContentSetting(
-          primary_pattern,
-          secondary_pattern,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          std::string(),
-          setting);
+          primary_pattern, secondary_pattern,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "", setting);
       break;
     }
     default:
@@ -173,7 +167,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     // can not create media settings exceptions by hand.
     content_settings::SettingInfo info;
     scoped_ptr<Value> v(content_settings_->GetWebsiteSetting(
-        site_url_, site_url_, type, std::string(), &info));
+        site_url_, site_url_, type, "", &info));
     DCHECK(info.source == content_settings::SETTING_SOURCE_USER);
     ContentSettingsPattern::Relation r1 =
         info.primary_pattern.Compare(primary_pattern);
@@ -194,7 +188,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     if (setting != CONTENT_SETTING_DEFAULT)
       value = Value::CreateIntegerValue(setting);
     content_settings_->SetWebsiteSetting(
-        primary_pattern, secondary_pattern, type, std::string(), value);
+        primary_pattern, secondary_pattern, type, "", value);
   }
 
   show_info_bar_ = true;
@@ -458,20 +452,14 @@ void WebsiteSettings::PresentSitePermissions() {
     content_settings::SettingInfo info;
     if (permission_info.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
       scoped_ptr<base::Value> mic_value(content_settings_->GetWebsiteSetting(
-          site_url_,
-          site_url_,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          std::string(),
-          &info));
+          site_url_, site_url_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+          "", &info));
       ContentSetting mic_setting =
           content_settings::ValueToContentSetting(mic_value.get());
 
       scoped_ptr<base::Value> camera_value(content_settings_->GetWebsiteSetting(
-          site_url_,
-          site_url_,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          std::string(),
-          &info));
+          site_url_, site_url_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          "", &info));
       ContentSetting camera_setting =
           content_settings::ValueToContentSetting(camera_value.get());
 
@@ -481,7 +469,7 @@ void WebsiteSettings::PresentSitePermissions() {
         permission_info.setting = mic_setting;
     } else {
       scoped_ptr<Value> value(content_settings_->GetWebsiteSetting(
-          site_url_, site_url_, permission_info.type, std::string(), &info));
+          site_url_, site_url_, permission_info.type, "", &info));
       DCHECK(value.get());
       if (value->GetType() == Value::TYPE_INTEGER) {
         permission_info.setting =

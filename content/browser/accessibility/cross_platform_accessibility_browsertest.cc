@@ -107,7 +107,7 @@ std::string CrossPlatformAccessibilityBrowserTest::GetAttr(
   if (iter != node.string_attributes.end())
     return UTF16ToUTF8(iter->second);
   else
-    return std::string();
+    return "";
 }
 
 // Convenience method to get the value of a particular AccessibilityNodeData

@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
                                     base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_test_server.GetURL(std::string()));
+  GURL https_url(https_test_server.GetURL(""));
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
@@ -647,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
                                     base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_test_server.GetURL(std::string()));
+  GURL https_url(https_test_server.GetURL(""));
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
@@ -747,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
       browser()->command_controller()->command_updater();
 
   ASSERT_TRUE(test_server()->Start());
-  GURL http_url(test_server()->GetURL(std::string()));
+  GURL http_url(test_server()->GetURL(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -775,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
                               net::TestServer::kLocalhost,
                               base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
-  GURL ftp_url(test_server.GetURL(std::string()));
+  GURL ftp_url(test_server.GetURL(""));
   ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
   ui_test_utils::NavigateToURL(browser(), ftp_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 // DISABLED: http://crbug.com/72310
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_TRUE(test_server()->Start());
-  GURL http_url(test_server()->GetURL(std::string()));
+  GURL http_url(test_server()->GetURL(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());

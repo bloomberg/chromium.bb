@@ -420,8 +420,8 @@ TEST(ContentSettingsPatternTest, InvalidPatterns) {
   EXPECT_STREQ("", ContentSettingsPattern().ToString().c_str());
 
   // Empty pattern string
-  EXPECT_FALSE(Pattern(std::string()).IsValid());
-  EXPECT_STREQ("", Pattern(std::string()).ToString().c_str());
+  EXPECT_FALSE(Pattern("").IsValid());
+  EXPECT_STREQ("", Pattern("").ToString().c_str());
 
   // Pattern strings with invalid scheme part.
   EXPECT_FALSE(Pattern("ftp://myhost.org").IsValid());
@@ -630,7 +630,8 @@ TEST(ContentSettingsPatternTest, PatternSupport_Legacy) {
   EXPECT_TRUE(
       Pattern("file:///tmp/test.html").Matches(
               GURL("file:///tmp/test.html")));
-  EXPECT_FALSE(Pattern(std::string()).Matches(GURL("http://www.example.com/")));
+  EXPECT_FALSE(Pattern("").Matches(
+               GURL("http://www.example.com/")));
   EXPECT_FALSE(Pattern("[*.]example.com").Matches(
                GURL("http://example.org/")));
   EXPECT_FALSE(Pattern("example.com").Matches(

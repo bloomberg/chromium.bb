@@ -61,7 +61,7 @@ std::string ProcessRawBytesWithSeparators(const unsigned char* data,
   size_t kMin = 0U;
 
   if (!data_length)
-    return std::string();
+    return "";
 
   ret.reserve(std::max(kMin, data_length * 3 - 1));
 

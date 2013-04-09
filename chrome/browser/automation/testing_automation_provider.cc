@@ -991,7 +991,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
-      *title = UTF16ToWideHack(entry->GetTitleForDisplay(std::string()));
+      *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
     } else {
       *title = std::wstring();
     }
@@ -3414,7 +3414,7 @@ void TestingAutomationProvider::RemoveSavedPassword(
   // This observer will delete itself.
   PasswordStoreLoginsChangedObserver* observer =
       new PasswordStoreLoginsChangedObserver(
-          this, reply_message, PasswordStoreChange::REMOVE, std::string());
+          this, reply_message, PasswordStoreChange::REMOVE, "");
   observer->Init();
 
   password_store->RemoveLogin(to_remove);
@@ -5353,7 +5353,7 @@ void TestingAutomationProvider::GetTabInfo(
       return;
     }
     DictionaryValue dict;
-    dict.SetString("title", entry->GetTitleForDisplay(std::string()));
+    dict.SetString("title", entry->GetTitleForDisplay(""));
     dict.SetString("url", entry->GetVirtualURL().spec());
     reply.SendSuccess(&dict);
   } else {

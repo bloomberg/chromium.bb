@@ -389,15 +389,13 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
       "user@gmail.com", &error_message));
   EXPECT_EQ("", error_message);
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
-      NULL,
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+      NULL, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message));
   EXPECT_EQ("", error_message);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOffer) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -410,10 +408,9 @@ TEST_F(OneClickSigninHelperTest, CanOffer) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
       "user@gmail.com", NULL));
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      NULL));
+                  web_contents(),
+                  OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+                  "", NULL));
 
   EnableOneClick(false);
 
@@ -427,15 +424,14 @@ TEST_F(OneClickSigninHelperTest, CanOffer) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
       "user@gmail.com", &error_message));
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+                  web_contents(),
+                  OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+                  "", &error_message));
   EXPECT_EQ("", error_message);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -458,10 +454,8 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
       OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
       "foo@gmail.com", NULL));
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      NULL));
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", NULL));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
@@ -498,14 +492,12 @@ TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
                                       UTF8ToUTF16("foo@gmail.com")),
             error_message);
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
       WillRepeatedly(Return(false));
@@ -521,15 +513,16 @@ TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
       "foo@gmail.com", &error_message));
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED),
             error_message);
-  EXPECT_TRUE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+  EXPECT_TRUE(
+      OneClickSigninHelper::CanOffer(
+          web_contents(),
+          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+          "",
+          &error_message));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -558,7 +551,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferIncognito) {
-  CreateSigninManager(true, std::string());
+  CreateSigninManager(true, "");
 
   std::string error_message;
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
@@ -570,15 +563,13 @@ TEST_F(OneClickSigninHelperTest, CanOfferIncognito) {
       "user@gmail.com", &error_message));
   EXPECT_EQ("", error_message);
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message));
   EXPECT_EQ("", error_message);
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
   AllowSigninCookies(false);
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
@@ -594,10 +585,8 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
       "user@gmail.com", &error_message));
   EXPECT_EQ("", error_message);
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
-      web_contents(),
-      OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-      std::string(),
-      &error_message));
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+      "", &error_message));
   EXPECT_EQ("", error_message);
 }
 
@@ -606,7 +595,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferUntrustedProcess) {
   ASSERT_NE(trusted.GetID(), process()->GetID());
   // Make sure the RenderProcessHost used by the test is untrusted.
   SetTrustedSigninProcessID(trusted.GetID());
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -618,7 +607,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferUntrustedProcess) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
-  CreateSigninManager(false, std::string());
+  CreateSigninManager(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -653,7 +642,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
 // Should not crash if a helper instance is not associated with an incognito
 // web contents.
 TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
-  CreateSigninManager(true, std::string());
+  CreateSigninManager(true, "");
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(web_contents());
   EXPECT_EQ(NULL, helper);
@@ -668,9 +657,9 @@ TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
 // config sync, then Chrome should redirect immidiately to sync settings page,
 // and upon successful setup, redirect back to webstore.
 TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
-  CreateSigninManager(false, std::string());
-  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
-      .WillRepeatedly(Return(true));
+  CreateSigninManager(false, "");
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
 
   CreateProfileSyncServiceMock();
 
@@ -698,9 +687,9 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 }
 
 TEST_F(OneClickSigninHelperTest, ShowSigninBubbleAfterSigninComplete) {
-  CreateSigninManager(false, std::string());
-  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
-      .WillRepeatedly(Return(true));
+  CreateSigninManager(false, "");
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
 
   CreateProfileSyncServiceMock();
 
@@ -736,34 +725,31 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThread) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadIncognito) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(true));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoIOData) {
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, NULL));
+                valid_gaia_url_, "", &request_, NULL));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_EQ(
-      OneClickSigninHelper::IGNORE_REQUEST,
-      OneClickSigninHelper::CanOfferOnIOThreadImpl(
-          GURL("https://foo.com/"), std::string(), &request_, io_data.get()));
   EXPECT_EQ(OneClickSigninHelper::IGNORE_REQUEST,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                GURL("http://accounts.google.com/"),
-                std::string(),
-                &request_,
-                io_data.get()));
+                GURL("https://foo.com/"), "", &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::IGNORE_REQUEST,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                GURL("http://accounts.google.com/"), "",
+                &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadReferrer) {
@@ -810,7 +796,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabled) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
@@ -820,7 +806,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
@@ -828,7 +814,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
@@ -841,7 +827,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
@@ -849,7 +835,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
@@ -857,14 +843,14 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 
   // Simulate a policy disabling signin by writing kSigninAllowed directly.
   // We should not offer to sign in the browser.
@@ -872,7 +858,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
       prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 
   // Reset the preference.
   profile_->GetTestingPrefService()->SetManagedPref(
@@ -884,5 +870,5 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
       prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, std::string(), &request_, io_data.get()));
+                valid_gaia_url_, "", &request_, io_data.get()));
 }

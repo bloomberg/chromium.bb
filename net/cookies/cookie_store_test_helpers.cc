@@ -90,7 +90,7 @@ std::string DelayedCookieMonster::GetCookiesWithOptions(
     const GURL& url,
     const CookieOptions& options) {
   ADD_FAILURE();
-  return std::string();
+  return "";
 }
 
 void DelayedCookieMonster::DeleteCookie(const GURL& url,

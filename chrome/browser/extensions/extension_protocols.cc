@@ -320,8 +320,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // some extensions want to be able to do things like create their own
   // launchers.
   std::string resource_root_relative_path =
-      request->url().path().empty() ? std::string()
-                                    : request->url().path().substr(1);
+      request->url().path().empty() ? "" : request->url().path().substr(1);
   if (extension->is_hosted_app() &&
       !extensions::IconsInfo::GetIcons(extension)
           .ContainsPath(resource_root_relative_path)) {

@@ -120,7 +120,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
 
 // These four tests time out, see http://crbug.com/113446.
 TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
-  TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, std::string());
+  TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
@@ -129,7 +129,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
 TEST_F(OAuth2AccessTokenFetcherTest,
        DISABLED_GetAccessTokenResponseCodeFailure) {
   TestURLFetcher* url_fetcher =
-      SetupGetAccessToken(true, net::HTTP_FORBIDDEN, std::string());
+      SetupGetAccessToken(true, net::HTTP_FORBIDDEN, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);

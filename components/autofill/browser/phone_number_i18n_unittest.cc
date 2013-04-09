@@ -337,7 +337,7 @@ TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
   // Same numbers, undefined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("4158889999"),
-                                std::string(),
+                                "",
                                 "en-US"));
 
   // Numbers differ by country code only.

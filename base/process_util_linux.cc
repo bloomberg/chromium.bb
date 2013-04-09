@@ -161,7 +161,7 @@ std::string GetProcStatsFieldAsString(
     ProcStatsFields field_num) {
   if (field_num < VM_COMM || field_num > VM_STATE) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
 
   if (proc_stats.size() > static_cast<size_t>(field_num))

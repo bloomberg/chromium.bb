@@ -969,7 +969,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   // Write the XML version.
   OPEN_ELEMENT_FOR_SCOPE("uielement");
   WriteAttribute("action", "autocomplete");
-  WriteAttribute("targetidhash", std::string());
+  WriteAttribute("targetidhash", "");
   // TODO(kochi): Properly track windows.
   WriteIntAttribute("window", 0);
   if (log.tab_id != -1) {

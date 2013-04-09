@@ -101,7 +101,7 @@ int StreamDelegateBase::WaitForClose() {
 std::string StreamDelegateBase::GetResponseHeaderValue(
     const std::string& name) const {
   SpdyHeaderBlock::const_iterator it = response_.find(name);
-  return (it == response_.end()) ? std::string() : it->second;
+  return (it == response_.end()) ? "" : it->second;
 }
 
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(

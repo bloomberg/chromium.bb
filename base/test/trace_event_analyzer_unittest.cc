@@ -786,7 +786,7 @@ TEST_F(TraceEventAnalyzerTest, FindClosest) {
   events[0].name = "one";
   events[2].name = "two";
   events[4].name = "three";
-  Query query_named = Query::EventName() != Query::String(std::string());
+  Query query_named = Query::EventName() != Query::String("");
   Query query_one = Query::EventName() == Query::String("one");
 
   // Only one event matches query_one, so two closest can't be found.
@@ -822,7 +822,7 @@ TEST_F(TraceEventAnalyzerTest, CountMatches) {
   events[0].name = "one";
   events[2].name = "two";
   events[4].name = "three";
-  Query query_named = Query::EventName() != Query::String(std::string());
+  Query query_named = Query::EventName() != Query::String("");
   Query query_one = Query::EventName() == Query::String("one");
 
   EXPECT_EQ(0u, CountMatches(event_ptrs, Query::Bool(false)));

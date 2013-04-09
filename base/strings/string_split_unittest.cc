@@ -36,10 +36,9 @@ class SplitStringIntoKeyValuesTest : public testing::Test {
 };
 
 TEST_F(SplitStringIntoKeyValuesTest, EmptyInputMultipleValues) {
-  EXPECT_FALSE(SplitStringIntoKeyValues(std::string(),  // Empty input
-                                        '\t',           // Key separators
-                                        &key,
-                                        &values));
+  EXPECT_FALSE(SplitStringIntoKeyValues("",     // Empty input
+                                        '\t',   // Key separators
+                                        &key, &values));
   EXPECT_TRUE(key.empty());
   EXPECT_TRUE(values.empty());
 }
@@ -70,10 +69,9 @@ TEST_F(SplitStringIntoKeyValuesTest, KeyWithMultipleValues) {
 }
 
 TEST_F(SplitStringIntoKeyValuesTest, EmptyInputSingleValue) {
-  EXPECT_FALSE(SplitStringIntoKeyValues(std::string(),  // Empty input
-                                        '\t',           // Key separators
-                                        &key,
-                                        &values));
+  EXPECT_FALSE(SplitStringIntoKeyValues("",     // Empty input
+                                        '\t',   // Key separators
+                                        &key, &values));
   EXPECT_TRUE(key.empty());
   EXPECT_TRUE(values.empty());
 }
@@ -110,9 +108,9 @@ class SplitStringIntoKeyValuePairsTest : public testing::Test {
 };
 
 TEST_F(SplitStringIntoKeyValuePairsTest, EmptyString) {
-  EXPECT_TRUE(SplitStringIntoKeyValuePairs(std::string(),
-                                           ':',  // Key-value delimiters
-                                           ',',  // Key-value pair delims
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs("",
+                                           ':',   // Key-value delimiters
+                                           ',',   // Key-value pair delims
                                            &kv_pairs));
   EXPECT_TRUE(kv_pairs.empty());
 }
@@ -155,7 +153,7 @@ TEST_F(SplitStringIntoKeyValuePairsTest, DelimiterInValue) {
 
 TEST(SplitStringUsingSubstrTest, EmptyString) {
   std::vector<std::string> results;
-  SplitStringUsingSubstr(std::string(), "DELIMITER", &results);
+  SplitStringUsingSubstr("", "DELIMITER", &results);
   ASSERT_EQ(1u, results.size());
   EXPECT_THAT(results, ElementsAre(""));
 }
@@ -164,7 +162,7 @@ TEST(SplitStringUsingSubstrTest, EmptyString) {
 TEST(StringUtilTest, SplitString) {
   std::vector<std::wstring> r;
 
-  SplitString(std::wstring(), L',', &r);
+  SplitString(L"", L',', &r);
   EXPECT_EQ(0U, r.size());
   r.clear();
 

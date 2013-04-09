@@ -337,13 +337,9 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
 const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     const base::FilePath& path,
     int expected_change) {
-  return InstallOrUpdateExtension(std::string(),
-                                  path,
-                                  INSTALL_UI_TYPE_NONE,
-                                  expected_change,
-                                  Manifest::INTERNAL,
-                                  browser(),
-                                  true);
+  return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
+                                  expected_change, Manifest::INTERNAL,
+                                  browser(), true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(

@@ -46,18 +46,11 @@ TEST(ContentSettingsProviderTest, Mock) {
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    "flash_plugin", false));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSetting(&mock_provider,
-                              url,
-                              url,
-                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                              std::string(),
-                              false));
+            GetContentSetting(&mock_provider, url, url,
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION, "", false));
   EXPECT_EQ(NULL,
-            GetContentSettingValue(&mock_provider,
-                                   url,
-                                   url,
-                                   CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                   std::string(),
+            GetContentSettingValue(&mock_provider, url, url,
+                                   CONTENT_SETTINGS_TYPE_GEOLOCATION, "",
                                    false));
 
   bool owned = mock_provider.SetWebsiteSetting(

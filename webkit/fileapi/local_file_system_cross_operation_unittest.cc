@@ -71,11 +71,13 @@ class CrossOperationTestHelper {
     FileSystemMountPointProvider* mount_point_provider =
         file_system_context_->GetMountPointProvider(src_type_);
     mount_point_provider->GetFileSystemRootPathOnFileThread(
-        SourceURL(std::string()), true /* create */);
+        SourceURL(""),
+        true /* create */);
     mount_point_provider =
         file_system_context_->GetMountPointProvider(dest_type_);
     mount_point_provider->GetFileSystemRootPathOnFileThread(
-        DestURL(std::string()), true /* create */);
+        DestURL(""),
+        true /* create */);
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(origin_,

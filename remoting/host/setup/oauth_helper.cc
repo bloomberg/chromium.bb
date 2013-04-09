@@ -14,7 +14,7 @@ namespace {
 std::string GetComponent(const std::string& url,
                          const url_parse::Component component) {
   if (component.len < 0) {
-    return std::string();
+    return "";
   }
   return url.substr(component.begin, component.len);
 }
@@ -60,11 +60,11 @@ std::string GetOauthCodeInUrl(const std::string& url,
                    &redirect_url_parsed);
   if (GetComponent(url, url_parsed.scheme) !=
       GetComponent(redirect_url, redirect_url_parsed.scheme)) {
-    return std::string();
+    return "";
   }
   if (GetComponent(url, url_parsed.host) !=
       GetComponent(redirect_url, redirect_url_parsed.host)) {
-    return std::string();
+    return "";
   }
   url_parse::Component query = url_parsed.query;
   url_parse::Component key;
@@ -74,7 +74,7 @@ std::string GetOauthCodeInUrl(const std::string& url,
       return GetComponent(url, value);
     }
   }
-  return std::string();
+  return "";
 }
 
 }  // namespace remoting

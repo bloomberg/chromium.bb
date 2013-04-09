@@ -158,8 +158,8 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     GURL url(CreateApiUrl());
     EXPECT_CALL(*flow_, CreateApiCallBody()).WillOnce(Return(body));
     EXPECT_CALL(*flow_, CreateApiCallUrl()).WillOnce(Return(url));
-    TestURLFetcher* url_fetcher =
-        CreateURLFetcher(url, succeeds, status, std::string());
+    TestURLFetcher* url_fetcher = CreateURLFetcher(
+        url, succeeds, status, "");
     EXPECT_CALL(factory_, CreateURLFetcher(_, url, _, _))
         .WillOnce(Return(url_fetcher));
     return url_fetcher;
@@ -240,7 +240,7 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenFirstApiCallSucceeds) {
   std::string at = "access_token";
   std::vector<std::string> scopes(CreateTestScopes());
 
-  CreateFlow(rt, std::string(), scopes);
+  CreateFlow(rt, "", scopes);
   SetupAccessTokenFetcher(rt, scopes);
   TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
   EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
@@ -256,7 +256,7 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenApiCallFails) {
   std::string at = "access_token";
   std::vector<std::string> scopes(CreateTestScopes());
 
-  CreateFlow(rt, std::string(), scopes);
+  CreateFlow(rt, "", scopes);
   SetupAccessTokenFetcher(rt, scopes);
   TestURLFetcher* url_fetcher = SetupApiCall(false, net::HTTP_BAD_GATEWAY);
   EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher));
@@ -272,7 +272,7 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenNewTokenGenerationFails) {
   std::string at = "access_token";
   std::vector<std::string> scopes(CreateTestScopes());
 
-  CreateFlow(rt, std::string(), scopes);
+  CreateFlow(rt, "", scopes);
   SetupAccessTokenFetcher(rt, scopes);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);

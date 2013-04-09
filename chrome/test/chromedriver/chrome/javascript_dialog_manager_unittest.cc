@@ -19,7 +19,7 @@ TEST(JavaScriptDialogManager, NoDialog) {
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_STREQ("HI", message.c_str());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, "").code());
 }
 
 namespace {
@@ -73,7 +73,7 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   ASSERT_EQ("Page.enable", client.method_);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, "").code());
 }
 
 namespace {
@@ -125,10 +125,10 @@ TEST(JavaScriptDialogManager, OneDialog) {
   ASSERT_EQ("hi", message);
 
   client.set_closing_count(1);
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, "").code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, "").code());
 }
 
 TEST(JavaScriptDialogManager, TwoDialogs) {
@@ -145,16 +145,16 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ("1", message);
 
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, "").code());
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("2", message);
 
   client.set_closing_count(2);
-  ASSERT_EQ(kOk, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kOk, manager.HandleDialog(false, "").code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, "").code());
 }
 
 TEST(JavaScriptDialogManager, OneDialogManualClose) {
@@ -174,5 +174,5 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   manager.OnEvent("Page.javascriptDialogClosing", params);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());
+  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, "").code());
 }

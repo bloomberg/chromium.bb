@@ -195,36 +195,22 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     scoped_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
-    net::CanonicalCookie cookie(GURL(),
-                                std::string(),
-                                std::string(),
-                                tests[i].domain,
-                                std::string(),
-                                base::Time(),
-                                base::Time(),
-                                base::Time(),
-                                false,
-                                false);
+    net::CanonicalCookie cookie(GURL(), "", "", tests[i].domain,"",
+                                base::Time(), base::Time(), base::Time(),
+                                false, false);
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
   }
 }
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
-  net::CanonicalCookie canonical_cookie(GURL(),
-                                        std::string(),
-                                        "011Q255bNX_1!yd\203e+",
-                                        "test.com",
-                                        "/path\203",
-                                        base::Time(),
-                                        base::Time(),
-                                        base::Time(),
-                                        false,
-                                        false);
+  net::CanonicalCookie canonical_cookie(
+      GURL(), "", "011Q255bNX_1!yd\203e+", "test.com", "/path\203",
+      base::Time(), base::Time(), base::Time(), false, false);
   scoped_ptr<Cookie> cookie(
       cookies_helpers::CreateCookie(
           canonical_cookie, "some cookie store"));
   EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD" "e+"), cookie->value);
-  EXPECT_EQ(std::string(), cookie->path);
+  EXPECT_EQ(std::string(""), cookie->path);
 }
 
 }  // namespace extensions

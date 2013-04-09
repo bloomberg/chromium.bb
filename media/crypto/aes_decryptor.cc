@@ -152,7 +152,7 @@ bool AesDecryptor::GenerateKeyRequest(const std::string& key_system,
                           init_data_length);
   }
 
-  key_message_cb_.Run(key_system, session_id_string, message, std::string());
+  key_message_cb_.Run(key_system, session_id_string, message, "");
   return true;
 }
 

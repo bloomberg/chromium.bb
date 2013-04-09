@@ -114,8 +114,10 @@ void NavigateToFeedAndValidate(net::TestServer* server,
                                GetFeedUrl(server, url, true, extension_id));
 
   WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(ValidatePageElement(
-      tab, std::string(), kScriptFeedTitle, expected_feed_title));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  "",
+                                  kScriptFeedTitle,
+                                  expected_feed_title));
   ASSERT_TRUE(ValidatePageElement(tab,
                                   "//html/body/div/iframe[1]",
                                   kScriptAnchor,

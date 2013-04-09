@@ -110,8 +110,8 @@ void ManagedUserPassphraseHandler::IsPassphraseSet(
 void ManagedUserPassphraseHandler::ResetPassphrase(
     const base::ListValue* args) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  pref_service->SetString(prefs::kManagedModeLocalPassphrase, std::string());
-  pref_service->SetString(prefs::kManagedModeLocalSalt, std::string());
+  pref_service->SetString(prefs::kManagedModeLocalPassphrase, "");
+  pref_service->SetString(prefs::kManagedModeLocalSalt, "");
 }
 
 void ManagedUserPassphraseHandler::SetLocalPassphrase(

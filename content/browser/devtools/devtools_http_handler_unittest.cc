@@ -56,20 +56,20 @@ class DummyListenSocketFactory : public net::StreamListenSocketFactory {
 
 class DummyDelegate : public DevToolsHttpHandlerDelegate {
  public:
-  virtual std::string GetDiscoveryPageHTML() OVERRIDE { return std::string(); }
+  virtual std::string GetDiscoveryPageHTML() OVERRIDE { return ""; }
   virtual bool BundlesFrontendResources() OVERRIDE { return true; }
   virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
     return base::FilePath();
   }
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
-    return std::string();
+    return "";
   }
   virtual RenderViewHost* CreateNewTarget() OVERRIDE { return NULL; }
   virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE {
     return kTargetTypeTab;
   }
   virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
-    return std::string();
+    return "";
   }
 };
 
@@ -98,9 +98,9 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
   content::DevToolsHttpHandler* devtools_http_handler_ =
       content::DevToolsHttpHandler::Start(
-          new DummyListenSocketFactory(run_loop.QuitClosure(),
-                                       run_loop_2.QuitClosure()),
-          std::string(),
+          new DummyListenSocketFactory(
+              run_loop.QuitClosure(), run_loop_2.QuitClosure()),
+          "",
           new DummyDelegate());
   // Our dummy socket factory will post a quit message once the server will
   // become ready.

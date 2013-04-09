@@ -87,10 +87,10 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
-                               std::string(),
+                               "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
-                               std::string(),
+                               "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
@@ -99,7 +99,7 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #endif
 
   registry->RegisterStringPref(prefs::kSyncSessionsGUID,
-                               std::string(),
+                               "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // We will start prompting people about new data types after the launch of
@@ -181,9 +181,9 @@ void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
 
 std::string SyncPrefs::GetGoogleServicesUsername() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_
-             ? pref_service_->GetString(prefs::kGoogleServicesUsername)
-             : std::string();
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kGoogleServicesUsername) : "";
 }
 
 base::Time SyncPrefs::GetLastSyncedTime() const {
@@ -266,9 +266,9 @@ bool SyncPrefs::IsManaged() const {
 
 std::string SyncPrefs::GetEncryptionBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_
-             ? pref_service_->GetString(prefs::kSyncEncryptionBootstrapToken)
-             : std::string();
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kSyncEncryptionBootstrapToken) : "";
 }
 
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
@@ -278,9 +278,10 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
 
 std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ ? pref_service_->GetString(
-                             prefs::kSyncKeystoreEncryptionBootstrapToken)
-                       : std::string();
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kSyncKeystoreEncryptionBootstrapToken) :
+      "";
 }
 
 void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
@@ -290,8 +291,9 @@ void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
 
 std::string SyncPrefs::GetSyncSessionsGUID() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ ? pref_service_->GetString(prefs::kSyncSessionsGUID)
-                       : std::string();
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kSyncSessionsGUID) : "";
 }
 
 void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {

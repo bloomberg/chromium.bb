@@ -426,11 +426,10 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
 
   // Check APIs not using the feature system first.
   if (!feature) {
-    return IsNonFeatureAPIAvailable(api_name, context, extension, url)
-               ? Feature::CreateAvailability(Feature::IS_AVAILABLE,
-                                             std::string())
-               : Feature::CreateAvailability(Feature::INVALID_CONTEXT,
-                                             kUnavailableMessage);
+    return IsNonFeatureAPIAvailable(api_name, context, extension, url) ?
+        Feature::CreateAvailability(Feature::IS_AVAILABLE, "") :
+        Feature::CreateAvailability(Feature::INVALID_CONTEXT,
+                                    kUnavailableMessage);
   }
 
   Feature::Availability availability =
@@ -446,7 +445,7 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
       return dependency_availability;
   }
 
-  return Feature::CreateAvailability(Feature::IS_AVAILABLE, std::string());
+  return Feature::CreateAvailability(Feature::IS_AVAILABLE, "");
 }
 
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
@@ -635,7 +634,7 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
   }
 
   *child_name = "";
-  return std::string();
+  return "";
 }
 
 bool ExtensionAPI::IsAPIAllowed(const std::string& name,

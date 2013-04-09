@@ -249,7 +249,7 @@ std::string SSLClientCertificateSelector::FormatComboBoxText(
     net::X509Certificate::OSCertHandle cert, const std::string& nickname) {
   std::string rv(nickname);
   rv += " [";
-  rv += x509_certificate_model::GetSerialNumberHexified(cert, std::string());
+  rv += x509_certificate_model::GetSerialNumberHexified(cert, "");
   rv += ']';
   return rv;
 }
@@ -266,8 +266,8 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
   rv += "\n  ";
   rv += l10n_util::GetStringFUTF8(
       IDS_CERT_SERIAL_NUMBER_FORMAT,
-      UTF8ToUTF16(x509_certificate_model::GetSerialNumberHexified(
-          cert, std::string())));
+      UTF8ToUTF16(
+          x509_certificate_model::GetSerialNumberHexified(cert, "")));
 
   base::Time issued, expires;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {

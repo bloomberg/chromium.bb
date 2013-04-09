@@ -726,7 +726,7 @@ void ProfileSyncService::ClearUnrecoverableError() {
 std::string ProfileSyncService::GetExperimentNameForDataType(
     syncer::ModelType data_type) {
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 void ProfileSyncService::RegisterNewDataType(syncer::ModelType data_type) {

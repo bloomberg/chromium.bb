@@ -38,7 +38,7 @@ class UDPSocketTest : public PlatformTest {
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     if (rv < 0)
-      return std::string();  // error!
+      return "";  // error!
     return std::string(buffer_->data(), rv);
   }
 
@@ -82,7 +82,7 @@ class UDPSocketTest : public PlatformTest {
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     if (rv < 0)
-      return std::string();  // error!
+      return "";  // error!
     return std::string(buffer_->data(), rv);
   }
 

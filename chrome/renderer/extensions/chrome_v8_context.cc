@@ -63,7 +63,7 @@ void ChromeV8Context::Invalidate() {
 }
 
 std::string ChromeV8Context::GetExtensionID() {
-  return extension_ ? extension_->id() : std::string();
+  return extension_ ? extension_->id() : "";
 }
 
 // static
@@ -187,7 +187,7 @@ std::string ChromeV8Context::GetContextTypeDescription() {
     case Feature::WEB_PAGE_CONTEXT:            return "WEB_PAGE";
   }
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 ChromeV8Context* ChromeV8Context::GetContext() {

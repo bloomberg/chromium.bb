@@ -117,7 +117,7 @@ void GpuDataManagerImpl::InitializeForTesting(
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
 
-  InitializeImpl(gpu_blacklist_json, std::string(), std::string(), gpu_info);
+  InitializeImpl(gpu_blacklist_json, "", "", gpu_info);
 }
 
 bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
@@ -350,7 +350,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
 
   if (gpu_blacklist_.get()) {
     std::set<int> features = gpu_blacklist_->MakeDecision(
-        GpuControlList::kOsAny, std::string(), my_gpu_info);
+        GpuControlList::kOsAny, "", my_gpu_info);
     if (update_histograms_)
       UpdateStats(gpu_blacklist_.get(), features);
 
@@ -358,7 +358,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   }
   if (gpu_switching_list_.get()) {
     std::set<int> option = gpu_switching_list_->MakeDecision(
-        GpuControlList::kOsAny, std::string(), my_gpu_info);
+        GpuControlList::kOsAny, "", my_gpu_info);
     if (option.size() == 1) {
       // Blacklist decision should not overwrite commandline switch from users.
       CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -368,7 +368,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
   }
   if (gpu_driver_bug_list_.get())
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
-        GpuControlList::kOsAny, std::string(), my_gpu_info);
+        GpuControlList::kOsAny, "", my_gpu_info);
 
   // We have to update GpuFeatureType before notify all the observers.
   NotifyGpuInfoUpdate();

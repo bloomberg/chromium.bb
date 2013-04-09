@@ -933,8 +933,8 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
                          GURL(std::string(chrome::kChromeUISettingsURL) +
                               chrome::kManagedUserSettingsSubPage));
     if (has_reset_local_passphrase_switch) {
-      prefs->SetString(prefs::kManagedModeLocalPassphrase, std::string());
-      prefs->SetString(prefs::kManagedModeLocalSalt, std::string());
+      prefs->SetString(prefs::kManagedModeLocalPassphrase, "");
+      prefs->SetString(prefs::kManagedModeLocalSalt, "");
     }
   }
 

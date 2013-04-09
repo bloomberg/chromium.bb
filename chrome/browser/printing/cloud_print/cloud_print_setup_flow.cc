@@ -66,7 +66,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
       chrome::GetActiveDesktop());
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
-  args.SetString("user", std::string());
+  args.SetString("user", "");
   args.SetInteger("error", 0);
   args.SetBoolean("editable_user", true);
 

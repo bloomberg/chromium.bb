@@ -87,7 +87,7 @@ std::string Message::GetMessageTypeAsString() {
       return "MESSAGE_ERROR";
   }
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 std::string Message::ToStringInternal(const std::string& indent,
@@ -251,7 +251,7 @@ std::string Message::ToStringInternal(const std::string& indent,
 // ...
 std::string Message::ToString() {
   if (!raw_message_)
-    return std::string();
+    return "";
 
   // Generate headers first.
   std::string headers;
@@ -268,7 +268,7 @@ std::string Message::ToString() {
 
   // Generate the payload.
   MessageReader reader(this);
-  return headers + "\n" + ToStringInternal(std::string(), &reader);
+  return headers + "\n" + ToStringInternal("", &reader);
 }
 
 bool Message::SetDestination(const std::string& destination) {

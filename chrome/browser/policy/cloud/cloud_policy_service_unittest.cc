@@ -118,7 +118,7 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicySuccess) {
 
 TEST_F(CloudPolicyServiceTest, RefreshPolicyNotRegistered) {
   // Clear the token so the client is not registered.
-  client_.SetDMToken(std::string());
+  client_.SetDMToken("");
 
   EXPECT_CALL(client_, FetchPolicy()).Times(0);
   EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(1);

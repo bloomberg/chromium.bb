@@ -16,7 +16,7 @@
 
 namespace {
 std::string TestFailedMessage(const std::string& msg) {
-  return msg.empty() ? std::string() : "Actual test failure: " + msg;
+  return msg.empty() ? "" : "Actual test failure: " + msg;
 }
 
 int GetSubProcessTimeoutTimeInSeconds() {

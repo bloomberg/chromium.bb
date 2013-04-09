@@ -691,10 +691,8 @@ void IOThread::EnableSpdy(const std::string& mode) {
     const std::string& element = *it;
     std::vector<std::string> name_value;
     base::SplitString(element, '=', &name_value);
-    const std::string& option =
-        name_value.size() > 0 ? name_value[0] : std::string();
-    const std::string value =
-        name_value.size() > 1 ? name_value[1] : std::string();
+    const std::string& option = name_value.size() > 0 ? name_value[0] : "";
+    const std::string value = name_value.size() > 1 ? name_value[1] : "";
 
     if (option == kOff) {
       net::HttpStreamFactory::set_spdy_enabled(false);
@@ -741,11 +739,10 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
                                "spdyproxy");
   registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
   registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
-  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
-                               std::string());
-  registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
-  registry->RegisterStringPref(prefs::kSpdyProxyAuthOrigin, std::string());
+  registry->RegisterStringPref(prefs::kAuthServerWhitelist, "");
+  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
+  registry->RegisterStringPref(prefs::kGSSAPILibraryName, "");
+  registry->RegisterStringPref(prefs::kSpdyProxyAuthOrigin, "");
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);

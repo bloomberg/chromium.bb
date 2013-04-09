@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, DeleteRecord) {
   CreateTable(shell());
   InsertRecord(shell(), "text");
   DeleteRecord(shell(), 0);
-  CompareRecords(shell(), std::string());
+  CompareRecords(shell(), "");
 
   InsertRecord(shell(), "0");
   InsertRecord(shell(), "1");
@@ -151,12 +151,12 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, DatabaseOperations) {
   for (int i = 0; i < 10; ++i)
     DeleteRecord(shell(), 0);
 
-  CompareRecords(shell(), std::string());
+  CompareRecords(shell(), "");
 
   RunScriptAndCheckResult(
       shell(), "deleteRecord(1)", "could not find row with index: 1");
 
-  CompareRecords(shell(), std::string());
+  CompareRecords(shell(), "");
 }
 
 // Create records in the database and verify they persist after reload.
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, OffTheRecordCannotReadRegularDatabase) {
   ASSERT_FALSE(HasTable(otr));
 
   CreateTable(otr);
-  CompareRecords(otr, std::string());
+  CompareRecords(otr, "");
 }
 
 // Attempt to read a database created in an off the record browser from a
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, RegularCannotReadOffTheRecordDatabase) {
   Navigate(shell());
   ASSERT_FALSE(HasTable(shell()));
   CreateTable(shell());
-  CompareRecords(shell(), std::string());
+  CompareRecords(shell(), "");
 }
 
 // Verify DB changes within first window are present in the second window.

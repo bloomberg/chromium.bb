@@ -117,19 +117,19 @@ void InternalExtensionProvider::SetContentSettingForExtension(
       value_map_.DeleteValue(primary_pattern,
                              secondary_pattern,
                              CONTENT_SETTINGS_TYPE_PLUGINS,
-                             ResourceIdentifier());
+                             ResourceIdentifier(""));
     } else {
       value_map_.SetValue(primary_pattern,
                           secondary_pattern,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
-                          ResourceIdentifier(),
+                          ResourceIdentifier(""),
                           Value::CreateIntegerValue(setting));
     }
   }
   NotifyObservers(primary_pattern,
                   secondary_pattern,
                   CONTENT_SETTINGS_TYPE_PLUGINS,
-                  ResourceIdentifier());
+                  ResourceIdentifier(""));
 }
 
 }  // namespace content_settings

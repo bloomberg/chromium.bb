@@ -304,7 +304,7 @@ TEST(HttpAuthTest, ChallengeTokenizerMismatchedQuotesNoValue) {
   EXPECT_TRUE(parameters.GetNext());
   EXPECT_TRUE(parameters.valid());
   EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string(), parameters.value());
+  EXPECT_EQ(std::string(""), parameters.value());
   EXPECT_FALSE(parameters.GetNext());
 }
 

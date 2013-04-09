@@ -704,8 +704,8 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   SpdySessionDependencies session_deps;
   session_deps.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_hosts); i++) {
-    session_deps.host_resolver->rules()->AddIPLiteralRule(
-        test_hosts[i].name, test_hosts[i].iplist, std::string());
+    session_deps.host_resolver->rules()->AddIPLiteralRule(test_hosts[i].name,
+        test_hosts[i].iplist, "");
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
@@ -1140,7 +1140,7 @@ TEST_F(SpdySessionSpdy3Test, CloseSessionWithTwoCreatedStreams) {
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   // Ensure we don't crash while closing the session.
-  session->CloseSessionOnError(ERR_ABORTED, true, std::string());
+  session->CloseSessionOnError(ERR_ABORTED, true, "");
 
   EXPECT_TRUE(spdy_stream1->closed());
   EXPECT_TRUE(spdy_stream2->closed());

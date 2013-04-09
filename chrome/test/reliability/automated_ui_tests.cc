@@ -505,7 +505,7 @@ bool AutomatedUITest::ChangeEncoding() {
   std::string cur_locale = g_browser_process->GetApplicationLocale();
   const std::vector<CharacterEncoding::EncodingInfo>* encodings =
       CharacterEncoding::GetCurrentDisplayEncodings(
-          cur_locale, "ISO-8859-1,windows-1252", std::string());
+          cur_locale, "ISO-8859-1,windows-1252", "");
   DCHECK(encodings);
   DCHECK(!encodings->empty());
   unsigned len = static_cast<unsigned>(encodings->size());

@@ -316,7 +316,7 @@ ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
 // Creates a StringValue with the status line of |headers|. If |headers| is
 // NULL, an empty string is returned.  Ownership is passed to the caller.
 StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
-  return new StringValue(headers ? headers->GetStatusLine() : std::string());
+  return new StringValue(headers ? headers->GetStatusLine() : "");
 }
 
 void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {

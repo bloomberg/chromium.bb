@@ -172,7 +172,7 @@ void DesktopProcessTest::ConnectNetworkChannel(
     IPC::PlatformFileForTransit desktop_process) {
 
 #if defined(OS_POSIX)
-  IPC::ChannelHandle channel_handle(std::string(), desktop_process);
+  IPC::ChannelHandle channel_handle("", desktop_process);
 #elif defined(OS_WIN)
   IPC::ChannelHandle channel_handle(desktop_process);
 #endif  // defined(OS_WIN)

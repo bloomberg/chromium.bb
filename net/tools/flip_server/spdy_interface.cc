@@ -112,14 +112,9 @@ SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
   }
 
   sm_http_interface->InitSMInterface(this, server_idx);
-  sm_http_interface->InitSMConnection(NULL,
-                                      sm_http_interface,
-                                      epoll_server_,
-                                      -1,
-                                      server_ip,
-                                      server_port,
-                                      std::string(),
-                                      false);
+  sm_http_interface->InitSMConnection(NULL, sm_http_interface,
+                                      epoll_server_, -1,
+                                      server_ip, server_port, "", false);
 
   return sm_http_interface;
 }

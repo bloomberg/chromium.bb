@@ -110,7 +110,7 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
       NOTREACHED();
       break;
   }
-  return std::string();
+  return "";
 }
 
 typedef std::map<WebKit::WebPluginContainer*,
@@ -227,7 +227,7 @@ void BrowserPlugin::RemoveDOMAttribute(const std::string& attribute_name) {
 std::string BrowserPlugin::GetDOMAttributeValue(
     const std::string& attribute_name) const {
   if (!container())
-    return std::string();
+    return "";
 
   return container()->element().getAttribute(
       WebKit::WebString::fromUTF8(attribute_name)).utf8();

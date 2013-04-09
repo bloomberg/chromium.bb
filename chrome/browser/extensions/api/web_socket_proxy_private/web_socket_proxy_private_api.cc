@@ -95,7 +95,7 @@ void WebSocketProxyPrivate::ResolveHostIOPart(IOThread* io_thread) {
 
 bool WebSocketProxyPrivate::RunImpl() {
   AddRef();
-  SetResult(Value::CreateStringValue(std::string()));
+  SetResult(Value::CreateStringValue(""));
 
 #if defined(OS_CHROMEOS)
   bool delay_response = false;

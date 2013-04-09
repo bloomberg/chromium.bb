@@ -633,7 +633,7 @@ VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
     DCHECK(target->Get(UNIQUE_CLIENT_TAG).empty())
         << "Doing move-aside undeletion on client-tagged item.";
     target->Put(ID, trans->directory()->NextId());
-    target->Put(UNIQUE_CLIENT_TAG, std::string());
+    target->Put(UNIQUE_CLIENT_TAG, "");
     target->Put(BASE_VERSION, CHANGES_VERSION);
     target->Put(SERVER_VERSION, 0);
     return VERIFY_SUCCESS;

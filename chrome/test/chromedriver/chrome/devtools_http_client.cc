@@ -169,8 +169,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
 
     scoped_ptr<base::Value> result;
     status = web_view->EvaluateScript(
-        std::string(),
-        "document.querySelector('*[id^=\"close-button-\"').click();",
+        "", "document.querySelector('*[id^=\"close-button-\"').click();",
         &result);
     // Ignore disconnected error, because it may be closed already.
     if (status.IsError() && status.code() != kDisconnected)

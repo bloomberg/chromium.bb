@@ -64,9 +64,8 @@ EntryPicker::EntryPicker(EntryPickerClient* client,
                                   last_directory,
                                   &info,
                                   file_type_index,
-                                  base::FilePath::StringType(),
-                                  owning_window,
-                                  NULL);
+                                  FILE_PATH_LITERAL(""),
+                                  owning_window, NULL);
 }
 
 EntryPicker::~EntryPicker() {}

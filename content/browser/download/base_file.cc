@@ -232,11 +232,11 @@ bool BaseFile::GetHash(std::string* hash) {
 
 std::string BaseFile::GetHashState() {
   if (!calculate_hash_)
-    return std::string();
+    return "";
 
   Pickle hash_state;
   if (!secure_hash_->Serialize(&hash_state))
-    return std::string();
+    return "";
 
   return std::string(reinterpret_cast<const char*>(hash_state.data()),
                      hash_state.size());

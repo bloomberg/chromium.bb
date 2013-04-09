@@ -11,7 +11,7 @@ StubChrome::StubChrome() {}
 StubChrome::~StubChrome() {}
 
 std::string StubChrome::GetVersion() {
-  return std::string();
+  return "";
 }
 
 int StubChrome::GetBuildNo() {
@@ -49,7 +49,7 @@ Status StubChrome::GetAutomationExtension(AutomationExtension** extension) {
 }
 
 std::string StubChrome::GetOperatingSystemName() {
-  return std::string();
+  return "";
 }
 
 Status StubChrome::Quit() {

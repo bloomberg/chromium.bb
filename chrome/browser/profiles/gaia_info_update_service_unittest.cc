@@ -184,8 +184,7 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
   GAIAInfoUpdateService service(profile());
   EXPECT_FALSE(service.GetCachedPictureURL().empty());
   // Log out.
-  profile()->GetPrefs()
-      ->SetString(prefs::kGoogleServicesUsername, std::string());
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "");
 
   // Verify that the GAIA name and picture, and picture URL are unset.
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
@@ -194,8 +193,7 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
-  profile()->GetPrefs()
-      ->SetString(prefs::kGoogleServicesUsername, std::string());
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "");
   GAIAInfoUpdateServiceMock service(profile());
 
   // Log in.

@@ -1535,7 +1535,7 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   trace_log->SetEnabled(std::string("foo2"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo2"));
   EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
-  trace_log->SetEnabled(std::string(), TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetEnabled(std::string(""), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
   trace_log->SetDisabled();
@@ -1558,8 +1558,7 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
 TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
   ManualTestSetUp();
 
-  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
-            TraceLog::TraceOptionsFromString(std::string()));
+  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL, TraceLog::TraceOptionsFromString(""));
 
   EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
             TraceLog::TraceOptionsFromString("record-until-full"));

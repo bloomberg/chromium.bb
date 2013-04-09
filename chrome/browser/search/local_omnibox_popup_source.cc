@@ -76,7 +76,7 @@ std::string LocalOmniboxPopupSource::GetMimeType(
   if (path == kPageIconFilename || path == kPageIcon2xFilename ||
       path == kSearchIconFilename || path == kSearchIcon2xFilename)
     return "image/png";
-  return std::string();
+  return "";
 }
 
 bool LocalOmniboxPopupSource::ShouldServiceRequest(

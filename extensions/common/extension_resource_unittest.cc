@@ -131,8 +131,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ASSERT_TRUE(file_util::CreateDirectory(l10n_path));
 
   std::vector<std::string> locales;
-  l10n_util::GetParentLocales(l10n_util::GetApplicationLocale(std::string()),
-                              &locales);
+  l10n_util::GetParentLocales(l10n_util::GetApplicationLocale(""), &locales);
   ASSERT_FALSE(locales.empty());
   for (size_t i = 0; i < locales.size(); i++) {
     base::FilePath make_path;

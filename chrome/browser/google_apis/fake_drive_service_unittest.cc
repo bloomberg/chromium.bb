@@ -96,9 +96,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -117,9 +117,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL("http://dummyurl/?start-offset=2"),
-      0,              // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -139,9 +139,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndexAndMaxResults) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL("http://localhost/?start-offset=2&max-results=5"),
-      0,              // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -168,9 +168,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithDefaultMaxResultsChanged) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -196,8 +196,8 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,                                  // start_changestamp
-      std::string(),                      // search_query
+      0,  // start_changestamp
+      "",  // search_query
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -217,9 +217,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
-      "File",         // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "File",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -239,9 +239,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchWithAttribute) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
+      0,  // start_changestamp
       "title:1.txt",  // search_query
-      std::string(),  // directory_resource_id
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -261,9 +261,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
+      0,  // start_changestamp
       "Directory 1",  // search_query
-      std::string(),  // directory_resource_id
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -274,9 +274,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
 
   fake_service_.GetResourceList(
       GURL(),
-      0,                  // start_changestamp
+      0,  // start_changestamp
       "\"Directory 1\"",  // search_query
-      std::string(),      // directory_resource_id
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -299,9 +299,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      654321 + 1,     // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      654321 + 1,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -331,9 +331,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      654321 + 1,     // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      654321 + 1,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -354,9 +354,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetResourceList(
       GURL(),
-      0,              // start_changestamp
-      std::string(),  // search_query
-      std::string(),  // directory_resource_id
+      0,  // start_changestamp
+      "",  // search_query
+      "",  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
@@ -845,7 +845,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
+                               "",  // etag
                                test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
@@ -860,7 +860,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:nonexisting_resource_id",
-                               std::string(),  // etag
+                               "",  // etag
                                test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
@@ -874,7 +874,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:2_file_resource_id",
-                               std::string(),  // etag
+                               "",  // etag
                                test_util::CreateCopyResultCallback(&error));
   message_loop_.RunUntilIdle();
 
@@ -1506,7 +1506,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
       "test/foo",
       13,
       "file:2_file_resource_id",
-      std::string(),  // etag
+      "",  // etag
       test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 
@@ -1525,7 +1525,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
       "test/foo",
       13,
       "non_existent",
-      std::string(),  // etag
+      "",  // etag
       test_util::CreateCopyResultCallback(&error, &upload_location));
   message_loop_.RunUntilIdle();
 

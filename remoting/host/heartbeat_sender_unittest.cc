@@ -176,9 +176,9 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq2), Return(true)));
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName(std::string(), "type"), "result");
-  XmlElement* result =
-      new XmlElement(QName(kChromotingXmlNamespace, "heartbeat-result"));
+  response->AddAttr(QName("", "type"), "result");
+  XmlElement* result = new XmlElement(
+      QName(kChromotingXmlNamespace, "heartbeat-result"));
   response->AddElement(result);
   XmlElement* expected_sequence_id = new XmlElement(
       QName(kChromotingXmlNamespace, "expected-sequence-id"));
@@ -200,7 +200,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
 // Verify that ProcessResponse parses set-interval result.
 TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName(std::string(), "type"), "result");
+  response->AddAttr(QName("", "type"), "result");
 
   XmlElement* result = new XmlElement(
       QName(kChromotingXmlNamespace, "heartbeat-result"));
@@ -221,9 +221,9 @@ TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
 // Validate a heartbeat stanza.
 void HeartbeatSenderTest::ValidateHeartbeatStanza(
     XmlElement* stanza, const char* expectedSequenceId) {
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "to")),
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "to")),
             std::string(kTestBotJid));
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "type")), "set");
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "type")), "set");
   XmlElement* heartbeat_stanza =
       stanza->FirstNamed(QName(kChromotingXmlNamespace, "heartbeat"));
   ASSERT_TRUE(heartbeat_stanza != NULL);

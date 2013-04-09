@@ -85,10 +85,8 @@ class FakeProfileSyncService : public TestProfileSyncService {
   virtual ~FakeProfileSyncService() {}
 
   virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const OVERRIDE {
-    return scoped_ptr<DeviceInfo>(new DeviceInfo("client_name",
-                                                 std::string(),
-                                                 std::string(),
-                                                 sync_pb::SyncEnums::TYPE_WIN));
+    return scoped_ptr<DeviceInfo>(
+        new DeviceInfo("client_name", "", "", sync_pb::SyncEnums::TYPE_WIN));
   }
 };
 

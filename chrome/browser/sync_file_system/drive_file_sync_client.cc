@@ -129,7 +129,7 @@ DriveFileSyncClient::DriveFileSyncClient(Profile* profile)
   drive_service_.reset(new google_apis::GDataWapiService(
       profile->GetRequestContext(),
       GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-      std::string() /* custom_user_agent */));
+      "" /* custom_user_agent */));
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);

@@ -118,10 +118,8 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
       HttpPipeliningCompatibilityClient::Options options) {
     HttpPipeliningCompatibilityClient client(NULL);
     net::TestCompletionCallback callback;
-    client.Start(test_server_.GetURL(std::string()).spec(),
-                 requests,
-                 options,
-                 callback.callback(),
+    client.Start(test_server_.GetURL("").spec(),
+                 requests, options, callback.callback(),
                  context_->GetURLRequestContext());
     callback.WaitForResult();
   }

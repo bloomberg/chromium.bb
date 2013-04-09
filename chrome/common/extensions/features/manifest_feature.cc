@@ -47,7 +47,7 @@ std::string ManifestFeature::Parse(const DictionaryValue* value) {
   if (!GetContexts()->empty())
     return name() + ": Manifest features do not support contexts.";
 
-  return std::string();
+  return "";
 }
 
 }  // namespace

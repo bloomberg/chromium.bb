@@ -185,7 +185,7 @@ class EndToEndAsyncTest : public testing::Test {
       ASSERT_TRUE(reader.PopString(&response_string));
       response_strings_.push_back(response_string);
     } else {
-      response_strings_.push_back(std::string());
+      response_strings_.push_back("");
     }
     message_loop_.Quit();
   };
@@ -205,7 +205,7 @@ class EndToEndAsyncTest : public testing::Test {
       ASSERT_NE("", error->GetErrorName());
       error_names_.push_back(error->GetErrorName());
     } else {
-      error_names_.push_back(std::string());
+      error_names_.push_back("");
     }
     message_loop_.Quit();
   }

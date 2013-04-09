@@ -194,7 +194,7 @@ const char kExamplePrinterDescription[] = "Example Description";
 
 // These are functions used to construct the various sample strings.
 std::string JobListResponse(int num_jobs) {
-  std::string job_objects;
+  std::string job_objects = "";
   for (int i = 0; i < num_jobs; i++) {
     job_objects = job_objects + StringPrintf(kExampleJobObject, i+1, i+1, i+1,
                                              i+1);
@@ -683,7 +683,7 @@ TEST_F(PrinterJobHandlerTest, TicketDownloadFailureTest) {
                            JobListResponse(2), true);
   factory_.SetFakeResponse(JobListURI(kJobFetchReasonQueryMore),
                            JobListResponse(0), true);
-  factory_.SetFakeResponse(TicketURI(1), std::string(), false);
+  factory_.SetFakeResponse(TicketURI(1), "", false);
 
   EXPECT_CALL(url_callback_, OnRequestCreate(GURL(TicketURI(1)), _))
       .Times(AtLeast(1));
@@ -734,7 +734,7 @@ TEST_F(PrinterJobHandlerTest, DISABLED_ManyFailureTest) {
 
   SetUpJobSuccessTest(1);
 
-  factory_.SetFakeResponse(TicketURI(1), std::string(), false);
+  factory_.SetFakeResponse(TicketURI(1), "", false);
 
   loop_.PostDelayedTask(FROM_HERE,
                         base::Bind(&net::FakeURLFetcherFactory::SetFakeResponse,
@@ -759,7 +759,7 @@ TEST_F(PrinterJobHandlerTest, DISABLED_CompleteFailureTest) {
   factory_.SetFakeResponse(JobListURI(kJobFetchReasonRetry),
                            JobListResponse(1), true);
   factory_.SetFakeResponse(ErrorURI(1), StatusResponse(1, "ERROR"), true);
-  factory_.SetFakeResponse(TicketURI(1), std::string(), false);
+  factory_.SetFakeResponse(TicketURI(1), "", false);
 
   EXPECT_CALL(url_callback_,
               OnRequestCreate(GURL(JobListURI(kJobFetchReasonStartup)), _))

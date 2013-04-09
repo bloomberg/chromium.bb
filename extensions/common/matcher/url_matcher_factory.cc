@@ -151,8 +151,7 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
   // matched.
   if (url_matcher_conditions.empty()) {
     url_matcher_conditions.insert(
-        url_matcher_condition_factory->CreateHostPrefixCondition(
-            std::string()));
+        url_matcher_condition_factory->CreateHostPrefixCondition(""));
   }
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set(

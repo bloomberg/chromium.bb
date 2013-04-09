@@ -1655,12 +1655,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   GURL download_url(URLRequestSlowDownloadJob::kKnownSizeUrl);
-  base::FilePath file(net::GenerateFileName(download_url,
-                                            std::string(),
-                                            std::string(),
-                                            std::string(),
-                                            std::string(),
-                                            std::string()));
+  base::FilePath file(net::GenerateFileName(download_url, "", "", "", "", ""));
 
   // We use the server so that we can get a redirect and test url_chain
   // persistence.
@@ -2632,7 +2627,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
 
   // Check that the file contains the expected referrer.
   base::FilePath file(download_items[0]->GetFullPath());
-  std::string expected_contents = test_server()->GetURL(std::string()).spec();
+  std::string expected_contents = test_server()->GetURL("").spec();
   ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
 

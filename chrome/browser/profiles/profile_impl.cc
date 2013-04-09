@@ -289,8 +289,9 @@ void ProfileImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kProfileAvatarIndex,
                                 -1,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kProfileName, std::string(), PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kProfileName,
+                               "",
+                               PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kProfileIsManaged,
                                 false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);

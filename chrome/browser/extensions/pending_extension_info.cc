@@ -25,7 +25,8 @@ PendingExtensionInfo::PendingExtensionInfo(
       install_source_(install_source) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
-    : update_url_(),
+    : id_(""),
+      update_url_(),
       should_allow_install_(NULL),
       is_from_sync_(true),
       install_silently_(false),

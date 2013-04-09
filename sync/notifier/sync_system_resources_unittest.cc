@@ -168,10 +168,9 @@ TEST_F(SyncSystemResourcesTest, WriteState) {
   EXPECT_CALL(mock_storage_callback, Run(_))
       .WillOnce(SaveArg<0>(&results));
   sync_system_resources_.storage()->WriteKey(
-      std::string(), "state", mock_storage_callback.CreateCallback());
+      "", "state", mock_storage_callback.CreateCallback());
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(invalidation::Status(invalidation::Status::SUCCESS, std::string()),
-            results);
+  EXPECT_EQ(invalidation::Status(invalidation::Status::SUCCESS, ""), results);
 }
 
 }  // namespace

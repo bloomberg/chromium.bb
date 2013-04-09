@@ -176,7 +176,7 @@ TEST_F(WalletAddressTest, CreateAddressMissingObjectId) {
                   ASCIIToUTF16("administrative_area_name"),
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  "");
   ASSERT_EQ(address, *Address::CreateAddress(*dict_));
 }
 
@@ -243,7 +243,7 @@ TEST_F(WalletAddressTest, CreateDisplayAddress) {
                   ASCIIToUTF16("state"),
                   ASCIIToUTF16("postal_code"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  "");
   ASSERT_EQ(address, *Address::CreateDisplayAddress(*dict_));
 }
 
@@ -272,7 +272,7 @@ TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
                   ASCIIToUTF16("administrative_area_name"),
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  "");
 
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithoutID().get()));
 }

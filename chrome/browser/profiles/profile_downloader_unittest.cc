@@ -68,25 +68,25 @@ TEST_F(ProfileDownloaderTest, ParseData) {
       true);
 
   // Data with only name.
-  VerifyWithNameAndURL("Pat Smith", std::string(), std::string(), true);
+  VerifyWithNameAndURL("Pat Smith", "", "", true);
 
   // Data with only URL.
   VerifyWithNameAndURL(
-      std::string(),
+      "",
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg",
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg",
       true);
 
   // Data without name or URL.
-  VerifyWithNameAndURL(std::string(), std::string(), std::string(), false);
+  VerifyWithNameAndURL("", "", "", false);
 
   // Data with an invalid URL.
-  VerifyWithNameAndURL(std::string(), "invalid url", std::string(), false);
+  VerifyWithNameAndURL( "", "invalid url", "", false);
 }
 
 TEST_F(ProfileDownloaderTest, DefaultURL) {
   // Empty URL should be default photo
-  EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(std::string()));
+  EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(""));
   // Picasa default photo
   EXPECT_TRUE(ProfileDownloader::IsDefaultProfileImageURL(
       "https://example.com/-4/AAAAAAAAAAA/AAAAAAAAAAE/G/s64-c/photo.jpg"));

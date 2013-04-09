@@ -200,7 +200,7 @@ GURL CreateDirectoryOperation::GetURL() const {
   if (parent_resource_id_.empty() || directory_name_.empty()) {
     return GURL();
   }
-  return url_generator_.GetFilelistUrl(GURL(), std::string());
+  return url_generator_.GetFilelistUrl(GURL(), "");
 }
 
 net::URLFetcher::RequestType CreateDirectoryOperation::GetRequestType() const {

@@ -69,7 +69,7 @@ class P2PInvalidatorTestDelegate {
   void TriggerOnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) {
     const P2PNotificationData notification_data(
-        std::string(), NOTIFY_ALL, invalidation_map);
+        "", NOTIFY_ALL, invalidation_map);
     notifier::Notification notification;
     notification.channel = kSyncP2PNotificationChannel;
     notification.data = notification_data.ToString();
@@ -160,7 +160,7 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataIsTargeted) {
 // default-constructed P2PNotificationData.
 TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
   const P2PNotificationData notification_data;
-  EXPECT_TRUE(notification_data.IsTargeted(std::string()));
+  EXPECT_TRUE(notification_data.IsTargeted(""));
   EXPECT_FALSE(notification_data.IsTargeted("other1"));
   EXPECT_FALSE(notification_data.IsTargeted("other2"));
   EXPECT_TRUE(notification_data.GetIdInvalidationMap().empty());
@@ -179,8 +179,7 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
 TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   const ObjectIdInvalidationMap& invalidation_map =
       ObjectIdSetToInvalidationMap(
-          ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)),
-          std::string());
+          ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)), "");
   const P2PNotificationData notification_data(
       "sender", NOTIFY_ALL, invalidation_map);
   EXPECT_TRUE(notification_data.IsTargeted("sender"));
@@ -248,8 +247,7 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
   {
     const ObjectIdInvalidationMap& invalidation_map =
         ObjectIdSetToInvalidationMap(
-            ModelTypeSetToObjectIdSet(ModelTypeSet(THEMES, APPS)),
-            std::string());
+            ModelTypeSetToObjectIdSet(ModelTypeSet(THEMES, APPS)), "");
     invalidator->SendInvalidation(invalidation_map);
   }
 
@@ -266,8 +264,8 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   const ModelTypeSet expected_types(THEMES);
 
   const ObjectIdInvalidationMap& invalidation_map =
-      ObjectIdSetToInvalidationMap(ModelTypeSetToObjectIdSet(changed_types),
-                                   std::string());
+      ObjectIdSetToInvalidationMap(
+          ModelTypeSetToObjectIdSet(changed_types), "");
 
   P2PInvalidator* const invalidator = delegate_.GetInvalidator();
   notifier::FakePushClient* const push_client = delegate_.GetPushClient();

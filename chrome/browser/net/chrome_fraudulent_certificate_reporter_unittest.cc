@@ -123,7 +123,8 @@ class NotSendingTestReporter : public TestReporter {
 class MockURLRequest : public net::URLRequest {
  public:
   explicit MockURLRequest(net::URLRequestContext* context)
-      : net::URLRequest(GURL(std::string()), NULL, context) {}
+      : net::URLRequest(GURL(""), NULL, context) {
+  }
 
  private:
 };

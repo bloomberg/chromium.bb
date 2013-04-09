@@ -32,7 +32,7 @@
 #endif
 
 #ifndef LINKDOCTOR_SERVER_REQUEST_URL
-#define LINKDOCTOR_SERVER_REQUEST_URL std::string()
+#define LINKDOCTOR_SERVER_REQUEST_URL ""
 #endif
 
 namespace {

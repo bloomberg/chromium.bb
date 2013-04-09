@@ -58,7 +58,8 @@ class CopyOrMoveFileValidatorTestHelper {
       FileSystemMountPointProvider* mount_point_provider =
           file_system_context_->GetMountPointProvider(src_type_);
       mount_point_provider->GetFileSystemRootPathOnFileThread(
-          SourceURL(std::string()), true /* create */);
+          SourceURL(""),
+          true /* create */);
     }
     DCHECK_EQ(kFileSystemTypeNativeMedia, dest_type_);
     base::FilePath dest_path = base_dir.Append(FILE_PATH_LITERAL("dest_media"));

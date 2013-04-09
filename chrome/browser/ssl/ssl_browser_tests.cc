@@ -738,9 +738,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
-  GURL url_non_dangerous = test_server()->GetURL(std::string());
-  GURL url_dangerous =
-      https_server_expired_.GetURL("files/downloads/dangerous/dangerous.exe");
+  GURL url_non_dangerous = test_server()->GetURL("");
+  GURL url_dangerous = https_server_expired_.GetURL(
+      "files/downloads/dangerous/dangerous.exe");
   base::ScopedTempDir downloads_directory_;
 
   // Need empty temp dir to avoid having Chrome ask us for a new filename

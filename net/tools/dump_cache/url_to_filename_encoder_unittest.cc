@@ -57,8 +57,7 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 
   void Validate(const string& in_word, const string& gold_word) {
     string escaped_word, url;
-    UrlToFilenameEncoder::EncodeSegment(
-        std::string(), in_word, '/', &escaped_word);
+    UrlToFilenameEncoder::EncodeSegment("", in_word, '/', &escaped_word);
     EXPECT_EQ(gold_word, escaped_word);
     CheckSegmentLength(escaped_word);
     CheckValidChars(escaped_word, '\\');
@@ -68,8 +67,7 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 
   void ValidateAllSegmentsSmall(const string& in_word) {
     string escaped_word, url;
-    UrlToFilenameEncoder::EncodeSegment(
-        std::string(), in_word, '/', &escaped_word);
+    UrlToFilenameEncoder::EncodeSegment("", in_word, '/', &escaped_word);
     CheckSegmentLength(escaped_word);
     CheckValidChars(escaped_word, '\\');
     UrlToFilenameEncoder::Decode(escaped_word, '/', &url);
@@ -108,13 +106,13 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 
   void ValidateUrlOldNew(const string& url, const string& gold_old_filename,
                          const string& gold_new_filename) {
-    ValidateUrl(url, std::string(), true, gold_old_filename);
-    ValidateUrl(url, std::string(), false, gold_new_filename);
+    ValidateUrl(url, "", true, gold_old_filename);
+    ValidateUrl(url, "", false, gold_new_filename);
   }
 
   void ValidateEncodeSame(const string& url1, const string& url2) {
-    string filename1 = UrlToFilenameEncoder::Encode(url1, std::string(), false);
-    string filename2 = UrlToFilenameEncoder::Encode(url2, std::string(), false);
+    string filename1 = UrlToFilenameEncoder::Encode(url1, "", false);
+    string filename2 = UrlToFilenameEncoder::Encode(url2, "", false);
     EXPECT_EQ(filename1, filename2);
   }
 
@@ -123,7 +121,7 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 };
 
 TEST_F(UrlToFilenameEncoderTest, DoesNotEscape) {
-  ValidateNoChange(std::string());
+  ValidateNoChange("");
   ValidateNoChange("abcdefg");
   ValidateNoChange("abcdefghijklmnopqrstuvwxyz");
   ValidateNoChange("ZYXWVUT");
@@ -195,8 +193,7 @@ TEST_F(UrlToFilenameEncoderTest, EncodeUrlCorrectly) {
 
   // From bug: Double slash preserved.
   ValidateUrl("http://www.foo.com/u?site=http://www.google.com/index.html",
-              std::string(),
-              false,
+              "", false,
               "www.foo.com" + dir_sep_ + "u" + escape_ + "3Fsite=http" +
               escape_ + "3A" + dir_sep_ + escape_ + "2Fwww.google.com" +
               dir_sep_ + "index.html" + escape_);
@@ -329,8 +326,7 @@ TEST_F(UrlToFilenameEncoderTest, BackslashSeparator) {
   string long_word;
   string escaped_word;
   long_word.append(UrlToFilenameEncoder::kMaximumSubdirectoryLength + 1, 'x');
-  UrlToFilenameEncoder::EncodeSegment(
-      std::string(), long_word, '\\', &escaped_word);
+  UrlToFilenameEncoder::EncodeSegment("", long_word, '\\', &escaped_word);
 
   // check that one backslash, plus the escape ",-", and the ending , got added.
   EXPECT_EQ(long_word.size() + 4, escaped_word.size());

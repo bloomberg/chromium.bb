@@ -413,7 +413,7 @@ void TabHelper::OnInlineInstallComplete(int install_id,
                                         const std::string& error) {
   if (success) {
     Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-        return_route_id, install_id, true, std::string()));
+        return_route_id, install_id, true, ""));
   } else {
     Send(new ExtensionMsg_InlineWebstoreInstallResponse(
         return_route_id, install_id, false, error));

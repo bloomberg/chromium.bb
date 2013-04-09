@@ -44,7 +44,7 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
     return default_locale;
 
   *error = errors::kInvalidDefaultLocale;
-  return std::string();
+  return "";
 
 }
 

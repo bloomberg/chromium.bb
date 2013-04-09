@@ -295,8 +295,7 @@ class StartupTest : public UIPerfTest {
                           "%.2f,",
                           timings[i].end_to_end.InMillisecondsF());
     }
-    perf_test::PrintResultList(
-        graph, std::string(), trace, times, "ms", important);
+    perf_test::PrintResultList(graph, "", trace, times, "ms", important);
 
     if (num_tabs > 0) {
       std::string name_base = trace;
@@ -306,15 +305,15 @@ class StartupTest : public UIPerfTest {
       name = name_base + "-start";
       for (int i = 0; i < numCycles; ++i)
         base::StringAppendF(&times, "%.2f,", timings[i].first_start_ms);
-      perf_test::PrintResultList(
-          graph, std::string(), name.c_str(), times, "ms", important);
+      perf_test::PrintResultList(graph, "", name.c_str(), times, "ms",
+                                 important);
 
       times.clear();
       name = name_base + "-first";
       for (int i = 0; i < numCycles; ++i)
         base::StringAppendF(&times, "%.2f,", timings[i].first_stop_ms);
-      perf_test::PrintResultList(
-          graph, std::string(), name.c_str(), times, "ms", important);
+      perf_test::PrintResultList(graph, "", name.c_str(), times, "ms",
+                                 important);
 
       if (nth_timed_tab > 0) {
         // Display only the time necessary to load the first n tabs.
@@ -322,8 +321,8 @@ class StartupTest : public UIPerfTest {
         name = name_base + "-" + base::IntToString(nth_timed_tab);
         for (int i = 0; i < numCycles; ++i)
           base::StringAppendF(&times, "%.2f,", timings[i].nth_tab_stop_ms);
-        perf_test::PrintResultList(
-            graph, std::string(), name.c_str(), times, "ms", important);
+        perf_test::PrintResultList(graph, "", name.c_str(), times, "ms",
+                                   important);
       }
 
       if (num_tabs > 1) {
@@ -332,8 +331,8 @@ class StartupTest : public UIPerfTest {
         name = name_base + "-all";
         for (int i = 0; i < numCycles; ++i)
           base::StringAppendF(&times, "%.2f,", timings[i].last_stop_ms);
-        perf_test::PrintResultList(
-            graph, std::string(), name.c_str(), times, "ms", important);
+        perf_test::PrintResultList(graph, "", name.c_str(), times, "ms",
+                                   important);
       }
     }
   }

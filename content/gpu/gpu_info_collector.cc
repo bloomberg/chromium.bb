@@ -53,7 +53,7 @@ std::string GetGLString(unsigned int pname) {
       reinterpret_cast<const char*>(glGetString(pname));
   if (gl_string)
     return std::string(gl_string);
-  return std::string();
+  return "";
 }
 
 // Return a version string in the format of "major.minor".
@@ -71,7 +71,7 @@ std::string GetVersionFromString(const std::string& version_string) {
     if (pieces.size() >= 2)
       return pieces[0] + "." + pieces[1];
   }
-  return std::string();
+  return "";
 }
 
 }  // namespace anonymous

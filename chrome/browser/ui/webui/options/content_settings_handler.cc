@@ -123,7 +123,7 @@ std::string ContentSettingToString(ContentSetting setting) {
       NOTREACHED();
   }
 
-  return std::string();
+  return "";
 }
 
 ContentSetting ContentSettingFromString(const std::string& name) {
@@ -151,9 +151,8 @@ DictionaryValue* GetExceptionForPage(
   DictionaryValue* exception = new DictionaryValue();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kEmbeddingOrigin,
-                       secondary_pattern == ContentSettingsPattern::Wildcard()
-                           ? std::string()
-                           : secondary_pattern.ToString());
+      secondary_pattern == ContentSettingsPattern::Wildcard() ? "" :
+          secondary_pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kSource, provider_name);
   return exception;
@@ -605,7 +604,7 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
   media_ui_settings.SetString("askText", "mediaStreamAsk");
   media_ui_settings.SetString("blockText", "mediaStreamBlock");
   media_ui_settings.SetBoolean("showBubble", false);
-  media_ui_settings.SetString("bubbleText", std::string());
+  media_ui_settings.SetString("bubbleText", "");
 
   web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
                                    media_ui_settings);
@@ -1053,16 +1052,18 @@ void ContentSettingsHandler::RemoveMediaException(
       mode == "normal" ? GetContentSettingsMap() :
                          GetOTRContentSettingsMap();
   if (settings_map) {
-    settings_map->SetWebsiteSetting(ContentSettingsPattern::FromString(pattern),
-                                    ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                    std::string(),
-                                    NULL);
-    settings_map->SetWebsiteSetting(ContentSettingsPattern::FromString(pattern),
-                                    ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                                    std::string(),
-                                    NULL);
+    settings_map->SetWebsiteSetting(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        "",
+        NULL);
+    settings_map->SetWebsiteSetting(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        "",
+        NULL);
   }
 }
 
@@ -1087,11 +1088,10 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   if (settings_map) {
     settings_map->SetWebsiteSetting(
         ContentSettingsPattern::FromString(pattern),
-        secondary_pattern.empty()
-            ? ContentSettingsPattern::Wildcard()
-            : ContentSettingsPattern::FromString(secondary_pattern),
+        secondary_pattern.empty() ? ContentSettingsPattern::Wildcard() :
+            ContentSettingsPattern::FromString(secondary_pattern),
         type,
-        std::string(),
+        "",
         NULL);
   }
 }
@@ -1259,7 +1259,7 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
     settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
                                     ContentSettingsPattern::Wildcard(),
                                     type,
-                                    std::string(),
+                                    "",
                                     ContentSettingFromString(setting));
   }
 }

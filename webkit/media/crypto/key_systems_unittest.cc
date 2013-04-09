@@ -233,14 +233,14 @@ TEST_F(KeySystemsTest, ClearKey_IsSupportedKeySystem_InvalidVariants) {
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_NoType) {
   // These two should be true. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kClearKey));
+      "", no_codecs(), kClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "webkit-org.w3"));
+      "", no_codecs(), "webkit-org.w3"));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "webkit-org.w3.foo"));
+      "", no_codecs(), "webkit-org.w3.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "webkit-org.w3.clearkey.foo"));
+      "", no_codecs(), "webkit-org.w3.clearkey.foo"));
 }
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_ClearKey_WebM) {
@@ -419,14 +419,14 @@ TEST_F(KeySystemsTest,
        IsSupportedKeySystemWithMediaMimeType_ExternalClearKey_NoType) {
   // These two should be true. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kExternalClearKey));
+      "", no_codecs(), kExternalClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "org.chromium"));
+      "", no_codecs(), "org.chromium"));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "org.chromium.foo"));
+      "", no_codecs(), "org.chromium.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "org.chromium.externalclearkey.foo"));
+      "", no_codecs(), "org.chromium.externalclearkey.foo"));
 }
 
 TEST_F(KeySystemsTest,
@@ -606,14 +606,14 @@ TEST_F(KeySystemsTest, Widevine_IsSupportedKeySystem_InvalidVariants) {
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_NoType) {
   // These two should be true. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kWidevineAlpha));
+      "", no_codecs(), kWidevineAlpha));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), kWidevine));
+      "", no_codecs(), kWidevine));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "com.widevine.foo"));
+      "", no_codecs(), "com.widevine.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "com.widevine.alpha.foo"));
+      "", no_codecs(), "com.widevine.alpha.foo"));
 }
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {

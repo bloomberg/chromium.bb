@@ -62,16 +62,16 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
   for (unsigned i = 0; i < domain.size() && domain[i]; i += domain[i] + 1) {
 #if CHAR_MIN < 0
     if (domain[i] < 0)
-      return std::string();
+      return "";
 #endif
     if (domain[i] > 63)
-      return std::string();
+      return "";
 
     if (i)
       ret += ".";
 
     if (static_cast<unsigned>(domain[i]) + i + 1 > domain.size())
-      return std::string();
+      return "";
 
     domain.substr(i + 1, domain[i]).AppendToString(&ret);
   }

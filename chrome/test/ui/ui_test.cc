@@ -516,7 +516,7 @@ bool UITestBase::BeginTracing(const std::string& categories) {
 std::string UITestBase::EndTracing() {
   std::string json_trace_output;
   if (!automation()->EndTracing(&json_trace_output))
-    return std::string();
+    return "";
   return json_trace_output;
 }
 

@@ -65,7 +65,7 @@ void ShowBookmarkManager(Browser* browser) {
 }
 
 void ShowBookmarkManagerForNode(Browser* browser, int64 node_id) {
-  OpenBookmarkManagerWithHash(browser, std::string(), node_id);
+  OpenBookmarkManagerWithHash(browser, "", node_id);
 }
 
 void ShowHistory(Browser* browser) {

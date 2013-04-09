@@ -317,7 +317,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_POSIX)
   bool use_zygote = !is_broker_ && plugin_launcher.empty() && info.is_sandboxed;
   if (!info.is_sandboxed)
-    cmd_line->AppendSwitchASCII(switches::kNoSandbox, std::string());
+    cmd_line->AppendSwitchASCII(switches::kNoSandbox, "");
 #endif  // OS_POSIX
   process_->Launch(
 #if defined(OS_WIN)

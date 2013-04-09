@@ -890,7 +890,7 @@ void ProfileManager::CreateMultiProfileAsync(
 
 // static
 void ProfileManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
+  registry->RegisterStringPref(prefs::kProfileLastUsed, "");
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   registry->RegisterListPref(prefs::kProfilesLastActive);
 }

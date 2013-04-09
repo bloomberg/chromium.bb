@@ -145,7 +145,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     const char* test_status_prefixes[] = {"DISABLED_", "FLAKY_", "FAILS_"};
     for (size_t i = 0; i < arraysize(test_status_prefixes); ++i) {
       ReplaceFirstSubstringAfterOffset(
-          &test_name_, 0, test_status_prefixes[i], std::string());
+          &test_name_, 0, test_status_prefixes[i], "");
     }
 
     ui::DisableTestCompositor();

@@ -225,7 +225,7 @@ DictionaryValue* GoogleServiceAuthError::ToValue() const {
 std::string GoogleServiceAuthError::ToString() const {
   switch (state_) {
     case NONE:
-      return std::string();
+      return "";
     case INVALID_GAIA_CREDENTIALS:
       return "Invalid credentials.";
     case USER_NOT_SIGNED_UP:

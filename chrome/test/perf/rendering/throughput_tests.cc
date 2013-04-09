@@ -383,12 +383,8 @@ class ThroughputTest : public BrowserPerfTest {
                              ran_on_gpu ? "gpu" : "software";
     std::string mean_and_error = base::StringPrintf("%f,%f", mean_ms,
                                                     std_dev_ms);
-    perf_test::PrintResultMeanAndError(test_name,
-                                       std::string(),
-                                       trace_name,
-                                       mean_and_error,
-                                       "frame_time",
-                                       true);
+    perf_test::PrintResultMeanAndError(test_name, "", trace_name,
+                                       mean_and_error, "frame_time", true);
 
     if (flags & kAllowExternalDNS)
       ResetAllowExternalDNS();

@@ -77,8 +77,9 @@ DeterministicSocketDataTest::DeterministicSocketDataTest()
                                             false,
                                             false,
                                             OnHostResolutionCallback())),
-      histograms_(std::string()),
-      socket_pool_(10, 10, &histograms_, &socket_factory_) {}
+      histograms_(""),
+      socket_pool_(10, 10, &histograms_, &socket_factory_) {
+}
 
 void DeterministicSocketDataTest::TearDown() {
   // Empty the current queue.

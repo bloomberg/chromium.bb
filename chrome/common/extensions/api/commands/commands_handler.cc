@@ -137,10 +137,8 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
                                                    CommandsInfo* info) {
   if (extension->manifest()->HasKey(keys::kBrowserAction) &&
       !info->browser_action_command.get()) {
-    info->browser_action_command.reset(
-        new Command(extension_manifest_values::kBrowserActionCommandEvent,
-                    string16(),
-                    std::string()));
+    info->browser_action_command.reset(new Command(
+        extension_manifest_values::kBrowserActionCommandEvent, string16(), ""));
   }
 }
 

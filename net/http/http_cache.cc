@@ -445,7 +445,7 @@ int HttpCache::CreateBackend(disk_cache::Backend** backend,
 
   // This is the only operation that we can do that is not related to any given
   // entry, so we use an empty key for it.
-  PendingOp* pending_op = GetPendingOp(std::string());
+  PendingOp* pending_op = GetPendingOp("");
   if (pending_op->writer) {
     if (!callback.is_null())
       pending_op->pending_queue.push_back(item.release());
@@ -477,7 +477,7 @@ int HttpCache::GetBackendForTransaction(Transaction* trans) {
 
   WorkItem* item = new WorkItem(
       WI_CREATE_BACKEND, trans, net::CompletionCallback(), NULL);
-  PendingOp* pending_op = GetPendingOp(std::string());
+  PendingOp* pending_op = GetPendingOp("");
   DCHECK(pending_op->writer);
   pending_op->pending_queue.push_back(item);
   return ERR_IO_PENDING;
@@ -896,7 +896,7 @@ void HttpCache::RemovePendingTransaction(Transaction* trans) {
     return;
 
   if (building_backend_) {
-    PendingOpsMap::const_iterator j = pending_ops_.find(std::string());
+    PendingOpsMap::const_iterator j = pending_ops_.find("");
     if (j != pending_ops_.end())
       found = RemovePendingTransactionFromPendingOp(j->second, trans);
 

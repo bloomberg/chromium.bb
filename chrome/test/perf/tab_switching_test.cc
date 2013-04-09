@@ -69,8 +69,7 @@ class TabSwitchingUITest : public UIPerfTest {
       std::string times;
       for (int i = 0; i < kNumCycles; ++i)
         base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
-      perf_test::PrintResultList(
-          "times", std::string(), label, times, "ms", important);
+      perf_test::PrintResultList("times", "", label, times, "ms", important);
   }
 
   void RunTabSwitchingUITest(const char* label, bool important) {

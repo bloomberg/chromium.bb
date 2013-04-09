@@ -45,7 +45,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref should cause the pref to fire.
-  const StringValue expected_default_value((std::string()));
+  const StringValue expected_default_value("");
   obs.Expect(pref_name, &expected_default_value);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);

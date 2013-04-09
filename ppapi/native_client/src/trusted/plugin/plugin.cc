@@ -677,6 +677,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   return status;
 }
 
+
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       scriptable_plugin_(NULL),
@@ -687,6 +688,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       nacl_ready_state_(UNSENT),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
+      last_error_string_(""),
       enable_dev_interfaces_(false),
       is_installed_(false),
       init_time_(0),

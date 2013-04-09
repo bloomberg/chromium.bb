@@ -17,6 +17,7 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
       satisfied_(false),
       waiting_(false),
       will_reply_(will_reply),
+      failure_message_(""),
       failed_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                  content::NotificationService::AllSources());
@@ -58,7 +59,7 @@ void ExtensionTestMessageListener::Observe(
     satisfied_ = true;
     registrar_.RemoveAll();  // Stop listening for more messages.
     if (!will_reply_) {
-      function_->Reply(std::string());
+      function_->Reply("");
       function_ = NULL;
     }
     if (waiting_) {

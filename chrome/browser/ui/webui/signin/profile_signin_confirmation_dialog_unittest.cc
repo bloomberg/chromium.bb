@@ -142,11 +142,11 @@ class ProfileSigninConfirmationDialogTest : public testing::Test {
                                    false);
 
     // Create a dialog, but don't display it.
-    dialog_ = new ProfileSigninConfirmationDialog(profile_.get(),
-                                                  std::string(),
-                                                  base::Bind(&base::DoNothing),
-                                                  base::Bind(&base::DoNothing),
-                                                  base::Bind(&base::DoNothing));
+    dialog_ = new ProfileSigninConfirmationDialog(
+        profile_.get(), "",
+        base::Bind(&base::DoNothing),
+        base::Bind(&base::DoNothing),
+        base::Bind(&base::DoNothing));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -204,10 +204,10 @@ TEST_F(ProfileSigninConfirmationDialogTest, PromptForNewProfile_Extensions) {
               &ProfileSigninConfirmationDialog::CheckShouldPromptForNewProfile,
               base::Unretained(dialog_))));
 
-  scoped_refptr<extensions::Extension> extension =
-      CreateExtension("foo", std::string());
+  scoped_refptr<extensions::Extension> extension = CreateExtension("foo", "");
   extensions->extension_prefs()->AddGrantedPermissions(
-      extension->id(), make_scoped_refptr(new extensions::PermissionSet));
+      extension->id(),
+      make_scoped_refptr(new extensions::PermissionSet));
   extensions->AddExtension(extension);
   EXPECT_TRUE(
       GetCallbackResult(

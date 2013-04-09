@@ -92,7 +92,7 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
 
 std::string BaseTestServer::SSLOptions::GetOCSPArgument() const {
   if (server_certificate != CERT_AUTO)
-    return std::string();
+    return "";
 
   switch (ocsp_status) {
     case OCSP_OK:
@@ -107,7 +107,7 @@ std::string BaseTestServer::SSLOptions::GetOCSPArgument() const {
       return "unknown";
     default:
       NOTREACHED();
-      return std::string();
+      return "";
   }
 }
 

@@ -234,7 +234,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
 
   client_->SendMessage(request);
 
-  client_->SendData(std::string(), true);
+  client_->SendData("", true);
 
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
@@ -243,7 +243,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
   request.AddBody("foo", true);
 
   client_->SendMessage(request);
-  client_->SendData(std::string(), true);
+  client_->SendData("", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ(200ul, client_->response_headers()->parsed_response_code());

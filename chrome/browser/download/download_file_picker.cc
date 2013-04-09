@@ -86,14 +86,15 @@ void DownloadFilePicker::Init(
       platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()) :
       NULL;
 
-  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                                  string16(),
-                                  suggested_path_,
-                                  &file_type_info,
-                                  0,
-                                  base::FilePath::StringType(),
-                                  owning_window,
-                                  NULL);
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+      string16(),
+      suggested_path_,
+      &file_type_info,
+      0,
+      FILE_PATH_LITERAL(""),
+      owning_window,
+      NULL);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {

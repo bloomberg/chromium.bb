@@ -308,7 +308,7 @@ StatisticsRecorder::~StatisticsRecorder() {
   DCHECK(histograms_ && ranges_ && lock_);
   if (dump_on_exit_) {
     string output;
-    WriteGraph(std::string(), &output);
+    WriteGraph("", &output);
     DLOG(INFO) << output;
   }
 

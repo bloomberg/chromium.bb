@@ -56,7 +56,7 @@ class ExtensionSyncTypeTest : public ExtensionTest {
       ListValue* plugins = new ListValue();
       for (int i = 0; i < num_plugins; ++i) {
         DictionaryValue* plugin = new DictionaryValue();
-        plugin->SetString(keys::kPluginsPath, std::string());
+        plugin->SetString(keys::kPluginsPath, "");
         plugins->Set(i, plugin);
       }
       source.Set(keys::kPlugins, plugins);
@@ -158,7 +158,7 @@ TEST_F(ExtensionSyncTypeTest, DisplayInXManifestProperties) {
   manifest.SetString(keys::kName, "TestComponentApp");
   manifest.SetString(keys::kVersion, "0.0.0.0");
   manifest.SetString(keys::kApp, "true");
-  manifest.SetString(keys::kPlatformAppBackgroundPage, std::string());
+  manifest.SetString(keys::kPlatformAppBackgroundPage, "");
 
   std::string error;
   scoped_refptr<Extension> app;

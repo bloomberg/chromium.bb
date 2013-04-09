@@ -523,7 +523,7 @@ std::string AlsaPcmOutputStream::FindDeviceForChannels(uint32 channels) {
 
   const char* wanted_device = GuessSpecificDeviceName(channels);
   if (!wanted_device)
-    return std::string();
+    return "";
 
   std::string guessed_device;
   void** hints = NULL;

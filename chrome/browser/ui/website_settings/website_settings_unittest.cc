@@ -165,22 +165,22 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   HostContentSettingsMap* content_settings =
       profile()->GetHostContentSettingsMap();
   ContentSetting setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
@@ -212,22 +212,22 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
   // Verify that the site permissions were changed correctly.
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 

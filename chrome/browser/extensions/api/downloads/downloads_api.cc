@@ -218,9 +218,9 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetBoolean(kExistsKey, !download_item->GetFileExternallyRemoved());
   json->SetInteger(kIdKey, download_item->GetId());
   const GURL& url = download_item->GetOriginalUrl();
-  json->SetString(kUrlKey, (url.is_valid() ? url.spec() : std::string()));
-  json->SetString(kFilenameKey,
-                  download_item->GetFullPath().LossyDisplayName());
+  json->SetString(kUrlKey, (url.is_valid() ? url.spec() : ""));
+  json->SetString(
+      kFilenameKey, download_item->GetFullPath().LossyDisplayName());
   json->SetString(kDangerKey, DangerString(download_item->GetDangerType()));
   if (download_item->GetDangerType() !=
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)

@@ -1289,7 +1289,7 @@ void SyncManagerImpl::OnIncomingInvalidation(
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const ModelTypeInvalidationMap& type_invalidation_map =
-      ModelTypeSetToInvalidationMap(types, std::string());
+      ModelTypeSetToInvalidationMap(types, "");
   if (type_invalidation_map.empty()) {
     LOG(WARNING) << "Sync received refresh request with no types specified.";
   } else {

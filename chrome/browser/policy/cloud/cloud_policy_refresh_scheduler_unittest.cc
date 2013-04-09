@@ -127,7 +127,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
 }
 
 TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
-  client_.SetDMToken(std::string());
+  client_.SetDMToken("");
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   client_.NotifyPolicyFetched();
   client_.NotifyRegistrationStateChanged();
@@ -182,7 +182,7 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnRegistrationStateChanged) {
   EXPECT_EQ(GetLastDelay(), base::TimeDelta());
 
   task_runner_->ClearPendingTasks();
-  client_.SetDMToken(std::string());
+  client_.SetDMToken("");
   client_.NotifyRegistrationStateChanged();
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 }

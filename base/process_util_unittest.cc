@@ -758,8 +758,8 @@ TEST_F(ProcessUtilTest, LaunchProcess) {
   EXPECT_EQ(0, setenv("BASE_TEST", "testing", 1 /* override */));
   EXPECT_EQ("testing\n", TestLaunchProcess(env_changes, no_clone_flags));
 
-  env_changes.push_back(
-      std::make_pair(std::string("BASE_TEST"), std::string()));
+  env_changes.push_back(std::make_pair(std::string("BASE_TEST"),
+                                       std::string("")));
   EXPECT_EQ("\n", TestLaunchProcess(env_changes, no_clone_flags));
 
   env_changes[0].second = "foo";
@@ -800,7 +800,7 @@ TEST_F(ProcessUtilTest, AlterEnvironment) {
   delete[] e;
 
   changes.clear();
-  changes.push_back(std::make_pair(std::string("A"), std::string()));
+  changes.push_back(std::make_pair(std::string("A"), std::string("")));
   e = base::AlterEnvironment(changes, empty);
   EXPECT_TRUE(e[0] == NULL);
   delete[] e;
@@ -819,7 +819,7 @@ TEST_F(ProcessUtilTest, AlterEnvironment) {
   delete[] e;
 
   changes.clear();
-  changes.push_back(std::make_pair(std::string("A"), std::string()));
+  changes.push_back(std::make_pair(std::string("A"), std::string("")));
   e = base::AlterEnvironment(changes, a2);
   EXPECT_TRUE(e[0] == NULL);
   delete[] e;

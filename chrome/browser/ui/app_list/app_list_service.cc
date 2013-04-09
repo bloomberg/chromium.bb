@@ -66,7 +66,7 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAppListLaunchCount, 0);
   registry->RegisterInt64Pref(prefs::kLastAppListAppLaunchPing, 0);
   registry->RegisterIntegerPref(prefs::kAppListAppLaunchCount, 0);
-  registry->RegisterStringPref(prefs::kAppListProfile, std::string());
+  registry->RegisterStringPref(prefs::kAppListProfile, "");
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kRestartWithAppList, false);
 #endif

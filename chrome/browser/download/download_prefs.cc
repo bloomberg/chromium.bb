@@ -86,7 +86,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen,
-                               std::string(),
+                               "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded,
                                 false,

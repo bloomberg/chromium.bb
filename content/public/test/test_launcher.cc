@@ -454,7 +454,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
   // Split --gtest_filter at '-', if there is one, to separate into
   // positive filter and negative filter portions.
   std::string positive_filter = filter;
-  std::string negative_filter;
+  std::string negative_filter = "";
   size_t dash_pos = filter.find('-');
   if (dash_pos != std::string::npos) {
     positive_filter = filter.substr(0, dash_pos);  // Everything up to the dash.

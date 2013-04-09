@@ -737,8 +737,7 @@ class HTML5FileWriter {
   ~HTML5FileWriter() {
     CHECK(BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
         &HTML5FileWriter::TearDownURLRequestContext, base::Unretained(this))));
-    events_listener_->WaitFor(
-        profile_, kURLRequestContextToreDown, std::string());
+    events_listener_->WaitFor(profile_, kURLRequestContextToreDown, "");
   }
 
   bool WriteFile() {
@@ -1072,10 +1071,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   // Simulate an error during icon load by invoking the mock with an empty
   // result string.
-  std::string error = RunFunctionAndReturnError(
-      MockedGetFileIconFunction(download_item->GetTargetFilePath(),
-                                IconLoader::NORMAL,
-                                std::string()),
+  std::string error = RunFunctionAndReturnError(MockedGetFileIconFunction(
+        download_item->GetTargetFilePath(), IconLoader::NORMAL, ""),
       args32);
   EXPECT_STREQ(download_extension_errors::kIconNotFoundError, error.c_str());
 

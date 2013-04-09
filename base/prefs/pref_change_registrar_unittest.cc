@@ -132,7 +132,7 @@ class ObserveSetOfPreferencesTest : public testing::Test {
     PrefRegistrySimple* registry = pref_service_->registry();
     registry->RegisterStringPref(kHomePage, "http://google.com");
     registry->RegisterBooleanPref(kHomePageIsNewTabPage, false);
-    registry->RegisterStringPref(kApplicationLocale, std::string());
+    registry->RegisterStringPref(kApplicationLocale, "");
   }
 
   PrefChangeRegistrar* CreatePrefChangeRegistrar() {

@@ -180,7 +180,7 @@ std::string HostToCustomHistogramSuffix(const std::string& host) {
     return ".docs";
   if (host == "plus.google.com")
     return ".plus";
-  return std::string();
+  return "";
 }
 
 void* CreateHistogram(

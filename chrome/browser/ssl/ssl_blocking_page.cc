@@ -218,9 +218,9 @@ std::string SSLBlockingPage::GetHTMLContents() {
                         l10n_util::GetStringUTF16(
                             IDS_SSL_ERROR_PAGE_CANNOT_PROCEED));
     } else {
-      strings.SetString("reasonForNotProceeding", std::string());
+      strings.SetString("reasonForNotProceeding", "");
     }
-    strings.SetString("errorType", std::string());
+    strings.SetString("errorType", "");
   }
 
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
@@ -318,6 +318,6 @@ void SSLBlockingPage::SetExtraInfo(
     strings->SetString(keys[i], extra_info[i]);
   }
   for (; i < 5; i++) {
-    strings->SetString(keys[i], std::string());
+    strings->SetString(keys[i], "");
   }
 }

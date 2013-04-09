@@ -57,7 +57,7 @@ TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
                                 &out_path));
 
   // Other bad files.
-  EXPECT_FALSE(PnaclCanOpenFile(std::string(), &out_path));
+  EXPECT_FALSE(PnaclCanOpenFile("", &out_path));
   EXPECT_FALSE(PnaclCanOpenFile(".", &out_path));
   EXPECT_FALSE(PnaclCanOpenFile("..", &out_path));
 #if defined(OS_WIN)

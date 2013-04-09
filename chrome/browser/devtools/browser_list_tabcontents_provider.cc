@@ -116,19 +116,19 @@ std::string BrowserListTabContentsProvider::GetViewDescription(
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(rvh);
   if (!web_contents)
-    return std::string();
+    return "";
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile)
-    return std::string();
+    return "";
 
   extensions::ExtensionHost* extension_host =
       extensions::ExtensionSystem::Get(profile)->process_manager()->
           GetBackgroundHostForExtension(web_contents->GetURL().host());
 
   if (!extension_host || extension_host->host_contents() != web_contents)
-    return std::string();
+    return "";
 
   return extension_host->extension()->name();
 }

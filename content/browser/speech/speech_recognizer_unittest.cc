@@ -305,7 +305,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   status.set_error(net::ERR_CONNECTION_REFUSED);
   fetcher->set_status(status);
   fetcher->set_response_code(0);
-  fetcher->SetResponseString(std::string());
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);

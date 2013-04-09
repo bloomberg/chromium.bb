@@ -56,7 +56,7 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       scoped_ptr<HttpHandler::CommandMap>(new HttpHandler::CommandMap()),
       "/");
-  HttpRequest request(kGet, "/path", std::string());
+  HttpRequest request(kGet, "/path", "");
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotFound, response.status());
@@ -68,7 +68,7 @@ TEST(HttpHandlerTest, HandleNewSession) {
   HttpHandler handler(
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       map.Pass(), "/base/");
-  HttpRequest request(kPost, "/base/session", std::string());
+  HttpRequest request(kPost, "/base/session", "");
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kSeeOther, response.status());
@@ -96,7 +96,7 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
   HttpHandler handler(
       scoped_ptr<CommandExecutor>(new DummyExecutor(kUnknownCommand)),
       map.Pass(), "/");
-  HttpRequest request(kPost, "/path", std::string());
+  HttpRequest request(kPost, "/path", "");
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotImplemented, response.status());
@@ -108,7 +108,7 @@ TEST(HttpHandlerTest, HandleCommand) {
   HttpHandler handler(
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       map.Pass(), "/");
-  HttpRequest request(kPost, "/path", std::string());
+  HttpRequest request(kPost, "/path", "");
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kOk, response.status());
@@ -140,9 +140,9 @@ TEST(MatchesCommandTest, DiffPathLength) {
   ASSERT_FALSE(internal::MatchesCommand(
       kPost, "path", command, &session_id, &params));
   ASSERT_FALSE(internal::MatchesCommand(
-      kPost, std::string(), command, &session_id, &params));
-  ASSERT_FALSE(
-      internal::MatchesCommand(kPost, "/", command, &session_id, &params));
+      kPost, "", command, &session_id, &params));
+  ASSERT_FALSE(internal::MatchesCommand(
+      kPost, "/", command, &session_id, &params));
   ASSERT_FALSE(internal::MatchesCommand(
       kPost, "path/path/path", command, &session_id, &params));
 }

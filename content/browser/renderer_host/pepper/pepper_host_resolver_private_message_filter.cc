@@ -122,9 +122,9 @@ int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
 
   // Check plugin permissions.
   SocketPermissionRequest request(
-      content::SocketPermissionRequest::NONE, std::string(), 0);
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id_, render_view_id_);
+      content::SocketPermissionRequest::NONE, "", 0);
+  RenderViewHost* render_view_host = RenderViewHost::FromID(render_process_id_,
+                                                            render_view_id_);
   if (!render_view_host ||
       !pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
                                              request,

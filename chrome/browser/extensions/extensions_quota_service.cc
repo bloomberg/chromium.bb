@@ -42,7 +42,7 @@ std::string ExtensionsQuotaService::Assess(
   DCHECK(CalledOnValidThread());
 
   if (function->ShouldSkipQuotaLimiting())
-    return std::string();
+    return "";
 
   // Lookup function list for extension.
   FunctionHeuristicsMap& functions = function_heuristics_[extension_id];
@@ -53,7 +53,7 @@ std::string ExtensionsQuotaService::Assess(
     function->GetQuotaLimitHeuristics(&heuristics);
 
   if (heuristics.empty())
-    return std::string();  // No heuristic implies no limit.
+    return "";  // No heuristic implies no limit.
 
   ViolationErrorMap::iterator violation_error =
       violation_errors_.find(extension_id);
@@ -71,7 +71,7 @@ std::string ExtensionsQuotaService::Assess(
   }
 
   if (!failed_heuristic)
-    return std::string();
+    return "";
 
   std::string error = failed_heuristic->GetError();
   DCHECK_GT(error.length(), 0u);

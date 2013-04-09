@@ -32,7 +32,7 @@ TEST_F(VersionInfoTest, ValidVersionInfo) {
       string1 = "8.9";
     if (op[i] == "between")
       string2 = "9.0";
-    VersionInfo info(op[i], std::string(), string1, string2);
+    VersionInfo info(op[i], "", string1, string2);
     EXPECT_TRUE(info.IsValid());
   }
 
@@ -42,7 +42,7 @@ TEST_F(VersionInfoTest, ValidVersionInfo) {
     ""  // Default, same as "numerical"
   };
   for (size_t i =0; i < arraysize(style); ++i) {
-    VersionInfo info("=", style[i], "8.9", std::string());
+    VersionInfo info("=", style[i], "8.9", "");
     EXPECT_TRUE(info.IsValid());
     if (style[i] == "lexical")
       EXPECT_TRUE(info.IsLexical());
@@ -65,7 +65,7 @@ TEST_F(VersionInfoTest, ValidVersionInfo) {
     "10. 9",
   };
   for (size_t i =0; i < arraysize(number); ++i) {
-    VersionInfo info("=", std::string(), number[i], std::string());
+    VersionInfo info("=", "", number[i], "");
     EXPECT_TRUE(info.IsValid());
   }
 }
@@ -82,21 +82,21 @@ TEST_F(VersionInfoTest, InvalidVersionInfo) {
   };
   for (size_t i = 0; i < arraysize(op); ++i) {
     {
-      VersionInfo info(op[i], std::string(), "8.9", std::string());
+      VersionInfo info(op[i], "", "8.9", "");
       if (op[i] == "between")
         EXPECT_FALSE(info.IsValid());
       else
         EXPECT_TRUE(info.IsValid());
     }
     {
-      VersionInfo info(op[i], std::string(), std::string(), std::string());
+      VersionInfo info(op[i], "", "", "");
       if (op[i] == "any")
         EXPECT_TRUE(info.IsValid());
       else
         EXPECT_FALSE(info.IsValid());
     }
     {
-      VersionInfo info(op[i], std::string(), "8.9", "9.0");
+      VersionInfo info(op[i], "", "8.9", "9.0");
       EXPECT_TRUE(info.IsValid());
     }
   }
@@ -106,34 +106,34 @@ TEST_F(VersionInfoTest, InvalidVersionInfo) {
     "8-9",
   };
   for (size_t i = 0; i < arraysize(number); ++i) {
-    VersionInfo info("=", std::string(), number[i], std::string());
+    VersionInfo info("=", "", number[i], "");
     EXPECT_FALSE(info.IsValid());
   }
 }
 
 TEST_F(VersionInfoTest, VersionComparison) {
   {
-    VersionInfo info("any", std::string(), std::string(), std::string());
+    VersionInfo info("any", "", "", "");
     EXPECT_TRUE(info.Contains("0"));
     EXPECT_TRUE(info.Contains("8.9"));
     EXPECT_TRUE(info.Contains("100"));
   }
   {
-    VersionInfo info(">", std::string(), "8.9", std::string());
+    VersionInfo info(">", "", "8.9", "");
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("8.9"));
     EXPECT_FALSE(info.Contains("8.9.1"));
     EXPECT_TRUE(info.Contains("9"));
   }
   {
-    VersionInfo info(">=", std::string(), "8.9", std::string());
+    VersionInfo info(">=", "", "8.9", "");
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8.9"));
     EXPECT_TRUE(info.Contains("8.9.1"));
     EXPECT_TRUE(info.Contains("9"));
   }
   {
-    VersionInfo info("=", std::string(), "8.9", std::string());
+    VersionInfo info("=", "", "8.9", "");
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8"));
     EXPECT_TRUE(info.Contains("8.9"));
@@ -141,7 +141,7 @@ TEST_F(VersionInfoTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9"));
   }
   {
-    VersionInfo info("<", std::string(), "8.9", std::string());
+    VersionInfo info("<", "", "8.9", "");
     EXPECT_TRUE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8.8"));
     EXPECT_FALSE(info.Contains("8"));
@@ -150,7 +150,7 @@ TEST_F(VersionInfoTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9"));
   }
   {
-    VersionInfo info("<=", std::string(), "8.9", std::string());
+    VersionInfo info("<=", "", "8.9", "");
     EXPECT_TRUE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8.8"));
     EXPECT_TRUE(info.Contains("8"));
@@ -159,7 +159,7 @@ TEST_F(VersionInfoTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9"));
   }
   {
-    VersionInfo info("between", std::string(), "8.9", "9.1");
+    VersionInfo info("between", "", "8.9", "9.1");
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("8.8"));
     EXPECT_TRUE(info.Contains("8"));
@@ -177,14 +177,14 @@ TEST_F(VersionInfoTest, DateComparison) {
   // When we use '-' as splitter, we assume a format of mm-dd-yyyy
   // or mm-yyyy, i.e., a date.
   {
-    VersionInfo info("=", std::string(), "1976.3.21", std::string());
+    VersionInfo info("=", "", "1976.3.21", "");
     EXPECT_TRUE(info.Contains("3-21-1976", '-'));
     EXPECT_TRUE(info.Contains("3-1976", '-'));
     EXPECT_TRUE(info.Contains("03-1976", '-'));
     EXPECT_FALSE(info.Contains("21-3-1976", '-'));
   }
   {
-    VersionInfo info(">", std::string(), "1976.3.21", std::string());
+    VersionInfo info(">", "", "1976.3.21", "");
     EXPECT_TRUE(info.Contains("3-22-1976", '-'));
     EXPECT_TRUE(info.Contains("4-1976", '-'));
     EXPECT_TRUE(info.Contains("04-1976", '-'));
@@ -192,7 +192,7 @@ TEST_F(VersionInfoTest, DateComparison) {
     EXPECT_FALSE(info.Contains("2-1976", '-'));
   }
   {
-    VersionInfo info("between", std::string(), "1976.3.21", "2012.12.25");
+    VersionInfo info("between", "", "1976.3.21", "2012.12.25");
     EXPECT_FALSE(info.Contains("3-20-1976", '-'));
     EXPECT_TRUE(info.Contains("3-21-1976", '-'));
     EXPECT_TRUE(info.Contains("3-22-1976", '-'));
@@ -215,7 +215,7 @@ TEST_F(VersionInfoTest, LexicalComparison) {
   // When we use lexical style, we assume a format major.minor.*.
   // We apply numerical comparison to major, lexical comparison to others.
   {
-    VersionInfo info("<", "lexical", "8.201", std::string());
+    VersionInfo info("<", "lexical", "8.201", "");
     EXPECT_TRUE(info.Contains("8.001.100"));
     EXPECT_TRUE(info.Contains("8.109"));
     EXPECT_TRUE(info.Contains("8.10900"));
@@ -234,7 +234,7 @@ TEST_F(VersionInfoTest, LexicalComparison) {
     EXPECT_FALSE(info.Contains("12.201"));
   }
   {
-    VersionInfo info("<", "lexical", "9.002", std::string());
+    VersionInfo info("<", "lexical", "9.002", "");
     EXPECT_TRUE(info.Contains("8.001.100"));
     EXPECT_TRUE(info.Contains("8.109"));
     EXPECT_TRUE(info.Contains("8.10900"));

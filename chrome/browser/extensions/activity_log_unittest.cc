@@ -93,8 +93,10 @@ TEST_F(ActivityLogTest, Construct) {
   extension_service_->AddExtension(extension);
   scoped_ptr<ListValue> args(new ListValue());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
-  activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
+  activity_log->LogAPIAction(extension,
+                             std::string("tabs.testMethod"),
+                             args.get(),
+                             "");
 }
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
@@ -111,8 +113,10 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 
   // Write some API calls
-  activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
+  activity_log->LogAPIAction(extension,
+                             std::string("tabs.testMethod"),
+                             args.get(),
+                             "");
   activity_log->LogDOMAction(extension,
                              GURL("http://www.google.com"),
                              string16(),
@@ -140,10 +144,14 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
+  activity_log->LogAPIAction(extension,
+                             std::string("tabs.testMethod"),
+                             args.get(),
+                             "");
   activity_log->GetActions(
-      extension->id(), 0, base::Bind(ActivityLogTest::Arguments_Missing));
+      extension->id(),
+      0,
+      base::Bind(ActivityLogTest::Arguments_Missing));
 }
 
 TEST_F(ActivityLogTest, LogWithArguments) {
@@ -161,10 +169,14 @@ TEST_F(ActivityLogTest, LogWithArguments) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(
-      extension, std::string("extension.connect"), args.get(), std::string());
+  activity_log->LogAPIAction(extension,
+                            std::string("extension.connect"),
+                            args.get(),
+                            "");
   activity_log->GetActions(
-      extension->id(), 0, base::Bind(ActivityLogTest::Arguments_Present));
+      extension->id(),
+      0,
+      base::Bind(ActivityLogTest::Arguments_Present));
 }
 
 }  // namespace extensions

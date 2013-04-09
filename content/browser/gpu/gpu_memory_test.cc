@@ -116,8 +116,12 @@ class GpuMemoryTest : public ContentBrowserTest {
     js_call << mb_to_use;
     js_call << ");";
     std::string message;
-    ASSERT_TRUE(ExecuteScriptInFrameAndExtractString(
-        tab_to_load->web_contents(), std::string(), js_call.str(), &message));
+    ASSERT_TRUE(
+        ExecuteScriptInFrameAndExtractString(
+        tab_to_load->web_contents(),
+        "",
+        js_call.str(),
+        &message));
     EXPECT_EQ("DONE_USE_GPU_MEMORY", message);
   }
 
@@ -192,8 +196,12 @@ class GpuMemoryTest : public ContentBrowserTest {
             "  domAutomationController.send(\"DONE_RAF\");"
             "})");
         std::string message;
-        ASSERT_TRUE(ExecuteScriptInFrameAndExtractString(
-            (*it)->web_contents(), std::string(), js_call, &message));
+        ASSERT_TRUE(
+            ExecuteScriptInFrameAndExtractString(
+            (*it)->web_contents(),
+            "",
+            js_call,
+            &message));
         EXPECT_EQ("DONE_RAF", message);
       }
       // TODO(ccameron): send an IPC from Browser -> Renderer (delay it until

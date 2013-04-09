@@ -410,9 +410,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Tab to search (the keyword box on the left hand side).
   tab_to_search_full_label_ =
-      theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
+      theme_service_->BuildLabel("", ui::kGdkBlack);
   tab_to_search_partial_label_ =
-      theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
+      theme_service_->BuildLabel("", ui::kGdkBlack);
   GtkWidget* tab_to_search_label_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
                      tab_to_search_full_label_, FALSE, FALSE, 0);
@@ -458,12 +458,12 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   tab_to_search_hint_ = gtk_hbox_new(FALSE, 0);
   gtk_widget_set_name(tab_to_search_hint_, "chrome-tab-to-search-hint");
   tab_to_search_hint_leading_label_ =
-      theme_service_->BuildLabel(std::string(), kHintTextColor);
+      theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
       rb.GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB).ToGdkPixbuf());
   tab_to_search_hint_trailing_label_ =
-      theme_service_->BuildLabel(std::string(), kHintTextColor);
+      theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
                      tab_to_search_hint_leading_label_,

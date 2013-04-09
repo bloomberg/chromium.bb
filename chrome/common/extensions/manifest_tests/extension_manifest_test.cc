@@ -217,16 +217,20 @@ ExtensionManifestTest::Testcase::Testcase(std::string manifest_filename,
 
 ExtensionManifestTest::Testcase::Testcase(std::string manifest_filename)
     : manifest_filename_(manifest_filename),
+      expected_error_(""),
       location_(extensions::Manifest::INTERNAL),
-      flags_(Extension::NO_FLAGS) {}
+      flags_(Extension::NO_FLAGS) {
+}
 
 ExtensionManifestTest::Testcase::Testcase(
     std::string manifest_filename,
     extensions::Manifest::Location location,
     int flags)
     : manifest_filename_(manifest_filename),
+      expected_error_(""),
       location_(location),
-      flags_(flags) {}
+      flags_(flags) {
+}
 
 void ExtensionManifestTest::RunTestcases(const Testcase* testcases,
                                          size_t num_testcases,

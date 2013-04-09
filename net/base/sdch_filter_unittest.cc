@@ -1346,7 +1346,7 @@ TEST_F(SdchFilterTest, PathMatch) {
   // Make sure less that sufficient prefix match is false.
   EXPECT_FALSE(PathMatch("/sear", "/search"));
   EXPECT_FALSE(PathMatch("/", "/search"));
-  EXPECT_FALSE(PathMatch(std::string(), "/search"));
+  EXPECT_FALSE(PathMatch("", "/search"));
 
   // Add examples with several levels of direcories in the restriction.
   EXPECT_FALSE(PathMatch("/search/something", "search/s"));

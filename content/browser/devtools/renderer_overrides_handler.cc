@@ -145,8 +145,8 @@ RendererOverridesHandler::PageNavigate(
   if (host) {
     WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
     if (web_contents) {
-      web_contents->GetController()
-          .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+      web_contents->GetController().LoadURL(
+          gurl, Referrer(), PAGE_TRANSITION_TYPED, "");
       return command->SuccessResponse(new base::DictionaryValue());
     }
   }

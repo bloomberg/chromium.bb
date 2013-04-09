@@ -282,8 +282,7 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
 
   host_resolver.rules()->AddRuleForAddressFamily(
       "host1", ADDRESS_FAMILY_IPV4, "166.155.144.44");
-  host_resolver.rules()
-      ->AddIPLiteralRule("host1", "::1,192.168.1.1", std::string());
+  host_resolver.rules()->AddIPLiteralRule("host1", "::1,192.168.1.1", "");
   host_resolver.rules()->AddSimulatedFailure("host2");
   host_resolver.rules()->AddRule("host3", "166.155.144.33");
   host_resolver.rules()->AddRule("host5", "166.155.144.55");
@@ -996,8 +995,7 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   MockHostResolver host_resolver0;
   host_resolver0.rules()->AddRuleForAddressFamily(
       "host1", ADDRESS_FAMILY_IPV4, "166.155.144.44");
-  host_resolver0.rules()
-      ->AddIPLiteralRule("host1", "::1,192.168.1.1", std::string());
+  host_resolver0.rules()->AddIPLiteralRule("host1", "::1,192.168.1.1", "");
   host_resolver0.rules()->AddSimulatedFailure("host2");
   host_resolver0.rules()->AddRule("host3", "166.155.144.33");
   host_resolver0.rules()->AddRule("host5", "166.155.144.55");

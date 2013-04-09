@@ -217,8 +217,8 @@ GpuControlList::OsInfo::OsInfo(const std::string& os,
                              const std::string& version_string2) {
   type_ = StringToOsType(os);
   if (type_ != kOsUnknown) {
-    version_info_.reset(new VersionInfo(
-        version_op, std::string(), version_string, version_string2));
+    version_info_.reset(
+        new VersionInfo(version_op, "", version_string, version_string2));
   }
 }
 
@@ -265,8 +265,8 @@ GpuControlList::MachineModelInfo::MachineModelInfo(
     const std::string& version_string,
     const std::string& version_string2) {
   name_info_.reset(new StringInfo(name_op, name_value));
-  version_info_.reset(new VersionInfo(
-      version_op, std::string(), version_string, version_string2));
+  version_info_.reset(
+      new VersionInfo(version_op, "", version_string, version_string2));
 }
 
 GpuControlList::MachineModelInfo::~MachineModelInfo() {}
@@ -864,7 +864,7 @@ bool GpuControlList::GpuControlListEntry::SetDriverDateInfo(
     const std::string& date_string,
     const std::string& date_string2) {
   driver_date_info_.reset(
-      new VersionInfo(date_op, std::string(), date_string, date_string2));
+      new VersionInfo(date_op, "", date_string, date_string2));
   return driver_date_info_->IsValid();
 }
 
@@ -1348,8 +1348,8 @@ GpuControlList::IsEntrySupportedByCurrentBrowserVersion(
     browser_version_value->GetString("number", &version_string);
     browser_version_value->GetString("number2", &version_string2);
     scoped_ptr<VersionInfo> browser_version_info;
-    browser_version_info.reset(new VersionInfo(
-        version_op, std::string(), version_string, version_string2));
+    browser_version_info.reset(
+        new VersionInfo(version_op, "", version_string, version_string2));
     if (!browser_version_info->IsValid())
       return kMalformed;
     if (browser_version_info->Contains(browser_version_))

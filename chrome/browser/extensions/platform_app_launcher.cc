@@ -107,7 +107,10 @@ class PlatformAppPathLauncher
   PlatformAppPathLauncher(Profile* profile,
                           const Extension* extension,
                           const base::FilePath& file_path)
-      : profile_(profile), extension_(extension), file_path_(file_path) {}
+      : profile_(profile),
+        extension_(extension),
+        file_path_(file_path),
+        handler_id_("") {}
 
   void Launch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -153,8 +153,7 @@ TEST_F(ThirdPartyAuthenticatorTest, ClientNoSecret) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators());
   ASSERT_NO_FATAL_FAILURE(RunHostInitiatedAuthExchange());
   ASSERT_EQ(Authenticator::PROCESSING_MESSAGE, client_->state());
-  ASSERT_NO_FATAL_FAILURE(
-      token_fetcher_->OnTokenFetched(kToken, std::string()));
+  ASSERT_NO_FATAL_FAILURE(token_fetcher_->OnTokenFetched(kToken, ""));
 
   // The end result is that the client rejected the connection, since it
   // couldn't fetch the secret.
@@ -168,7 +167,7 @@ TEST_F(ThirdPartyAuthenticatorTest, InvalidToken) {
   ASSERT_NO_FATAL_FAILURE(token_fetcher_->OnTokenFetched(
       kToken, kSharedSecret));
   ASSERT_EQ(Authenticator::PROCESSING_MESSAGE, host_->state());
-  ASSERT_NO_FATAL_FAILURE(token_validator_->OnTokenValidated(std::string()));
+  ASSERT_NO_FATAL_FAILURE(token_validator_->OnTokenValidated(""));
 
   // The end result is that the host rejected the token.
   ASSERT_EQ(Authenticator::REJECTED, host_->state());
@@ -178,8 +177,7 @@ TEST_F(ThirdPartyAuthenticatorTest, CannotFetchToken) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators());
   ASSERT_NO_FATAL_FAILURE(RunHostInitiatedAuthExchange());
   ASSERT_EQ(Authenticator::PROCESSING_MESSAGE, client_->state());
-  ASSERT_NO_FATAL_FAILURE(
-      token_fetcher_->OnTokenFetched(std::string(), std::string()));
+  ASSERT_NO_FATAL_FAILURE(token_fetcher_->OnTokenFetched("", ""));
 
   // The end result is that the client rejected the connection, since it
   // couldn't fetch the token.

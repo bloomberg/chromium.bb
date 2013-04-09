@@ -50,7 +50,7 @@ WebContents* CreateRestoredTab(
   // session_storage_namespace.h include since we only need that to assign
   // into the map.
   content::SessionStorageNamespaceMap session_storage_namespace_map;
-  session_storage_namespace_map[std::string()] = session_storage_namespace;
+  session_storage_namespace_map[""] = session_storage_namespace;
   WebContents::CreateParams create_params(
       browser->profile(),
       tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url));

@@ -93,11 +93,11 @@ TEST(MimeUtilTest, MatchesMimeType) {
                                    "application/html+xml"));
   EXPECT_TRUE(MatchesMimeType("application/*+xml", "application/+xml"));
   EXPECT_TRUE(MatchesMimeType("aaa*aaa", "aaaaaa"));
-  EXPECT_TRUE(MatchesMimeType("*", std::string()));
+  EXPECT_TRUE(MatchesMimeType("*", ""));
   EXPECT_FALSE(MatchesMimeType("video/", "video/x-mpeg"));
-  EXPECT_FALSE(MatchesMimeType(std::string(), "video/x-mpeg"));
-  EXPECT_FALSE(MatchesMimeType(std::string(), std::string()));
-  EXPECT_FALSE(MatchesMimeType("video/x-mpeg", std::string()));
+  EXPECT_FALSE(MatchesMimeType("", "video/x-mpeg"));
+  EXPECT_FALSE(MatchesMimeType("", ""));
+  EXPECT_FALSE(MatchesMimeType("video/x-mpeg", ""));
   EXPECT_FALSE(MatchesMimeType("application/*+xml", "application/xml"));
   EXPECT_FALSE(MatchesMimeType("application/*+xml",
                                     "application/html+xmlz"));
@@ -219,7 +219,7 @@ TEST(MimeUtilTest, TestIsMimeType) {
 TEST(MimeUtilTest, TestToIANAMediaType) {
   EXPECT_EQ("", GetIANAMediaType("texting/driving"));
   EXPECT_EQ("", GetIANAMediaType("ham/sandwich"));
-  EXPECT_EQ("", GetIANAMediaType(std::string()));
+  EXPECT_EQ("", GetIANAMediaType(""));
   EXPECT_EQ("", GetIANAMediaType("/application/hamsandwich"));
 
   EXPECT_EQ("application", GetIANAMediaType("application/poodle-wrestler"));

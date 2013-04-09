@@ -67,7 +67,7 @@ void Session::SwitchToSubFrame(const std::string& frame_id,
 
 std::string Session::GetCurrentFrameId() const {
   if (frames.empty())
-    return std::string();
+    return "";
   return frames.back().frame_id;
 }
 

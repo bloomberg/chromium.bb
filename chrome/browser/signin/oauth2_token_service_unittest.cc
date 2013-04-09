@@ -138,7 +138,7 @@ TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   EXPECT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(0, consumer_.number_of_correct_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);
@@ -251,7 +251,7 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndFailure) {
   fetcher = factory_.GetFetcherByID(0);
   EXPECT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, consumer_.number_of_correct_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);
@@ -374,7 +374,7 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndSignOutAndRequest) {
 
   // Signs out
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  std::string());
+                                  "");
   service_->EraseTokensFromDB();
 
   request = oauth2_service_->StartRequest(std::set<std::string>(), &consumer_);
@@ -404,7 +404,7 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndSignOutAndSignInAndSuccess) {
 
   // Signs out and signs in
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  std::string());
+                                  "");
   service_->EraseTokensFromDB();
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "refreshToken");
@@ -486,7 +486,7 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   EXPECT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(0, consumer.number_of_correct_tokens_);
   EXPECT_EQ(1, consumer.number_of_errors_);
@@ -494,7 +494,7 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   fetcher = factory_.GetFetcherByID(0);
   EXPECT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(0, consumer.number_of_correct_tokens_);
   EXPECT_EQ(2, consumer.number_of_errors_);

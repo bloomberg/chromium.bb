@@ -1670,8 +1670,7 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   if (extension->RequiresSortOrdinal()) {
     extension_dict->SetString(
         kPrefSuggestedPageOrdinal,
-        page_ordinal.IsValid() ? page_ordinal.ToInternalValue()
-                               : std::string());
+        page_ordinal.IsValid() ? page_ordinal.ToInternalValue() : "");
   }
 
   UpdateExtensionPref(extension->id(), kDelayedInstallInfo, extension_dict);

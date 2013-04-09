@@ -196,10 +196,8 @@ class FrameRateTest
     // race condition caused by an html redirect. If that is the case, verify
     // that flag kHasRedirect is enabled for the current test.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
-        tab,
-        std::wstring(),
-        L"window.domAutomationController.send(__initialized);",
-        TestTimeouts::large_test_timeout()));
+      tab, L"", L"window.domAutomationController.send(__initialized);",
+      TestTimeouts::large_test_timeout()));
 
     if (HasFlag(kForceGpuComposited)) {
       ASSERT_TRUE(tab->NavigateToURLAsync(
@@ -211,9 +209,7 @@ class FrameRateTest
 
     // Block until the tests completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
-        tab,
-        std::wstring(),
-        L"window.domAutomationController.send(!__running_all);",
+        tab, L"", L"window.domAutomationController.send(!__running_all);",
         TestTimeouts::large_test_timeout()));
 
     // TODO(jbates): remove this check when ref builds are updated.
@@ -229,7 +225,7 @@ class FrameRateTest
     // Read out the results.
     std::wstring json;
     ASSERT_TRUE(tab->ExecuteAndExtractString(
-        std::wstring(),
+        L"",
         L"window.domAutomationController.send("
         L"JSON.stringify(__calc_results_total()));",
         &json));
@@ -251,12 +247,8 @@ class FrameRateTest
                                                 results["sigmas"].c_str());
 
     std::string mean_and_error = results["mean"] + "," + results["sigma"];
-    perf_test::PrintResultMeanAndError(name,
-                                       std::string(),
-                                       trace_name,
-                                       mean_and_error,
-                                       "milliseconds-per-frame",
-                                       true);
+    perf_test::PrintResultMeanAndError(name, "", trace_name, mean_and_error,
+                                       "milliseconds-per-frame", true);
 
     // Navigate back to NTP so that we can quit without timing out during the
     // wait-for-idle stage in test framework.

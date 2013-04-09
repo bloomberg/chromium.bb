@@ -334,7 +334,7 @@ std::string LeveldbValueStore::EnsureDbIsOpen() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (db_.get())
-    return std::string();
+    return "";
 
 #if defined(OS_POSIX)
   std::string os_path(db_path_.value());
@@ -356,7 +356,7 @@ std::string LeveldbValueStore::EnsureDbIsOpen() {
   }
 
   db_.reset(db);
-  return std::string();
+  return "";
 }
 
 std::string LeveldbValueStore::ReadFromDb(
@@ -371,7 +371,7 @@ std::string LeveldbValueStore::ReadFromDb(
   if (s.IsNotFound()) {
     // Despite there being no value, it was still a success.
     // Check this first because ok() is false on IsNotFound.
-    return std::string();
+    return "";
   }
 
   if (!s.ok())
@@ -384,7 +384,7 @@ std::string LeveldbValueStore::ReadFromDb(
   }
 
   setting->reset(value);
-  return std::string();
+  return "";
 }
 
 std::string LeveldbValueStore::AddToBatch(
@@ -410,16 +410,16 @@ std::string LeveldbValueStore::AddToBatch(
     batch->Put(key, value_as_json);
   }
 
-  return std::string();
+  return "";
 }
 
 std::string LeveldbValueStore::WriteToDb(leveldb::WriteBatch* batch) {
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
   if (status.IsNotFound()) {
     NOTREACHED() << "IsNotFound() but writing?!";
-    return std::string();
+    return "";
   }
-  return status.ok() ? std::string() : status.ToString();
+  return status.ok() ? "" : status.ToString();
 }
 
 bool LeveldbValueStore::IsEmpty() {

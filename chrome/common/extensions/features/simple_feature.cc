@@ -168,7 +168,7 @@ std::string GetDisplayTypeName(Manifest::Type type) {
   }
 
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 }  // namespace
@@ -229,7 +229,7 @@ std::string SimpleFeature::Parse(const DictionaryValue* value) {
     return name() + ": Allowing web_page contexts requires supplying a value " +
         "for matches.";
   }
-  return std::string();
+  return "";
 }
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
@@ -313,7 +313,7 @@ std::string SimpleFeature::GetAvailabilityMessage(
     AvailabilityResult result, Manifest::Type type, const GURL& url) const {
   switch (result) {
     case IS_AVAILABLE:
-      return std::string();
+      return "";
     case NOT_FOUND_IN_WHITELIST:
       return base::StringPrintf(
           "'%s' is not allowed for specified extension ID.",
@@ -381,7 +381,7 @@ std::string SimpleFeature::GetAvailabilityMessage(
   }
 
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(

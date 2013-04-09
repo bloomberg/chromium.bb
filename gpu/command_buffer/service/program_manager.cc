@@ -445,8 +445,8 @@ void ProgramManager::DoCompileShader(Shader* shader,
                                      FeatureInfo* feature_info) {
   TimeTicks before = TimeTicks::HighResNow();
   if (program_cache_ &&
-      program_cache_->GetShaderCompilationStatus(
-          shader->source() ? *shader->source() : std::string()) ==
+      program_cache_->GetShaderCompilationStatus(shader->source() ?
+                                                 *shader->source() : "") ==
           ProgramCache::COMPILATION_SUCCEEDED) {
     shader->SetStatus(true, "", translator);
     shader->FlagSourceAsCompiled(false);
@@ -525,9 +525,9 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"
-        << "\n--original-shader--\n" << (source ? *source : std::string())
-        << "\n--translated-shader--\n" << shader_src << "\n--info-log--\n"
-        << *shader->log_info();
+        << "\n--original-shader--\n" << (source ? *source : "")
+        << "\n--translated-shader--\n" << shader_src
+        << "\n--info-log--\n" << *shader->log_info();
   }
 }
 

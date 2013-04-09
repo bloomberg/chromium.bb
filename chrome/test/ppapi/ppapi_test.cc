@@ -156,7 +156,7 @@ GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
   GURL test_url = net::FilePathToFileURL(test_path);
 
   GURL::Replacements replacements;
-  std::string query = BuildQuery(std::string(), test_case);
+  std::string query = BuildQuery("", test_case);
   replacements.SetQuery(query.c_str(), url_parse::Component(0, query.size()));
   return test_url.ReplaceComponents(replacements);
 }
@@ -182,7 +182,7 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
                               net::TestServer::kLocalhost,
                               document_root);
   ASSERT_TRUE(http_server.Start());
-  RunTestURL(GetTestURL(http_server, test_case, std::string()));
+  RunTestURL(GetTestURL(http_server, test_case, ""));
 }
 
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {

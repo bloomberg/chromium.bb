@@ -64,7 +64,7 @@ TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge) {
   EXPECT_TRUE(value->GetDictionary("captcha", &captcha_value));
   ASSERT_TRUE(captcha_value);
   ExpectDictStringValue("captcha_token", *captcha_value, "token");
-  ExpectDictStringValue(std::string(), *captcha_value, "audioUrl");
+  ExpectDictStringValue("", *captcha_value, "audioUrl");
   ExpectDictStringValue("http://www.google.com/", *captcha_value, "imageUrl");
   ExpectDictStringValue("http://www.bing.com/", *captcha_value, "unlockUrl");
   ExpectDictIntegerValue(0, *captcha_value, "imageWidth");

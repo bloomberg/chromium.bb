@@ -158,7 +158,7 @@ class ParseRequestInfoTest : public testing::Test {
   virtual ~ParseRequestInfoTest() {}
 
   virtual void TearDown() {
-    SessionManager::GetInstance()->set_url_base(std::string());
+    SessionManager::GetInstance()->set_url_base("");
   }
 
  private:
@@ -178,7 +178,7 @@ TEST_F(ParseRequestInfoTest, ParseRequestWithEmptyUrlBase) {
   base::DictionaryValue* parameters;
   Response response;
 
-  SessionManager::GetInstance()->set_url_base(std::string());
+  SessionManager::GetInstance()->set_url_base("");
   EXPECT_TRUE(internal::ParseRequestInfo(
       &request_info,
       NULL,  // NULL is ok because GET not POST is used

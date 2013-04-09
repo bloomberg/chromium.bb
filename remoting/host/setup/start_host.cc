@@ -53,7 +53,7 @@ std::string ReadString(bool no_echo) {
     SetEcho(true);
   }
   if (!result)
-    return std::string();
+    return "";
   size_t newline_index = str.find('\n');
   if (newline_index != std::string::npos)
     str[newline_index] = '\0';

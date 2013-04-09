@@ -55,7 +55,7 @@ std::string SysInfo::OperatingSystemName() {
   struct utsname info;
   if (uname(&info) < 0) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
   return std::string(info.sysname);
 }
@@ -67,7 +67,7 @@ std::string SysInfo::OperatingSystemVersion() {
   struct utsname info;
   if (uname(&info) < 0) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
   return std::string(info.release);
 }
@@ -78,7 +78,7 @@ std::string SysInfo::OperatingSystemArchitecture() {
   struct utsname info;
   if (uname(&info) < 0) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
   std::string arch(info.machine);
   if (arch == "i386" || arch == "i486" || arch == "i586" || arch == "i686") {

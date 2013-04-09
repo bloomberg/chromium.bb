@@ -101,10 +101,9 @@ std::string GaiaTokenPreXmppAuth::GetAuthMechanism() const {
 
 std::string GaiaTokenPreXmppAuth::ChooseBestSaslMechanism(
     const std::vector<std::string> & mechanisms, bool encrypted) {
-  return (std::find(mechanisms.begin(), mechanisms.end(), auth_mechanism_) !=
-              mechanisms.end())
-             ? auth_mechanism_
-             : std::string();
+  return (std::find(mechanisms.begin(),
+                    mechanisms.end(), auth_mechanism_) !=
+          mechanisms.end()) ? auth_mechanism_ : "";
 }
 
 buzz::SaslMechanism* GaiaTokenPreXmppAuth::CreateSaslMechanism(

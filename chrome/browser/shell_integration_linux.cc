@@ -435,7 +435,7 @@ ShellIntegration::DefaultWebClientSetPermission
 
 // static
 bool ShellIntegration::SetAsDefaultBrowser() {
-  return SetDefaultWebClient(std::string());
+  return SetDefaultWebClient("");
 }
 
 // static
@@ -445,7 +445,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
 
 // static
 ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
-  return GetIsDefaultWebClient(std::string());
+  return GetIsDefaultWebClient("");
 }
 
 // static

@@ -343,7 +343,7 @@ void PreferencesBrowserTest::VerifySetPref(const std::string& name,
   std::string observed_json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       render_view_host_, javascript.str(), &observed_json));
-  VerifyObservedPref(observed_json, name, value, std::string(), false, !commit);
+  VerifyObservedPref(observed_json, name, value, "", false, !commit);
   VerifyAndClearExpectations();
 }
 
@@ -385,7 +385,7 @@ void PreferencesBrowserTest::VerifyCommit(const std::string& name,
 void PreferencesBrowserTest::VerifySetCommit(const std::string& name,
                                              const base::Value* value) {
   ExpectSetCommit(name, value);
-  VerifyCommit(name, value, std::string());
+  VerifyCommit(name, value, "");
   VerifyAndClearExpectations();
 }
 
@@ -476,8 +476,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, FetchPrefs) {
 
   // Verify notifications when default values are in effect.
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(
-      observed_json, pref_names_, default_values_, std::string(), false, false);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", false, false);
 
   // Verify notifications when recommended values are in effect.
   SetUserPolicies(policy_names_, non_default_values_,
@@ -497,12 +497,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, FetchPrefs) {
   ClearUserPolicies();
   SetUserValues(pref_names_, non_default_values_);
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json,
-                      pref_names_,
-                      non_default_values_,
-                      std::string(),
-                      false,
-                      false);
+  VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
+                      "", false, false);
 }
 
 // Verifies that setting a user-modified pref value through the JavaScript
@@ -554,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, DialogPrefsSetRollback) {
   ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
   for (size_t i = 0; i < pref_names_.size(); ++i) {
     VerifySetPref(pref_names_[i], types_[i], non_default_values_[i], false);
-    VerifyRollback(pref_names_[i], default_values_[i], std::string());
+    VerifyRollback(pref_names_[i], default_values_[i], "");
   }
 
   // Verify behavior when recommended values are in effect.
@@ -596,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, DialogPrefsClearRollback) {
   ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
   for (size_t i = 0; i < pref_names_.size(); ++i) {
     VerifyClearPref(pref_names_[i], default_values_[i], false);
-    VerifyRollback(pref_names_[i], non_default_values_[i], std::string());
+    VerifyRollback(pref_names_[i], non_default_values_[i], "");
   }
 }
 
@@ -628,19 +624,15 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, NotificationsOnBackendChanges) {
   StartObserving();
   ClearUserPolicies();
   FinishObserving(&observed_json);
-  VerifyObservedPrefs(
-      observed_json, pref_names_, default_values_, std::string(), false, false);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", false, false);
 
   // Verify notifications when user-modified values come into effect.
   StartObserving();
   SetUserValues(pref_names_, non_default_values_);
   FinishObserving(&observed_json);
-  VerifyObservedPrefs(observed_json,
-                      pref_names_,
-                      non_default_values_,
-                      std::string(),
-                      false,
-                      false);
+  VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
+                      "", false, false);
 }
 
 #if defined(OS_CHROMEOS)

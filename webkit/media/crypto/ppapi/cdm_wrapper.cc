@@ -652,7 +652,7 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
 
   if (!cdm_) {
     if (!CreateCdmInstance(key_system)) {
-      SendUnknownKeyError(key_system, std::string());
+      SendUnknownKeyError(key_system, "");
       return;
     }
   }

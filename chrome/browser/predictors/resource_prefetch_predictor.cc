@@ -1012,8 +1012,7 @@ void ResourcePrefetchPredictor::LearnNavigation(
   } else {
     bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
     PrefetchData empty_data(
-        !is_host ? PREFETCH_KEY_TYPE_HOST : PREFETCH_KEY_TYPE_URL,
-        std::string());
+        !is_host ? PREFETCH_KEY_TYPE_HOST : PREFETCH_KEY_TYPE_URL , "");
     const PrefetchData& host_data = is_host ? cache_entry->second : empty_data;
     const PrefetchData& url_data = is_host ? empty_data : cache_entry->second;
     BrowserThread::PostTask(

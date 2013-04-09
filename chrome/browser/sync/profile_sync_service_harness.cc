@@ -134,7 +134,7 @@ ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
     NOTREACHED() << "Profile has never signed into sync.";
     return NULL;
   }
-  return new ProfileSyncServiceHarness(profile, std::string(), std::string());
+  return new ProfileSyncServiceHarness(profile, "", "");
 }
 
 void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
@@ -179,8 +179,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->SetSetupInProgress(true);
 
   // Authenticate sync client using GAIA credentials.
-  service_->signin()
-      ->StartSignIn(username_, password_, std::string(), std::string());
+  service_->signin()->StartSignIn(username_, password_, "", "");
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {
@@ -1015,7 +1014,7 @@ std::string ProfileSyncServiceHarness::GetSerializedProgressMarker(
 
   syncer::ProgressMarkerMap::const_iterator it =
       markers_map.find(model_type);
-  return (it != markers_map.end()) ? it->second : std::string();
+  return (it != markers_map.end()) ? it->second : "";
 }
 
 std::string ProfileSyncServiceHarness::GetClientInfoString(

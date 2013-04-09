@@ -147,13 +147,13 @@ void UserScriptScheduler::ExecuteCodeImpl(
   // Since extension info is sent separately from user script info, they can
   // be out of sync. We just ignore this situation.
   if (!extension) {
-    render_view->Send(
-        new ExtensionHostMsg_ExecuteCodeFinished(render_view->GetRoutingID(),
-                                                 params.request_id,
-                                                 std::string(),  // no error
-                                                 -1,
-                                                 GURL(std::string()),
-                                                 execution_results));
+    render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
+        render_view->GetRoutingID(),
+        params.request_id,
+        "",  // no error
+        -1,
+        GURL(""),
+        execution_results));
     return;
   }
 

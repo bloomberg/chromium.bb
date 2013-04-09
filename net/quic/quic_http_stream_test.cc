@@ -348,7 +348,7 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
             stream_->ReadResponseHeaders(callback_.callback()));
 
   // Send the response without a body.
-  SetResponseString("404 Not Found", std::string());
+  SetResponseString("404 Not Found", "");
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(2, false, kFin, 0, response_data_));
   ProcessPacket(*resp);
@@ -440,7 +440,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   ProcessPacket(*ack);
 
   // Send the response headers (but not the body).
-  SetResponseString("200 OK", std::string());
+  SetResponseString("200 OK", "");
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(2, false, !kFin, 0, response_data_));
   ProcessPacket(*resp);
@@ -502,7 +502,7 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
   ProcessPacket(*ack);
 
   // Send the response headers (but not the body).
-  SetResponseString("200 OK", std::string());
+  SetResponseString("200 OK", "");
   scoped_ptr<QuicEncryptedPacket> resp(
       ConstructDataPacket(2, false, !kFin, 0, response_data_));
   ProcessPacket(*resp);

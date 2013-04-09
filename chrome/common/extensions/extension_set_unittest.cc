@@ -59,8 +59,7 @@ TEST(ExtensionSetTest, ExtensionSet) {
   scoped_refptr<Extension> ext3(CreateTestExtension(
       "b", "http://dev.chromium.org/", "http://dev.chromium.org/"));
 
-  scoped_refptr<Extension> ext4(
-      CreateTestExtension("c", std::string(), std::string()));
+  scoped_refptr<Extension> ext4(CreateTestExtension("c", "", ""));
 
   ASSERT_TRUE(ext1 && ext2 && ext3 && ext4);
 
@@ -119,10 +118,8 @@ TEST(ExtensionSetTest, ExtensionSet) {
   EXPECT_FALSE(extensions.GetByID(ext2->id()));
 
   // Make a union of a set with 3 more extensions (only 2 are new).
-  scoped_refptr<Extension> ext5(
-      CreateTestExtension("d", std::string(), std::string()));
-  scoped_refptr<Extension> ext6(
-      CreateTestExtension("e", std::string(), std::string()));
+  scoped_refptr<Extension> ext5(CreateTestExtension("d", "", ""));
+  scoped_refptr<Extension> ext6(CreateTestExtension("e", "", ""));
   ASSERT_TRUE(ext5 && ext6);
 
   scoped_ptr<ExtensionSet> to_add(new ExtensionSet());

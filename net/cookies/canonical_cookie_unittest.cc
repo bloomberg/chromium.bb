@@ -55,16 +55,8 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_EQ("/test", cookie.Path());
   EXPECT_FALSE(cookie.IsSecure());
 
-  CanonicalCookie cookie2(url,
-                          "A",
-                          "2",
-                          std::string(),
-                          std::string(),
-                          current_time,
-                          base::Time(),
-                          current_time,
-                          false,
-                          false);
+  CanonicalCookie cookie2(url, "A", "2", "", "", current_time, base::Time(),
+                          current_time, false, false);
   EXPECT_EQ(url.GetOrigin().spec(), cookie.Source());
   EXPECT_EQ("A", cookie2.Name());
   EXPECT_EQ("2", cookie2.Value());
@@ -295,7 +287,7 @@ TEST(CanonicalCookieTest, IsOnPath) {
   EXPECT_TRUE(cookie->IsOnPath("/test/bar.html"));
 
   // Test the empty string edge case.
-  EXPECT_FALSE(cookie->IsOnPath(std::string()));
+  EXPECT_FALSE(cookie->IsOnPath(""));
 
   cookie.reset(
       CanonicalCookie::Create(GURL("http://www.example.com/test/foo.html"),

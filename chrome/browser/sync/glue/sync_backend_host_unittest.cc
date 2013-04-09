@@ -194,7 +194,7 @@ class SyncBackendHostTest : public testing::Test {
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     backend_->Initialize(&mock_frontend_,
                          syncer::WeakHandle<syncer::JsEventHandler>(),
-                         GURL(std::string()),
+                         GURL(""),
                          credentials_,
                          true,
                          &fake_manager_factory_,

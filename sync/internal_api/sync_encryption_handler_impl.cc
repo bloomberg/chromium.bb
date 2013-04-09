@@ -136,7 +136,7 @@ std::string PackKeystoreBootstrapToken(
     const std::string& current_keystore_key,
     Encryptor* encryptor) {
   if (current_keystore_key.empty())
-    return std::string();
+    return "";
 
   base::ListValue keystore_key_values;
   for (size_t i = 0; i < old_keystore_keys.size(); ++i)
@@ -1112,7 +1112,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
   if (passphrase_type_ != KEYSTORE_PASSPHRASE) {
     DVLOG(1) << "Failing to set a custom passphrase because one has already "
              << "been set.";
-    FinishSetPassphrase(false, std::string(), trans, nigori_node);
+    FinishSetPassphrase(false, "", trans, nigori_node);
     return;
   }
 
@@ -1125,7 +1125,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
     // if statement above. For the sake of safety though, we check for it in
     // case a client is misbehaving.
     LOG(ERROR) << "Failing to set custom passphrase because of pending keys.";
-    FinishSetPassphrase(false, std::string(), trans, nigori_node);
+    FinishSetPassphrase(false, "", trans, nigori_node);
     return;
   }
 

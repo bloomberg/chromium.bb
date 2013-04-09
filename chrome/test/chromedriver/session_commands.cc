@@ -201,8 +201,7 @@ Status ExecuteSwitchToWindow(
       status = web_view->ConnectIfNecessary();
       if (status.IsError())
         return status;
-      status = web_view->CallFunction(
-          std::string(), kGetWindowNameScript, args, &result);
+      status = web_view->CallFunction("", kGetWindowNameScript, args, &result);
       if (status.IsError())
         return status;
       std::string window_name;

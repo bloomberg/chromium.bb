@@ -85,7 +85,7 @@ void NullAudioSink::StartAudioHashForTesting() {
 }
 
 std::string NullAudioSink::GetAudioHashForTesting() {
-  return audio_hash_ ? audio_hash_->ToString() : std::string();
+  return audio_hash_ ? audio_hash_->ToString() : "";
 }
 
 }  // namespace media

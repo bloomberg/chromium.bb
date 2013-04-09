@@ -70,7 +70,7 @@ class V8ValueConverterImplTest : public testing::Test {
     std::string temp;
     if (!value->GetString(key, &temp)) {
       ADD_FAILURE();
-      return std::string();
+      return "";
     }
     return temp;
   }
@@ -80,7 +80,7 @@ class V8ValueConverterImplTest : public testing::Test {
         value->Get(v8::String::New(key.c_str())).As<v8::String>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
-      return std::string();
+      return "";
     }
     v8::String::Utf8Value utf8(temp);
     return std::string(*utf8, utf8.length());
@@ -90,7 +90,7 @@ class V8ValueConverterImplTest : public testing::Test {
     std::string temp;
     if (!value->GetString(static_cast<size_t>(index), &temp)) {
       ADD_FAILURE();
-      return std::string();
+      return "";
     }
     return temp;
   }
@@ -99,7 +99,7 @@ class V8ValueConverterImplTest : public testing::Test {
     v8::Handle<v8::String> temp = value->Get(index).As<v8::String>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
-      return std::string();
+      return "";
     }
     v8::String::Utf8Value utf8(temp);
     return std::string(*utf8, utf8.length());

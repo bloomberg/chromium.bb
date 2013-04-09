@@ -208,7 +208,7 @@ TEST(ParsedCookieTest, InvalidTooLong) {
 }
 
 TEST(ParsedCookieTest, InvalidEmpty) {
-  ParsedCookie pc((std::string()));
+  ParsedCookie pc("");
   EXPECT_FALSE(pc.IsValid());
 }
 
@@ -259,7 +259,7 @@ TEST(ParsedCookieTest, SerializeCookieLine) {
 
 
 TEST(ParsedCookieTest, SetNameAndValue) {
-  ParsedCookie empty((std::string()));
+  ParsedCookie empty("");
   EXPECT_FALSE(empty.IsValid());
   EXPECT_FALSE(empty.SetDomain("foobar.com"));
   EXPECT_TRUE(empty.SetName("name"));
@@ -282,7 +282,7 @@ TEST(ParsedCookieTest, SetNameAndValue) {
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
 
-  EXPECT_FALSE(pc.SetName(std::string()));
+  EXPECT_FALSE(pc.SetName(""));
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
 
@@ -303,7 +303,7 @@ TEST(ParsedCookieTest, SetNameAndValue) {
   EXPECT_EQ("test=\"foobar\"", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
 
-  EXPECT_TRUE(pc.SetValue(std::string()));
+  EXPECT_TRUE(pc.SetValue(""));
   EXPECT_EQ("test=", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
 }
@@ -313,7 +313,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.IsValid());
 
   // Clear an unset attribute.
-  EXPECT_TRUE(pc.SetDomain(std::string()));
+  EXPECT_TRUE(pc.SetDomain(""));
   EXPECT_FALSE(pc.HasDomain());
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
@@ -355,10 +355,10 @@ TEST(ParsedCookieTest, SetAttributes) {
             pc.ToCookieLine());
 
   // Clear the rest and change the name and value.
-  EXPECT_TRUE(pc.SetDomain(std::string()));
-  EXPECT_TRUE(pc.SetPath(std::string()));
-  EXPECT_TRUE(pc.SetExpires(std::string()));
-  EXPECT_TRUE(pc.SetMaxAge(std::string()));
+  EXPECT_TRUE(pc.SetDomain(""));
+  EXPECT_TRUE(pc.SetPath(""));
+  EXPECT_TRUE(pc.SetExpires(""));
+  EXPECT_TRUE(pc.SetMaxAge(""));
   EXPECT_TRUE(pc.SetIsSecure(false));
   EXPECT_TRUE(pc.SetIsHttpOnly(false));
   EXPECT_TRUE(pc.SetName("name2"));

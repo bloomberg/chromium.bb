@@ -63,7 +63,7 @@ std::string GetExtensionID(RenderViewHost* render_view_host) {
   // This works for both apps and extensions because the site has been
   // normalized to the extension URL for apps.
   if (!render_view_host->GetSiteInstance())
-    return std::string();
+    return "";
 
   return render_view_host->GetSiteInstance()->GetSiteURL().host();
 }

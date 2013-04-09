@@ -169,9 +169,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, base::FilePath());
   MOCK_METHOD0(NotifyRemoved, void());
   // May be called when vlog is on.
-  virtual std::string DebugString(bool verbose) const OVERRIDE {
-    return std::string();
-  }
+  virtual std::string DebugString(bool verbose) const OVERRIDE { return ""; }
 };
 
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {

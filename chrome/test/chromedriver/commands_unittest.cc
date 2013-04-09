@@ -28,8 +28,7 @@ TEST(CommandsTest, GetStatus) {
   base::DictionaryValue params;
   scoped_ptr<base::Value> value;
   std::string session_id;
-  ASSERT_EQ(
-      kOk, ExecuteGetStatus(params, std::string(), &value, &session_id).code());
+  ASSERT_EQ(kOk, ExecuteGetStatus(params, "", &value, &session_id).code());
   base::DictionaryValue* dict;
   ASSERT_TRUE(value->GetAsDictionary(&dict));
   base::Value* unused;
@@ -73,7 +72,7 @@ TEST(CommandsTest, QuitAll) {
   scoped_ptr<base::Value> value;
   std::string session_id;
   Status status =
-      ExecuteQuitAll(cmd, &map, params, std::string(), &value, &session_id);
+      ExecuteQuitAll(cmd, &map, params, "", &value, &session_id);
   ASSERT_EQ(kOk, status.code());
   ASSERT_FALSE(value.get());
   ASSERT_EQ(2, count);
@@ -244,7 +243,7 @@ TEST(CommandsTest, SuccessfulFindElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.SwitchToSubFrame("frame_id1", std::string());
+  session.SwitchToSubFrame("frame_id1", "");
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
@@ -273,7 +272,7 @@ TEST(CommandsTest, SuccessfulFindElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.SwitchToSubFrame("frame_id2", std::string());
+  session.SwitchToSubFrame("frame_id2", "");
   base::DictionaryValue params;
   params.SetString("using", "name");
   params.SetString("value", "b");
@@ -307,7 +306,7 @@ TEST(CommandsTest, SuccessfulFindChildElement) {
   FindElementWebView web_view(true, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.SwitchToSubFrame("frame_id3", std::string());
+  session.SwitchToSubFrame("frame_id3", "");
   base::DictionaryValue params;
   params.SetString("using", "tag name");
   params.SetString("value", "div");
@@ -345,7 +344,7 @@ TEST(CommandsTest, SuccessfulFindChildElements) {
   FindElementWebView web_view(false, kElementExistsQueryTwice);
   Session session("id");
   session.implicit_wait = 1000;
-  session.SwitchToSubFrame("frame_id4", std::string());
+  session.SwitchToSubFrame("frame_id4", "");
   base::DictionaryValue params;
   params.SetString("using", "class name");
   params.SetString("value", "c");

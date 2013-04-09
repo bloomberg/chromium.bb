@@ -621,7 +621,7 @@ static std::string FindSetRequestHeader(
         return (*delta)->extension_id;
     }
   }
-  return std::string();
+  return "";
 }
 
 // Returns the extension ID of the first extension in |deltas| that removes the
@@ -639,7 +639,7 @@ static std::string FindRemoveRequestHeader(
         return (*delta)->extension_id;
     }
   }
-  return std::string();
+  return "";
 }
 
 void MergeOnBeforeSendHeadersResponses(
@@ -816,26 +816,22 @@ static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
   if (filter->name.get() && cookie->Name() != *filter->name) return false;
   if (filter->value.get() && cookie->Value() != *filter->value) return false;
   if (filter->expires.get()) {
-    std::string actual_value =
-        cookie->HasExpires() ? cookie->Expires() : std::string();
+    std::string actual_value = cookie->HasExpires() ? cookie->Expires() : "";
     if (actual_value != *filter->expires)
       return false;
   }
   if (filter->max_age.get()) {
-    std::string actual_value =
-        cookie->HasMaxAge() ? cookie->MaxAge() : std::string();
+    std::string actual_value = cookie->HasMaxAge() ? cookie->MaxAge() : "";
     if (actual_value != base::IntToString(*filter->max_age))
       return false;
   }
   if (filter->domain.get()) {
-    std::string actual_value =
-        cookie->HasDomain() ? cookie->Domain() : std::string();
+    std::string actual_value = cookie->HasDomain() ? cookie->Domain() : "";
     if (actual_value != *filter->domain)
       return false;
   }
   if (filter->path.get()) {
-    std::string actual_value =
-        cookie->HasPath() ? cookie->Path() : std::string();
+    std::string actual_value = cookie->HasPath() ? cookie->Path() : "";
     if (actual_value != *filter->path)
       return false;
   }
@@ -884,8 +880,7 @@ static bool MergeAddResponseCookieModifications(
         continue;
       // Cookie names are not unique in response cookies so we always append
       // and never override.
-      linked_ptr<net::ParsedCookie> cookie(
-          new net::ParsedCookie(std::string()));
+      linked_ptr<net::ParsedCookie> cookie(new net::ParsedCookie(""));
       ApplyResponseCookieModification((*mod)->modification.get(), cookie.get());
       cookies->push_back(cookie);
       modified = true;
@@ -1013,7 +1008,7 @@ static std::string FindRemoveResponseHeader(
         return (*delta)->extension_id;
     }
   }
-  return std::string();
+  return "";
 }
 
 void MergeOnHeadersReceivedResponses(

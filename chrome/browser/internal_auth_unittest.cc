@@ -69,10 +69,9 @@ TEST_F(InternalAuthTest, BadGeneration) {
       token, long_string_, map));
 
   // Trying empty domain.
-  token = InternalAuthGeneration::GeneratePassport(std::string(), map);
+  token = InternalAuthGeneration::GeneratePassport("", map);
   ASSERT_TRUE(token.empty());
-  ASSERT_FALSE(
-      InternalAuthVerification::VerifyPassport(token, std::string(), map));
+  ASSERT_FALSE(InternalAuthVerification::VerifyPassport(token, "", map));
 
   std::string dummy("abcdefghij");
   for (size_t i = 1000; i--;) {
@@ -88,7 +87,7 @@ TEST_F(InternalAuthTest, BadGeneration) {
   ASSERT_FALSE(InternalAuthVerification::VerifyPassport(token, "zapata", map));
 
   map.clear();
-  map[std::string()] = "value";
+  map[""] = "value";
   // Trying empty key.
   token = InternalAuthGeneration::GeneratePassport("zapata", map);
   ASSERT_TRUE(token.empty());

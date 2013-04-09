@@ -402,8 +402,8 @@ TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
 
   FullWallet full_wallet(-1,
                          -1,
-                         std::string(),
-                         std::string(),
+                         "",
+                         "",
                          scoped_ptr<Address>(),
                          scoped_ptr<Address>(),
                          required_actions);
@@ -411,13 +411,14 @@ TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
 
   ASSERT_FALSE(required_actions.empty());
   required_actions.pop_back();
-  FullWallet different_required_actions(-1,
-                                        -1,
-                                        std::string(),
-                                        std::string(),
-                                        scoped_ptr<Address>(),
-                                        scoped_ptr<Address>(),
-                                        required_actions);
+  FullWallet different_required_actions(
+      -1,
+      -1,
+      "",
+      "",
+      scoped_ptr<Address>(),
+      scoped_ptr<Address>(),
+      required_actions);
   EXPECT_NE(full_wallet, different_required_actions);
 }
 

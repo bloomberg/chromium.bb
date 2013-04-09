@@ -153,7 +153,7 @@ class LatencyTest
         return "software";
       default:
         NOTREACHED() << "invalid mode";
-        return std::string();
+        return "";
     }
   }
 
@@ -586,12 +586,8 @@ double LatencyTest::CalculateLatency() {
   std::string trace_name = GetTraceName(test_flags_);
   std::string mean_and_error = base::StringPrintf("%f,%f", mean_latency,
                                                   mean_error);
-  perf_test::PrintResultMeanAndError(GetModeString(),
-                                     std::string(),
-                                     trace_name,
-                                     mean_and_error,
-                                     "frames",
-                                     true);
+  perf_test::PrintResultMeanAndError(GetModeString(), "", trace_name,
+                                     mean_and_error, "frames", true);
   return mean_latency;
 }
 

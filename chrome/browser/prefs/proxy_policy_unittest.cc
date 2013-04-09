@@ -68,9 +68,9 @@ void assertBypassList(const ProxyConfigDictionary& dict,
 void assertProxyModeWithoutParams(const ProxyConfigDictionary& dict,
                                   ProxyPrefs::ProxyMode proxy_mode) {
   assertProxyMode(dict, proxy_mode);
-  assertProxyServer(dict, std::string());
-  assertPacUrl(dict, std::string());
-  assertBypassList(dict, std::string());
+  assertProxyServer(dict, "");
+  assertPacUrl(dict, "");
+  assertBypassList(dict, "");
 }
 
 }  // namespace
@@ -130,7 +130,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
-  assertPacUrl(dict, std::string());
+  assertPacUrl(dict, "");
   assertBypassList(dict, "123");
 
   // Try a second time time with the managed PrefStore in place, the
@@ -140,7 +140,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   ProxyConfigDictionary dict2(prefs->GetDictionary(prefs::kProxy));
   assertProxyMode(dict2, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict2, "ghi");
-  assertPacUrl(dict2, std::string());
+  assertPacUrl(dict2, "");
   assertBypassList(dict2, "abc");
 }
 
@@ -160,7 +160,7 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
-  assertPacUrl(dict, std::string());
+  assertPacUrl(dict, "");
   assertBypassList(dict, "123");
 
   // Try a second time time with the managed PrefStore in place, the

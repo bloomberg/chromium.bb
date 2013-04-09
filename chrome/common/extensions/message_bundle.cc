@@ -303,7 +303,7 @@ std::string MessageBundle::GetL10nMessage(const std::string& name,
     return it->second;
   }
 
-  return std::string();
+  return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

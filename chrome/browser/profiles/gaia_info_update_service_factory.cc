@@ -39,8 +39,7 @@ void GAIAInfoUpdateServiceFactory::RegisterUserPrefs(
     PrefRegistrySyncable* prefs) {
   prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime, 0,
                            PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL,
-                            std::string(),
+  prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL, "",
                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

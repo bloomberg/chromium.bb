@@ -265,7 +265,7 @@ bool FileSystemOriginDatabase::ListAllOrigins(
     return false;
   DCHECK(origins);
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
-  std::string origin_key_prefix = OriginToOriginKey(std::string());
+  std::string origin_key_prefix = OriginToOriginKey("");
   iter->Seek(origin_key_prefix);
   origins->clear();
   while (iter->Valid() &&

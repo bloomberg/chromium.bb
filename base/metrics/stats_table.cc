@@ -431,8 +431,8 @@ int* StatsTable::FindLocation(const char* name) {
   // Get the slot for this thread.  Try to register
   // it if none exists.
   int slot = table->GetSlot();
-  if (!slot && !(slot = table->RegisterThread(std::string())))
-    return NULL;
+  if (!slot && !(slot = table->RegisterThread("")))
+      return NULL;
 
   // Find the counter id for the counter.
   std::string str_name(name);

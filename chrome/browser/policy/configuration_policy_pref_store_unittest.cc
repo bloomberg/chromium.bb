@@ -409,10 +409,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
           ProxyPolicyHandler::PROXY_MANUALLY_CONFIGURED_PROXY_SERVER_MODE));
   UpdateProviderPolicy(policy);
 
-  VerifyProxyPrefs("chromium.org",
-                   std::string(),
-                   "http://chromium.org/override",
-                   ProxyPrefs::MODE_FIXED_SERVERS);
+  VerifyProxyPrefs(
+      "chromium.org", "", "http://chromium.org/override",
+      ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
@@ -427,10 +426,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
              base::Value::CreateStringValue("chromium.org"));
   UpdateProviderPolicy(policy);
 
-  VerifyProxyPrefs("chromium.org",
-                   std::string(),
-                   "http://chromium.org/override",
-                   ProxyPrefs::MODE_FIXED_SERVERS);
+  VerifyProxyPrefs(
+      "chromium.org", "", "http://chromium.org/override",
+      ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsInvalid) {
@@ -452,8 +450,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyServerMode) {
              base::Value::CreateIntegerValue(
                  ProxyPolicyHandler::PROXY_SERVER_MODE));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(
-      std::string(), std::string(), std::string(), ProxyPrefs::MODE_DIRECT);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyModeName) {
@@ -461,8 +458,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyModeName) {
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateStringValue(ProxyPrefs::kDirectProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(
-      std::string(), std::string(), std::string(), ProxyPrefs::MODE_DIRECT);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyServerMode) {
@@ -472,10 +468,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyServerMode) {
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_AUTO_DETECT_PROXY_SERVER_MODE));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(std::string(),
-                   std::string(),
-                   std::string(),
-                   ProxyPrefs::MODE_AUTO_DETECT);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyModeName) {
@@ -484,10 +477,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyModeName) {
              base::Value::CreateStringValue(
                  ProxyPrefs::kAutoDetectProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(std::string(),
-                   std::string(),
-                   std::string(),
-                   ProxyPrefs::MODE_AUTO_DETECT);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
@@ -498,9 +488,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
              base::Value::CreateStringValue(
                  ProxyPrefs::kPacScriptProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(std::string(),
-                   "http://short.org/proxy.pac",
-                   std::string(),
+  VerifyProxyPrefs("", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
@@ -518,21 +506,15 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeInvalid) {
 // for unset properties.
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeBug78016) {
   PolicyMap policy;
-  policy.Set(key::kProxyServer,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(std::string()));
-  policy.Set(key::kProxyPacUrl,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateStringValue(""));
+  policy.Set(key::kProxyPacUrl, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateStringValue("http://short.org/proxy.pac"));
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateStringValue(
                  ProxyPrefs::kPacScriptProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(std::string(),
-                   "http://short.org/proxy.pac",
-                   std::string(),
+  VerifyProxyPrefs("", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
@@ -542,8 +524,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyServerMode) {
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_USE_SYSTEM_PROXY_SERVER_MODE));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(
-      std::string(), std::string(), std::string(), ProxyPrefs::MODE_SYSTEM);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyMode) {
@@ -551,8 +532,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyMode) {
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateStringValue(ProxyPrefs::kSystemProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(
-      std::string(), std::string(), std::string(), ProxyPrefs::MODE_SYSTEM);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest,
@@ -565,10 +545,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest,
              base::Value::CreateStringValue(
                  ProxyPrefs::kAutoDetectProxyModeName));
   UpdateProviderPolicy(policy);
-  VerifyProxyPrefs(std::string(),
-                   std::string(),
-                   std::string(),
-                   ProxyPrefs::MODE_AUTO_DETECT);
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
@@ -791,7 +768,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Disabled) {
   base::FundamentalValue expected_enabled(false);
   EXPECT_TRUE(base::Value::Equals(&expected_enabled, value));
   EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
-  base::StringValue expected_search_url((std::string()));
+  base::StringValue expected_search_url("");
   EXPECT_TRUE(base::Value::Equals(&expected_search_url, value));
 }
 
@@ -931,10 +908,8 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   PolicyMap policy;
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-  policy.Set(key::kDownloadDirectory,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(std::string()));
+  policy.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, base::Value::CreateStringValue(""));
   UpdateProviderPolicy(policy);
 
   // Setting a DownloadDirectory should disable the PromptForDownload pref.

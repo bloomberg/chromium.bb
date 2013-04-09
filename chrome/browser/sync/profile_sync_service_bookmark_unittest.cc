@@ -706,9 +706,9 @@ TEST_F(ProfileSyncServiceBookmarkTest, ServerChangeProcessing) {
       "'about:blank','gnotesWin','location=0,menubar=0," \
       "scrollbars=0,status=0,toolbar=0,width=300," \
       "height=300,resizable');});");
-  adds.AddURL(std::wstring(), javascript_url, other_bookmarks_id(), 0);
-  int64 u6 = adds.AddURL(
-      L"Sync1", "http://www.syncable.edu/", mobile_bookmarks_id(), 0);
+  adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
+  int64 u6 = adds.AddURL(L"Sync1", "http://www.syncable.edu/",
+                         mobile_bookmarks_id(), 0);
 
   syncer::ChangeRecordList::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.

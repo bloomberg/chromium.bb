@@ -323,8 +323,7 @@ void JingleSession::OnMessageResponse(
     CloseInternal(SIGNALING_TIMEOUT);
     return;
   } else {
-    const std::string& type =
-        response->Attr(buzz::QName(std::string(), "type"));
+    const std::string& type = response->Attr(buzz::QName("", "type"));
     if (type != "result") {
       LOG(ERROR) << "Received error in response to " << type_str
                  << " message: \"" << response->Str()
@@ -384,7 +383,7 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
     return;
   }
 
-  const std::string& type = response->Attr(buzz::QName(std::string(), "type"));
+  const std::string& type = response->Attr(buzz::QName("", "type"));
   if (type != "result") {
     LOG(ERROR) << "Received error in response to transport-info message: \""
                << response->Str() << "\". Terminating the session.";

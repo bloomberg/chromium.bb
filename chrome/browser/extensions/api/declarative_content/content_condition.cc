@@ -129,8 +129,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
   if (!url_matcher_condition_set) {
     URLMatcherConditionSet::Conditions url_matcher_conditions;
     url_matcher_conditions.insert(
-        url_matcher_condition_factory->CreateHostPrefixCondition(
-            std::string()));
+        url_matcher_condition_factory->CreateHostPrefixCondition(""));
     url_matcher_condition_set =
         new URLMatcherConditionSet(++g_next_id, url_matcher_conditions);
   }

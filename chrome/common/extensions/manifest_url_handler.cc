@@ -125,8 +125,8 @@ bool HomepageURLHandler::Parse(Extension* extension, string16* error) {
   std::string homepage_url_str;
   if (!extension->manifest()->GetString(keys::kHomepageURL,
                                         &homepage_url_str)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidHomepageURL,
-                                                 std::string());
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidHomepageURL, "");
     return false;
   }
   manifest_url->url_ = GURL(homepage_url_str);
@@ -156,8 +156,8 @@ bool UpdateURLHandler::Parse(Extension* extension, string16* error) {
   std::string tmp_update_url;
 
   if (!extension->manifest()->GetString(keys::kUpdateURL, &tmp_update_url)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidUpdateURL,
-                                                 std::string());
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidUpdateURL, "");
     return false;
   }
 

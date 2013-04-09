@@ -1409,7 +1409,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
     next_protos_value = Value::CreateStringValue(
         JoinString(net::HttpStreamFactory::next_protos(), ','));
   } else {
-    next_protos_value = Value::CreateStringValue(std::string());
+    next_protos_value = Value::CreateStringValue("");
   }
   status_dict->Set("next_protos", next_protos_value);
 

@@ -41,7 +41,7 @@ TEST(HttpVaryDataTest, IsInvalid) {
 
   for (size_t i = 0; i < arraysize(kTestResponses); ++i) {
     TestTransaction t;
-    t.Init(std::string(), kTestResponses[i]);
+    t.Init("", kTestResponses[i]);
 
     net::HttpVaryData v;
     EXPECT_FALSE(v.is_valid());

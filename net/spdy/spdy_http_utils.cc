@@ -188,9 +188,8 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
   if (it != headers.end())
     path = it->second;
 
-  std::string url = (scheme.empty() || host_port.empty() || path.empty())
-                        ? std::string()
-                        : scheme + "://" + host_port + path;
+  std::string url =  (scheme.empty() || host_port.empty() || path.empty())
+      ? "" : scheme + "://" + host_port + path;
   return GURL(url);
 }
 

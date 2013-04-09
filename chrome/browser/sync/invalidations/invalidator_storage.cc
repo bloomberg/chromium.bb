@@ -282,10 +282,8 @@ void InvalidatorStorage::SetBootstrapData(const std::string& data) {
 }
 
 std::string InvalidatorStorage::GetBootstrapData() const {
-  std::string base64_data(
-      pref_service_
-          ? pref_service_->GetString(prefs::kInvalidatorInvalidationState)
-          : std::string());
+  std::string base64_data(pref_service_ ?
+      pref_service_->GetString(prefs::kInvalidatorInvalidationState) : "");
   std::string data;
   base::Base64Decode(base64_data, &data);
   return data;

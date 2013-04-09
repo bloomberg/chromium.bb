@@ -184,7 +184,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
   ClearCacheOnNavigation();
 
-  return std::string();
+  return "";
 }
 
 std::string WebRequestRulesRegistry::RemoveRulesImpl(
@@ -223,7 +223,7 @@ std::string WebRequestRulesRegistry::RemoveRulesImpl(
 
   ClearCacheOnNavigation();
 
-  return std::string();
+  return "";
 }
 
 std::string WebRequestRulesRegistry::RemoveAllRulesImpl(

@@ -47,7 +47,8 @@ TEST_F(MachineModelInfoTest, ValidModelInfo) {
 }
 
 TEST_F(MachineModelInfoTest, ModelComparison) {
-  MachineModelInfo info("=", "model_a", ">", "3.4", std::string());
+  MachineModelInfo info("=", "model_a",
+                        ">", "3.4", "");
   EXPECT_TRUE(info.Contains("model_a", "4"));
   EXPECT_FALSE(info.Contains("model_b", "4"));
   EXPECT_FALSE(info.Contains("model_a", "3.2"));

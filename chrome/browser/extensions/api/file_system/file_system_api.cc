@@ -435,11 +435,8 @@ class FileSystemChooseEntryFunction::FilePicker
     select_file_dialog_->SelectFile(picker_type,
                                     string16(),
                                     suggested_name,
-                                    &file_type_info,
-                                    0,
-                                    base::FilePath::StringType(),
-                                    owning_window,
-                                    NULL);
+                                    &file_type_info, 0, FILE_PATH_LITERAL(""),
+                                    owning_window, NULL);
   }
 
   virtual ~FilePicker() {}

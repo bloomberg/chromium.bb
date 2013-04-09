@@ -146,7 +146,7 @@ std::string HttpAuth::GetChallengeHeaderName(Target target) {
       return "WWW-Authenticate";
     default:
       NOTREACHED();
-      return std::string();
+      return "";
   }
 }
 
@@ -159,7 +159,7 @@ std::string HttpAuth::GetAuthorizationHeaderName(Target target) {
       return HttpRequestHeaders::kAuthorization;
     default:
       NOTREACHED();
-      return std::string();
+      return "";
   }
 }
 
@@ -172,7 +172,7 @@ std::string HttpAuth::GetAuthTargetString(Target target) {
       return "server";
     default:
       NOTREACHED();
-      return std::string();
+      return "";
   }
 }
 

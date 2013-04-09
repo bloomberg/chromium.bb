@@ -39,11 +39,9 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 }
 
 void SigninManagerFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
-                               std::string(),
+  registry->RegisterStringPref(prefs::kGoogleServicesLastUsername, "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kGoogleServicesUsername,
-                               std::string(),
+  registry->RegisterStringPref(prefs::kGoogleServicesUsername, "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -56,8 +54,7 @@ void SigninManagerFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 
 // static
 void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kGoogleServicesUsernamePattern,
-                               std::string());
+  registry->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "");
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(

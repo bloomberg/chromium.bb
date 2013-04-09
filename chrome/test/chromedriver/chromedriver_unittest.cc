@@ -164,7 +164,7 @@ TEST(ChromeDriver, ExecuteCommand) {
     base::DictionaryValue params;
     scoped_ptr<base::Value> value(base::Value::CreateNullValue());
     mock->Expect(scoped_ptr<ExpectedCommand>(new ExpectedCommand(
-        "quitAll", params, std::string(), kOk, value.Pass(), std::string())));
+        "quitAll", params, "", kOk, value.Pass(), "")));
   }
   Shutdown();
 }

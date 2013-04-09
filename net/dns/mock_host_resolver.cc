@@ -256,13 +256,8 @@ void RuleBasedHostResolverProc::AddRuleForAddressFamily(
   DCHECK(!replacement.empty());
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
       HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            address_family,
-            flags,
-            replacement,
-            std::string(),
-            0);
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, address_family, flags,
+            replacement, "", 0);
   rules_.push_back(rule);
 }
 
@@ -291,13 +286,8 @@ void RuleBasedHostResolverProc::AddRuleWithLatency(
   DCHECK(!replacement.empty());
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
       HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            replacement,
-            std::string(),
-            latency_ms);
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, replacement, "", latency_ms);
   rules_.push_back(rule);
 }
 
@@ -305,13 +295,8 @@ void RuleBasedHostResolverProc::AllowDirectLookup(
     const std::string& host_pattern) {
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
       HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            std::string(),
-            std::string(),
-            0);
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, "", "", 0);
   rules_.push_back(rule);
 }
 
@@ -319,13 +304,8 @@ void RuleBasedHostResolverProc::AddSimulatedFailure(
     const std::string& host_pattern) {
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
       HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeFail,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            std::string(),
-            std::string(),
-            0);
+  Rule rule(Rule::kResolverTypeFail, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, "", "", 0);
   rules_.push_back(rule);
 }
 

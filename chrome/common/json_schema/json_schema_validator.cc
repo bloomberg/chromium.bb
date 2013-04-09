@@ -99,7 +99,7 @@ std::string JSONSchemaValidator::GetJSONSchemaType(const Value* value) {
       return schema::kArray;
     default:
       NOTREACHED() << "Unexpected value type: " << value->GetType();
-      return std::string();
+      return "";
   }
 }
 
@@ -147,7 +147,7 @@ JSONSchemaValidator::~JSONSchemaValidator() {}
 
 bool JSONSchemaValidator::Validate(const Value* instance) {
   errors_.clear();
-  Validate(instance, schema_root_, std::string());
+  Validate(instance, schema_root_, "");
   return errors_.empty();
 }
 

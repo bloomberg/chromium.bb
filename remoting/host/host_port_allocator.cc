@@ -59,16 +59,11 @@ HostPortAllocatorSession::HostPortAllocatorSession(
     const std::vector<std::string>& relay_hosts,
     const std::string& relay,
     const scoped_refptr<net::URLRequestContextGetter>& url_context)
-    : HttpPortAllocatorSessionBase(allocator,
-                                   content_name,
-                                   component,
-                                   ice_username_fragment,
-                                   ice_password,
-                                   stun_hosts,
-                                   relay_hosts,
-                                   relay,
-                                   std::string()),
-      url_context_(url_context) {}
+    : HttpPortAllocatorSessionBase(
+        allocator, content_name, component, ice_username_fragment, ice_password,
+        stun_hosts, relay_hosts, relay, ""),
+      url_context_(url_context) {
+}
 
 HostPortAllocatorSession::~HostPortAllocatorSession() {
   STLDeleteElements(&url_fetchers_);
@@ -162,12 +157,11 @@ HostPortAllocator::HostPortAllocator(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
     scoped_ptr<talk_base::NetworkManager> network_manager,
     scoped_ptr<talk_base::PacketSocketFactory> socket_factory)
-    : HttpPortAllocatorBase(network_manager.get(),
-                            socket_factory.get(),
-                            std::string()),
+    : HttpPortAllocatorBase(network_manager.get(), socket_factory.get(), ""),
       url_context_(url_context),
       network_manager_(network_manager.Pass()),
-      socket_factory_(socket_factory.Pass()) {}
+      socket_factory_(socket_factory.Pass()) {
+}
 
 HostPortAllocator::~HostPortAllocator() {
 }

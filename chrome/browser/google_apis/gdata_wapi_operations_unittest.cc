@@ -325,10 +325,10 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      GURL(),         // Pass an empty URL to use the default feed
-      0,              // start changestamp
-      std::string(),  // search string
-      std::string(),  // directory resource ID
+      GURL(),  // Pass an empty URL to use the default feed
+      0,  // start changestamp
+      "",  // search string
+      "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
@@ -360,9 +360,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
       request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
-      0,              // start changestamp
-      std::string(),  // search string
-      std::string(),  // directory resource ID
+      0,  // start changestamp
+      "",  // search string
+      "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
@@ -395,9 +395,9 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
       request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
-      0,              // start changestamp
-      std::string(),  // search string
-      std::string(),  // directory resource ID
+      0,  // start changestamp
+      "",  // search string
+      "",  // directory resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
@@ -548,10 +548,11 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      CreateComposedCallback(base::Bind(&test_util::RunAndQuit),
-                             test_util::CreateCopyResultCallback(&result_code)),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code)),
       "file:2_file_resource_id",
-      std::string());
+      "");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -1134,7 +1135,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
 // The test is almost identical to UploadNewFile. The only difference is the
 // expectation for the Content-Range header.
 TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
-  const std::string kUploadContent;
+  const std::string kUploadContent = "";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
@@ -1243,7 +1244,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           "text/plain",
           kUploadContent.size(),
           "file:foo",
-          std::string() /* etag */);
+          "" /* etag */);
 
   initiate_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,

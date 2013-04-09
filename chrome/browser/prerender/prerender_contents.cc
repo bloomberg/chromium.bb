@@ -465,8 +465,8 @@ WebContents* PrerenderContents::CreateWebContents(
   // TODO(ajwong): Remove the temporary map once prerendering is aware of
   // multiple session storage namespaces per tab.
   content::SessionStorageNamespaceMap session_storage_namespace_map;
-  session_storage_namespace_map[std::string()] = session_storage_namespace;
-  return WebContents::CreateWithSessionStorage(
+  session_storage_namespace_map[""] = session_storage_namespace;
+  return  WebContents::CreateWithSessionStorage(
       WebContents::CreateParams(profile_), session_storage_namespace_map);
 }
 

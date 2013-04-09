@@ -176,7 +176,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
 
   UpdateConditionCache();
 
-  return std::string();
+  return "";
 }
 
 std::string ContentRulesRegistry::RemoveRulesImpl(
@@ -221,7 +221,7 @@ std::string ContentRulesRegistry::RemoveRulesImpl(
 
   UpdateConditionCache();
 
-  return std::string();
+  return "";
 }
 
 std::string ContentRulesRegistry::RemoveAllRulesImpl(

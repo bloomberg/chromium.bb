@@ -62,7 +62,7 @@ void HttpServer::Send200(int connection_id,
 }
 
 void HttpServer::Send404(int connection_id) {
-  Send(connection_id, HTTP_NOT_FOUND, std::string(), "text/html");
+  Send(connection_id, HTTP_NOT_FOUND, "", "text/html");
 }
 
 void HttpServer::Send500(int connection_id, const std::string& message) {

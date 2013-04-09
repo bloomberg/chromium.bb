@@ -252,8 +252,9 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   Mock::VerifyAndClearExpectations(&service);
 
   // Empty model file.
-  SetModelFetchResponse(std::string(), true /* success */);
-  EXPECT_CALL(service, EndFetchModel(ClientSideDetectionService::MODEL_EMPTY))
+  SetModelFetchResponse("", true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_EMPTY))
       .WillOnce(QuitCurrentMessageLoop());
   service.StartFetchModel();
   msg_loop_.Run();  // EndFetchModel will quit the message loop.
@@ -575,7 +576,7 @@ TEST_F(ClientSideDetectionServiceTest, IsBadIpAddress) {
   ClientSideDetectionService::SetBadSubnets(
       model, &(csd_service_->bad_subnets_));
   EXPECT_FALSE(csd_service_->IsBadIpAddress("blabla"));
-  EXPECT_FALSE(csd_service_->IsBadIpAddress(std::string()));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress(""));
 
   EXPECT_TRUE(csd_service_->IsBadIpAddress(
       "2620:0:1000:3103:21a:a0ff:fe10:786e"));

@@ -32,7 +32,7 @@ ConnectorSettings::~ConnectorSettings() {
 void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   CopyFrom(ConnectorSettings());
 
-  proxy_id_ = prefs->GetString(prefs::kCloudPrintProxyId, std::string());
+  proxy_id_ = prefs->GetString(prefs::kCloudPrintProxyId, "");
   if (proxy_id_.empty()) {
     proxy_id_ = PrintSystem::GenerateProxyId();
     prefs->SetString(prefs::kCloudPrintProxyId, proxy_id_);
@@ -51,8 +51,7 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   }
 
   // Check if there is an override for the cloud print server URL.
-  server_url_ =
-      GURL(prefs->GetString(prefs::kCloudPrintServiceURL, std::string()));
+  server_url_ = GURL(prefs->GetString(prefs::kCloudPrintServiceURL, ""));
   DCHECK(server_url_.is_empty() || server_url_.is_valid());
   if (server_url_.is_empty() || !server_url_.is_valid()) {
     server_url_ = GURL(kDefaultCloudPrintServerUrl);

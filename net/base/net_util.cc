@@ -1433,7 +1433,7 @@ std::string NetAddressToString(const struct sockaddr* sa,
   if (!GetIPAddressFromSockAddr(sa, sock_addr_len, &address,
                                 &address_len, NULL)) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
   return IPAddressToString(address, address_len);
 }
@@ -1446,7 +1446,7 @@ std::string NetAddressToStringWithPort(const struct sockaddr* sa,
   if (!GetIPAddressFromSockAddr(sa, sock_addr_len, &address,
                                 &address_len, &port)) {
     NOTREACHED();
-    return std::string();
+    return "";
   }
   return IPAddressToStringWithPort(address, address_len, port);
 }

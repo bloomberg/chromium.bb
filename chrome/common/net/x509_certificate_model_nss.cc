@@ -100,8 +100,8 @@ using net::X509Certificate;
 using std::string;
 
 string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
-  string name = ProcessIDN(
-      Stringize(CERT_GetCommonName(&cert_handle->subject), std::string()));
+  string name = ProcessIDN(Stringize(CERT_GetCommonName(&cert_handle->subject),
+                                     ""));
   if (!name.empty())
     return name;
   return GetNickname(cert_handle);
@@ -132,7 +132,7 @@ string GetVersion(X509Certificate::OSCertHandle cert_handle) {
       SEC_ASN1DecodeInteger(&cert_handle->version, &version) == SECSuccess) {
     return base::UintToString(version + 1);
   }
-  return std::string();
+  return "";
 }
 
 net::CertType GetType(X509Certificate::OSCertHandle cert_handle) {
@@ -142,7 +142,7 @@ net::CertType GetType(X509Certificate::OSCertHandle cert_handle) {
 string GetEmailAddress(X509Certificate::OSCertHandle cert_handle) {
   if (cert_handle->emailAddr)
     return cert_handle->emailAddr;
-  return std::string();
+  return "";
 }
 
 void GetUsageStrings(X509Certificate::OSCertHandle cert_handle,
@@ -346,14 +346,14 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
       message.get(), cert_chain[start], PR_FALSE));
   if (!signed_data.get()) {
     DLOG(ERROR) << "NSS_CMSSignedData_Create failed";
-    return std::string();
+    return "";
   }
   // Add the rest of the chain (if any).
   for (size_t i = start + 1; i < end; ++i) {
     if (NSS_CMSSignedData_AddCertificate(signed_data.get(), cert_chain[i]) !=
         SECSuccess) {
       DLOG(ERROR) << "NSS_CMSSignedData_AddCertificate failed on " << i;
-      return std::string();
+      return "";
     }
   }
 
@@ -363,7 +363,7 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
     ignore_result(signed_data.release());
   } else {
     DLOG(ERROR) << "NSS_CMSMessage_GetContentInfo failed";
-    return std::string();
+    return "";
   }
 
   SECItem cert_p7 = { siBuffer, NULL, 0 };
@@ -373,12 +373,12 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                                                    NULL);
   if (!ecx) {
     DLOG(ERROR) << "NSS_CMSEncoder_Start failed";
-    return std::string();
+    return "";
   }
 
   if (NSS_CMSEncoder_Finish(ecx) != SECSuccess) {
     DLOG(ERROR) << "NSS_CMSEncoder_Finish failed";
-    return std::string();
+    return "";
   }
 
   return string(reinterpret_cast<const char*>(cert_p7.data), cert_p7.len);

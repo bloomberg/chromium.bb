@@ -45,7 +45,7 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
     std::string url_text;
     if (url_list->GetString(i, &url_text)) {
-      GURL fixed_url = URLFixerUpper::FixupURL(url_text, std::string());
+      GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
       pref->urls.push_back(fixed_url);
     }
   }

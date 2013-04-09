@@ -64,8 +64,7 @@ void ChannelFactory::OnFileCanReadWithoutBlocking(int fd) {
   if (!IsPeerAuthorized(new_fd))
     return;
 
-  ChannelHandle handle(std::string(),
-                       base::FileDescriptor(*scoped_fd.release(), true));
+  ChannelHandle handle("", base::FileDescriptor(*scoped_fd.release(), true));
   delegate_->OnClientConnected(handle);
 }
 

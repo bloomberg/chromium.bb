@@ -85,9 +85,9 @@ net::HostPortPair ParseRedirectText(const std::string& redirect_text) {
 void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
                                  const buzz::XmlElement* stream_error) {
   DVLOG(1) << "Error: " << error << ", subcode: " << subcode
-           << (stream_error
-                   ? (", stream error: " + XmlElementToString(*stream_error))
-                   : std::string());
+           << (stream_error ?
+               (", stream error: " + XmlElementToString(*stream_error)) :
+               "");
 
   DCHECK_EQ(error == buzz::XmppEngine::ERROR_STREAM, stream_error != NULL);
 

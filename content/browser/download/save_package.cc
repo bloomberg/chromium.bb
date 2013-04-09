@@ -365,7 +365,7 @@ void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {
   // with SavePackage flow.
   if (download_->IsInProgress()) {
     download_->SetTotalBytes(size);
-    download_->UpdateProgress(size, 0, std::string());
+    download_->UpdateProgress(size, 0, "");
     // Must call OnAllDataSaved here in order for
     // GDataDownloadObserver::ShouldUpload() to return true.
     // ShouldCompleteDownload() may depend on the gdata uploader to finish.
@@ -449,11 +449,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
                                    base::FilePath::StringType* generated_name) {
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GenerateFileName.
-  base::FilePath file_path = net::GenerateFileName(url,
-                                                   disposition,
-                                                   std::string(),
-                                                   std::string(),
-                                                   std::string(),
+  base::FilePath file_path = net::GenerateFileName(url, disposition, "", "", "",
                                                    kDefaultSaveName);
 
   DCHECK(!file_path.empty());
@@ -792,8 +788,7 @@ void SavePackage::Finish() {
     // with SavePackage flow.
     if (download_->IsInProgress()) {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-        download_->UpdateProgress(
-            all_save_items_count_, CurrentSpeed(), std::string());
+        download_->UpdateProgress(all_save_items_count_, CurrentSpeed(), "");
         download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
       }
       download_->MarkAsComplete();
@@ -823,7 +818,7 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
   if (download_ && download_->IsInProgress())
-    download_->UpdateProgress(completed_count(), CurrentSpeed(), std::string());
+    download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
       save_item->url() == page_url_ && !save_item->received_bytes()) {
@@ -868,7 +863,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
   if (download_ && download_->IsInProgress())
-    download_->UpdateProgress(completed_count(), CurrentSpeed(), std::string());
+    download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if ((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
       (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||

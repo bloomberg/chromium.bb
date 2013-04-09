@@ -12,14 +12,11 @@
 namespace content_settings_helper {
 
 std::string OriginToString(const GURL& origin) {
-  std::string port_component(origin.IntPort() != url_parse::PORT_UNSPECIFIED
-                                 ? ":" + origin.port()
-                                 : std::string());
-  std::string scheme_component(!origin.SchemeIs(chrome::kHttpScheme)
-                                   ? origin.scheme() +
-                                     content::kStandardSchemeSeparator
-                                   : std::string());
-   return scheme_component + origin.host() + port_component;
+   std::string port_component(origin.IntPort() != url_parse::PORT_UNSPECIFIED ?
+      ":" + origin.port() : "");
+  std::string scheme_component(!origin.SchemeIs(chrome::kHttpScheme) ?
+      origin.scheme() + content::kStandardSchemeSeparator : "");
+  return scheme_component + origin.host() + port_component;
 }
 
 string16 OriginToString16(const GURL& origin) {

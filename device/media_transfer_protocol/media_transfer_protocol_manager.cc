@@ -111,7 +111,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                            const OpenStorageCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(storage_info_map_, storage_name)) {
-      callback.Run(std::string(), true);
+      callback.Run("", true);
       return;
     }
     open_storage_callbacks_.push(callback);
@@ -333,13 +333,13 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       open_storage_callbacks_.front().Run(handle, false);
     } else {
       NOTREACHED();
-      open_storage_callbacks_.front().Run(std::string(), true);
+      open_storage_callbacks_.front().Run("", true);
     }
     open_storage_callbacks_.pop();
   }
 
   void OnOpenStorageError() {
-    open_storage_callbacks_.front().Run(std::string(), true);
+    open_storage_callbacks_.front().Run("", true);
     open_storage_callbacks_.pop();
   }
 

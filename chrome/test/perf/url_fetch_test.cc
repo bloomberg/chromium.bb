@@ -77,8 +77,8 @@ class UrlFetchTest : public UIPerfTest {
           "window.domAutomationController.send(%s);", var_to_fetch);
 
       std::wstring value;
-      bool success = tab->ExecuteAndExtractString(
-          std::wstring(), ASCIIToWide(script), &value);
+      bool success = tab->ExecuteAndExtractString(L"", ASCIIToWide(script),
+                                                  &value);
       ASSERT_TRUE(success);
       result->javascript_variable = WideToUTF8(value);
     }

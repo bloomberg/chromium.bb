@@ -723,7 +723,7 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
   }
   virtual const std::string GetResponseHeaderValue(
       const std::string& name) const OVERRIDE {
-    return std::string();
+    return "";
   }
   virtual void Abort() OVERRIDE {}
 };
@@ -820,25 +820,20 @@ class SyncManagerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routing_info);
 
     // Takes ownership of |fake_invalidator_|.
-    sync_manager_.Init(
-        temp_dir_.path(),
-        WeakHandle<JsEventHandler>(),
-        "bogus",
-        0,
-        false,
-        scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory()),
-        workers,
-        &extensions_activity_monitor_,
-        this,
-        credentials,
-        scoped_ptr<Invalidator>(fake_invalidator_),
-        "fake_invalidator_client_id",
-        std::string(),
-        std::string(),  // bootstrap tokens
-        scoped_ptr<InternalComponentsFactory>(GetFactory()),
-        &encryptor_,
-        &handler_,
-        NULL);
+    sync_manager_.Init(temp_dir_.path(),
+                       WeakHandle<JsEventHandler>(),
+                       "bogus", 0, false,
+                       scoped_ptr<HttpPostProviderFactory>(
+                           new TestHttpPostProviderFactory()),
+                       workers, &extensions_activity_monitor_, this,
+                       credentials,
+                       scoped_ptr<Invalidator>(fake_invalidator_),
+                       "fake_invalidator_client_id",
+                       "", "",  // bootstrap tokens
+                       scoped_ptr<InternalComponentsFactory>(GetFactory()),
+                       &encryptor_,
+                       &handler_,
+                       NULL);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
@@ -1186,9 +1181,9 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       base::ListValue args;
       base::ListValue* ids = new base::ListValue();
       args.Append(ids);
-      ids->Append(new base::StringValue(std::string()));
-      SendJsMessage(
-          message_name, JsArgList(&args), reply_handler.AsWeakHandle());
+      ids->Append(new base::StringValue(""));
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
@@ -1278,9 +1273,9 @@ TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
 
   {
     base::ListValue args;
-    args.Append(new base::StringValue(std::string()));
-    SendJsMessage(
-        "getChildNodeIds", JsArgList(&args), reply_handler.AsWeakHandle());
+    args.Append(new base::StringValue(""));
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {

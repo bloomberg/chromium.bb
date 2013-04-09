@@ -256,8 +256,8 @@ URLMatcherConditionFactory::~URLMatcherConditionFactory() {
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
     const GURL& url) const {
   return kBeginningOfURL + CanonicalizeHostname(url.host()) + kEndOfDomain +
-         url.path() + kEndOfPath +
-         (url.has_query() ? "?" + url.query() : std::string()) + kEndOfURL;
+      url.path() + kEndOfPath + (url.has_query() ? "?" + url.query() : "") +
+      kEndOfURL;
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateHostPrefixCondition(

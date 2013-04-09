@@ -26,7 +26,7 @@ std::string APIFeature::Parse(const DictionaryValue* value) {
   if (GetContexts()->empty())
     return name() + ": API features must specify at least one context.";
 
-  return std::string();
+  return "";
 }
 
 }  // namespace

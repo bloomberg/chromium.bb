@@ -388,7 +388,7 @@ bool KeywordTable::MigrateToVersion45RemoveLogoIDAndAutogenerateColumns() {
   // Migrate the keywords backup table as well.
   if (!MigrateKeywordsTableForVersion45("keywords_backup") ||
       !meta_table_->SetValue("Default Search Provider ID Backup Signature",
-                             std::string()))
+                             ""))
     return false;
 
   return transaction.Commit();
@@ -409,7 +409,7 @@ bool KeywordTable::MigrateToVersion47AddAlternateURLsColumn() {
   if (!db_->Execute("ALTER TABLE keywords_backup ADD COLUMN "
                     "alternate_urls VARCHAR DEFAULT ''") ||
       !meta_table_->SetValue("Default Search Provider ID Backup Signature",
-                             std::string()))
+                             ""))
     return false;
 
   return transaction.Commit();

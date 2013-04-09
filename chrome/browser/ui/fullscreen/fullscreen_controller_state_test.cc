@@ -658,7 +658,7 @@ FullscreenControllerStateTest::StateTransitionInfo
 std::string FullscreenControllerStateTest::GetAndClearDebugLog() {
   debugging_log_ << "(End of Debugging Log)\n";
   std::string output_log = "\nDebugging Log:\n" + debugging_log_.str();
-  debugging_log_.str(std::string());
+  debugging_log_.str("");
   return output_log;
 }
 

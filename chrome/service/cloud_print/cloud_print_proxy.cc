@@ -85,10 +85,10 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   DCHECK(backend_.get());
   // Read persisted robot credentials because we may decide to reuse it if the
   // passed in LSID belongs the same user.
-  std::string robot_refresh_token = service_prefs_->GetString(
-      prefs::kCloudPrintRobotRefreshToken, std::string());
+  std::string robot_refresh_token =
+      service_prefs_->GetString(prefs::kCloudPrintRobotRefreshToken, "");
   std::string robot_email =
-      service_prefs_->GetString(prefs::kCloudPrintRobotEmail, std::string());
+      service_prefs_->GetString(prefs::kCloudPrintRobotEmail, "");
   user_email_ = service_prefs_->GetString(prefs::kCloudPrintEmail, user_email_);
 
   // If we have been passed in an LSID, we want to use this to authenticate.
@@ -104,7 +104,7 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     } else {
       // Finally see if we have persisted user credentials (legacy case).
       std::string cloud_print_token =
-          service_prefs_->GetString(prefs::kCloudPrintAuthToken, std::string());
+          service_prefs_->GetString(prefs::kCloudPrintAuthToken, "");
       DCHECK(!cloud_print_token.empty());
       backend_->InitializeWithToken(cloud_print_token);
     }
@@ -124,7 +124,7 @@ void CloudPrintProxy::EnableForUserWithRobot(
 
   ShutdownBackend();
   std::string proxy_id(
-      service_prefs_->GetString(prefs::kCloudPrintProxyId, std::string()));
+      service_prefs_->GetString(prefs::kCloudPrintProxyId, ""));
   service_prefs_->RemovePref(prefs::kCloudPrintRoot);
   if (!proxy_id.empty()) {
     // Keep only proxy id;
@@ -204,8 +204,7 @@ void CloudPrintProxy::GetProxyInfo(CloudPrintProxyInfo* info) {
   // If the Cloud Print service is not enabled, we may need to read the old
   // value of proxy_id from prefs.
   if (info->proxy_id.empty())
-    info->proxy_id =
-        service_prefs_->GetString(prefs::kCloudPrintProxyId, std::string());
+    info->proxy_id = service_prefs_->GetString(prefs::kCloudPrintProxyId, "");
 }
 
 void CloudPrintProxy::CheckCloudPrintProxyPolicy() {
