@@ -105,7 +105,9 @@ bool ExtensionFunctionRegistry::OverrideFunction(
 ExtensionFunction* ExtensionFunctionRegistry::NewFunction(
     const std::string& name) {
   FactoryMap::iterator iter = factories_.find(name);
-  DCHECK(iter != factories_.end());
+  if (iter == factories_.end()) {
+    return NULL;
+  }
   ExtensionFunction* function = iter->second.factory_();
   function->set_name(name);
   function->set_histogram_value(iter->second.histogram_value_);

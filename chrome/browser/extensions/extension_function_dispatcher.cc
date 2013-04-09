@@ -384,6 +384,12 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 
   ExtensionFunction* function =
       ExtensionFunctionRegistry::GetInstance()->NewFunction(params.name);
+  if (!function) {
+    LOG(ERROR) << "Unknown Extension API - " << params.name;
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
+    return NULL;
+  }
+
   function->SetArgs(&params.arguments);
   function->set_source_url(params.source_url);
   function->set_request_id(params.request_id);
