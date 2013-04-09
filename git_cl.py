@@ -1300,6 +1300,9 @@ def CMDupload(parser, args):
       print ('The last upload made from this repository was patchset #%d but '
             'the most recent patchset on the server is #%d.'
             % (local_patchset, latest_patchset))
+      print ('Uploading will still work, but if you\'ve uploaded to this issue '
+            'from another machine or branch the patch you\'re uploading now '
+            'might not include those changes.')
       ask_for_data('About to upload; enter to confirm.')
 
   print_stats(options.similarity, options.find_copies, args)
