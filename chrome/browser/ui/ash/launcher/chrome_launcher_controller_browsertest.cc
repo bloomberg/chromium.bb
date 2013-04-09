@@ -391,9 +391,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPanelWindow) {
   EXPECT_EQ(item_count, launcher_model()->item_count());
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_WindowActivation DISABLED_WindowActivation
+#else
+#define MAYBE_WindowActivation WindowActivation
+#endif
 // Confirm that app windows can be reactivated by clicking their icons and that
 // the correct activation order is maintained.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_WindowActivation) {
   int item_count = launcher_model()->item_count();
 
   // First run app.
