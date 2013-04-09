@@ -5,6 +5,9 @@
 #include "ash/focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/test/base/ui_controls.h"
@@ -44,9 +47,19 @@ class AshFocusCycleTest : public CrosInProcessBrowserTest {
   void PressEscape() {
     aura::Window* window = ash::wm::GetActiveWindow();
     CHECK(window);
-    ui_controls::SendKeyPress(window, ui::VKEY_ESCAPE,
-                              false, false, false, false);
-    content::RunAllPendingInMessageLoop();
+    wait_for_key_press_.reset(new base::RunLoop());
+    ui_controls::SendKeyPressNotifyWhenDone(
+        window, ui::VKEY_ESCAPE,
+        false, false, false, false,
+        base::Bind(&AshFocusCycleTest::QuitWaiting, base::Unretained(this)));
+    wait_for_key_press_->Run();
+  }
+
+ private:
+  scoped_ptr<base::RunLoop> wait_for_key_press_;
+
+  void QuitWaiting() {
+    wait_for_key_press_->Quit();
   }
 };
 
