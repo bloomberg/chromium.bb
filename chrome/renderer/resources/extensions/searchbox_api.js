@@ -147,7 +147,6 @@ if (!chrome.embeddedSearch) {
           }
           result.contents = null;
           result.description = null;
-          result.is_search = null;
         }
         return autocompleteResults;
       }
