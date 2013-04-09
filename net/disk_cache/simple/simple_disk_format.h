@@ -10,9 +10,14 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 
+namespace base {
+class Time;
+}
+
 namespace disk_cache {
 
 const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
+const uint64 kSimpleIndexInitialMagicNumber = GG_UINT64_C(0x656e74657220796f);
 
 // A file in the Simple cache consists of a SimpleFileHeader followed
 // by data.
@@ -37,23 +42,46 @@ std::string GetEntryHashForKey(const std::string& key);
 // alignment is platform dependent.
 // The CRC check is a guarantee that we don't read incorrect values.
 // -------------------------
-//    uint64 initial_magic_number
-//    uint32 version
-//    uint64 size
+//    struct Header;
 // -------------------------
 //    Repeated |size| times {
-//       bytes[kEntryHashKeySize]
+//       struct EntryMetadata;
 //    }
 // -------------------------
-//    uint32 crc
+//    struct Footer;
 // -------------------------
 namespace SimpleIndexFile {
   // Simple Index File metadata is defined here.
   struct Header {
     uint64 initial_magic_number;
     uint32 version;
-    uint64 size;
+    uint64 number_of_entries;
   };
+
+  // We must keep this struct a POD.
+  struct EntryMetadata {
+    EntryMetadata();
+    EntryMetadata(const std::string& hash_key_p, base::Time last_used_time_p);
+
+    base::Time GetLastUsedTime() const;
+    std::string GetHashKey() const;
+    void SetLastUsedTime(const base::Time& last_used_time_p);
+
+    static void Serialize(const EntryMetadata& in_entry_metadata,
+                          std::string* out_buffer);
+
+    static void DeSerialize(const char* in_buffer,
+                            EntryMetadata* out_entry_metadata);
+
+    char hash_key[kEntryHashKeySize];  // Not a c_string, not null terminated.
+
+    // This is the serialized format from Time::ToInternalValue().
+    // If you want to make calculations/comparisons, you should use the
+    // base::Time() class. Use the GetLastUsedTime() method above.
+    int64 last_used_time;
+  };
+
+  const size_t kEntryMetadataSize = sizeof(EntryMetadata);
 
   struct Footer {
     uint32 crc;

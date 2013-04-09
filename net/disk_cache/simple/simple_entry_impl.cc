@@ -39,7 +39,9 @@ int SimpleEntryImpl::OpenEntry(WeakPtr<SimpleIndex> index,
                                const std::string& key,
                                Entry** entry,
                                const CompletionCallback& callback) {
-  if (!index || index->Has(key)) {
+  // TODO(gavinp): More closely unify the last_used_ in the
+  // SimpleSynchronousEntry  and the SimpleIndex.
+  if (!index || index->UseIfExists(key)) {
     SynchronousCreationCallback sync_creation_callback =
         base::Bind(&SimpleEntryImpl::CreationOperationComplete,
                    index, callback, key, entry);
@@ -138,6 +140,7 @@ int SimpleEntryImpl::ReadData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
+  index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);
@@ -161,6 +164,7 @@ int SimpleEntryImpl::WriteData(int index,
     CHECK(false);
   }
   synchronous_entry_in_use_by_worker_ = true;
+  index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
                  callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);

@@ -30,10 +30,11 @@ bool WriteHashKeyToFile(const base::PlatformFile& file,
   return true;
 }
 
-bool CheckMetadata(disk_cache::SimpleIndexFile::Header metadata) {
-  return metadata.size <= kMaxEntiresInIndex &&
-      metadata.initial_magic_number == disk_cache::kSimpleInitialMagicNumber &&
-      metadata.version == disk_cache::kSimpleVersion;
+bool CheckHeader(disk_cache::SimpleIndexFile::Header header) {
+  return header.number_of_entries <= kMaxEntiresInIndex &&
+      header.initial_magic_number ==
+      disk_cache::kSimpleIndexInitialMagicNumber &&
+      header.version == disk_cache::kSimpleVersion;
 }
 
 }  // namespace
@@ -53,65 +54,66 @@ bool SimpleIndex::Initialize() {
     return RestoreFromDisk();
   uLong incremental_crc = crc32(0L, Z_NULL, 0);
   int64 index_file_offset = 0;
-  SimpleIndexFile::Header metadata;
+  SimpleIndexFile::Header header;
   if (base::ReadPlatformFile(index_file_,
                              index_file_offset,
-                             reinterpret_cast<char*>(&metadata),
-                             sizeof(metadata)) != sizeof(metadata)) {
-    CloseIndexFile();
+                             reinterpret_cast<char*>(&header),
+                             sizeof(header)) != sizeof(header)) {
     return RestoreFromDisk();
   }
-  index_file_offset += sizeof(metadata);
+  index_file_offset += sizeof(header);
   incremental_crc = crc32(incremental_crc,
-                          reinterpret_cast<const Bytef*>(&metadata),
-                          implicit_cast<uInt>(sizeof(metadata)));
+                          reinterpret_cast<const Bytef*>(&header),
+                          implicit_cast<uInt>(sizeof(header)));
 
-  if (!CheckMetadata(metadata)) {
-    LOG(ERROR) << "Invalid metadata on Simple Cache Index.";
-    CloseIndexFile();
+  if (!CheckHeader(header)) {
+    LOG(ERROR) << "Invalid header on Simple Cache Index.";
     return RestoreFromDisk();
   }
 
-  char hash_key[kEntryHashKeySize];
-  while(entries_set_.size() < metadata.size) {
-    // TODO(felipeg): Read things in larger chunks/optimize this.
-    if (base::ReadPlatformFile(index_file_,
-                               index_file_offset,
-                               hash_key,
-                               kEntryHashKeySize) != kEntryHashKeySize) {
-      CloseIndexFile();
-      return RestoreFromDisk();
-    }
-    index_file_offset += kEntryHashKeySize;
-    incremental_crc = crc32(incremental_crc,
-                            reinterpret_cast<const Bytef*>(hash_key),
-                            implicit_cast<uInt>(kEntryHashKeySize));
-    entries_set_.insert(std::string(hash_key, kEntryHashKeySize));
+  const int entries_buffer_size =
+      header.number_of_entries * SimpleIndexFile::kEntryMetadataSize;
+
+  scoped_ptr<char[]> entries_buffer(new char[entries_buffer_size]);
+  if (base::ReadPlatformFile(index_file_,
+                             index_file_offset,
+                             entries_buffer.get(),
+                             entries_buffer_size) != entries_buffer_size) {
+    return RestoreFromDisk();
   }
+  index_file_offset += entries_buffer_size;
+  incremental_crc = crc32(incremental_crc,
+                          reinterpret_cast<const Bytef*>(entries_buffer.get()),
+                          implicit_cast<uInt>(entries_buffer_size));
 
   SimpleIndexFile::Footer footer;
   if (base::ReadPlatformFile(index_file_,
                              index_file_offset,
                              reinterpret_cast<char*>(&footer),
                              sizeof(footer)) != sizeof(footer)) {
-    CloseIndexFile();
     return RestoreFromDisk();
   }
   const uint32 crc_read = footer.crc;
   const uint32 crc_calculated = incremental_crc;
-  if (crc_read != crc_calculated) {
-    DCHECK_EQ(crc_read, crc_calculated);
-    CloseIndexFile();
+  if (crc_read != crc_calculated)
     return RestoreFromDisk();
-  }
 
+  int entries_buffer_offset = 0;
+  while(entries_buffer_offset < entries_buffer_size) {
+    SimpleIndexFile::EntryMetadata entry_metadata;
+    SimpleIndexFile::EntryMetadata::DeSerialize(
+        &entries_buffer.get()[entries_buffer_offset], &entry_metadata);
+    InsertInternal(entry_metadata);
+    entries_buffer_offset += SimpleIndexFile::kEntryMetadataSize;
+  }
+  DCHECK_EQ(header.number_of_entries, entries_set_.size());
   CloseIndexFile();
   return true;
 }
 
 void SimpleIndex::Insert(const std::string& key) {
-  std::string hash_key = GetEntryHashForKey(key);
-  entries_set_.insert(hash_key);
+  InsertInternal(SimpleIndexFile::EntryMetadata(GetEntryHashForKey(key),
+                                                base::Time::Now()));
 }
 
 void SimpleIndex::Remove(const std::string& key) {
@@ -122,9 +124,24 @@ bool SimpleIndex::Has(const std::string& key) const {
   return entries_set_.count(GetEntryHashForKey(key)) != 0;
 }
 
+bool SimpleIndex::UseIfExists(const std::string& key) {
+  EntrySet::iterator it = entries_set_.find(GetEntryHashForKey(key));
+  if (it == entries_set_.end())
+    return false;
+  it->second.SetLastUsedTime(base::Time::Now());
+  return true;
+}
+
+void SimpleIndex::InsertInternal(
+    const SimpleIndexFile::EntryMetadata& entry_metadata) {
+  entries_set_.insert(make_pair(entry_metadata.GetHashKey(), entry_metadata));
+}
+
 bool SimpleIndex::RestoreFromDisk() {
   using file_util::FileEnumerator;
-  LOG(WARNING) << "Simple Cache Index is being restored from disk.";
+  LOG(INFO) << "Simple Cache Index is being restored from disk.";
+  CloseIndexFile();
+  file_util::Delete(index_filename_, /* recursive = */ false);
   entries_set_.clear();
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_0");
   FileEnumerator enumerator(path_,
@@ -138,7 +155,18 @@ bool SimpleIndex::RestoreFromDisk() {
     // file names.
     const std::string hash_name(base_name.begin(), base_name.end());
     const std::string hash_key = hash_name.substr(0, kEntryHashKeySize);
-    entries_set_.insert(hash_key);
+
+    FileEnumerator::FindInfo find_info = {};
+    enumerator.GetFindInfo(&find_info);
+    base::Time last_used_time;
+#if defined(OS_POSIX)
+    // For POSIX systems, a last access time is available. However, it's not
+    // guaranteed to be more accurate than mtime. It is no worse though.
+    last_used_time = base::Time::FromTimeT(find_info.stat.st_atime);
+#endif
+    if (last_used_time.is_null())
+      last_used_time = FileEnumerator::GetLastModifiedTime(find_info);
+    InsertInternal(SimpleIndexFile::EntryMetadata(hash_key, last_used_time));
   }
   // TODO(felipeg): Detect unrecoverable problems and return false here.
   return true;
@@ -146,25 +174,25 @@ bool SimpleIndex::RestoreFromDisk() {
 
 void SimpleIndex::Serialize(std::string* out_buffer) {
   DCHECK(out_buffer);
-  SimpleIndexFile::Header metadata;
+  SimpleIndexFile::Header header;
   SimpleIndexFile::Footer footer;
 
-  metadata.initial_magic_number = kSimpleInitialMagicNumber;
-  metadata.version = kSimpleVersion;
-  metadata.size = entries_set_.size();
+  header.initial_magic_number = kSimpleIndexInitialMagicNumber;
+  header.version = kSimpleVersion;
+  header.number_of_entries = entries_set_.size();
 
-  out_buffer->reserve(sizeof(metadata) +
+  out_buffer->reserve(sizeof(header) +
                       kEntryHashKeySize * entries_set_.size() +
                       sizeof(footer));
 
-  // Metadata goes first.
-  out_buffer->append(reinterpret_cast<const char*>(&metadata),
-                     sizeof(metadata));
+  // The Header goes first.
+  out_buffer->append(reinterpret_cast<const char*>(&header),
+                     sizeof(header));
 
-  // Then all the hashes in the entries_set.
+  // Then all the entries from |entries_set_|.
   for (EntrySet::const_iterator it = entries_set_.begin();
        it != entries_set_.end(); ++it) {
-    out_buffer->append(*it);
+    SimpleIndexFile::EntryMetadata::Serialize(it->second, out_buffer);
   }
 
   // Then, CRC.
@@ -222,7 +250,6 @@ void SimpleIndex::UpdateFile(const base::FilePath& index_filename,
     file_util::Delete(temp_filename, /* recursive = */ false);
     return;
   }
-
   // Swap temp and index_file.
   bool result = file_util::ReplaceFile(temp_filename, index_filename);
   DCHECK(result);

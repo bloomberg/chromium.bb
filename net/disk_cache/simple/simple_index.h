@@ -5,13 +5,17 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_H_
 
+#include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/simple/simple_disk_format.h"
 
 namespace base {
 class TaskRunner;
@@ -34,12 +38,23 @@ class SimpleIndex
 
   void Insert(const std::string& key);
   void Remove(const std::string& key);
+
   bool Has(const std::string& key) const;
+
+  // Update the last used time of the entry with the given key and return true
+  // iff the entry exist in the index.
+  bool UseIfExists(const std::string& key);
 
   void Cleanup();
 
  private:
-  typedef std::set<std::string> EntrySet;
+  // TODO(felipeg): This way we are storing the hash_key string twice (as the
+  // hash_map::key and as a member of EntryMetadata. We could save space if we
+  // redefine the hash_map::operators and make the hash_map::key be part of the
+  // EntryMetadata itself.
+  typedef base::hash_map<std::string, SimpleIndexFile::EntryMetadata> EntrySet;
+
+  void InsertInternal(const SimpleIndexFile::EntryMetadata& entry_metadata);
 
   // Enumerates all entries' files on disk and regenerates the index.
   bool RestoreFromDisk();
