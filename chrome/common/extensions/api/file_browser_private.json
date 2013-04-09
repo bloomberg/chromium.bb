@@ -1064,9 +1064,26 @@
         "description": "Performs drive metadata search.",
         "parameters": [
           {
-            "name": "searchQuery",
-            "type": "string",
-            "description": "Search query."
+            "name": "searchParams",
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "optional": true,
+                "description": "Search query. It can be empty. Any filename matches to an empty query."
+              },
+              "types": {
+                "type": "string",
+                "enum": ["EXCLUDE_DIRECTORIES", "ALL"],
+                "optional": true,
+                "description": "The type of entry that is needed. Default to ALL."
+              },
+              "maxResults": {
+                "type": "integer",
+                "optional": true,
+                "description": "Maximum number of results."
+              }
+            }
           },
           {
             "name": "callback",

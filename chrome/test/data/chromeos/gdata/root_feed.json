@@ -1097,7 +1097,7 @@
             "$t": "2011-12-12T23:28:46.686Z"
          },
          "title": {
-            "$t": "Document 1"
+            "$t": "Document 1 excludeDir-test"
          },
          "updated": {
             "$t": "2011-12-12T23:28:52.783Z"
@@ -1181,7 +1181,7 @@
             "$t": "2010-11-07T05:03:54.719Z"
          },
          "title": {
-            "$t": "Directory 2"
+            "$t": "Directory 2 excludeDir-test"
          },
          "updated": {
             "$t": "2011-04-01T18:34:08.234Z"

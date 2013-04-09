@@ -108,6 +108,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
   virtual void SearchMetadata(const std::string& query,
+                              int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(

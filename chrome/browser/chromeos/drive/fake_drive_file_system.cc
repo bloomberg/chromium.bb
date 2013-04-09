@@ -205,6 +205,7 @@ void FakeDriveFileSystem::Search(const std::string& search_query,
 
 void FakeDriveFileSystem::SearchMetadata(
     const std::string& query,
+    int options,
     int at_most_num_matches,
     const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

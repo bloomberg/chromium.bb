@@ -3018,12 +3018,23 @@ void SearchDriveFunction::OnSearch(
   SendResponse(true);
 }
 
-SearchDriveMetadataFunction::SearchDriveMetadataFunction() {}
+SearchDriveMetadataFunction::SearchDriveMetadataFunction()
+    : max_results_(0) {}
 
 SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {}
 
 bool SearchDriveMetadataFunction::RunImpl() {
-  if (!args_->GetString(0, &query_))
+  DictionaryValue* search_params;
+  if (!args_->GetDictionary(0, &search_params))
+    return false;
+
+  if (!search_params->GetString("query", &query_))
+    return false;
+
+  if (!search_params->GetString("types", &types_))
+    return false;
+
+  if (!search_params->GetInteger("maxResults", &max_results_))
     return false;
 
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
@@ -3054,10 +3065,12 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
     return;
   }
 
-  const int kAtMostNumMatches = 4;
   system_service->file_system()->SearchMetadata(
       query_,
-      kAtMostNumMatches,
+      types_ == "EXCLUDE_DIRECTORIES" ?
+          drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES :
+          drive::SEARCH_METADATA_ALL,
+      max_results_,
       base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));
 }
 

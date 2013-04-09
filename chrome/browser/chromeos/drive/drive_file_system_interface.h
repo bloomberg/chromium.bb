@@ -122,6 +122,17 @@ struct DriveClientContext {
   ContextType type;
 };
 
+// Option enum to control eligible entries for searchMetadata().
+// SEARCH_METADATA_ALL is the default to investigate all the entries.
+// SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS excludes the hosted documents.
+// SEARCH_METADATA_EXCLUDE_DIRECTORIES excludes the directories from the result.
+// TODO(haruki): Add option for shared_with_me and offline.
+enum SearchMetadataOptions {
+  SEARCH_METADATA_ALL = 0,
+  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS = 1,
+  SEARCH_METADATA_EXCLUDE_DIRECTORIES = 1 << 1,
+};
+
 // Drive file system abstraction layer.
 // The interface is defined to make DriveFileSystem mockable.
 class DriveFileSystemInterface {
@@ -372,9 +383,13 @@ class DriveFileSystemInterface {
 
   // Searches the local resource metadata, and returns the entries
   // |at_most_num_matches| that contain |query| in their base names. Search is
-  // done in a case-insensitive fashion. |callback| must not be null. Must be
-  // called on UI thread. No entries are returned if |query| is empty.
+  // done in a case-insensitive fashion. The eligible entries are selected based
+  // on the given |options|, which is a bit-wise OR of SearchMetadataOptions.
+  // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS will be automatically added based
+  // on the preference. |callback| must not be null. Must be called on UI
+  // thread. Empty |query| matches any base name. i.e. returns everything.
   virtual void SearchMetadata(const std::string& query,
+                              int  options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) = 0;
 

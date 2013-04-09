@@ -14,21 +14,16 @@ namespace drive {
 
 class DriveResourceMetadata;
 
-// Used to specify target entries for SearchMetadata().
-enum SearchMetadataTarget {
-  SEARCH_METADATA_ALL,  // All entries including files and directories.
-  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,  // Exclude the hosted documents.
-};
-
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
-// done in a case-insensitive fashion. |target| specifies the target entries
-// |callback| must not be null.
-// Must be called on UI thread. No entries are returned if |query| is empty.
+// done in a case-insensitive fashion. The eligible entries are selected based
+// on the given |options|, which is a bit-wise OR of SearchMetadataOptions.
+// |callback| must not be null. Must be called on UI thread. Empty |query|
+// matches any base name. i.e. returns everything.
 void SearchMetadata(DriveResourceMetadata* resource_metadata,
                     const std::string& query,
+                    int search_options,
                     int at_most_num_matches,
-                    SearchMetadataTarget target,
                     const SearchMetadataCallback& callback);
 
 // Finds |query| in |text| while ignoring case. Returns true if |query| is

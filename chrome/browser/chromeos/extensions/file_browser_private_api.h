@@ -776,6 +776,15 @@ class SearchDriveMetadataFunction : public AsyncExtensionFunction {
 
   // Query for which the search is being performed.
   std::string query_;
+  // String representing what type of entries are needed. It corresponds to
+  // SearchMetadataOptions:
+  // SEARCH_METADATA_OPTION_EXCLUDE_DIRECTORIES => "EXCLUDE_DIRECTORIES"
+  // SEARCH_METADATA_OPTION_ALL => "ALL"
+  std::string types_;
+  // Maximum number of results. The results contains |max_num_results_| entries
+  // at most.
+  int max_results_;
+
   // Information about remote file system we will need to create file entries
   // to represent search results.
   std::string file_system_name_;

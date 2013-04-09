@@ -40,13 +40,13 @@ class SearchMetadataHelper {
  public:
   SearchMetadataHelper(DriveResourceMetadata* resource_metadata,
                        const std::string& query,
+                       int options,
                        int at_most_num_matches,
-                       SearchMetadataTarget target,
                        const SearchMetadataCallback& callback)
     : resource_metadata_(resource_metadata),
       query_(query),
+      options_(options),
       at_most_num_matches_(at_most_num_matches),
-      target_(target),
       callback_(callback),
       results_(new MetadataSearchResultVector),
       num_pending_reads_(0),
@@ -85,19 +85,6 @@ class SearchMetadataHelper {
       const DriveEntryProto& entry = entries->at(i);
       const base::FilePath current_path = parent_path.Append(
           base::FilePath::FromUTF8Unsafe(entry.base_name()));
-      // Skip the hosted document if "hide hosted documents" setting is
-      // enabled.
-      if (target_ == SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS &&
-          entry.file_specific_info().is_hosted_document())
-        continue;
-
-      // Add it to the search result if the base name of the file contains
-      // the query.
-      std::string highlighted;
-      if (FindAndHighlight(entry.base_name(), query_, &highlighted)) {
-        results_->push_back(
-            MetadataSearchResult(current_path, entry, highlighted));
-      }
 
       // Recursively reading the sub directory.
       if (entry.file_info().is_directory()) {
@@ -107,6 +94,26 @@ class SearchMetadataHelper {
             base::Bind(&SearchMetadataHelper::DidReadDirectoryByPath,
                        weak_ptr_factory_.GetWeakPtr(),
                        current_path));
+      }
+
+      // Skip the hosted document if |options| has
+      // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS, which is set by
+      // DriveFileSystem::SearchMetadata() based on the preference.
+      if ((options_ & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
+          entry.file_specific_info().is_hosted_document())
+        continue;
+
+      // Skip the directory if SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested.
+      if ((options_ & SEARCH_METADATA_EXCLUDE_DIRECTORIES) &&
+          entry.file_info().is_directory())
+        continue;
+
+      // Add it to the search result if the base name of the file contains
+      // the query.
+      std::string highlighted;
+      if (FindAndHighlight(entry.base_name(), query_, &highlighted)) {
+        results_->push_back(
+            MetadataSearchResult(current_path, entry, highlighted));
       }
     }
 
@@ -125,8 +132,8 @@ class SearchMetadataHelper {
 
   DriveResourceMetadata* resource_metadata_;
   const std::string query_;
+  const int options_;
   const int at_most_num_matches_;
-  const SearchMetadataTarget target_;
   const SearchMetadataCallback callback_;
   scoped_ptr<MetadataSearchResultVector> results_;
   int num_pending_reads_;
@@ -138,8 +145,8 @@ class SearchMetadataHelper {
 
 void SearchMetadata(DriveResourceMetadata* resource_metadata,
                     const std::string& query,
+                    int options,
                     int at_most_num_matches,
-                    SearchMetadataTarget target,
                     const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -148,8 +155,8 @@ void SearchMetadata(DriveResourceMetadata* resource_metadata,
   SearchMetadataHelper* helper =
       new SearchMetadataHelper(resource_metadata,
                                query,
+                               options,
                                at_most_num_matches,
-                               target,
                                callback);
   helper->Start();
 }
@@ -160,8 +167,9 @@ bool FindAndHighlight(const std::string& text,
   DCHECK(highlighted_text);
   highlighted_text->clear();
 
+  // For empty query, any filename matches with no highlighted text.
   if (query.empty())
-    return false;
+    return true;
 
   // TODO(satorux): Should support non-ASCII characters.
   std::string lower_text = StringToLowerASCII(text);

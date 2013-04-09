@@ -1262,18 +1262,18 @@ void DriveFileSystem::Search(const std::string& search_query,
 }
 
 void DriveFileSystem::SearchMetadata(const std::string& query,
+                                     int options,
                                      int at_most_num_matches,
                                      const SearchMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const SearchMetadataTarget target =
-      (hide_hosted_docs_ ?
-       SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS :
-       SEARCH_METADATA_ALL);
+  if (hide_hosted_docs_)
+    options |= SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS;
+
   drive::SearchMetadata(resource_metadata_,
                         query,
+                        options,
                         at_most_num_matches,
-                        target,
                         callback);
 }
 

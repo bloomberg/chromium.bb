@@ -3138,6 +3138,9 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.requestAutocompleteSuggestions_ = function(query) {
+    query = query.trimLeft();
+
+    // Only Drive supports auto-compelete
     if (!this.isOnDrive())
       return;
 
@@ -3166,8 +3169,14 @@ DialogType.isModal = function(type) {
       this.autocompleteList_.dataModel.splice(0, 1, headerItem);
 
     this.autocompleteSuggestionsBusy_ = true;
+
+    var searchParams = {
+      'query': query,
+      'types': 'ALL',
+      'maxResults': 4
+    };
     chrome.fileBrowserPrivate.searchDriveMetadata(
-      query,
+      searchParams,
       function(suggestions) {
         this.autocompleteSuggestionsBusy_ = false;
 

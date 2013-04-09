@@ -595,7 +595,7 @@ TEST_F(DriveFileSystemTest, SearchExistingDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const base::FilePath kFilePath = base::FilePath(
-      FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
@@ -837,7 +837,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2"))));
+      "drive/root/Directory 2 excludeDir-test"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -856,26 +856,28 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
       .Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 2")))))
-      .Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL(
+          "drive/root/Directory 2 excludeDir-test"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(
-          FILE_PATH_LITERAL("drive/root/Directory 2/Directory 1"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL(
+          "drive/root/Directory 2 excludeDir-test/Directory 1"))))).Times(1);
   ASSERT_TRUE(LoadChangeFeed(
       "chromeos/gdata/delta_dir_moved_from_root_to_directory.json"));
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2"))));
+      "drive/root/Directory 2 excludeDir-test"))));
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2/Directory 1"))));
+      "drive/root/Directory 2 excludeDir-test/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2/Directory 1/SubDirectory File 1.txt"))));
+      "drive/root/Directory 2 excludeDir-test/Directory 1/"
+      "SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2/Directory 1/Sub Directory Folder"))));
+      "drive/root/Directory 2 excludeDir-test/Directory 1/"
+      "Sub Directory Folder"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2/Directory 1/Sub Directory Folder/"
+      "drive/root/Directory 2 excludeDir-test/Directory 1/Sub Directory Folder/"
       "Sub Sub Directory Folder"))));
 }
 
@@ -1055,8 +1057,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   file_util::WriteFile(local_src_file_path, kContent.data(), kContent.size());
 
   // Confirm that the remote file does not exist.
-  const base::FilePath remote_dest_file_path(
-      FILE_PATH_LITERAL("drive/root/Directory 1/Document 1.gdoc"));
+  const base::FilePath remote_dest_file_path(FILE_PATH_LITERAL(
+      "drive/root/Directory 1/Document 1 excludeDir-test.gdoc"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
 
   // We'll add a file to the Drive root and then move to "Directory 1".
@@ -1149,7 +1151,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   base::FilePath local_dest_file_path =
       temp_dir.path().AppendASCII("local_copy.txt");
   base::FilePath remote_src_file_path(
-      FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path,
@@ -1218,11 +1220,12 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
 // Test the case where the parent of |dest_file_path| is an existing file,
 // not a directory.
 TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
-  base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
+  base::FilePath src_file_path(FILE_PATH_LITERAL(
+      "drive/root/Document 1 excludeDir-test.gdoc"));
   base::FilePath dest_parent_path(
       FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   base::FilePath dest_file_path(FILE_PATH_LITERAL(
-      "drive/root/Duplicate Name.txt/Document 1.gdoc"));
+      "drive/root/Duplicate Name.txt/Document 1 excludeDir-test.gdoc"));
 
   ASSERT_TRUE(LoadRootFeedDocument());
 
@@ -1789,7 +1792,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
 TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/Document 1.gdoc"));
+  base::FilePath file_in_root(FILE_PATH_LITERAL(
+      "drive/root/Document 1 excludeDir-test.gdoc"));
   scoped_ptr<DriveEntryProto> src_entry_proto =
       GetEntryInfoByPathSync(file_in_root);
   ASSERT_TRUE(src_entry_proto.get());
@@ -1981,7 +1985,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
     { "drive/root/Directory 1/Sub Directory Folder", true },
     { "drive/root/Directory 1/SubDirectory File 1.txt", false },
     { "drive/root/Directory 1", true },
-    { "drive/root/Directory 2", true },
+    { "drive/root/Directory 2 excludeDir-test", true },
   };
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,

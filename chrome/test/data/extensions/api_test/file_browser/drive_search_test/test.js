@@ -144,7 +144,7 @@ chrome.test.runTests([
     // sort should be decending. The comments above each expected result
     // represent their (lastAccessed, lastModified) pair. These values are set
     // in remote_file_system_api_test_root_feed.json.
-    // The API should return 5 results, even though there are more than five
+    // The API should return 4 results, even though there are more than five
     // matches in the test file system.
     var expectedResults = [
         // (2012-01-02T00:00:01.000Z, 2012-01-02T00:00:0.000Z)
@@ -157,8 +157,14 @@ chrome.test.runTests([
         {path: '/drive/root/test_dir/test_file.xul.foo', type: 'file'},
     ];
 
+    var query = {
+      'query': 'test',
+      'types': 'ALL',
+      'maxResults': 4
+    };
+
     chrome.fileBrowserPrivate.searchDriveMetadata(
-        'test',
+        query,
         function(entries) {
           chrome.test.assertFalse(!entries);
           chrome.test.assertEq(expectedResults.length, entries.length);

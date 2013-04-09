@@ -105,8 +105,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
 
   SearchMetadata(resource_metadata_.get(),
                  "NonExistent",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -120,8 +120,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
 
   SearchMetadata(resource_metadata_.get(),
                  "SubDirectory File 1.txt",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -140,8 +140,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   // The query is all in lower case.
   SearchMetadata(resource_metadata_.get(),
                  "subdirectory file 1.txt",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -157,8 +157,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
 
   SearchMetadata(resource_metadata_.get(),
                  "SubDir",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -188,8 +188,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   // returned.
   SearchMetadata(resource_metadata_.get(),
                  "SubDir",
-                 1,  // at_most_num_matches
                  SEARCH_METADATA_ALL,
+                 1,  // at_most_num_matches
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -207,8 +207,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
 
   SearchMetadata(resource_metadata_.get(),
                  "Directory 1",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -225,15 +225,16 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
 
   SearchMetadata(resource_metadata_.get(),
                  "Document",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
 
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/Document 1.gdoc"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
+                "drive/root/Document 1 excludeDir-test.gdoc"),
             result->at(0).path);
 }
 
@@ -243,13 +244,57 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
 
   SearchMetadata(resource_metadata_.get(),
                  "Document",
-                 kDefaultAtMostNumMatches,
                  SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS,
+                 kDefaultAtMostNumMatches,
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(0U, result->size());
+}
+
+
+TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(resource_metadata_.get(),
+                 "excludeDir-test",
+                 SEARCH_METADATA_ALL,
+                 kDefaultAtMostNumMatches,
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
+
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(2U, result->size());
+
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
+                "drive/root/Document 1 excludeDir-test.gdoc"),
+            result->at(0).path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
+                "drive/root/Directory 2 excludeDir-test"),
+            result->at(1).path);
+}
+
+TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(resource_metadata_.get(),
+                 "excludeDir-test",
+                 SEARCH_METADATA_EXCLUDE_DIRECTORIES,
+                 kDefaultAtMostNumMatches,
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
+
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(1U, result->size());
+
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
+                "drive/root/Document 1 excludeDir-test.gdoc"),
+            result->at(0).path);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
@@ -259,7 +304,8 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyQuery) {
   std::string highlighted_text;
-  EXPECT_FALSE(FindAndHighlight("text", "", &highlighted_text));
+  EXPECT_TRUE(FindAndHighlight("text", "", &highlighted_text));
+  EXPECT_EQ("", highlighted_text);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyText) {
@@ -269,7 +315,8 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyText) {
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_EmptyTextAndQuery) {
   std::string highlighted_text;
-  EXPECT_FALSE(FindAndHighlight("", "", &highlighted_text));
+  EXPECT_TRUE(FindAndHighlight("", "", &highlighted_text));
+  EXPECT_EQ("", highlighted_text);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_FullMatch) {
