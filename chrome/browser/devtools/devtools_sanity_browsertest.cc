@@ -469,15 +469,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 // Tests that renderer process native memory is feasible.
-#if defined(OS_WIN)
-// This test fails on Windows. http://crbug.com/215246
-#define MAYBE_TestRendererProcessNativeMemorySize DISABLED_TestRendererProcessNativeMemorySize
-#else
-#define MAYBE_TestRendererProcessNativeMemorySize TestRendererProcessNativeMemorySize
-#endif
-
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       MAYBE_TestRendererProcessNativeMemorySize) {
+                       TestRendererProcessNativeMemorySize) {
   RunTest("testRendererProcessNativeMemorySize", std::string());
 }
 
