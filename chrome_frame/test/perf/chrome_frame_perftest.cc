@@ -532,6 +532,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
       virtual_size_ = process_metrics->GetPagefileUsage();
       working_set_size_ = process_metrics->GetWorkingSetSize();
 
+      base::CloseProcessHandle(process_handle);
       return true;
     }
 

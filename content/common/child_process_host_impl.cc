@@ -262,7 +262,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
-  if (!base::OpenProcessHandle(peer_pid, &peer_handle_)) {
+  if (!base::OpenPrivilegedProcessHandle(peer_pid, &peer_handle_)) {
     NOTREACHED();
   }
   opening_channel_ = false;

@@ -62,7 +62,7 @@ void NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy,
 }
 
 void NaClBrokerListener::OnChannelConnected(int32 peer_pid) {
-  bool res = base::OpenProcessHandle(peer_pid, &browser_handle_);
+  bool res = base::OpenPrivilegedProcessHandle(peer_pid, &browser_handle_);
   CHECK(res);
 }
 

@@ -31,7 +31,7 @@ void BrowserMessageFilter::OnChannelClosing() {
 }
 
 void BrowserMessageFilter::OnChannelConnected(int32 peer_pid) {
-  if (!base::OpenProcessHandle(peer_pid, &peer_handle_)) {
+  if (!base::OpenPrivilegedProcessHandle(peer_pid, &peer_handle_)) {
     NOTREACHED();
   }
 }

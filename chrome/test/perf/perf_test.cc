@@ -195,7 +195,7 @@ std::string IOPerfInfoToString(const std::string& test_name,
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
     base::ProcessHandle process_handle;
-    if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
+    if (!base::OpenProcessHandle(*it, &process_handle)) {
       NOTREACHED();
       return output;
     }
@@ -411,7 +411,7 @@ std::string MemoryUsageInfoToString(const std::string& test_name,
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
     base::ProcessHandle process_handle;
-    if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
+    if (!base::OpenProcessHandle(*it, &process_handle)) {
       NOTREACHED();
       return output;
     }

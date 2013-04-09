@@ -4229,13 +4229,19 @@ void TestingAutomationProvider::KillRendererProcess(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   int pid;
+  uint32 kAccessFlags = base::kProcessAccessTerminate |
+                        base::kProcessAccessWaitForTermination |
+                        base::kProcessAccessQueryInformation;
+
   if (!args->GetInteger("pid", &pid)) {
     AutomationJSONReply(this, reply_message)
         .SendError("'pid' key missing or invalid.");
     return;
   }
   base::ProcessHandle process;
-  if (!base::OpenProcessHandle(static_cast<base::ProcessId>(pid), &process)) {
+  if (!base::OpenProcessHandleWithAccess(static_cast<base::ProcessId>(pid),
+                                         kAccessFlags,
+                                         &process)) {
     AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
         "Failed to open process handle for pid %d", pid));
     return;
