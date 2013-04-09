@@ -59,7 +59,6 @@ TestInterfaces::TestInterfaces()
 {
     WebKit::setLayoutTestMode(true);
 
-    WebRuntimeFeatures::enableDataTransferItems(true);
     WebRuntimeFeatures::enableDeviceMotion(false);
     WebRuntimeFeatures::enableGeolocation(true);
     WebRuntimeFeatures::enableIndexedDatabase(true);

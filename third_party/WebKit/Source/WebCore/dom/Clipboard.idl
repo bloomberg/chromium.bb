@@ -39,6 +39,6 @@
     boolean setData(DOMString type, DOMString data);
     [Custom, RaisesException] void setDragImage(HTMLImageElement image, long x, long y);
 
-    [EnabledAtRuntime=DataTransferItems] readonly attribute DataTransferItemList items;
+    readonly attribute DataTransferItemList items;
 };
 

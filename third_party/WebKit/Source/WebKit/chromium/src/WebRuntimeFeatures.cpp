@@ -144,9 +144,7 @@ bool WebRuntimeFeatures::isApplicationCacheEnabled()
 
 void WebRuntimeFeatures::enableDataTransferItems(bool enable)
 {
-#if ENABLE(DATA_TRANSFER_ITEMS)
-    RuntimeEnabledFeatures::setDataTransferItemsEnabled(enable);
-#endif
+    // FIXME: This is in the process of being removed.
 }
 
 bool WebRuntimeFeatures::isDataTransferItemsEnabled()
