@@ -300,7 +300,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
  private:
   // Reset the member variables corresponding to same-finger state and
   // updates changed_time_ to |now|.
-  void ResetSameFingersState(stime_t now);
+  void ResetSameFingersState(const HardwareState& hwstate);
 
   // Sets pointing_.
   void UpdatePointingFingers(const HardwareState& hwstate);

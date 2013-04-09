@@ -756,7 +756,7 @@ void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       (hwstate->buttons_down == state_buffer_.Get(1)->buttons_down);
   if (!same_fingers) {
     // Fingers changed, do nothing this time
-    ResetSameFingersState(hwstate->timestamp);
+    ResetSameFingersState(*hwstate);
     FillStartPositions(*hwstate);
     UpdatePinchState(*hwstate, true);
     moving_finger_id_ = -1;
@@ -821,12 +821,12 @@ void ImmediateInterpreter::FillOriginInfo(
   }
 }
 
-void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
+void ImmediateInterpreter::ResetSameFingersState(const HardwareState& hwstate) {
   pointing_.clear();
   fingers_.clear();
   start_positions_.clear();
-  moving_.clear();
-  changed_time_ = now;
+  RemoveMissingIdsFromSet(&moving_, hwstate);
+  changed_time_ = hwstate.timestamp;
 }
 
 void ImmediateInterpreter::UpdatePointingFingers(const HardwareState& hwstate) {
@@ -1854,13 +1854,13 @@ int ImmediateInterpreter::EvaluateButtonType(
   const FingerState* fingers[4] = {0};
   int num_fingers = 0;
   for (int i = 0; i < hwstate.touch_cnt; ++i) {
-    if (!(hwstate.fingers[i].flags & GESTURES_FINGER_PALM)) {
-      // we don't support more than 4 fingers
-      if (num_fingers >= 4)
-        return hwstate.buttons_down;
-      fingers[num_fingers] = &hwstate.fingers[i];
-      num_fingers++;
-    }
+    const FingerState& fs = hwstate.fingers[i];
+    if (fs.flags & (GESTURES_FINGER_PALM | GESTURES_FINGER_POSSIBLE_PALM))
+      continue;
+    // we don't support more than 4 fingers
+    if (num_fingers >= 4)
+      return hwstate.buttons_down;
+    fingers[num_fingers++] = &fs;
   }
 
   // Single finger is trivial
@@ -1878,9 +1878,11 @@ int ImmediateInterpreter::EvaluateButtonType(
   for (int i = 0; i < num_fingers; ++i) {
     stime_t finger_age = button_down_time -
                          finger_origin_timestamp(fingers[i]->tracking_id);
+    bool moving_finger = SetContainsValue(moving_, fingers[i]->tracking_id)
+                      || (DistanceTravelledSq(*fingers[i], true) > kMoveDistSq);
     if (!SetContainsValue(pointing_, fingers[i]->tracking_id))
       fingers_status[i] = GESTURES_FINGER_STATUS_COLD;
-    else if (DistanceTravelledSq(*fingers[i], true) > kMoveDistSq)
+    else if (moving_finger)
       fingers_status[i] = GESTURES_FINGER_STATUS_HOT;
     else if (finger_age < right_click_second_finger_age_.val_)
       fingers_status[i] = GESTURES_FINGER_STATUS_RECENT;
