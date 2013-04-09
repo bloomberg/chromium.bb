@@ -66,22 +66,24 @@ public:
 
     virtual void setVisible(bool) = 0;
 
-    virtual float duration() const = 0;
+    virtual double duration() const { return 0; }
 
-    virtual float currentTime() const = 0;
-    virtual void seek(float time) = 0;
+    virtual double currentTime() const { return 0; }
+
+    virtual void seek(double) { }
+
     virtual bool seeking() const = 0;
 
-    virtual float startTime() const { return 0; }
-
+    virtual double startTime() const { return 0; }
     virtual double initialTime() const { return 0; }
 
-    virtual void setRate(float) = 0;
+    virtual void setRate(double) { }
+
     virtual void setPreservesPitch(bool) { }
 
     virtual bool paused() const = 0;
 
-    virtual void setVolume(float) = 0;
+    virtual void setVolume(double) { }
 
     virtual bool supportsMuting() const { return false; }
     virtual void setMuted(bool) { }
@@ -93,7 +95,7 @@ public:
     virtual MediaPlayer::ReadyState readyState() const = 0;
 
     virtual PassRefPtr<TimeRanges> seekable() const { return maxTimeSeekable() ? TimeRanges::create(0, maxTimeSeekable()) : TimeRanges::create(); }
-    virtual float maxTimeSeekable() const = 0;
+    virtual double maxTimeSeekable() const { return 0; }
     virtual PassRefPtr<TimeRanges> buffered() const = 0;
 
     virtual bool didLoadingProgress() const = 0;
@@ -142,7 +144,7 @@ public:
 
     // Time value in the movie's time scale. It is only necessary to override this if the media
     // engine uses rational numbers to represent media time.
-    virtual float mediaTimeForTimeValue(float timeValue) const { return timeValue; }
+    virtual double mediaTimeForTimeValue(double timeValue) const { return timeValue; }
 
     // Overide this if it is safe for HTMLMediaElement to cache movie time and report
     // 'currentTime' as [cached time + elapsed wall time]. Returns the maximum wall time

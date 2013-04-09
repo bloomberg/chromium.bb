@@ -246,7 +246,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_lastSeekTime(0)
     , m_previousProgressTime(numeric_limits<double>::max())
     , m_lastTimeUpdateEventWallTime(0)
-    , m_lastTimeUpdateEventMovieTime(numeric_limits<float>::max())
+    , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     , m_proxyWidget(0)
@@ -1030,7 +1030,7 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a,
 }
 
 
-void HTMLMediaElement::updateActiveTextTrackCues(float movieTime)
+void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
 {
     LOG(Media, "HTMLMediaElement::updateActiveTextTracks");
 
@@ -1065,7 +1065,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(float movieTime)
     // 3 - Let last time be the current playback position at the time this
     // algorithm was last run for this media element, if this is not the first
     // time it has run.
-    float lastTime = m_lastTextTrackUpdateTime;
+    double lastTime = m_lastTextTrackUpdateTime;
 
     // 4 - If the current playback position has, since the last time this
     // algorithm was run, only changed through its usual monotonic increase
@@ -1078,8 +1078,8 @@ void HTMLMediaElement::updateActiveTextTrackCues(float movieTime)
             m_cueTree.allOverlaps(m_cueTree.createInterval(lastTime, movieTime));
 
         for (size_t i = 0; i < potentiallySkippedCues.size(); ++i) {
-            float cueStartTime = potentiallySkippedCues[i].low();
-            float cueEndTime = potentiallySkippedCues[i].high();
+            double cueStartTime = potentiallySkippedCues[i].low();
+            double cueEndTime = potentiallySkippedCues[i].high();
 
             // Consider cues that may have been missed since the last seek time.
             if (cueStartTime > max(m_lastSeekTime, lastTime) && cueEndTime < movieTime)
@@ -1915,7 +1915,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
     }
 }
 
-void HTMLMediaElement::rewind(float timeDelta)
+void HTMLMediaElement::rewind(double timeDelta)
 {
     LOG(Media, "HTMLMediaElement::rewind(%f)", timeDelta);
     setCurrentTime(max(currentTime() - timeDelta, minTimeSeekable()), IGNORE_EXCEPTION);
@@ -1927,7 +1927,7 @@ void HTMLMediaElement::returnToRealtime()
     setCurrentTime(maxTimeSeekable(), IGNORE_EXCEPTION);
 }
 
-void HTMLMediaElement::addPlayedRange(float start, float end)
+void HTMLMediaElement::addPlayedRange(double start, double end)
 {
     LOG(Media, "HTMLMediaElement::addPlayedRange(%f, %f)", start, end);
     if (!m_playedTimeRanges)
@@ -1954,7 +1954,7 @@ void HTMLMediaElement::prepareToPlay()
     m_player->prepareToPlay();
 }
 
-void HTMLMediaElement::seek(float time, ExceptionCode& ec)
+void HTMLMediaElement::seek(double time, ExceptionCode& ec)
 {
     LOG(Media, "HTMLMediaElement::seek(%f)", time);
 
@@ -1972,7 +1972,7 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
 
     // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
     refreshCachedTime();
-    float now = currentTime();
+    double now = currentTime();
 
     // 2 - If the element's seeking IDL attribute is true, then another instance of this algorithm is
     // already running. Abort that other instance of the algorithm without waiting for the step that
@@ -1988,7 +1988,7 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
     time = min(time, duration());
 
     // 6 - If the new playback position is less than the earliest possible position, let it be that position instead.
-    float earliestTime = m_player->startTime();
+    double earliestTime = m_player->startTime();
     time = max(time, earliestTime);
 
     // Ask the media engine for the time value in the movie's time scale before comparing with current time. This
@@ -1997,7 +1997,7 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
     // not generate a timechanged callback. This means m_seeking will never be cleared and we will never 
     // fire a 'seeked' event.
 #if !LOG_DISABLED
-    float mediaTime = m_player->mediaTimeForTimeValue(time);
+    double mediaTime = m_player->mediaTimeForTimeValue(time);
     if (time != mediaTime)
         LOG(Media, "HTMLMediaElement::seek(%f) - media timeline equivalent is %f", time, mediaTime);
 #endif
@@ -2102,7 +2102,7 @@ void HTMLMediaElement::invalidateCachedTime()
 }
 
 // playback state
-float HTMLMediaElement::currentTime() const
+double HTMLMediaElement::currentTime() const
 {
 #if LOG_CACHED_TIME_WARNINGS
     static const double minCachedDeltaForWarning = 0.01;
@@ -2118,7 +2118,7 @@ float HTMLMediaElement::currentTime() const
 
     if (m_cachedTime != MediaPlayer::invalidTime() && m_paused) {
 #if LOG_CACHED_TIME_WARNINGS
-        float delta = m_cachedTime - m_player->currentTime();
+        double delta = m_cachedTime - m_player->currentTime();
         if (delta > minCachedDeltaForWarning)
             LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when paused", delta);
 #endif
@@ -2134,10 +2134,10 @@ float HTMLMediaElement::currentTime() const
 
         // Not too soon, use the cached time only if it hasn't expired.
         if (wallClockDelta < maximumDurationToCacheMediaTime) {
-            float adjustedCacheTime = static_cast<float>(m_cachedTime + (m_playbackRate * wallClockDelta));
+            double adjustedCacheTime = m_cachedTime + (m_playbackRate * wallClockDelta);
 
 #if LOG_CACHED_TIME_WARNINGS
-            float delta = adjustedCacheTime - m_player->currentTime();
+            double delta = adjustedCacheTime - m_player->currentTime();
             if (delta > minCachedDeltaForWarning)
                 LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when playing", delta);
 #endif
@@ -2148,7 +2148,7 @@ float HTMLMediaElement::currentTime() const
 #if LOG_CACHED_TIME_WARNINGS
     if (maximumDurationToCacheMediaTime && now > m_minimumWallClockTimeToCacheMediaTime && m_cachedTime != MediaPlayer::invalidTime()) {
         double wallClockDelta = now - m_cachedTimeWallClockUpdateTime;
-        float delta = m_cachedTime + (m_playbackRate * wallClockDelta) - m_player->currentTime();
+        double delta = m_cachedTime + (m_playbackRate * wallClockDelta) - m_player->currentTime();
         LOG(Media, "HTMLMediaElement::currentTime - cached time was %f seconds off of media time when it expired", delta);
     }
 #endif
@@ -2158,7 +2158,7 @@ float HTMLMediaElement::currentTime() const
     return m_cachedTime;
 }
 
-void HTMLMediaElement::setCurrentTime(float time, ExceptionCode& ec)
+void HTMLMediaElement::setCurrentTime(double time, ExceptionCode& ec)
 {
     if (m_mediaController) {
         ec = INVALID_STATE_ERR;
@@ -2167,7 +2167,7 @@ void HTMLMediaElement::setCurrentTime(float time, ExceptionCode& ec)
     seek(time, ec);
 }
 
-float HTMLMediaElement::startTime() const
+double HTMLMediaElement::startTime() const
 {
     if (!m_player)
         return 0;
@@ -2185,12 +2185,12 @@ double HTMLMediaElement::initialTime() const
     return m_player->initialTime();
 }
 
-float HTMLMediaElement::duration() const
+double HTMLMediaElement::duration() const
 {
     if (m_player && m_readyState >= HAVE_METADATA)
         return m_player->duration();
 
-    return numeric_limits<float>::quiet_NaN();
+    return numeric_limits<double>::quiet_NaN();
 }
 
 bool HTMLMediaElement::paused() const
@@ -2198,12 +2198,12 @@ bool HTMLMediaElement::paused() const
     return m_paused;
 }
 
-float HTMLMediaElement::defaultPlaybackRate() const
+double HTMLMediaElement::defaultPlaybackRate() const
 {
     return m_defaultPlaybackRate;
 }
 
-void HTMLMediaElement::setDefaultPlaybackRate(float rate)
+void HTMLMediaElement::setDefaultPlaybackRate(double rate)
 {
     if (m_defaultPlaybackRate != rate) {
         m_defaultPlaybackRate = rate;
@@ -2211,12 +2211,12 @@ void HTMLMediaElement::setDefaultPlaybackRate(float rate)
     }
 }
 
-float HTMLMediaElement::playbackRate() const
+double HTMLMediaElement::playbackRate() const
 {
     return m_playbackRate;
 }
 
-void HTMLMediaElement::setPlaybackRate(float rate)
+void HTMLMediaElement::setPlaybackRate(double rate)
 {
     LOG(Media, "HTMLMediaElement::setPlaybackRate(%f)", rate);
     
@@ -2232,7 +2232,7 @@ void HTMLMediaElement::setPlaybackRate(float rate)
 
 void HTMLMediaElement::updatePlaybackRate()
 {
-    float effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
+    double effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
     if (m_player && potentiallyPlaying() && m_player->rate() != effectiveRate)
         m_player->setRate(effectiveRate);
 }
@@ -2526,12 +2526,12 @@ void HTMLMediaElement::setControls(bool b)
     setBooleanAttribute(controlsAttr, b);
 }
 
-float HTMLMediaElement::volume() const
+double HTMLMediaElement::volume() const
 {
     return m_volume;
 }
 
-void HTMLMediaElement::setVolume(float vol, ExceptionCode& ec)
+void HTMLMediaElement::setVolume(double vol, ExceptionCode& ec)
 {
     LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
@@ -2660,7 +2660,7 @@ void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
 
     // Some media engines make multiple "time changed" callbacks at the same time, but we only want one
     // event at a given time so filter here
-    float movieTime = currentTime();
+    double movieTime = currentTime();
     if (movieTime != m_lastTimeUpdateEventMovieTime) {
         scheduleEvent(eventNames().timeupdateEvent);
         m_lastTimeUpdateEventWallTime = now;
@@ -2673,20 +2673,20 @@ bool HTMLMediaElement::canPlay() const
     return paused() || ended() || m_readyState < HAVE_METADATA;
 }
 
-float HTMLMediaElement::percentLoaded() const
+double HTMLMediaElement::percentLoaded() const
 {
     if (!m_player)
         return 0;
-    float duration = m_player->duration();
+    double duration = m_player->duration();
 
     if (!duration || std::isinf(duration))
         return 0;
 
-    float buffered = 0;
+    double buffered = 0;
     RefPtr<TimeRanges> timeRanges = m_player->buffered();
     for (unsigned i = 0; i < timeRanges->length(); ++i) {
-        float start = timeRanges->start(i, IGNORE_EXCEPTION);
-        float end = timeRanges->end(i, IGNORE_EXCEPTION);
+        double start = timeRanges->start(i, IGNORE_EXCEPTION);
+        double end = timeRanges->end(i, IGNORE_EXCEPTION);
         buffered += end - start;
     }
     return buffered / duration;
@@ -3356,8 +3356,8 @@ void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
     // movie time.
     scheduleTimeupdateEvent(false);
 
-    float now = currentTime();
-    float dur = duration();
+    double now = currentTime();
+    double dur = duration();
     
     // When the current playback position reaches the end of the media resource when the direction of
     // playback is forwards, then the user agent must follow these steps:
@@ -3399,7 +3399,7 @@ void HTMLMediaElement::mediaPlayerVolumeChanged(MediaPlayer*)
 
     beginProcessingMediaPlayerCallback();
     if (m_player) {
-        float vol = m_player->volume();
+        double vol = m_player->volume();
         if (vol != m_volume) {
             m_volume = vol;
             updateVolume();
@@ -3428,8 +3428,8 @@ void HTMLMediaElement::mediaPlayerDurationChanged(MediaPlayer* player)
     scheduleEvent(eventNames().durationchangeEvent);
     mediaPlayerCharacteristicChanged(player);
 
-    float now = currentTime();
-    float dur = duration();
+    double now = currentTime();
+    double dur = duration();
     if (now > dur)
         seek(dur, IGNORE_EXCEPTION);
 
@@ -3574,7 +3574,7 @@ PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
 PassRefPtr<TimeRanges> HTMLMediaElement::played()
 {
     if (m_playing) {
-        float time = currentTime();
+        double time = currentTime();
         if (time > m_lastSeekTime)
             addPlayedRange(m_lastSeekTime, time);
     }
@@ -3606,7 +3606,7 @@ bool HTMLMediaElement::couldPlayIfEnoughData() const
 
 bool HTMLMediaElement::endedPlayback() const
 {
-    float dur = duration();
+    double dur = duration();
     if (!m_player || std::isnan(dur))
         return false;
 
@@ -3620,7 +3620,7 @@ bool HTMLMediaElement::endedPlayback() const
     // and the current playback position is the end of the media resource and the direction
     // of playback is forwards, Either the media element does not have a loop attribute specified,
     // or the media element has a current media controller.
-    float now = currentTime();
+    double now = currentTime();
     if (m_playbackRate > 0)
         return dur > 0 && now >= dur && (!loop() || m_mediaController);
 
@@ -3649,12 +3649,12 @@ bool HTMLMediaElement::pausedForUserInteraction() const
     return false;
 }
 
-float HTMLMediaElement::minTimeSeekable() const
+double HTMLMediaElement::minTimeSeekable() const
 {
     return 0;
 }
 
-float HTMLMediaElement::maxTimeSeekable() const
+double HTMLMediaElement::maxTimeSeekable() const
 {
     return m_player ? m_player->maxTimeSeekable() : 0;
 }
@@ -3667,7 +3667,7 @@ void HTMLMediaElement::updateVolume()
     // Avoid recursion when the player reports volume changes.
     if (!processingMediaPlayerCallback()) {
         Page* page = document()->page();
-        float volumeMultiplier = page ? page->mediaVolume() : 1;
+        double volumeMultiplier = page ? page->mediaVolume() : 1;
         bool shouldMute = m_muted;
 
         if (m_mediaController) {
@@ -3732,7 +3732,7 @@ void HTMLMediaElement::updatePlayState()
 
         m_playbackProgressTimer.stop();
         m_playing = false;
-        float time = currentTime();
+        double time = currentTime();
         if (time > m_lastSeekTime)
             addPlayedRange(m_lastSeekTime, time);
 
@@ -4566,7 +4566,7 @@ bool HTMLMediaElement::isBlockedOnMediaController() const
     // or if its media controller position is either before the media resource's earliest possible 
     // position relative to the MediaController's timeline or after the end of the media resource 
     // relative to the MediaController's timeline.
-    float mediaControllerPosition = m_mediaController->currentTime();
+    double mediaControllerPosition = m_mediaController->currentTime();
     if (mediaControllerPosition < startTime() || mediaControllerPosition > startTime() + duration())
         return true;
 
@@ -4576,7 +4576,7 @@ bool HTMLMediaElement::isBlockedOnMediaController() const
 void HTMLMediaElement::prepareMediaFragmentURI()
 {
     MediaFragmentURIParser fragmentParser(m_currentSrc);
-    float dur = duration();
+    double dur = duration();
     
     double start = fragmentParser.startTime();
     if (start != MediaFragmentURIParser::invalidTimeValue() && start > 0) {

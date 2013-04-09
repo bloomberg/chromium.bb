@@ -231,8 +231,8 @@ public:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-    void setPosition(float);
-    void setDuration(float);
+    void setPosition(double);
+    void setDuration(double);
 
 private:
     explicit MediaControlTimelineElement(Document*, MediaControls*);

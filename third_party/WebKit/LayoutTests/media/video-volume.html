@@ -6,6 +6,8 @@
     testExpected("video.volume", 1.0);
     run("video.volume = 0.5");
     testExpected("video.volume", 0.5);
+    run("video.volume = Number.MIN_VALUE");
+    testExpected("video.volume", Number.MIN_VALUE);
     run("video.volume = 0");
     testExpected("video.volume", 0);
     testDOMException("video.volume = 1.5", "DOMException.INDEX_SIZE_ERR");

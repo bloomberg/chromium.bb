@@ -62,6 +62,23 @@
                 testExpected("video.playbackRate", 1);
                 testExpected("video.defaultPlaybackRate", 2);
                 consoleWrite("");
+
+                consoleWrite("Test extreme playback rates");
+                run("video.defaultPlaybackRate = Number.MIN_VALUE");
+                testExpected("video.defaultPlaybackRate", Number.MIN_VALUE);
+                consoleWrite("");
+
+                run("video.defaultPlaybackRate = Number.MAX_VALUE");
+                testExpected("video.defaultPlaybackRate", Number.MAX_VALUE);
+                consoleWrite("");
+
+                run("video.playbackRate = Number.MIN_VALUE");
+                testExpected("video.playbackRate", Number.MIN_VALUE);
+                consoleWrite("");
+
+                run("video.playbackRate = Number.MAX_VALUE");
+                testExpected("video.playbackRate", Number.MAX_VALUE);
+                consoleWrite("");
                 endTest();
             }
 

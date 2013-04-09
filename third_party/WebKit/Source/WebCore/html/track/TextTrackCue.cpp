@@ -763,7 +763,7 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
     }
 }
 
-void TextTrackCue::updateDisplayTree(float movieTime)
+void TextTrackCue::updateDisplayTree(double movieTime)
 {
     // The display tree may contain WebVTT timestamp objects representing
     // timestamps (processing instructions), along with displayable nodes.

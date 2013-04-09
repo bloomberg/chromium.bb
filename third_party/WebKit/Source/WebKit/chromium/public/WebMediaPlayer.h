@@ -105,15 +105,15 @@ public:
     virtual void pause() = 0;
     virtual bool supportsFullscreen() const = 0;
     virtual bool supportsSave() const = 0;
-    virtual void seek(float seconds) = 0;
-    virtual void setEndTime(float seconds) = 0;
-    virtual void setRate(float) = 0;
-    virtual void setVolume(float) = 0;
+    virtual void seekFloat(float seconds) = 0;
+    virtual void setEndTimeFloat(float seconds) = 0;
+    virtual void setRateFloat(float rate)  = 0;
+    virtual void setVolumeFloat(float volume) = 0;
     virtual void setVisible(bool) = 0;
     virtual void setPreload(Preload) { };
     virtual bool totalBytesKnown() = 0;
     virtual const WebTimeRanges& buffered() = 0;
-    virtual float maxTimeSeekable() const = 0;
+    virtual float maxTimeSeekableFloat() const = 0;
 
     virtual void setSize(const WebSize&) = 0;
 
@@ -129,8 +129,8 @@ public:
     // Getters of playback state.
     virtual bool paused() const = 0;
     virtual bool seeking() const = 0;
-    virtual float duration() const = 0;
-    virtual float currentTime() const = 0;
+    virtual float durationFloat() const = 0;
+    virtual float currentTimeFloat() const = 0;
 
     // Get rate of loading the resource.
     virtual int dataRate() const = 0;
@@ -146,7 +146,7 @@ public:
     virtual bool didPassCORSAccessCheck() const = 0;
     virtual MovieLoadType movieLoadType() const = 0;
 
-    virtual float mediaTimeForTimeValue(float timeValue) const = 0;
+    virtual float mediaTimeForTimeValueFloat(float timeValue) const = 0;
 
     virtual unsigned decodedFrameCount() const = 0;
     virtual unsigned droppedFrameCount() const = 0;

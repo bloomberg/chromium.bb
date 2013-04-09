@@ -61,7 +61,7 @@ public:
 
     virtual void networkStateChanged() = 0;
     virtual void readyStateChanged() = 0;
-    virtual void volumeChanged(float) = 0;
+    virtual void volumeChanged(double) = 0;
     virtual void muteChanged(bool) = 0;
     virtual void timeChanged() = 0;
     virtual void repaint() = 0;
@@ -70,7 +70,7 @@ public:
     virtual void sizeChanged() = 0;
     virtual void setOpaque(bool) = 0;
     virtual void sawUnsupportedTracks() = 0;
-    virtual float volume() const = 0;
+    virtual double volume() const = 0;
     virtual void playbackStateChanged() = 0;
     virtual WebMediaPlayer::Preload preload() const = 0;
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) = 0;

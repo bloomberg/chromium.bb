@@ -116,7 +116,7 @@ void WebMediaPlayerClientImpl::readyStateChanged()
     m_mediaPlayer->readyStateChanged();
 }
 
-void WebMediaPlayerClientImpl::volumeChanged(float newVolume)
+void WebMediaPlayerClientImpl::volumeChanged(double newVolume)
 {
     ASSERT(m_mediaPlayer);
     m_mediaPlayer->volumeChanged(newVolume);
@@ -175,11 +175,11 @@ void WebMediaPlayerClientImpl::sawUnsupportedTracks()
     m_mediaPlayer->mediaPlayerClient()->mediaPlayerSawUnsupportedTracks(m_mediaPlayer);
 }
 
-float WebMediaPlayerClientImpl::volume() const
+double WebMediaPlayerClientImpl::volume() const
 {
     if (m_mediaPlayer)
         return m_mediaPlayer->volume();
-    return 0.0f;
+    return 0.0;
 }
 
 void WebMediaPlayerClientImpl::playbackStateChanged()
@@ -464,24 +464,24 @@ void WebMediaPlayerClientImpl::setVisible(bool visible)
         m_webMediaPlayer->setVisible(visible);
 }
 
-float WebMediaPlayerClientImpl::duration() const
+double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->duration();
+        return m_webMediaPlayer->durationFloat();
     return 0.0f;
 }
 
-float WebMediaPlayerClientImpl::currentTime() const
+double WebMediaPlayerClientImpl::currentTime() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->currentTime();
+        return m_webMediaPlayer->currentTimeFloat();
     return 0.0f;
 }
 
-void WebMediaPlayerClientImpl::seek(float time)
+void WebMediaPlayerClientImpl::seek(double time)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->seek(time);
+        m_webMediaPlayer->seekFloat(time);
 }
 
 bool WebMediaPlayerClientImpl::seeking() const
@@ -491,16 +491,16 @@ bool WebMediaPlayerClientImpl::seeking() const
     return false;
 }
 
-void WebMediaPlayerClientImpl::setEndTime(float time)
+void WebMediaPlayerClientImpl::setEndTime(double time)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->setEndTime(time);
+        m_webMediaPlayer->setEndTimeFloat(time);
 }
 
-void WebMediaPlayerClientImpl::setRate(float rate)
+void WebMediaPlayerClientImpl::setRate(double rate)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->setRate(rate);
+        m_webMediaPlayer->setRateFloat(rate);
 }
 
 bool WebMediaPlayerClientImpl::paused() const
@@ -524,10 +524,10 @@ bool WebMediaPlayerClientImpl::supportsSave() const
     return false;
 }
 
-void WebMediaPlayerClientImpl::setVolume(float volume)
+void WebMediaPlayerClientImpl::setVolume(double volume)
 {
     if (m_webMediaPlayer)
-        m_webMediaPlayer->setVolume(volume);
+        m_webMediaPlayer->setVolumeFloat(volume);
 }
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
@@ -544,11 +544,11 @@ MediaPlayer::ReadyState WebMediaPlayerClientImpl::readyState() const
     return MediaPlayer::HaveNothing;
 }
 
-float WebMediaPlayerClientImpl::maxTimeSeekable() const
+double WebMediaPlayerClientImpl::maxTimeSeekable() const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->maxTimeSeekable();
-    return 0.0f;
+        return m_webMediaPlayer->maxTimeSeekableFloat();
+    return 0.0;
 }
 
 PassRefPtr<TimeRanges> WebMediaPlayerClientImpl::buffered() const
@@ -662,10 +662,10 @@ MediaPlayer::MovieLoadType WebMediaPlayerClientImpl::movieLoadType() const
     return MediaPlayer::Unknown;
 }
 
-float WebMediaPlayerClientImpl::mediaTimeForTimeValue(float timeValue) const
+double WebMediaPlayerClientImpl::mediaTimeForTimeValue(double timeValue) const
 {
     if (m_webMediaPlayer)
-        return m_webMediaPlayer->mediaTimeForTimeValue(timeValue);
+        return m_webMediaPlayer->mediaTimeForTimeValueFloat(timeValue);
     return timeValue;
 }
 

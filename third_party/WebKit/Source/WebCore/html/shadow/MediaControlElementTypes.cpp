@@ -34,7 +34,6 @@
 
 #include "CSSValueKeywords.h"
 #include "ExceptionCodePlaceholder.h"
-#include "FloatConversion.h"
 #include "HTMLNames.h"
 #include "MouseEvent.h"
 #include "RenderMedia.h"
@@ -48,10 +47,10 @@ using namespace HTMLNames;
 class Event;
 
 // FIXME: These constants may need to be tweaked to better match the seeking in the QuickTime plug-in.
-static const float cSkipRepeatDelay = 0.1f;
-static const float cSkipTime = 0.2f;
-static const float cScanRepeatDelay = 1.5f;
-static const float cScanMaximumRate = 8;
+static const double cSkipRepeatDelay = 0.1;
+static const double cSkipTime = 0.2;
+static const double cScanRepeatDelay = 1.5;
+static const double cScanMaximumRate = 8;
 
 HTMLMediaElement* toParentMediaElement(Node* node)
 {
@@ -154,7 +153,7 @@ MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(Document* documen
 {
 }
 
-void MediaControlTimeDisplayElement::setCurrentValue(float time)
+void MediaControlTimeDisplayElement::setCurrentValue(double time)
 {
     m_currentValue = time;
 }
@@ -249,9 +248,9 @@ void MediaControlSeekButtonElement::stopTimer()
         m_seekTimer.stop();
 }
 
-float MediaControlSeekButtonElement::nextRate() const
+double MediaControlSeekButtonElement::nextRate() const
 {
-    float rate = std::min(cScanMaximumRate, fabsf(mediaController()->playbackRate() * 2));
+    double rate = std::min(cScanMaximumRate, fabs(mediaController()->playbackRate() * 2));
     if (!isForwardButton())
         rate *= -1;
     return rate;
@@ -260,7 +259,7 @@ float MediaControlSeekButtonElement::nextRate() const
 void MediaControlSeekButtonElement::seekTimerFired(Timer<MediaControlSeekButtonElement>*)
 {
     if (m_seekType == Skip) {
-        float skipTime = isForwardButton() ? cSkipTime : -cSkipTime;
+        double skipTime = isForwardButton() ? cSkipTime : -cSkipTime;
         mediaController()->setCurrentTime(mediaController()->currentTime() + skipTime, IGNORE_EXCEPTION);
     } else
         mediaController()->setPlaybackRate(nextRate());
@@ -288,7 +287,7 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
     if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
         return;
 
-    float volume = narrowPrecisionToFloat(value().toDouble());
+    double volume = value().toDouble();
     if (volume != mediaController()->volume())
         mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION);
     if (m_clearMutedOnUserInteraction)
@@ -311,9 +310,9 @@ bool MediaControlVolumeSliderElement::willRespondToMouseClickEvents()
     return MediaControlInputElement::willRespondToMouseClickEvents();
 }
 
-void MediaControlVolumeSliderElement::setVolume(float volume)
+void MediaControlVolumeSliderElement::setVolume(double volume)
 {
-    if (value().toFloat() != volume)
+    if (value().toDouble() != volume)
         setValue(String::number(volume));
 }
 

@@ -42,5 +42,18 @@ EVENT(ended)
 EXPECTED (video.playbackRate == '1') OK
 EXPECTED (video.defaultPlaybackRate == '2') OK
 
+Test extreme playback rates
+RUN(video.defaultPlaybackRate = Number.MIN_VALUE)
+EXPECTED (video.defaultPlaybackRate == '5e-324') OK
+
+RUN(video.defaultPlaybackRate = Number.MAX_VALUE)
+EXPECTED (video.defaultPlaybackRate == '1.7976931348623157e+308') OK
+
+RUN(video.playbackRate = Number.MIN_VALUE)
+EXPECTED (video.playbackRate == '5e-324') OK
+
+RUN(video.playbackRate = Number.MAX_VALUE)
+EXPECTED (video.playbackRate == '1.7976931348623157e+308') OK
+
 END OF TEST
 

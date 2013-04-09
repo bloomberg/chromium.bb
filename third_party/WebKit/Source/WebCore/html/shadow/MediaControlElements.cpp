@@ -37,7 +37,6 @@
 #include "EventNames.h"
 #include "EventTarget.h"
 #include "ExceptionCodePlaceholder.h"
-#include "FloatConversion.h"
 #include "Frame.h"
 #include "GraphicsContext.h"
 #include "HTMLVideoElement.h"
@@ -722,7 +721,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
         return;
 
-    float time = narrowPrecisionToFloat(value().toDouble());
+    double time = value().toDouble();
     if (event->type() == eventNames().inputEvent && time != mediaController()->currentTime())
         mediaController()->setCurrentTime(time, IGNORE_EXCEPTION);
 
@@ -739,12 +738,12 @@ bool MediaControlTimelineElement::willRespondToMouseClickEvents()
     return true;
 }
 
-void MediaControlTimelineElement::setPosition(float currentTime)
+void MediaControlTimelineElement::setPosition(double currentTime)
 {
     setValue(String::number(currentTime));
 }
 
-void MediaControlTimelineElement::setDuration(float duration)
+void MediaControlTimelineElement::setDuration(double duration)
 {
     setAttribute(maxAttr, String::number(std::isfinite(duration) ? duration : 0));
 }
