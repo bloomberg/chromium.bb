@@ -115,3 +115,6 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api))
   results.extend(_CheckSubversionConfig(input_api, output_api))
   return results
+
+def GetPreferredTrySlaves(project, change):
+    return ['linux_layout_rel', 'mac_layout_rel', 'win_layout_rel']
