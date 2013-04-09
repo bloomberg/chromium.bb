@@ -201,8 +201,6 @@ public:
     // to know if there is non-affine content, e.g. for drawing into an image.
     bool has3DContent() const;
     
-    bool shouldPropagateCompositingToEnclosingFrame() const;
-
     static RenderLayerCompositor* frameContentsCompositor(RenderPart*);
     // Return true if the layers changed.
     static bool parentFrameContentLayers(RenderPart*);
@@ -304,6 +302,8 @@ private:
 
     void attachRootLayer(RootLayerAttachment);
     void detachRootLayer();
+
+    bool isMainFrame() const;
     
     void rootLayerAttachmentChanged();
 

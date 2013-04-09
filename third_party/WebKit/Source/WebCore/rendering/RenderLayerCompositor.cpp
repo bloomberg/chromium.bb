@@ -260,7 +260,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         showRepaintCounter = settings->showRepaintCounter();
         forceCompositingMode = settings->forceCompositingMode() && hasAcceleratedCompositing;
 
-        if (forceCompositingMode && m_renderView->document()->ownerElement())
+        if (forceCompositingMode && !isMainFrame())
             forceCompositingMode = requiresCompositingForScrollableFrame();
 
         acceleratedDrawingEnabled = settings->acceleratedDrawingEnabled();
@@ -417,8 +417,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         m_secondaryBackingStoreBytes = 0;
 
         Frame* frame = m_renderView->frameView()->frame();
-        bool isMainFrame = !m_renderView->document()->ownerElement();
-        LOG(Compositing, "\nUpdate %d of %s. Overlap testing is %s\n", m_rootLayerUpdateCount, isMainFrame ? "main frame" : frame->tree()->uniqueName().string().utf8().data(),
+        LOG(Compositing, "\nUpdate %d of %s. Overlap testing is %s\n", m_rootLayerUpdateCount, isMainFrame() ? "main frame" : frame->tree()->uniqueName().string().utf8().data(),
             m_compositingConsultsOverlap ? "on" : "off");
     }
 #endif
@@ -511,7 +510,7 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
             layer->ensureBacking();
 
             // At this time, the ScrollingCooridnator only supports the top-level frame.
-            if (layer->isRootLayer() && !m_renderView->document()->ownerElement()) {
+            if (layer->isRootLayer() && !isMainFrame()) {
                 if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                     scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
             }
@@ -1404,7 +1403,7 @@ void RenderLayerCompositor::setIsInWindow(bool isInWindow)
         if (m_rootLayerAttachment != RootLayerUnattached)
             return;
 
-        RootLayerAttachment attachment = shouldPropagateCompositingToEnclosingFrame() ? RootLayerAttachedViaEnclosingFrame : RootLayerAttachedViaChromeClient;
+        RootLayerAttachment attachment = isMainFrame() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
         attachRootLayer(attachment);
     } else {
         if (m_rootLayerAttachment == RootLayerUnattached)
@@ -1466,17 +1465,6 @@ void RenderLayerCompositor::updateRootLayerPosition()
 bool RenderLayerCompositor::has3DContent() const
 {
     return layerHas3DContent(rootRenderLayer());
-}
-
-bool RenderLayerCompositor::shouldPropagateCompositingToEnclosingFrame() const
-{
-    // Parent document content needs to be able to render on top of a composited frame, so correct behavior
-    // is to have the parent document become composited too. However, this can cause problems on platforms that
-    // use native views for frames (like Mac), so disable that behavior on those platforms for now.
-    HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement();
-
-    // If we are the top-level frame, don't propagate.
-    return ownerElement;
 }
 
 bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
@@ -1767,8 +1755,7 @@ bool RenderLayerCompositor::requiresCompositingForScrollableFrame() const
 {
     // Need this done first to determine overflow.
     ASSERT(!m_renderView->needsLayout());
-    HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement();
-    if (!ownerElement)
+    if (isMainFrame())
         return false;
 
     if (!(m_compositingTriggers & ChromeClient::ScrollableInnerFrameTrigger))
@@ -1868,7 +1855,7 @@ bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) 
     m_reevaluateCompositingAfterLayout = true;
 
     RenderLayerCompositor* innerCompositor = frameContentsCompositor(frameRenderer);
-    if (!innerCompositor || !innerCompositor->shouldPropagateCompositingToEnclosingFrame())
+    if (!innerCompositor)
         return false;
 
     // If we can't reliably know the size of the iframe yet, don't change compositing state.
@@ -2207,7 +2194,7 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
 bool RenderLayerCompositor::requiresOverhangAreasLayer() const
 {
     // We don't want a layer if this is a subframe.
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return false;
 
     // We do want a layer if we have a scrolling coordinator and can scroll.
@@ -2225,7 +2212,7 @@ bool RenderLayerCompositor::requiresOverhangAreasLayer() const
 bool RenderLayerCompositor::requiresContentShadowLayer() const
 {
     // We don't want a layer if this is a subframe.
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return false;
 
 #if PLATFORM(MAC)
@@ -2242,7 +2229,7 @@ bool RenderLayerCompositor::requiresContentShadowLayer() const
 
 GraphicsLayer* RenderLayerCompositor::updateLayerForTopOverhangArea(bool wantsLayer)
 {
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return 0;
 
     if (!wantsLayer) {
@@ -2266,7 +2253,7 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForTopOverhangArea(bool wantsLa
 
 GraphicsLayer* RenderLayerCompositor::updateLayerForBottomOverhangArea(bool wantsLayer)
 {
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return 0;
 
     if (!wantsLayer) {
@@ -2291,7 +2278,7 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForBottomOverhangArea(bool want
 
 GraphicsLayer* RenderLayerCompositor::updateLayerForHeader(bool wantsLayer)
 {
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return 0;
 
     if (!wantsLayer) {
@@ -2317,7 +2304,7 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForHeader(bool wantsLayer)
 
 GraphicsLayer* RenderLayerCompositor::updateLayerForFooter(bool wantsLayer)
 {
-    if (m_renderView->document()->ownerElement())
+    if (!isMainFrame())
         return 0;
 
     if (!wantsLayer) {
@@ -2462,7 +2449,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
 
 void RenderLayerCompositor::ensureRootLayer()
 {
-    RootLayerAttachment expectedAttachment = shouldPropagateCompositingToEnclosingFrame() ? RootLayerAttachedViaEnclosingFrame : RootLayerAttachedViaChromeClient;
+    RootLayerAttachment expectedAttachment = isMainFrame() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
     if (expectedAttachment == m_rootLayerAttachment)
          return;
 
@@ -2641,6 +2628,11 @@ void RenderLayerCompositor::detachRootLayer()
 void RenderLayerCompositor::updateRootLayerAttachment()
 {
     ensureRootLayer();
+}
+
+bool RenderLayerCompositor::isMainFrame() const
+{
+    return !m_renderView->document()->ownerElement();
 }
 
 void RenderLayerCompositor::rootLayerAttachmentChanged()
