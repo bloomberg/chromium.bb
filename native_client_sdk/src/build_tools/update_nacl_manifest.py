@@ -620,18 +620,9 @@ class Updater(object):
         platform_bundle.name = bundle_name
         bundle.MergeWithBundle(platform_bundle)
 
-      # Check to ensure this bundle is newer than the online bundle.
-      online_bundle = self.online_manifest.GetBundle(bundle_name)
-      if online_bundle and online_bundle.revision >= bundle.revision:
-        self.delegate.Print(
-            '  Revision %s is not newer than than online revision %s. '
-            'Skipping.' % (bundle.revision, online_bundle.revision))
-
-        manifest.SetBundle(online_bundle)
-        continue
-
+      # Fix the stability and recommended values
       major_version = SplitVersion(version)[0]
-      if major_version < max_stable_version and channel == 'stable':
+      if major_version < max_stable_version:
         bundle.stability = 'post_stable'
       else:
         bundle.stability = channel
@@ -640,6 +631,21 @@ class Updater(object):
         bundle.recommended = 'yes'
       else:
         bundle.recommended = 'no'
+
+      # Check to ensure this bundle is newer than the online bundle.
+      online_bundle = self.online_manifest.GetBundle(bundle_name)
+      if online_bundle:
+        # This test used to be online_bundle.revision >= bundle.revision.
+        # That doesn't do quite what we want: sometimes the metadata changes
+        # but the revision stays the same -- we still want to push those
+        # changes.
+        if online_bundle.revision > bundle.revision or online_bundle == bundle:
+          self.delegate.Print(
+              '  Revision %s is not newer than than online revision %s. '
+              'Skipping.' % (bundle.revision, online_bundle.revision))
+
+          manifest.SetBundle(online_bundle)
+          continue
     self._UploadManifest(manifest)
     self.delegate.Print('Done.')
 
@@ -833,8 +839,9 @@ def main(args):
     try:
       delegate = RealDelegate(options.dryrun, options.gsutil, options.verbose,
                               options.mailfrom, options.mailto)
-      # Only look for naclports archives > 26.0.1391.0 = r178222
-      extra_archives = [('naclports.tar.bz2', '26.0.1391.0')]
+      # Only look for naclports archives >= 27. The old ports bundles don't
+      # include license information.
+      extra_archives = [('naclports.tar.bz2', '27.0.0.0')]
       Run(delegate, ('mac', 'win', 'linux'), extra_archives,
           fixed_bundle_versions)
       return 0
