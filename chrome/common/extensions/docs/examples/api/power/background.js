@@ -3,23 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * Available levels of power-saving-overriding.
+ * States that the extension can be in.
  */
-var LevelEnum = {
-  DISABLED: '',
+var StateEnum = {
+  DISABLED: 'disabled',
   DISPLAY: 'display',
   SYSTEM: 'system'
 };
 
 /**
- * Key used for storing the current level in {localStorage}.
+ * Key used for storing the current state in {localStorage}.
  */
-var LEVEL_KEY = 'level';
-
-/**
- * Current {LevelEnum}.
- */
-var currentLevel = LevelEnum.DISABLED;
+var STATE_KEY = 'state';
 
 /**
  * Should the old {chrome.experimental.power} API be used rather than
@@ -28,40 +23,41 @@ var currentLevel = LevelEnum.DISABLED;
 var useOldApi = !chrome.power;
 
 /**
- * Returns the previously-used level.
- * @return {string} Saved {LevelEnum} from local storage.
+ * Loads the locally-saved state asynchronously.
+ * @param {function} callback Callback invoked with the loaded {StateEnum}.
  */
-function getInitialLevel() {
-  if (LEVEL_KEY in localStorage) {
-    var savedLevel = localStorage[LEVEL_KEY];
-    for (var key in LevelEnum) {
-      if (savedLevel == LevelEnum[key]) {
-        return savedLevel;
+function loadSavedState(callback) {
+  chrome.storage.local.get(STATE_KEY, function(items) {
+    var savedState = items[STATE_KEY];
+    for (var key in StateEnum) {
+      if (savedState == StateEnum[key]) {
+        callback(savedState);
+        return;
       }
     }
-  }
-  return LevelEnum.DISABLED;
+    callback(StateEnum.DISABLED);
+  });
 }
 
 /**
- * Switches to a new power-saving-overriding level.
- * @param {string} newLevel New {LevelEnum} to use.
+ * Switches to a new state.
+ * @param {string} newState New {StateEnum} to use.
  */
-function setLevel(newLevel) {
+function setState(newState) {
   var imagePrefix = 'night';
   var title = '';
 
   // The old API doesn't support the "system" level.
-  if (useOldApi && newLevel == LevelEnum.SYSTEM)
-    newLevel = LevelEnum.DISPLAY;
+  if (useOldApi && newState == StateEnum.SYSTEM)
+    newState = StateEnum.DISPLAY;
 
-  switch (newLevel) {
-    case LevelEnum.DISABLED:
+  switch (newState) {
+    case StateEnum.DISABLED:
       (useOldApi ? chrome.experimental.power : chrome.power).releaseKeepAwake();
       imagePrefix = 'night';
       title = chrome.i18n.getMessage('disabledTitle');
       break;
-    case LevelEnum.DISPLAY:
+    case StateEnum.DISPLAY:
       if (useOldApi)
         chrome.experimental.power.requestKeepAwake(function() {});
       else
@@ -69,17 +65,18 @@ function setLevel(newLevel) {
       imagePrefix = 'day';
       title = chrome.i18n.getMessage('displayTitle');
       break;
-    case LevelEnum.SYSTEM:
+    case StateEnum.SYSTEM:
       chrome.power.requestKeepAwake('system');
       imagePrefix = 'sunset';
       title = chrome.i18n.getMessage('systemTitle');
       break;
     default:
-      throw 'Invalid level "' + newLevel + '"';
+      throw 'Invalid state "' + newState + '"';
   }
 
-  currentLevel = newLevel;
-  localStorage[LEVEL_KEY] = currentLevel;
+  var items = {};
+  items[STATE_KEY] = newState;
+  chrome.storage.local.set(items);
 
   chrome.browserAction.setIcon({
     path: {
@@ -90,24 +87,29 @@ function setLevel(newLevel) {
   chrome.browserAction.setTitle({title: title});
 }
 
-/**
- * Cycles levels in response to browser action icon clicks.
- */
-function handleClicked() {
-  switch (currentLevel) {
-    case LevelEnum.DISABLED:
-      setLevel(LevelEnum.DISPLAY);
-      break;
-    case LevelEnum.DISPLAY:
-      setLevel(useOldApi ? LevelEnum.DISABLED : LevelEnum.SYSTEM);
-      break;
-    case LevelEnum.SYSTEM:
-      setLevel(LevelEnum.DISABLED);
-      break;
-    default:
-      throw 'Invalid level "' + currentLevel + '"';
-  }
-}
+chrome.browserAction.onClicked.addListener(function() {
+  loadSavedState(function(state) {
+    switch (state) {
+      case StateEnum.DISABLED:
+        setState(StateEnum.DISPLAY);
+        break;
+      case StateEnum.DISPLAY:
+        setState(useOldApi ? StateEnum.DISABLED : StateEnum.SYSTEM);
+        break;
+      case StateEnum.SYSTEM:
+        setState(StateEnum.DISABLED);
+        break;
+      default:
+        throw 'Invalid state "' + state + '"';
+    }
+  });
+});
 
-chrome.browserAction.onClicked.addListener(handleClicked);
-setLevel(getInitialLevel());
+chrome.runtime.onStartup.addListener(function() {
+  loadSavedState(function(state) { setState(state); });
+});
+
+// TODO(derat): Remove this once http://crbug.com/222473 is fixed.
+chrome.windows.onCreated.addListener(function() {
+  loadSavedState(function(state) { setState(state); });
+});
