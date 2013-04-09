@@ -32,6 +32,7 @@
 namespace WebKit {
 
 class WebGraphicsContext3D;
+struct WebExternalTextureMailbox;
 
 class WebTextureUpdater {
 public:
@@ -45,6 +46,14 @@ class WebExternalTextureLayerClient {
 public:
     virtual unsigned prepareTexture(WebTextureUpdater&) = 0;
     virtual WebGraphicsContext3D* context() = 0;
+
+    // Returns true and provides a mailbox if a new frame is available.
+    // Returns false if no new data is available and the old mailbox is to be reused.
+    virtual bool prepareMailbox(WebExternalTextureMailbox*) = 0;
+
+    // Notifies the client when a mailbox is no longer in use by the compositor and provides
+    // a sync point to wait on before the mailbox could be consumes again by the client.
+    virtual void mailboxReleased(const WebExternalTextureMailbox&) = 0;
 
 protected:
     virtual ~WebExternalTextureLayerClient() { }

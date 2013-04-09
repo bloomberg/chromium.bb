@@ -46,6 +46,9 @@ public:
 
     virtual WebLayer* layer() = 0;
 
+    // Clears texture from the layer.
+    virtual void clearTexture() { }
+
     // Sets the texture id that represents the layer, in the namespace of the
     // compositor context.
     virtual void setTextureId(unsigned) = 0;

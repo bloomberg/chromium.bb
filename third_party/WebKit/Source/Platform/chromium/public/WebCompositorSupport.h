@@ -77,6 +77,8 @@ public:
 
     virtual WebExternalTextureLayer* createExternalTextureLayer(WebExternalTextureLayerClient* = 0) { return 0; }
 
+    virtual WebExternalTextureLayer* createExternalTextureLayerForMailbox(WebExternalTextureLayerClient*) { return 0; }
+
     virtual WebImageLayer* createImageLayer() { return 0; }
 
     virtual WebSolidColorLayer* createSolidColorLayer() { return 0; }

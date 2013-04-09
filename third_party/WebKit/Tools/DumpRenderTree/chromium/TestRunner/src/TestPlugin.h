@@ -79,6 +79,8 @@ public:
     // WebExternalTextureLayerClient methods:
     virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) { return m_colorTexture; }
     virtual WebKit::WebGraphicsContext3D* context() { return m_context; }
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) { return false; };
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) { }
 
 private:
     TestPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&, WebTestDelegate*);

@@ -111,6 +111,9 @@ public:
         return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_drawingBuffer->graphicsContext3D());
     }
 
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE { return false; }
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE { }
+
     void clearTextureId()
     {
         m_layer->setTextureId(0);

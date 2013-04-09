@@ -59,6 +59,8 @@ public:
     // WebKit::WebExternalTextureLayerClient implementation.
     virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) OVERRIDE;
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE { return false; }
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE { }
 
     // SkDeferredCanvas::NotificationClient implementation
     virtual void prepareForDraw() OVERRIDE;
