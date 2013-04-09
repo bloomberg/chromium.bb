@@ -758,7 +758,6 @@ void RenderWidgetHostViewAura::WasHidden() {
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
   SetBounds(gfx::Rect(window_->bounds().origin(), size));
-  previous_damage_.op(RectToSkIRect(gfx::Rect(size)), SkRegion::kUnion_Op);
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
@@ -1460,7 +1459,6 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   current_dib_.reset(dib.release());
   current_dib_id_ = dib_id;
   last_swapped_surface_size_ = frame_size;
-  previous_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
@@ -2040,12 +2038,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
     bitmap.setPixels(current_dib_->memory());
 
     SkCanvas* sk_canvas = canvas->sk_canvas();
-    for (SkRegion::Iterator it(previous_damage_); !it.done(); it.next()) {
-      const SkIRect& src_rect = it.rect();
-      SkRect dst_rect = SkRect::Make(src_rect);
-      sk_canvas->drawBitmapRect(bitmap, &src_rect, dst_rect, NULL);
-    }
-    previous_damage_.setEmpty();
+    sk_canvas->drawBitmap(bitmap, 0, 0);
 
     if (frame_size != window_size) {
       SkRegion region;
