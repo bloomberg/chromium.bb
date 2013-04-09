@@ -892,7 +892,7 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
         gfx::Size((card_width + kCardPadding) * number_of_cards - kCardPadding,
                   some_card.height()),
         ui::SCALE_FACTOR_100P,
-        true);
+        false);
     CreditCard card;
     card.SetRawInfo(CREDIT_CARD_NUMBER, user_input);
 
