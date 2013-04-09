@@ -91,6 +91,9 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
   { PT_NOTE, PF_R, PCA_IGNORE, 0, 0},
   { PT_GNU_EH_FRAME, PF_R, PCA_IGNORE, 0, 0},
   { PT_GNU_RELRO, PF_R, PCA_IGNORE, 0, 0},
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  { PT_MIPS_REGINFO, PF_R, PCA_IGNORE, 0, 0},
+#endif
   { PT_NULL, PF_R, PCA_IGNORE, 0, 0},
 };
 

@@ -2721,7 +2721,7 @@ def SetupLinuxEnvMips(env):
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
       print ("\nERRROR: MIPS trusted TC is not installed - try running:\n"
              "tools/trusted_cross_toolchains/trusted-toolchain-creator"
-             ".mipsel.squeeze.sh trusted_sdk")
+             ".mipsel.squeeze.sh nacl_sdk")
       sys.exit(-1)
     env.Replace(CC=os.path.join(tc_dir, 'mipsel-linux-gnu-gcc'),
                 CXX=os.path.join(tc_dir, 'mipsel-linux-gnu-g++'),

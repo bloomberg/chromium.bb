@@ -29,6 +29,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
    * remaining registers are overwritten by the code that follows
    * after.
    */
+  addu $at, $zero, $zero
   addu $v1, $zero, $zero
   addu $a1, $zero, $zero
   addu $a2, $zero, $zero
@@ -39,6 +40,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   addu $t3, $zero, $zero
   addu $t4, $zero, $zero
   addu $t5, $zero, $zero
+  addu $gp, $zero, $zero
   addu $ra, $zero, $zero
 
   /* NACL_CALLEE_SAVE_LIST BEGIN */
