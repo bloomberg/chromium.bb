@@ -191,16 +191,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // Returns the display layout registered for the given display id |pair|.
   DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair) const;
 
-  // Checks if the mouse pointer is on one of displays, and moves to
-  // the center of the nearest display if it's outside of all displays.
-  void EnsurePointerInDisplays();
-
-  gfx::Point GetNativeMouseCursorLocation() const;
-
-  // Update the current cursor image that is sutable for the given
-  // |point_in_native|.
-  void UpdateMouseCursor(const gfx::Point& point_in_native);
-
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
       const gfx::Display& display) OVERRIDE;

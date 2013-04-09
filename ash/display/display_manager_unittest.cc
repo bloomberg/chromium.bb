@@ -748,48 +748,5 @@ TEST_F(DisplayManagerTest, UIScale) {
   EXPECT_EQ(0.5f, GetDisplayInfoAt(0).ui_scale());
 }
 
-
-#if defined(OS_WIN)
-// TODO(oshima): On Windows, we don't update the origin/size right away.
-#define MAYBE_UpdateMouseCursorAfterRotateZoom DISABLED_UpdateMouseCursorAfterRotateZoom
-#else
-#define MAYBE_UpdateMouseCursorAfterRotateZoom UpdateMouseCursorAfterRotateZoom
-#endif
-
-TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
-  // Make sure just rotating will not change native location.
-  UpdateDisplay("300x200,200x150");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  aura::Env* env = aura::Env::GetInstance();
-
-  // Test on 1st display.
-  root_windows[0]->MoveCursorTo(gfx::Point(150, 50));
-  EXPECT_EQ("150,50", env->last_mouse_location().ToString());
-  UpdateDisplay("300x200/r,200x150");
-  EXPECT_EQ("50,149", env->last_mouse_location().ToString());
-
-  // Test on 2nd display.
-  root_windows[1]->MoveCursorTo(gfx::Point(50, 100));
-  EXPECT_EQ("250,100", env->last_mouse_location().ToString());
-  UpdateDisplay("300x200/r,200x150/l");
-  EXPECT_EQ("249,50", env->last_mouse_location().ToString());
-
-  // Make sure just zooming will not change native location.
-  UpdateDisplay("600x400*2,400x300");
-
-  // Test on 1st display.
-  root_windows[0]->MoveCursorTo(gfx::Point(100, 150));
-  EXPECT_EQ("100,150", env->last_mouse_location().ToString());
-  UpdateDisplay("600x400*2@1.5,400x300");
-  EXPECT_EQ("150,225", env->last_mouse_location().ToString());
-
-  // Test on 2nd display.
-  UpdateDisplay("600x400,400x300*2");
-  root_windows[1]->MoveCursorTo(gfx::Point(100, 50));
-  EXPECT_EQ("700,50", env->last_mouse_location().ToString());
-  UpdateDisplay("600x400,400x300*2@1.5");
-  EXPECT_EQ("750,75", env->last_mouse_location().ToString());
-}
-
 }  // namespace internal
 }  // namespace ash

@@ -24,7 +24,6 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -721,76 +720,6 @@ gfx::Display* DisplayController::GetSecondaryDisplay() {
   CHECK_EQ(2U, display_manager->GetNumDisplays());
   return display_manager->GetDisplayAt(0)->id() == primary_display_id ?
       display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
-}
-
-void DisplayController::EnsurePointerInDisplays() {
-  // Don't try to move the pointer during the boot/startup.
-  if (!HasPrimaryDisplay())
-    return;
-  gfx::Point location_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Point target_location;
-  int64 closest_distance_squared = -1;
-  internal::DisplayManager* display_manager = GetDisplayManager();
-
-  aura::RootWindow* dst_root_window = NULL;
-  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    const gfx::Display* display = display_manager->GetDisplayAt(i);
-    aura::RootWindow* root_window = GetRootWindowForDisplayId(display->id());
-    if (display->bounds().Contains(location_in_screen)) {
-      dst_root_window = root_window;
-      target_location = location_in_screen;
-      break;
-    }
-    gfx::Point center = display->bounds().CenterPoint();
-    // Use the distance squared from the center of the dislay. This is not
-    // exactly "closest" display, but good enough to pick one
-    // appropriate (and there are at most two displays).
-    // We don't care about actual distance, only relative to other displays, so
-    // using the LengthSquared() is cheaper than Length().
-
-    int64 distance_squared = (center - location_in_screen).LengthSquared();
-    if (closest_distance_squared < 0 ||
-        closest_distance_squared > distance_squared) {
-      dst_root_window = root_window;
-      target_location = center;
-      closest_distance_squared = distance_squared;
-    }
-  }
-  DCHECK(dst_root_window);
-  aura::client::ScreenPositionClient* client =
-      aura::client::GetScreenPositionClient(dst_root_window);
-  client->ConvertPointFromScreen(dst_root_window, &target_location);
-  dst_root_window->MoveCursorTo(target_location);
-}
-
-gfx::Point DisplayController::GetNativeMouseCursorLocation() const {
-  gfx::Point location = Shell::GetScreen()->GetCursorScreenPoint();
-  const gfx::Display& display =
-      Shell::GetScreen()->GetDisplayNearestPoint(location);
-  const aura::RootWindow* root_window =
-      root_windows_.find(display.id())->second;
-  aura::client::ScreenPositionClient* client =
-      aura::client::GetScreenPositionClient(root_window);
-  client->ConvertPointFromScreen(root_window, &location);
-  root_window->ConvertPointToNativeScreen(&location);
-  return location;
-}
-
-void DisplayController::UpdateMouseCursor(const gfx::Point& point_in_native) {
-  std::vector<aura::RootWindow*> root_windows = GetAllRootWindows();
-  for (std::vector<aura::RootWindow*>::iterator iter = root_windows.begin();
-       iter != root_windows.end();
-       ++iter) {
-    aura::RootWindow* root_window = *iter;
-    gfx::Rect bounds_in_native(root_window->GetHostOrigin(),
-                               root_window->GetHostSize());
-    if (bounds_in_native.Contains(point_in_native)) {
-      gfx::Point point(point_in_native);
-      root_window->ConvertPointFromNativeScreen(&point);
-      root_window->MoveCursorTo(point);
-      break;
-    }
-  }
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
