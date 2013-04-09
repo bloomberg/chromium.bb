@@ -6,4 +6,13 @@ npapi_layout_test_plugin with the mime type changed. The build machine is
 running 64-bit Hardy with GCC 4.2.4. The binaries have been stripped with
 strip --strip-unneeded.
 
-On Mac, plugin.plugin is a Release build of TestNetscapePlugin.plugin with the MIME type changed.
+On Mac, plugin.plugin is a Release build of TestNetscapePlugin.plugin with the
+MIME type changed. This was built from the tree as of r192827, with manual
+merging of the binaries:
+
+(From both 32 and 64 bit checkouts:)
+$ ninja -C out/Release TestNetscapePlugIn
+(then)
+$ lipo -create [...32...]/src/out/Release/TestNetscapePlugIn.plugin/Contents/MacOS/TestNetscapePlugIn \
+    [...64...]src/out/Release/TestNetscapePlugIn.plugin/Contents/MacOS/TestNetscapePlugIn \
+    -output [somewhere]/TestNetscapePlugIn
