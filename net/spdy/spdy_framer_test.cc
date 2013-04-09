@@ -286,7 +286,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       header_buffer_length_(0),
       header_buffer_size_(kDefaultHeaderBufferSize),
       header_stream_id_(-1),
-      header_control_type_(NUM_CONTROL_FRAME_TYPES),
+      header_control_type_(DATA),
       header_buffer_valid_(false),
       credential_buffer_(new char[kDefaultCredentialBufferSize]),
       credential_buffer_length_(0),
@@ -461,8 +461,10 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     }
   }
 
-  void InitHeaderStreaming(SpdyControlType header_control_type,
+  void InitHeaderStreaming(SpdyFrameType header_control_type,
                            SpdyStreamId stream_id) {
+    DCHECK_GE(header_control_type, FIRST_CONTROL_TYPE);
+    DCHECK_LE(header_control_type, LAST_CONTROL_TYPE);
     memset(header_buffer_.get(), 0, header_buffer_size_);
     header_buffer_length_ = 0;
     header_stream_id_ = stream_id;
@@ -509,7 +511,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   size_t header_buffer_length_;
   size_t header_buffer_size_;
   SpdyStreamId header_stream_id_;
-  SpdyControlType header_control_type_;
+  SpdyFrameType header_control_type_;
   bool header_buffer_valid_;
   SpdyHeaderBlock headers_;
 
@@ -3616,29 +3618,29 @@ TEST_P(SpdyFramerTest, StatusCodeToStringTest) {
                SpdyFramer::StatusCodeToString(RST_STREAM_NUM_STATUS_CODES));
 }
 
-TEST_P(SpdyFramerTest, ControlTypeToStringTest) {
+TEST_P(SpdyFramerTest, FrameTypeToStringTest) {
+  EXPECT_STREQ("DATA",
+               SpdyFramer::FrameTypeToString(DATA));
   EXPECT_STREQ("SYN_STREAM",
-               SpdyFramer::ControlTypeToString(SYN_STREAM));
+               SpdyFramer::FrameTypeToString(SYN_STREAM));
   EXPECT_STREQ("SYN_REPLY",
-               SpdyFramer::ControlTypeToString(SYN_REPLY));
+               SpdyFramer::FrameTypeToString(SYN_REPLY));
   EXPECT_STREQ("RST_STREAM",
-               SpdyFramer::ControlTypeToString(RST_STREAM));
+               SpdyFramer::FrameTypeToString(RST_STREAM));
   EXPECT_STREQ("SETTINGS",
-               SpdyFramer::ControlTypeToString(SETTINGS));
+               SpdyFramer::FrameTypeToString(SETTINGS));
   EXPECT_STREQ("NOOP",
-               SpdyFramer::ControlTypeToString(NOOP));
+               SpdyFramer::FrameTypeToString(NOOP));
   EXPECT_STREQ("PING",
-               SpdyFramer::ControlTypeToString(PING));
+               SpdyFramer::FrameTypeToString(PING));
   EXPECT_STREQ("GOAWAY",
-               SpdyFramer::ControlTypeToString(GOAWAY));
+               SpdyFramer::FrameTypeToString(GOAWAY));
   EXPECT_STREQ("HEADERS",
-               SpdyFramer::ControlTypeToString(HEADERS));
+               SpdyFramer::FrameTypeToString(HEADERS));
   EXPECT_STREQ("WINDOW_UPDATE",
-               SpdyFramer::ControlTypeToString(WINDOW_UPDATE));
+               SpdyFramer::FrameTypeToString(WINDOW_UPDATE));
   EXPECT_STREQ("CREDENTIAL",
-               SpdyFramer::ControlTypeToString(CREDENTIAL));
-  EXPECT_STREQ("UNKNOWN_CONTROL_TYPE",
-               SpdyFramer::ControlTypeToString(NUM_CONTROL_FRAME_TYPES));
+               SpdyFramer::FrameTypeToString(CREDENTIAL));
 }
 
 TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {

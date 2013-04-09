@@ -146,7 +146,7 @@ void SpdyFramer::Reset() {
   remaining_data_length_ = 0;
   remaining_control_header_ = 0;
   current_frame_buffer_length_ = 0;
-  current_frame_type_ = NUM_CONTROL_FRAME_TYPES;
+  current_frame_type_ = DATA;
   current_frame_flags_ = 0;
   current_frame_length_ = 0;
   current_frame_stream_id_ = kInvalidStream;
@@ -349,8 +349,10 @@ const char* SpdyFramer::StatusCodeToString(int status_code) {
   return "UNKNOWN_STATUS";
 }
 
-const char* SpdyFramer::ControlTypeToString(SpdyControlType type) {
+const char* SpdyFramer::FrameTypeToString(SpdyFrameType type) {
   switch (type) {
+    case DATA:
+      return "DATA";
     case SYN_STREAM:
       return "SYN_STREAM";
     case SYN_REPLY:
@@ -371,8 +373,6 @@ const char* SpdyFramer::ControlTypeToString(SpdyControlType type) {
       return "WINDOW_UPDATE";
     case CREDENTIAL:
       return "CREDENTIAL";
-    case NUM_CONTROL_FRAME_TYPES:
-      break;
   }
   return "UNKNOWN_CONTROL_TYPE";
 }
@@ -508,6 +508,10 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   uint16 version = 0;
   bool is_control_frame = false;
 
+  uint16 control_frame_type_field = DATA;
+  // ProcessControlFrameHeader() will set current_frame_type_ to the
+  // correct value if this is a valid control frame.
+  current_frame_type_ = DATA;
   if (protocol_version() < 4) {
     bool successful_read = reader->ReadUInt16(&version);
     DCHECK(successful_read);
@@ -515,10 +519,9 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     version &= ~kControlFlagMask;  // Only valid for control frames.
 
     if (is_control_frame) {
-      uint16 frame_type_field;
-      successful_read = reader->ReadUInt16(&frame_type_field);
-      // We check for validity below in ProcessControlFrameHeader().
-      current_frame_type_ = static_cast<SpdyControlType>(frame_type_field);
+      // We check control_frame_type_field's validity in
+      // ProcessControlFrameHeader().
+      successful_read = reader->ReadUInt16(&control_frame_type_field);
     } else {
       reader->Rewind();
       successful_read = reader->ReadUInt31(&current_frame_stream_id_);
@@ -541,14 +544,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     DCHECK(successful_read);
     current_frame_length_ = length_field;
 
-    uint8 frame_type_field = 0;
-    successful_read = reader->ReadUInt8(&frame_type_field);
+    uint8 control_frame_type_field_uint8 = DATA;
+    successful_read = reader->ReadUInt8(&control_frame_type_field_uint8);
     DCHECK(successful_read);
-    if (frame_type_field != 0) {
-      is_control_frame = true;
-      // We check for validity below in ProcessControlFrameHeader().
-      current_frame_type_ = static_cast<SpdyControlType>(frame_type_field);
-    }
+    // We check control_frame_type_field's validity in
+    // ProcessControlFrameHeader().
+    control_frame_type_field = control_frame_type_field_uint8;
+    is_control_frame = (control_frame_type_field != DATA);
 
     successful_read = reader->ReadUInt8(&current_frame_flags_);
     DCHECK(successful_read);
@@ -619,22 +621,23 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
                << " (expected " << spdy_version_ << ")";
     set_error(SPDY_UNSUPPORTED_VERSION);
   } else {
-    ProcessControlFrameHeader();
+    ProcessControlFrameHeader(control_frame_type_field);
   }
 
   return original_len - len;
 }
 
-void SpdyFramer::ProcessControlFrameHeader() {
+void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
-  DCHECK_LE(GetControlFrameHeaderSize(),
-            current_frame_buffer_length_);
+  DCHECK_LE(GetControlFrameHeaderSize(), current_frame_buffer_length_);
 
-  if (current_frame_type_ < SYN_STREAM ||
-      current_frame_type_ >= NUM_CONTROL_FRAME_TYPES) {
+  if (control_frame_type_field < FIRST_CONTROL_TYPE ||
+      control_frame_type_field > LAST_CONTROL_TYPE) {
     set_error(SPDY_INVALID_CONTROL_FRAME);
     return;
   }
+
+  current_frame_type_ = static_cast<SpdyFrameType>(control_frame_type_field);
 
   if (current_frame_type_ == NOOP) {
     DLOG(INFO) << "NOOP control frame found. Ignoring.";

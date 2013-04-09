@@ -251,9 +251,11 @@ const int kV3DictionarySize = arraysize(kV3Dictionary);
 //       accessors provided or call base::NetworkToHostX() functions.
 // TODO(hkhalil): remove above note.
 
-// Types of Spdy Control Frames.
-enum SpdyControlType {
+// Types of SPDY frames.
+enum SpdyFrameType {
+  DATA = 0,
   SYN_STREAM = 1,
+  FIRST_CONTROL_TYPE = SYN_STREAM,
   SYN_REPLY,
   RST_STREAM,
   SETTINGS,
@@ -263,7 +265,7 @@ enum SpdyControlType {
   HEADERS,
   WINDOW_UPDATE,
   CREDENTIAL,
-  NUM_CONTROL_FRAME_TYPES
+  LAST_CONTROL_TYPE = CREDENTIAL
 };
 
 // Flags on data packets.

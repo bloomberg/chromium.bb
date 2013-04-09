@@ -210,7 +210,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   // Collection of fields from control frames that we need to
   // buffer up from the spdy framer.
   struct ControlFrameFields {
-    SpdyControlType type;
+    SpdyFrameType type;
     SpdyStreamId stream_id;
     SpdyStreamId associated_stream_id;
     SpdyPriority priority;

@@ -39,7 +39,7 @@ namespace test_spdy3 {
 // NOTE: In GCC, on a Mac, this can't be in an anonymous namespace!
 // This struct holds information used to construct spdy control and data frames.
 struct SpdyHeaderInfo {
-  SpdyControlType kind;
+  SpdyFrameType kind;
   SpdyStreamId id;
   SpdyStreamId assoc_id;
   SpdyPriority priority;
@@ -112,7 +112,7 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      bool compressed,
                                      int stream_id,
                                      RequestPriority request_priority,
-                                     SpdyControlType type,
+                                     SpdyFrameType type,
                                      SpdyControlFlags flags,
                                      const char* const* kHeaders,
                                      int kHeadersSize);
@@ -121,7 +121,7 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      bool compressed,
                                      SpdyStreamId stream_id,
                                      RequestPriority request_priority,
-                                     SpdyControlType type,
+                                     SpdyFrameType type,
                                      SpdyControlFlags flags,
                                      const char* const* kHeaders,
                                      int kHeadersSize,
@@ -353,7 +353,7 @@ class SpdyURLRequestContext : public URLRequestContext {
   net::URLRequestContextStorage storage_;
 };
 
-const SpdyHeaderInfo MakeSpdyHeader(SpdyControlType type);
+const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type);
 
 class SpdySessionPoolPeer {
  public:

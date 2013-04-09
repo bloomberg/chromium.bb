@@ -495,7 +495,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   static const char* StateToString(int state);
   static const char* ErrorCodeToString(int error_code);
   static const char* StatusCodeToString(int status_code);
-  static const char* ControlTypeToString(SpdyControlType type);
+  static const char* FrameTypeToString(SpdyFrameType type);
 
   int protocol_version() const { return spdy_version_; }
 
@@ -553,7 +553,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessDataFramePayload(const char* data, size_t len);
 
   // Helpers for above internal breakouts from ProcessInput.
-  void ProcessControlFrameHeader();
+  void ProcessControlFrameHeader(uint16 control_frame_type_field);
   bool ProcessSetting(const char* data);  // Always passed exactly 8 bytes.
 
   // Retrieve serialized length of SpdyHeaderBlock. If compression is enabled, a
@@ -637,9 +637,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Number of bytes read into the current_frame_buffer_.
   size_t current_frame_buffer_length_;
 
-  // The type of the frame currently being read. Set to NUM_CONTROL_FRAME_TYPES
-  // if currently processing a DATA frame.
-  SpdyControlType current_frame_type_;
+  // The type of the frame currently being read.
+  SpdyFrameType current_frame_type_;
 
   // The flags field of the frame currently being read.
   uint8 current_frame_flags_;

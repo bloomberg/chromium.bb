@@ -17,6 +17,7 @@
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test_spdy2 {
@@ -77,6 +78,11 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
   BufferedSpdyFramer framer(kSpdyVersion2, header_info.compressed);
   SpdyFrame* frame = NULL;
   switch (header_info.kind) {
+    case DATA:
+      frame = framer.CreateDataFrame(header_info.id, header_info.data,
+                                     header_info.data_length,
+                                     header_info.data_flags);
+      break;
     case SYN_STREAM:
       frame = framer.CreateSynStream(header_info.id, header_info.assoc_id,
                                      header_info.priority, 0,
@@ -95,9 +101,7 @@ SpdyFrame* ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
                                    header_info.compressed, headers.get());
       break;
     default:
-      frame = framer.CreateDataFrame(header_info.id, header_info.data,
-                                     header_info.data_length,
-                                     header_info.data_flags);
+      ADD_FAILURE();
       break;
   }
   return frame;
@@ -207,10 +211,12 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      bool compressed,
                                      int stream_id,
                                      RequestPriority request_priority,
-                                     SpdyControlType type,
+                                     SpdyFrameType type,
                                      SpdyControlFlags flags,
                                      const char* const* kHeaders,
                                      int kHeadersSize) {
+  EXPECT_GE(type, FIRST_CONTROL_TYPE);
+  EXPECT_LE(type, LAST_CONTROL_TYPE);
   return ConstructSpdyControlFrame(extra_headers,
                                    extra_header_count,
                                    compressed,
@@ -228,11 +234,13 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
                                      bool compressed,
                                      SpdyStreamId stream_id,
                                      RequestPriority request_priority,
-                                     SpdyControlType type,
+                                     SpdyFrameType type,
                                      SpdyControlFlags flags,
                                      const char* const* kHeaders,
                                      int kHeadersSize,
                                      SpdyStreamId associated_stream_id) {
+  EXPECT_GE(type, FIRST_CONTROL_TYPE);
+  EXPECT_LE(type, LAST_CONTROL_TYPE);
   const SpdyHeaderInfo kSynStartHeader = {
     type,                         // Kind = Syn
     stream_id,                    // Stream ID
@@ -807,7 +815,7 @@ SpdyURLRequestContext::SpdyURLRequestContext()
 SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
-const SpdyHeaderInfo MakeSpdyHeader(SpdyControlType type) {
+const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type) {
   const SpdyHeaderInfo kHeader = {
     type,                         // Kind = Syn
     1,                            // Stream ID

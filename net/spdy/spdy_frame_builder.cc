@@ -58,8 +58,10 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 }
 
 bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
-                                               SpdyControlType type,
+                                               SpdyFrameType type,
                                                uint8 flags) {
+  DCHECK_GE(type, FIRST_CONTROL_TYPE);
+  DCHECK_LE(type, LAST_CONTROL_TYPE);
   bool success = true;
   if (framer.protocol_version() < 4) {
     FlagsAndLength flags_length = CreateFlagsAndLength(

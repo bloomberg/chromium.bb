@@ -49,9 +49,9 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
 
   // Populates this frame with a SPDY control frame header using
   // version-specific information from the |framer| and length information from
-  // capacity_.
+  // capacity_. The given type must be a control frame type.
   bool WriteControlFrameHeader(const SpdyFramer& framer,
-                               SpdyControlType type,
+                               SpdyFrameType type,
                                uint8 flags);
 
   // Populates this frame with a SPDY data frame header using version-specific
