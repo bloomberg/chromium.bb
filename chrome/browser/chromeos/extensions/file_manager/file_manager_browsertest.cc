@@ -19,10 +19,15 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -43,6 +48,26 @@ const char kKeyboardTestFileName[] = "world.mpeg";
 const int64 kKeyboardTestFileSize = 1000;
 const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
 
+struct TestFileInfo {
+  const char* base_name;
+  int64 file_size;
+  const char* last_modified_time_as_string;
+} kTestFiles[] = {
+  { "hello.txt", 123, "4 Sep 1998 12:34:56" },
+  { "My Desktop Background.png", 1024, "18 Jan 2038 01:02:03" },
+  { kKeyboardTestFileName, kKeyboardTestFileSize, "4 July 2012 10:35:00" },
+};
+
+struct TestDirectoryInfo {
+  const char* base_name;
+  const char* last_modified_time_as_string;
+} kTestDirectories[] = {
+  { "photos", "1 Jan 1980 23:59:59" },
+  // Files starting with . are filtered out in
+  // file_manager/js/directory_contents.js, so this should not be shown.
+  { ".warez", "26 Oct 1985 13:39" },
+};
+
 // The base test class. Used by FileManagerBrowserLocalTest and
 // FileManagerBrowserDriveTest.
 // TODO(satorux): Add the latter: crbug.com/224534.
@@ -56,6 +81,22 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   // Loads our testing extension and sends it a string identifying the current
   // test.
   void StartTest(const std::string& test_name);
+
+  // Creates test files and directories.
+  void CreateTestFilesAndDirectories();
+
+  // Creates a file with the given |name|, |length|, and |modification_time|.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) = 0;
+
+  // Creates an empty directory with the given |name| and |modification_time|.
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) = 0;
+
+  // Runs the file display test, shared by sub classes.
+  void DoTestFileDisplay();
 };
 
 void FileManagerBrowserTestBase::StartFileManager(
@@ -83,6 +124,31 @@ void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
   listener.Reply(test_name);
 }
 
+void FileManagerBrowserTestBase::CreateTestFilesAndDirectories() {
+  for (size_t i = 0; i < arraysize(kTestFiles); ++i) {
+    CreateTestFile(kTestFiles[i].base_name,
+                   kTestFiles[i].file_size,
+                   kTestFiles[i].last_modified_time_as_string);
+  }
+  for (size_t i = 0; i < arraysize(kTestDirectories); ++i) {
+    CreateTestDirectory(kTestDirectories[i].base_name,
+                        kTestDirectories[i].last_modified_time_as_string);
+  }
+}
+
+void FileManagerBrowserTestBase::DoTestFileDisplay() {
+  ResultCatcher catcher;
+
+  StartTest("file display");
+
+  ExtensionTestMessageListener listener("initial check done", true);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  CreateTestFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
+  listener.Reply("file added");
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // The boolean parameter, retrieved by GetParam(), is true if testing in the
 // guest mode. See SetUpCommandLine() below for details.
 class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
@@ -95,14 +161,7 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
     downloads_path_ = tmp_dir_.path().Append("Downloads");
     ASSERT_TRUE(file_util::CreateDirectory(downloads_path_));
 
-    CreateTestFile("hello.txt", 123, "4 Sep 1998 12:34:56");
-    CreateTestFile("My Desktop Background.png", 1024, "18 Jan 2038 01:02:03");
-    CreateTestFile(kKeyboardTestFileName, kKeyboardTestFileSize,
-                   "4 July 2012 10:35:00");
-    CreateTestDirectory("photos", "1 Jan 1980 23:59:59");
-    // Files starting with . are filtered out in
-    // file_manager/js/directory_contents.js, so this should not be shown.
-    CreateTestDirectory(".warez", "26 Oct 1985 13:39");
+    CreateTestFilesAndDirectories();
 
     ExtensionApiTest::SetUp();
   }
@@ -117,14 +176,13 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
   }
 
  protected:
-  // Creates a file with the given |name|, |length|, and |modification_time|.
-  void CreateTestFile(const std::string& name,
-                      int length,
-                      const std::string& modification_time);
-
-  // Creates an empty directory with the given |name| and |modification_time|.
-  void CreateTestDirectory(const std::string& name,
-                           const std::string& modification_time);
+  // FileManagerBrowserTestBase overrides.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) OVERRIDE;
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) OVERRIDE;
 
   // Add a mount point to the fake Downloads directory. Should be called
   // before StartFileManager().
@@ -147,7 +205,7 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
 
 void FileManagerBrowserLocalTest::CreateTestFile(
     const std::string& name,
-    int length,
+    int64 length,
     const std::string& modification_time) {
   ASSERT_GE(length, 0);
   base::FilePath path = downloads_path_.AppendASCII(name);
@@ -182,6 +240,131 @@ void FileManagerBrowserLocalTest::AddMountPointToFakeDownloads() {
   ASSERT_TRUE(mount_points->RevokeFileSystem("Downloads"));
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "Downloads", fileapi::kFileSystemTypeNativeLocal, downloads_path_));
+}
+
+class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
+ public:
+  FileManagerBrowserDriveTest()
+      : fake_drive_service_(NULL),
+        system_service_(NULL) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
+
+    drive::DriveSystemServiceFactory::SetFactoryForTest(
+        base::Bind(&FileManagerBrowserDriveTest::CreateDriveSystemService,
+                   base::Unretained(this)));
+
+    ExtensionApiTest::SetUp();
+  }
+
+ protected:
+  // FileManagerBrowserTestBase overrides.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) OVERRIDE;
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) OVERRIDE;
+
+  // Notifies DriveFileSystem that the contents in FakeDriveService are
+  // changed, hence the new contents should be fetched.
+  void CheckForUpdates();
+
+  // DriveSystemService factory function for this test.
+  drive::DriveSystemService* CreateDriveSystemService(Profile* profile);
+
+  base::ScopedTempDir test_cache_root_;
+  google_apis::FakeDriveService* fake_drive_service_;
+  drive::DriveSystemService* system_service_;
+};
+
+void FileManagerBrowserDriveTest::CreateTestFile(
+    const std::string& name,
+    int64 length,
+    const std::string& modification_time) {
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_drive_service_->AddNewFile(
+      "text/plain",
+      length,
+      fake_drive_service_->GetRootResourceId(),
+      name,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  fake_drive_service_->SetLastModifiedTime(
+      resource_entry->resource_id(),
+      time,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+
+  CheckForUpdates();
+}
+
+void FileManagerBrowserDriveTest::CreateTestDirectory(
+    const std::string& name,
+    const std::string& modification_time) {
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_drive_service_->AddNewDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      name,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  fake_drive_service_->SetLastModifiedTime(
+      resource_entry->resource_id(),
+      time,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+
+  CheckForUpdates();
+}
+
+void FileManagerBrowserDriveTest::CheckForUpdates() {
+  if (system_service_ && system_service_->file_system()) {
+    system_service_->file_system()->CheckForUpdates();
+  }
+}
+
+drive::DriveSystemService*
+FileManagerBrowserDriveTest::CreateDriveSystemService(Profile* profile) {
+  fake_drive_service_ = new google_apis::FakeDriveService;
+  fake_drive_service_->LoadResourceListForWapi(
+      "chromeos/gdata/empty_feed.json");
+  fake_drive_service_->LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json");
+  fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+
+  // Create test files and directories inside the fake drive service.
+  CreateTestFilesAndDirectories();
+
+  system_service_ = new drive::DriveSystemService(profile,
+                                                  fake_drive_service_,
+                                                  test_cache_root_.path(),
+                                                  NULL);
+
+  return system_service_;
 }
 
 // Monitors changes to a single file until the supplied condition callback
@@ -297,16 +480,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
   AddMountPointToFakeDownloads();
   StartFileManager("/Downloads");
 
-  ResultCatcher catcher;
-
-  StartTest("file display");
-
-  ExtensionTestMessageListener listener("initial check done", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  CreateTestFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
-  listener.Reply("file added");
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  DoTestFileDisplay();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
@@ -348,6 +522,12 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
   TestFilePathWatcher watcher(delete_path,
                               base::Bind(FileNotPresent));
   ASSERT_TRUE(watcher.RunMessageLoopUntilConditionSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestFileDisplay) {
+  StartFileManager("/drive/root");
+
+  DoTestFileDisplay();
 }
 
 }  // namespace
