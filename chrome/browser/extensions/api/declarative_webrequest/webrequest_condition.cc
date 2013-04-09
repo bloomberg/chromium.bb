@@ -148,7 +148,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_condition_set;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
     const Value& condition_attribute_value = iter.value();
     const bool name_is_url = condition_attribute_name == keys::kUrlKey;

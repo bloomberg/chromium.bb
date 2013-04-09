@@ -70,7 +70,7 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy,
   // anymore.
   std::vector<std::string> removed_keys;
   for (base::DictionaryValue::Iterator it(previous_policy);
-       it.HasNext(); it.Advance()) {
+       !it.IsAtEnd(); it.Advance()) {
     if (!current_policy.HasKey(it.key()))
       removed_keys.push_back(it.key());
   }

@@ -488,7 +488,7 @@ void RunDownloadQuery(
 
   scoped_ptr<base::DictionaryValue> query_in_value(query_in.ToValue().Pass());
   for (base::DictionaryValue::Iterator query_json_field(*query_in_value.get());
-       query_json_field.HasNext(); query_json_field.Advance()) {
+       !query_json_field.IsAtEnd(); query_json_field.Advance()) {
     FilterTypeMap::const_iterator filter_type =
         filter_types.Get().find(query_json_field.key());
     if (filter_type != filter_types.Get().end()) {
@@ -1368,7 +1368,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
   // json, set the differences in the |delta| object and remember that something
   // significant changed.
   for (base::DictionaryValue::Iterator iter(*new_json.get());
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     new_fields.insert(iter.key());
     if (iter.key() != kBytesReceivedKey) {
       const base::Value* old_value = NULL;
@@ -1386,7 +1386,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
   // If a field was in the previous json but is not in the new json, set the
   // difference in |delta|.
   for (base::DictionaryValue::Iterator iter(data->json());
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     if (new_fields.find(iter.key()) == new_fields.end()) {
       delta->Set(iter.key() + ".previous", iter.value().DeepCopy());
       changed = true;

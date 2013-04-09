@@ -165,7 +165,7 @@ void ShellWindowGeometryCache::OnExtensionLoaded(
   if (!stored_windows)
     return;
 
-  for (base::DictionaryValue::Iterator it(*stored_windows); it.HasNext();
+  for (base::DictionaryValue::Iterator it(*stored_windows); !it.IsAtEnd();
        it.Advance()) {
     // If the cache already contains geometry for this window, don't
     // overwrite that information since it is probably the result of an

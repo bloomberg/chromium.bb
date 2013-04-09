@@ -87,7 +87,7 @@ BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
                                          FeatureFactory factory)
     : factory_(factory ? factory :
                static_cast<FeatureFactory>(&CreateFeature<SimpleFeature>)) {
-  for (DictionaryValue::Iterator iter(root); iter.HasNext(); iter.Advance()) {
+  for (DictionaryValue::Iterator iter(root); !iter.IsAtEnd(); iter.Advance()) {
     if (iter.value().GetType() == Value::TYPE_DICTIONARY) {
       linked_ptr<SimpleFeature> feature((*factory_)());
 

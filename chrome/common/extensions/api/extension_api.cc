@@ -66,7 +66,7 @@ bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
         return true;
     }
   } else if (name_space_node->GetDictionary(child_kind, &child_dict)) {
-    for (DictionaryValue::Iterator it(*child_dict); it.HasNext();
+    for (DictionaryValue::Iterator it(*child_dict); !it.IsAtEnd();
          it.Advance()) {
       const DictionaryValue* item = NULL;
       CHECK(it.value().GetAsDictionary(&item));

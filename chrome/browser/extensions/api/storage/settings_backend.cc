@@ -128,7 +128,7 @@ static void AddAllSyncData(
     const DictionaryValue& src,
     syncer::ModelType type,
     syncer::SyncDataList* dst) {
-  for (DictionaryValue::Iterator it(src); it.HasNext(); it.Advance()) {
+  for (DictionaryValue::Iterator it(src); !it.IsAtEnd(); it.Advance()) {
     dst->push_back(settings_sync_util::CreateData(
         extension_id, it.key(), it.value(), type));
   }

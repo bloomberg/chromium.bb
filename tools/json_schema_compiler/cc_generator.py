@@ -215,7 +215,7 @@ class _Generator(object):
           cpp_type = self._type_helper.GetCppType(type_.additional_properties,
                                                   is_in_container=True)
           (c.Append('for (base::DictionaryValue::Iterator it(*dict);')
-            .Sblock('     it.HasNext(); it.Advance()) {')
+            .Sblock('     !it.IsAtEnd(); it.Advance()) {')
               .Append('%s tmp;' % cpp_type)
               .Concat(self._GeneratePopulateVariableFromValue(
                   type_.additional_properties,

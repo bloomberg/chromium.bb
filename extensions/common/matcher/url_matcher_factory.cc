@@ -110,7 +110,7 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
   URLMatcherConditionSet::Conditions url_matcher_conditions;
 
   for (base::DictionaryValue::Iterator iter(*url_filter_dict);
-       iter.HasNext(); iter.Advance()) {
+       !iter.IsAtEnd(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
     const Value& condition_attribute_value = iter.value();
     if (IsURLMatcherConditionAttribute(condition_attribute_name)) {

@@ -125,7 +125,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
             !right_list->GetDictionary(0, &right_dict))
           return false;
         for (base::DictionaryValue::Iterator iter(*left_dict);
-             iter.HasNext(); iter.Advance()) {
+             !iter.IsAtEnd(); iter.Advance()) {
           base::Value* right_value = NULL;
           if (right_dict->HasKey(iter.key()) &&
               right_dict->Get(iter.key(), &right_value) &&
