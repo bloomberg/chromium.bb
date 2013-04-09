@@ -32,6 +32,8 @@
 #ifndef AsyncFileStream_h
 #define AsyncFileStream_h
 
+#if ENABLE(BLOB)
+
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
@@ -82,5 +84,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)
 
 #endif // AsyncFileStream_h

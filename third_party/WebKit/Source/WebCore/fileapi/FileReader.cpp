@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(BLOB)
+
 #include "FileReader.h"
 
 #include "CrossThreadTask.h"
@@ -264,3 +266,5 @@ String FileReader::stringResult()
 }
 
 } // namespace WebCore
+ 
+#endif // ENABLE(BLOB)

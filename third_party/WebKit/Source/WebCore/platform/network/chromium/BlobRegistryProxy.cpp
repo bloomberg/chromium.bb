@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(BLOB)
+
 #include "BlobRegistryProxy.h"
 
 #include "BlobData.h"
@@ -77,3 +79,5 @@ void BlobRegistryProxy::unregisterBlobURL(const KURL& url)
 }
 
 } // namespace WebCore
+
+#endif

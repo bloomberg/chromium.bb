@@ -28,6 +28,8 @@
 
 #include "config.h"
 
+#if ENABLE(BLOB)
+
 #include "FileException.h"
 
 namespace WebCore {
@@ -69,3 +71,5 @@ bool FileException::initializeDescription(ExceptionCode ec, ExceptionCodeDescrip
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)

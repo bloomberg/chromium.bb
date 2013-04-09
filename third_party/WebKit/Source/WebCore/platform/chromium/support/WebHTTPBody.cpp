@@ -90,15 +90,19 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
     case FormDataElement::encodedFile:
         result.type = Element::TypeFile;
         result.filePath = element.m_filename;
+#if ENABLE(BLOB)
         result.fileStart = element.m_fileStart;
         result.fileLength = element.m_fileLength;
         result.modificationTime = element.m_expectedFileModificationTime;
+#endif
         break;
+#if ENABLE(BLOB)
     case FormDataElement::encodedBlob:
         result.type = Element::TypeBlob;
         result.url = element.m_url;
         result.blobURL = element.m_url; // FIXME: deprecate this.
         break;
+#endif
     case FormDataElement::encodedURL:
         result.type = Element::TypeURL;
         result.url = element.m_url;
@@ -130,8 +134,10 @@ void WebHTTPBody::appendFile(const WebString& filePath)
 
 void WebHTTPBody::appendFileRange(const WebString& filePath, long long fileStart, long long fileLength, double modificationTime)
 {
+#if ENABLE(BLOB)
     ensureMutable();
     m_private->appendFileRange(filePath, fileStart, fileLength, modificationTime);
+#endif
 }
 
 void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long length, double modificationTime)
@@ -144,9 +150,11 @@ void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long l
 
 void WebHTTPBody::appendBlob(const WebURL& blobURL)
 {
+#if ENABLE(BLOB)
     ASSERT(KURL(blobURL).protocolIs("blob"));
     ensureMutable();
     m_private->appendBlob(blobURL);
+#endif
 }
 
 long long WebHTTPBody::identifier() const

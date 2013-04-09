@@ -26,6 +26,7 @@
 #ifndef PublicURLManager_h
 #define PublicURLManager_h
 
+#if ENABLE(BLOB)
 #include "ScriptExecutionContext.h"
 #include "ThreadableBlobRegistry.h"
 #include <wtf/HashSet.h>
@@ -79,4 +80,5 @@ private:
 
 } // namespace WebCore
 
+#endif // BLOB
 #endif // PUBLICURLMANAGER_h

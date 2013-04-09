@@ -30,6 +30,8 @@
 
 #include "config.h"
 
+#if ENABLE(BLOB)
+
 #include "FileThread.h"
 
 #include "Logging.h"
@@ -111,3 +113,5 @@ void FileThread::runLoop()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)

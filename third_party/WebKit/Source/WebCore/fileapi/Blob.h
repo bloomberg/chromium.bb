@@ -70,7 +70,9 @@ public:
     virtual unsigned long long size() const { return static_cast<unsigned long long>(m_size); }
     virtual bool isFile() const { return false; }
 
+#if ENABLE(BLOB)
     PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
+#endif
 
 protected:
     Blob();

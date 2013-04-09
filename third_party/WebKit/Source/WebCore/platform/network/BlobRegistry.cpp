@@ -26,6 +26,8 @@
 #include "config.h"
 #include "BlobRegistry.h"
 
+#if ENABLE(BLOB)
+
 #include "BlobRegistryImpl.h"
 #include <wtf/MainThread.h>
 
@@ -36,3 +38,5 @@ BlobRegistry::~BlobRegistry()
 }
 
 }
+
+#endif

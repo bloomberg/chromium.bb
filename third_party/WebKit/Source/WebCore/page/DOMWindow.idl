@@ -784,10 +784,10 @@
     attribute DOMFormDataConstructor FormData;
 
     attribute FileErrorConstructor FileError;
-    attribute FileReaderConstructor FileReader;
+    [Conditional=BLOB] attribute FileReaderConstructor FileReader;
 
-    attribute DOMURLConstructor URL;
-    attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
+    [Conditional=BLOB] attribute DOMURLConstructor URL;
+    [Conditional=BLOB] attribute DOMURLConstructor webkitURL; // FIXME: deprecate this.
 
     attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
     attribute MutationObserverConstructor MutationObserver;

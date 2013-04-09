@@ -36,6 +36,10 @@
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
 
+#if !defined(LANGUAGE_OBJECTIVE_C)
+#if defined(ENABLE_BLOB) && ENABLE_BLOB
     Blob slice([Optional] long long start, [Optional] long long end, [Optional, TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString contentType);
+#endif
+#endif
 };
 

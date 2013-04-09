@@ -45,6 +45,7 @@ class DOMURL : public RefCounted<DOMURL> {
 public:
     static PassRefPtr<DOMURL> create() { return adoptRef(new DOMURL); }
 
+#if ENABLE(BLOB)
     static void contextDestroyed(ScriptExecutionContext*);
 
     static String createObjectURL(ScriptExecutionContext*, Blob*);
@@ -52,6 +53,7 @@ public:
     static String createObjectURL(ScriptExecutionContext*, MediaSource*);
 #if ENABLE(MEDIA_STREAM)
     static String createObjectURL(ScriptExecutionContext*, MediaStream*);
+#endif
 #endif
 };
 

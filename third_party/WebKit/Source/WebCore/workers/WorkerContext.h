@@ -168,7 +168,9 @@ namespace WebCore {
         OwnPtr<WorkerScriptController> m_script;
         WorkerThread* m_thread;
 
+#if ENABLE(BLOB)
         mutable RefPtr<DOMURL> m_domURL;
+#endif
         OwnPtr<WorkerInspectorController> m_workerInspectorController;
         bool m_closing;
         EventTargetData m_eventTargetData;

@@ -37,8 +37,12 @@ public:
     FormDataElement() : m_type(data) { }
     explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }
 
+#if ENABLE(BLOB)
     FormDataElement(const String& filename, long long fileStart, long long fileLength, double expectedFileModificationTime, bool shouldGenerateFile) : m_type(encodedFile), m_filename(filename), m_fileStart(fileStart), m_fileLength(fileLength), m_expectedFileModificationTime(expectedFileModificationTime), m_shouldGenerateFile(shouldGenerateFile) { }
     explicit FormDataElement(const KURL& blobURL) : m_type(encodedBlob), m_url(blobURL) { }
+#else
+    FormDataElement(const String& filename, bool shouldGenerateFile) : m_type(encodedFile), m_filename(filename), m_shouldGenerateFile(shouldGenerateFile) { }
+#endif
     FormDataElement(const KURL& url, long long start, long long length, double expectedFileModificationTime) : m_type(encodedURL), m_url(url), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime), m_shouldGenerateFile(false) { }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
@@ -46,15 +50,19 @@ public:
     enum Type {
         data,
         encodedFile
+#if ENABLE(BLOB)
         , encodedBlob
+#endif
         , encodedURL
     } m_type;
     Vector<char> m_data;
     String m_filename;
+#if ENABLE(BLOB)
     KURL m_url; // For Blob or URL.
     long long m_fileStart;
     long long m_fileLength;
     double m_expectedFileModificationTime;
+#endif
     String m_generatedFilename;
     bool m_shouldGenerateFile;
 };
@@ -69,9 +77,13 @@ inline bool operator==(const FormDataElement& a, const FormDataElement& b)
     if (a.m_type == FormDataElement::data)
         return a.m_data == b.m_data;
     if (a.m_type == FormDataElement::encodedFile)
+#if ENABLE(BLOB)
         return a.m_filename == b.m_filename && a.m_fileStart == b.m_fileStart && a.m_fileLength == b.m_fileLength && a.m_expectedFileModificationTime == b.m_expectedFileModificationTime;
     if (a.m_type == FormDataElement::encodedBlob)
         return a.m_url == b.m_url;
+#else
+        return a.m_filename == b.m_filename;
+#endif
     if (a.m_type == FormDataElement::encodedURL)
         return a.m_url == b.m_url;
 
@@ -106,17 +118,21 @@ public:
 
     void appendData(const void* data, size_t);
     void appendFile(const String& filePath, bool shouldGenerateFile = false);
+#if ENABLE(BLOB)
     void appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime, bool shouldGenerateFile = false);
     void appendBlob(const KURL& blobURL);
+#endif
     void appendURL(const KURL&);
     void appendURLRange(const KURL&, long long start, long long length, double expectedModificationTime);
 
     void flatten(Vector<char>&) const; // omits files
     String flattenToString() const; // omits files
 
+#if ENABLE(BLOB)
     // Resolve all blob references so we only have file and data.
     // If the FormData has no blob references to resolve, this is returned.
     PassRefPtr<FormData> resolveBlobReferences();
+#endif
 
     bool isEmpty() const { return m_elements.isEmpty(); }
     const Vector<FormDataElement>& elements() const { return m_elements; }

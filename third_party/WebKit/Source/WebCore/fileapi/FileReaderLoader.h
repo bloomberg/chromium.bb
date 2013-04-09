@@ -31,6 +31,8 @@
 #ifndef FileReaderLoader_h
 #define FileReaderLoader_h
 
+#if ENABLE(BLOB)
+
 #include "FileError.h"
 #include "KURL.h"
 #include "TextEncoding.h"
@@ -124,5 +126,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)
 
 #endif // FileReaderLoader_h

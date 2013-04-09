@@ -31,6 +31,8 @@
 #ifndef BlobRegistryProxy_h
 #define BlobRegistryProxy_h
 
+#if ENABLE(BLOB)
+
 #include "BlobRegistry.h"
 
 namespace WebKit { class WebBlobRegistry; }
@@ -52,5 +54,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)
 
 #endif // BlobRegistryProxy_h

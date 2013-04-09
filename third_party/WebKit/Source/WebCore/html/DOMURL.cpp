@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#if ENABLE(BLOB)
+
 #include "DOMURL.h"
 
 #include "ActiveDOMObject.h"
@@ -135,3 +137,5 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)

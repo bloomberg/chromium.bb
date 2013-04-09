@@ -31,6 +31,8 @@
 #ifndef BlobResourceHandle_h
 #define BlobResourceHandle_h
 
+#if ENABLE(BLOB)
+
 #include "FileStreamClient.h"
 #include "ResourceHandle.h"
 #include <wtf/PassRefPtr.h>
@@ -110,5 +112,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(BLOB)
 
 #endif // BlobResourceHandle_h

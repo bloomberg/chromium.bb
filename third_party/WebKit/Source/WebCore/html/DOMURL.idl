@@ -25,6 +25,7 @@
  */
 
 [
+    Conditional=BLOB,
     Constructor,
     InterfaceName=URL,
     ImplementationLacksVTable

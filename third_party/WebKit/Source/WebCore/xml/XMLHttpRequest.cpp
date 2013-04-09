@@ -641,8 +641,10 @@ void XMLHttpRequest::send(Blob* body, ExceptionCode& ec)
         m_requestEntityBody = FormData::create();
         if (body->isFile())
             m_requestEntityBody->appendFile(toFile(body)->path());
+#if ENABLE(BLOB)
         else
             m_requestEntityBody->appendBlob(body->url());
+#endif
     }
 
     createRequest(ec);
@@ -710,11 +712,13 @@ void XMLHttpRequest::sendFromInspector(PassRefPtr<FormData> formData, ExceptionC
 
 void XMLHttpRequest::createRequest(ExceptionCode& ec)
 {
+#if ENABLE(BLOB)
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
         ec = XMLHttpRequestException::NETWORK_ERR;
         return;
     }
+#endif
 
     // The presence of upload event listeners forces us to use preflighting because POSTing to an URL that does not
     // permit cross origin requests should look exactly like POSTing to an URL that does not respond at all.
