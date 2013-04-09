@@ -76,6 +76,9 @@ const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
 const base::FilePath::CharType kO3DPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppo3dautoplugin.so");
 
+const base::FilePath::CharType kO1DPluginFileName[] =
+    FILE_PATH_LITERAL("pepper/libppo1d.so");
+
 const base::FilePath::CharType kGTalkPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppgoogletalk.so");
 
@@ -364,6 +367,11 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(kO3DPluginFileName);
+      break;
+    case chrome::FILE_O1D_PLUGIN:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(kO1DPluginFileName);
       break;
     case chrome::FILE_GTALK_PLUGIN:
       if (!PathService::Get(base::DIR_MODULE, &cur))

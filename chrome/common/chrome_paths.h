@@ -88,6 +88,7 @@ enum {
   DIR_PNACL_COMPONENT,          // Full path to the latest PNaCl version
                                 // (subdir of DIR_PNACL_BASE).
   FILE_O3D_PLUGIN,              // Full path to the O3D Pepper plugin file.
+  FILE_O1D_PLUGIN,              // Full path to the O1D Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
   FILE_WIDEVINE_CDM_PLUGIN,     // Full path to the Widevine CDM Pepper plugin
                                 // file.
