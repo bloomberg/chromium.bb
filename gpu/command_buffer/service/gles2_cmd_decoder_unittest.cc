@@ -7913,6 +7913,11 @@ TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Bind image to texture.
+  // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
+  EXPECT_CALL(*gl_, GetError())
+      .Times(2)
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
   bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
@@ -7952,6 +7957,11 @@ TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Bind image to texture.
+  // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
+  EXPECT_CALL(*gl_, GetError())
+      .Times(2)
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
   bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
@@ -7960,6 +7970,11 @@ TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Release image from texture.
+  // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
+  EXPECT_CALL(*gl_, GetError())
+      .Times(2)
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   ReleaseTexImage2DCHROMIUM release_tex_image_2d_cmd;
   release_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(release_tex_image_2d_cmd));

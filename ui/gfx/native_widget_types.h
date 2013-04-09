@@ -321,6 +321,8 @@ const AcceleratedWidget kNullAcceleratedWidget = 0;
 #error unknown platform
 #endif
 
+typedef void* GpuMemoryBufferHandle;
+
 }  // namespace gfx
 
 #endif  // UI_GFX_NATIVE_WIDGET_TYPES_H_

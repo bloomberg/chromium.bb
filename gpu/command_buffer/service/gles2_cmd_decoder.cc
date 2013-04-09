@@ -10149,11 +10149,15 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     return;
   }
 
-  if (!gl_image->BindTexImage()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glBindTexImage2DCHROMIUM", "fail to bind image with the given ID");
-    return;
+  {
+    ScopedGLErrorSuppressor suppressor(
+        "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", this);
+    if (!gl_image->BindTexImage()) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION,
+          "glBindTexImage2DCHROMIUM", "fail to bind image with the given ID");
+      return;
+    }
   }
 
   gfx::Size size = gl_image->GetSize();
@@ -10196,7 +10200,11 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
   if (texture->GetLevelImage(target, 0) != gl_image)
     return;
 
-  gl_image->ReleaseTexImage();
+  {
+    ScopedGLErrorSuppressor suppressor(
+        "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM", this);
+    gl_image->ReleaseTexImage();
+  }
 
   texture_manager()->SetLevelInfo(
       texture, target, 0, GL_RGBA, 0, 0, 1, 0,

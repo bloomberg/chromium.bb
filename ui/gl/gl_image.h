@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
 namespace gfx {
@@ -35,6 +34,10 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
 
   // Create a GL image for a window.
   static scoped_refptr<GLImage> CreateGLImage(gfx::PluginWindowHandle window);
+
+  // Create a GL image for a GPU Memory buffer.
+  static scoped_refptr<GLImage> CreateGLImageForGpuMemoryBuffer(
+      gfx::GpuMemoryBufferHandle buffer, gfx::Size size);
 
  protected:
   virtual ~GLImage();
