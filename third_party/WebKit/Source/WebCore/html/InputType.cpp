@@ -107,10 +107,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::file(), FileInputType::create);
     map->add(InputTypeNames::hidden(), HiddenInputType::create);
     map->add(InputTypeNames::image(), ImageInputType::create);
-#if ENABLE(INPUT_TYPE_MONTH)
-    if (RuntimeEnabledFeatures::inputTypeMonthEnabled())
-        map->add(InputTypeNames::month(), MonthInputType::create);
-#endif
+    map->add(InputTypeNames::month(), MonthInputType::create);
     map->add(InputTypeNames::number(), NumberInputType::create);
     map->add(InputTypeNames::password(), PasswordInputType::create);
     map->add(InputTypeNames::radio(), RadioInputType::create);

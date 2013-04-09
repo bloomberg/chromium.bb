@@ -239,11 +239,6 @@ public:
     static void setInputTypeDateTimeEnabled(bool isEnabled) { isInputTypeDateTimeEnabled = isEnabled; }
 #endif
 
-#if ENABLE(INPUT_TYPE_MONTH)
-    static bool inputTypeMonthEnabled() { return isInputTypeMonthEnabled; }
-    static void setInputTypeMonthEnabled(bool isEnabled) { isInputTypeMonthEnabled = isEnabled; }
-#endif
-
 #if ENABLE(INPUT_TYPE_TIME)
     static bool inputTypeTimeEnabled() { return isInputTypeTimeEnabled; }
     static void setInputTypeTimeEnabled(bool isEnabled) { isInputTypeTimeEnabled = isEnabled; }
@@ -343,10 +338,6 @@ private:
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     static bool isInputTypeDateTimeEnabled;
-#endif
-
-#if ENABLE(INPUT_TYPE_MONTH)
-    static bool isInputTypeMonthEnabled;
 #endif
 
 #if ENABLE(INPUT_TYPE_TIME)

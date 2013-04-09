@@ -359,9 +359,7 @@ TEST_F(WebViewTest, DISABLED_TextInputType)
     testTextInputType(WebTextInputTypeDateTime, "input_field_datetime.html");
 #endif
     testTextInputType(WebTextInputTypeDateTimeLocal, "input_field_datetimelocal.html");
-#if ENABLE(INPUT_TYPE_MONTH)
     testTextInputType(WebTextInputTypeMonth, "input_field_month.html");
-#endif
 #if ENABLE(INPUT_TYPE_TIME)
     testTextInputType(WebTextInputTypeTime, "input_field_time.html");
 #endif

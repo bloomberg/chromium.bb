@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_MONTH)
 #include "MonthInputType.h"
 
 #include "DateComponents.h"
@@ -174,5 +173,3 @@ bool MonthInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bo
 }
 #endif
 } // namespace WebCore
-
-#endif

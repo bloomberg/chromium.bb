@@ -490,24 +490,6 @@ bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
 #endif
 }
 
-void WebRuntimeFeatures::enableInputTypeMonth(bool enable)
-{
-#if ENABLE(INPUT_TYPE_MONTH)
-    RuntimeEnabledFeatures::setInputTypeMonthEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
-}
-
-bool WebRuntimeFeatures::isInputTypeMonthEnabled()
-{
-#if ENABLE(INPUT_TYPE_MONTH)
-    return RuntimeEnabledFeatures::inputTypeMonthEnabled();
-#else
-    return false;
-#endif
-}
-
 void WebRuntimeFeatures::enableInputTypeTime(bool enable)
 {
 #if ENABLE(INPUT_TYPE_TIME)
