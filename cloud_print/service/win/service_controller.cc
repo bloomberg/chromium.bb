@@ -9,15 +9,19 @@
 #include <atlctl.h>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
+#include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
 
 namespace {
+
+const wchar_t kServiceExeName[] = L"cloud_print_service.exe";
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -84,11 +88,17 @@ ServiceController::~ServiceController() {
 
 HRESULT ServiceController::StartService() {
   ServiceHandle service;
-  HRESULT hr = OpenService(name_, SERVICE_START, &service);
+  HRESULT hr = OpenService(name_, SERVICE_START| SERVICE_QUERY_STATUS,
+                           &service);
   if (FAILED(hr))
     return hr;
   if (!::StartService(service, 0, NULL))
     return cloud_print::GetLastHResult();
+  SERVICE_STATUS status = {0};
+  while (::QueryServiceStatus(service, &status) &&
+          status.dwCurrentState == SERVICE_START_PENDING) {
+    Sleep(100);
+  }
   return S_OK;
 }
 
@@ -109,11 +119,29 @@ HRESULT ServiceController::StopService() {
   return S_OK;
 }
 
+HRESULT ServiceController::InstallConnectorService(
+    const string16& user,
+    const string16& password,
+    const base::FilePath& user_data_dir,
+    bool enable_logging) {
+  return InstallService(user, password, true, kServiceSwitch, user_data_dir,
+                        enable_logging);
+}
+
+HRESULT ServiceController::InstallCheckService(
+    const string16& user,
+    const string16& password,
+    const base::FilePath& user_data_dir) {
+  return InstallService(user, password, false, kRequirementsSwitch,
+                        user_data_dir, true);
+}
+
 HRESULT ServiceController::InstallService(const string16& user,
                                           const string16& password,
+                                          bool auto_start,
                                           const std::string& run_switch,
                                           const base::FilePath& user_data_dir,
-                                          bool auto_start) {
+                                          bool enable_logging) {
   // TODO(vitalybuka): consider "lite" version if we don't want unregister
   // printers here.
   HRESULT hr = UninstallService();
@@ -126,10 +154,17 @@ HRESULT ServiceController::InstallService(const string16& user,
 
   base::FilePath service_path;
   CHECK(PathService::Get(base::FILE_EXE, &service_path));
+  service_path = service_path.DirName().Append(base::FilePath(kServiceExeName));
+  if (!file_util::PathExists(service_path))
+    return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
   CommandLine command_line(service_path);
   command_line.AppendSwitch(run_switch);
   if (!user_data_dir.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+  if (enable_logging) {
+    command_line.AppendSwitch(switches::kEnableLogging);
+    command_line.AppendSwitchASCII(switches::kV, "1");
+  }
   ChromeLauncher::CopySwitchesFromCurrent(&command_line);
 
   LocalSecurityPolicy local_security_policy;
@@ -183,3 +218,42 @@ HRESULT ServiceController::UninstallService() {
   return hr;
 }
 
+void ServiceController::UpdateState() {
+  ServiceHandle service;
+  state_ = STATE_NOT_FOUND;
+  user_.clear();
+  is_logging_enabled_ = false;
+
+  HRESULT hr = OpenService(name_, SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG,
+                           &service);
+  if (FAILED(hr))
+    return;
+
+  state_ = STATE_STOPPED;
+  SERVICE_STATUS status = {0};
+  if (::QueryServiceStatus(service, &status) &&
+      status.dwCurrentState == SERVICE_RUNNING) {
+    state_ = STATE_RUNNING;
+  }
+
+  DWORD config_size = 0;
+  ::QueryServiceConfig(service, NULL, 0, &config_size);
+  if (!config_size)
+    return;
+
+  std::vector<uint8> buffer(config_size, 0);
+  QUERY_SERVICE_CONFIG* config =
+      reinterpret_cast<QUERY_SERVICE_CONFIG*>(&buffer[0]);
+  if (!::QueryServiceConfig(service, config, buffer.size(), &config_size) ||
+      config_size != buffer.size()) {
+    return;
+  }
+
+  CommandLine command_line(CommandLine::FromString(config->lpBinaryPathName));
+  if (!command_line.HasSwitch(kServiceSwitch)) {
+    state_ = STATE_NOT_FOUND;
+    return;
+  }
+  is_logging_enabled_ = command_line.HasSwitch(switches::kEnableLogging);
+  user_ = config->lpServiceStartName;
+}

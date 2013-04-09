@@ -17,25 +17,53 @@ class FilePath;
 
 class ServiceController {
  public:
+  enum State {
+    STATE_UNKNOWN = 0,
+    STATE_NOT_FOUND,
+    STATE_STOPPED,
+    STATE_RUNNING,
+  };
+
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CLOUDPRINTSERVICE,
                                     "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
 
   explicit ServiceController(const string16& name);
   ~ServiceController();
 
-  HRESULT InstallService(const string16& user,
-                         const string16& password,
-                         const std::string& run_switch,
-                         const base::FilePath& user_data_dir,
-                         bool auto_start);
+  // Installs temporarily service to check pre-requirements.
+  HRESULT InstallCheckService(const string16& user,
+                              const string16& password,
+                              const base::FilePath& user_data_dir);
+
+  // Installs real service that will run connector.
+  HRESULT InstallConnectorService(const string16& user,
+                                  const string16& password,
+                                  const base::FilePath& user_data_dir,
+                                  bool enable_logging);
 
   HRESULT UninstallService();
 
   HRESULT StartService();
   HRESULT StopService();
 
+  // Query service status and options. Results accessible with getters below.
+  void UpdateState();
+  State state() const { return state_; }
+  const string16& user() const { return user_; }
+  bool is_logging_enabled() const { return is_logging_enabled_; }
+
  private:
+  HRESULT InstallService(const string16& user,
+                         const string16& password,
+                         bool auto_start,
+                         const std::string& run_switch,
+                         const base::FilePath& user_data_dir,
+                         bool enable_logging);
+
   const string16 name_;
+  State state_;
+  string16 user_;
+  bool is_logging_enabled_;
 };
 
 #endif  // CLOUD_PRINT_SERVICE_SERVICE_CONTROLLER_H_

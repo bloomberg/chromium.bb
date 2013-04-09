@@ -205,9 +205,9 @@ class CloudPrintServiceModule
       if (FAILED(hr))
         return hr;
 
-      hr = controller_->InstallService(run_as_user, run_as_password,
-                                       kServiceSwitch, user_data_dir_switch_,
-                                       true);
+      hr = controller_->InstallConnectorService(
+          run_as_user, run_as_password, user_data_dir_switch_,
+          command_line.HasSwitch(switches::kEnableLogging));
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return controller_->StartService();
 
@@ -248,9 +248,9 @@ class CloudPrintServiceModule
       *run_as_password = ASCIIToWide(GetOption("Password", "", true));
 
       SetupListener setup(*run_as_user);
-      if (FAILED(controller_->InstallService(*run_as_user, *run_as_password,
-                                             kRequirementsSwitch,
-                                             user_data_dir_switch_, false))) {
+      if (FAILED(controller_->InstallCheckService(*run_as_user,
+                                                  *run_as_password,
+                                                  user_data_dir_switch_))) {
         LOG(ERROR) << "Failed to install service as " << *run_as_user << ".";
         continue;
       }
