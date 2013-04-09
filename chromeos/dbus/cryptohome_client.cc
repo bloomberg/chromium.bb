@@ -519,6 +519,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
@@ -530,6 +531,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     writer.AppendString(domain);
     writer.AppendString(device_id);
+    bool include_signed_public_key = (options & INCLUDE_SIGNED_PUBLIC_KEY);
+    writer.AppendBool(include_signed_public_key);
     writer.AppendString(challenge);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -1052,6 +1055,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, true);

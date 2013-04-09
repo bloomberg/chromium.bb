@@ -158,6 +158,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      chromeos::CryptohomeClient::AttestationChallengeOptions options,
       const std::string& challenge,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
@@ -166,6 +167,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
             key_name,
             domain,
             device_id,
+            options,
             challenge,
             base::Bind(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,

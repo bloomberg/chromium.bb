@@ -56,13 +56,15 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
                void(chromeos::CryptohomeClient::AttestationKeyType key_type,
                     const std::string& key_name,
                     const Callback& callback));
-  MOCK_METHOD6(TpmAttestationSignEnterpriseChallenge,
-               void(chromeos::CryptohomeClient::AttestationKeyType key_type,
-                    const std::string& key_name,
-                    const std::string& domain,
-                    const std::string& device_id,
-                    const std::string& challenge,
-                    const DataCallback& callback));
+  MOCK_METHOD7(
+      TpmAttestationSignEnterpriseChallenge,
+      void(chromeos::CryptohomeClient::AttestationKeyType key_type,
+           const std::string& key_name,
+           const std::string& domain,
+           const std::string& device_id,
+           chromeos::CryptohomeClient::AttestationChallengeOptions options,
+           const std::string& challenge,
+           const DataCallback& callback));
   MOCK_METHOD4(TpmAttestationSignSimpleChallenge,
                void(chromeos::CryptohomeClient::AttestationKeyType key_type,
                     const std::string& key_name,

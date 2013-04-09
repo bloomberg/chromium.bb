@@ -107,11 +107,12 @@ class MockCryptohomeClient : public CryptohomeClient {
                void(AttestationKeyType key_type,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
-  MOCK_METHOD6(TpmAttestationSignEnterpriseChallenge,
+  MOCK_METHOD7(TpmAttestationSignEnterpriseChallenge,
                void(AttestationKeyType key_type,
                     const std::string& key_name,
                     const std::string& domain,
                     const std::string& device_id,
+                    AttestationChallengeOptions options,
                     const std::string& challenge,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationSignSimpleChallenge,

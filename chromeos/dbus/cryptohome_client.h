@@ -60,6 +60,12 @@ class CHROMEOS_EXPORT CryptohomeClient {
     USER_KEY
   };
 
+  // Options available for customizing an attestation challenge response.
+  enum AttestationChallengeOptions {
+    CHALLENGE_RESPONSE_OPTION_NONE = 0,
+    INCLUDE_SIGNED_PUBLIC_KEY = 1
+  };
+
   virtual ~CryptohomeClient();
 
   // Factory function, creates a new instance and returns ownership.
@@ -292,15 +298,17 @@ class CHROMEOS_EXPORT CryptohomeClient {
 
   // Asynchronously signs an enterprise challenge with the key specified by
   // |key_type| and |key_name|.  |domain| and |device_id| will be included in
-  // the challenge response.  |challenge| must be a valid enterprise attestation
-  // challenge.  The |callback| will be called when the dbus call completes.
-  // When the operation completes, the AsyncCallStatusWithDataHandler signal
-  // handler is called.
+  // the challenge response.  |options| control how the challenge response is
+  // generated.  |challenge| must be a valid enterprise attestation challenge.
+  // The |callback| will be called when the dbus call completes.  When the
+  // operation completes, the AsyncCallStatusWithDataHandler signal handler is
+  // called.
   virtual void TpmAttestationSignEnterpriseChallenge(
       AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
 

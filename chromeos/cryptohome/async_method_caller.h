@@ -133,6 +133,7 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      chromeos::CryptohomeClient::AttestationChallengeOptions options,
       const std::string& challenge,
       const DataCallback& callback) = 0;
 

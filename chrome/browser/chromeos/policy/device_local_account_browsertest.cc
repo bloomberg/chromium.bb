@@ -348,6 +348,7 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
+      AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationSignSimpleChallenge(
