@@ -1144,8 +1144,8 @@ public:
     void didCreateCustomElement(Element*, CustomElementConstructor*);
 #endif
 
-    void adjustFloatQuadsForScrollAndAbsoluteZoomAndFrameScale(Vector<FloatQuad>&, RenderObject*);
-    void adjustFloatRectForScrollAndAbsoluteZoomAndFrameScale(FloatRect&, RenderObject*);
+    void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, RenderObject*);
+    void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject*);
 
     bool hasActiveParser();
     void incrementActiveParserCount() { ++m_activeParserCount; }

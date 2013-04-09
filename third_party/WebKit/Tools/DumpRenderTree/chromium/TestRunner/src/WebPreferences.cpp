@@ -211,8 +211,6 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setValidationMessageTimerMagnification(-1);
     settings->setVisualWordMovementEnabled(false);
     settings->setPasswordEchoEnabled(false);
-    settings->setApplyDeviceScaleFactorInCompositor(true);
-    settings->setApplyPageScaleFactorInCompositor(true);
     settings->setSmartInsertDeleteEnabled(true);
 #ifdef WIN32
     settings->setSelectTrailingWhitespaceEnabled(true);

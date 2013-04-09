@@ -569,7 +569,6 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
     m_webView->setPageScaleFactor(2, WebPoint());
 
     WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
-    EXPECT_EQ(1, webViewImpl->page()->mainFrame()->frameScaleFactor());
     EXPECT_EQ(980, webViewImpl->page()->mainFrame()->contentRenderer()->unscaledDocumentRect().width());
     EXPECT_EQ(980, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
 }
@@ -584,8 +583,6 @@ TEST_F(WebFrameTest, targetDensityDpiHigh)
     int viewportHeight = 480;
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
-    m_webView->settings()->setApplyDeviceScaleFactorInCompositor(true);
-    m_webView->settings()->setApplyPageScaleFactorInCompositor(true);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
@@ -607,8 +604,6 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
     int viewportHeight = 480;
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
-    m_webView->settings()->setApplyDeviceScaleFactorInCompositor(true);
-    m_webView->settings()->setApplyPageScaleFactorInCompositor(true);
     m_webView->enableFixedLayoutMode(true);
     m_webView->settings()->setViewportEnabled(true);
     m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
@@ -2531,8 +2526,6 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     // Make sure we initialize to minimum scale, even if the window size
     // only becomes available after the load begins.
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "long_scroll.html", true, &client);
-    m_webView->settings()->setApplyDeviceScaleFactorInCompositor(true);
-    m_webView->settings()->setApplyPageScaleFactorInCompositor(true);
     m_webView->resize(WebSize(1000, 1000));
     m_webView->layout();
 
@@ -2590,8 +2583,6 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
     // Short page tests.
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "short_scroll.html", true, &client);
 
-    m_webView->settings()->setApplyDeviceScaleFactorInCompositor(true);
-    m_webView->settings()->setApplyPageScaleFactorInCompositor(true);
     m_webView->resize(WebSize(1000, 1000));
     m_webView->layout();
 

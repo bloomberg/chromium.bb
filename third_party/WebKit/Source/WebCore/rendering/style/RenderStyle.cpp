@@ -882,17 +882,6 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
     }
 }
 
-void RenderStyle::setPageScaleTransform(float scale)
-{
-    if (scale == 1)
-        return;
-    TransformOperations transform;
-    transform.operations().append(ScaleTransformOperation::create(scale, scale, ScaleTransformOperation::SCALE));
-    setTransform(transform);
-    setTransformOriginX(Length(0, Fixed));
-    setTransformOriginY(Length(0, Fixed));
-}
-
 void RenderStyle::setTextShadow(PassOwnPtr<ShadowData> shadowData, bool add)
 {
     ASSERT(!shadowData || (!shadowData->spread() && shadowData->style() == Normal));

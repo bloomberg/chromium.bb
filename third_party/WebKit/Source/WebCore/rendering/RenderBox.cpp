@@ -2895,7 +2895,7 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
     Frame* frame = view() ? view()->frame(): 0;
     FrameView* frameView = view() ? view()->frameView() : 0;
     if (fixedElementLaysOutRelativeToFrame(frame, frameView))
-        return (view()->isHorizontalWritingMode() ? frameView->visibleWidth() : frameView->visibleHeight()) / frame->frameScaleFactor();
+        return (view()->isHorizontalWritingMode() ? frameView->visibleWidth() : frameView->visibleHeight());
 
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalHeightForPositioned(containingBlock, false);
@@ -2953,7 +2953,7 @@ LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxM
     Frame* frame = view() ? view()->frame(): 0;
     FrameView* frameView = view() ? view()->frameView() : 0;
     if (fixedElementLaysOutRelativeToFrame(frame, frameView))
-        return (view()->isHorizontalWritingMode() ? frameView->visibleHeight() : frameView->visibleWidth()) / frame->frameScaleFactor();
+        return (view()->isHorizontalWritingMode() ? frameView->visibleHeight() : frameView->visibleWidth());
 
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalWidthForPositioned(containingBlock, 0, 0, false);

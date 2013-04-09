@@ -91,14 +91,11 @@ void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntR
     goodTargets.clear();
 
     int touchPointPadding = ceil(max(touchBox.width(), touchBox.height()) * 0.5);
-    // FIXME: Rect-based hit test doesn't transform the touch point size.
-    //        We have to pre-apply frame scale factor here.
-    int padding = ceil(touchPointPadding / mainFrame->frameScaleFactor());
 
     IntPoint touchPoint = touchBox.center();
     IntPoint contentsPoint = mainFrame->view()->windowToContents(touchPoint);
 
-    HitTestResult result = mainFrame->eventHandler()->hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent, IntSize(padding, padding));
+    HitTestResult result = mainFrame->eventHandler()->hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent, IntSize(touchPointPadding, touchPointPadding));
     const ListHashSet<RefPtr<Node> >& hitResults = result.rectBasedTestResult();
 
     // Blacklist nodes that are container of disambiguated nodes.

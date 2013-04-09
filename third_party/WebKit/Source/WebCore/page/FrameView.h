@@ -208,7 +208,7 @@ public:
     // and adjusting for page scale.
     IntSize scrollOffsetForFixedPosition() const;
     // Static function can be called from another thread.
-    static IntSize scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, float frameScaleFactor, bool fixedElementsLayoutRelativeToFrame, int headerHeight, int footerHeight);
+    static IntSize scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame, int headerHeight, int footerHeight);
 
     bool fixedElementsLayoutRelativeToFrame() const;
 
@@ -604,12 +604,12 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 
 inline int FrameView::mapFromLayoutToCSSUnits(LayoutUnit value)
 {
-    return value / (m_frame->pageZoomFactor() * m_frame->frameScaleFactor());
+    return value / m_frame->pageZoomFactor();
 }
 
 inline LayoutUnit FrameView::mapFromCSSToLayoutUnits(int value)
 {
-    return value * m_frame->pageZoomFactor() * m_frame->frameScaleFactor();
+    return value * m_frame->pageZoomFactor();
 }
 
 inline FrameView* toFrameView(Widget* widget)

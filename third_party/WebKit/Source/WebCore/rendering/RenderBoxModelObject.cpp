@@ -560,11 +560,6 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
 LayoutSize RenderBoxModelObject::stickyPositionOffset() const
 {
     LayoutRect viewportRect = view()->frameView()->viewportConstrainedVisibleContentRect();
-    float scale = 1;
-    if (Frame* frame = view()->frameView()->frame())
-        scale = frame->frameScaleFactor();
-    
-    viewportRect.scale(1 / scale);
     
     StickyPositionViewportConstraints constraints;
     computeStickyPositionConstraints(constraints, viewportRect);

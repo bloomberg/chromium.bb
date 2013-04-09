@@ -118,13 +118,8 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
     if (!parent())
         return;
 
-    FloatRect scaledDamageRect = damageRect;
-    float frameScaleFactor = m_element->document()->frame()->frameScaleFactor();
-    scaledDamageRect.scale(frameScaleFactor);
-    scaledDamageRect.move(-frameRect().x() * (frameScaleFactor - 1), -frameRect().y() * (frameScaleFactor - 1));
-
     // Don't paint anything if the plugin doesn't intersect the damage rect.
-    if (!frameRect().intersects(enclosingIntRect(scaledDamageRect)))
+    if (!frameRect().intersects(damageRect))
         return;
 
     gc->save();
@@ -139,7 +134,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
 
     WebCanvas* canvas = gc->platformContext()->canvas();
 
-    IntRect windowRect = view->contentsToWindow(enclosingIntRect(scaledDamageRect));
+    IntRect windowRect = view->contentsToWindow(damageRect);
     m_webPlugin->paint(canvas, windowRect);
 
     gc->restore();

@@ -601,11 +601,6 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
     // scrollbars.  The CSS2.1 draft states that HTML UAs should use the <html> or <body> element and XML/XHTML UAs should
     // use the root element.
 
-    // To combat the inability to scroll on a page with overflow:hidden on the root when scaled, disregard hidden when
-    // there is a frameScaleFactor that is greater than one on the main frame.
-
-    bool overrideHidden = m_frame->page() && m_frame->page()->mainFrame() == m_frame && m_frame->frameScaleFactor() > 1;
-
     EOverflow overflowX = o->style()->overflowX();
     EOverflow overflowY = o->style()->overflowY();
 
@@ -621,10 +616,7 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
 
     switch (overflowX) {
         case OHIDDEN:
-            if (overrideHidden)
-                hMode = ScrollbarAuto;
-            else
-                hMode = ScrollbarAlwaysOff;
+            hMode = ScrollbarAlwaysOff;
             break;
         case OSCROLL:
             hMode = ScrollbarAlwaysOn;
@@ -639,10 +631,7 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
     
      switch (overflowY) {
         case OHIDDEN:
-            if (overrideHidden)
-                vMode = ScrollbarAuto;
-            else
-                vMode = ScrollbarAlwaysOff;
+            vMode = ScrollbarAlwaysOff;
             break;
         case OSCROLL:
             vMode = ScrollbarAlwaysOn;
@@ -1503,16 +1492,16 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
     return viewportRect;
 }
 
-IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, float frameScaleFactor, bool fixedElementsLayoutRelativeToFrame, int headerHeight, int footerHeight)
+IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& totalContentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame, int headerHeight, int footerHeight)
 {
     IntPoint constrainedPosition = ScrollableArea::constrainScrollPositionForOverhang(visibleContentRect, totalContentsSize, scrollPosition, scrollOrigin, headerHeight, footerHeight);
 
     IntSize maxSize = totalContentsSize - visibleContentRect.size();
 
-    float dragFactorX = (fixedElementsLayoutRelativeToFrame || !maxSize.width()) ? 1 : (totalContentsSize.width() - visibleContentRect.width() * frameScaleFactor) / maxSize.width();
-    float dragFactorY = (fixedElementsLayoutRelativeToFrame || !maxSize.height()) ? 1 : (totalContentsSize.height() - visibleContentRect.height() * frameScaleFactor) / maxSize.height();
+    float dragFactorX = (fixedElementsLayoutRelativeToFrame || !maxSize.width()) ? 1 : (totalContentsSize.width() - visibleContentRect.width()) / maxSize.width();
+    float dragFactorY = (fixedElementsLayoutRelativeToFrame || !maxSize.height()) ? 1 : (totalContentsSize.height() - visibleContentRect.height()) / maxSize.height();
 
-    return IntSize(constrainedPosition.x() * dragFactorX / frameScaleFactor, constrainedPosition.y() * dragFactorY / frameScaleFactor);
+    return IntSize(constrainedPosition.x() * dragFactorX, constrainedPosition.y() * dragFactorY);
 }
 
 IntSize FrameView::scrollOffsetForFixedPosition() const
@@ -1521,8 +1510,7 @@ IntSize FrameView::scrollOffsetForFixedPosition() const
     IntSize totalContentsSize = this->totalContentsSize();
     IntPoint scrollPosition = this->scrollPosition();
     IntPoint scrollOrigin = this->scrollOrigin();
-    float frameScaleFactor = m_frame ? m_frame->frameScaleFactor() : 1;
-    return scrollOffsetForFixedPosition(visibleContentRect, totalContentsSize, scrollPosition, scrollOrigin, frameScaleFactor, fixedElementsLayoutRelativeToFrame(), headerHeight(), footerHeight());
+    return scrollOffsetForFixedPosition(visibleContentRect, totalContentsSize, scrollPosition, scrollOrigin, fixedElementsLayoutRelativeToFrame(), headerHeight(), footerHeight());
 }
 
 bool FrameView::fixedElementsLayoutRelativeToFrame() const
@@ -1619,11 +1607,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 #if USE(ACCELERATED_COMPOSITING)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
-
-        // Make sure to "apply" the scale factor here since we're converting from frame view
-        // coordinates to layer backing coordinates.
-        updateRect.scale(1 / m_frame->frameScaleFactor());
-
         ASSERT(renderView());
         renderView()->layer()->setBackingNeedsRepaintInRect(updateRect);
     }
@@ -2812,7 +2795,7 @@ float FrameView::visibleContentScaleFactor() const
     if (!m_frame || !m_frame->page())
         return 1;
 
-    if (!m_frame->settings()->applyPageScaleFactorInCompositor() || m_frame != m_frame->page()->mainFrame())
+    if (m_frame != m_frame->page()->mainFrame())
         return 1;
 
     return m_frame->page()->pageScaleFactor();

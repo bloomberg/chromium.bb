@@ -222,7 +222,7 @@ Node* nodeFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
     if (!frameView)
         return 0;
 
-    float scaleFactor = frame->pageZoomFactor() * frame->frameScaleFactor();
+    float scaleFactor = frame->pageZoomFactor();
     IntPoint point = roundedIntPoint(FloatPoint(x * scaleFactor  + frameView->scrollX(), y * scaleFactor + frameView->scrollY()));
 
     if (!frameView->visibleContentRect().contains(point))

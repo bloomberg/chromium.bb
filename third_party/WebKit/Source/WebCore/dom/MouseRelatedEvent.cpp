@@ -48,7 +48,7 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
     FrameView* frameView = frame->view();
     if (!frameView)
         return LayoutSize();
-    float scaleFactor = frame->pageZoomFactor() * frame->frameScaleFactor();
+    float scaleFactor = frame->pageZoomFactor();
     return LayoutSize(frameView->scrollX() / scaleFactor, frameView->scrollY() / scaleFactor);
 }
 
@@ -73,7 +73,7 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
             adjustedPageLocation = frameView->windowToContents(windowLocation);
-            float scaleFactor = 1 / (frame->pageZoomFactor() * frame->frameScaleFactor());
+            float scaleFactor = 1 / frame->pageZoomFactor();
             if (scaleFactor != 1.0f) {
                 adjustedPageLocation.scale(scaleFactor, scaleFactor);
                 scrollPosition.scale(scaleFactor, scaleFactor);
@@ -123,20 +123,9 @@ static float pageZoomFactor(const UIEvent* event)
     return frame->pageZoomFactor();
 }
 
-static float frameScaleFactor(const UIEvent* event)
-{
-    DOMWindow* window = event->view();
-    if (!window)
-        return 1;
-    Frame* frame = window->frame();
-    if (!frame)
-        return 1;
-    return frame->frameScaleFactor();
-}
-
 void MouseRelatedEvent::computePageLocation()
 {
-    float scaleFactor = pageZoomFactor(this) * frameScaleFactor(this);
+    float scaleFactor = pageZoomFactor(this);
     setAbsoluteLocation(roundedLayoutPoint(FloatPoint(pageX() * scaleFactor, pageY() * scaleFactor)));
 }
 
@@ -162,7 +151,7 @@ void MouseRelatedEvent::computeRelativePosition()
     if (RenderObject* r = targetNode->renderer()) {
         FloatPoint localPos = r->absoluteToLocal(absoluteLocation(), UseTransforms);
         m_offsetLocation = roundedLayoutPoint(localPos);
-        float scaleFactor = 1 / (pageZoomFactor(this) * frameScaleFactor(this));
+        float scaleFactor = 1 / pageZoomFactor(this);
         if (scaleFactor != 1.0f)
             m_offsetLocation.scale(scaleFactor, scaleFactor);
     }

@@ -2622,7 +2622,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     if (delta.isZero())
         return false;
 
-    const float scaleFactor = m_frame->pageZoomFactor() * m_frame->frameScaleFactor();
+    const float scaleFactor = m_frame->pageZoomFactor();
     delta.scale(1 / scaleFactor, 1 / scaleFactor);
 
     Node* node = m_scrollGestureHandlingNode.get();
@@ -3860,7 +3860,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             pagePoint = documentPointForWindowPoint(targetFrame, point.pos());
         }
 
-        float scaleFactor = targetFrame->pageZoomFactor() * targetFrame->frameScaleFactor();
+        float scaleFactor = targetFrame->pageZoomFactor();
 
         int adjustedPageX = lroundf(pagePoint.x() / scaleFactor);
         int adjustedPageY = lroundf(pagePoint.y() / scaleFactor);

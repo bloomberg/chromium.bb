@@ -142,16 +142,6 @@ bool WebSettingsImpl::deviceSupportsTouch()
     return m_settings->deviceSupportsTouch();
 }
 
-void WebSettingsImpl::setApplyDeviceScaleFactorInCompositor(bool applyDeviceScaleFactorInCompositor)
-{
-    m_settings->setApplyDeviceScaleFactorInCompositor(applyDeviceScaleFactorInCompositor);
-}
-
-void WebSettingsImpl::setApplyPageScaleFactorInCompositor(bool applyPageScaleFactorInCompositor)
-{
-    m_settings->setApplyPageScaleFactorInCompositor(applyPageScaleFactorInCompositor);
-}
-
 void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedNodeToLegibleScale)
 {
     m_autoZoomFocusedNodeToLegibleScale = autoZoomFocusedNodeToLegibleScale;
@@ -693,16 +683,6 @@ void WebSettingsImpl::setCookieEnabled(bool enabled)
 void WebSettingsImpl::setGestureTapHighlightEnabled(bool enableHighlight)
 {
     m_gestureTapHighlightEnabled = enableHighlight;
-}
-
-bool WebSettingsImpl::applyDeviceScaleFactorInCompositor() const
-{
-    return m_settings->applyDeviceScaleFactorInCompositor();
-}
-
-bool WebSettingsImpl::applyPageScaleFactorInCompositor() const
-{
-    return m_settings->applyPageScaleFactorInCompositor();
 }
 
 void WebSettingsImpl::setAllowCustomScrollbarInMainFrame(bool enabled)

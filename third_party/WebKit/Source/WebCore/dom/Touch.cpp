@@ -42,7 +42,7 @@ static int contentsX(Frame* frame)
     FrameView* frameView = frame->view();
     if (!frameView)
         return 0;
-    return frameView->scrollX() / frame->pageZoomFactor() / frame->frameScaleFactor();
+    return frameView->scrollX() / frame->pageZoomFactor();
 }
 
 static int contentsY(Frame* frame)
@@ -52,7 +52,7 @@ static int contentsY(Frame* frame)
     FrameView* frameView = frame->view();
     if (!frameView)
         return 0;
-    return frameView->scrollY() / frame->pageZoomFactor() / frame->frameScaleFactor();
+    return frameView->scrollY() / frame->pageZoomFactor();
 }
 
 Touch::Touch(Frame* frame, EventTarget* target, unsigned identifier, int screenX, int screenY, int pageX, int pageY, int radiusX, int radiusY, float rotationAngle, float force)
@@ -69,7 +69,7 @@ Touch::Touch(Frame* frame, EventTarget* target, unsigned identifier, int screenX
     , m_rotationAngle(rotationAngle)
     , m_force(force)
 {
-    float scaleFactor = frame->pageZoomFactor() * frame->frameScaleFactor();
+    float scaleFactor = frame->pageZoomFactor();
     float x = pageX * scaleFactor;
     float y = pageY * scaleFactor;
     m_absoluteLocation = roundedLayoutPoint(FloatPoint(x, y));
