@@ -35,50 +35,6 @@
 
 namespace WebCore {
 
-RenderMediaVolumeSliderContainer::RenderMediaVolumeSliderContainer(Element* element)
-    : RenderBlock(element)
-{
-}
-
-void RenderMediaVolumeSliderContainer::layout()
-{
-    RenderBlock::layout();
-
-    if (style()->display() == NONE || !nextSibling() || !nextSibling()->isBox())
-        return;
-
-    RenderBox* buttonBox = toRenderBox(nextSibling());
-    int absoluteOffsetTop = buttonBox->localToAbsolute(FloatPoint(0, -size().height())).y();
-
-    LayoutStateDisabler layoutStateDisabler(view());
-
-    // If the slider would be rendered outside the page, it should be moved below the controls.
-    if (UNLIKELY(absoluteOffsetTop < 0))
-        setY(buttonBox->offsetTop() + theme()->volumeSliderOffsetFromMuteButton(buttonBox, pixelSnappedSize()).y());
-}
-
-// ----------------------------
-
-RenderMediaControlTimelineContainer::RenderMediaControlTimelineContainer(Element* element)
-    : RenderFlexibleBox(element)
-{
-}
-
-// We want the timeline slider to be at least 100 pixels wide.
-// FIXME: Eliminate hard-coded widths altogether.
-static const int minWidthToDisplayTimeDisplays = 45 + 100 + 45;
-
-void RenderMediaControlTimelineContainer::layout()
-{
-    RenderFlexibleBox::layout();
-
-    LayoutStateDisabler layoutStateDisabler(view());
-    MediaControlTimelineContainerElement* container = static_cast<MediaControlTimelineContainerElement*>(node());
-    container->setTimeDisplaysHidden(width().toInt() < minWidthToDisplayTimeDisplays);
-}
-
-// ----------------------------
-
 #if ENABLE(VIDEO_TRACK)
 
 RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* element)

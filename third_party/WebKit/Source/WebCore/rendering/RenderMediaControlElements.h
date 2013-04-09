@@ -36,26 +36,6 @@
 
 namespace WebCore {
 
-class RenderMediaVolumeSliderContainer : public RenderBlock {
-public:
-    RenderMediaVolumeSliderContainer(Element*);
-
-private:
-    virtual void layout();
-};
-
-// ----------------------------
-
-class RenderMediaControlTimelineContainer : public RenderFlexibleBox {
-public:
-    RenderMediaControlTimelineContainer(Element*);
-
-private:
-    virtual void layout();
-};
-
-// ----------------------------
-
 #if ENABLE(VIDEO_TRACK)
 
 class RenderTextTrackContainerElement : public RenderBlock {
