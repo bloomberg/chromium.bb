@@ -403,10 +403,19 @@ struct NaClDescVtbl {
 struct NaClDesc {
   struct NaClRefCount base NACL_IS_REFCOUNT_SUBCLASS;
   uint32_t flags;
-  /* public flags */
+
+  /* "public" flags -- settable by users of NaClDesc interface */
+
+  /*
+   * It is okay to try to use this descriptor with PROT_EXEC in mmap.
+   * This is just a hint to the service runtime to try direct mmap --
+   * the validator cache can still disallow the operation.
+   */
 #define NACL_DESC_FLAGS_MMAP_EXEC_OK 0x1
+
+  /* private flags -- used internally by NaClDesc */
 #define NACL_DESC_FLAGS_PUBLIC_MASK 0xffff
-  /* private flags */
+
 #define NACL_DESC_FLAGS_HAS_METADATA 0x10000
   /*
    * We could have used two uint16_t variables too, but that just
@@ -643,6 +652,8 @@ int NaClDescInternalizeNotImplemented(
 
 
 int NaClSafeCloseNaClHandle(NaClHandle h);
+
+int NaClDescIsSafeForMmap(struct NaClDesc *vself);
 
 EXTERN_C_END
 

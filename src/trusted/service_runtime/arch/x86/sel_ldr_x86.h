@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__
-#define SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_X86_SEL_LDR_X86__H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_X86_SEL_LDR_X86__H_
 
 /* to make LDT_ENTRIES available */
 #if NACL_WINDOWS
@@ -17,7 +17,6 @@
 #endif
 
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
-
 
 #if NACL_BUILD_SUBARCH == 32
 # define NACL_MAX_ADDR_BITS  (30)
@@ -33,13 +32,5 @@
 #else
 # error "Did Intel or AMD introduce the 128-bit x86?"
 #endif
-
-#define NACL_NOOP_OPCODE    0x90
-#define NACL_HALT_OPCODE    0xf4
-#define NACL_HALT_LEN       1           /* length of halt instruction */
-#define NACL_HALT_WORD      0xf4f4f4f4U
-
-#define NACL_X86_TRAP_FLAG      (1 << 8)
-#define NACL_X86_DIRECTION_FLAG (1 << 10)
 
 #endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */

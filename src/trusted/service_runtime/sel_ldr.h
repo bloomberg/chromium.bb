@@ -298,7 +298,11 @@ struct NaClApp {
    * This is the effector interface object that is used to manipulate
    * NaCl apps by the objects in the NaClDesc class hierarchy.  This
    * is used by this NaClApp when making NaClDesc method calls from
-   * syscall handlers.
+   * syscall handlers.  Currently, this is when NaClDesc objects need
+   * to manipulate the untrusted address space -- the mmap
+   * implementation need to unmap the untrusted pages, and on Windows
+   * this requires different calls depending on how the pages were
+   * created.
    */
   struct NaClDescEffector   *effp;
 

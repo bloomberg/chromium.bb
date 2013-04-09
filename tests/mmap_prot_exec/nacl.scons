@@ -1,0 +1,74 @@
+# -*- python -*-
+# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import atexit
+import os
+import tempfile
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+
+nexe_command_line = []
+
+if env.Bit('host_mac'):
+  nexe_command_line += ['-m']
+
+env.Append(CPPDEFINES = [['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}'],
+                         ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}'],
+                         ])
+
+temporary_file = tempfile.mktemp()
+
+def CleanupFileBinder(fn):
+  def Cleanup():
+    try:
+      os.unlink(fn)
+    except OSError:
+      pass
+  return Cleanup
+
+atexit.register(CleanupFileBinder(temporary_file))
+
+# TODO(dschuff): remove temporary workaround for pnacl bug.  This is a
+# generic workaround, rather than just creating the file with the
+# correct permission bits here, so that other pnacl users who are
+# affected by the bug can copy this.
+#
+# See https://code.google.com/p/nativeclient/issues/detail?id=3374
+if env.Bit('bitcode'):
+  env.Append(TRANSLATEFLAGS=['-O0'])
+  env.Append(LINKFLAGS=['-O0'])
+
+nexe_command_line += ['-f', temporary_file]
+
+nexe = env.ComponentProgram('mmap_prot_exec',
+                            'mmap_prot_exec.c',
+                            EXTRA_LIBS=['platform',
+                                        '${NONIRT_LIBS}',
+                                        '${PTHREAD_LIBS}'])
+
+# Fault injection is used to bypass safety checks, since this test as
+# untrusted code cannot actually obtain "blessed" descriptors that are
+# marked safe-for-mmap.  The encoded fault-injection control string
+# says that the failure control at the call-site marked with
+# "MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK" is global (not per-thread),
+# and that the first time the program (rather than thread) encounter
+# the call-site it should "pass", e.g., let the normal code run;
+# subsequently, however, it will "fail" 100 times, with the error
+# value specified at the NACL_FI macro, without actually invoking the
+# wrapped function, which is the NaClDescIsSafeForMmap predicate.
+#
+# See native_client/src/trusted/fault_injection/fault_injection.h for
+# details of how fault injection works.
+node = env.CommandSelLdrTestNacl(
+    'mmap_prot_exec.out',
+    nexe,
+    nexe_command_line,
+    sel_ldr_flags=['-a'],
+    osenv=['NACL_FAULT_INJECTION=MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F100'])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test')

@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef SERVICE_RUNTIME_ARCH_MIPS_SEL_LDR_H__
@@ -22,10 +22,5 @@
 #define NACL_DATA_SEGMENT_START 0x10000000
 
 #define NACL_THREAD_MAX         8192
-
-#define NACL_NOOP_OPCODE        0x00000000  /* nop */
-#define NACL_HALT_OPCODE        0x0000000D  /* break */
-#define NACL_HALT_LEN           4           /* length of halt instruction */
-#define NACL_HALT_WORD          NACL_HALT_OPCODE
 
 #endif /* SERVICE_RUNTIME_ARCH_MIPS_SEL_LDR_H__ */

@@ -164,12 +164,6 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
     return -NACL_ABI_EINVAL;
   }
 
-  if (0 == (NACL_ABI_MAP_FIXED & flags) && NULL == start_addr) {
-    NaClLog(LOG_INFO,
-            ("NaClDescIoDescMap: Mapping not NACL_ABI_MAP_FIXED"
-             " but start_addr is NULL\n"));
-  }
-
   if (0 == (NACL_ABI_MAP_FIXED & flags)) {
     if (!NaClFindAddressSpace(&addr, len)) {
       NaClLog(1, "NaClDescIoDescMap: no address space?\n");

@@ -162,9 +162,21 @@
 # define NACL_FAKE_INODE_NUM     0x6c43614e
 #endif
 
+/*
+ * Block sizes, op-codes that are used in NaCl, and trampoline related
+ * constants that simplify making the C code architecture independent.
+ */
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 # define NACL_BLOCK_SHIFT         (5)
+
+# define NACL_NOOP_OPCODE    0x90
+# define NACL_HALT_OPCODE    0xf4
+# define NACL_HALT_LEN       1           /* length of halt instruction */
+# define NACL_HALT_WORD      0xf4f4f4f4U
+
+# define NACL_X86_TRAP_FLAG      (1 << 8)
+# define NACL_X86_DIRECTION_FLAG (1 << 10)
 
 # if NACL_BUILD_SUBARCH == 32
 /*
@@ -214,8 +226,21 @@
 # endif /* NACL_BUILD_SUBARCH */
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+# include "native_client/src/include/arm_sandbox.h"
 
 # define NACL_BLOCK_SHIFT         (4)
+
+# if defined(NACL_TARGET_ARM_THUMB2_MODE)
+#  define NACL_NOOP_OPCODE        0x46c0      /* mov r8, r8 */
+#  define NACL_HALT_OPCODE        0xbe00      /* bkpt 0x0000 */
+#  define NACL_HALT_LEN           2           /* length of halt instruction */
+#  define NACL_HALT_WORD          0xbe00be00
+# else
+#  define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
+#  define NACL_HALT_OPCODE        NACL_INSTR_ARM_HALT_FILL
+#  define NACL_HALT_LEN           4           /* length of halt instruction */
+#  define NACL_HALT_WORD          NACL_HALT_OPCODE
+# endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 
 /* 16-byte bundles, 1G address space */
 # define NACL_CONTROL_FLOW_MASK      0xC000000F
@@ -254,10 +279,15 @@
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
-#undef  NACL_KERN_STACK_SIZE        // Mips needs 128k pthread stack size
-#define NACL_KERN_STACK_SIZE        (128 << 10)
+# undef  NACL_KERN_STACK_SIZE        // Mips needs 128k pthread stack size
+# define NACL_KERN_STACK_SIZE        (128 << 10)
 
-#define NACL_BLOCK_SHIFT            4
+# define NACL_BLOCK_SHIFT            4
+
+# define NACL_NOOP_OPCODE        0x00000000  /* nop */
+# define NACL_HALT_OPCODE        0x0000000D  /* break */
+# define NACL_HALT_LEN           4           /* length of halt instruction */
+# define NACL_HALT_WORD          NACL_HALT_OPCODE
 
 /* 16-byte bundles, 256MB code segment*/
 # define NACL_CONTROL_FLOW_MASK     0x0FFFFFF0

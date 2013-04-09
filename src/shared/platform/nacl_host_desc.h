@@ -59,20 +59,23 @@ typedef struct _stati64 nacl_host_stat_t;
 # error "what OS?"
 #endif
 
-/* TODO(ilewis, bsy): it seems like these error functions are useful in more
- * places than just the NaClDesc library. Move them to a more central header.
- * When that's done, it should be possible to include this header *only* from
- * host code, removing the need for the #ifdef __native_client__ directives.
+/*
+ * TODO(bsy): it seems like these error functions are useful in more
+ * places than just the NaClDesc library. Move them to a more central
+ * header.  When that's done, it should be possible to include this
+ * header *only* from host code, removing the need for the #ifdef
+ * __native_client__ directives.
  *
- * Currently that's not possible, unless we want to forego NaClIsNegErrno in
- * trusted code, and go back to writing if(retval < 0) to check for errors.
+ * Currently that's not possible, unless we want to forego
+ * NaCl*IsNegErrno in trusted code, and go back to writing if(retval <
+ * 0) to check for errors.
  */
 
 /*
  * On 64-bit Linux, the app has the entire 32-bit address space
  * (kernel no longer occupies the top 1G), so what is an errno and
  * what is an address is trickier: we require that our NACL_ABI_
- * errno values be at most 64K.
+ * errno values be less than 64K.
  *
  * NB: The runtime assumes that valid errno values can ALWAYS be
  * represented using no more than 16 bits. If this assumption

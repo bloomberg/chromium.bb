@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
@@ -38,6 +39,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
 #include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+
+#include "native_client/src/trusted/fault_injection/fault_injection.h"
 
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -47,6 +50,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
+#include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -66,6 +70,8 @@
 
 
 struct NaClDescQuotaInterface;
+
+static size_t const kdefault_io_buffer_bytes_to_log = 64;
 
 static int32_t MunmapInternal(struct NaClApp *nap,
                               uintptr_t sysaddr, size_t length);
@@ -705,7 +711,8 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
   ssize_t         read_result = -NACL_ABI_EINVAL;
   uintptr_t       sysaddr;
   struct NaClDesc *ndp;
-
+  size_t          log_bytes;
+  char const      *ellipsis = "";
 
   NaClLog(3,
           ("Entered NaClSysRead(0x%08"NACL_PRIxPTR", "
@@ -745,9 +752,19 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
                     (uint32_t) (((uintptr_t) buf) + count - 1));
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
-    NaClLog(8, "read result: %.*s\n",
-           (int) read_result,
-           (char *) sysaddr);
+    log_bytes = (size_t) read_result;
+    if (log_bytes > INT32_MAX) {
+      log_bytes = INT32_MAX;
+      ellipsis = "...";
+    }
+    if (NaClLogGetVerbosity() < 10) {
+      if (log_bytes > kdefault_io_buffer_bytes_to_log) {
+        log_bytes = kdefault_io_buffer_bytes_to_log;
+        ellipsis = "...";
+      }
+    }
+    NaClLog(8, "read result: %.*s%s\n",
+            (int) log_bytes, (char *) sysaddr, ellipsis);
   } else {
     NaClLog(4, "read returned %"NACL_PRIdS"\n", read_result);
   }
@@ -767,7 +784,9 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
   int32_t         retval = -NACL_ABI_EINVAL;
   ssize_t         write_result = -NACL_ABI_EINVAL;
   uintptr_t       sysaddr;
+  char const      *ellipsis = "";
   struct NaClDesc *ndp;
+  size_t          log_bytes;
 
   NaClLog(3,
           "Entered NaClSysWrite(0x%08"NACL_PRIxPTR", "
@@ -789,8 +808,19 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  NaClLog(8, "In NaClSysWrite(%d, %.*s, %"NACL_PRIdS")\n",
-          d, (int) count, (char *) sysaddr, count);
+  log_bytes = count;
+  if (log_bytes > INT32_MAX) {
+    log_bytes = INT32_MAX;
+    ellipsis = "...";
+  }
+  if (NaClLogGetVerbosity() < 10) {
+    if (log_bytes > kdefault_io_buffer_bytes_to_log) {
+      log_bytes = kdefault_io_buffer_bytes_to_log;
+      ellipsis = "...";
+    }
+  }
+  NaClLog(8, "In NaClSysWrite(%d, %.*s%s, %"NACL_PRIdS")\n",
+          d, (int) log_bytes, (char *) sysaddr, ellipsis, count);
 
   /*
    * The maximum length for read and write is INT32_MAX--anything larger and
@@ -1039,6 +1069,24 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
   return usraddr < nap->dynamic_text_end;
 }
 
+int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace_mu(struct NaClApp *nap,
+                                                       uintptr_t usraddr,
+                                                       size_t length) {
+  uintptr_t usr_region_end = usraddr + length;
+
+  if (usr_region_end < usraddr) {
+    /* Check for unsigned addition overflow */
+    return 0;
+  }
+  usr_region_end = NaClRoundAllocPage(usr_region_end);
+  if (usr_region_end < usraddr) {
+    /* 32-bit systems only, rounding caused uint32_t overflow */
+    return 0;
+  }
+  return (nap->dynamic_text_start <= usraddr &&
+          usr_region_end <= nap->dynamic_text_end);
+}
+
 
 /* Warning: sizeof(nacl_abi_off_t)!=sizeof(off_t) on OSX */
 int32_t NaClSysMmapIntern(struct NaClApp        *nap,
@@ -1054,6 +1102,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   uintptr_t                   usrpage;
   uintptr_t                   sysaddr;
   uintptr_t                   endaddr;
+  int                         mapping_code = 0;
   uintptr_t                   map_result;
   int                         holding_app_lock;
   struct nacl_abi_stat        stbuf;
@@ -1089,6 +1138,24 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       map_result = -NACL_ABI_EBADF;
       goto cleanup;
     }
+  }
+
+  if (NULL == ndp && 0 != (NACL_ABI_PROT_EXEC & prot)) {
+    NaClLog(3, "NaClSysMmap: asked for executable anonymous pages?!?\n");
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  if (((NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC) & prot) ==
+      (NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC)) {
+    NaClLog(3, "NaClSysMmap: asked for writable and executable pages?!?\n");
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  if (0 != (NACL_ABI_PROT_EXEC & prot) &&
+      0 == (NACL_ABI_MAP_FIXED & flags)) {
+    NaClLog(3, "NaClSysMmap: PROT_EXEC without MAP_FIXED.\n");
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
   }
 
   /*
@@ -1130,8 +1197,13 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   }
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
+    if (0 != (NACL_ABI_PROT_EXEC & prot)) {
+      NaClLog(3, "NaClSysMmap: length not a multiple of allocation size\n");
+      map_result = -NACL_ABI_EINVAL;
+      goto cleanup;
+    }
     NaClLog(1,
-            "mmap: rounded length to 0x%"NACL_PRIxS"\n",
+            "NaClSysMmap: rounded length to 0x%"NACL_PRIxS"\n",
             alloc_rounded_length);
   }
 
@@ -1307,9 +1379,30 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     goto cleanup;
   }
 
-  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
-                                                       usraddr,
-                                                       length)) {
+  /*
+   * Check if application is trying to do dynamic code loading by
+   * mmaping a file.
+   */
+  if (NULL != ndp && 0 != (prot & NACL_ABI_PROT_EXEC)) {
+    NaClLog(4,
+            "NaClSysMmap: PROT_EXEC requested, usraddr 0x%08"NACL_PRIxPTR
+            ", length %"NACL_PRIxS"\n",
+            usraddr, length);
+    if (NACL_FI("MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK",
+                NaClDescIsSafeForMmap(ndp),
+                1) &&
+        NaClSysCommonAddrRangeInAllowedDynamicCodeSpace_mu(nap,
+                                                           usraddr, length)) {
+      NaClLog(4, "NaClSysMmap: allowed\n");
+      mapping_code = 1;
+    } else {
+      NaClLog(4, "NaClSysMmap: descriptor not blessed, or target addr bad\n");
+      map_result = -NACL_ABI_EINVAL;
+      goto cleanup;
+    }
+  } else if (NaClSysCommonAddrRangeContainsExecutablePages_mu(nap,
+                                                              usraddr,
+                                                              length)) {
     NaClLog(2, "NaClSysMmap: region contains executable pages\n");
     map_result = -NACL_ABI_EINVAL;
     goto cleanup;
@@ -1325,11 +1418,15 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
   flags |= NACL_ABI_MAP_FIXED;
 
   /*
-   * Never allow users to say that mmapped pages are executable.  This
-   * is primarily for the service runtime's own bookkeeping -- prot is
-   * used in NaClVmmapAddWithOverwrite -- since %cs restriction makes
-   * page protection irrelevant, it doesn't matter that on many systems
-   * (w/o NX) PROT_READ implies PROT_EXEC.
+   * Turn off PROT_EXEC -- normal user mmapped pages should not be
+   * executable.  This is primarily for the service runtime's own
+   * bookkeeping -- prot is used in NaClVmmapAddWithOverwrite and will
+   * be needed for remapping data pages on Windows if page protection
+   * is set to PROT_NONE and back.
+   *
+   * NB: we've captured the notion of mapping executable memory for
+   * dynamic library loading etc in mapping_code, so when we do map
+   * text we will explicitly OR in NACL_ABI_PROT_EXEC as needed.
    */
   prot &= ~NACL_ABI_PROT_EXEC;
 
@@ -1360,6 +1457,104 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                                          prot,
                                          flags,
                                          (off_t) offset);
+    } else if (mapping_code) {
+      /*
+       * TODO(bsy):  coming in the next CL.
+       *
+       * Map a read-only view in trusted memory, ask validator if
+       * valid without patching; if okay, then stop threads on
+       * windows, then map in untrusted executable memory, continue
+       * threads on windows.  Fallback to using the dyncode_create
+       * interface otherwise.  (We could also stop threads, mmap
+       * in-place, run patching-validation, resume threads.)
+       *
+       * For mmap, stopping threads on Windows is only needed to
+       * ensure that nothing gets allocated into the temporary address
+       * space hole.  This is particularly dangerous, since the hole
+       * is in an executable region.  We must abort the program if
+       * some other trusted thread (or injected thread) allocates into
+       * this space.  We also need interprocessor interrupts to flush
+       * the icaches associated other cores, since they may contain
+       * stale data.  NB: mmap with PROT_EXEC should do this for us,
+       * since otherwise loading shared libraries in a multithreaded
+       * environment cannot work in a portable fashion.  (Mutex locks
+       * only ensure dcache coherency.)
+       *
+       * For eventual munmap, stopping threads also involve looking at
+       * their registers to make sure their %rip/%eip/%ip are not
+       * inside the region being modified (impossible for initial
+       * insertion).  This is needed because mmap->munmap->mmap could
+       * cause problems due to scheduler races.
+       *
+       * Fast path: if single threaded, no need to have two mappings,
+       * since we do not allow overmapping of existing code.
+       *
+       * Use NaClDynamicRegionCreate to mark region as allocated.
+       */
+      uintptr_t image_sys_addr;
+      int sys_ret;  /* syscall return convention */
+
+      NaClLog(4, "NaClSysMmap: checking descriptor type\n");
+      if (NACL_VTBL(NaClDesc, ndp)->typeTag != NACL_DESC_HOST_IO) {
+        NaClLog(4, "NaClSysMmap: not supported type, got %d\n",
+                NACL_VTBL(NaClDesc, ndp)->typeTag);
+        map_result = -NACL_ABI_EINVAL;
+        goto cleanup;
+      }
+
+      /*
+       * First, try to mmap.  Check if target address range is
+       * available.  It must be neither in use by NaClText interface,
+       * nor used by previous mmap'd code.  We record mmap'd code
+       * regions in the NaClText's data structures to avoid lo both
+       * having to deal with looking in two data structures.
+       */
+
+      /*
+       * Fallback implementation only.
+       */
+      image_sys_addr = (*NACL_VTBL(NaClDesc, ndp)->
+                        Map)(ndp,
+                             NaClDescEffectorTrustedMem(),
+                             (void *) NULL,
+                             length,
+                             PROT_READ,
+                             MAP_PRIVATE,
+                             offset);
+      if (NaClPtrIsNegErrno(&image_sys_addr)) {
+        map_result = image_sys_addr;
+        goto cleanup;
+      }
+
+      if (holding_app_lock) {
+        NaClVmHoleClosingMu(nap);
+        NaClXMutexUnlock(&nap->mu);
+      }
+
+      sys_ret = NaClTextDyncodeCreate(nap,
+                                      (uint32_t) usraddr,
+                                      (uint8_t *) image_sys_addr,
+                                      (uint32_t) length,
+                                      NULL);
+      if (sys_ret < 0) {
+        map_result = sys_ret;
+      } else {
+        map_result = (int32_t) usraddr;
+      }
+
+#if NACL_WINDOWS
+      sys_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                 UnmapUnsafe)(ndp, (void *) image_sys_addr, length);
+#else
+      sys_ret = munmap((void *) image_sys_addr, length);
+#endif
+      if (0 != sys_ret) {
+        NaClLog(LOG_FATAL,
+                "NaClSysMmap: could not unmap text at 0x%"NACL_PRIxPTR","
+                " length 0x%"NACL_PRIxS", NaCl errno %d\n",
+                image_sys_addr, length, -sys_ret);
+      }
+      goto cleanup_no_locks;
     } else {
       /*
        * This is a fix for Windows, where we cannot pass a size that
@@ -1414,8 +1609,6 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                               NaClProtMap(prot),
                               NaClProtMap(max_prot),
                               vmmap_type);
-  } else {
-    map_result = sysaddr;
   }
   /*
    * If we are mapping beyond the end of the file, we fill this space
@@ -1452,16 +1645,15 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       goto cleanup;
     }
   }
-  NaClLog(3, "NaClSysMmap: got address 0x%08"NACL_PRIxPTR"\n",
-          (uintptr_t) map_result);
 
   map_result = usraddr;
 
-cleanup:
+ cleanup:
   if (holding_app_lock) {
     NaClVmHoleClosingMu(nap);
     NaClXMutexUnlock(&nap->mu);
   }
+ cleanup_no_locks:
   if (NULL != ndp) {
     NaClDescUnref(ndp);
   }

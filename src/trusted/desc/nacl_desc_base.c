@@ -667,6 +667,10 @@ uint32_t NaClDescGetFlags(struct NaClDesc *self) {
   return rv;
 }
 
+int NaClDescIsSafeForMmap(struct NaClDesc *vself) {
+  return 0 != (NaClDescGetFlags(vself) & NACL_DESC_FLAGS_MMAP_EXEC_OK);
+}
+
 struct NaClDescVtbl const kNaClDescVtbl = {
   {
     NaClDescDtor,

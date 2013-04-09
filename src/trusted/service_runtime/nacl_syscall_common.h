@@ -109,6 +109,11 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
                                                      uintptr_t      usraddr,
                                                      size_t         length);
 
+/* bool */
+int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace_mu(struct NaClApp *nap,
+                                                       uintptr_t usraddr,
+                                                       size_t length);
+
 int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     void                  *start,
                     size_t                length,

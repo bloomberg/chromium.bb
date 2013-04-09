@@ -258,7 +258,7 @@ int CreateTestData(struct NaClHostDesc *d) {
     if (result < 0) {
       return (int) result;
     }
-    written += nbytes;
+    written += result;
   }
   return 0;
 }
@@ -291,7 +291,7 @@ void CreateTestFile(struct NaClHostDesc *d_out,
     fprintf(stderr, "Could not open test scratch file: NaCl errno %d\n", -err);
     exit(1);
   }
-  if (0 != CreateTestData(d_out)) {
+  if (0 != (err = CreateTestData(d_out))) {
     fprintf(stderr,
             "Could not write test data into test scratch file: NaCl errno %d\n",
             -err);
