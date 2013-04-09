@@ -91,10 +91,13 @@
 #include <public/WebURL.h>
 #include <public/WebURLError.h>
 #include <public/WebVector.h>
-#include <v8.h>
 #include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+
+#if USE(V8)
+#include <v8.h>
+#endif
 
 using namespace WebCore;
 
@@ -149,6 +152,7 @@ void FrameLoaderClientImpl::didExhaustMemoryAvailableForScript()
         m_webFrame->client()->didExhaustMemoryAvailableForScript(m_webFrame);
 }
 
+#if USE(V8)
 void FrameLoaderClientImpl::didCreateScriptContext(v8::Handle<v8::Context> context, int extensionGroup, int worldId)
 {
     WebViewImpl* webview = m_webFrame->viewImpl();
@@ -163,6 +167,7 @@ void FrameLoaderClientImpl::willReleaseScriptContext(v8::Handle<v8::Context> con
     if (m_webFrame->client())
         m_webFrame->client()->willReleaseScriptContext(m_webFrame, context, worldId);
 }
+#endif
 
 bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
                                                  int extensionGroup,

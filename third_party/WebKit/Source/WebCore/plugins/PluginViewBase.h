@@ -30,7 +30,9 @@
 #include "Widget.h"
 #include <wtf/text/WTFString.h>
 
+#if USE(V8)
 struct NPObject;
+#endif
 
 namespace WebCore {
 
@@ -44,7 +46,9 @@ public:
     virtual PlatformLayer* platformLayer() const { return 0; }
 #endif
 
+#if USE(V8)
     virtual NPObject* scriptableObject() { return 0; }
+#endif
     virtual void storageBlockingStateChanged() { }
     virtual void privateBrowsingStateChanged(bool) { }
     virtual bool getFormValue(String&) { return false; }

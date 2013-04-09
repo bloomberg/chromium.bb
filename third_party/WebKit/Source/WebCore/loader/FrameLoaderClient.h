@@ -53,10 +53,12 @@ class NSCachedURLResponse;
 class NSView;
 #endif
 
+#if USE(V8)
 namespace v8 {
 class Context;
 template<class T> class Handle;
 }
+#endif
 
 namespace WebCore {
 
@@ -287,9 +289,11 @@ namespace WebCore {
 
         virtual void didExhaustMemoryAvailableForScript() { };
 
+#if USE(V8)
         virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) = 0;
         virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) = 0;
         virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) = 0;
+#endif
 
         virtual void registerForIconNotification(bool listen = true) = 0;
         

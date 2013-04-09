@@ -622,11 +622,12 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
+#if USE(V8)
     v8::HandleScope handleScope;
     v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
+#endif
 
     ExceptionCode ec = 0;
     RefPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, ec);
@@ -647,11 +648,12 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
+#if USE(V8)
     v8::HandleScope handleScope;
     v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
+#endif
 
     RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(document, requestCallback);
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
@@ -675,11 +677,12 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
         return;
     }
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
+#if USE(V8)
     v8::HandleScope handleScope;
     v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
+#endif
 
     RefPtr<DataLoader> dataLoader = DataLoader::create(document, requestCallback, injectedScript, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
@@ -778,11 +781,12 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope contextScope(context);
+#if USE(V8)
+        v8::HandleScope handleScope;
+        v8::Handle<v8::Context> context = document->frame()->script()->mainWorldContext();
+        ASSERT(!context.IsEmpty());
+        v8::Context::Scope contextScope(context);
+#endif
 
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(document, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
