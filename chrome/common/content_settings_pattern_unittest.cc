@@ -158,7 +158,7 @@ TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
   EXPECT_TRUE(pattern.Matches(GURL("https://www.example.com")));
   EXPECT_FALSE(pattern.Matches(GURL("http://foo.www.example.com")));
 
-   // Pattern for filesystem URLs
+  // Pattern for filesystem URLs
   pattern =
       ContentSettingsPattern::FromURLNoWildcard(
           GURL("filesystem:http://www.google.com/temporary/"));
@@ -206,6 +206,9 @@ TEST(ContentSettingsPatternTest, TrimEndingDotFromHost) {
                Pattern("www.example.com.").ToString().c_str());
 
   EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com"));
+
+  EXPECT_TRUE(Pattern(".").IsValid());
+  EXPECT_STREQ(".", Pattern(".").ToString().c_str());
 }
 
 TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
@@ -443,6 +446,10 @@ TEST(ContentSettingsPatternTest, InvalidPatterns) {
   EXPECT_STREQ("", Pattern("file://").ToString().c_str());
   EXPECT_FALSE(Pattern("file:///foo/bar.html:8080").IsValid());
   EXPECT_STREQ("", Pattern("file:///foo/bar.html:8080").ToString().c_str());
+
+  // Host having multiple ending dots.
+  EXPECT_FALSE(Pattern("www.example.com..").IsValid());
+  EXPECT_STREQ("", Pattern("www.example.com..").ToString().c_str());
 }
 
 TEST(ContentSettingsPatternTest, UnequalOperator) {

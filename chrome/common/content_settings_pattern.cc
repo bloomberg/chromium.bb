@@ -156,6 +156,20 @@ ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
   } else {
     is_valid_ = Validate(parts_);
   }
+  if (!is_valid_)
+    return ContentSettingsPattern();
+
+  // A pattern is invalid if canonicalization is not idempotent.
+  // This check is here because it should be checked no matter
+  // use_legacy_validate_ is.
+  PatternParts parts(parts_);
+  if (!Canonicalize(&parts))
+    return ContentSettingsPattern();
+  if (ContentSettingsPattern(parts_, true) !=
+      ContentSettingsPattern(parts, true)) {
+    return ContentSettingsPattern();
+  }
+
   return ContentSettingsPattern(parts_, is_valid_);
 }
 
