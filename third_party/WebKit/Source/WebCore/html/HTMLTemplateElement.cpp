@@ -45,6 +45,7 @@ using namespace HTMLNames;
 inline HTMLTemplateElement::HTMLTemplateElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 HTMLTemplateElement::~HTMLTemplateElement()

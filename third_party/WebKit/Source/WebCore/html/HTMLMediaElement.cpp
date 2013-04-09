@@ -496,6 +496,8 @@ void HTMLMediaElement::finishParsingChildren()
         }
     }
 #endif
+
+    ScriptWrappable::init(this);
 }
 
 bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)

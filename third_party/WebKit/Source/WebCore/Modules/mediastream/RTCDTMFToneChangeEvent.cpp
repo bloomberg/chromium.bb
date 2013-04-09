@@ -50,18 +50,21 @@ PassRefPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicSt
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
     : Event(eventNames().tonechangeEvent, false, false)
     , m_tone(tone)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit& initializer)
     : Event(eventNames().tonechangeEvent, initializer)
     , m_tone(initializer.tone)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent()

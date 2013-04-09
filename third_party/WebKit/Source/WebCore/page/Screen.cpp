@@ -43,6 +43,7 @@ namespace WebCore {
 Screen::Screen(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned Screen::horizontalDPI() const

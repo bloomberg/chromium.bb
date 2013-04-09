@@ -46,6 +46,7 @@ inline SVGStopElement::SVGStopElement(const QualifiedName& tagName, Document* do
     , m_offset(0)
 {
     ASSERT(hasTagName(SVGNames::stopTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGStopElement();
 }
 

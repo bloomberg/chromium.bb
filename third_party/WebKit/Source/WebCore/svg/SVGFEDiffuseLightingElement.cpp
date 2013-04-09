@@ -57,6 +57,7 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedN
     , m_surfaceScale(1)
 {
     ASSERT(hasTagName(SVGNames::feDiffuseLightingTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDiffuseLightingElement();
 }
 

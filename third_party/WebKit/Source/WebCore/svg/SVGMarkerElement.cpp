@@ -84,6 +84,7 @@ inline SVGMarkerElement::SVGMarkerElement(const QualifiedName& tagName, Document
 {
     // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
     ASSERT(hasTagName(SVGNames::markerTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGMarkerElement();
 }
 

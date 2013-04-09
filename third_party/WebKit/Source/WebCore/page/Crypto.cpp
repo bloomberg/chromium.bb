@@ -54,6 +54,7 @@ bool isIntegerArray(ArrayBufferView* array)
 
 Crypto::Crypto()
 {
+    ScriptWrappable::init(this);
 }
 
 void Crypto::getRandomValues(ArrayBufferView* array, ExceptionCode& ec)

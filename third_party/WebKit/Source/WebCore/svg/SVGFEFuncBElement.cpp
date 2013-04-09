@@ -30,6 +30,7 @@ inline SVGFEFuncBElement::SVGFEFuncBElement(const QualifiedName& tagName, Docume
     : SVGComponentTransferFunctionElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feFuncBTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFEFuncBElement> SVGFEFuncBElement::create(const QualifiedName& tagName, Document* document)

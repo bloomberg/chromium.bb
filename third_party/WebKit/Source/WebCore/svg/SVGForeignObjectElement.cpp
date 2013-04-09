@@ -62,6 +62,7 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(const QualifiedName& tag
     , m_height(LengthModeHeight)
 {
     ASSERT(hasTagName(SVGNames::foreignObjectTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGForeignObjectElement();
 }
 

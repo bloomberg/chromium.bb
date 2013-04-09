@@ -43,6 +43,7 @@ HTMLMapElement::HTMLMapElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(mapTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLMapElement> HTMLMapElement::create(Document* document)

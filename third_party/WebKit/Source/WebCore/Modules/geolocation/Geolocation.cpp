@@ -242,6 +242,7 @@ Geolocation::Geolocation(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_allowGeolocation(Unknown)
 {
+    ScriptWrappable::init(this);
 }
 
 Geolocation::~Geolocation()

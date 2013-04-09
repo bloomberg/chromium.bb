@@ -94,6 +94,7 @@ HTMLTextAreaElement::HTMLTextAreaElement(const QualifiedName& tagName, Document*
 {
     ASSERT(hasTagName(textareaTag));
     setFormControlValueMatchesRenderer(true);
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)

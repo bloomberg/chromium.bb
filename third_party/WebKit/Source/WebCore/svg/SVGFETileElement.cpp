@@ -44,6 +44,7 @@ inline SVGFETileElement::SVGFETileElement(const QualifiedName& tagName, Document
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feTileTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFETileElement();
 }
 

@@ -45,12 +45,14 @@ PassRefPtr<RTCDataChannelEvent> RTCDataChannelEvent::create(const AtomicString& 
 
 RTCDataChannelEvent::RTCDataChannelEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel> channel)
     : Event(type, canBubble, cancelable)
     , m_channel(channel)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCDataChannelEvent::~RTCDataChannelEvent()

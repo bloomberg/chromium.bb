@@ -33,6 +33,7 @@ inline HTMLDirectoryElement::HTMLDirectoryElement(const QualifiedName& tagName, 
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(dirTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLDirectoryElement> HTMLDirectoryElement::create(const QualifiedName& tagName, Document* document)

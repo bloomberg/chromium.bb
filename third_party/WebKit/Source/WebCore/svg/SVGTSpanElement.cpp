@@ -34,6 +34,7 @@ inline SVGTSpanElement::SVGTSpanElement(const QualifiedName& tagName, Document* 
     : SVGTextPositioningElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::tspanTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGTSpanElement> SVGTSpanElement::create(const QualifiedName& tagName, Document* document)

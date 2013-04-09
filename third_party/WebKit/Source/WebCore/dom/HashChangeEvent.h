@@ -71,6 +71,7 @@ public:
 private:
     HashChangeEvent()
     {
+        ScriptWrappable::init(this);
     }
 
     HashChangeEvent(const String& oldURL, const String& newURL)
@@ -78,6 +79,7 @@ private:
         , m_oldURL(oldURL)
         , m_newURL(newURL)
     {
+        ScriptWrappable::init(this);
     }
 
     HashChangeEvent(const AtomicString& type, const HashChangeEventInit& initializer)
@@ -85,6 +87,7 @@ private:
         , m_oldURL(initializer.oldURL)
         , m_newURL(initializer.newURL)
     {
+        ScriptWrappable::init(this);
     }
 
     String m_oldURL;

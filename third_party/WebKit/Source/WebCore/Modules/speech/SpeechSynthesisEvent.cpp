@@ -42,6 +42,7 @@ PassRefPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString
 
 SpeechSynthesisEvent::SpeechSynthesisEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)

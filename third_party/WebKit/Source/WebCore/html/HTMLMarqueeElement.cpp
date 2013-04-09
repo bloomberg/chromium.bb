@@ -40,6 +40,7 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(const QualifiedName& tagName, Docu
     , ActiveDOMObject(document)
 {
     ASSERT(hasTagName(marqueeTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(const QualifiedName& tagName, Document* document)

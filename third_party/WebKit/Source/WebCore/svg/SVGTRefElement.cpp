@@ -136,6 +136,7 @@ inline SVGTRefElement::SVGTRefElement(const QualifiedName& tagName, Document* do
     , m_targetListener(SVGTRefTargetEventListener::create(this))
 {
     ASSERT(hasTagName(SVGNames::trefTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTRefElement();
 }
 

@@ -52,6 +52,7 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(const QualifiedN
     , m_yChannelSelector(CHANNEL_A)
 {
     ASSERT(hasTagName(SVGNames::feDisplacementMapTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDisplacementMapElement();
 }
 

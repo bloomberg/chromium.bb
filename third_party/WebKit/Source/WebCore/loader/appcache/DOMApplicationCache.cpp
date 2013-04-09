@@ -42,6 +42,7 @@ namespace WebCore {
 DOMApplicationCache::DOMApplicationCache(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (cacheHost)
         cacheHost->setDOMApplicationCache(this);

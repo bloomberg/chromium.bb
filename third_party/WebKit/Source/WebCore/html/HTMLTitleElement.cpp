@@ -39,6 +39,7 @@ inline HTMLTitleElement::HTMLTitleElement(const QualifiedName& tagName, Document
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(titleTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTitleElement> HTMLTitleElement::create(const QualifiedName& tagName, Document* document)

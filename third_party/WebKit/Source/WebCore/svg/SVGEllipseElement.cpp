@@ -59,6 +59,7 @@ inline SVGEllipseElement::SVGEllipseElement(const QualifiedName& tagName, Docume
     , m_ry(LengthModeHeight)
 {
     ASSERT(hasTagName(SVGNames::ellipseTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGEllipseElement();
 }    
 

@@ -63,6 +63,7 @@ inline SVGLinearGradientElement::SVGLinearGradientElement(const QualifiedName& t
 {
     // Spec: If the x2 attribute is not specified, the effect is as if a value of "100%" were specified.
     ASSERT(hasTagName(SVGNames::linearGradientTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGLinearGradientElement();
 }
 

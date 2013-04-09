@@ -55,6 +55,7 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     ASSERT(m_transaction);
     // We pass a reference to this object before it can be adopted.
     relaxAdoptionRequirement();
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<DOMStringList> IDBObjectStore::indexNames() const

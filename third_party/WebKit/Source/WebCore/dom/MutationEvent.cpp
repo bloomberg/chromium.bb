@@ -30,6 +30,7 @@ namespace WebCore {
 MutationEvent::MutationEvent()
     : m_attrChange(0)
 {
+    ScriptWrappable::init(this);
 }
 
 MutationEvent::MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<Node> relatedNode,

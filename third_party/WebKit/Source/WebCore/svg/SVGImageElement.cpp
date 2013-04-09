@@ -66,6 +66,7 @@ inline SVGImageElement::SVGImageElement(const QualifiedName& tagName, Document* 
     , m_imageLoader(this)
 {
     ASSERT(hasTagName(SVGNames::imageTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGImageElement();
 }
 

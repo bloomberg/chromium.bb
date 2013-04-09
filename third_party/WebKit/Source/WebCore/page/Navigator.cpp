@@ -45,6 +45,7 @@ namespace WebCore {
 Navigator::Navigator(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 Navigator::~Navigator()

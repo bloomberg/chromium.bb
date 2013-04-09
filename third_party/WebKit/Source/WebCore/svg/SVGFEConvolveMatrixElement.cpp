@@ -69,6 +69,7 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(const QualifiedNam
     , m_edgeMode(EDGEMODE_DUPLICATE)
 {
     ASSERT(hasTagName(SVGNames::feConvolveMatrixTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEConvolveMatrixElement();
 }
 

@@ -37,6 +37,7 @@ HTMLBRElement::HTMLBRElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(brTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBRElement> HTMLBRElement::create(Document* document)

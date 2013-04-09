@@ -31,6 +31,7 @@ inline SVGTitleElement::SVGTitleElement(const QualifiedName& tagName, Document* 
     : SVGStyledElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::titleTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGTitleElement> SVGTitleElement::create(const QualifiedName& tagName, Document* document)

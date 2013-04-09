@@ -46,6 +46,7 @@ inline SVGGlyphRefElement::SVGGlyphRefElement(const QualifiedName& tagName, Docu
     , m_dy(0)
 {
     ASSERT(hasTagName(SVGNames::glyphRefTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGGlyphRefElement();
 }
 

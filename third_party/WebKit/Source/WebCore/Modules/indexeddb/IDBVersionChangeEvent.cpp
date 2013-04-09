@@ -41,6 +41,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, Pass
     , m_oldVersion(oldVersion)
     , m_newVersion(newVersion)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBVersionChangeEvent::~IDBVersionChangeEvent()

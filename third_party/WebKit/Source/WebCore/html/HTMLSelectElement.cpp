@@ -79,6 +79,7 @@ HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document* doc
     , m_shouldRecalcListItems(false)
 {
     ASSERT(hasTagName(selectTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)

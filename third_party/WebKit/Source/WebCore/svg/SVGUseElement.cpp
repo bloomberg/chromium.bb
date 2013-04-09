@@ -96,6 +96,7 @@ inline SVGUseElement::SVGUseElement(const QualifiedName& tagName, Document* docu
 {
     ASSERT(hasCustomStyleCallbacks());
     ASSERT(hasTagName(SVGNames::useTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGUseElement();
 }
 

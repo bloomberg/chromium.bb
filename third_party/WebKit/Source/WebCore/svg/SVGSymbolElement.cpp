@@ -46,6 +46,7 @@ inline SVGSymbolElement::SVGSymbolElement(const QualifiedName& tagName, Document
     : SVGStyledElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::symbolTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSymbolElement();
 }
 

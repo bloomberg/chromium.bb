@@ -83,6 +83,7 @@ using namespace HTMLNames;
 HTMLDocument::HTMLDocument(Frame* frame, const KURL& url)
     : Document(frame, url, false, true)
 {
+    ScriptWrappable::init(this);
     clearXMLVersion();
 }
 

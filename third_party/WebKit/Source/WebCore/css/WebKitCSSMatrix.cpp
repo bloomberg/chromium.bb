@@ -39,10 +39,12 @@ namespace WebCore {
 WebKitCSSMatrix::WebKitCSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)
 {
+    ScriptWrappable::init(this);
 }
 
 WebKitCSSMatrix::WebKitCSSMatrix(const String& s, ExceptionCode& ec)
 {
+    ScriptWrappable::init(this);
     setMatrixValue(s, ec);
 }
 

@@ -48,6 +48,7 @@ inline SVGTextElement::SVGTextElement(const QualifiedName& tagName, Document* do
     : SVGTextPositioningElement(tagName, doc)
 {
     ASSERT(hasTagName(SVGNames::textTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTextElement();
 }
 

@@ -57,6 +57,7 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(const Q
     , m_amplitude(1)
     , m_exponent(1)
 {
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGComponentTransferFunctionElement();
 }
 

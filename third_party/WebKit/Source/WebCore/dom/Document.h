@@ -1599,6 +1599,7 @@ inline Node::Node(Document* document, ConstructionType type)
     , m_previous(0)
     , m_next(0)
 {
+    ScriptWrappable::init(this);
     if (!m_treeScope)
         m_treeScope = TreeScope::noDocumentInstance();
     m_treeScope->guardRef();

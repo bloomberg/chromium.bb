@@ -39,6 +39,7 @@ namespace WebCore {
 SVGDocument::SVGDocument(Frame* frame, const KURL& url)
     : Document(frame, url, false, false)
 {
+    ScriptWrappable::init(this);
 }
 
 SVGSVGElement* SVGDocument::rootElement() const

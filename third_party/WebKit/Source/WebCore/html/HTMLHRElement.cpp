@@ -38,6 +38,7 @@ HTMLHRElement::HTMLHRElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(hrTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLHRElement> HTMLHRElement::create(Document* document)

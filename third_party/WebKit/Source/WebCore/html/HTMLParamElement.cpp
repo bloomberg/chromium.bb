@@ -35,6 +35,7 @@ inline HTMLParamElement::HTMLParamElement(const QualifiedName& tagName, Document
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(paramTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLParamElement> HTMLParamElement::create(const QualifiedName& tagName, Document* document)

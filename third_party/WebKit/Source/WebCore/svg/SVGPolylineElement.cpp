@@ -30,6 +30,7 @@ inline SVGPolylineElement::SVGPolylineElement(const QualifiedName& tagName, Docu
     : SVGPolyElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::polylineTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGPolylineElement> SVGPolylineElement::create(const QualifiedName& tagName, Document* document)

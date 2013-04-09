@@ -93,6 +93,7 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document* doc)
     , m_timeContainer(SMILTimeContainer::create(this))
 {
     ASSERT(hasTagName(SVGNames::svgTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
     doc->registerForPageCacheSuspensionCallbacks(this);
 }

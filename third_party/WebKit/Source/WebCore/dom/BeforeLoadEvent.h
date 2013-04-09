@@ -64,18 +64,21 @@ public:
 private:
     BeforeLoadEvent()
     {
+        ScriptWrappable::init(this);
     }
 
     explicit BeforeLoadEvent(const String& url)
         : Event(eventNames().beforeloadEvent, false, true)
         , m_url(url)
     {
+        ScriptWrappable::init(this);
     }
 
     BeforeLoadEvent(const AtomicString& type, const BeforeLoadEventInit& initializer)
         : Event(type, initializer)
         , m_url(initializer.url)
     {
+        ScriptWrappable::init(this);
     }
 
     String m_url;

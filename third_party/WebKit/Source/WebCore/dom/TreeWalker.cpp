@@ -38,6 +38,7 @@ TreeWalker::TreeWalker(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPt
     : Traversal(rootNode, whatToShow, filter, expandEntityReferences)
     , m_current(root())
 {
+    ScriptWrappable::init(this);
 }
 
 void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionCode& ec)

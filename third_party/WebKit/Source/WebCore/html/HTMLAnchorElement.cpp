@@ -55,6 +55,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document* doc
     , m_linkRelations(0)
     , m_cachedVisitedLinkHash(0)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document* document)

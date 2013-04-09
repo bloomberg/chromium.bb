@@ -34,6 +34,7 @@ namespace WebCore {
 DocumentFragment::DocumentFragment(Document* document, ConstructionType constructionType)
     : ContainerNode(document, constructionType)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<DocumentFragment> DocumentFragment::create(Document* document)

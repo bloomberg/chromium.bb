@@ -35,6 +35,7 @@ inline HTMLMetaElement::HTMLMetaElement(const QualifiedName& tagName, Document* 
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(metaTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(const QualifiedName& tagName, Document* document)

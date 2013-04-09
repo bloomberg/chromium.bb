@@ -38,6 +38,7 @@ HTMLLIElement::HTMLLIElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(liTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLLIElement> HTMLLIElement::create(Document* document)

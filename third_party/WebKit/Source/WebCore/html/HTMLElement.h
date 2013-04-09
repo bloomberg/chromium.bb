@@ -169,6 +169,7 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document* document
     : StyledElement(tagName, document, type)
 {
     ASSERT(tagName.localName().impl());
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

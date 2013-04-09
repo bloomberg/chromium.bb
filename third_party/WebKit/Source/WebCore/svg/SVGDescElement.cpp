@@ -29,6 +29,7 @@ inline SVGDescElement::SVGDescElement(const QualifiedName& tagName, Document* do
     : SVGStyledElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::descTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGDescElement> SVGDescElement::create(const QualifiedName& tagName, Document* document)

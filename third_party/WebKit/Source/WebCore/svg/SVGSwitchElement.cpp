@@ -42,6 +42,7 @@ inline SVGSwitchElement::SVGSwitchElement(const QualifiedName& tagName, Document
     : SVGStyledTransformableElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::switchTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSwitchElement();
 }
 

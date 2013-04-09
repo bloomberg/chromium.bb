@@ -55,6 +55,7 @@ inline SVGFEImageElement::SVGFEImageElement(const QualifiedName& tagName, Docume
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feImageTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEImageElement();
 }
 

@@ -474,6 +474,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
 #endif
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
+    ScriptWrappable::init(this);
     m_printing = false;
     m_paginatedForScreen = false;
 

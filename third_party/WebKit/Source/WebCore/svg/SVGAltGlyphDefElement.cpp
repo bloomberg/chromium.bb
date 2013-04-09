@@ -32,6 +32,7 @@ inline SVGAltGlyphDefElement::SVGAltGlyphDefElement(const QualifiedName& tagName
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::altGlyphDefTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGAltGlyphDefElement> SVGAltGlyphDefElement::create(const QualifiedName& tagName, Document* document)

@@ -46,6 +46,7 @@ inline HTMLButtonElement::HTMLButtonElement(const QualifiedName& tagName, Docume
     , m_isActivatedSubmit(false)
 {
     ASSERT(hasTagName(buttonTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLButtonElement> HTMLButtonElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)

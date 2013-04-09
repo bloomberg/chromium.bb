@@ -46,6 +46,7 @@ HTMLBodyElement::HTMLBodyElement(const QualifiedName& tagName, Document* documen
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(bodyTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBodyElement> HTMLBodyElement::create(Document* document)

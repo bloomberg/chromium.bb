@@ -48,6 +48,7 @@ inline SVGAltGlyphElement::SVGAltGlyphElement(const QualifiedName& tagName, Docu
     : SVGTextPositioningElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::altGlyphTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGAltGlyphElement();
 }
 

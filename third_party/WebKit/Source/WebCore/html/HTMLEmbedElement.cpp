@@ -48,6 +48,7 @@ inline HTMLEmbedElement::HTMLEmbedElement(const QualifiedName& tagName, Document
     : HTMLPlugInImageElement(tagName, document, createdByParser, ShouldPreferPlugInsForImages)
 {
     ASSERT(hasTagName(embedTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)

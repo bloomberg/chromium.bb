@@ -58,6 +58,7 @@ inline SVGLineElement::SVGLineElement(const QualifiedName& tagName, Document* do
     , m_y2(LengthModeHeight)
 {
     ASSERT(hasTagName(SVGNames::lineTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGLineElement();
 }
 

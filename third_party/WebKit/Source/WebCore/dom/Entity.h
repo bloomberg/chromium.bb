@@ -35,7 +35,10 @@ public:
     String notationName() const { ASSERT_NOT_REACHED(); return String(); }
 
 private:
-    Entity() : ContainerNode(0) {}
+    Entity() : ContainerNode(0)
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 } //namespace

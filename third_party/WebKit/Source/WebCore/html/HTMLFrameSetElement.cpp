@@ -56,7 +56,7 @@ HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document*
     , m_noresize(false)
 {
     ASSERT(hasTagName(framesetTag));
-    
+    ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
 }
 

@@ -50,6 +50,7 @@ inline SVGCursorElement::SVGCursorElement(const QualifiedName& tagName, Document
     , m_y(LengthModeHeight)
 {
     ASSERT(hasTagName(SVGNames::cursorTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGCursorElement();
 }
 

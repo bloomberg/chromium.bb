@@ -32,6 +32,7 @@ using namespace HTMLNames;
 inline HTMLModElement::HTMLModElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLModElement> HTMLModElement::create(const QualifiedName& tagName, Document* document)

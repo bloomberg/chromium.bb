@@ -45,6 +45,7 @@ IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, Low
     , m_lowerType(lowerType)
     , m_upperType(upperType)
 {
+    ScriptWrappable::init(this);
 }
 
 ScriptValue IDBKeyRange::lowerValue(ScriptExecutionContext* context) const

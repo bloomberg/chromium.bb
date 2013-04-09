@@ -76,6 +76,7 @@ HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document* documen
 #endif
 {
     ASSERT(hasTagName(formTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document* document)

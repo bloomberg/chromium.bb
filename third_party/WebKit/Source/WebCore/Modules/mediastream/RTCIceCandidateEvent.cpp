@@ -45,12 +45,14 @@ PassRefPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bo
 
 RTCIceCandidateEvent::RTCIceCandidateEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate> candidate)
     : Event(eventNames().icecandidateEvent, canBubble, cancelable)
     , m_candidate(candidate)
 {
+    ScriptWrappable::init(this);
 }
 
 RTCIceCandidateEvent::~RTCIceCandidateEvent()

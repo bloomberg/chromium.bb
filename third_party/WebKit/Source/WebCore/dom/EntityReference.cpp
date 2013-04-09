@@ -29,6 +29,7 @@ inline EntityReference::EntityReference(Document* document, const String& entity
     : ContainerNode(document)
     , m_entityName(entityName)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<EntityReference> EntityReference::create(Document* document, const String& entityName)

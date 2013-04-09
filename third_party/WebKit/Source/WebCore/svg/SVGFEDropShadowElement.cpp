@@ -56,6 +56,7 @@ inline SVGFEDropShadowElement::SVGFEDropShadowElement(const QualifiedName& tagNa
     , m_stdDeviationY(2)
 {
     ASSERT(hasTagName(SVGNames::feDropShadowTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDropShadowElement();
 }
 

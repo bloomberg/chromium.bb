@@ -37,6 +37,7 @@ namespace WebCore {
 
 CSSFontFaceLoadEvent::CSSFontFaceLoadEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, PassRefPtr<CSSFontFaceRule> fontface, PassRefPtr<DOMError> error)
@@ -44,6 +45,7 @@ CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, PassRefPtr<
     , m_fontface(fontface)
     , m_error(error)
 {
+    ScriptWrappable::init(this);
 }
 
 CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
@@ -51,6 +53,7 @@ CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const CSSFo
     , m_fontface(initializer.fontface)
     , m_error(initializer.error)
 {
+    ScriptWrappable::init(this);
 }
 
 CSSFontFaceLoadEvent::~CSSFontFaceLoadEvent()

@@ -38,6 +38,7 @@ PassRefPtr<HTMLAllCollection> HTMLAllCollection::create(Node* node, CollectionTy
 HTMLAllCollection::HTMLAllCollection(Node* node, CollectionType type)
     : HTMLCollection(node, type, DoesNotOverrideItemAfter)
 {
+    ScriptWrappable::init(this);
 }
 
 HTMLAllCollection::~HTMLAllCollection()

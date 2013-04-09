@@ -68,6 +68,8 @@ HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* docu
     , m_shouldParseSelectorList(false)
     , m_isValidSelector(true)
 {
+    if (RuntimeEnabledFeatures::shadowDOMEnabled())
+        ScriptWrappable::init(this);
 }
 
 HTMLContentElement::~HTMLContentElement()

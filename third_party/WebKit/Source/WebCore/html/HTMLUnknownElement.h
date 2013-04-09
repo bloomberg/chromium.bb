@@ -47,6 +47,7 @@ private:
     HTMLUnknownElement(const QualifiedName& tagName, Document* document)
         : HTMLElement(tagName, document)
     {
+        ScriptWrappable::init(this);
     }
 };
 

@@ -46,6 +46,7 @@ HTMLProgressElement::HTMLProgressElement(const QualifiedName& tagName, Document*
     , m_value(0)
 {
     ASSERT(hasTagName(progressTag));
+    ScriptWrappable::init(this);
 }
 
 HTMLProgressElement::~HTMLProgressElement()

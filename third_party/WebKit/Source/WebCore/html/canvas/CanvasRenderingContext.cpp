@@ -39,6 +39,7 @@ namespace WebCore {
 CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
     : m_canvas(canvas)
 {
+    ScriptWrappable::init(this);
 }
 
 bool CanvasRenderingContext::wouldTaintOrigin(const CanvasPattern* pattern)

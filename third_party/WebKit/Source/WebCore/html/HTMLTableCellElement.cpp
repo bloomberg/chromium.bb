@@ -45,6 +45,7 @@ using namespace HTMLNames;
 inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName, Document* document)
     : HTMLTablePartElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTableCellElement> HTMLTableCellElement::create(const QualifiedName& tagName, Document* document)

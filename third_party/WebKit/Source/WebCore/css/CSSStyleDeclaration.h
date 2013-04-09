@@ -73,7 +73,10 @@ public:
     virtual void reportMemoryUsage(MemoryObjectInfo*) const = 0;
 
 protected:
-    CSSStyleDeclaration() { }
+    CSSStyleDeclaration()
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 } // namespace WebCore

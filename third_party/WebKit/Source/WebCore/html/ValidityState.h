@@ -57,7 +57,10 @@ public:
     bool valid() const;
 
 private:
-    ValidityState(FormAssociatedElement* control) : m_control(control) { }
+    ValidityState(FormAssociatedElement* control) : m_control(control)
+    {
+        ScriptWrappable::init(this);
+    }
 
     FormAssociatedElement* m_control;
 };

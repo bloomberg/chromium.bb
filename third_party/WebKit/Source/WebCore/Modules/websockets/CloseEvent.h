@@ -78,6 +78,7 @@ private:
         , m_wasClean(false)
         , m_code(0)
     {
+        ScriptWrappable::init(this);
     }
 
     CloseEvent(bool wasClean, int code, const String& reason)
@@ -86,6 +87,7 @@ private:
         , m_code(code)
         , m_reason(reason)
     {
+        ScriptWrappable::init(this);
     }
 
     CloseEvent(const AtomicString& type, const CloseEventInit& initializer)
@@ -94,6 +96,7 @@ private:
         , m_code(initializer.code)
         , m_reason(initializer.reason)
     {
+        ScriptWrappable::init(this);
     }
 
     bool m_wasClean;

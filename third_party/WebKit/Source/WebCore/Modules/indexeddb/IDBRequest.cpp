@@ -84,6 +84,7 @@ IDBRequest::IDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBAny> sourc
     , m_preventPropagation(false)
     , m_requestState(context)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBRequest::~IDBRequest()

@@ -40,6 +40,7 @@ inline HTMLScriptElement::HTMLScriptElement(const QualifiedName& tagName, Docume
     , ScriptElement(this, wasInsertedByParser, alreadyStarted)
 {
     ASSERT(hasTagName(scriptTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLScriptElement> HTMLScriptElement::create(const QualifiedName& tagName, Document* document, bool wasInsertedByParser, bool alreadyStarted)

@@ -58,6 +58,7 @@ inline SVGCircleElement::SVGCircleElement(const QualifiedName& tagName, Document
     , m_r(LengthModeOther)
 {
     ASSERT(hasTagName(SVGNames::circleTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGCircleElement();
 }
 

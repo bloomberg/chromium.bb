@@ -43,6 +43,12 @@ namespace WebCore {
 
         // Other methods (not part of DOM)
         virtual bool isLiveNodeList() const { return false; }
+
+    protected:
+        NodeList()
+        {
+            ScriptWrappable::init(this);
+        }
     };
 
 } // namespace WebCore

@@ -31,6 +31,7 @@ inline SVGAnimateColorElement::SVGAnimateColorElement(const QualifiedName& tagNa
     : SVGAnimateElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::animateColorTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGAnimateColorElement> SVGAnimateColorElement::create(const QualifiedName& tagName, Document* document)

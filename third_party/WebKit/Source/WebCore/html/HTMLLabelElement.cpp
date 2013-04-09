@@ -56,6 +56,7 @@ inline HTMLLabelElement::HTMLLabelElement(const QualifiedName& tagName, Document
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(labelTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(const QualifiedName& tagName, Document* document)

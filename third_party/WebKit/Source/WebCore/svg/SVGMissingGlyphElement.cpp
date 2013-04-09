@@ -29,6 +29,7 @@ inline SVGMissingGlyphElement::SVGMissingGlyphElement(const QualifiedName& tagNa
     : SVGStyledElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::missing_glyphTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGMissingGlyphElement> SVGMissingGlyphElement::create(const QualifiedName& tagName, Document* document)

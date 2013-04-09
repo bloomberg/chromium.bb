@@ -28,6 +28,7 @@ namespace WebCore {
 inline HTMLHeadingElement::HTMLHeadingElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLHeadingElement> HTMLHeadingElement::create(const QualifiedName& tagName, Document* document)

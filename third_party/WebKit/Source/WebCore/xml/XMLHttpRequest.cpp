@@ -194,6 +194,7 @@ XMLHttpRequest::XMLHttpRequest(ScriptExecutionContext* context, PassRefPtr<Secur
 #ifndef NDEBUG
     xmlHttpRequestCounter.increment();
 #endif
+    ScriptWrappable::init(this);
 }
 
 XMLHttpRequest::~XMLHttpRequest()

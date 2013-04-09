@@ -41,7 +41,13 @@ namespace WebCore {
 class ScriptWrappable {
     friend class WeakHandleListener<ScriptWrappable>;
 public:
-    ScriptWrappable() { }
+    ScriptWrappable()
+    {
+    }
+
+    template <class C> static void init(C *object)
+    {
+    }
 
     v8::Handle<v8::Object> wrapper() const
     {
@@ -63,6 +69,11 @@ public:
         info.ignoreMember(m_maskedWrapper);
     }
 
+protected:
+    ~ScriptWrappable()
+    {
+    }
+
 private:
     inline void disposeWrapper(v8::Persistent<v8::Value> value, v8::Isolate* isolate)
     {
@@ -72,16 +83,16 @@ private:
         m_maskedWrapper.Clear();
     }
 
-    // Stores a masked wrapper to prevent attackers from overwriting this field
-    // with a phony wrapper.
-    v8::Persistent<v8::Object> m_maskedWrapper;
-
     static inline v8::Object* maskOrUnmaskPointer(const v8::Object* object)
     {
         const uintptr_t objectPointer = reinterpret_cast<uintptr_t>(object);
         const uintptr_t randomMask = ~(reinterpret_cast<uintptr_t>(&WebCoreMemoryTypes::DOM) >> 13); // Entropy via ASLR.
         return reinterpret_cast<v8::Object*>((objectPointer ^ randomMask) & (!objectPointer - 1)); // Preserve null without branching.
     }
+
+    // Stores a masked wrapper to prevent attackers from overwriting this field
+    // with a phony wrapper.
+    v8::Persistent<v8::Object> m_maskedWrapper;
 };
 
 template<>

@@ -53,6 +53,7 @@ inline SVGTextPathElement::SVGTextPathElement(const QualifiedName& tagName, Docu
     , m_spacing(SVGTextPathSpacingExact)
 {
     ASSERT(hasTagName(SVGNames::textPathTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTextPathElement();
 }
 

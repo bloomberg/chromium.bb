@@ -84,6 +84,7 @@ IDBCursor::IDBCursor(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::C
     ASSERT(m_request);
     ASSERT(m_source->type() == IDBAny::IDBObjectStoreType || m_source->type() == IDBAny::IDBIndexType);
     ASSERT(m_transaction);
+    ScriptWrappable::init(this);
 }
 
 IDBCursor::~IDBCursor()

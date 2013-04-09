@@ -49,6 +49,7 @@ inline SVGViewElement::SVGViewElement(const QualifiedName& tagName, Document* do
     , m_viewTarget(SVGNames::viewTargetAttr)
 {
     ASSERT(hasTagName(SVGNames::viewTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGViewElement();
 }
 

@@ -37,6 +37,7 @@ inline HTMLBaseElement::HTMLBaseElement(const QualifiedName& tagName, Document* 
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(baseTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBaseElement> HTMLBaseElement::create(const QualifiedName& tagName, Document* document)

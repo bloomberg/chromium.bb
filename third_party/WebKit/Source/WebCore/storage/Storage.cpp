@@ -45,6 +45,7 @@ Storage::Storage(Frame* frame, PassRefPtr<StorageArea> storageArea)
 {
     ASSERT(m_frame);
     ASSERT(m_storageArea);
+    ScriptWrappable::init(this);
     if (m_storageArea)
         m_storageArea->incrementAccessCount();
 }

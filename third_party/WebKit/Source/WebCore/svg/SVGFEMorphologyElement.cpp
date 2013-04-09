@@ -50,6 +50,7 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(const QualifiedName& tagNa
     , m__operator(FEMORPHOLOGY_OPERATOR_ERODE)
 {
     ASSERT(hasTagName(SVGNames::feMorphologyTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEMorphologyElement();
 }
 

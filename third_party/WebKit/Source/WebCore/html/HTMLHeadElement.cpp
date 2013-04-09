@@ -35,6 +35,7 @@ HTMLHeadElement::HTMLHeadElement(const QualifiedName& tagName, Document* documen
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(headTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLHeadElement> HTMLHeadElement::create(Document* document)

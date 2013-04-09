@@ -37,18 +37,21 @@ CompositionEventInit::CompositionEventInit()
 
 CompositionEvent::CompositionEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data)
     : UIEvent(type, true, true, view, 0)
     , m_data(data)
 {
+    ScriptWrappable::init(this);
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, const CompositionEventInit& initializer)
     : UIEvent(type, initializer)
     , m_data(initializer.data)
 {
+    ScriptWrappable::init(this);
 }
 
 CompositionEvent::~CompositionEvent()

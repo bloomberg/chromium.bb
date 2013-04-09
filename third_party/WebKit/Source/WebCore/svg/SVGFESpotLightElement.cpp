@@ -31,6 +31,7 @@ inline SVGFESpotLightElement::SVGFESpotLightElement(const QualifiedName& tagName
     : SVGFELightElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feSpotLightTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFESpotLightElement> SVGFESpotLightElement::create(const QualifiedName& tagName, Document* document)

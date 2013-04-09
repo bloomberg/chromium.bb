@@ -34,6 +34,7 @@ inline SVGHKernElement::SVGHKernElement(const QualifiedName& tagName, Document* 
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::hkernTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGHKernElement> SVGHKernElement::create(const QualifiedName& tagName, Document* document)

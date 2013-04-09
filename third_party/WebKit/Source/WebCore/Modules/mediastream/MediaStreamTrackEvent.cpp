@@ -45,12 +45,14 @@ PassRefPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicStri
 
 MediaStreamTrackEvent::MediaStreamTrackEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack> track)
     : Event(type, canBubble, cancelable)
     , m_track(track)
 {
+    ScriptWrappable::init(this);
 }
 
 MediaStreamTrackEvent::~MediaStreamTrackEvent()

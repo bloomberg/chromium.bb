@@ -48,6 +48,7 @@ inline SVGAnimateMotionElement::SVGAnimateMotionElement(const QualifiedName& tag
 {
     setCalcMode(CalcModePaced);
     ASSERT(hasTagName(animateMotionTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(const QualifiedName& tagName, Document* document)

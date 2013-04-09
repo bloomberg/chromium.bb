@@ -59,6 +59,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document* d
     , m_spreadMethod(SVGSpreadMethodPad)
     , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
 {
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGGradientElement();
 }
 

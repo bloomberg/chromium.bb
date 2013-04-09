@@ -33,6 +33,7 @@ inline HTMLBaseFontElement::HTMLBaseFontElement(const QualifiedName& tagName, Do
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(basefontTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBaseFontElement> HTMLBaseFontElement::create(const QualifiedName& tagName, Document* document)

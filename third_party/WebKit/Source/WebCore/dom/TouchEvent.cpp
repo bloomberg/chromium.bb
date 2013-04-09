@@ -39,6 +39,7 @@ namespace WebCore {
 
 TouchEvent::TouchEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
@@ -59,6 +60,7 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
 
 TouchEvent::~TouchEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,

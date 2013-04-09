@@ -37,6 +37,7 @@ inline SVGGlyphElement::SVGGlyphElement(const QualifiedName& tagName, Document* 
     : SVGStyledElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::glyphTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGGlyphElement> SVGGlyphElement::create(const QualifiedName& tagName, Document* document)

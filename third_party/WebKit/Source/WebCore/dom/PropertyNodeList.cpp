@@ -47,6 +47,7 @@ PropertyNodeList::PropertyNodeList(Node* rootNode, const String& name)
     : LiveNodeList(rootNode, PropertyNodeListType, InvalidateOnItemAttrChange, NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr)
     , m_name(name)
 {
+    ScriptWrappable::init(this);
 }
 
 PropertyNodeList::~PropertyNodeList()

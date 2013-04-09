@@ -34,6 +34,7 @@ inline SVGFEFloodElement::SVGFEFloodElement(const QualifiedName& tagName, Docume
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feFloodTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFEFloodElement> SVGFEFloodElement::create(const QualifiedName& tagName, Document* document)

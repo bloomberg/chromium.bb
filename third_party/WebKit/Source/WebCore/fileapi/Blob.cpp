@@ -54,6 +54,7 @@ enum SliceHistogramEnum {
 Blob::Blob()
     : m_size(0)
 {
+    ScriptWrappable::init(this);
     OwnPtr<BlobData> blobData = BlobData::create();
 
     // Create a new internal URL and register it with the provided blob data.
@@ -66,6 +67,7 @@ Blob::Blob(PassOwnPtr<BlobData> blobData, long long size)
     , m_size(size)
 {
     ASSERT(blobData);
+    ScriptWrappable::init(this);
 
     // Create a new internal URL and register it with the provided blob data.
     m_internalURL = BlobURL::createInternalURL();
@@ -76,6 +78,8 @@ Blob::Blob(const KURL& srcURL, const String& type, long long size)
     : m_type(type)
     , m_size(size)
 {
+    ScriptWrappable::init(this);
+
     // Create a new internal URL and register it with the same blob data as the source URL.
     m_internalURL = BlobURL::createInternalURL();
     ThreadableBlobRegistry::registerBlobURL(0, m_internalURL, srcURL);

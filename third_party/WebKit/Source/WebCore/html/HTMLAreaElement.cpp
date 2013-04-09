@@ -46,6 +46,7 @@ inline HTMLAreaElement::HTMLAreaElement(const QualifiedName& tagName, Document* 
     , m_shape(Unknown)
 {
     ASSERT(hasTagName(areaTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLAreaElement> HTMLAreaElement::create(const QualifiedName& tagName, Document* document)

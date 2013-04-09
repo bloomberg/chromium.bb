@@ -44,6 +44,7 @@ inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(const QualifiedName& tagName
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feMergeNodeTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEMergeNodeElement();
 }
 

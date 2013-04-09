@@ -43,6 +43,7 @@ HTMLAppletElement::HTMLAppletElement(const QualifiedName& tagName, Document* doc
     : HTMLPlugInImageElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
 {
     ASSERT(hasTagName(appletTag));
+    ScriptWrappable::init(this);
 
     m_serviceType = "application/x-java-applet";
 }

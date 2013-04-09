@@ -61,6 +61,7 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(const Qualifie
     , m_surfaceScale(1)
 {
     ASSERT(hasTagName(SVGNames::feSpecularLightingTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFESpecularLightingElement();
 }
 

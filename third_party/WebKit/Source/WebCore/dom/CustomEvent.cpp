@@ -36,12 +36,14 @@ CustomEventInit::CustomEventInit()
 
 CustomEvent::CustomEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 CustomEvent::CustomEvent(const AtomicString& type, const CustomEventInit& initializer)
     : Event(type, initializer)
     , m_detail(initializer.detail)
 {
+    ScriptWrappable::init(this);
 }
 
 CustomEvent::~CustomEvent()

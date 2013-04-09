@@ -31,6 +31,7 @@ namespace WebCore {
 DOMPluginArray::DOMPluginArray(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMPluginArray::~DOMPluginArray()

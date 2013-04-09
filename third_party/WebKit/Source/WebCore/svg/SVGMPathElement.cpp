@@ -42,6 +42,7 @@ inline SVGMPathElement::SVGMPathElement(const QualifiedName& tagName, Document* 
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::mpathTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGMPathElement();
 }
 

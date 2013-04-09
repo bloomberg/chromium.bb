@@ -38,6 +38,7 @@ HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* doc
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(dialogTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tagName, Document* document)

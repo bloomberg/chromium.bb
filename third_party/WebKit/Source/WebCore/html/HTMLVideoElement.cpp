@@ -51,6 +51,7 @@ inline HTMLVideoElement::HTMLVideoElement(const QualifiedName& tagName, Document
     : HTMLMediaElement(tagName, document, createdByParser)
 {
     ASSERT(hasTagName(videoTag));
+    ScriptWrappable::init(this);
     if (document->settings())
         m_defaultPosterURL = document->settings()->defaultVideoPosterURL();
 }

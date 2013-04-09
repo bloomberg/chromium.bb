@@ -69,6 +69,7 @@ inline HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Docume
     : HTMLFormControlElementWithState(tagName, document, form)
 {
     ASSERT(hasTagName(keygenTag));
+    ScriptWrappable::init(this);
 
     // Create a select element with one option element for each key size.
     Vector<String> keys;

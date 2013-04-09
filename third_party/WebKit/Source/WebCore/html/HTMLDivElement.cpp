@@ -36,6 +36,7 @@ HTMLDivElement::HTMLDivElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(divTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLDivElement> HTMLDivElement::create(Document* document)

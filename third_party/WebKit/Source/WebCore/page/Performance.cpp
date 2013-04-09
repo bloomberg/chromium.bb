@@ -62,6 +62,7 @@ Performance::Performance(Frame* frame)
     , m_userTiming(0)
 #endif // ENABLE(USER_TIMING)
 {
+    ScriptWrappable::init(this);
 }
 
 Performance::~Performance()

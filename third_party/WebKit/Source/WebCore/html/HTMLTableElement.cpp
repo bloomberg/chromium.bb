@@ -56,6 +56,7 @@ HTMLTableElement::HTMLTableElement(const QualifiedName& tagName, Document* docum
     , m_padding(1)
 {
     ASSERT(hasTagName(tableTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document* document)

@@ -40,6 +40,7 @@ inline HTMLLegendElement::HTMLLegendElement(const QualifiedName& tagName, Docume
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(legendTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLLegendElement> HTMLLegendElement::create(const QualifiedName& tagName, Document* document)

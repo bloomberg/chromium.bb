@@ -52,6 +52,7 @@ END_REGISTER_ANIMATED_PROPERTIES
 SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagName, Document* document)
     : SVGTextContentElement(tagName, document)
 {
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTextPositioningElement();
 }
 

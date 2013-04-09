@@ -41,6 +41,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document* doc
     , m_animatedPropertyType(AnimatedString)
 {
     ASSERT(hasTagName(SVGNames::animateTag) || hasTagName(SVGNames::setTag) || hasTagName(SVGNames::animateColorTag) || hasTagName(SVGNames::animateTransformTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGAnimateElement> SVGAnimateElement::create(const QualifiedName& tagName, Document* document)

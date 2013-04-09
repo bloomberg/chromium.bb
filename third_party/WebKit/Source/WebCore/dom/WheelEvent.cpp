@@ -43,6 +43,7 @@ WheelEvent::WheelEvent()
     : m_deltaMode(DOM_DELTA_PIXEL)
     , m_directionInvertedFromDevice(false)
 {
+    ScriptWrappable::init(this);
 }
 
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
@@ -50,6 +51,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_wheelDelta(IntPoint(initializer.wheelDeltaX, initializer.wheelDeltaY))
     , m_deltaMode(initializer.deltaMode)
 {
+    ScriptWrappable::init(this);
 }
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
@@ -67,6 +69,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaMode(deltaMode)
     , m_directionInvertedFromDevice(directionInvertedFromDevice)
 {
+    ScriptWrappable::init(this);
 }
 
 void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<AbstractView> view,

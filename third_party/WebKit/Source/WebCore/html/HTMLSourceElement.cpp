@@ -46,6 +46,7 @@ inline HTMLSourceElement::HTMLSourceElement(const QualifiedName& tagName, Docume
 {
     LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
     ASSERT(hasTagName(sourceTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(const QualifiedName& tagName, Document* document)

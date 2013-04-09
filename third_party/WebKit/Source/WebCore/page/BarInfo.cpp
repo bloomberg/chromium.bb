@@ -39,6 +39,7 @@ BarInfo::BarInfo(Frame* frame, Type type)
     : DOMWindowProperty(frame)
     , m_type(type)
 {
+    ScriptWrappable::init(this);
 }
 
 BarInfo::Type BarInfo::type() const

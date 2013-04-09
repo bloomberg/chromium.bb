@@ -30,6 +30,7 @@ inline SVGSetElement::SVGSetElement(const QualifiedName& tagName, Document* docu
 {
     setAnimationMode(ToAnimation);
     ASSERT(hasTagName(SVGNames::setTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGSetElement> SVGSetElement::create(const QualifiedName& tagName, Document* document)

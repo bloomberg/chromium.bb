@@ -37,6 +37,7 @@ inline SVGFontFaceSrcElement::SVGFontFaceSrcElement(const QualifiedName& tagName
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(font_face_srcTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFontFaceSrcElement> SVGFontFaceSrcElement::create(const QualifiedName& tagName, Document* document)

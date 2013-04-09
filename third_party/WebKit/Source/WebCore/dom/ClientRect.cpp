@@ -31,16 +31,19 @@ namespace WebCore {
 
 ClientRect::ClientRect()
 {
+    ScriptWrappable::init(this);
 }
 
 ClientRect::ClientRect(const IntRect& rect)
     : m_rect(rect)
 {
+    ScriptWrappable::init(this);
 }
 
 ClientRect::ClientRect(const FloatRect& rect)
     : m_rect(rect)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

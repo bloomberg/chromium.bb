@@ -30,6 +30,7 @@ inline SVGPolygonElement::SVGPolygonElement(const QualifiedName& tagName, Docume
     : SVGPolyElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::polygonTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGPolygonElement> SVGPolygonElement::create(const QualifiedName& tagName, Document* document)

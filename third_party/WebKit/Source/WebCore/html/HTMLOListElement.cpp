@@ -42,6 +42,7 @@ HTMLOListElement::HTMLOListElement(const QualifiedName& tagName, Document* docum
     , m_shouldRecalculateItemCount(false)
 {
     ASSERT(hasTagName(olTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOListElement> HTMLOListElement::create(Document* document)

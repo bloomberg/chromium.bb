@@ -40,6 +40,7 @@ MessageEventInit::MessageEventInit()
 MessageEvent::MessageEvent()
     : m_dataType(DataTypeScriptValue)
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& initializer)
@@ -51,6 +52,7 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     , m_source(initializer.source)
     , m_ports(adoptPtr(new MessagePortArray(initializer.ports)))
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(const ScriptValue& data, const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
@@ -62,6 +64,7 @@ MessageEvent::MessageEvent(const ScriptValue& data, const String& origin, const 
     , m_source(source)
     , m_ports(ports)
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
@@ -73,6 +76,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     , m_source(source)
     , m_ports(ports)
 {
+    ScriptWrappable::init(this);
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
 }
@@ -84,6 +88,7 @@ MessageEvent::MessageEvent(const String& data, const String& origin)
     , m_origin(origin)
     , m_lastEventId("")
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(PassRefPtr<Blob> data, const String& origin)
@@ -93,6 +98,7 @@ MessageEvent::MessageEvent(PassRefPtr<Blob> data, const String& origin)
     , m_origin(origin)
     , m_lastEventId("")
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
@@ -102,6 +108,7 @@ MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
     , m_origin(origin)
     , m_lastEventId("")
 {
+    ScriptWrappable::init(this);
 }
 
 MessageEvent::~MessageEvent()

@@ -44,6 +44,7 @@ HTMLFontElement::HTMLFontElement(const QualifiedName& tagName, Document* documen
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(fontTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFontElement> HTMLFontElement::create(const QualifiedName& tagName, Document* document)

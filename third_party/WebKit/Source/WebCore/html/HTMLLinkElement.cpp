@@ -75,6 +75,7 @@ inline HTMLLinkElement::HTMLLinkElement(const QualifiedName& tagName, Document* 
     , m_beforeLoadRecurseCount(0)
 {
     ASSERT(hasTagName(linkTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLLinkElement> HTMLLinkElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)

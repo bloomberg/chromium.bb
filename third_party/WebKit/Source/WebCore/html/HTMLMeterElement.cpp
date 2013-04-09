@@ -45,6 +45,7 @@ HTMLMeterElement::HTMLMeterElement(const QualifiedName& tagName, Document* docum
     : LabelableElement(tagName, document)
 {
     ASSERT(hasTagName(meterTag));
+    ScriptWrappable::init(this);
 }
 
 HTMLMeterElement::~HTMLMeterElement()

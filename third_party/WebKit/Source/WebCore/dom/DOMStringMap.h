@@ -55,6 +55,7 @@ public:
 protected:
     DOMStringMap()
     {
+        ScriptWrappable::init(this);
     }
 };
 

@@ -46,6 +46,7 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(const Qualif
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feComponentTransferTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEComponentTransferElement();
 }
 

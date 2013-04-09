@@ -103,6 +103,7 @@ HTMLDetailsElement::HTMLDetailsElement(const QualifiedName& tagName, Document* d
     , m_isOpen(false)
 {
     ASSERT(hasTagName(detailsTag));
+    ScriptWrappable::init(this);
 }
 
 RenderObject* HTMLDetailsElement::createRenderer(RenderArena* arena, RenderStyle*)

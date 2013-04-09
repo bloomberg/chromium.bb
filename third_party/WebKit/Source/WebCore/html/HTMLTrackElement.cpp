@@ -59,6 +59,7 @@ inline HTMLTrackElement::HTMLTrackElement(const QualifiedName& tagName, Document
 {
     LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
     ASSERT(hasTagName(trackTag));
+    ScriptWrappable::init(this);
 }
 
 HTMLTrackElement::~HTMLTrackElement()

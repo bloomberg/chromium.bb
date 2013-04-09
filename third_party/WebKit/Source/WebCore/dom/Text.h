@@ -58,6 +58,7 @@ protected:
     Text(Document* document, const String& data, ConstructionType type)
         : CharacterData(document, data, type)
     {
+        ScriptWrappable::init(this);
     }
 
 private:

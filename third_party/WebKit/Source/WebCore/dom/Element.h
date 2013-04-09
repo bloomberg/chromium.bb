@@ -619,6 +619,7 @@ protected:
         : ContainerNode(document, type)
         , m_tagName(tagName)
     {
+        ScriptWrappable::init(this);
     }
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

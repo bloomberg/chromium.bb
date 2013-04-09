@@ -45,6 +45,7 @@ PassRefPtr<AudioProcessingEvent> AudioProcessingEvent::create(PassRefPtr<AudioBu
 
 AudioProcessingEvent::AudioProcessingEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 AudioProcessingEvent::AudioProcessingEvent(PassRefPtr<AudioBuffer> inputBuffer, PassRefPtr<AudioBuffer> outputBuffer)
@@ -52,6 +53,7 @@ AudioProcessingEvent::AudioProcessingEvent(PassRefPtr<AudioBuffer> inputBuffer, 
     , m_inputBuffer(inputBuffer)
     , m_outputBuffer(outputBuffer)
 {
+    ScriptWrappable::init(this);
 }
 
 AudioProcessingEvent::~AudioProcessingEvent()

@@ -45,6 +45,7 @@ inline HTMLShadowElement::HTMLShadowElement(const QualifiedName& tagName, Docume
     : InsertionPoint(tagName, document)
 {
     ASSERT(hasTagName(HTMLNames::shadowTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLShadowElement> HTMLShadowElement::create(const QualifiedName& tagName, Document* document)

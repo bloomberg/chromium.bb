@@ -44,6 +44,7 @@ History::History(Frame* frame)
     : DOMWindowProperty(frame)
     , m_lastStateObjectRequested(0)
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned History::length() const

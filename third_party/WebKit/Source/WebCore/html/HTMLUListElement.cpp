@@ -35,6 +35,7 @@ HTMLUListElement::HTMLUListElement(const QualifiedName& tagName, Document* docum
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(ulTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLUListElement> HTMLUListElement::create(Document* document)

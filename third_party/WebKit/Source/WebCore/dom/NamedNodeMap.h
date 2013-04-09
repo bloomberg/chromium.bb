@@ -71,6 +71,7 @@ private:
     {
         // Only supports NamedNodeMaps with Element associated, DocumentType.entities and DocumentType.notations are not supported yet.
         ASSERT(m_element);
+        ScriptWrappable::init(this);
     }
 
     Element* m_element;

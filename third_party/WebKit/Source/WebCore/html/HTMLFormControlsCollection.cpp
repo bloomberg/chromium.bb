@@ -40,6 +40,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(Node* ownerNode)
     : HTMLCollection(ownerNode, FormControls, OverridesItemAfter)
 {
     ASSERT(ownerNode->hasTagName(formTag) || ownerNode->hasTagName(fieldsetTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(Node* ownerNode, CollectionType)

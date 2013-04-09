@@ -235,6 +235,7 @@ static bool isEvents3Feature(const String &feature, const String &version)
 DOMImplementation::DOMImplementation(Document* document)
     : m_document(document)
 {
+    ScriptWrappable::init(this);
 }
 
 bool DOMImplementation::hasFeature(const String& feature, const String& version)

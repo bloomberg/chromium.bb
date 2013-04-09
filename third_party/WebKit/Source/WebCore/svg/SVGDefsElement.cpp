@@ -41,6 +41,7 @@ inline SVGDefsElement::SVGDefsElement(const QualifiedName& tagName, Document* do
     : SVGStyledTransformableElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::defsTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGDefsElement();
 }
 

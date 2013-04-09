@@ -100,6 +100,7 @@ File::File(const String& path, ContentTypeLookupPolicy policy)
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
+    ScriptWrappable::init(this);
 }
 
 File::File(const String& path, const KURL& url, const String& type)
@@ -108,6 +109,7 @@ File::File(const String& path, const KURL& url, const String& type)
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
+    ScriptWrappable::init(this);
     m_name = pathGetFileName(path);
     // FIXME: File object serialization/deserialization does not include
     // newer file object data members: m_name and m_relativePath.
@@ -121,6 +123,7 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
+    ScriptWrappable::init(this);
 }
 
 File::File(const String& name, const FileMetadata& metadata)
@@ -130,6 +133,7 @@ File::File(const String& name, const FileMetadata& metadata)
     , m_snapshotSize(metadata.length)
     , m_snapshotModificationTime(metadata.modificationTime)
 {
+    ScriptWrappable::init(this);
 }
 
 File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
@@ -138,6 +142,7 @@ File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
     , m_snapshotSize(metadata.length)
     , m_snapshotModificationTime(metadata.modificationTime)
 {
+    ScriptWrappable::init(this);
 }
 
 double File::lastModifiedDate() const

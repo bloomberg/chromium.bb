@@ -67,6 +67,7 @@ TextEvent::TextEvent()
     , m_shouldSmartReplace(false)
     , m_shouldMatchStyle(false)
 {
+    ScriptWrappable::init(this);
 }
 
 TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, TextEventInputType inputType)
@@ -77,6 +78,7 @@ TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, TextEven
     , m_shouldSmartReplace(false)
     , m_shouldMatchStyle(false)
 {
+    ScriptWrappable::init(this);
 }
 
 TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, PassRefPtr<DocumentFragment> pastingFragment,
@@ -88,6 +90,7 @@ TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, PassRefP
     , m_shouldSmartReplace(shouldSmartReplace)
     , m_shouldMatchStyle(shouldMatchStyle)
 {
+    ScriptWrappable::init(this);
 }
 
 TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, const Vector<DictationAlternative>& dictationAlternatives)
@@ -98,6 +101,7 @@ TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, const Ve
     , m_shouldMatchStyle(false)
     , m_dictationAlternatives(dictationAlternatives)
 {
+    ScriptWrappable::init(this);
 }
 
 TextEvent::~TextEvent()

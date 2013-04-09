@@ -51,6 +51,7 @@ using namespace HTMLNames;
 SVGElement::SVGElement(const QualifiedName& tagName, Document* document, ConstructionType constructionType)
     : StyledElement(tagName, document, constructionType)
 {
+    ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
 }
 

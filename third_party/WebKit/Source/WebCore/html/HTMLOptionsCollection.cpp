@@ -31,6 +31,7 @@ HTMLOptionsCollection::HTMLOptionsCollection(Node* select)
     : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
 {
     ASSERT(select->hasTagName(HTMLNames::selectTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(Node* select, CollectionType)

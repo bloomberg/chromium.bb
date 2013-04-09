@@ -105,6 +105,7 @@ KeyboardEvent::KeyboardEvent()
     : m_keyLocation(DOMKeyLocationStandard)
     , m_altGraphKey(false)
 {
+    ScriptWrappable::init(this);
 }
 
 KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* view)
@@ -115,6 +116,7 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
     , m_keyLocation(keyLocationCode(key))
     , m_altGraphKey(false)
 {
+    ScriptWrappable::init(this);
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventInit& initializer)
@@ -123,6 +125,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventI
     , m_keyLocation(initializer.keyLocation)
     , m_altGraphKey(false)
 {
+    ScriptWrappable::init(this);
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView *view,
@@ -133,6 +136,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool
     , m_keyLocation(keyLocation)
     , m_altGraphKey(altGraphKey)
 {
+    ScriptWrappable::init(this);
 }
 
 KeyboardEvent::~KeyboardEvent()

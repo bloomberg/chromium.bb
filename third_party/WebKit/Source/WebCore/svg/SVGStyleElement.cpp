@@ -40,6 +40,7 @@ inline SVGStyleElement::SVGStyleElement(const QualifiedName& tagName, Document* 
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasTagName(SVGNames::styleTag));
+    ScriptWrappable::init(this);
 }
 
 SVGStyleElement::~SVGStyleElement()

@@ -37,6 +37,7 @@ inline HTMLTableCaptionElement::HTMLTableCaptionElement(const QualifiedName& tag
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(captionTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTableCaptionElement> HTMLTableCaptionElement::create(const QualifiedName& tagName, Document* document)

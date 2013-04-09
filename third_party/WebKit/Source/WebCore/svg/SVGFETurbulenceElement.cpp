@@ -55,6 +55,7 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(const QualifiedName& tagNa
     , m_type(FETURBULENCE_TYPE_TURBULENCE)
 {
     ASSERT(hasTagName(SVGNames::feTurbulenceTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFETurbulenceElement();
 }
 

@@ -44,6 +44,7 @@ SVGGElement::SVGGElement(const QualifiedName& tagName, Document* document, Const
     : SVGStyledTransformableElement(tagName, document, constructionType)
 {
     ASSERT(hasTagName(SVGNames::gTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGGElement();
 }
 

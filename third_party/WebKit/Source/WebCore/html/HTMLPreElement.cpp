@@ -36,6 +36,7 @@ using namespace HTMLNames;
 inline HTMLPreElement::HTMLPreElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLPreElement> HTMLPreElement::create(const QualifiedName& tagName, Document* document)

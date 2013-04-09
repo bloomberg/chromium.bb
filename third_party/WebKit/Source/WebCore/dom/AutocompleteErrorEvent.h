@@ -60,18 +60,21 @@ public:
 private:
     AutocompleteErrorEvent()
     {
+        ScriptWrappable::init(this);
     }
 
     AutocompleteErrorEvent(const String& reason)
         : Event(eventNames().autocompleteerrorEvent, false, false)
         , m_reason(reason)
     {
+        ScriptWrappable::init(this);
     }
 
     AutocompleteErrorEvent(const AtomicString& eventType, const AutocompleteErrorEventInit& initializer)
         : Event(eventType, initializer)
         , m_reason(initializer.reason)
     {
+        ScriptWrappable::init(this);
     }
 
     String m_reason;

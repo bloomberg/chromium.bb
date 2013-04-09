@@ -47,6 +47,7 @@ inline SVGFEOffsetElement::SVGFEOffsetElement(const QualifiedName& tagName, Docu
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feOffsetTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEOffsetElement();
 }
 

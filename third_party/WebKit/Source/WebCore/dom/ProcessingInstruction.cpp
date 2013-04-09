@@ -51,6 +51,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document* document, const St
     , m_isXSL(false)
 #endif
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<ProcessingInstruction> ProcessingInstruction::create(Document* document, const String& target, const String& data)

@@ -184,6 +184,7 @@ HTMLCollection::HTMLCollection(Node* ownerNode, CollectionType type, ItemAfterOv
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type),
         WebCore::shouldOnlyIncludeDirectChildren(type), type, itemAfterOverrideType)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLCollection> HTMLCollection::create(Node* base, CollectionType type)

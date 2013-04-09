@@ -82,6 +82,7 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
     , m_didClearImageBuffer(false)
 {
     ASSERT(hasTagName(canvasTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document* document)

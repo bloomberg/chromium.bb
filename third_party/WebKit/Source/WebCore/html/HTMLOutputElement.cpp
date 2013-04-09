@@ -44,6 +44,7 @@ inline HTMLOutputElement::HTMLOutputElement(const QualifiedName& tagName, Docume
     , m_defaultValue("")
     , m_tokens(DOMSettableTokenList::create())
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOutputElement> HTMLOutputElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)

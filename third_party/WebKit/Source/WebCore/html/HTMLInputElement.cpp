@@ -139,6 +139,7 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document* docum
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     setHasCustomStyleCallbacks();
 #endif
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLInputElement> HTMLInputElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form, bool createdByParser)

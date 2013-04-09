@@ -39,6 +39,7 @@ UIEventInit::UIEventInit()
 UIEvent::UIEvent()
     : m_detail(0)
 {
+    ScriptWrappable::init(this);
 }
 
 UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, PassRefPtr<AbstractView> viewArg, int detailArg)

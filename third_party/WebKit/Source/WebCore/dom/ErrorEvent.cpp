@@ -44,6 +44,7 @@ ErrorEventInit::ErrorEventInit()
 
 ErrorEvent::ErrorEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializer)
@@ -52,6 +53,7 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
     , m_fileName(initializer.filename)
     , m_lineNumber(initializer.lineno)
 {
+    ScriptWrappable::init(this);
 }
 
 ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber)
@@ -60,6 +62,7 @@ ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned l
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
 {
+    ScriptWrappable::init(this);
 }
 
 ErrorEvent::~ErrorEvent()

@@ -40,6 +40,7 @@ inline HTMLFrameElement::HTMLFrameElement(const QualifiedName& tagName, Document
     , m_frameBorderSet(false)
 {
     ASSERT(hasTagName(frameTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFrameElement> HTMLFrameElement::create(const QualifiedName& tagName, Document* document)

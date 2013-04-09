@@ -48,6 +48,7 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(const QualifiedName& t
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feGaussianBlurTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEGaussianBlurElement();
 }
 

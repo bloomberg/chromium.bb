@@ -72,6 +72,7 @@ void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, CSSPropertyID>* proper
 SVGStyledElement::SVGStyledElement(const QualifiedName& tagName, Document* document, ConstructionType constructionType)
     : SVGElement(tagName, document, constructionType)
 {
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGStyledElement();
 }
 

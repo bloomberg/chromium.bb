@@ -69,6 +69,7 @@ inline SVGAElement::SVGAElement(const QualifiedName& tagName, Document* document
     : SVGStyledTransformableElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::aTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGAElement();
 }
 

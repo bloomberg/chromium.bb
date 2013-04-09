@@ -50,6 +50,7 @@ inline SVGClipPathElement::SVGClipPathElement(const QualifiedName& tagName, Docu
     , m_clipPathUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
     ASSERT(hasTagName(SVGNames::clipPathTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGClipPathElement();
 }
 

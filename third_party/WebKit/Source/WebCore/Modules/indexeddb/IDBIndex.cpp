@@ -48,6 +48,7 @@ IDBIndex::IDBIndex(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore
     ASSERT(m_objectStore);
     ASSERT(m_transaction);
     ASSERT(m_metadata.id != IDBIndexMetadata::InvalidId);
+    ScriptWrappable::init(this);
 }
 
 IDBIndex::~IDBIndex()

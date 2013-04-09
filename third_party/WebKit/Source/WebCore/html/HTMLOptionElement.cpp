@@ -57,6 +57,7 @@ HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document* doc
 {
     ASSERT(hasTagName(optionTag));
     setHasCustomStyleCallbacks();
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document* document)

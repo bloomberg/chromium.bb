@@ -32,6 +32,7 @@ SVGZoomEvent::SVGZoomEvent()
     : m_newScale(0.0f)
     , m_previousScale(0.0f)
 {
+    ScriptWrappable::init(this);
 }
 
 FloatRect SVGZoomEvent::zoomRectScreen() const

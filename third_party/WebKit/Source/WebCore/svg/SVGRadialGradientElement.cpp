@@ -69,6 +69,7 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(const QualifiedName& t
 {
     // Spec: If the cx/cy/r/fr attribute is not specified, the effect is as if a value of "50%" were specified.
     ASSERT(hasTagName(SVGNames::radialGradientTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGRadialGradientElement();
 }
 

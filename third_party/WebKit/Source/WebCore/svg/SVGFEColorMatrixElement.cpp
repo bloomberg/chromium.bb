@@ -48,6 +48,7 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(const QualifiedName& tag
     , m_type(FECOLORMATRIX_TYPE_MATRIX)
 {
     ASSERT(hasTagName(SVGNames::feColorMatrixTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEColorMatrixElement();
 }
 

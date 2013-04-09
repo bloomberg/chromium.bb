@@ -471,6 +471,8 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
 {
     ASSERT(m_context);
+    ScriptWrappable::init(this);
+
     m_contextGroup = WebGLContextGroup::create();
     m_contextGroup->addContext(this);
 

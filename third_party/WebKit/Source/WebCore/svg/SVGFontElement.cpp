@@ -50,6 +50,7 @@ inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document* do
     , m_isGlyphCacheValid(false)
 {
     ASSERT(hasTagName(SVGNames::fontTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFontElement();
 }
 

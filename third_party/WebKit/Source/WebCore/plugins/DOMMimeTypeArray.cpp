@@ -31,6 +31,7 @@ namespace WebCore {
 DOMMimeTypeArray::DOMMimeTypeArray(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMMimeTypeArray::~DOMMimeTypeArray()

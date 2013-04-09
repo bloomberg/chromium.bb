@@ -42,6 +42,7 @@ HTMLTableRowElement::HTMLTableRowElement(const QualifiedName& tagName, Document*
     : HTMLTablePartElement(tagName, document)
 {
     ASSERT(hasTagName(trTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document* document)

@@ -50,12 +50,14 @@ PassRefPtr<SpeechInputEvent> SpeechInputEvent::create(const AtomicString& eventT
 
 SpeechInputEvent::SpeechInputEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechInputEvent::SpeechInputEvent(const AtomicString& eventType, const SpeechInputResultArray& results)
     : Event(eventType, true, false) // Can bubble, not cancelable
     , m_results(SpeechInputResultList::create(results))
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechInputEvent::~SpeechInputEvent()

@@ -100,6 +100,7 @@ IDBTransaction::IDBTransaction(ScriptExecutionContext* context, int64_t id, cons
     , m_contextStopped(false)
     , m_previousMetadata(previousMetadata)
 {
+    ScriptWrappable::init(this);
     if (mode == IndexedDB::TransactionVersionChange) {
         // Not active until the callback.
         m_state = Inactive;

@@ -50,10 +50,15 @@ public:
     virtual const AtomicString& interfaceName() const { return eventNames().interfaceForXMLHttpRequestProgressEvent; }
 
 private:
-    XMLHttpRequestProgressEvent() { }
+    XMLHttpRequestProgressEvent()
+    {
+        ScriptWrappable::init(this);
+    }
+
     XMLHttpRequestProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
         : ProgressEvent(type, lengthComputable, loaded, total)
     {
+        ScriptWrappable::init(this);
     }
 };
 

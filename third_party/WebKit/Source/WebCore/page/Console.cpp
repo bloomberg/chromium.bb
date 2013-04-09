@@ -65,6 +65,7 @@ namespace WebCore {
 Console::Console(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 Console::~Console()

@@ -58,6 +58,7 @@ IDBFactory::IDBFactory(IDBFactoryBackendInterface* factory)
 {
     // We pass a reference to this object before it can be adopted.
     relaxAdoptionRequirement();
+    ScriptWrappable::init(this);
 }
 
 IDBFactory::~IDBFactory()

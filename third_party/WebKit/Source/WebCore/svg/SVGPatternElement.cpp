@@ -82,6 +82,7 @@ inline SVGPatternElement::SVGPatternElement(const QualifiedName& tagName, Docume
     , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
     ASSERT(hasTagName(SVGNames::patternTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 

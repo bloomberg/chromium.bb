@@ -64,6 +64,7 @@ inline SVGRectElement::SVGRectElement(const QualifiedName& tagName, Document* do
     , m_ry(LengthModeHeight)
 {
     ASSERT(hasTagName(SVGNames::rectTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGRectElement();
 }
 

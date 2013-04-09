@@ -48,6 +48,7 @@ inline SVGFEBlendElement::SVGFEBlendElement(const QualifiedName& tagName, Docume
     , m_mode(FEBLEND_MODE_NORMAL)
 {
     ASSERT(hasTagName(SVGNames::feBlendTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEBlendElement();
 }
 

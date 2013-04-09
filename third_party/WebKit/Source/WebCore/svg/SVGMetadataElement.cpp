@@ -29,6 +29,7 @@ inline SVGMetadataElement::SVGMetadataElement(const QualifiedName& tagName, Docu
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::metadataTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGMetadataElement> SVGMetadataElement::create(const QualifiedName& tagName, Document* document)

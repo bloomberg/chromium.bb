@@ -41,6 +41,7 @@ inline SVGFontFaceUriElement::SVGFontFaceUriElement(const QualifiedName& tagName
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(font_face_uriTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFontFaceUriElement> SVGFontFaceUriElement::create(const QualifiedName& tagName, Document* document)

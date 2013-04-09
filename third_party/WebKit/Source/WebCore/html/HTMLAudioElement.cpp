@@ -37,6 +37,7 @@ HTMLAudioElement::HTMLAudioElement(const QualifiedName& tagName, Document* docum
     : HTMLMediaElement(tagName, document, createdByParser)
 {
     ASSERT(hasTagName(audioTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLAudioElement> HTMLAudioElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)

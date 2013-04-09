@@ -49,6 +49,7 @@ HTMLImageElement::HTMLImageElement(const QualifiedName& tagName, Document* docum
     , m_compositeOperator(CompositeSourceOver)
 {
     ASSERT(hasTagName(imgTag));
+    ScriptWrappable::init(this);
     if (form)
         form->registerImgElement(this);
 }

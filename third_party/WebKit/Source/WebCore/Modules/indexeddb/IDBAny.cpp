@@ -56,6 +56,7 @@ IDBAny::IDBAny(Type type)
     , m_integer(0)
 {
     ASSERT(type == UndefinedType || type == NullType);
+    ScriptWrappable::init(this);
 }
 
 IDBAny::~IDBAny()
@@ -133,6 +134,7 @@ IDBAny::IDBAny(PassRefPtr<DOMStringList> value)
     , m_domStringList(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBCursorWithValue> value)
@@ -140,6 +142,7 @@ IDBAny::IDBAny(PassRefPtr<IDBCursorWithValue> value)
     , m_idbCursorWithValue(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBCursor> value)
@@ -147,6 +150,7 @@ IDBAny::IDBAny(PassRefPtr<IDBCursor> value)
     , m_idbCursor(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBDatabase> value)
@@ -154,6 +158,7 @@ IDBAny::IDBAny(PassRefPtr<IDBDatabase> value)
     , m_idbDatabase(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBFactory> value)
@@ -161,6 +166,7 @@ IDBAny::IDBAny(PassRefPtr<IDBFactory> value)
     , m_idbFactory(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBIndex> value)
@@ -168,6 +174,7 @@ IDBAny::IDBAny(PassRefPtr<IDBIndex> value)
     , m_idbIndex(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBTransaction> value)
@@ -175,6 +182,7 @@ IDBAny::IDBAny(PassRefPtr<IDBTransaction> value)
     , m_idbTransaction(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBObjectStore> value)
@@ -182,6 +190,7 @@ IDBAny::IDBAny(PassRefPtr<IDBObjectStore> value)
     , m_idbObjectStore(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(const ScriptValue& value)
@@ -189,6 +198,7 @@ IDBAny::IDBAny(const ScriptValue& value)
     , m_scriptValue(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(const IDBKeyPath& value)
@@ -196,6 +206,7 @@ IDBAny::IDBAny(const IDBKeyPath& value)
     , m_idbKeyPath(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(const String& value)
@@ -203,12 +214,14 @@ IDBAny::IDBAny(const String& value)
     , m_string(value)
     , m_integer(0)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBAny::IDBAny(int64_t value)
     : m_type(IntegerType)
     , m_integer(value)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

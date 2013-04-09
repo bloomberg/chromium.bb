@@ -71,6 +71,7 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
     , m_specifiedTextLength(LengthModeOther)
     , m_lengthAdjust(SVGLengthAdjustSpacing)
 {
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTextContentElement();
 }
 

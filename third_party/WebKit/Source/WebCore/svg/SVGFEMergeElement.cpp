@@ -34,6 +34,7 @@ inline SVGFEMergeElement::SVGFEMergeElement(const QualifiedName& tagName, Docume
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feMergeTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFEMergeElement> SVGFEMergeElement::create(const QualifiedName& tagName, Document* document)

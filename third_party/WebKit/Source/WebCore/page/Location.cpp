@@ -42,6 +42,7 @@ namespace WebCore {
 Location::Location(Frame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 inline const KURL& Location::url() const

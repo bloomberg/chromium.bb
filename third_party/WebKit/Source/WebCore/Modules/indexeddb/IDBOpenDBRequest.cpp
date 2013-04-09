@@ -49,6 +49,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptExecutionContext* context, PassRefPtr<I
     , m_version(version)
 {
     ASSERT(!m_result);
+    ScriptWrappable::init(this);
 }
 
 IDBOpenDBRequest::~IDBOpenDBRequest()

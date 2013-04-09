@@ -43,6 +43,7 @@ OverflowEvent::OverflowEvent()
     , m_horizontalOverflow(false)
     , m_verticalOverflow(false)
 {
+    ScriptWrappable::init(this);
 }
 
 OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
@@ -51,6 +52,7 @@ OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOver
     , m_verticalOverflow(verticalOverflow)
 {
     ASSERT(horizontalOverflowChanged || verticalOverflowChanged);
+    ScriptWrappable::init(this);
 
     if (horizontalOverflowChanged && verticalOverflowChanged)
         m_orient = BOTH;
@@ -66,6 +68,7 @@ OverflowEvent::OverflowEvent(const AtomicString& type, const OverflowEventInit& 
     , m_horizontalOverflow(initializer.horizontalOverflow)
     , m_verticalOverflow(initializer.verticalOverflow)
 {
+    ScriptWrappable::init(this);
 }
 
 const AtomicString& OverflowEvent::interfaceName() const

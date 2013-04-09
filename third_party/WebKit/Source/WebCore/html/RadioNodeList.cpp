@@ -41,6 +41,7 @@ RadioNodeList::RadioNodeList(Node* rootNode, const AtomicString& name)
     : LiveNodeList(rootNode, RadioNodeListType, InvalidateForFormControls, rootNode->hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
     , m_name(name)
 {
+    ScriptWrappable::init(this);
 }
 
 RadioNodeList::~RadioNodeList()

@@ -42,6 +42,7 @@ namespace WebCore {
 inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document* document)

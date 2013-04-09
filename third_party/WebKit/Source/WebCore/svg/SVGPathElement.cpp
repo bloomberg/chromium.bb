@@ -81,6 +81,7 @@ inline SVGPathElement::SVGPathElement(const QualifiedName& tagName, Document* do
     , m_isAnimValObserved(false)
 {
     ASSERT(hasTagName(SVGNames::pathTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGPathElement();
 }
 

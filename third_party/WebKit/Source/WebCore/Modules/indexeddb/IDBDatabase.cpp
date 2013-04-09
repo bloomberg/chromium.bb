@@ -65,6 +65,7 @@ IDBDatabase::IDBDatabase(ScriptExecutionContext* context, PassRefPtr<IDBDatabase
 {
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
+    ScriptWrappable::init(this);
 }
 
 IDBDatabase::~IDBDatabase()

@@ -44,6 +44,7 @@ Attr::Attr(Element* element, const QualifiedName& name)
     , m_ignoreChildrenChanged(0)
     , m_specified(true)
 {
+    ScriptWrappable::init(this);
 }
 
 Attr::Attr(Document* document, const QualifiedName& name, const AtomicString& standaloneValue)
@@ -54,6 +55,7 @@ Attr::Attr(Document* document, const QualifiedName& name, const AtomicString& st
     , m_ignoreChildrenChanged(0)
     , m_specified(true)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<Attr> Attr::create(Element* element, const QualifiedName& name)

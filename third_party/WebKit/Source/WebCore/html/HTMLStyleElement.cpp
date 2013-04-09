@@ -54,6 +54,7 @@ inline HTMLStyleElement::HTMLStyleElement(const QualifiedName& tagName, Document
     , m_scopedStyleRegistrationState(NotRegistered)
 {
     ASSERT(hasTagName(styleTag));
+    ScriptWrappable::init(this);
 }
 
 HTMLStyleElement::~HTMLStyleElement()

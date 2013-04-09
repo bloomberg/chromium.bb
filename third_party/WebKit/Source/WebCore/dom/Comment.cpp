@@ -29,6 +29,7 @@ namespace WebCore {
 inline Comment::Comment(Document* document, const String& text)
     : CharacterData(document, text, CreateOther)
 {
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<Comment> Comment::create(Document* document, const String& text)

@@ -33,6 +33,7 @@ inline HTMLMenuElement::HTMLMenuElement(const QualifiedName& tagName, Document* 
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(menuTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLMenuElement> HTMLMenuElement::create(const QualifiedName& tagName, Document* document)

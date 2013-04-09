@@ -77,6 +77,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, co
     , m_resultIndex(initializer.resultIndex)
     , m_results(initializer.results)
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtr<SpeechRecognitionResultList> results)
@@ -84,10 +85,12 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, un
     , m_resultIndex(resultIndex)
     , m_results(results)
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::~SpeechRecognitionEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

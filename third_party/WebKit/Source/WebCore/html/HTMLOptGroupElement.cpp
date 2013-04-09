@@ -43,6 +43,7 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(const QualifiedName& tagName, Do
 {
     ASSERT(hasTagName(optgroupTag));
     setHasCustomStyleCallbacks();
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(const QualifiedName& tagName, Document* document)

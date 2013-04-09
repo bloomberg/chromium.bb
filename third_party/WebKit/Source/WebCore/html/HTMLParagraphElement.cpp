@@ -37,6 +37,7 @@ inline HTMLParagraphElement::HTMLParagraphElement(const QualifiedName& tagName, 
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(pTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLParagraphElement> HTMLParagraphElement::create(Document* document)

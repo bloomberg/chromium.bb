@@ -50,6 +50,7 @@ inline SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasTagName(SVGNames::scriptTag));
+    ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGScriptElement();
 }
 

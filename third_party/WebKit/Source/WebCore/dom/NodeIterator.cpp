@@ -79,6 +79,7 @@ NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassR
 {
     // Document type nodes may have a null document. But since they can't have children, there is no need to listen for modifications to these.
     ASSERT(root()->document() || root()->nodeType() == Node::DOCUMENT_TYPE_NODE);
+    ScriptWrappable::init(this);
     if (Document* ownerDocument = root()->document())
         ownerDocument->attachNodeIterator(this);
 }

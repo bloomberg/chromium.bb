@@ -45,6 +45,7 @@ PassRefPtr<IDBCursorWithValue> IDBCursorWithValue::fromCursor(PassRefPtr<IDBCurs
 IDBCursorWithValue::IDBCursorWithValue(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : IDBCursor(backend, direction, request, source, transaction)
 {
+    ScriptWrappable::init(this);
 }
 
 IDBCursorWithValue::~IDBCursorWithValue()

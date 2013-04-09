@@ -31,6 +31,7 @@ inline SVGFontFaceNameElement::SVGFontFaceNameElement(const QualifiedName& tagNa
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::font_face_nameTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFontFaceNameElement> SVGFontFaceNameElement::create(const QualifiedName& tagName, Document* document)

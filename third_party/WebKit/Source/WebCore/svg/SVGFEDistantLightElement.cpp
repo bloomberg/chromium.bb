@@ -31,6 +31,7 @@ inline SVGFEDistantLightElement::SVGFEDistantLightElement(const QualifiedName& t
     : SVGFELightElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feDistantLightTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGFEDistantLightElement> SVGFEDistantLightElement::create(const QualifiedName& tagName, Document* document)

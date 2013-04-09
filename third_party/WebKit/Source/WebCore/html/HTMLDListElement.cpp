@@ -33,6 +33,7 @@ inline HTMLDListElement::HTMLDListElement(const QualifiedName& tagName, Document
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(dlTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLDListElement> HTMLDListElement::create(const QualifiedName& tagName, Document* document)

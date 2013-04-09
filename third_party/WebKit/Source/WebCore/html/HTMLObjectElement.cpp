@@ -64,6 +64,7 @@ inline HTMLObjectElement::HTMLObjectElement(const QualifiedName& tagName, Docume
 {
     ASSERT(hasTagName(objectTag));
     setForm(form ? form : findFormAncestor());
+    ScriptWrappable::init(this);
 }
 
 inline HTMLObjectElement::~HTMLObjectElement()

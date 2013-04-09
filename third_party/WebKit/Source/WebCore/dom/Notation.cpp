@@ -31,6 +31,7 @@ Notation::Notation(Document* document, const String& name, const String& publicI
     , m_publicId(publicId)
     , m_systemId(systemId)
 {
+    ScriptWrappable::init(this);
 }
 
 String Notation::nodeName() const

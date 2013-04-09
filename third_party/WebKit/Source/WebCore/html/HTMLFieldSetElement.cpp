@@ -42,6 +42,7 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(const QualifiedName& tagName, Do
     , m_documentVersion(0)
 {
     ASSERT(hasTagName(fieldsetTag));
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
