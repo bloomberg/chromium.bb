@@ -106,7 +106,9 @@ void TestBrowserPluginGuest::WaitForDamageBufferWithSize(
 
 void TestBrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   exit_observed_ = true;
-  LOG(INFO) << "Guest crashed";
+  if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION &&
+      status != base::TERMINATION_STATUS_STILL_RUNNING)
+    LOG(INFO) << "Guest crashed status: " << status;
   if (crash_message_loop_runner_)
     crash_message_loop_runner_->Quit();
   BrowserPluginGuest::RenderViewGone(status);

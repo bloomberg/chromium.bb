@@ -801,10 +801,16 @@ void BrowserPluginGuest::OnHandleInputEvent(
     const gfx::Rect& guest_window_rect,
     const WebKit::WebInputEvent* event) {
   guest_window_rect_ = guest_window_rect;
-  guest_screen_rect_ = guest_window_rect;
-  guest_screen_rect_.Offset(
-      embedder_web_contents_->GetRenderViewHost()->GetView()->
-          GetViewBounds().OffsetFromOrigin());
+  // If the embedder's RWHV is destroyed then that means that the embedder's
+  // window has been closed but the embedder's WebContents has not yet been
+  // destroyed. Computing screen coordinates of a BrowserPlugin only makes sense
+  // if there is a visible embedder.
+  if (embedder_web_contents_->GetRenderWidgetHostView()) {
+    guest_screen_rect_ = guest_window_rect;
+    guest_screen_rect_.Offset(
+        embedder_web_contents_->GetRenderWidgetHostView()->
+            GetViewBounds().OffsetFromOrigin());
+  }
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
 
