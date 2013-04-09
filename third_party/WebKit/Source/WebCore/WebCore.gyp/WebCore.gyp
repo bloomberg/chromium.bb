@@ -761,6 +761,8 @@
         {
           'action_name': 'EventFactory',
           'inputs': [
+            '../scripts/InFilesCompiler.pm',
+            '../scripts/InFilesParser.pm',
             '../scripts/make_event_factory.pl',
             '../dom/EventNames.in',
           ],
@@ -781,6 +783,8 @@
         {
           'action_name': 'EventTargetFactory',
           'inputs': [
+            '../scripts/InFilesCompiler.pm',
+            '../scripts/InFilesParser.pm',
             '../scripts/make_event_factory.pl',
             '../dom/EventTargetFactory.in',
           ],
@@ -800,6 +804,8 @@
         {
           'action_name': 'ExceptionCodeDescription',
           'inputs': [
+            '../scripts/InFilesCompiler.pm',
+            '../scripts/InFilesParser.pm',
             '../scripts/make_dom_exceptions.pl',
             '../dom/DOMExceptions.in',
           ],
