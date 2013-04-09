@@ -1529,6 +1529,8 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
 
 void FrameLoader::stopForUserCancel(bool deferCheckLoadComplete)
 {
+    // stopAllLoaders can detach the Frame, so protect it.
+    RefPtr<Frame> protect(m_frame);
     stopAllLoaders();
     
     if (deferCheckLoadComplete)
@@ -2345,6 +2347,8 @@ void FrameLoader::handledOnloadEvents()
 
 void FrameLoader::frameDetached()
 {
+    // stopAllLoaders can detach the Frame, so protect it.
+    RefPtr<Frame> protect(m_frame);
     stopAllLoaders();
     m_frame->document()->stopActiveDOMObjects();
     detachFromParent();
@@ -2352,6 +2356,7 @@ void FrameLoader::frameDetached()
 
 void FrameLoader::detachFromParent()
 {
+    // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
 
     closeURL();
@@ -2734,6 +2739,9 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
     // nil policyDataSource because loading the alternate page will have passed
     // through this method already, nested; otherwise, policyDataSource should still be set.
     ASSERT(m_policyDocumentLoader || !m_provisionalDocumentLoader->unreachableURL().isEmpty());
+
+    // stopAllLoaders can detach the Frame, so protect it.
+    RefPtr<Frame> protect(m_frame);
 
     bool isTargetItem = history()->provisionalItem() ? history()->provisionalItem()->isTargetItem() : false;
 

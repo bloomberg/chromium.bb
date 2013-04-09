@@ -97,6 +97,8 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
 
     m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, buildConsoleError(xssInfo, m_document->url().string()));
 
+    // stopAllLoaders can detach the Frame, so protect it.
+    RefPtr<Frame> protect(m_document->frame());
     FrameLoader* frameLoader = m_document->frame()->loader();
     if (xssInfo.m_didBlockEntirePage)
         frameLoader->stopAllLoaders();
