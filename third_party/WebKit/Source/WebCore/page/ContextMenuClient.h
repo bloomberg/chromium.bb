@@ -59,10 +59,6 @@ namespace WebCore {
         virtual void speak(const String&) = 0;
         virtual void stopSpeaking() = 0;
 
-#if PLATFORM(MAC)
-        virtual void searchWithSpotlight() = 0;
-#endif
-
 #if USE(ACCESSIBILITY_CONTEXT_MENUS)
         virtual void showContextMenu() = 0;
 #endif
