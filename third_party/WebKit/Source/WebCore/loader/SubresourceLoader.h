@@ -40,8 +40,6 @@ class SubresourceLoader : public ResourceLoader {
 public:
     static PassRefPtr<SubresourceLoader> create(Frame*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
 
-    void cancelIfNotFinishing();
-
 private:
     SubresourceLoader(Frame*, CachedResource*, const ResourceLoaderOptions&);
     virtual ~SubresourceLoader();
@@ -53,8 +51,6 @@ private:
     virtual void didReceiveCachedMetadata(const char*, int) OVERRIDE;
     virtual void didFinishLoading(double finishTime) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
-    virtual void willCancel(const ResourceError&) OVERRIDE;
-    virtual void didCancel(const ResourceError&) OVERRIDE { }
     virtual void releaseResources() OVERRIDE;
 
     bool checkForHTTPStatusCodeError();

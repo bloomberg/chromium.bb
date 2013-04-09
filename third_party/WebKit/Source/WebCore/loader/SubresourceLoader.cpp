@@ -71,14 +71,6 @@ PassRefPtr<SubresourceLoader> SubresourceLoader::create(Frame* frame, CachedReso
     return subloader.release();
 }
 
-void SubresourceLoader::cancelIfNotFinishing()
-{
-    if (m_state != Initialized)
-        return;
-
-    ResourceLoader::cancel();
-}
-
 bool SubresourceLoader::init(const ResourceRequest& request)
 {
     if (!ResourceLoader::init(request))
@@ -224,21 +216,6 @@ void SubresourceLoader::didFail(const ResourceError& error)
     if (!m_resource->isPreloaded())
         memoryCache()->remove(m_resource);
     ResourceLoader::didFail(error);
-}
-
-void SubresourceLoader::willCancel(const ResourceError& error)
-{
-    if (m_state != Initialized)
-        return;
-    ASSERT(!reachedTerminalState());
-    LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
-
-    RefPtr<SubresourceLoader> protect(this);
-    m_state = Finishing;
-    if (m_resource->resourceToRevalidate())
-        memoryCache()->revalidationFailed(m_resource);
-    m_resource->setResourceError(error);
-    memoryCache()->remove(m_resource);
 }
 
 void SubresourceLoader::releaseResources()

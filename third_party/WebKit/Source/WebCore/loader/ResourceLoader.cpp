@@ -37,6 +37,8 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "InspectorInstrumentation.h"
+#include "Logging.h"
+#include "MemoryCache.h"
 #include "Page.h"
 #include "ProgressTracker.h"
 #include "ResourceBuffer.h"
@@ -70,7 +72,6 @@ ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceL
     , m_identifier(0)
     , m_loadingMultipartContent(false)
     , m_reachedTerminalState(false)
-    , m_calledWillCancel(false)
     , m_cancelled(false)
     , m_notifiedLoadComplete(false)
     , m_defersLoading(frame->page()->defersLoading())
@@ -333,6 +334,13 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
     }
 }
 
+void ResourceLoader::cancelIfNotFinishing()
+{
+    if (m_state != Initialized)
+        return;
+    cancel();
+}
+
 void ResourceLoader::cancel()
 {
     cancel(ResourceError());
@@ -345,17 +353,20 @@ void ResourceLoader::cancel(const ResourceError& error)
         return;
        
     ResourceError nonNullError = error.isNull() ? cancelledError() : error;
-    
-    // willCancel() and didFailToLoad() both call out to clients that might do 
-    // something causing the last reference to this object to go away.
+
+    // This function calls out to clients at several points that might do
+    // something that causes the last reference to this object to go away.
     RefPtr<ResourceLoader> protector(this);
     
-    // If we re-enter cancel() from inside willCancel(), we want to pick up from where we left 
-    // off without re-running willCancel()
-    if (!m_calledWillCancel) {
-        m_calledWillCancel = true;
-        
-        willCancel(nonNullError);
+    // If we re-enter cancel() from inside this if() block, we want to pick up from where we left
+    // off without re-running it
+    if (m_state == Initialized) {
+        LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
+        m_state = Finishing;
+        if (m_resource->resourceToRevalidate())
+            memoryCache()->revalidationFailed(m_resource);
+        m_resource->setResourceError(nonNullError);
+        memoryCache()->remove(m_resource);
     }
 
     // If we re-enter cancel() from inside didFailToLoad(), we want to pick up from where we 
@@ -380,9 +391,6 @@ void ResourceLoader::cancel(const ResourceError& error)
     // we don't want to redo didCancel() or releasesResources().
     if (m_reachedTerminalState)
         return;
-
-    didCancel(nonNullError);
-            
     releaseResources();
 }
 

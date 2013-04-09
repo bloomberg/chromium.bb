@@ -54,6 +54,8 @@ public:
     virtual ~ResourceLoader();
 
     void cancel();
+    void cancel(const ResourceError&);
+    void cancelIfNotFinishing();
 
     virtual bool init(const ResourceRequest&);
 
@@ -63,8 +65,7 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     CachedResource* cachedResource() { return m_resource; }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
-    
-    virtual void cancel(const ResourceError&);
+
     ResourceError cancelledError();
     ResourceError cannotShowURLError();
     
@@ -127,9 +128,6 @@ protected:
     RefPtr<DocumentLoader> m_documentLoader;
     ResourceResponse m_response;
 
-    virtual void willCancel(const ResourceError&) = 0;
-    virtual void didCancel(const ResourceError&) = 0;
-
     void addData(const char*, int);
 
     ResourceRequest m_request;
@@ -140,7 +138,6 @@ protected:
 
     bool m_loadingMultipartContent;
     bool m_reachedTerminalState;
-    bool m_calledWillCancel;
     bool m_cancelled;
     bool m_notifiedLoadComplete;
 
