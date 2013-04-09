@@ -160,9 +160,6 @@ namespace WebCore {
         void setUserStyleSheetLocation(const KURL&);
         const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-        void setNeedsAdobeFrameReloadingQuirk(bool);
-        bool needsAcrobatFrameReloadingQuirk() const { return m_needsAdobeFrameReloadingQuirk; }
-
         static void setDefaultMinDOMTimerInterval(double); // Interval specified in seconds.
         static double defaultMinDOMTimerInterval();
         
@@ -271,7 +268,6 @@ namespace WebCore {
         bool m_areImagesEnabled : 1;
         bool m_arePluginsEnabled : 1;
         bool m_isScriptEnabled : 1;
-        bool m_needsAdobeFrameReloadingQuirk : 1;
         bool m_usesPageCache : 1;
         unsigned m_fontRenderingMode : 1;
         bool m_isCSSCustomFilterEnabled : 1;

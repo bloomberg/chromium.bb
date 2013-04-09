@@ -162,7 +162,6 @@ Settings::Settings(Page* page)
     , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
-    , m_needsAdobeFrameReloadingQuirk(false)
     , m_usesPageCache(false)
     , m_fontRenderingMode(0)
     , m_isCSSCustomFilterEnabled(false)
@@ -402,13 +401,6 @@ void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
     m_userStyleSheetLocation = userStyleSheetLocation;
 
     m_page->userStyleSheetLocationChanged();
-}
-
-// FIXME: This quirk is needed because of Radar 4674537 and 5211271. We need to phase it out once Adobe
-// can fix the bug from their end.
-void Settings::setNeedsAdobeFrameReloadingQuirk(bool shouldNotReloadIFramesForUnchangedSRC)
-{
-    m_needsAdobeFrameReloadingQuirk = shouldNotReloadIFramesForUnchangedSRC;
 }
 
 void Settings::setDefaultMinDOMTimerInterval(double interval)
