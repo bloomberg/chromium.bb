@@ -36,7 +36,7 @@ bool CompareTimestampSerial::operator()(Notification* n1, Notification* n2) {
 }
 
 const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
-const size_t NotificationList::kMaxVisiblePopupNotifications = 2;
+const size_t NotificationList::kMaxVisiblePopupNotifications = 3;
 
 NotificationList::Delegate::~Delegate() {
 }
