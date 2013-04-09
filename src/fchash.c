@@ -29,9 +29,6 @@
 #include "fcint.h"
 #include <stdio.h>
 #include <string.h>
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
-#include FT_TRUETYPE_TAGS_H
 
 #define ROTRN(w, v, n)	((((FcChar32)v) >> n) | (((FcChar32)v) << (w - n)))
 #define ROTR32(v, n)	ROTRN(32, v, n)
@@ -207,40 +204,28 @@ FcHashGetSHA256Digest (const FcChar8 *input_strings,
 }
 
 FcChar8 *
-FcHashGetSHA256DigestFromFace (const FT_Face face)
+FcHashGetSHA256DigestFromMemory (const char *fontdata,
+				 size_t      length)
 {
-    char ibuf[64], *buf = NULL;
+    char ibuf[64];
     FcChar32 *ret;
-    FT_Error err;
-    FT_ULong len = 0, alen, i = 0;
-
-    err = FT_Load_Sfnt_Table (face, 0, 0, NULL, &len);
-    if (err != FT_Err_Ok)
-	return NULL;
-    alen = (len + 63) & ~63;
-    buf = malloc (alen);
-    if (!buf)
-	return NULL;
-    err = FT_Load_Sfnt_Table (face, 0, 0, (FT_Byte *)buf, &len);
-    if (err != FT_Err_Ok)
-	goto bail0;
-    memset (&buf[len], 0, alen - len);
+    size_t i = 0;
 
     ret = FcHashInitSHA256Digest ();
     if (!ret)
-	goto bail0;
+	return NULL;
 
-    while (i <= len)
+    while (i <= length)
     {
-	if ((len - i) < 64)
+	if ((length - i) < 64)
 	{
 	    long v;
-	    int n;
+	    size_t n;
 
 	    /* add a padding */
-	    n = len - i;
+	    n = length - i;
 	    if (n > 0)
-		memcpy (ibuf, &buf[i], n);
+		memcpy (ibuf, &fontdata[i], n);
 	    memset (&ibuf[n], 0, 64 - n);
 	    ibuf[n] = 0x80;
 	    if ((64 - n) < 9)
@@ -250,7 +235,7 @@ FcHashGetSHA256DigestFromFace (const FT_Face face)
 		memset (ibuf, 0, 64);
 	    }
 	    /* set input size at the end */
-	    v = len * 8;
+	    v = length * 8;
 	    ibuf[63 - 0] =  v        & 0xff;
 	    ibuf[63 - 1] = (v >>  8) & 0xff;
 	    ibuf[63 - 2] = (v >> 16) & 0xff;
@@ -264,18 +249,10 @@ FcHashGetSHA256DigestFromFace (const FT_Face face)
 	}
 	else
 	{
-	    FcHashComputeSHA256Digest (ret, &buf[i]);
+	    FcHashComputeSHA256Digest (ret, &fontdata[i]);
 	}
 	i += 64;
     }
-    if (buf)
-	free (buf);
 
     return FcHashSHA256ToString (ret);
-
-bail0:
-    if (buf)
-	free (buf);
-
-    return NULL;
 }
