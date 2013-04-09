@@ -123,7 +123,7 @@ class ChromeDownloadManagerDelegate
       content::DownloadItem& download,
       const base::FilePath& target_path,
       const base::FilePath& default_download_path,
-      bool should_uniquify_path,
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const DownloadPathReservationTracker::ReservedPathCallback& callback);
 
   // Displays the file chooser dialog to prompt the user for the download
@@ -181,7 +181,7 @@ class ChromeDownloadManagerDelegate
       int32 download_id,
       const content::DownloadTargetCallback& callback,
       bool should_prompt,
-      bool is_forced_path,
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       content::DownloadDangerType danger_type,
       const base::FilePath& unverified_path);
 #endif
@@ -202,7 +202,7 @@ class ChromeDownloadManagerDelegate
   void OnExtensionOverridingFilename(
       const ContinueFilenameDeterminationInfo& continue_info,
       const base::FilePath& changed_filename,
-      bool overwrite);
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action);
 
   // When extensions either opt not to change a download's target filename, or
   // the changed filename has been sanitized, this method continues with the
@@ -211,7 +211,7 @@ class ChromeDownloadManagerDelegate
   void ContinueDeterminingFilename(
       const ContinueFilenameDeterminationInfo& continue_info,
       const base::FilePath& suggested_path,
-      bool is_forced_path);
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action);
 
   // Called on the UI thread once the final target path is available.
   void OnTargetPathDetermined(

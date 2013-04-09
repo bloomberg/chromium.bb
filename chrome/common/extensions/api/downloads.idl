@@ -12,18 +12,28 @@ namespace downloads {
     DOMString value;
   };
 
+  // <dl><dt>uniquify</dt>
+  //     <dd>To avoid duplication, the <code>filename</code> is changed to
+  //     include a counter before the filename extension.</dd>
+  //     <dt>overwrite</dt>
+  //     <dd>The existing file will be overwritten with the new file.</dd>
+  //     <dt>prompt</dt>
+  //     <dd>The user will be prompted with a file chooser dialog.</dd>
+  // </dl>
+  [inline_doc] enum FilenameConflictAction {uniquify, overwrite, prompt};
+
   // $ref:onDeterminingFilename listeners may pass a $ref:FilenameSuggestion
   // object to <code>suggest()</code> in order to override a download's target
   // filename.
-  dictionary FilenameSuggestion {
+  [inline_doc] dictionary FilenameSuggestion {
     // The $ref:DownloadItem's new target $ref:DownloadItem.filename, as a path
     // relative to the user's default Downloads directory, possibly containing
     // subdirectories. Absolute paths, empty paths, and paths containing
     // back-references ".." will be ignored.
     DOMString filename;
 
-    // Whether to overwrite any existing files.
-    boolean? overwrite;
+    // The action to take if $ref:FilenameSuggestion.filename already exists.
+    FilenameConflictAction? conflict_action;
   };
 
   [inline_doc] enum HttpMethod {GET, POST};
@@ -72,8 +82,6 @@ namespace downloads {
   //     <dt>accepted</dt>
   //     <dd>The user has accepted the dangerous download.</dd>
   // </dl>
-  // These string constants will never change, however the set of DangerTypes
-  // may change.
   enum DangerType {file, url, content, uncommon, host, safe, accepted};
 
   // <dl><dt>in_progress</dt>
@@ -83,8 +91,6 @@ namespace downloads {
   //     <dt>complete</dt>
   //     <dd>The download completed successfully.</dd>
   // </dl>
-  // These string constants will never change, however the set of States may
-  // change.
   enum State {in_progress, interrupted, complete};
 
   // The state of the process of downloading a file.
@@ -437,12 +443,14 @@ namespace downloads {
 
     // Fires with the <code>downloadId</code> when a download is erased from
     // history.
-    // |downloadId|: The <code>id</code> of the $ref:DownloadItem that was erased.
+    // |downloadId|: The <code>id</code> of the $ref:DownloadItem that was
+    // erased.
     static void onErased(long downloadId);
 
-    // When any of a $ref:DownloadItem's properties
-    // except <code>bytesReceived</code> changes, this event fires with the
-    // <code>downloadId</code> and an object containing the properties that changed.
+    // When any of a $ref:DownloadItem's properties except
+    // <code>bytesReceived</code> changes, this event fires with the
+    // <code>downloadId</code> and an object containing the properties that
+    // changed.
     static void onChanged(DownloadDelta downloadDelta);
 
     // During the filename determination process, extensions will be given the

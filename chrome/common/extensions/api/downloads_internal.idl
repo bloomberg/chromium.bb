@@ -7,8 +7,8 @@ namespace downloadsInternal {
   interface Functions {
     // Secretly called when onDeterminingFilename handlers return.
     static void determineFilename(long downloadId,
-                                  optional DOMString filename,
-                                  optional boolean overwrite);
+                                  DOMString filename,
+                                  DOMString conflict_action);
   };
 
   interface Events {

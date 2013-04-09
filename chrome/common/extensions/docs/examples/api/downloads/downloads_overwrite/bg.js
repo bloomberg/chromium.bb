@@ -7,5 +7,5 @@
 
 chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
   suggest({filename: item.filename,
-           overwrite: true});
+           conflict_action: 'overwrite'});
 });

@@ -188,7 +188,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       content::DownloadItem& download,
       const base::FilePath& target_path,
       const base::FilePath& default_download_path,
-      bool should_uniquify_path,
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const DownloadPathReservationTracker::ReservedPathCallback& callback)
       OVERRIDE {
     // Pretend the path reservation succeeded without any change to

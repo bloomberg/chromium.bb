@@ -12,8 +12,10 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
+#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -204,8 +206,10 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
 class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
                                       public AllDownloadItemNotifier::Observer {
  public:
-  typedef base::Callback<void(const base::FilePath& changed_filename,
-                              bool overwrite)> FilenameChangedCallback;
+  typedef base::Callback<void(
+      const base::FilePath& changed_filename,
+      DownloadPathReservationTracker::FilenameConflictAction)>
+    FilenameChangedCallback;
 
   // A downloads.onDeterminingFilename listener has returned. If the extension
   // wishes to override the download's filename, then |filename| will be
@@ -219,7 +223,7 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       const std::string& ext_id,
       int download_id,
       const base::FilePath& filename,
-      bool overwrite,
+      extensions::api::downloads::FilenameConflictAction conflict_action,
       std::string* error);
 
   explicit ExtensionDownloadsEventRouter(

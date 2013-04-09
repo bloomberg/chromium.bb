@@ -25,15 +25,12 @@ chromeHidden.Event.registerArgumentMassager(
     if ((typeof(result) == 'object') &&
         result.filename &&
         (typeof(result.filename) == 'string') &&
-        ((result.overwrite === undefined) ||
-          (typeof(result.overwrite) == 'boolean'))) {
+        ((result.conflict_action == undefined) ||
+          (typeof(result.conflict_action) == 'string'))) {
       downloadsInternal.determineFilename(
-          downloadId,
-          result.filename,
-          result.overwrite || false);
+          downloadId, result.filename, result.conflict_action || "");
     } else {
-      downloadsInternal.determineFilename(
-          downloadId);
+      downloadsInternal.determineFilename(downloadId, "", "");
     }
   }
   try {

@@ -76,7 +76,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   void CallGetReservedPath(
       DownloadItem& download_item,
       const base::FilePath& target_path,
-      bool uniquify_path,
+      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       base::FilePath* return_path,
       bool* return_verified);
 
@@ -141,7 +141,7 @@ bool DownloadPathReservationTrackerTest::IsPathInUse(
 void DownloadPathReservationTrackerTest::CallGetReservedPath(
     DownloadItem& download_item,
     const base::FilePath& target_path,
-    bool uniquify_path,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     base::FilePath* return_path,
     bool* return_verified) {
   // Weak pointer factory to prevent the callback from running after this
@@ -150,7 +150,7 @@ void DownloadPathReservationTrackerTest::CallGetReservedPath(
       this);
   bool did_run_callback = false;
   DownloadPathReservationTracker::GetReservedPath(
-      download_item, target_path, default_download_path(), uniquify_path,
+      download_item, target_path, default_download_path(), conflict_action,
       base::Bind(&DownloadPathReservationTrackerTest::TestReservedPathCallback,
                  weak_ptr_factory.GetWeakPtr(), return_path, return_verified,
                  &did_run_callback));
@@ -185,7 +185,9 @@ TEST_F(DownloadPathReservationTrackerTest, BasicReservation) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(verified);
   EXPECT_EQ(path.value(), reserved_path.value());
@@ -205,7 +207,9 @@ TEST_F(DownloadPathReservationTrackerTest, InterruptedDownload) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(verified);
   EXPECT_EQ(path.value(), reserved_path.value());
@@ -225,7 +229,9 @@ TEST_F(DownloadPathReservationTrackerTest, CompleteDownload) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(verified);
   EXPECT_EQ(path.value(), reserved_path.value());
@@ -255,7 +261,9 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingFiles) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, true, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::UNIQUIFY;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(IsPathInUse(reserved_path));
   EXPECT_TRUE(verified);
@@ -284,7 +292,10 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   base::FilePath reserved_path1;
   bool verified = false;
 
-  CallGetReservedPath(*item1, path, true, &reserved_path1, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::UNIQUIFY;
+  CallGetReservedPath(
+      *item1, path, conflict_action, &reserved_path1, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(verified);
 
@@ -293,7 +304,8 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
     // a uniquified path.
     scoped_ptr<FakeDownloadItem> item2(CreateDownloadItem(2));
     base::FilePath reserved_path2;
-    CallGetReservedPath(*item2, path, true, &reserved_path2, &verified);
+    CallGetReservedPath(
+        *item2, path, conflict_action, &reserved_path2, &verified);
     EXPECT_TRUE(IsPathInUse(path));
     EXPECT_TRUE(IsPathInUse(uniquified_path));
     EXPECT_EQ(uniquified_path.value(), reserved_path2.value());
@@ -307,7 +319,8 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
     // for the same path should result in the same uniquified path.
     scoped_ptr<FakeDownloadItem> item2(CreateDownloadItem(2));
     base::FilePath reserved_path2;
-    CallGetReservedPath(*item2, path, true, &reserved_path2, &verified);
+    CallGetReservedPath(
+        *item2, path, conflict_action, &reserved_path2, &verified);
     EXPECT_TRUE(IsPathInUse(path));
     EXPECT_TRUE(IsPathInUse(uniquified_path));
     EXPECT_EQ(uniquified_path.value(), reserved_path2.value());
@@ -318,7 +331,9 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   // non-uniquified path for both reservations.
   scoped_ptr<FakeDownloadItem> item3(CreateDownloadItem(2));
   base::FilePath reserved_path3;
-  CallGetReservedPath(*item3, path, false, &reserved_path3, &verified);
+  conflict_action = DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(
+      *item3, path, conflict_action, &reserved_path3, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_FALSE(IsPathInUse(uniquified_path));
 
@@ -334,6 +349,8 @@ TEST_F(DownloadPathReservationTrackerTest, UnresolvedConflicts) {
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo.txt")));
   scoped_ptr<FakeDownloadItem> items[
       DownloadPathReservationTracker::kMaxUniqueFiles + 1];
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::UNIQUIFY;
   // Create |kMaxUniqueFiles + 1| reservations for |path|. The first reservation
   // will have no uniquifier. The |kMaxUniqueFiles| remaining reservations do.
   for (int i = 0; i <= DownloadPathReservationTracker::kMaxUniqueFiles; i++) {
@@ -348,7 +365,8 @@ TEST_F(DownloadPathReservationTrackerTest, UnresolvedConflicts) {
     }
     items[i].reset(CreateDownloadItem(i));
     EXPECT_FALSE(IsPathInUse(expected_path));
-    CallGetReservedPath(*items[i], path, true, &reserved_path, &verified);
+    CallGetReservedPath(
+        *items[i], path, conflict_action, &reserved_path, &verified);
     EXPECT_TRUE(IsPathInUse(expected_path));
     EXPECT_EQ(expected_path.value(), reserved_path.value());
     EXPECT_TRUE(verified);
@@ -358,7 +376,7 @@ TEST_F(DownloadPathReservationTrackerTest, UnresolvedConflicts) {
       CreateDownloadItem(DownloadPathReservationTracker::kMaxUniqueFiles + 1));
   base::FilePath reserved_path;
   bool verified = true;
-  CallGetReservedPath(*item, path, true, &reserved_path, &verified);
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_FALSE(verified);
   EXPECT_EQ(path.value(), reserved_path.value());
 }
@@ -378,7 +396,10 @@ TEST_F(DownloadPathReservationTrackerTest, UnwriteableDirectory) {
     EXPECT_TRUE(file_util::MakeFileUnwritable(dir));
     base::FilePath reserved_path;
     bool verified = true;
-    CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+      DownloadPathReservationTracker::OVERWRITE;
+    CallGetReservedPath(
+        *item, path, conflict_action, &reserved_path, &verified);
     // Verification fails.
     EXPECT_FALSE(verified);
     EXPECT_EQ(path.BaseName().value(), reserved_path.BaseName().value());
@@ -392,12 +413,15 @@ TEST_F(DownloadPathReservationTrackerTest, CreateDefaultDownloadPath) {
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo/foo.txt")));
   base::FilePath dir(path.DirName());
   ASSERT_FALSE(file_util::DirectoryExists(dir));
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
 
   {
     scoped_ptr<FakeDownloadItem> item(CreateDownloadItem(1));
     base::FilePath reserved_path;
     bool verified = true;
-    CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+    CallGetReservedPath(
+        *item, path, conflict_action, &reserved_path, &verified);
     // Verification fails because the directory doesn't exist.
     EXPECT_FALSE(verified);
   }
@@ -407,7 +431,8 @@ TEST_F(DownloadPathReservationTrackerTest, CreateDefaultDownloadPath) {
     base::FilePath reserved_path;
     bool verified = true;
     set_default_download_path(dir);
-    CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+    CallGetReservedPath(
+        *item, path, conflict_action, &reserved_path, &verified);
     // Verification succeeds because the directory is created.
     EXPECT_TRUE(verified);
     EXPECT_TRUE(file_util::DirectoryExists(dir));
@@ -424,7 +449,9 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_TRUE(verified);
   EXPECT_EQ(path.value(), reserved_path.value());
@@ -473,7 +500,9 @@ TEST_F(DownloadPathReservationTrackerTest, BasicTruncation) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(reserved_path));
   EXPECT_TRUE(verified);
   // The file name length is truncated to max_length.
@@ -506,7 +535,9 @@ TEST_F(DownloadPathReservationTrackerTest, TruncationConflict) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, true, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::UNIQUIFY;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   EXPECT_TRUE(IsPathInUse(reserved_path));
   EXPECT_TRUE(verified);
   EXPECT_EQ(path2, reserved_path);
@@ -526,7 +557,9 @@ TEST_F(DownloadPathReservationTrackerTest, TruncationFail) {
 
   base::FilePath reserved_path;
   bool verified = false;
-  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+    DownloadPathReservationTracker::OVERWRITE;
+  CallGetReservedPath(*item, path, conflict_action, &reserved_path, &verified);
   // We cannot truncate a path with very long extension.
   EXPECT_FALSE(verified);
 }

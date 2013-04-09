@@ -155,7 +155,7 @@ void CreateReservation(
     DownloadId download_id,
     const base::FilePath& suggested_path,
     const base::FilePath& default_download_path,
-    bool should_uniquify,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(download_id.IsValid());
@@ -205,29 +205,36 @@ void CreateReservation(
     }
 
     // Uniquify the name, if it already exists.
-    if (!name_too_long && should_uniquify && IsPathInUse(target_path)) {
+    if (!name_too_long && IsPathInUse(target_path)) {
       has_conflicts = true;
-      for (int uniquifier = 1;
-           uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
-           ++uniquifier) {
-        // Append uniquifier.
-        std::string suffix(base::StringPrintf(" (%d)", uniquifier));
-        base::FilePath path_to_check(target_path);
-        // If the name length limit is available (max_length != -1), and the
-        // the current name exceeds the limit, truncate.
-        if (max_length != -1) {
-          int limit =
-              max_length - kIntermediateNameSuffixLength - suffix.size();
-          // If truncation failed, give up uniquification.
-          if (limit <= 0 || !TruncateFileName(&path_to_check, limit))
-            break;
-        }
-        path_to_check = path_to_check.InsertBeforeExtensionASCII(suffix);
+      if (conflict_action == DownloadPathReservationTracker::OVERWRITE) {
+        has_conflicts = false;
+      }
+      // If ...PROMPT, then |has_conflicts| will remain true, |verified| will be
+      // false, and CDMD will prompt.
+      if (conflict_action == DownloadPathReservationTracker::UNIQUIFY) {
+        for (int uniquifier = 1;
+            uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
+            ++uniquifier) {
+          // Append uniquifier.
+          std::string suffix(base::StringPrintf(" (%d)", uniquifier));
+          base::FilePath path_to_check(target_path);
+          // If the name length limit is available (max_length != -1), and the
+          // the current name exceeds the limit, truncate.
+          if (max_length != -1) {
+            int limit =
+                max_length - kIntermediateNameSuffixLength - suffix.size();
+            // If truncation failed, give up uniquification.
+            if (limit <= 0 || !TruncateFileName(&path_to_check, limit))
+              break;
+          }
+          path_to_check = path_to_check.InsertBeforeExtensionASCII(suffix);
 
-        if (!IsPathInUse(path_to_check)) {
-          target_path = path_to_check;
-          has_conflicts = false;
-          break;
+          if (!IsPathInUse(path_to_check)) {
+            target_path = path_to_check;
+            has_conflicts = false;
+            break;
+          }
         }
       }
     }
@@ -335,7 +342,7 @@ void DownloadPathReservationTracker::GetReservedPath(
     DownloadItem& download_item,
     const base::FilePath& target_path,
     const base::FilePath& default_path,
-    bool uniquify_path,
+    FilenameConflictAction conflict_action,
     const ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Attach an observer to the download item so that we know when the target
@@ -346,7 +353,7 @@ void DownloadPathReservationTracker::GetReservedPath(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateReservation, download_item.GetGlobalId(),
-                 target_path, default_path, uniquify_path, callback));
+                 target_path, default_path, conflict_action, callback));
 }
 
 // static

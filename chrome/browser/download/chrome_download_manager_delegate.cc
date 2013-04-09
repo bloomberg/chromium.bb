@@ -517,11 +517,10 @@ void ChromeDownloadManagerDelegate::GetReservedPath(
     DownloadItem& download,
     const base::FilePath& target_path,
     const base::FilePath& default_download_path,
-    bool should_uniquify_path,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DownloadPathReservationTracker::GetReservedPath(
-      download, target_path, default_download_path, should_uniquify_path,
-      callback);
+      download, target_path, default_download_path, conflict_action, callback);
 }
 
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
@@ -693,9 +692,13 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   continue_info.visited_referrer_before = visited_referrer_before;
   continue_info.should_prompt = should_prompt;
 
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action = (
+      is_forced_path ?
+      DownloadPathReservationTracker::OVERWRITE :
+      DownloadPathReservationTracker::UNIQUIFY);
   base::Closure filename_determined = base::Bind(
       &ChromeDownloadManagerDelegate::ContinueDeterminingFilename,
-      this, continue_info, suggested_path, is_forced_path);
+      this, continue_info, suggested_path, conflict_action);
 #if defined(OS_ANDROID)
   filename_determined.Run();
 #else
@@ -718,12 +721,13 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
 void ChromeDownloadManagerDelegate::OnExtensionOverridingFilename(
     const ContinueFilenameDeterminationInfo& continue_info,
     const base::FilePath& changed_filename,
-    bool overwrite) {
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
       download_manager_->GetDownload(continue_info.download_id);
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
+
   // If an extension overrides the filename, then the target directory will be
   // forced to download_prefs_->DownloadPath() since extensions cannot place
   // downloaded files anywhere except there. This prevents subdirectories from
@@ -737,16 +741,14 @@ void ChromeDownloadManagerDelegate::OnExtensionOverridingFilename(
   // the filename to have an extension if the (chrome) extension does not
   // suggest it.
   net::GenerateSafeFileName(std::string(), false, &temp_filename);
-  // If |is_forced_path| were true, then extensions would not have been
-  // consulted, so use |overwrite| instead of |is_forced_path|. This does NOT
-  // set DownloadItem::GetForcedFilePath()!
-  ContinueDeterminingFilename(continue_info, temp_filename, overwrite);
+
+  ContinueDeterminingFilename(continue_info, temp_filename, conflict_action);
 }
 
 void ChromeDownloadManagerDelegate::ContinueDeterminingFilename(
     const ContinueFilenameDeterminationInfo& continue_info,
     const base::FilePath& suggested_path,
-    bool is_forced_path) {
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int32 download_id = continue_info.download_id;
   const content::DownloadTargetCallback& callback = continue_info.callback;
@@ -761,7 +763,8 @@ void ChromeDownloadManagerDelegate::ContinueDeterminingFilename(
   // If the download hasn't already been marked dangerous (could be
   // DANGEROUS_URL), check if it is a dangerous file.
   if (danger_type == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-    if (!should_prompt && !is_forced_path &&
+    if (!should_prompt &&
+        download->GetForcedFilePath().empty() &&
         IsDangerousFile(*download, suggested_path, visited_referrer_before)) {
       danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
     }
@@ -792,14 +795,14 @@ void ChromeDownloadManagerDelegate::ContinueDeterminingFilename(
         suggested_path, download,
         base::Bind(
             &ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback,
-            this, download->GetId(), callback, should_prompt, is_forced_path,
+            this, download->GetId(), callback, should_prompt, conflict_action,
             danger_type));
     return;
   }
 #endif
   GetReservedPath(
       *download, suggested_path, download_prefs_->DownloadPath(),
-      !is_forced_path,
+      conflict_action,
       base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
                  this, download->GetId(), callback, should_prompt,
                  danger_type));
@@ -811,7 +814,7 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
     int32 download_id,
     const content::DownloadTargetCallback& callback,
     bool should_prompt,
-    bool is_forced_path,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     content::DownloadDangerType danger_type,
     const base::FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -831,7 +834,7 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
 
   GetReservedPath(
       *download, suggested_path, download_prefs_->DownloadPath(),
-      !is_forced_path,
+      conflict_action,
       base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
                  this, download->GetId(), callback, should_prompt,
                  danger_type));

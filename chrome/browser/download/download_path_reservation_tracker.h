@@ -93,6 +93,12 @@ class DownloadPathReservationTracker {
   // attempting to come up with a unique path.
   static const int kMaxUniqueFiles = 100;
 
+  enum FilenameConflictAction {
+    UNIQUIFY,
+    OVERWRITE,
+    PROMPT,
+  };
+
   // Called on the UI thread to request a download path reservation. Begins
   // observing |download_item| and initiates creating a reservation on the FILE
   // thread. Will not modify any state of |download_item|.
@@ -100,11 +106,12 @@ class DownloadPathReservationTracker {
   // |default_download_path| is the user's default download path. If this
   // directory does not exist and is the parent directory of
   // |requested_target_path|, the directory will be created.
-  static void GetReservedPath(content::DownloadItem& download_item,
-                              const base::FilePath& requested_target_path,
-                              const base::FilePath& default_download_path,
-                              bool should_uniquify_path,
-                              const ReservedPathCallback& callback);
+  static void GetReservedPath(
+      content::DownloadItem& download_item,
+      const base::FilePath& requested_target_path,
+      const base::FilePath& default_download_path,
+      FilenameConflictAction conflict_action,
+      const ReservedPathCallback& callback);
 
   // Returns true if |path| is in use by an existing path reservation. Should
   // only be called on the FILE thread. Currently only used by tests.

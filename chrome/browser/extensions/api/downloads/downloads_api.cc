@@ -529,7 +529,8 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
       : updated_(0),
         changed_fired_(0),
         json_(json_item.Pass()),
-        determined_overwrite_(false) {
+        determined_conflict_action_(
+            extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY) {
     download_item->SetUserData(kKey, this);
   }
 
@@ -557,7 +558,8 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
 
   void ClearPendingDeterminers() {
     determined_filename_.clear();
-    determined_overwrite_ = false;
+    determined_conflict_action_ =
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY;
     determiner_ = DeterminerInfo();
     filename_no_change_ = base::Closure();
     filename_change_ = ExtensionDownloadsEventRouter::FilenameChangedCallback();
@@ -604,7 +606,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   bool DeterminerCallback(
       const std::string& extension_id,
       const base::FilePath& filename,
-      bool overwrite) {
+      extensions::api::downloads::FilenameConflictAction conflict_action) {
     bool found_info = false;
     for (size_t index = 0; index < determiners_.size(); ++index) {
       if (determiners_[index].extension_id == extension_id) {
@@ -619,7 +621,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
             (determiner_.extension_id.empty() ||
              (determiners_[index].install_time > determiner_.install_time))) {
           determined_filename_ = filename;
-          determined_overwrite_ = overwrite;
+          determined_conflict_action_ = conflict_action;
           determiner_ = determiners_[index];
         }
         break;
@@ -658,8 +660,17 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
       if (!filename_no_change_.is_null())
         filename_no_change_.Run();
     } else {
-      if (!filename_change_.is_null())
-        filename_change_.Run(determined_filename_, determined_overwrite_);
+      if (!filename_change_.is_null()) {
+        DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+          DownloadPathReservationTracker::UNIQUIFY;
+        if (determined_conflict_action_ ==
+            extensions::api::downloads::FILENAME_CONFLICT_ACTION_OVERWRITE)
+          conflict_action = DownloadPathReservationTracker::OVERWRITE;
+        if (determined_conflict_action_ ==
+            extensions::api::downloads::FILENAME_CONFLICT_ACTION_PROMPT)
+          conflict_action = DownloadPathReservationTracker::PROMPT;
+        filename_change_.Run(determined_filename_, conflict_action);
+      }
     }
     // Don't clear determiners_ immediately in case there's a second listener
     // for one of the extensions, so that DetermineFilename can return
@@ -685,7 +696,8 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   DeterminerInfoVector determiners_;
 
   base::FilePath determined_filename_;
-  bool determined_overwrite_;
+  extensions::api::downloads::FilenameConflictAction
+    determined_conflict_action_;
   DeterminerInfo determiner_;
 
   scoped_ptr<base::WeakPtrFactory<ExtensionDownloadsEventRouterData> >
@@ -1258,7 +1270,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     const std::string& ext_id,
     int download_id,
     const base::FilePath& filename,
-    bool overwrite,
+    extensions::api::downloads::FilenameConflictAction conflict_action,
     std::string* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* item = GetDownload(profile, include_incognito, download_id);
@@ -1284,7 +1296,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     *error = download_extension_errors::kInvalidOperationError;
     return false;
   }
-  if (!data->DeterminerCallback(ext_id, filename, overwrite)) {
+  if (!data->DeterminerCallback(ext_id, filename, conflict_action)) {
     // Nobody expects this ext_id!
     *error = download_extension_errors::kInvalidOperationError;
     return false;

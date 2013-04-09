@@ -2255,7 +2255,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       GetExtensionId(),
       result_id,
       base::FilePath(),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2325,7 +2325,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("overridden.swf")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2404,7 +2404,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("sneaky/../../sneaky.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
@@ -2466,7 +2466,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL(".")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
@@ -2528,7 +2528,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("..")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
@@ -2590,7 +2590,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       downloads_directory().Append(FILE_PATH_LITERAL("sneaky.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
 
@@ -2653,7 +2653,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("foo/")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(download_extension_errors::kInvalidFilenameError, error.c_str());
 
@@ -2715,7 +2715,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2777,7 +2777,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("foo")),
-      true,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_OVERWRITE,
       &error));
   EXPECT_EQ("", error);
 
@@ -2904,7 +2904,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -2967,7 +2967,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("5.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3045,7 +3045,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3107,7 +3107,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       result_id,
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_EQ("", error);
 
@@ -3207,7 +3207,7 @@ IN_PROC_BROWSER_TEST_F(
       GetExtensionId(),
       item->GetId(),
       base::FilePath(FILE_PATH_LITERAL("42.txt")),
-      false,
+      extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error)) << error;
   EXPECT_EQ("", error);
 
