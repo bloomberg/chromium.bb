@@ -293,6 +293,14 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
                       true /* recursive */);
   }
 
+  SetUpDefaultEntries();
+
+  return DRIVE_FILE_OK;
+}
+
+void DriveResourceMetadata::SetUpDefaultEntries() {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+
   // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
   // As an intermediate change, "/drive/root" is also added here.
   // TODO(haruki): Move this initialization to change_list_loader where we
@@ -320,7 +328,6 @@ DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
     mydrive_root.set_title(util::kDriveMyDriveRootDirName);
     AddEntryToDirectory(mydrive_root);
   }
-  return DRIVE_FILE_OK;
 }
 
 void DriveResourceMetadata::DestroyOnBlockingPool() {
@@ -331,8 +338,7 @@ void DriveResourceMetadata::DestroyOnBlockingPool() {
 void DriveResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
-  InitializeOnBlockingPool();
+  RemoveAllOnBlockingPool();
   last_serialized_ = base::Time();
   serialized_size_ = 0;
   storage_->SetLargestChangestamp(0);
@@ -919,7 +925,7 @@ void DriveResourceMetadata::RemoveAllOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
-  InitializeOnBlockingPool();
+  SetUpDefaultEntries();
 }
 
 void DriveResourceMetadata::MaybeSaveOnBlockingPool() {

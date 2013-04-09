@@ -247,7 +247,10 @@ class DriveResourceMetadata {
   virtual ~DriveResourceMetadata();
 
   // Used to implement Initialize();
-  DriveFileError InitializeOnBlockingPool();
+  DriveFileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
+
+  // Sets up entries which should be present by default.
+  void SetUpDefaultEntries();
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
