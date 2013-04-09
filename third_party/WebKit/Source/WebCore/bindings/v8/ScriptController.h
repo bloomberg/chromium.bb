@@ -32,7 +32,6 @@
 #define ScriptController_h
 
 #include "FrameLoaderTypes.h"
-#include "ScriptControllerBase.h"
 #include "ScriptInstance.h"
 #include "ScriptValue.h"
 
@@ -60,6 +59,11 @@ class V8DOMWindowShell;
 class Widget;
 
 typedef WTF::Vector<v8::Extension*> V8Extensions;
+
+enum ReasonForCallingCanExecuteScripts {
+    AboutToExecuteScript,
+    NotAboutToExecuteScript
+};
 
 class ScriptController {
 public:

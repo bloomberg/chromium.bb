@@ -1239,7 +1239,6 @@
             'accessibility/AccessibilityTableRow.h',
             'accessibility/chromium/AXObjectCacheChromium.cpp',
             'accessibility/chromium/AccessibilityObjectChromium.cpp',
-            'bindings/ScriptControllerBase.cpp',
             'bindings/v8/ActiveDOMCallback.cpp',
             'bindings/v8/ActiveDOMCallback.h',
             'bindings/v8/BindingSecurity.cpp',
