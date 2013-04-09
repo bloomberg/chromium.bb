@@ -1141,6 +1141,7 @@ public:
     void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject*);
 
     bool hasActiveParser();
+    unsigned activeParserCount() { return m_activeParserCount; }
     void incrementActiveParserCount() { ++m_activeParserCount; }
     void decrementActiveParserCount();
 
