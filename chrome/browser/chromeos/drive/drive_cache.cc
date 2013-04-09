@@ -581,17 +581,15 @@ DriveFileError DriveCache::StoreOnBlockingPool(
     FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
 
+  int64 file_size = 0;
   if (file_operation_type == FILE_OPERATION_COPY) {
-    int64 file_size;
     if (!file_util::GetFileSize(source_path, &file_size)) {
       LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
       return DRIVE_FILE_ERROR_FAILED;
     }
-
-    const bool enough_space = FreeDiskSpaceOnBlockingPoolIfNeededFor(file_size);
-    if (!enough_space)
-      return DRIVE_FILE_ERROR_NO_SPACE;
   }
+  if (!FreeDiskSpaceOnBlockingPoolIfNeededFor(file_size))
+    return DRIVE_FILE_ERROR_NO_SPACE;
 
   base::FilePath symlink_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;

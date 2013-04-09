@@ -354,10 +354,15 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
-  void GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
+  void GetResolvedFileByPathAfterFreeDiskSpace(
       scoped_ptr<GetResolvedFileParams> params,
       const GURL& download_url,
       bool has_enough_space);
+  void GetResolveFileByPathAfterCreateTemporaryFile(
+      scoped_ptr<GetResolvedFileParams> params,
+      const GURL& download_url,
+      base::FilePath* temp_file,
+      bool success);
   void GetResolvedFileByPathAfterDownloadFile(
       scoped_ptr<GetResolvedFileParams> params,
       google_apis::GDataErrorCode status,
@@ -367,10 +372,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& md5,
       bool success,
       const DriveCacheEntry& cache_entry);
-  void GetResolvedFileByPathAfterFreeDiskSpace(
+  void GetResolvedFileByPathAfterStore(
       scoped_ptr<GetResolvedFileParams> params,
       const base::FilePath& downloaded_file_path,
-      bool has_enough_space);
+      DriveFileError error);
+  void GetResolvedFileByPathAfterGetFile(
+      scoped_ptr<GetResolvedFileParams> params,
+      DriveFileError error,
+      const base::FilePath& cache_file);
 
   // Loads the file system from the cache or the server via change lists if
   // the file system is not yet loaded. Runs |callback| upon the completion

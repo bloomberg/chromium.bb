@@ -181,9 +181,9 @@ struct DriveFileSystem::GetResolvedFileParams {
     }
   }
 
-  void OnDownloadFileCompleted(const base::FilePath& downloaded_file_path) {
+  void OnStoreCompleted(const base::FilePath& local_file_path) {
     get_file_callback.Run(
-        DRIVE_FILE_OK, downloaded_file_path,
+        DRIVE_FILE_OK, local_file_path,
         entry_proto->file_specific_info().content_mime_type(), REGULAR_FILE);
   }
 
@@ -930,15 +930,13 @@ void DriveFileSystem::GetResolvedFileByPathAfterRefreshEntry(
   params->entry_proto = entry_proto.Pass();  // Update the entry in |params|.
   cache_->FreeDiskSpaceIfNeededFor(
       file_size,
-      base::Bind(
-          &DriveFileSystem
-              ::GetResolvedFileByPathAfterFreeDiskSpacePreliminarily,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&params),
-          download_url));
+      base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&params),
+                 download_url));
 }
 
-void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
+void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
     scoped_ptr<GetResolvedFileParams> params,
     const GURL& download_url,
     bool has_enough_space) {
@@ -951,16 +949,40 @@ void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpacePreliminarily(
     return;
   }
 
-  // We have enough disk space. Start downloading the file.
-  base::FilePath local_tmp_path = cache_->GetCacheFilePath(
-      params->entry_proto->resource_id(),
-      params->entry_proto->file_specific_info().file_md5(),
-      DriveCache::CACHE_TYPE_TMP,
-      DriveCache::CACHED_FILE_FROM_SERVER);
+  // We have enough disk space. Create download destination file.
+  const base::FilePath temp_download_directory =
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS);
+  base::FilePath* file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&file_util::CreateTemporaryFileInDir,
+                 temp_download_directory,
+                 file_path),
+      base::Bind(&DriveFileSystem::GetResolveFileByPathAfterCreateTemporaryFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&params),
+                 download_url,
+                 base::Owned(file_path)));
+}
+
+void DriveFileSystem::GetResolveFileByPathAfterCreateTemporaryFile(
+    scoped_ptr<GetResolvedFileParams> params,
+    const GURL& download_url,
+    base::FilePath* temp_file,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(params);
+
+  if (!success) {
+    params->OnError(DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
+
   GetResolvedFileParams* params_ptr = params.get();
   scheduler_->DownloadFile(
       params_ptr->drive_file_path,
-      local_tmp_path,
+      *temp_file,
       download_url,
       params_ptr->context,
       base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterDownloadFile,
@@ -995,20 +1017,15 @@ void DriveFileSystem::GetResolvedFileByPathAfterDownloadFile(
     return;
   }
 
-  // At this point, the disk can be full or nearly full for several reasons:
-  // - The expected file size was incorrect and the file was larger
-  // - There was an in-flight download operation and it used up space
-  // - The disk became full for some user actions we cannot control
-  //   (ex. the user might have downloaded a large file from a regular web site)
-  //
-  // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
-  // and try to free up space, even if the file was downloaded successfully.
-  cache_->FreeDiskSpaceIfNeededFor(
-      0,
-      base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
-                 downloaded_file_path));
+  DriveEntryProto* entry = params->entry_proto.get();
+  cache_->Store(entry->resource_id(),
+                entry->file_specific_info().file_md5(),
+                downloaded_file_path,
+                DriveCache::FILE_OPERATION_MOVE,
+                base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterStore,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(&params),
+                           downloaded_file_path));
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
@@ -1026,37 +1043,46 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
   }
 }
 
-void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
+void DriveFileSystem::GetResolvedFileByPathAfterStore(
     scoped_ptr<GetResolvedFileParams> params,
     const base::FilePath& downloaded_file_path,
-    bool has_enough_space) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(params);
 
-  // If we don't have enough space, remove the downloaded file, and
-  // report "no space" error.
-  if (!has_enough_space) {
+  if (error != DRIVE_FILE_OK) {
     blocking_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&file_util::Delete),
                    downloaded_file_path,
                    false /* recursive*/));
-    params->OnError(DRIVE_FILE_ERROR_NO_SPACE);
+    params->OnError(error);
     return;
   }
-
-  // Make sure that downloaded file is properly stored in cache. We don't have
-  // to wait for this operation to finish since the user can already use the
-  // downloaded file.
-  cache_->Store(params->entry_proto->resource_id(),
-                params->entry_proto->file_specific_info().file_md5(),
-                downloaded_file_path,
-                DriveCache::FILE_OPERATION_MOVE,
-                base::Bind(&util::EmptyFileOperationCallback));
   // Storing to cache changes the "offline available" status, hence notify.
   OnDirectoryChanged(params->drive_file_path.DirName());
 
-  params->OnDownloadFileCompleted(downloaded_file_path);
+  DriveEntryProto* entry = params->entry_proto.get();
+  cache_->GetFile(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterGetFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&params)));
+}
+
+void DriveFileSystem::GetResolvedFileByPathAfterGetFile(
+    scoped_ptr<GetResolvedFileParams> params,
+    DriveFileError error,
+    const base::FilePath& cache_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(params);
+
+  if (error != DRIVE_FILE_OK) {
+    params->OnError(error);
+    return;
+  }
+  params->OnStoreCompleted(cache_file);
 }
 
 void DriveFileSystem::RefreshDirectory(
