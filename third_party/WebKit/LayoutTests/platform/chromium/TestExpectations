@@ -254,10 +254,6 @@ webkit.org/b/98212 fast/dom/Geolocation/coordinates-interface-attributes.html [ 
 # These tests are for -apple- and -khtml- prefixes, which we don't support
 inspector/styles/vendor-prefixes.html [ WontFix ]
 
-# This test is specific to JSC; the V8 equivalent is
-# platform/chromium/fast/storage/serialized-script-value.html
-fast/storage/serialized-script-value.html [ WontFix ]
-
 # Perf tests are really slow in debug builds and there are few benefits in
 # running them.
 [ Debug ] perf [ WontFix ]
