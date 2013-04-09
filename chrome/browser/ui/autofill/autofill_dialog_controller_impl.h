@@ -283,6 +283,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // they have not already been calculated.
   void EnsureLegalDocumentsText();
 
+  // Resets the DetailInputs* and |section_editing_state_| for a section.
+  void ResetManualInputForSection(DialogSection section);
+
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
   // data or Wallet data, depending on whether Wallet is currently enabled.

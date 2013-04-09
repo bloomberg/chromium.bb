@@ -579,6 +579,13 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
     initial_user_state_ = GetInitialUserState();
 }
 
+void AutofillDialogControllerImpl::OnWalletSigninError() {
+  signin_helper_.reset();
+  current_username_.clear();
+  account_chooser_model_.SetHadWalletSigninError();
+  GetWalletClient()->CancelRequests();
+}
+
 void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
   if (!wallet_items_ || wallet_items_->legal_documents().empty())
     return;
@@ -618,6 +625,14 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
         link_start, link_start + documents[i]->display_name().size()));
   }
   legal_documents_text_ = text;
+}
+
+void AutofillDialogControllerImpl::ResetManualInputForSection(
+    DialogSection section) {
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  for (size_t i = 0; i < inputs->size(); ++i)
+    (*inputs)[i].initial_value.clear();
+  section_editing_state_[section] = false;
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -849,10 +864,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (size_t i = 0; i < inputs->size(); ++i)
-    (*inputs)[i].initial_value.clear();
-  section_editing_state_[section] = false;
+  ResetManualInputForSection(section);
   view_->UpdateSection(section);
 }
 
@@ -1488,17 +1500,24 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   if (!view_)
     return;
 
+  // Whenever the user changes the account, all manual inputs should be reset.
+  ResetManualInputForSection(SECTION_EMAIL);
+  ResetManualInputForSection(SECTION_CC);
+  ResetManualInputForSection(SECTION_BILLING);
+  ResetManualInputForSection(SECTION_CC_BILLING);
+  ResetManualInputForSection(SECTION_SHIPPING);
+
   // Whenever the user changes the current account, the Wallet data should be
   // cleared. If the user has chosen a Wallet account, an attempt to fetch
   // the Wallet data is made to see if the user is still signed in.
   // This will trigger a passive sign-in if required.
-  // TODO(aruslan): integrate an automatic sign-in.
   wallet_items_.reset();
   full_wallet_.reset();
   GetWalletClient()->CancelRequests();
 
   SetIsSubmitting(false);
 
+  // TODO(aruslan): integrate an automatic sign-in.
   if (account_chooser_model_.WalletIsSelected())
     StartFetchingWalletItems();
 
@@ -1595,13 +1614,6 @@ void AutofillDialogControllerImpl::DisableWallet() {
   wallet_items_.reset();
   full_wallet_.reset();
   SetIsSubmitting(false);
-}
-
-void AutofillDialogControllerImpl::OnWalletSigninError() {
-  signin_helper_.reset();
-  current_username_.clear();
-  account_chooser_model_.SetHadWalletSigninError();
-  GetWalletClient()->CancelRequests();
 }
 
 bool AutofillDialogControllerImpl::IsFirstRun() const {
