@@ -33,7 +33,7 @@ class AddressMapping(object):
 
 class RangeAddressMapping(AddressMapping):
   def __init__(self):
-    AddressMapping.__init__(self)
+    super(RangeAddressMapping, self).__init__()
     self._sorted_start_list = []
     self._is_sorted = True
 
@@ -47,6 +47,8 @@ class RangeAddressMapping(AddressMapping):
     self._symbol_map[start] = entry
 
   def find(self, address):
+    if not self._sorted_start_list:
+      return None
     if not self._is_sorted:
       self._sorted_start_list.sort()
       self._is_sorted = True
@@ -119,6 +121,7 @@ class StaticSymbolsInFile(object):
     self.my_name = my_name
     self._elf_sections = []
     self._procedures = RangeAddressMapping()
+    self._sourcefiles = RangeAddressMapping()
     self._typeinfos = AddressMapping()
 
   def _append_elf_section(self, elf_section):
@@ -126,6 +129,9 @@ class StaticSymbolsInFile(object):
 
   def _append_procedure(self, start, procedure):
     self._procedures.append(start, procedure)
+
+  def _append_sourcefile(self, start, sourcefile):
+    self._sourcefiles.append(start, sourcefile)
 
   def _append_typeinfo(self, start, typeinfo):
     self._typeinfos.append(start, typeinfo)
@@ -149,6 +155,9 @@ class StaticSymbolsInFile(object):
 
   def find_procedure_by_runtime_address(self, address, vma):
     return self._find_symbol_by_runtime_address(address, vma, self._procedures)
+
+  def find_sourcefile_by_runtime_address(self, address, vma):
+    return self._find_symbol_by_runtime_address(address, vma, self._sourcefiles)
 
   def find_typeinfo_by_runtime_address(self, address, vma):
     return self._find_symbol_by_runtime_address(address, vma, self._typeinfos)
@@ -182,6 +191,11 @@ class StaticSymbolsInFile(object):
       else:
         if line in ('Key to Flags:', 'Program Headers:'):
           break
+
+  def load_readelf_debug_decodedline_file(self, input_file):
+    for line in input_file:
+      splitted = line.rstrip().split(None, 2)
+      self._append_sourcefile(int(splitted[0], 16), splitted[1])
 
   @staticmethod
   def _parse_nm_bsd_line(line):

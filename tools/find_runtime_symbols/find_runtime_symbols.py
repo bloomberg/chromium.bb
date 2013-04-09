@@ -2,6 +2,11 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Find symbols in a binary corresponding to given runtime virtual addresses.
+
+Note that source file names are treated as symbols in this script while they
+are actually not.
+"""
 
 import json
 import logging
@@ -11,37 +16,21 @@ import sys
 from static_symbols import StaticSymbolsInFile
 from proc_maps import ProcMaps
 
+try:
+  from collections import OrderedDict  # pylint: disable=E0611
+except ImportError:
+  BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+  SIMPLEJSON_PATH = os.path.join(BASE_PATH, os.pardir, os.pardir, 'third_party')
+  sys.path.insert(0, SIMPLEJSON_PATH)
+  from simplejson import OrderedDict
+
+
+FUNCTION_SYMBOLS = 0
+SOURCEFILE_SYMBOLS = 1
+TYPEINFO_SYMBOLS = 2
 
 _MAPS_FILENAME = 'maps'
 _FILES_FILENAME = 'files.json'
-
-
-class _ListOutput(object):
-  def __init__(self, result):
-    self.result = result
-
-  def output(self, address, symbol):  # pylint: disable=W0613
-    self.result.append(symbol)
-
-
-class _DictOutput(object):
-  def __init__(self, result):
-    self.result = result
-
-  def output(self, address, symbol):
-    self.result[address] = symbol
-
-
-class _FileOutput(object):
-  def __init__(self, result, with_address):
-    self.result = result
-    self.with_address = with_address
-
-  def output(self, address, symbol):
-    if self.with_address:
-      self.result.write('%016x %s\n' % (address, symbol))
-    else:
-      self.result.write('%s\n' % symbol)
 
 
 class RuntimeSymbolsInProcess(object):
@@ -55,6 +44,17 @@ class RuntimeSymbolsInProcess(object):
         static_symbols = self._static_symbols_in_filse.get(vma.name)
         if static_symbols:
           return static_symbols.find_procedure_by_runtime_address(
+              runtime_address, vma)
+        else:
+          return None
+    return None
+
+  def find_sourcefile(self, runtime_address):
+    for vma in self._maps.iter(ProcMaps.executable):
+      if vma.begin <= runtime_address < vma.end:
+        static_symbols = self._static_symbols_in_filse.get(vma.name)
+        if static_symbols:
+          return static_symbols.find_sourcefile_by_runtime_address(
               runtime_address, vma)
         else:
           return None
@@ -99,73 +99,71 @@ class RuntimeSymbolsInProcess(object):
                   'r') as f:
           static_symbols.load_readelf_ew(f)
 
+      decodedline_file_entry = file_entry.get('readelf-debug-decodedline-file')
+      if decodedline_file_entry:
+        with open(os.path.join(prepared_data_dir,
+                               decodedline_file_entry['file']), 'r') as f:
+          static_symbols.load_readelf_debug_decodedline_file(f)
+
       symbols_in_process._static_symbols_in_filse[vma.name] = static_symbols
 
     return symbols_in_process
 
 
-def _find_runtime_symbols(symbols_in_process, addresses, outputter):
+def _find_runtime_function_symbols(symbols_in_process, addresses):
+  result = OrderedDict()
   for address in addresses:
     if isinstance(address, basestring):
       address = int(address, 16)
     found = symbols_in_process.find_procedure(address)
     if found:
-      outputter.output(address, found.name)
+      result[address] = found.name
     else:
-      outputter.output(address, '0x%016x' % address)
+      result[address] = '0x%016x' % address
+  return result
 
 
-def _find_runtime_typeinfo_symbols(symbols_in_process, addresses, outputter):
+def _find_runtime_sourcefile_symbols(symbols_in_process, addresses):
+  result = OrderedDict()
+  for address in addresses:
+    if isinstance(address, basestring):
+      address = int(address, 16)
+    found = symbols_in_process.find_sourcefile(address)
+    if found:
+      result[address] = found
+    else:
+      result[address] = ''
+  return result
+
+
+def _find_runtime_typeinfo_symbols(symbols_in_process, addresses):
+  result = OrderedDict()
   for address in addresses:
     if isinstance(address, basestring):
       address = int(address, 16)
     if address == 0:
-      outputter.output(address, 'no typeinfo')
+      result[address] = 'no typeinfo'
     else:
       found = symbols_in_process.find_typeinfo(address)
       if found:
         if found.startswith('typeinfo for '):
-          outputter.output(address, found[13:])
+          result[address] = found[13:]
         else:
-          outputter.output(address, found)
+          result[address] = found
       else:
-        outputter.output(address, '0x%016x' % address)
-
-
-def find_runtime_typeinfo_symbols_list(symbols_in_process, addresses):
-  result = []
-  _find_runtime_typeinfo_symbols(
-      symbols_in_process, addresses, _ListOutput(result))
+        result[address] = '0x%016x' % address
   return result
 
 
-def find_runtime_typeinfo_symbols_dict(symbols_in_process, addresses):
-  result = {}
-  _find_runtime_typeinfo_symbols(
-      symbols_in_process, addresses, _DictOutput(result))
-  return result
+_INTERNAL_FINDERS = {
+    FUNCTION_SYMBOLS: _find_runtime_function_symbols,
+    SOURCEFILE_SYMBOLS: _find_runtime_sourcefile_symbols,
+    TYPEINFO_SYMBOLS: _find_runtime_typeinfo_symbols,
+    }
 
 
-def find_runtime_typeinfo_symbols_file(symbols_in_process, addresses, f):
-  _find_runtime_typeinfo_symbols(
-      symbols_in_process, addresses, _FileOutput(f, False))
-
-
-def find_runtime_symbols_list(symbols_in_process, addresses):
-  result = []
-  _find_runtime_symbols(symbols_in_process, addresses, _ListOutput(result))
-  return result
-
-
-def find_runtime_symbols_dict(symbols_in_process, addresses):
-  result = {}
-  _find_runtime_symbols(symbols_in_process, addresses, _DictOutput(result))
-  return result
-
-
-def find_runtime_symbols_file(symbols_in_process, addresses, f):
-  _find_runtime_symbols(
-      symbols_in_process, addresses, _FileOutput(f, False))
+def find_runtime_symbols(symbol_type, symbols_in_process, addresses):
+  return _INTERNAL_FINDERS[symbol_type](symbols_in_process, addresses)
 
 
 def main():
@@ -193,7 +191,16 @@ def main():
     return 1
 
   symbols_in_process = RuntimeSymbolsInProcess.load(prepared_data_dir)
-  return find_runtime_symbols_file(symbols_in_process, sys.stdin, sys.stdout)
+  symbols_dict = find_runtime_symbols(FUNCTION_SYMBOLS,
+                                      symbols_in_process,
+                                      sys.stdin)
+  for address, symbol in symbols_dict:
+    if symbol:
+      print '%016x %s' % (address, symbol)
+    else:
+      print '%016x' % address
+
+  return 0
 
 
 if __name__ == '__main__':

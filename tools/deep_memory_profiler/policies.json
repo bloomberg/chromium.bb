@@ -1,4 +1,8 @@
 {
+  "sourcefile": {
+    "file": "policy.sourcefile.json",
+    "format": "json"
+  },
   "l0": {
     "file": "policy.l0.json",
     "format": "json"

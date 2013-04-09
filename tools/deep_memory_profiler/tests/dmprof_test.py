@@ -13,8 +13,17 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+try:
+  from collections import OrderedDict  # pylint: disable=E0611
+except ImportError:
+  SIMPLEJSON_PATH = os.path.join(ROOT_DIR, os.pardir, os.pardir, 'third_party')
+  sys.path.insert(0, SIMPLEJSON_PATH)
+  from simplejson import OrderedDict
+
 import dmprof
-from dmprof import FUNCTION_ADDRESS, TYPEINFO_ADDRESS
+from find_runtime_symbols import FUNCTION_SYMBOLS
+from find_runtime_symbols import SOURCEFILE_SYMBOLS
+from find_runtime_symbols import TYPEINFO_SYMBOLS
 
 
 class SymbolMappingCacheTest(unittest.TestCase):
@@ -22,7 +31,7 @@ class SymbolMappingCacheTest(unittest.TestCase):
     def __init__(self, addresses):
       self._addresses = addresses
 
-    def iter_addresses(self, address_type):  # pylint: disable=W0613
+    def iter_addresses(self, symbol_type):  # pylint: disable=W0613
       for address in self._addresses:
         yield address
 
@@ -31,7 +40,10 @@ class SymbolMappingCacheTest(unittest.TestCase):
       self._mapping = mapping
 
     def find(self, address_list):
-      return [self._mapping[address] for address in address_list]
+      result = OrderedDict()
+      for address in address_list:
+        result[address] = self._mapping[address]
+      return result
 
   _TEST_FUNCTION_CACHE = textwrap.dedent("""\
       1 0x0000000000000001
@@ -70,35 +82,39 @@ class SymbolMappingCacheTest(unittest.TestCase):
 
     # No update from self._TEST_FUNCTION_CACHE
     symbol_mapping_cache.update(
-        FUNCTION_ADDRESS,
+        FUNCTION_SYMBOLS,
         self.MockBucketSet(self._TEST_FUNCTION_ADDRESS_LIST1),
         self.MockSymbolFinder(self._TEST_FUNCTION_DICT), cache_f)
     for address in self._TEST_FUNCTION_ADDRESS_LIST1:
       self.assertEqual(self._TEST_FUNCTION_DICT[address],
-                       symbol_mapping_cache.lookup(FUNCTION_ADDRESS, address))
+                       symbol_mapping_cache.lookup(FUNCTION_SYMBOLS, address))
     self.assertEqual(self._TEST_FUNCTION_CACHE, cache_f.getvalue())
 
     # Update to self._TEST_FUNCTION_ADDRESS_LIST2
     symbol_mapping_cache.update(
-        FUNCTION_ADDRESS,
+        FUNCTION_SYMBOLS,
         self.MockBucketSet(self._TEST_FUNCTION_ADDRESS_LIST2),
         self.MockSymbolFinder(self._TEST_FUNCTION_DICT), cache_f)
     for address in self._TEST_FUNCTION_ADDRESS_LIST2:
       self.assertEqual(self._TEST_FUNCTION_DICT[address],
-                       symbol_mapping_cache.lookup(FUNCTION_ADDRESS, address))
+                       symbol_mapping_cache.lookup(FUNCTION_SYMBOLS, address))
     self.assertEqual(self._EXPECTED_TEST_FUNCTION_CACHE, cache_f.getvalue())
 
 
 class PolicyTest(unittest.TestCase):
   class MockSymbolMappingCache(object):
     def __init__(self):
-      self._symbol_caches = {FUNCTION_ADDRESS: {}, TYPEINFO_ADDRESS: {}}
+      self._symbol_caches = {
+          FUNCTION_SYMBOLS: {},
+          SOURCEFILE_SYMBOLS: {},
+          TYPEINFO_SYMBOLS: {},
+          }
 
-    def add(self, address_type, address, symbol):
-      self._symbol_caches[address_type][address] = symbol
+    def add(self, symbol_type, address, symbol):
+      self._symbol_caches[symbol_type][address] = symbol
 
-    def lookup(self, address_type, address):
-      symbol = self._symbol_caches[address_type].get(address)
+    def lookup(self, symbol_type, address):
+      symbol = self._symbol_caches[symbol_type].get(address)
       return symbol if symbol else '0x%016x' % address
 
   _TEST_POLICY = textwrap.dedent("""\
@@ -157,8 +173,8 @@ class PolicyTest(unittest.TestCase):
     self.assertTrue(policy)
 
     symbol_mapping_cache = self.MockSymbolMappingCache()
-    symbol_mapping_cache.add(FUNCTION_ADDRESS, 0x1212, 'v8::create')
-    symbol_mapping_cache.add(FUNCTION_ADDRESS, 0x1381, 'WebKit::create')
+    symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1212, 'v8::create')
+    symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1381, 'WebKit::create')
 
     bucket1 = dmprof.Bucket([0x1212, 0x013], False, 0x29492, '_Z')
     bucket1.symbolize(symbol_mapping_cache)

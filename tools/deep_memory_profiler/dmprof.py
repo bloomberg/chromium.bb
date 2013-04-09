@@ -4,7 +4,7 @@
 
 """The deep heap profiler script for Chrome."""
 
-from datetime import datetime
+import datetime
 import json
 import logging
 import optparse
@@ -20,10 +20,12 @@ FIND_RUNTIME_SYMBOLS_PATH = os.path.join(
     BASE_PATH, os.pardir, 'find_runtime_symbols')
 sys.path.append(FIND_RUNTIME_SYMBOLS_PATH)
 
-from find_runtime_symbols import find_runtime_symbols_list
-from find_runtime_symbols import find_runtime_typeinfo_symbols_list
-from find_runtime_symbols import RuntimeSymbolsInProcess
-from prepare_symbol_info import prepare_symbol_info
+import find_runtime_symbols
+import prepare_symbol_info
+
+from find_runtime_symbols import FUNCTION_SYMBOLS
+from find_runtime_symbols import SOURCEFILE_SYMBOLS
+from find_runtime_symbols import TYPEINFO_SYMBOLS
 
 BUCKET_ID = 5
 VIRTUAL = 0
@@ -34,8 +36,6 @@ NULL_REGEX = re.compile('')
 
 LOGGER = logging.getLogger('dmprof')
 POLICIES_JSON_PATH = os.path.join(BASE_PATH, 'policies.json')
-FUNCTION_ADDRESS = 'function'
-TYPEINFO_ADDRESS = 'typeinfo'
 
 
 # Heap Profile Dump versions
@@ -155,8 +155,12 @@ class SymbolDataSources(object):
         True if succeeded.
     """
     LOGGER.info('Preparing symbol mapping...')
-    self._prepared_symbol_data_sources_path, used_tempdir = prepare_symbol_info(
-        self._prefix + '.maps', self._prefix + '.symmap', True)
+    self._prepared_symbol_data_sources_path, used_tempdir = (
+        prepare_symbol_info.prepare_symbol_info(
+            self._prefix + '.maps',
+            output_dir_path=self._prefix + '.symmap',
+            use_tempdir=True,
+            use_source_file_name=True))
     if self._prepared_symbol_data_sources_path:
       LOGGER.info('  Prepared symbol mapping.')
       if used_tempdir:
@@ -178,8 +182,9 @@ class SymbolDataSources(object):
       return None
     if not self._loaded_symbol_data_sources:
       LOGGER.info('Loading symbol mapping...')
-      self._loaded_symbol_data_sources = RuntimeSymbolsInProcess.load(
-          self._prepared_symbol_data_sources_path)
+      self._loaded_symbol_data_sources = (
+          find_runtime_symbols.RuntimeSymbolsInProcess.load(
+              self._prepared_symbol_data_sources_path))
     return self._loaded_symbol_data_sources
 
   def path(self):
@@ -195,17 +200,13 @@ class SymbolFinder(object):
   This class does only 'find()' symbols from a specified |address_list|.
   It is introduced to make a finder mockable.
   """
-  _FIND_RUNTIME_SYMBOLS_FUNCTIONS = {
-      FUNCTION_ADDRESS: find_runtime_symbols_list,
-      TYPEINFO_ADDRESS: find_runtime_typeinfo_symbols_list,
-      }
-
-  def __init__(self, address_type, symbol_data_sources):
-    self._finder_function = self._FIND_RUNTIME_SYMBOLS_FUNCTIONS[address_type]
+  def __init__(self, symbol_type, symbol_data_sources):
+    self._symbol_type = symbol_type
     self._symbol_data_sources = symbol_data_sources
 
   def find(self, address_list):
-    return self._finder_function(self._symbol_data_sources.get(), address_list)
+    return find_runtime_symbols.find_runtime_symbols(
+        self._symbol_type, self._symbol_data_sources.get(), address_list)
 
 
 class SymbolMappingCache(object):
@@ -216,11 +217,12 @@ class SymbolMappingCache(object):
   """
   def __init__(self):
     self._symbol_mapping_caches = {
-        FUNCTION_ADDRESS: {},
-        TYPEINFO_ADDRESS: {},
+        FUNCTION_SYMBOLS: {},
+        SOURCEFILE_SYMBOLS: {},
+        TYPEINFO_SYMBOLS: {},
         }
 
-  def update(self, address_type, bucket_set, symbol_finder, cache_f):
+  def update(self, symbol_type, bucket_set, symbol_finder, cache_f):
     """Updates symbol mapping cache on memory and in a symbol cache file.
 
     It reads cached symbol mapping from a symbol cache file |cache_f| if it
@@ -234,18 +236,18 @@ class SymbolMappingCache(object):
       ...
 
     Args:
-        address_type: A type of addresses to update.
-            It should be one of FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
+        symbol_type: A type of symbols to update.  It should be one of
+            FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS and TYPEINFO_SYMBOLS.
         bucket_set: A BucketSet object.
         symbol_finder: A SymbolFinder object to find symbols.
         cache_f: A readable and writable IO object of the symbol cache file.
     """
     cache_f.seek(0, os.SEEK_SET)
-    self._load(cache_f, address_type)
+    self._load(cache_f, symbol_type)
 
     unresolved_addresses = sorted(
-        address for address in bucket_set.iter_addresses(address_type)
-        if address not in self._symbol_mapping_caches[address_type])
+        address for address in bucket_set.iter_addresses(symbol_type)
+        if address not in self._symbol_mapping_caches[symbol_type])
 
     if not unresolved_addresses:
       LOGGER.info('No need to resolve any more addresses.')
@@ -253,36 +255,36 @@ class SymbolMappingCache(object):
 
     cache_f.seek(0, os.SEEK_END)
     LOGGER.info('Loading %d unresolved addresses.' %
-                   len(unresolved_addresses))
-    symbol_list = symbol_finder.find(unresolved_addresses)
+                len(unresolved_addresses))
+    symbol_dict = symbol_finder.find(unresolved_addresses)
 
-    for address, symbol in zip(unresolved_addresses, symbol_list):
-      stripped_symbol = symbol.strip() or '??'
-      self._symbol_mapping_caches[address_type][address] = stripped_symbol
+    for address, symbol in symbol_dict.iteritems():
+      stripped_symbol = symbol.strip() or '?'
+      self._symbol_mapping_caches[symbol_type][address] = stripped_symbol
       cache_f.write('%x %s\n' % (address, stripped_symbol))
 
-  def lookup(self, address_type, address):
+  def lookup(self, symbol_type, address):
     """Looks up a symbol for a given |address|.
 
     Args:
-        address_type: A type of addresses to lookup.
-            It should be one of FUNCTION_ADDRESS or TYPEINFO_ADDRESS.
+        symbol_type: A type of symbols to update.  It should be one of
+            FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS and TYPEINFO_SYMBOLS.
         address: An integer that represents an address.
 
     Returns:
         A string that represents a symbol.
     """
-    return self._symbol_mapping_caches[address_type].get(address)
+    return self._symbol_mapping_caches[symbol_type].get(address)
 
-  def _load(self, cache_f, address_type):
+  def _load(self, cache_f, symbol_type):
     try:
       for line in cache_f:
         items = line.rstrip().split(None, 1)
         if len(items) == 1:
           items.append('??')
-        self._symbol_mapping_caches[address_type][int(items[0], 16)] = items[1]
+        self._symbol_mapping_caches[symbol_type][int(items[0], 16)] = items[1]
       LOGGER.info('Loaded %d entries from symbol cache.' %
-                     len(self._symbol_mapping_caches[address_type]))
+                     len(self._symbol_mapping_caches[symbol_type]))
     except IOError as e:
       LOGGER.info('The symbol cache file is invalid: %s' % e)
 
@@ -290,14 +292,28 @@ class SymbolMappingCache(object):
 class Rule(object):
   """Represents one matching rule in a policy file."""
 
-  def __init__(self, name, mmap, stacktrace_pattern, typeinfo_pattern=None):
+  def __init__(self,
+               name,
+               mmap,
+               stackfunction_pattern=None,
+               stacksourcefile_pattern=None,
+               typeinfo_pattern=None):
     self._name = name
     self._mmap = mmap
-    self._stacktrace_pattern = re.compile(stacktrace_pattern + r'\Z')
+
+    self._stackfunction_pattern = None
+    if stackfunction_pattern:
+      self._stackfunction_pattern = re.compile(
+          stackfunction_pattern + r'\Z')
+
+    self._stacksourcefile_pattern = None
+    if stacksourcefile_pattern:
+      self._stacksourcefile_pattern = re.compile(
+          stacksourcefile_pattern + r'\Z')
+
+    self._typeinfo_pattern = None
     if typeinfo_pattern:
       self._typeinfo_pattern = re.compile(typeinfo_pattern + r'\Z')
-    else:
-      self._typeinfo_pattern = None
 
   @property
   def name(self):
@@ -308,8 +324,12 @@ class Rule(object):
     return self._mmap
 
   @property
-  def stacktrace_pattern(self):
-    return self._stacktrace_pattern
+  def stackfunction_pattern(self):
+    return self._stackfunction_pattern
+
+  @property
+  def stacksourcefile_pattern(self):
+    return self._stacksourcefile_pattern
 
   @property
   def typeinfo_pattern(self):
@@ -350,14 +370,18 @@ class Policy(object):
     if bucket.component_cache:
       return bucket.component_cache
 
-    stacktrace = bucket.symbolized_joined_stacktrace
+    stackfunction = bucket.symbolized_joined_stackfunction
+    stacksourcefile = bucket.symbolized_joined_stacksourcefile
     typeinfo = bucket.symbolized_typeinfo
     if typeinfo.startswith('0x'):
       typeinfo = bucket.typeinfo_name
 
     for rule in self._rules:
       if (bucket.mmap == rule.mmap and
-          rule.stacktrace_pattern.match(stacktrace) and
+          (not rule.stackfunction_pattern or
+           rule.stackfunction_pattern.match(stackfunction)) and
+          (not rule.stacksourcefile_pattern or
+           rule.stacksourcefile_pattern.match(stacksourcefile)) and
           (not rule.typeinfo_pattern or rule.typeinfo_pattern.match(typeinfo))):
         bucket.component_cache = rule.name
         return rule.name
@@ -414,11 +438,15 @@ class Policy(object):
 
     rules = []
     for rule in policy['rules']:
+      stackfunction = rule.get('stackfunction') or rule.get('stacktrace')
+      stacksourcefile = rule.get('stacksourcefile')
       rules.append(Rule(
           rule['name'],
           rule['allocator'] == 'mmap',
-          rule['stacktrace'],
+          stackfunction,
+          stacksourcefile,
           rule['typeinfo'] if 'typeinfo' in rule else None))
+
     return Policy(rules, policy['version'], policy['components'])
 
 
@@ -493,8 +521,10 @@ class Bucket(object):
     self._typeinfo = typeinfo
     self._typeinfo_name = typeinfo_name
 
-    self._symbolized_stacktrace = stacktrace
-    self._symbolized_joined_stacktrace = ''
+    self._symbolized_stackfunction = stacktrace
+    self._symbolized_joined_stackfunction = ''
+    self._symbolized_stacksourcefile = stacktrace
+    self._symbolized_joined_stacksourcefile = ''
     self._symbolized_typeinfo = typeinfo_name
 
     self.component_cache = ''
@@ -506,15 +536,21 @@ class Bucket(object):
         symbol_mapping_cache: A SymbolMappingCache object.
     """
     # TODO(dmikurube): Fill explicitly with numbers if symbol not found.
-    self._symbolized_stacktrace = [
-        symbol_mapping_cache.lookup(FUNCTION_ADDRESS, address)
+    self._symbolized_stackfunction = [
+        symbol_mapping_cache.lookup(FUNCTION_SYMBOLS, address)
         for address in self._stacktrace]
-    self._symbolized_joined_stacktrace = ' '.join(self._symbolized_stacktrace)
+    self._symbolized_joined_stackfunction = ' '.join(
+        self._symbolized_stackfunction)
+    self._symbolized_stacksourcefile = [
+        symbol_mapping_cache.lookup(SOURCEFILE_SYMBOLS, address)
+        for address in self._stacktrace]
+    self._symbolized_joined_stacksourcefile = ' '.join(
+        self._symbolized_stacksourcefile)
     if not self._typeinfo:
       self._symbolized_typeinfo = 'no typeinfo'
     else:
       self._symbolized_typeinfo = symbol_mapping_cache.lookup(
-          TYPEINFO_ADDRESS, self._typeinfo)
+          TYPEINFO_SYMBOLS, self._typeinfo)
       if not self._symbolized_typeinfo:
         self._symbolized_typeinfo = 'no typeinfo'
 
@@ -538,12 +574,20 @@ class Bucket(object):
     return self._typeinfo_name
 
   @property
-  def symbolized_stacktrace(self):
-    return self._symbolized_stacktrace
+  def symbolized_stackfunction(self):
+    return self._symbolized_stackfunction
 
   @property
-  def symbolized_joined_stacktrace(self):
-    return self._symbolized_joined_stacktrace
+  def symbolized_joined_stackfunction(self):
+    return self._symbolized_joined_stackfunction
+
+  @property
+  def symbolized_stacksourcefile(self):
+    return self._symbolized_stacksourcefile
+
+  @property
+  def symbolized_joined_stacksourcefile(self):
+    return self._symbolized_joined_stacksourcefile
 
   @property
   def symbolized_typeinfo(self):
@@ -554,10 +598,8 @@ class BucketSet(object):
   """Represents a set of bucket."""
   def __init__(self):
     self._buckets = {}
-    self._addresses = {
-        FUNCTION_ADDRESS: set(),
-        TYPEINFO_ADDRESS: set(),
-        }
+    self._code_addresses = set()
+    self._typeinfo_addresses = set()
 
   def load(self, prefix):
     """Loads all related bucket files.
@@ -591,7 +633,7 @@ class BucketSet(object):
           continue
         if word[0] == 't':
           typeinfo = int(word[1:], 16)
-          self._addresses[TYPEINFO_ADDRESS].add(typeinfo)
+          self._typeinfo_addresses.add(typeinfo)
         elif word[0] == 'n':
           typeinfo_name = word[1:]
         else:
@@ -599,7 +641,7 @@ class BucketSet(object):
           break
       stacktrace = [int(address, 16) for address in words[stacktrace_begin:]]
       for frame in stacktrace:
-        self._addresses[FUNCTION_ADDRESS].add(frame)
+        self._code_addresses.add(frame)
       self._buckets[int(words[0])] = Bucket(
           stacktrace, words[1] == 'mmap', typeinfo, typeinfo_name)
 
@@ -621,9 +663,13 @@ class BucketSet(object):
     for bucket_content in self._buckets.itervalues():
       bucket_content.clear_component_cache()
 
-  def iter_addresses(self, address_type):
-    for function in self._addresses[address_type]:
-      yield function
+  def iter_addresses(self, symbol_type):
+    if symbol_type in [FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS]:
+      for function in self._code_addresses:
+        yield function
+    else:
+      for function in self._typeinfo_addresses:
+        yield function
 
 
 class Dump(object):
@@ -840,14 +886,18 @@ class Command(object):
     else:
       dump = Dump.load(dump_path)
     symbol_mapping_cache = SymbolMappingCache()
-    with open(prefix + '.funcsym', 'a+') as cache_f:
+    with open(prefix + '.cache.function', 'a+') as cache_f:
       symbol_mapping_cache.update(
-          FUNCTION_ADDRESS, bucket_set,
-          SymbolFinder(FUNCTION_ADDRESS, symbol_data_sources), cache_f)
-    with open(prefix + '.typesym', 'a+') as cache_f:
+          FUNCTION_SYMBOLS, bucket_set,
+          SymbolFinder(FUNCTION_SYMBOLS, symbol_data_sources), cache_f)
+    with open(prefix + '.cache.typeinfo', 'a+') as cache_f:
       symbol_mapping_cache.update(
-          TYPEINFO_ADDRESS, bucket_set,
-          SymbolFinder(TYPEINFO_ADDRESS, symbol_data_sources), cache_f)
+          TYPEINFO_SYMBOLS, bucket_set,
+          SymbolFinder(TYPEINFO_SYMBOLS, symbol_data_sources), cache_f)
+    with open(prefix + '.cache.sourcefile', 'a+') as cache_f:
+      symbol_mapping_cache.update(
+          SOURCEFILE_SYMBOLS, bucket_set,
+          SymbolFinder(SOURCEFILE_SYMBOLS, symbol_data_sources), cache_f)
     bucket_set.symbolize(symbol_mapping_cache)
     if multiple:
       return (bucket_set, dump_list)
@@ -936,7 +986,7 @@ class StacktraceCommand(Command):
         continue
       for i in range(0, BUCKET_ID - 1):
         out.write(words[i] + ' ')
-      for frame in bucket.symbolized_stacktrace:
+      for frame in bucket.symbolized_stackfunction:
         out.write(frame + ' ')
       out.write('\n')
 
@@ -1121,7 +1171,7 @@ class JSONCommand(PolicyCommands):
         component_sizes = PolicyCommands._apply_policy(
             dump, policy_set[label], bucket_set, dumps[0].time)
         component_sizes['dump_path'] = dump.path
-        component_sizes['dump_time'] = datetime.fromtimestamp(
+        component_sizes['dump_time'] = datetime.datetime.fromtimestamp(
             dump.time).strftime('%Y-%m-%d %H:%M:%S')
         json_base['policies'][label]['snapshots'].append(component_sizes)
 
@@ -1197,6 +1247,7 @@ class ExpandCommand(Command):
     sorted_sizes_list = sorted(
         sizes.iteritems(), key=(lambda x: x[1]), reverse=True)
     total = 0
+    # TODO(dmikurube): Better formatting.
     for size_pair in sorted_sizes_list:
       out.write('%10d %s\n' % (size_pair[1], size_pair[0]))
       total += size_pair[1]
@@ -1213,9 +1264,12 @@ class ExpandCommand(Command):
         if bucket.typeinfo:
           stacktrace_sequence += '(type=%s)' % bucket.symbolized_typeinfo
           stacktrace_sequence += ' (type.name=%s) ' % bucket.typeinfo_name
-        for stack in bucket.symbolized_stacktrace[
-            0 : min(len(bucket.symbolized_stacktrace), 1 + depth)]:
-          stacktrace_sequence += stack + ' '
+        for function, sourcefile in zip(
+            bucket.symbolized_stackfunction[
+                0 : min(len(bucket.symbolized_stackfunction), 1 + depth)],
+            bucket.symbolized_stacksourcefile[
+                0 : min(len(bucket.symbolized_stacksourcefile), 1 + depth)]):
+          stacktrace_sequence += '%s(@%s) ' % (function, sourcefile)
         if not stacktrace_sequence in sizes:
           sizes[stacktrace_sequence] = 0
         sizes[stacktrace_sequence] += int(words[COMMITTED])
