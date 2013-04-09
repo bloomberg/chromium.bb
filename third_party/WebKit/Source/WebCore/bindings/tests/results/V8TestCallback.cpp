@@ -227,3 +227,4 @@ bool V8TestCallback::callbackRequiresThisToPass(Class8* class8Param, ThisClass* 
 }
 
 } // namespace WebCore
+
