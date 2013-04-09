@@ -110,8 +110,8 @@ public:
     }
 
     // DOMDataStore is owned outside V8PerIsolateData.
-    DOMDataStore* domDataStore() { return m_domDataStore; }
-    void setDOMDataStore(DOMDataStore* store) { m_domDataStore = store; }
+    DOMDataStore* workerDOMDataStore() { return m_workerDomDataStore; }
+    void setWorkerDOMDataStore(DOMDataStore* store) { m_workerDomDataStore = store; }
 
     int recursionLevel() const { return m_recursionLevel; }
     int incrementRecursionLevel() { return ++m_recursionLevel; }
@@ -159,7 +159,7 @@ private:
     ScopedPersistent<v8::Value> m_v8Null;
 
     Vector<DOMDataStore*> m_domDataList;
-    DOMDataStore* m_domDataStore;
+    DOMDataStore* m_workerDomDataStore;
 
     OwnPtr<V8HiddenPropertyName> m_hiddenPropertyName;
     ScopedPersistent<v8::Value> m_liveRoot;

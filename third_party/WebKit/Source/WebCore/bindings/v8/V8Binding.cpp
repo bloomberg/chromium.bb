@@ -402,8 +402,7 @@ void crashIfV8IsDead()
 WrapperWorldType worldType(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    // FIXME: Rename domDataStore() to workerDataStore().
-    if (!data->domDataStore())
+    if (!data->workerDOMDataStore())
         return worldTypeInMainThread(isolate);
     return WorkerWorld;
 }

@@ -63,7 +63,7 @@ WorkerScriptController::WorkerScriptController(WorkerContext* workerContext)
     m_isolate->Enter();
     V8PerIsolateData* data = V8PerIsolateData::create(m_isolate);
     m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
-    data->setDOMDataStore(m_domDataStore.get());
+    data->setWorkerDOMDataStore(m_domDataStore.get());
 
     V8Initializer::initializeWorker(m_isolate);
 }

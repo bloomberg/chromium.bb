@@ -62,8 +62,8 @@ DOMDataStore* DOMDataStore::mainWorldStore()
 DOMDataStore* DOMDataStore::current(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = isolate ? V8PerIsolateData::from(isolate) : V8PerIsolateData::current();
-    if (UNLIKELY(!!data->domDataStore()))
-        return data->domDataStore();
+    if (UNLIKELY(!!data->workerDOMDataStore()))
+        return data->workerDOMDataStore();
 
     if (DOMWrapperWorld::isolatedWorldsExist()) {
         DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(v8::Context::GetEntered());
