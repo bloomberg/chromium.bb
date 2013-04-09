@@ -50,6 +50,11 @@ elif util.IsLinux():
       'ChromeDriverTest.testWindowPosition',
       'ChromeDriverTest.testWindowSize',
   ]
+elif util.IsMac():
+  _DESKTOP_OS_SPECIFIC_FILTER = [
+      # https://code.google.com/p/chromedriver/issues/detail?id=304
+      'ChromeDriverTest.testGoBackAndGoForward',
+  ]
 
 
 _DESKTOP_NEGATIVE_FILTER = {}
