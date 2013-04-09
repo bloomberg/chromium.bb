@@ -72,6 +72,8 @@ class GetApplistOperation : public GetDataOperation {
 //============================ GetChangelistOperation ==========================
 
 // This class performs the operation for fetching changelist.
+// The result may contain only first part of the result. The remaining result
+// should be able to be fetched by ContinueGetFileListOperation defined below.
 class GetChangelistOperation : public GetDataOperation {
  public:
   // |start_changestamp| specifies the starting point of change list or 0 if
@@ -100,9 +102,11 @@ class GetChangelistOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
 };
 
-//============================= GetFlielistOperation ===========================
+//============================= GetFilelistOperation ===========================
 
 // This class performs the operation for fetching Filelist.
+// The result may contain only first part of the result. The remaining result
+// should be able to be fetched by ContinueGetFileListOperation defined below.
 class GetFilelistOperation : public GetDataOperation {
  public:
   GetFilelistOperation(
@@ -153,8 +157,30 @@ class GetFileOperation : public GetDataOperation {
 // the operations for Drive API v2 and GData WAPI for transition.
 // And, when the migration is done and GData WAPI's code is cleaned up,
 // classes inside this namespace should be moved to the google_apis namespace.
-// TODO(hidehiko): Get rid of this namespace after the migration.
+// TODO(hidehiko): Move all the operations defined in this file into drive
+// namespace.  crbug.com/180808
 namespace drive {
+
+//======================= ContinueGetFileListOperation =========================
+
+// This class performs the operation to fetch remaining Filelist result.
+class ContinueGetFileListOperation : public GetDataOperation {
+ public:
+  ContinueGetFileListOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GURL& url,
+      const GetDataCallback& callback);
+  virtual ~ContinueGetFileListOperation();
+
+ protected:
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListOperation);
+};
 
 //========================== CreateDirectoryOperation ==========================
 

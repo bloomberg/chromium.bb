@@ -357,6 +357,32 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
   EXPECT_FALSE(about_resource.get());
 }
 
+TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/drive/filelist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result;
+
+  drive::ContinueGetFileListOperation* operation =
+      new drive::ContinueGetFileListOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          test_server_.GetURL("/continue/get/file/list"),
+          CreateComposedCallback(
+              base::Bind(&test_util::RunAndQuit),
+              test_util::CreateCopyResultCallback(&error, &result)));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
 TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   // Set an expected data file containing the directory's entry data.
   expected_data_file_path_ =

@@ -132,7 +132,7 @@ GURL GetChangelistOperation::GetURL() const {
   return url_generator_.GetChangelistUrl(url_, start_changestamp_);
 }
 
-//============================= GetFlielistOperation ===========================
+//============================= GetFilelistOperation ===========================
 
 GetFilelistOperation::GetFilelistOperation(
     OperationRegistry* registry,
@@ -176,6 +176,24 @@ GURL GetFileOperation::GetURL() const {
 }
 
 namespace drive {
+
+//======================= ContinueGetFileListOperation =========================
+
+ContinueGetFileListOperation::ContinueGetFileListOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const GURL& url,
+    const GetDataCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter, callback),
+      url_(url) {
+  DCHECK(!callback.is_null());
+}
+
+ContinueGetFileListOperation::~ContinueGetFileListOperation() {}
+
+GURL ContinueGetFileListOperation::GetURL() const {
+  return url_;
+}
 
 //========================== CreateDirectoryOperation ==========================
 
