@@ -88,6 +88,12 @@ class BookmarkContextMenuDelegateBridge :
   if (!bookmarkModel || !bookmarkModel->IsLoaded())
     return nil;
 
+  // This may be called before the BMB view has been added to the window. In
+  // that case, simply return nil so that BookmarkContextMenuController doesn't
+  // get created with a nil window.
+  if (![bookmarkBarController_ browserWindow])
+    return nil;
+
   if (!node)
     node = bookmarkModel->bookmark_bar_node();
 
