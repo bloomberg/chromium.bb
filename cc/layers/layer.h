@@ -16,6 +16,7 @@
 #include "cc/base/region.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/render_surface.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "skia/ext/refptr.h"
@@ -124,12 +125,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::PointF position() const { return position_; }
 
   void SetIsContainerForFixedPositionLayers(bool container);
-  bool is_container_for_fixed_position_layers() const {
-    return is_container_for_fixed_position_layers_;
-  }
+  bool IsContainerForFixedPositionLayers() const;
 
-  void SetFixedToContainerLayer(bool fixed_to_container_layer);
-  bool fixed_to_container_layer() const { return fixed_to_container_layer_; }
+  void SetPositionConstraint(const LayerPositionConstraint& constraint);
+  const LayerPositionConstraint& position_constraint() const {
+    return position_constraint_;
+  }
 
   void SetSublayerTransform(const gfx::Transform& sublayer_transform);
   const gfx::Transform& sublayer_transform() const {
@@ -449,7 +450,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   WebKit::WebFilterOperations background_filters_;
   float anchor_point_z_;
   bool is_container_for_fixed_position_layers_;
-  bool fixed_to_container_layer_;
+  LayerPositionConstraint position_constraint_;
   bool is_drawable_;
   bool masks_to_bounds_;
   bool contents_opaque_;

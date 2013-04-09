@@ -18,6 +18,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
@@ -157,14 +158,24 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetIsContainerForFixedPositionLayers(bool container) {
     is_container_for_fixed_position_layers_ = container;
   }
-  bool is_container_for_fixed_position_layers() const {
+  // This is a non-trivial function in Layer.
+  bool IsContainerForFixedPositionLayers() const {
     return is_container_for_fixed_position_layers_;
   }
 
-  void SetFixedToContainerLayer(bool fixed) {
-    fixed_to_container_layer_ = fixed;
+  void SetFixedContainerSizeDelta(const gfx::Vector2dF& delta) {
+    fixed_container_size_delta_ = delta;
   }
-  bool fixed_to_container_layer() const { return fixed_to_container_layer_; }
+  const gfx::Vector2dF& fixed_container_size_delta() const {
+    return fixed_container_size_delta_;
+  }
+
+  void SetPositionConstraint(const LayerPositionConstraint& constraint) {
+    position_constraint_ = constraint;
+  }
+  const LayerPositionConstraint& position_constraint() const {
+    return position_constraint_;
+  }
 
   void SetPreserves3d(bool preserves_3d);
   bool preserves_3d() const { return preserves_3d_; }
@@ -475,9 +486,11 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Set for the layer that other layers are fixed to.
   bool is_container_for_fixed_position_layers_;
-  // This is true if the layer should be fixed to the closest ancestor
-  // container.
-  bool fixed_to_container_layer_;
+  // This property is effective when
+  // is_container_for_fixed_position_layers_ == true,
+  gfx::Vector2dF fixed_container_size_delta_;
+
+  LayerPositionConstraint position_constraint_;
 
   gfx::Vector2dF scroll_delta_;
   gfx::Vector2d sent_scroll_delta_;

@@ -110,6 +110,8 @@
       'layers/layer_iterator.h',
       'layers/layer_lists.h',
       'resources/layer_painter.h',
+      'layers/layer_position_constraint.cc',
+      'layers/layer_position_constraint.h',
       'resources/layer_quad.cc',
       'resources/layer_quad.h',
       'trees/layer_sorter.cc',

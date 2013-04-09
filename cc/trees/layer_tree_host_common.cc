@@ -342,6 +342,120 @@ static bool SubtreeShouldRenderToSeparateSurface(
   return false;
 }
 
+static LayerImpl* NextTargetSurface(LayerImpl* layer) {
+  return layer->parent() ? layer->parent()->render_target() : 0;
+}
+
+// This function returns a translation matrix that can be applied on a vector
+// that's in the layer's target surface coordinate, while the position offset is
+// specified in some ancestor layer's coordinate.
+gfx::Transform ComputeSizeDeltaCompensation(
+    LayerImpl* layer,
+    LayerImpl* container,
+    const gfx::Vector2dF& position_offset) {
+  gfx::Transform result_transform;
+
+  // To apply a translate in the container's layer space,
+  // the following steps need to be done:
+  //     Step 1a. transform from target surface space to the container's target
+  //              surface space
+  //     Step 1b. transform from container's target surface space to the
+  //              container's layer space
+  //     Step 2. apply the compensation
+  //     Step 3. transform back to target surface space
+
+  gfx::Transform target_surface_space_to_container_layer_space;
+  // Calculate step 1a
+  LayerImpl* container_target_surface =
+      container ? container->render_target() : 0;
+  for (LayerImpl* current_target_surface = NextTargetSurface(layer);
+      current_target_surface &&
+          current_target_surface != container_target_surface;
+      current_target_surface = NextTargetSurface(current_target_surface)) {
+    // Note: Concat is used here to convert the result coordinate space from
+    //       current render surface to the next render surface.
+    target_surface_space_to_container_layer_space.ConcatTransform(
+        current_target_surface->render_surface()->draw_transform());
+  }
+  // Calculate step 1b
+  if (container) {
+    gfx::Transform container_layer_space_to_container_target_surface_space =
+        container->draw_transform();
+    container_layer_space_to_container_target_surface_space.Scale(
+        container->contents_scale_x(), container->contents_scale_y());
+
+    gfx::Transform container_target_surface_space_to_container_layer_space;
+    if (container_layer_space_to_container_target_surface_space.GetInverse(
+        &container_target_surface_space_to_container_layer_space)) {
+      // Note: Again, Concat is used to conver the result coordinate space from
+      //       the container render surface to the container layer.
+      target_surface_space_to_container_layer_space.ConcatTransform(
+          container_target_surface_space_to_container_layer_space);
+    }
+  }
+
+  // Apply step 3
+  gfx::Transform container_layer_space_to_target_surface_space;
+  if (target_surface_space_to_container_layer_space.GetInverse(
+      &container_layer_space_to_target_surface_space))
+    result_transform.PreconcatTransform(
+        container_layer_space_to_target_surface_space);
+  else {
+    // FIXME: A non-invertible matrix could still make meaningful projection.
+    // For example ScaleZ(0) is non-invertible but the layer is still visible.
+    return gfx::Transform();
+  }
+
+  // Apply step 2
+  result_transform.Translate(position_offset.x(), position_offset.y());
+
+  // Apply step 1
+  result_transform.PreconcatTransform(
+      target_surface_space_to_container_layer_space);
+
+  return result_transform;
+}
+
+void ApplyPositionAdjustment(
+    Layer* layer,
+    Layer* container,
+    const gfx::Transform& scroll_compensation,
+    gfx::Transform* combined_transform) { }
+void ApplyPositionAdjustment(
+    LayerImpl* layer,
+    LayerImpl* container,
+    const gfx::Transform& scroll_compensation,
+    gfx::Transform* combined_transform)
+{
+  if (!layer->position_constraint().is_fixed_position())
+    return;
+
+  // Special case: this layer is a composited fixed-position layer; we need to
+  // explicitly compensate for all ancestors' nonzero scroll_deltas to keep
+  // this layer fixed correctly.
+  // Note carefully: this is Concat, not Preconcat
+  // (current_scroll_compensation * combined_transform).
+  combined_transform->ConcatTransform(scroll_compensation);
+
+  // For right-edge or bottom-edge anchored fixed position layers,
+  // the layer should relocate itself if the container changes its size.
+  bool fixed_to_right_edge =
+      layer->position_constraint().is_fixed_to_right_edge();
+  bool fixed_to_bottom_edge =
+      layer->position_constraint().is_fixed_to_bottom_edge();
+  gfx::Vector2dF position_offset =
+      container ? container->fixed_container_size_delta() : gfx::Vector2dF();
+  position_offset.set_x(fixed_to_right_edge ? position_offset.x() : 0);
+  position_offset.set_y(fixed_to_bottom_edge ? position_offset.y() : 0);
+  if (position_offset.IsZero())
+    return;
+
+  // Note: Again, this is Concat. The compensation matrix will be applied on
+  //       the vector in target surface space.
+  combined_transform->ConcatTransform(
+      ComputeSizeDeltaCompensation(layer, container, position_offset));
+}
+
 gfx::Transform ComputeScrollCompensationForThisLayer(
     LayerImpl* scrolling_layer,
     const gfx::Transform& parent_matrix) {
@@ -425,7 +539,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // Avoid the overheads (including stack allocation and matrix
   // initialization/copy) if we know that the scroll compensation doesn't need
   // to be reset or adjusted.
-  if (!layer->is_container_for_fixed_position_layers() &&
+  if (!layer->IsContainerForFixedPositionLayers() &&
       layer->scroll_delta().IsZero() && !layer->render_surface())
     return current_scroll_compensation_matrix;
 
@@ -434,7 +548,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 
   // If this layer is not a container, then it inherits the existing scroll
   // compensations.
-  if (!layer->is_container_for_fixed_position_layers())
+  if (!layer->IsContainerForFixedPositionLayers())
     next_scroll_compensation_matrix = current_scroll_compensation_matrix;
 
   // If the current layer has a non-zero scroll_delta, then we should compute
@@ -636,6 +750,7 @@ static void CalculateDrawPropertiesInternal(
     const gfx::Transform& parent_matrix,
     const gfx::Transform& full_hierarchy_matrix,
     const gfx::Transform& current_scroll_compensation_matrix,
+    LayerType* current_fixed_container,
     gfx::Rect clip_rect_from_ancestor,
     gfx::Rect clip_rect_from_ancestor_in_descendant_space,
     bool ancestor_clips_subtree,
@@ -859,14 +974,9 @@ static void CalculateDrawPropertiesInternal(
     RoundTranslationComponents(&combined_transform);
   }
 
-  if (layer->fixed_to_container_layer()) {
-    // Special case: this layer is a composited fixed-position layer; we need to
-    // explicitly compensate for all ancestors' nonzero scroll_deltas to keep
-    // this layer fixed correctly.
-    // Note carefully: this is Concat, not Preconcat
-    // (current_scroll_compensation * combined_transform).
-    combined_transform.ConcatTransform(current_scroll_compensation_matrix);
-  }
+  // Apply adjustment from position constraints.
+  ApplyPositionAdjustment(layer, current_fixed_container,
+      current_scroll_compensation_matrix, &combined_transform);
 
   // The draw_transform that gets computed below is effectively the layer's
   // draw_transform, unless the layer itself creates a render_surface. In that
@@ -1105,6 +1215,9 @@ static void CalculateDrawPropertiesInternal(
   gfx::Transform next_scroll_compensation_matrix =
       ComputeScrollCompensationMatrixForChildren(
           layer, parent_matrix, current_scroll_compensation_matrix);
+  LayerType* next_fixed_container =
+      layer->IsContainerForFixedPositionLayers() ?
+          layer : current_fixed_container;
 
   gfx::Rect accumulated_drawable_content_rect_of_children;
   for (size_t i = 0; i < layer->children().size(); ++i) {
@@ -1116,6 +1229,7 @@ static void CalculateDrawPropertiesInternal(
         sublayer_matrix,
         next_hierarchy_matrix,
         next_scroll_compensation_matrix,
+        next_fixed_container,
         clip_rect_for_subtree,
         clip_rect_for_subtree_in_descendant_space,
         subtree_should_be_clipped,
@@ -1323,6 +1437,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
                                                  device_scale_transform,
                                                  identity_matrix,
                                                  identity_matrix,
+                                                 NULL,
                                                  device_viewport_rect,
                                                  device_viewport_rect,
                                                  subtree_should_be_clipped,
@@ -1376,6 +1491,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       device_scale_transform,
       identity_matrix,
       identity_matrix,
+      NULL,
       device_viewport_rect,
       device_viewport_rect,
       subtree_should_be_clipped,

@@ -50,7 +50,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       draws_content_(false),
       force_render_surface_(false),
       is_container_for_fixed_position_layers_(false),
-      fixed_to_container_layer_(false),
       draw_depth_(0.f),
 #ifndef NDEBUG
       between_will_draw_and_did_draw_(false),
@@ -341,7 +340,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       is_container_for_fixed_position_layers_);
-  layer->SetFixedToContainerLayer(fixed_to_container_layer_);
+  layer->SetFixedContainerSizeDelta(fixed_container_size_delta_);
+  layer->SetPositionConstraint(position_constraint_);
   layer->SetPreserves3d(preserves_3d());
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);

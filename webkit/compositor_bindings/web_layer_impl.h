@@ -110,8 +110,9 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual WebKit::WebVector<WebKit::WebRect> touchEventHandlerRegion() const;
   virtual void setIsContainerForFixedPositionLayers(bool is_container);
   virtual bool isContainerForFixedPositionLayers() const;
-  virtual void setFixedToContainerLayer(bool is_fixed);
-  virtual bool fixedToContainerLayer() const;
+  virtual void setPositionConstraint(
+      const WebKit::WebLayerPositionConstraint& constraint);
+  virtual WebKit::WebLayerPositionConstraint positionConstraint() const;
   virtual void setScrollClient(WebKit::WebLayerScrollClient* client);
   virtual bool isOrphan() const;
 

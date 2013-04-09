@@ -259,6 +259,9 @@ struct UpdateTilePrioritiesForLayer {
 };
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
+  if (IsActiveTree() && RootScrollLayer() && RootClipLayer())
+    UpdateRootScrollLayerSizeDelta();
+
   if (settings().solid_color_scrollbars &&
       IsActiveTree() &&
       RootScrollLayer()) {
@@ -664,6 +667,25 @@ void LayerTreeImpl::FadeOutPinchZoomScrollbars() {
 bool LayerTreeImpl::HasPinchZoomScrollbars() const {
   return pinch_zoom_scrollbar_horizontal_layer_id_ != Layer::INVALID_ID &&
          pinch_zoom_scrollbar_vertical_layer_id_ != Layer::INVALID_ID;
+}
+
+void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
+  LayerImpl* root_scroll = RootScrollLayer();
+  LayerImpl* root_clip = RootClipLayer();
+  DCHECK(root_scroll);
+  DCHECK(root_clip);
+  DCHECK(IsActiveTree());
+
+  gfx::Vector2dF scrollable_viewport_size =
+      gfx::RectF(ScrollableViewportSize()).bottom_right() - gfx::PointF();
+
+  gfx::Vector2dF original_viewport_size =
+      gfx::RectF(root_clip->bounds()).bottom_right() -
+      gfx::PointF();
+  original_viewport_size.Scale(1 / page_scale_factor());
+
+  root_scroll->SetFixedContainerSizeDelta(
+      scrollable_viewport_size - original_viewport_size);
 }
 
 }  // namespace cc

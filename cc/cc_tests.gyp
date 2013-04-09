@@ -25,6 +25,7 @@
       'animation/layer_animation_controller_unittest.cc',
       'layers/layer_impl_unittest.cc',
       'layers/layer_iterator_unittest.cc',
+      'layers/layer_position_constraint_unittest.cc',
       'resources/layer_quad_unittest.cc',
       'trees/layer_sorter_unittest.cc',
       'trees/layer_tree_host_common_unittest.cc',

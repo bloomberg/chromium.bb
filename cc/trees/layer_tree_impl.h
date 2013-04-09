@@ -211,6 +211,8 @@ class CC_EXPORT LayerTreeImpl {
   ScrollbarLayerImpl* PinchZoomScrollbarVertical();
   bool HasPinchZoomScrollbars() const;
 
+  void UpdateRootScrollLayerSizeDelta();
+
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
   scoped_ptr<LayerImpl> root_layer_;

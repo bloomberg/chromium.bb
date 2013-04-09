@@ -42,7 +42,6 @@ Layer::Layer()
       opacity_(1.f),
       anchor_point_z_(0.f),
       is_container_for_fixed_position_layers_(false),
-      fixed_to_container_layer_(false),
       is_drawable_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
@@ -416,6 +415,14 @@ void Layer::SetPosition(gfx::PointF position) {
   SetNeedsCommit();
 }
 
+bool Layer::IsContainerForFixedPositionLayers() const {
+  if (!transform_.IsIdentityOrTranslation())
+    return true;
+  if (parent_ && !parent_->sublayer_transform_.IsIdentityOrTranslation())
+    return true;
+  return is_container_for_fixed_position_layers_;
+}
+
 void Layer::SetSublayerTransform(const gfx::Transform& sublayer_transform) {
   if (sublayer_transform_ == sublayer_transform)
     return;
@@ -533,7 +540,7 @@ void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->fixed_to_container_layer() ||
+    if (children_[i]->position_constraint_.is_fixed_position() ||
         children_[i]->DescendantIsFixedToContainerLayer())
       return true;
   }
@@ -553,11 +560,11 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
     SetNeedsCommit();
 }
 
-void Layer::SetFixedToContainerLayer(bool fixed_to_container_layer) {
-  if (fixed_to_container_layer_ == fixed_to_container_layer)
-    return;
-  fixed_to_container_layer_ = fixed_to_container_layer;
-  SetNeedsCommit();
+void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
+    if (position_constraint_ == constraint)
+        return;
+    position_constraint_ = constraint;
+    SetNeedsCommit();
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
@@ -587,8 +594,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(!(OpacityIsAnimating() && layer->OpacityIsAnimatingOnImplOnly()));
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
-      is_container_for_fixed_position_layers_);
-  layer->SetFixedToContainerLayer(fixed_to_container_layer_);
+      IsContainerForFixedPositionLayers());
+  layer->SetFixedContainerSizeDelta(gfx::Vector2dF());
+  layer->SetPositionConstraint(position_constraint_);
   layer->SetPreserves3d(preserves_3d());
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetSublayerTransform(sublayer_transform_);

@@ -8,8 +8,10 @@
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_position_constraint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerPositionConstraint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
@@ -308,15 +310,34 @@ void WebLayerImpl::setIsContainerForFixedPositionLayers(bool enable) {
 }
 
 bool WebLayerImpl::isContainerForFixedPositionLayers() const {
-  return layer_->is_container_for_fixed_position_layers();
+  return layer_->IsContainerForFixedPositionLayers();
 }
 
-void WebLayerImpl::setFixedToContainerLayer(bool enable) {
-  layer_->SetFixedToContainerLayer(enable);
+static WebKit::WebLayerPositionConstraint ToWebLayerPositionConstraint(
+    const cc::LayerPositionConstraint& constraint) {
+  WebKit::WebLayerPositionConstraint web_constraint;
+  web_constraint.isFixedPosition = constraint.is_fixed_position();
+  web_constraint.isFixedToRightEdge = constraint.is_fixed_to_right_edge();
+  web_constraint.isFixedToBottomEdge = constraint.is_fixed_to_bottom_edge();
+  return web_constraint;
 }
 
-bool WebLayerImpl::fixedToContainerLayer() const {
-  return layer_->fixed_to_container_layer();
+static cc::LayerPositionConstraint ToLayerPositionConstraint(
+    const WebKit::WebLayerPositionConstraint& web_constraint) {
+  cc::LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(web_constraint.isFixedPosition);
+  constraint.set_is_fixed_to_right_edge(web_constraint.isFixedToRightEdge);
+  constraint.set_is_fixed_to_bottom_edge(web_constraint.isFixedToBottomEdge);
+  return constraint;
+}
+
+void WebLayerImpl::setPositionConstraint(
+    const WebKit::WebLayerPositionConstraint& constraint) {
+  layer_->SetPositionConstraint(ToLayerPositionConstraint(constraint));
+}
+
+WebKit::WebLayerPositionConstraint WebLayerImpl::positionConstraint() const {
+  return ToWebLayerPositionConstraint(layer_->position_constraint());
 }
 
 void WebLayerImpl::setScrollClient(
