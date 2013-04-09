@@ -68,22 +68,18 @@ class DisplayView : public ash::internal::ActionableView {
       case chromeos::STATE_SINGLE:
         SetVisible(false);
         return;
-      case chromeos::STATE_DUAL_MIRROR: {
+      case chromeos::STATE_DUAL_MIRROR:
         label_->SetText(l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetExternalDisplayName()));
         SetVisible(true);
         return;
-      }
       case chromeos::STATE_DUAL_EXTENDED:
-      case chromeos::STATE_DUAL_UNKNOWN: {
         label_->SetText(l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName()));
         SetVisible(true);
         return;
-      }
-      default:
-        NOTREACHED();
     }
+    NOTREACHED() << "Unhandled state " << state;
   }
 
   chromeos::OutputState InferOutputState() const {

@@ -219,7 +219,7 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   LoadDisplayPreferences(true);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON,
-            shell->output_configurator()->display_power_state());
+            shell->output_configurator()->power_state());
 
   shell->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
@@ -466,7 +466,7 @@ TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {
   LoadDisplayPreferences(false);
   EXPECT_EQ(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      ash::Shell::GetInstance()->output_configurator()->display_power_state());
+      ash::Shell::GetInstance()->output_configurator()->power_state());
 }
 
 }  // namespace

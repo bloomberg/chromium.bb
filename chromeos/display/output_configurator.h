@@ -32,7 +32,6 @@ enum OutputState {
   STATE_SINGLE,
   STATE_DUAL_MIRROR,
   STATE_DUAL_EXTENDED,
-  STATE_DUAL_UNKNOWN,
 };
 
 // Information that is necessary to construct display id
@@ -165,10 +164,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
     // Called to set the frame buffer (underlying XRR "screen") size.  Has
     // a side-effect of disabling all CRTCs.
-    virtual void CreateFrameBuffer(int width,
-                                   int height,
-                                   CrtcConfig* config1,
-                                   CrtcConfig* config2) = 0;
+    virtual void CreateFrameBuffer(
+        int width,
+        int height,
+        const std::vector<OutputConfigurator::CrtcConfig>& configs) = 0;
 
     // Configures XInput's Coordinate Transformation Matrix property.
     // |touch_device_id| the ID of the touchscreen device to configure.
@@ -227,14 +226,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
-  int connected_output_count() const { return connected_output_count_; }
-
   OutputState output_state() const { return output_state_; }
-
-  void set_display_power_state(DisplayPowerState power_state) {
-    power_state_ = power_state;
-  }
-  DisplayPowerState display_power_state() const { return power_state_; }
+  DisplayPowerState power_state() const { return power_state_; }
 
   void set_state_controller(StateController* controller) {
     state_controller_ = controller;
@@ -243,6 +236,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Replaces |delegate_| with |delegate| and sets |configure_display_| to
   // true.  Should be called before Init().
   void SetDelegateForTesting(scoped_ptr<Delegate> delegate);
+
+  // Sets the initial value of |power_state_|.  Must be called before Start().
+  void SetInitialDisplayPower(DisplayPowerState power_state);
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
@@ -264,7 +260,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   bool SetDisplayPower(DisplayPowerState power_state, int flags);
 
   // Force switching the display mode to |new_state|. Returns false if
-  // it was called in a single-head or headless mode.
+  // switching failed (possibly because |new_state| is invalid for the
+  // current set of connected outputs).
   bool SetDisplayMode(OutputState new_state);
 
   // Called when an RRNotify event is received.  The implementation is
@@ -293,19 +290,20 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
 
-  // Configures X to the state specified in |output_state| and
-  // |power_state|.  |outputs| contains information on the currently
-  // configured state, as well as how to apply the new state.
+  // Switches to the state specified in |output_state| and |power_state|.
+  // On success, updates |output_state_| and |power_state_| and returns true.
   bool EnterState(OutputState output_state,
                   DisplayPowerState power_state,
                   const std::vector<OutputSnapshot>& outputs);
 
-  // Returns next state.
-  OutputState GetNextState(const std::vector<OutputSnapshot>& outputs) const;
+  // Returns the output state that should be used with |outputs| connected
+  // while in |power_state|.
+  OutputState GetOutputState(const std::vector<OutputSnapshot>& outputs,
+                             DisplayPowerState power_state) const;
 
   // Computes the relevant transformation for mirror mode.
   // |output| is the output on which mirror mode is being applied.
-  // Returns the transformation, which would be identity if computations fail.
+  // Returns the transformation or identity if computations fail.
   CoordinateTransformation GetMirrorModeCTM(
       const OutputConfigurator::OutputSnapshot* output);
 
@@ -319,24 +317,20 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // configuration to immediately fail without changing the state.
   bool configure_display_;
 
-  // The number of outputs that are connected.
-  int connected_output_count_;
-
   // The base of the event numbers used to represent XRandr events used in
   // decoding events regarding output add/remove.
   int xrandr_event_base_;
 
-  // The display state as derived from the outputs observed in |output_cache_|.
-  // This is used for rotating display modes.
+  // The current display state.
   OutputState output_state_;
 
-  // The current power state as set via SetDisplayPower().
+  // The current power state.
   DisplayPowerState power_state_;
 
   ObserverList<Observer> observers_;
 
   // The timer to delay configuring outputs. See also the comments in
-  // |Dispatch()|.
+  // Dispatch().
   scoped_ptr<base::OneShotTimer<OutputConfigurator> > configure_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);

@@ -47,8 +47,7 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void CreateFrameBuffer(
       int width,
       int height,
-      OutputConfigurator::CrtcConfig* config1,
-      OutputConfigurator::CrtcConfig* config2) OVERRIDE;
+      const std::vector<OutputConfigurator::CrtcConfig>& configs) OVERRIDE;
   virtual void ConfigureCTM(
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;
@@ -58,8 +57,8 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   // Destroys unused CRTCs and parks used CRTCs in a way which allows a
   // framebuffer resize. This is faster than turning them off, resizing,
   // then turning them back on.
-  void DestroyUnusedCrtcs(OutputConfigurator::CrtcConfig* config1,
-                          OutputConfigurator::CrtcConfig* config2);
+  void DestroyUnusedCrtcs(
+      const std::vector<OutputConfigurator::CrtcConfig>& configs);
 
   // Returns whether |id| is configured to preserve aspect when scaling.
   bool IsOutputAspectPreservingScaling(RROutput id);

@@ -42,67 +42,28 @@ std::string DisplayPowerStateToString(DisplayPowerState state) {
   }
 }
 
-OutputState InferCurrentState(
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
-  OutputState state = STATE_INVALID;
-  switch (outputs.size()) {
-    case 0:
-      state = STATE_HEADLESS;
-      break;
-    case 1:
-      state = STATE_SINGLE;
-      break;
-    case 2: {
-      RRMode primary_mode = outputs[0].current_mode;
-      RRMode secondary_mode = outputs[1].current_mode;
+// Returns the number of outputs in |outputs| that should be turned on, per
+// |state|.  If |output_power| is non-NULL, it is updated to contain the
+// on/off state of each corresponding entry in |outputs|.
+int GetOutputPower(
+    const std::vector<OutputConfigurator::OutputSnapshot>& outputs,
+    DisplayPowerState state,
+    std::vector<bool>* output_power) {
+  int num_on_outputs = 0;
+  if (output_power)
+    output_power->resize(outputs.size());
 
-      if (outputs[0].y == 0 && outputs[1].y == 0) {
-        // Displays in the same spot so this is either mirror or unknown.
-        // Note that we should handle no configured CRTC as a "wildcard" since
-        // that allows us to preserve mirror mode state while power is switched
-        // off on one display.
-        bool primary_mirror = (outputs[0].mirror_mode == primary_mode) ||
-            (primary_mode == None);
-        bool secondary_mirror = (outputs[1].mirror_mode == secondary_mode) ||
-            (secondary_mode == None);
-        if (primary_mirror && secondary_mirror) {
-          state = STATE_DUAL_MIRROR;
-        } else {
-          // We should never normally get into this state but it can help us
-          // make sense of situations where the configuration may have been
-          // changed for testing, etc.
-          state = STATE_DUAL_UNKNOWN;
-        }
-      } else {
-        // At this point, we expect both displays to be in native mode and tiled
-        // such that one is primary and another is correctly positioned as
-        // secondary.  If any of these assumptions are false, this is an unknown
-        // configuration.
-        bool primary_native = (primary_mode == outputs[0].native_mode) ||
-            (primary_mode == None);
-        bool secondary_native = (secondary_mode == outputs[1].native_mode) ||
-            (secondary_mode == None);
-        if (primary_native && secondary_native) {
-          // Just check the relative locations.
-          int secondary_offset = outputs[0].height +
-              OutputConfigurator::kVerticalGap;
-          if (outputs[0].y == 0 && outputs[1].y == secondary_offset) {
-            state = STATE_DUAL_EXTENDED;
-          } else {
-            // Unexpected locations.
-            state = STATE_DUAL_UNKNOWN;
-          }
-        } else {
-          // Mode assumptions don't hold.
-          state = STATE_DUAL_UNKNOWN;
-        }
-      }
-      break;
-    }
-    default:
-      CHECK(false);
+  for (size_t i = 0; i < outputs.size(); ++i) {
+    bool internal = outputs[i].is_internal;
+    bool on = state == DISPLAY_POWER_ALL_ON ||
+        (state == DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON && !internal) ||
+        (state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF && internal);
+    if (output_power)
+      (*output_power)[i] = on;
+    if (on)
+      num_on_outputs++;
   }
-  return state;
+  return num_on_outputs;
 }
 
 // Determine if there is an "internal" output and how many outputs are
@@ -188,7 +149,6 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 OutputConfigurator::OutputConfigurator()
     : state_controller_(NULL),
       configure_display_(base::chromeos::IsRunningOnChromeOS()),
-      connected_output_count_(0),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON) {
@@ -200,6 +160,11 @@ void OutputConfigurator::SetDelegateForTesting(
     scoped_ptr<Delegate> delegate) {
   delegate_ = delegate.Pass();
   configure_display_ = true;
+}
+
+void OutputConfigurator::SetInitialDisplayPower(DisplayPowerState power_state) {
+  DCHECK_EQ(output_state_, STATE_INVALID);
+  power_state_ = power_state;
 }
 
 void OutputConfigurator::Init(bool is_panel_fitting_enabled,
@@ -224,26 +189,16 @@ void OutputConfigurator::Start() {
     return;
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  connected_output_count_ = outputs.size();
-
-  output_state_ = InferCurrentState(outputs);
-  // Ensure that we are in a supported state with all connected displays powered
-  // on.
-  OutputState starting_state = GetNextState(outputs);
-  if (output_state_ != starting_state &&
-      EnterState(starting_state, power_state_, outputs)) {
-    output_state_ = starting_state;
-  }
-  bool is_projecting = IsProjecting(outputs);
-
   delegate_->InitXRandRExtension(&xrandr_event_base_);
+
+  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  EnterState(GetOutputState(outputs, power_state_), power_state_, outputs);
 
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
   delegate_->ForceDPMSOn();
   delegate_->UngrabServer();
-  delegate_->SendProjectingStateToPowerManager(is_projecting);
+  delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
 }
 
 void OutputConfigurator::Stop() {
@@ -262,14 +217,12 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  connected_output_count_ = outputs.size();
 
   bool only_if_single_internal_display =
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display = outputs.size() == 1 && outputs[0].is_internal;
   if ((single_internal_display || !only_if_single_internal_display) &&
-      EnterState(output_state_, power_state, outputs)) {
-    power_state_ = power_state;
+      EnterState(GetOutputState(outputs, power_state), power_state, outputs)) {
     if (power_state != DISPLAY_POWER_ALL_OFF)  {
       // Force the DPMS on since the driver doesn't always detect that it
       // should turn on. This is needed when coming back from idle suspend.
@@ -285,28 +238,21 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   if (!configure_display_)
     return false;
 
-  if (output_state_ == STATE_INVALID ||
-      output_state_ == STATE_HEADLESS ||
-      output_state_ == STATE_SINGLE)
-    return false;
-
   if (output_state_ == new_state)
     return true;
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  connected_output_count_ = outputs.size();
-  if (EnterState(new_state, power_state_, outputs))
-    output_state_ = new_state;
+  bool success = EnterState(new_state, power_state_, outputs);
   delegate_->UngrabServer();
 
-  if (output_state_ == new_state) {
+  if (success) {
     NotifyOnDisplayChanged();
   } else {
     FOR_EACH_OBSERVER(
         Observer, observers_, OnDisplayModeChangeFailed(new_state));
   }
-  return true;
+  return success;
 }
 
 bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
@@ -365,12 +311,12 @@ void OutputConfigurator::SuspendDisplays() {
   if (power_state_ == DISPLAY_POWER_ALL_OFF) {
     SetDisplayPower(DISPLAY_POWER_ALL_ON,
                     kSetDisplayPowerOnlyIfSingleInternalDisplay);
-  }
 
-  // We need to make sure that the monitor configuration we just did actually
-  // completes before we return, because otherwise the X message could be
-  // racing with the HandleSuspendReadiness message.
-  delegate_->SyncWithServer();
+    // We need to make sure that the monitor configuration we just did actually
+    // completes before we return, because otherwise the X message could be
+    // racing with the HandleSuspendReadiness message.
+    delegate_->SyncWithServer();
+  }
 }
 
 void OutputConfigurator::ResumeDisplays() {
@@ -384,26 +330,17 @@ void OutputConfigurator::ConfigureOutputs() {
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
-  int new_output_count = outputs.size();
-  // Don't skip even if the output counts didn't change because
-  // a display might have been swapped during the suspend.
-  connected_output_count_ = new_output_count;
-  OutputState new_state = GetNextState(outputs);
-  // When a display was swapped, the state moves from
-  // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED, so don't rely on
-  // the state chagne to tell if it was successful.
+  OutputState new_state = GetOutputState(outputs, power_state_);
   bool success = EnterState(new_state, power_state_, outputs);
-  bool is_projecting = IsProjecting(outputs);
   delegate_->UngrabServer();
 
   if (success) {
-    output_state_ = new_state;
     NotifyOnDisplayChanged();
   } else {
     FOR_EACH_OBSERVER(
         Observer, observers_, OnDisplayModeChangeFailed(new_state));
   }
-  delegate_->SendProjectingStateToPowerManager(is_projecting);
+  delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
@@ -414,138 +351,171 @@ bool OutputConfigurator::EnterState(
     OutputState output_state,
     DisplayPowerState power_state,
     const std::vector<OutputSnapshot>& outputs) {
-  std::vector<bool> output_power(outputs.size());
-  bool all_outputs_off = true;
+  std::vector<bool> output_power;
+  int num_on_outputs = GetOutputPower(outputs, power_state, &output_power);
 
-  for (size_t i = 0; i < outputs.size(); ++i) {
-    output_power[i] = power_state == DISPLAY_POWER_ALL_ON ||
-        (power_state == DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&
-         !outputs[i].is_internal) ||
-        (power_state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF &&
-         outputs[i].is_internal);
-    if (output_power[i])
-      all_outputs_off = false;
-  }
-
-  switch (outputs.size()) {
-    case 0:
-      // Do nothing as no 0-display states are supported.
+  switch (output_state) {
+    case STATE_HEADLESS:
+      if (outputs.size() != 0) {
+        LOG(WARNING) << "Ignoring request to enter headless mode with "
+                     << outputs.size() << " connected output(s)";
+        return false;
+      }
       break;
-    case 1: {
-      // Re-allocate the framebuffer to fit.
-      int width = 0, height = 0;
-      if (!delegate_->GetModeDetails(
-              outputs[0].native_mode, &width, &height, NULL)) {
+    case STATE_SINGLE: {
+      // If there are multiple outputs connected, only one should be turned on.
+      if (outputs.size() != 1 && num_on_outputs != 1) {
+        LOG(WARNING) << "Ignoring request to enter single mode with "
+                     << outputs.size() << " connected outputs and "
+                     << num_on_outputs << " turned on";
         return false;
       }
 
-      CrtcConfig config(outputs[0].crtc, 0, 0,
-                        output_power[0] ? outputs[0].native_mode : None,
-                        outputs[0].output);
-      delegate_->CreateFrameBuffer(width, height, &config, NULL);
-      delegate_->ConfigureCrtc(&config);
-      if (outputs[0].touch_device_id) {
-        // Restore identity transformation for single monitor in native mode.
-        delegate_->ConfigureCTM(outputs[0].touch_device_id,
-                                CoordinateTransformation());
+      // Determine which output to use.
+      const OutputSnapshot& output = outputs.size() == 1 ? outputs[0] :
+          (output_power[0] ? outputs[0] : outputs[1]);
+      int width = 0, height = 0;
+      if (!delegate_->GetModeDetails(output.native_mode, &width, &height, NULL))
+        return false;
+
+      std::vector<CrtcConfig> configs(outputs.size());
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        configs[i] = CrtcConfig(
+            outputs[i].crtc, 0, 0,
+            output_power[i] ? outputs[i].native_mode : None,
+            outputs[i].output);
+      }
+      delegate_->CreateFrameBuffer(width, height, configs);
+
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        delegate_->ConfigureCrtc(&configs[i]);
+        if (outputs[i].touch_device_id) {
+          delegate_->ConfigureCTM(outputs[i].touch_device_id,
+                                  CoordinateTransformation());
+        }
       }
       break;
     }
-    case 2: {
-      if (output_state == STATE_DUAL_MIRROR) {
-        int width = 0, height = 0;
-        if (!delegate_->GetModeDetails(
-                outputs[0].mirror_mode, &width, &height, NULL)) {
+    case STATE_DUAL_MIRROR: {
+      if (outputs.size() != 2 || (num_on_outputs != 0 && num_on_outputs != 2)) {
+        LOG(WARNING) << "Ignoring request to enter mirrored mode with "
+                     << outputs.size() << " connected output(s) and "
+                     << num_on_outputs << " turned on";
+        return false;
+      }
+
+      int width = 0, height = 0;
+      if (!delegate_->GetModeDetails(
+              outputs[0].mirror_mode, &width, &height, NULL)) {
+        return false;
+      }
+
+      std::vector<CrtcConfig> configs(outputs.size());
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        configs[i] = CrtcConfig(
+            outputs[i].crtc, 0, 0,
+            output_power[i] ? outputs[i].mirror_mode : None,
+            outputs[i].output);
+      }
+      delegate_->CreateFrameBuffer(width, height, configs);
+
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        delegate_->ConfigureCrtc(&configs[i]);
+        if (outputs[i].touch_device_id) {
+          CoordinateTransformation ctm;
+          // CTM needs to be calculated if aspect preserving scaling is used.
+          // Otherwise, assume it is full screen, and use identity CTM.
+          if (outputs[i].mirror_mode != outputs[i].native_mode &&
+              outputs[i].is_aspect_preserving_scaling) {
+            ctm = GetMirrorModeCTM(&outputs[i]);
+          }
+          delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
+        }
+      }
+      break;
+    }
+    case STATE_DUAL_EXTENDED: {
+      if (outputs.size() != 2 || (num_on_outputs != 0 && num_on_outputs != 2)) {
+        LOG(WARNING) << "Ignoring request to enter extended mode with "
+                     << outputs.size() << " connected output(s) and "
+                     << num_on_outputs << " turned on";
+        return false;
+      }
+
+      // Pairs are [width, height] corresponding to the given output's mode.
+      std::vector<std::pair<int, int> > mode_sizes(outputs.size());
+      std::vector<CrtcConfig> configs(outputs.size());
+      int width = 0, height = 0;
+
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        if (!delegate_->GetModeDetails(outputs[i].native_mode,
+                &(mode_sizes[i].first), &(mode_sizes[i].second), NULL)) {
           return false;
         }
 
-        std::vector<CrtcConfig> configs(outputs.size());
-        for (size_t i = 0; i < outputs.size(); ++i) {
-          configs[i] = CrtcConfig(
-              outputs[i].crtc, 0, 0,
-              output_power[i] ? outputs[i].mirror_mode : None,
-              outputs[i].output);
-        }
+        configs[i] = CrtcConfig(
+            outputs[i].crtc, 0, (height ? height + kVerticalGap : 0),
+            output_power[i] ? outputs[i].native_mode : None,
+            outputs[i].output);
 
-        delegate_->CreateFrameBuffer(width, height, &configs[0], &configs[1]);
+        // Retain the full screen size even if all outputs are off so the
+        // same desktop configuration can be restored when the outputs are
+        // turned back on.
+        width = std::max<int>(width, mode_sizes[i].first);
+        height += (height ? kVerticalGap : 0) + mode_sizes[i].second;
+      }
 
-        for (size_t i = 0; i < outputs.size(); ++i) {
-          delegate_->ConfigureCrtc(&configs[i]);
-          if (outputs[i].touch_device_id) {
-            CoordinateTransformation ctm;
-            // CTM needs to be calculated if aspect preserving scaling is used.
-            // Otherwise, assume it is full screen, and use identity CTM.
-            if (outputs[i].mirror_mode != outputs[i].native_mode &&
-                outputs[i].is_aspect_preserving_scaling) {
-              ctm = GetMirrorModeCTM(&outputs[i]);
-            }
-            delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
-          }
-        }
-      } else {  // STATE_DUAL_EXTENDED
-        // Pairs are [width, height] corresponding to the given output's mode.
-        std::vector<std::pair<int, int> > mode_sizes(outputs.size());
-        std::vector<CrtcConfig> configs(outputs.size());
-        int width = 0, height = 0;
+      delegate_->CreateFrameBuffer(width, height, configs);
 
-        for (size_t i = 0; i < outputs.size(); ++i) {
-          if (!delegate_->GetModeDetails(outputs[i].native_mode,
-                  &(mode_sizes[i].first), &(mode_sizes[i].second), NULL)) {
-            return false;
-          }
-
-          configs[i] = CrtcConfig(
-              outputs[i].crtc, 0, (height ? height + kVerticalGap : 0),
-              output_power[i] ? outputs[i].native_mode : None,
-              outputs[i].output);
-
-          // Retain the full screen size if all outputs are off so the same
-          // desktop configuration can be restored when the outputs are
-          // turned back on.
-          if (output_power[i] || all_outputs_off) {
-            width = std::max<int>(width, mode_sizes[i].first);
-            height += (height ? kVerticalGap : 0) + mode_sizes[i].second;
-          }
-        }
-
-        delegate_->CreateFrameBuffer(width, height, &configs[0], &configs[1]);
-
-        for (size_t i = 0; i < outputs.size(); ++i) {
-          delegate_->ConfigureCrtc(&configs[i]);
-          if (outputs[i].touch_device_id) {
-            CoordinateTransformation ctm;
-            ctm.x_scale = static_cast<float>(mode_sizes[i].first) / width;
-            ctm.x_offset = static_cast<float>(configs[i].x) / width;
-            ctm.y_scale = static_cast<float>(mode_sizes[i].second) / height;
-            ctm.y_offset = static_cast<float>(configs[i].y) / height;
-            delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
-          }
+      for (size_t i = 0; i < outputs.size(); ++i) {
+        delegate_->ConfigureCrtc(&configs[i]);
+        if (outputs[i].touch_device_id) {
+          CoordinateTransformation ctm;
+          ctm.x_scale = static_cast<float>(mode_sizes[i].first) / width;
+          ctm.x_offset = static_cast<float>(configs[i].x) / width;
+          ctm.y_scale = static_cast<float>(mode_sizes[i].second) / height;
+          ctm.y_offset = static_cast<float>(configs[i].y) / height;
+          delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
         }
       }
       break;
     }
     default:
-      NOTREACHED() << "Got " << outputs.size() << " outputs";
+      NOTREACHED() << "Got request to enter output state " << output_state
+                   << " with " << outputs.size() << " output(s)";
+      return false;
   }
 
+  output_state_ = output_state;
+  power_state_ = power_state;
   return true;
 }
 
-OutputState OutputConfigurator::GetNextState(
-    const std::vector<OutputSnapshot>& output_snapshots) const {
-  switch (output_snapshots.size()) {
+OutputState OutputConfigurator::GetOutputState(
+    const std::vector<OutputSnapshot>& outputs,
+    DisplayPowerState power_state) const {
+  int num_on_outputs = GetOutputPower(outputs, power_state, NULL);
+  switch (outputs.size()) {
     case 0:
       return STATE_HEADLESS;
     case 1:
       return STATE_SINGLE;
     case 2: {
-      std::vector<OutputInfo> outputs;
-      for (size_t i = 0; i < output_snapshots.size(); ++i) {
-        outputs.push_back(OutputInfo());
-        outputs[i].output = output_snapshots[i].output;
-        outputs[i].output_index = i;
+      if (num_on_outputs == 1) {
+        // If only one output is currently turned on, return the "single"
+        // state so that its native mode will be used.
+        return STATE_SINGLE;
+      } else {
+        // With either both outputs on or both outputs off, use one of the
+        // dual modes.
+        std::vector<OutputInfo> output_infos;
+        for (size_t i = 0; i < outputs.size(); ++i) {
+          output_infos.push_back(OutputInfo());
+          output_infos[i].output = outputs[i].output;
+          output_infos[i].output_index = i;
+        }
+        return state_controller_->GetStateForOutputs(output_infos);
       }
-      return state_controller_->GetStateForOutputs(outputs);
     }
     default:
       NOTREACHED();

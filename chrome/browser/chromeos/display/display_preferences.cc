@@ -240,7 +240,7 @@ void StoreDisplayPowerState(DisplayPowerState power_state) {
 
 void StoreCurrentDisplayPowerState() {
   StoreDisplayPowerState(
-      ash::Shell::GetInstance()->output_configurator()->display_power_state());
+      ash::Shell::GetInstance()->output_configurator()->power_state());
 }
 
 }  // namespace
@@ -297,7 +297,7 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
     std::string value = local_state->GetString(prefs::kDisplayPowerState);
     chromeos::DisplayPowerState power_state;
     if (GetDisplayPowerStateFromString(value, &power_state)) {
-      ash::Shell::GetInstance()->output_configurator()->set_display_power_state(
+      ash::Shell::GetInstance()->output_configurator()->SetInitialDisplayPower(
           power_state);
     }
   }

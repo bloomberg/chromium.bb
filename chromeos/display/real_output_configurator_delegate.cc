@@ -262,8 +262,7 @@ void RealOutputConfiguratorDelegate::ConfigureCrtc(
 void RealOutputConfiguratorDelegate::CreateFrameBuffer(
     int width,
     int height,
-    OutputConfigurator::CrtcConfig* config1,
-    OutputConfigurator::CrtcConfig* config2) {
+    const std::vector<OutputConfigurator::CrtcConfig>& configs) {
   CHECK(screen_) << "Server not grabbed";
   int current_width = DisplayWidth(display_, DefaultScreen(display_));
   int current_height = DisplayHeight(display_, DefaultScreen(display_));
@@ -272,7 +271,7 @@ void RealOutputConfiguratorDelegate::CreateFrameBuffer(
   if (width ==  current_width && height == current_height)
     return;
 
-  DestroyUnusedCrtcs(config1, config2);
+  DestroyUnusedCrtcs(configs);
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display_, window_, width, height, mm_width, mm_height);
@@ -323,8 +322,7 @@ void RealOutputConfiguratorDelegate::SendProjectingStateToPowerManager(
 }
 
 void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
-    OutputConfigurator::CrtcConfig* config1,
-    OutputConfigurator::CrtcConfig* config2) {
+    const std::vector<OutputConfigurator::CrtcConfig>& configs) {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
@@ -341,16 +339,13 @@ void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
     // Default config is to disable the crtcs.
     OutputConfigurator::CrtcConfig config(
         screen_->crtcs[i], 0, 0, None, None);
-
-    // If we are going to use that CRTC later, prepare it now.
-    if (config1 && screen_->crtcs[i] == config1->crtc) {
-      config = *config1;
-      config.x = 0;
-      config.y = 0;
-    } else if (config2 && screen_->crtcs[i] == config2->crtc) {
-      config = *config2;
-      config.x = 0;
-      config.y = 0;
+    for (std::vector<OutputConfigurator::CrtcConfig>::const_iterator it =
+         configs.begin(); it != configs.end(); ++it) {
+      if (config.crtc == it->crtc) {
+        config.mode = it->mode;
+        config.output = it->output;
+        break;
+      }
     }
 
     if (config.mode != None) {
