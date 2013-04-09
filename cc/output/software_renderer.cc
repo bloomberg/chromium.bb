@@ -399,7 +399,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
                                            const DrawQuad* quad) {
-#ifndef NDEBUG
+#ifdef NDEBUG
   current_paint_.setColor(SK_ColorWHITE);
 #else
   current_paint_.setColor(SK_ColorMAGENTA);
