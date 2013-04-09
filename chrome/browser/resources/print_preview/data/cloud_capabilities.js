@@ -36,18 +36,18 @@ cr.define('print_preview', function() {
   };
 
   CloudCapabilities.ColorType_ = {
-    STANDARD_COLOR: 0,
-    STANDARD_MONOCHROME: 1
+    STANDARD_COLOR: 'STANDARD_COLOR',
+    STANDARD_MONOCHROME: 'STANDARD_MONOCHROME'
   };
 
   CloudCapabilities.DuplexType_ = {
-    NO_DUPLEX: 0,
-    LONG_EDGE: 1
+    NO_DUPLEX: 'NO_DUPLEX',
+    LONG_EDGE: 'LONG_EDGE'
   };
 
   CloudCapabilities.PageOrientationType_ = {
-    PORTRAIT: 0,
-    LANDSCAPE: 1
+    PORTRAIT: 'PORTRAIT',
+    LANDSCAPE: 'LANDSCAPE'
   };
 
   CloudCapabilities.hasColorCapability_ = function(cdd) {
@@ -84,12 +84,12 @@ cr.define('print_preview', function() {
   };
 
   CloudCapabilities.hasPageOrientationCapability_ = function(cdd) {
-    if (!cdd.printer || !cdd.printer.pageOrientation) {
+    if (!cdd.printer || !cdd.printer.page_orientation) {
       return false;
     }
     var hasPortraitOption = false;
     var hasLandscapeOption = false;
-    cdd.printer.pageOrientation.option.forEach(function(option) {
+    cdd.printer.page_orientation.option.forEach(function(option) {
       if (option.type == CloudCapabilities.PageOrientationType_.PORTRAIT) {
         hasPortraitOption = true;
       } else if (option.type ==
@@ -102,14 +102,14 @@ cr.define('print_preview', function() {
 
   CloudCapabilities.isColorDefault_ = function(color) {
     return color.option.some(function(option) {
-      return option.isDefault &&
+      return option.is_default &&
           option.type == CloudCapabilities.ColorType_.STANDARD_COLOR;
     });
   };
 
   CloudCapabilities.isLongEdgeDefault_ = function(duplex) {
     return duplex.option.some(function(option) {
-      return option.isDefault &&
+      return option.is_default &&
           option.type == CloudCapabilities.DuplexType_.LONG_EDGE;
     });
   };
@@ -145,7 +145,7 @@ cr.define('print_preview', function() {
             this.createDuplexTicketItem_(printTicketStore.isDuplexEnabled());
       }
       if (CloudCapabilities.hasPageOrientationCapability_(this.cdd_)) {
-        cjt.print.pageOrientation = this.createPageOrientationTicketItem_(
+        cjt.print.page_orientation = this.createPageOrientationTicketItem_(
             printTicketStore.isLandscapeEnabled());
       }
       return cjt;
@@ -169,8 +169,8 @@ cr.define('print_preview', function() {
              'STANDARD_MONOCHROME option');
 
       var colorTicketItem = {};
-      if (selectedColorOption[0].hasOwnProperty('vendorId')) {
-        colorTicketItem.vendorId = selectedColorOption[0].vendorId;
+      if (selectedColorOption[0].hasOwnProperty('vendor_id')) {
+        colorTicketItem.vendor_id = selectedColorOption[0].vendor_id;
       }
       if (selectedColorOption[0].hasOwnProperty('type')) {
         colorTicketItem.type = selectedColorOption[0].type;
