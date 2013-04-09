@@ -95,32 +95,32 @@ class RenderViewHostInitializedObserver
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostInitializedObserver);
 };
 
-class WebUIJsInjectionReadyObserver : public content::NotificationObserver {
+class WebUIJsInjectionReadyObserver {
  public:
   explicit WebUIJsInjectionReadyObserver(
       content::JsInjectionReadyObserver* observer)
-      : injection_observer_(observer) {
-    registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-                   content::NotificationService::AllSources());
+      : injection_observer_(observer),
+        ALLOW_THIS_IN_INITIALIZER_LIST(rvh_callback_(
+            base::Bind(&WebUIJsInjectionReadyObserver::RenderViewHostCreated,
+                       base::Unretained(this)))) {
+    content::RenderViewHost::AddCreatedCallback(rvh_callback_);
   }
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(content::NOTIFICATION_RENDER_VIEW_HOST_CREATED, type);
-
-    rvh_observer_.reset(new RenderViewHostInitializedObserver(
-        content::Source<content::RenderViewHost>(source).ptr(),
-        injection_observer_));
+  ~WebUIJsInjectionReadyObserver() {
+    content::RenderViewHost::RemoveCreatedCallback(rvh_callback_);
   }
 
  private:
+  void RenderViewHostCreated(content::RenderViewHost* rvh) {
+    rvh_observer_.reset(
+        new RenderViewHostInitializedObserver(rvh, injection_observer_));
+  }
+
   content::JsInjectionReadyObserver* injection_observer_;
 
   scoped_ptr<RenderViewHostInitializedObserver> rvh_observer_;
 
-  content::NotificationRegistrar registrar_;
+  content::RenderViewHost::CreatedCallback rvh_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIJsInjectionReadyObserver);
 };

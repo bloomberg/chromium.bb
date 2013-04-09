@@ -164,6 +164,9 @@ ExternalTabContainerWin::ExternalTabContainerWin(
     AutomationResourceMessageFilter* filter)
     : widget_(NULL),
       automation_(automation),
+      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_callback_(base::Bind(
+          &ExternalTabContainerWin::RegisterRenderViewHostForAutomation,
+          base::Unretained(this), false))),
       tab_contents_container_(NULL),
       tab_handle_(0),
       ignore_next_load_notification_(false),
@@ -250,9 +253,8 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::Source<WebContents>(existing_contents));
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-                 content::NotificationService::AllSources());
 
+  content::RenderViewHost::AddCreatedCallback(rvh_callback_);
   content::WebContentsObserver::Observe(existing_contents);
 
   BrowserTabContents::AttachTabHelpers(existing_contents);
@@ -298,6 +300,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
 void ExternalTabContainerWin::Uninitialize() {
   registrar_.RemoveAll();
+  content::RenderViewHost::RemoveCreatedCallback(rvh_callback_);
   if (web_contents_.get()) {
     tab_contents_container_->SetWebContents(NULL);
     UnregisterRenderViewHost(web_contents_->GetRenderViewHost());
@@ -605,7 +608,7 @@ void ExternalTabContainerWin::WebContentsCreated(WebContents* source_contents,
   // Register this render view as a pending render view, i.e. any network
   // requests initiated by this render view would be serviced when the
   // external host connects to the new external tab instance.
-  RegisterRenderViewHostForAutomation(rvh, true);
+  RegisterRenderViewHostForAutomation(true, rvh);
 }
 
 void ExternalTabContainerWin::CloseContents(content::WebContents* source) {
@@ -692,8 +695,8 @@ void ExternalTabContainerWin::CanDownload(
 }
 
 void ExternalTabContainerWin::RegisterRenderViewHostForAutomation(
-    RenderViewHost* render_view_host,
-    bool pending_view) {
+    bool pending_view,
+    RenderViewHost* render_view_host) {
   if (render_view_host) {
     AutomationResourceMessageFilter::RegisterRenderView(
         render_view_host->GetProcess()->GetID(),
@@ -710,8 +713,8 @@ void ExternalTabContainerWin::RegisterRenderViewHost(
   // ExternalTabContainer should share the same resource request automation
   // settings.
   RegisterRenderViewHostForAutomation(
-      render_view_host,
-      false);  // Network requests should not be handled later.
+      false,  // Network requests should not be handled later.
+      render_view_host);
 }
 
 void ExternalTabContainerWin::UnregisterRenderViewHost(
@@ -964,14 +967,7 @@ void ExternalTabContainerWin::Observe(
     case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = content::Details<RenderViewHost>(details).ptr();
-        RegisterRenderViewHostForAutomation(rvh, false);
-      }
-      break;
-    }
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED: {
-      if (load_requests_via_automation_) {
-        RenderViewHost* rvh = content::Source<RenderViewHost>(source).ptr();
-        RegisterRenderViewHostForAutomation(rvh, false);
+        RegisterRenderViewHostForAutomation(false, rvh);
       }
       break;
     }

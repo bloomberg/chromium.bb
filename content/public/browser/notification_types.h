@@ -206,10 +206,6 @@ enum NotificationType {
   // Used only in testing.
   NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
 
-  // Sent from RenderViewHost constructor. The source is the RenderViewHost,
-  // the details unused.
-  NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-
   // Sent from RenderViewHost::ClosePage.  The hosted RenderView has
   // processed the onbeforeunload handler and is about to be sent a
   // ViewMsg_ClosePage message to complete the tear-down process.  The source

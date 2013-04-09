@@ -87,15 +87,17 @@ class ExtensionSettingsHandler
 
   void GetLocalizedValues(content::WebUIDataSource* source);
 
+ private:
+  friend class ExtensionUITest;
+
+  void RenderViewHostCreated(content::RenderViewHost* render_view_host);
+
   // content::WebContentsObserver implementation.
   virtual void RenderViewDeleted(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void NavigateToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
-
- private:
-  friend class ExtensionUITest;
 
   // Allows injection for testing by friend classes.
   ExtensionSettingsHandler(ExtensionService* service,
@@ -264,6 +266,8 @@ class ExtensionSettingsHandler
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar pref_registrar_;
+
+  content::RenderViewHost::CreatedCallback rvh_created_callback_;
 
   // This will not be empty when a requirements check is in progress. Doing
   // another Check() before the previous one is complete will cause the first

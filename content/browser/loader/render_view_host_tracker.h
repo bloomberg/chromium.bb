@@ -7,8 +7,7 @@
 
 #include <set>
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 
 namespace content {
@@ -18,12 +17,13 @@ namespace content {
 // operates on the IO thread. RenderViewHostTracker listens for renderer
 // notifications on the UI thread, then bounces them over to the IO thread so
 // the ResourceDispatcherHost can be notified.
-class CONTENT_EXPORT RenderViewHostTracker : public NotificationObserver {
+class CONTENT_EXPORT RenderViewHostTracker {
  public:
   RenderViewHostTracker();
   virtual ~RenderViewHostTracker();
 
  private:
+  // TODO(phajdan.jr): Move this declaration of inner class to the .cc file.
   class Observer : public RenderViewHostObserver {
    public:
     Observer(RenderViewHost* rvh,
@@ -40,14 +40,11 @@ class CONTENT_EXPORT RenderViewHostTracker : public NotificationObserver {
   friend class Observer;
   typedef std::set<Observer*> ObserverSet;
 
-  // NotificationObserver interface:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  void RenderViewHostCreated(RenderViewHost* rvh);
 
   void RemoveObserver(Observer* observer);
 
-  content::NotificationRegistrar registrar_;
+  RenderViewHost::CreatedCallback rvh_created_callback_;
   ObserverSet observers_;
 };
 

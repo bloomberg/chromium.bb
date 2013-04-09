@@ -7,8 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_navigation_observer.h"
 
 class TabStripModel;
@@ -37,10 +36,7 @@ class TestTabStripModelObserver : public content::TestNavigationObserver,
  private:
   class RenderViewHostInitializedObserver;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  void RenderViewHostCreated(content::RenderViewHost* rvh);
 
   // Callback to observer the print preview dialog associated with |contents|.
   void ObservePrintPreviewDialog(content::WebContents* contents);
@@ -53,12 +49,12 @@ class TestTabStripModelObserver : public content::TestNavigationObserver,
   // register this as an observer, and the destructor will remove the observer.
   TabStripModel* tab_strip_model_;
 
+  content::RenderViewHost::CreatedCallback rvh_created_callback_;
+
   // RenderViewHost watched for JS injection.
   scoped_ptr<RenderViewHostInitializedObserver> rvh_observer_;
 
   content::JsInjectionReadyObserver* injection_observer_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelObserver);
 };
