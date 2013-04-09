@@ -53,6 +53,12 @@ void ButtonExample::CreateExampleView(View* container) {
   label_button_->set_focusable(true);
   container->AddChildView(label_button_);
 
+  LabelButton* disabled_label_button =
+      new LabelButton(this, ASCIIToUTF16("Disabled STYLE_BUTTON Label Button"));
+  disabled_label_button->SetStyle(Button::STYLE_BUTTON);
+  disabled_label_button->SetState(Button::STATE_DISABLED);
+  container->AddChildView(disabled_label_button);
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
   image_button_->set_focusable(true);

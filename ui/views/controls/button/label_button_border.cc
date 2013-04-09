@@ -72,12 +72,16 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
                Painter::CreateImageGridPainter(kHoveredImages));
     SetPainter(false, Button::STATE_PRESSED,
                Painter::CreateImageGridPainter(kPressedImages));
+    SetPainter(false, Button::STATE_DISABLED,
+               Painter::CreateImageGridPainter(kNormalImages));
     SetPainter(true, Button::STATE_NORMAL,
                Painter::CreateImageGridPainter(kFocusedNormalImages));
     SetPainter(true, Button::STATE_HOVERED,
                Painter::CreateImageGridPainter(kFocusedHoveredImages));
     SetPainter(true, Button::STATE_PRESSED,
                Painter::CreateImageGridPainter(kFocusedPressedImages));
+    SetPainter(true, Button::STATE_DISABLED,
+               Painter::CreateImageGridPainter(kNormalImages));
   } else if (style == Button::STYLE_TEXTBUTTON) {
     SetPainter(false, Button::STATE_HOVERED,
                Painter::CreateImageGridPainter(kTextHoveredImages));
@@ -98,22 +102,26 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   ui::NativeTheme::ExtraParams extra;
   const ui::NativeTheme* theme = view.GetNativeTheme();
   const ui::Animation* animation = native_theme_delegate->GetThemeAnimation();
+  state = native_theme_delegate->GetThemeState(&extra);
+  int alpha = 0xff;
 
   if (animation && animation->is_animating()) {
     // Paint the background state.
     state = native_theme_delegate->GetBackgroundThemeState(&extra);
     PaintHelper(this, canvas, theme, part, state, rect, extra);
-
     // Composite the foreground state above the background state.
-    const int alpha = animation->CurrentValueBetween(0, 255);
-    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
+    alpha = animation->CurrentValueBetween(0, alpha);
     state = native_theme_delegate->GetForegroundThemeState(&extra);
-    PaintHelper(this, canvas, theme, part, state, rect, extra);
-    canvas->Restore();
-  } else {
-    state = native_theme_delegate->GetThemeState(&extra);
-    PaintHelper(this, canvas, theme, part, state, rect, extra);
   }
+
+  if (state == ui::NativeTheme::kDisabled && style() == Button::STYLE_BUTTON)
+    alpha /= 2;
+
+  if (alpha != 0xff)
+    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
+  PaintHelper(this, canvas, theme, part, state, rect, extra);
+  if (alpha != 0xff)
+    canvas->Restore();
 
   // Draw the Views focus border for the native theme style.
   if (style() == Button::STYLE_NATIVE_TEXTBUTTON &&
