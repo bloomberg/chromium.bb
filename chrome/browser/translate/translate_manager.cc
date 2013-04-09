@@ -50,6 +50,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -136,31 +137,50 @@ const char* const kDefaultSupportedLanguages[] = {
 
 const char* const kTranslateScriptURL =
     "https://translate.google.com/translate_a/element.js";
-const char* const kTranslateScriptQuery =
-    "?cb=cr.googleTranslate.onTranslateElementLoad&hl=%s";
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
-    "https://translate.google.com/translate_error";
+    "https://translate.google.com/translate_error?client=cr&action=langidc";
 const char* const kLanguageListFetchURL =
     "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
 
-const char* const kLanguageListFetchLocaleQueryName = "hl";
-const char* const kLanguageListFetchAlphaLanguageQueryName = "alpha";
-const char* const kLanguageListFetchAlphaLanguageQueryValue = "1";
+// Used in kTranslateScriptURL to request supporting languages list including
+// "alpha languages".
+const char* const kAlphaLanguageQueryName = "alpha";
+const char* const kAlphaLanguageQueryValue = "1";
+
+// Used in all translate URLs to specify API Key.
+const char* const kApiKeyName = "key";
+
+// Used in kTranslateScriptURL to specify a callback function name.
+const char* const kCallbackQueryName = "cb";
+const char* const kCallbackQueryValue =
+    "cr.googleTranslate.onTranslateElementLoad";
+
+// Used in kTranslateScriptURL and kLanguageListFetchURL to specify the
+// application locale.
+const char* const kHostLocaleQueryName = "hl";
+
+// Used in kReportLanguageDetectionErrorURL to specify the original page
+// language.
+const char* const kSourceLanguageQueryName = "sl";
+
+// Used in kReportLanguageDetectionErrorURL to specify the page URL.
+const char* const kUrlQueryName = "u";
 
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
 
-void AddApiKeyToUrl(GURL* url) {
-  std::string api_key = google_apis::GetAPIKey();
-  std::string query(url->query());
-  if (!query.empty())
-    query += "&";
-  query += "key=" + net::EscapeQueryParamValue(api_key, true);
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  *url = url->ReplaceComponents(replacements);
+GURL AddApiKeyToUrl(const GURL& url) {
+  return net::AppendQueryParameter(url, kApiKeyName, google_apis::GetAPIKey());
+}
+
+GURL AddHostLocaleToUrl(const GURL& url) {
+  return net::AppendQueryParameter(
+      url,
+      kHostLocaleQueryName,
+      TranslateManager::GetLanguageCode(
+          g_browser_process->GetApplicationLocale()));
 }
 
 }  // namespace
@@ -312,7 +332,7 @@ void TranslateManager::Observe(int type,
       // If the navigation happened while offline don't show the translate
       // bar since there will be nothing to translate.
       if (load_details->http_status_code == 0 ||
-          load_details->http_status_code == 500) {
+          load_details->http_status_code == net::HTTP_INTERNAL_SERVER_ERROR) {
         return;
       }
 
@@ -407,7 +427,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool error =
       (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() != 200);
+      source->GetResponseCode() != net::HTTP_OK);
   if (translate_script_request_pending_.get() == source) {
     scoped_ptr<const net::URLFetcher> delete_ptr(
         translate_script_request_pending_.release());
@@ -638,24 +658,24 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
     return;
   }
 
+  GURL report_error_url = GURL(kReportLanguageDetectionErrorURL);
+
   GURL page_url = web_contents->GetController().GetActiveEntry()->GetURL();
-  // Report option should be disabled for secure URLs.
-  DCHECK(!page_url.SchemeIsSecure());
-  std::string report_error_url_str(kReportLanguageDetectionErrorURL);
-  report_error_url_str += "?client=cr&action=langidc&u=";
-  report_error_url_str += net::EscapeUrlEncodedData(page_url.spec(), true);
-  report_error_url_str += "&sl=";
+  report_error_url = net::AppendQueryParameter(
+      report_error_url,
+      kUrlQueryName,
+      page_url.spec());
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  report_error_url_str +=
-      translate_tab_helper->language_state().original_language();
-  report_error_url_str += "&hl=";
-  report_error_url_str +=
-      GetLanguageCode(g_browser_process->GetApplicationLocale());
+  report_error_url = net::AppendQueryParameter(
+      report_error_url,
+      kSourceLanguageQueryName,
+      translate_tab_helper->language_state().original_language());
 
-  GURL report_error_url(report_error_url_str);
-  AddApiKeyToUrl(&report_error_url);
+  report_error_url = AddHostLocaleToUrl(report_error_url);
+  report_error_url = AddApiKeyToUrl(report_error_url);
+
   chrome::AddSelectedTabWithURL(browser, report_error_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
@@ -780,19 +800,17 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
   }
 
   GURL language_list_fetch_url = GURL(kLanguageListFetchURL);
-  language_list_fetch_url = net::AppendQueryParameter(
-      language_list_fetch_url,
-      kLanguageListFetchLocaleQueryName,
-      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
+  language_list_fetch_url = AddHostLocaleToUrl(language_list_fetch_url);
+  language_list_fetch_url = AddApiKeyToUrl(language_list_fetch_url);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableTranslateAlphaLanguages)) {
     language_list_fetch_url = net::AppendQueryParameter(
         language_list_fetch_url,
-        kLanguageListFetchAlphaLanguageQueryName,
-        kLanguageListFetchAlphaLanguageQueryValue);
+        kAlphaLanguageQueryName,
+        kAlphaLanguageQueryValue);
   }
-  AddApiKeyToUrl(&language_list_fetch_url);
+
   VLOG(9) << "Fetch supporting language list from: "
           << language_list_fetch_url.spec().c_str();
 
@@ -817,30 +835,31 @@ void TranslateManager::RequestTranslateScript() {
     return;
 
   GURL translate_script_url;
-  std::string translate_script;
   // Check if command-line contains an alternative URL for translate service.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTranslateScriptURL)) {
-    translate_script = std::string(
+    translate_script_url = GURL(
         command_line.GetSwitchValueASCII(switches::kTranslateScriptURL));
-    translate_script_url = GURL(translate_script.c_str());
     if (!translate_script_url.is_valid() ||
         !translate_script_url.query().empty()) {
       LOG(WARNING) << "The following translate URL specified at the "
-                   << "command-line is invalid: " << translate_script;
-      translate_script.clear();
+                   << "command-line is invalid: "
+                   << translate_script_url.spec();
+      translate_script_url = GURL();
     }
   }
   // Use default URL when command-line argument is not specified, or specified
   // URL is invalid.
-  if (translate_script.empty())
-    translate_script = std::string(kTranslateScriptURL);
+  if (translate_script_url.is_empty())
+    translate_script_url = GURL(kTranslateScriptURL);
 
-  translate_script += std::string(kTranslateScriptQuery);
-  translate_script_url = GURL(base::StringPrintf(
-      translate_script.c_str(),
-      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str()));
-  AddApiKeyToUrl(&translate_script_url);
+  translate_script_url = net::AppendQueryParameter(
+      translate_script_url,
+      kCallbackQueryName,
+      kCallbackQueryValue);
+  translate_script_url = AddHostLocaleToUrl(translate_script_url);
+  translate_script_url = AddApiKeyToUrl(translate_script_url);
+
   translate_script_request_pending_.reset(net::URLFetcher::Create(
       0, translate_script_url, net::URLFetcher::GET, this));
   translate_script_request_pending_->SetLoadFlags(
