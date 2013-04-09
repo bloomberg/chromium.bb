@@ -586,6 +586,11 @@
               '<(PRODUCT_DIR)/libpdf.so',
             ],
           }],
+          ['libpeer_target_type=="shared_library"', {
+            'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/lib.target/libpeerconnection.so',
+            ],
+          }],
         ],
       },
       'targets': [
