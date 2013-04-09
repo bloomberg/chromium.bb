@@ -84,7 +84,9 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
   // WebRequestIgnoreRulesActions.
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, WebRequestRule::Priority> MinPriorities;
+  typedef std::map<ExtensionId, std::set<std::string> > IgnoreTags;
   MinPriorities min_priorities;
+  IgnoreTags ignore_tags;
   for (std::vector<PriorityRuleIdPair>::iterator i = ordered_matches.begin();
        i != ordered_matches.end(); ++i) {
     const WebRequestRule::GlobalRuleId& rule_id = i->second;
@@ -108,10 +110,22 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     if (priority_of_rule < current_min_priority)
       continue;
 
+    if (!rule->tags().empty() && !ignore_tags[extension_id].empty()) {
+      bool ignore_rule = false;
+      const WebRequestRule::Tags& tags = rule->tags();
+      for (WebRequestRule::Tags::const_iterator i = tags.begin();
+           !ignore_rule && i != tags.end();
+           ++i) {
+        ignore_rule |= ContainsKey(ignore_tags[extension_id], *i);
+      }
+      if (ignore_rule)
+        continue;
+    }
 
     std::list<LinkedPtrEventResponseDelta> rule_result;
     WebRequestAction::ApplyInfo apply_info = {
-      extension_info_map, request_data, crosses_incognito, &rule_result
+      extension_info_map, request_data, crosses_incognito, &rule_result,
+      &ignore_tags[extension_id]
     };
     rule->Apply(&apply_info);
     result.splice(result.begin(), rule_result);

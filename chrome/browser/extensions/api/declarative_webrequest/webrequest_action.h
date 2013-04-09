@@ -87,6 +87,7 @@ class WebRequestAction {
     bool crosses_incognito;
     // Modified by each applied action:
     std::list<LinkedPtrEventResponseDelta>* deltas;
+    std::set<std::string>* ignored_tags;
   };
 
   WebRequestAction();
@@ -359,7 +360,8 @@ class WebRequestRemoveResponseHeaderAction : public WebRequestAction {
 // Action that instructs to ignore rules below a certain priority.
 class WebRequestIgnoreRulesAction : public WebRequestAction {
  public:
-  explicit WebRequestIgnoreRulesAction(int minimum_priority);
+  explicit WebRequestIgnoreRulesAction(int minimum_priority,
+                                       const std::string& ignore_tag);
   virtual ~WebRequestIgnoreRulesAction();
 
   // Implementation of WebRequestAction:
@@ -371,9 +373,13 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
       const WebRequestData& request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
+  const std::string& ignore_tag() const { return ignore_tag_; }
 
  private:
   int minimum_priority_;
+  // Rules are ignored if they have a tag matching |ignore_tag_| and
+  // |ignore_tag_| is non-empty.
+  std::string ignore_tag_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestIgnoreRulesAction);
 };
 

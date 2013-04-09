@@ -186,6 +186,7 @@ class DeclarativeRule {
   typedef DeclarativeConditionSet<ConditionT> ConditionSet;
   typedef DeclarativeActionSet<ActionT> ActionSet;
   typedef extensions::api::events::Rule JsonRule;
+  typedef std::vector<std::string> Tags;
 
   // Checks whether the set of |conditions| and |actions| are consistent.
   // Returns true in case of consistency and MUST set |error| otherwise.
@@ -194,6 +195,7 @@ class DeclarativeRule {
                                      std::string* error);
 
   DeclarativeRule(const GlobalRuleId& id,
+                  const Tags& tags,
                   base::Time extension_installation_time,
                   scoped_ptr<ConditionSet> conditions,
                   scoped_ptr<ActionSet> actions,
@@ -216,6 +218,7 @@ class DeclarativeRule {
       std::string* error);
 
   const GlobalRuleId& id() const { return id_; }
+  const Tags& tags() const { return tags_; }
   const std::string& extension_id() const { return id_.first; }
   const ConditionSet& conditions() const { return *conditions_; }
   const ActionSet& actions() const { return *actions_; }
@@ -234,6 +237,7 @@ class DeclarativeRule {
 
  private:
   GlobalRuleId id_;
+  Tags tags_;
   base::Time extension_installation_time_;  // For precedences of rules.
   scoped_ptr<ConditionSet> conditions_;
   scoped_ptr<ActionSet> actions_;
@@ -397,11 +401,13 @@ int DeclarativeActionSet<ActionT>::GetMinimumPriority() const {
 template<typename ConditionT, typename ActionT>
 DeclarativeRule<ConditionT, ActionT>::DeclarativeRule(
     const GlobalRuleId& id,
+    const Tags& tags,
     base::Time extension_installation_time,
     scoped_ptr<ConditionSet> conditions,
     scoped_ptr<ActionSet> actions,
     Priority priority)
     : id_(id),
+      tags_(tags),
       extension_installation_time_(extension_installation_time),
       conditions_(conditions.release()),
       actions_(actions.release()),
@@ -452,9 +458,10 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   int priority = *(rule->priority);
 
   GlobalRuleId rule_id(extension_id, *(rule->id));
+  Tags tags = rule->tags ? *rule->tags : Tags();
   return scoped_ptr<DeclarativeRule>(
-      new DeclarativeRule(rule_id, extension_installation_time,
-                         conditions.Pass(), actions.Pass(), priority));
+      new DeclarativeRule(rule_id, tags, extension_installation_time,
+                          conditions.Pass(), actions.Pass(), priority));
 }
 
 template<typename ConditionT, typename ActionT>

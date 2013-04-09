@@ -29,6 +29,7 @@ extern const char kFilterKey[];
 extern const char kFirstPartyForCookiesUrlKey[];
 extern const char kFromKey[];
 extern const char kHttpOnlyKey[];
+extern const char kHasTagKey[];
 extern const char kInstanceTypeKey[];
 extern const char kLowerPriorityThanKey[];
 extern const char kMaxAgeKey[];

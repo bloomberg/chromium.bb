@@ -32,6 +32,8 @@ namespace {
 // Error messages.
 const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
+const char kIgnoreRulesRequiresParameterError[] =
+    "IgnoreRules requires at least one parameter.";
 
 const char kTransparentImageUrl[] = "data:image/png;base64,iVBORw0KGgoAAAANSUh"
     "EUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==";
@@ -197,11 +199,24 @@ scoped_ptr<WebRequestAction> CreateIgnoreRulesAction(
     const base::DictionaryValue* dict,
     std::string* error,
     bool* bad_message) {
-  int minium_priority;
-  INPUT_FORMAT_VALIDATE(
-      dict->GetInteger(keys::kLowerPriorityThanKey, &minium_priority));
+  bool has_parameter = false;
+  int minimum_priority = std::numeric_limits<int>::min();
+  std::string ignore_tag;
+  if (dict->HasKey(keys::kLowerPriorityThanKey)) {
+    INPUT_FORMAT_VALIDATE(
+        dict->GetInteger(keys::kLowerPriorityThanKey, &minimum_priority));
+    has_parameter = true;
+  }
+  if (dict->HasKey(keys::kHasTagKey)) {
+    INPUT_FORMAT_VALIDATE(dict->GetString(keys::kHasTagKey, &ignore_tag));
+    has_parameter = true;
+  }
+  if (!has_parameter) {
+    *error = kIgnoreRulesRequiresParameterError;
+    return scoped_ptr<WebRequestAction>(NULL);
+  }
   return scoped_ptr<WebRequestAction>(
-      new WebRequestIgnoreRulesAction(minium_priority));
+      new WebRequestIgnoreRulesAction(minimum_priority, ignore_tag));
 }
 
 scoped_ptr<WebRequestAction> CreateRequestCookieAction(
@@ -459,6 +474,12 @@ void WebRequestAction::Apply(const std::string& extension_id,
                              apply_info->crosses_incognito,
                              delta))
         apply_info->deltas->push_back(delta);
+    }
+    if (GetType() == WebRequestAction::ACTION_IGNORE_RULES) {
+      const WebRequestIgnoreRulesAction* ignore_action =
+          static_cast<const WebRequestIgnoreRulesAction*>(this);
+      if (!ignore_action->ignore_tag().empty())
+        apply_info->ignored_tags->insert(ignore_action->ignore_tag());
     }
   }
 }
@@ -869,8 +890,10 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
 //
 
 WebRequestIgnoreRulesAction::WebRequestIgnoreRulesAction(
-    int minimum_priority)
-    : minimum_priority_(minimum_priority) {
+    int minimum_priority,
+    const std::string& ignore_tag)
+    : minimum_priority_(minimum_priority),
+      ignore_tag_(ignore_tag) {
 }
 
 WebRequestIgnoreRulesAction::~WebRequestIgnoreRulesAction() {}

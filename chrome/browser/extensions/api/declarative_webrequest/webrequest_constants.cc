@@ -25,6 +25,7 @@ const char kFilterKey[] ="filter";
 const char kFirstPartyForCookiesUrlKey[] = "firstPartyForCookiesUrl";
 const char kFromKey[] = "from";
 const char kHttpOnlyKey[] = "httpOnly";
+const char kHasTagKey[] = "hasTag";
 const char kInstanceTypeKey[] = "instanceType";
 const char kLowerPriorityThanKey[] = "lowerPriorityThan";
 const char kMaxAgeKey[] = "maxAge";

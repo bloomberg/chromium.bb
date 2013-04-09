@@ -20,6 +20,12 @@
             "optional": true,
             "description": "Optional identifier that allows referencing this rule."
           },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description":  "Tags can be used to annotate rules and perform operations on sets of rules."
+          },
           "conditions": {
             "type": "array",
             "items": {"type": "any"},

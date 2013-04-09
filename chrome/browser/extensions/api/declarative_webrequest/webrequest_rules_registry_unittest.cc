@@ -444,6 +444,75 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   EXPECT_EQ(GURL("http://www.bar.com"), effective_rule->new_url);
 }
 
+// Test ignoring of rules by tag.
+TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
+  const char kRule1[] =
+      "{                                                                 \n"
+      "  \"id\": \"rule1\",                                              \n"
+      "  \"tags\": [\"non_matching_tag\", \"ignore_tag\"],               \n"
+      "  \"conditions\": [                                               \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+      "      \"url\": {\"hostSuffix\": \"foo.com\"}                      \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"actions\": [                                                  \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
+      "      \"redirectUrl\": \"http://bar.com\"                         \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"priority\": 200                                               \n"
+      "}                                                                 ";
+
+  const char kRule2[] =
+      "{                                                                 \n"
+      "  \"id\": \"rule2\",                                              \n"
+      "  \"conditions\": [                                               \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+      "      \"url\": {\"pathPrefix\": \"/test\"}                        \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"actions\": [                                                  \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.IgnoreRules\",    \n"
+      "      \"hasTag\": \"ignore_tag\"                                  \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"priority\": 300                                               \n"
+      "}                                                                 ";
+
+  scoped_ptr<Value> value1(base::JSONReader::Read(kRule1));
+  ASSERT_TRUE(value1.get());
+  scoped_ptr<Value> value2(base::JSONReader::Read(kRule2));
+  ASSERT_TRUE(value2.get());
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+  rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
+  rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
+  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value1, rules[0].get()));
+  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value2, rules[1].get()));
+
+  scoped_refptr<WebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+  std::string error = registry->AddRulesImpl(kExtensionId, rules);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(registry->IsEmpty());
+
+  GURL url("http://www.foo.com/test");
+  net::TestURLRequestContext context;
+  net::TestURLRequest request(url, NULL, &context, NULL);
+  WebRequestData request_data(&request, ON_BEFORE_REQUEST);
+  std::list<LinkedPtrEventResponseDelta> deltas =
+      registry->CreateDeltas(NULL, request_data, false);
+
+  // The redirect by the redirect rule is ignored due to the ignore rule.
+  std::set<const WebRequestRule*> matches = registry->GetMatches(request_data);
+  EXPECT_EQ(2u, matches.size());
+  ASSERT_EQ(0u, deltas.size());
+}
+
 // Test that rules failing IsFulfilled on their conditions are never returned by
 // GetMatches.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
