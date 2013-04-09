@@ -142,6 +142,7 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type,
   switch (type) {
     case FOURCC_FTYP:
     case FOURCC_PDIN:
+    case FOURCC_BLOC:
     case FOURCC_MOOV:
     case FOURCC_MOOF:
     case FOURCC_MFRA:

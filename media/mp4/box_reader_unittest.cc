@@ -181,5 +181,21 @@ TEST_F(BoxReaderTest, ReadAllChildrenTest) {
   EXPECT_EQ(kids[0].val, 0xdeadbeef);   // Ensure order is preserved
 }
 
+TEST_F(BoxReaderTest, TestSkippingBloc) {
+  static const uint8 kData[] = {
+    0x00, 0x00, 0x00, 0x09,  'b',  'l',  'o',  'c', 0x00
+  };
+
+  std::vector<uint8> buf(kData, kData + sizeof(kData));
+
+  bool err;
+  scoped_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), LogCB(), &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_BLOC, reader->type());
+}
+
 }  // namespace mp4
 }  // namespace media
