@@ -31,7 +31,7 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
 
   base::DictionaryValue environment;
   environment.Set(SetupListener::kPrintersJsonValueName, printers.release());
-  environment.SetBoolean(SetupListener::kXpsAvailibleJsonValueName,
+  environment.SetBoolean(SetupListener::kXpsAvailableJsonValueName,
                          printing::XPSModule::Init());
   environment.SetString(SetupListener::kUserNameJsonValueName,
                         GetCurrentUserName());

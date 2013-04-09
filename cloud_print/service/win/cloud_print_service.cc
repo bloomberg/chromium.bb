@@ -29,7 +29,7 @@
 
 namespace {
 
-const wchar_t kAppDataSubDir[] = L"Google\\Cloud Printe Service";
+const wchar_t kAppDataSubDir[] = L"Google\\Cloud Print Service";
 
 void InvalidUsage() {
   base::FilePath service_path;
@@ -274,7 +274,7 @@ class CloudPrintServiceModule
         LOG(ERROR) << "Chrome is not available  for " << *run_as_user << ".";
         continue;
       }
-      if (!setup.is_xps_availible()) {
+      if (!setup.is_xps_available()) {
         LOG(ERROR) << "XPS pack is not installed.";
         continue;
       }

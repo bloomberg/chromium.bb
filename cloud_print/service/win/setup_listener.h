@@ -28,7 +28,7 @@ class Channel;
 // environment from service process.
 class SetupListener : public IPC::Listener {
  public:
-  static const char kXpsAvailibleJsonValueName[];
+  static const char kXpsAvailableJsonValueName[];
   static const char kChromePathJsonValueName[];
   static const char kPrintersJsonValueName[];
   static const char kUserDataDirJsonValueName[];
@@ -59,8 +59,8 @@ class SetupListener : public IPC::Listener {
     return printers_;
   }
 
-  bool is_xps_availible() const {
-    return is_xps_availible_;
+  bool is_xps_available() const {
+    return is_xps_available_;
   }
 
  private:
@@ -71,7 +71,7 @@ class SetupListener : public IPC::Listener {
   base::FilePath user_data_dir_;
   string16 user_name_;
   std::vector<std::string> printers_;
-  bool is_xps_availible_;
+  bool is_xps_available_;
   bool succeded_;
 
   scoped_ptr<base::WaitableEvent> done_event_;
