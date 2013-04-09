@@ -15,7 +15,7 @@
     limitations under the License.
 -->
 
-<project default="-package">
+<project default="-do-sign">
   <property name="verbose" value="false" />
   <property name="out.dir" location="${OUT_DIR}" />
   <!-- Output directories -->
@@ -46,11 +46,14 @@
     <equals arg1="build.target" arg2="debug" />
   </condition>
 
+  <property name="out.final.file" location="${FINAL_APK_PATH}" />
+
   <!-- Disables automatic signing. -->
   <property name="build.is.signing.debug" value="false"/>
 
   <!-- SDK tools assume that out.packaged.file is signed and name it "...-unaligned" -->
-  <property name="out.packaged.file" value="${UNSIGNED_APK_PATH}" />
+  <property name="out.packaged.file" value="${out.dir}/${APK_NAME}-unsigned.apk" />
+  <property name="out.unaligned.file" value="${out.dir}/${APK_NAME}-unaligned.apk" />
 
   <property name="resource.dir" value="${RESOURCE_DIR}"/>
   <property name="resource.absolute.dir" location="${resource.dir}"/>
@@ -163,5 +166,34 @@
       <sourcefolder path="${source.absolute.dir}"/>
       <nativefolder path="${native.libs.absolute.dir}" />
     </apkbuilder>
+  </target>
+
+
+
+  <property name="key.store" value="${KEYSTORE_PATH}"/>
+  <property name="key.store.password" value="chromium"/>
+  <property name="key.alias" value="chromiumdebugkey"/>
+  <property name="key.alias.password" value="chromium"/>
+  <property name="zipalign" location="${android.tools.dir}/zipalign" />
+
+  <!-- Signs and zipaligns the apk. -->
+  <target name="-do-sign" depends="-package">
+    <sequential>
+      <echo level="info">Signing final apk...</echo>
+      <signapk
+          input="${out.packaged.file}"
+          output="${out.unaligned.file}"
+          keystore="${key.store}"
+          storepass="${key.store.password}"
+          alias="${key.alias}"
+          keypass="${key.alias.password}" />
+
+      <zipalign
+          executable="${zipalign}"
+          input="${out.unaligned.file}"
+          output="${out.final.file}"
+          verbose="${verbose}" />
+      <echo level="info">Release Package: ${out.final.file}</echo>
+    </sequential>
   </target>
 </project>
