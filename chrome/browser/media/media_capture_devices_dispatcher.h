@@ -13,6 +13,10 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
+namespace extensions {
+class Extension;
+}
+
 class AudioStreamIndicator;
 class MediaStreamCaptureIndicator;
 class PrefRegistrySyncable;
@@ -57,10 +61,14 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   const content::MediaStreamDevices& GetAudioCaptureDevices();
   const content::MediaStreamDevices& GetVideoCaptureDevices();
 
-  void RequestAccess(
+  // Method called from WebCapturerDelegate implementations to process access
+  // requests. |extension| is set to NULL if request was made from a drive-by
+  // page.
+  void ProcessMediaAccessRequest(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
+      const content::MediaResponseCallback& callback,
+      const extensions::Extension* extension);
 
   // Helper to get the default devices which can be used by the media request,
   // if the return list is empty, it means there is no available device on the
@@ -114,6 +122,17 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
 
   MediaCaptureDevicesDispatcher();
   virtual ~MediaCaptureDevicesDispatcher();
+
+  // Helpers for ProcessMediaAccessRequest().
+  void ProcessScreenCaptureAccessRequest(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback);
+  void ProcessMediaAccessRequestFromExtension(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback,
+      const extensions::Extension* extension);
 
   // Called by the MediaObserver() functions, executed on UI thread.
   void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);

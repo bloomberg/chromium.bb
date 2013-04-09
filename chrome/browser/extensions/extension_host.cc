@@ -36,7 +36,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/request_media_access_permission_helper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/content_browser_client.h"
@@ -624,17 +623,8 @@ void ExtensionHost::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  // Get the preferred default devices for the request.
-  content::MediaStreamDevices devices;
-  MediaCaptureDevicesDispatcher::GetInstance()->GetDefaultDevicesForProfile(
-      profile_,
-      content::IsAudioMediaType(request.audio_type),
-      content::IsVideoMediaType(request.video_type),
-      &devices);
-
-  // For tab capture device, we require the tabCapture permission.
-  RequestMediaAccessPermissionHelper::AuthorizeRequest(
-      devices, request, callback, extension(), false);
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, extension());
 }
 
 }  // namespace extensions

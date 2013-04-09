@@ -10,8 +10,6 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -86,9 +84,11 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
     return true;
   }
 
+  // Tab capture is allowed for extensions only and infobar is not shown for
+  // extensions.
   if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    HandleTabMediaRequest();
+    Deny(false);
     return true;
   }
 
@@ -260,35 +260,6 @@ bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
   return (current_setting == CONTENT_SETTING_BLOCK);
-}
-
-void MediaStreamDevicesController::HandleTabMediaRequest() {
-#if defined(OS_ANDROID)
-  Deny(false);
-#else
-  // For tab media requests, we need to make sure the request came from the
-  // extension API, so we check the registry here.
-  extensions::TabCaptureRegistry* registry =
-      extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
-
-  if (!registry->VerifyRequest(request_.render_process_id,
-                               request_.render_view_id)) {
-    Deny(false);
-  } else {
-    content::MediaStreamDevices devices;
-
-    if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-      devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
-    }
-    if (request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-      devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
-    }
-
-    callback_.Run(devices);
-  }
-#endif
 }
 
 bool MediaStreamDevicesController::IsSchemeSecure() const {

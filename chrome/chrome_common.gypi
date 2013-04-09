@@ -298,8 +298,6 @@
         'common/extensions/permissions/usb_device_permission.h',
         'common/extensions/permissions/usb_device_permission_data.cc',
         'common/extensions/permissions/usb_device_permission_data.h',
-        'common/extensions/request_media_access_permission_helper.cc',
-        'common/extensions/request_media_access_permission_helper.h',
         'common/extensions/unpacker.cc',
         'common/extensions/unpacker.h',
         'common/extensions/update_manifest.cc',

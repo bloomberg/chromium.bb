@@ -60,9 +60,6 @@ class MediaStreamDevicesController {
   // |CONTENT_SETTING_BLOCK|, otherwise returns false.
   bool IsDefaultMediaAccessBlocked() const;
 
-  // Handles Tab Capture media request.
-  void HandleTabMediaRequest();
-
   // Returns true if the origin is a secure scheme, otherwise returns false.
   bool IsSchemeSecure() const;
 

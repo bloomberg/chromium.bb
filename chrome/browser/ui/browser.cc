@@ -1611,8 +1611,17 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  MediaCaptureDevicesDispatcher::GetInstance()->RequestAccess(
-      web_contents, request, callback);
+  const extensions::Extension* extension = NULL;
+  GURL origin(request.security_origin);
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
+    ExtensionService* extensions_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    extension = extensions_service->extensions()->GetByID(origin.host());
+    DCHECK(extension);
+  }
+
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, extension);
 }
 
 bool Browser::RequestPpapiBrokerPermission(

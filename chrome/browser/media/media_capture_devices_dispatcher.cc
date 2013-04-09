@@ -10,6 +10,8 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/audio_stream_indicator.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -17,11 +19,15 @@
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_devices_monitor.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -130,18 +136,29 @@ MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
   return video_devices_;
 }
 
-void MediaCaptureDevicesDispatcher::RequestAccess(
+void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    const extensions::Extension* extension) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE) {
+    ProcessScreenCaptureAccessRequest(web_contents, request, callback);
+  } else if (extension) {
+    // For extensions access is approved based on extension permissions.
+    ProcessMediaAccessRequestFromExtension(
+        web_contents, request, callback, extension);
+  } else {
+    // For all regular media requests show infobar.
+    MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
+  }
+}
+
+void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Handle regular media requests first.
-  if (request.video_type != content::MEDIA_SCREEN_VIDEO_CAPTURE) {
-    MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
-    return;
-  }
-
   content::MediaStreamDevices devices;
 
   bool screen_capture_enabled =
@@ -156,7 +173,7 @@ void MediaCaptureDevicesDispatcher::RequestAccess(
   if (screen_capture_enabled &&
       request.audio_type == content::MEDIA_NO_SERVICE &&
       (request.security_origin.SchemeIsSecure() ||
-       request.security_origin.SchemeIs("chrome-extension"))) {
+       request.security_origin.SchemeIs(extensions::kExtensionScheme))) {
     string16 application_name = UTF8ToUTF16(request.security_origin.spec());
     chrome::MessageBoxResult result = chrome::ShowMessageBox(
         NULL,
@@ -169,6 +186,57 @@ void MediaCaptureDevicesDispatcher::RequestAccess(
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
     }
+  }
+
+  callback.Run(devices);
+}
+
+void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    const extensions::Extension* extension) {
+  content::MediaStreamDevices devices;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
+
+#if defined(OS_ANDROID)
+  // Tab capture is not supported on Android.
+  bool tab_capture_allowed = false;
+#else
+  extensions::TabCaptureRegistry* tab_capture_registry =
+      extensions::TabCaptureRegistryFactory::GetForProfile(profile);
+  bool tab_capture_allowed =
+      tab_capture_registry->VerifyRequest(request.render_process_id,
+                                          request.render_view_id);
+#endif
+
+  if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
+      tab_capture_allowed &&
+      extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
+      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+    devices.push_back(content::MediaStreamDevice(
+        content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
+  } else if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+             extension->HasAPIPermission(
+                 extensions::APIPermission::kAudioCapture)) {
+    std::string default_device =
+        prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+    GetRequestedDevice(default_device, true, false, &devices);
+  }
+
+  if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
+      tab_capture_allowed &&
+      extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
+      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+    devices.push_back(content::MediaStreamDevice(
+        content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
+  } else if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+       extension->HasAPIPermission(extensions::APIPermission::kVideoCapture)) {
+    std::string default_device = prefs->GetString(
+        prefs::kDefaultVideoCaptureDevice);
+    GetRequestedDevice(default_device, false, true, &devices);
   }
 
   callback.Run(devices);

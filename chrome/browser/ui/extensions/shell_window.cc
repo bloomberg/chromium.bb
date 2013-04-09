@@ -30,7 +30,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/request_media_access_permission_helper.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -53,7 +52,6 @@
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
-using extensions::RequestMediaAccessPermissionHelper;
 
 namespace {
 const int kDefaultWidth = 512;
@@ -228,16 +226,8 @@ void ShellWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  // Get the preferred default devices for the request.
-  content::MediaStreamDevices devices;
-  MediaCaptureDevicesDispatcher::GetInstance()->GetDefaultDevicesForProfile(
-      profile_,
-      content::IsAudioMediaType(request.audio_type),
-      content::IsVideoMediaType(request.video_type),
-      &devices);
-
-  RequestMediaAccessPermissionHelper::AuthorizeRequest(
-      devices, request, callback, extension(), true);
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, extension());
 }
 
 WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
