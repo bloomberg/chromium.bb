@@ -104,6 +104,18 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
         case ERROR_ACCESS_DENIED:
           *error = PLATFORM_FILE_ERROR_ACCESS_DENIED;
           break;
+        case ERROR_TOO_MANY_OPEN_FILES:
+          *error = PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+          break;
+        case ERROR_OUTOFMEMORY:
+        case ERROR_NOT_ENOUGH_MEMORY:
+          *error = PLATFORM_FILE_ERROR_NO_MEMORY;
+          break;
+        case ERROR_HANDLE_DISK_FULL:
+        case ERROR_DISK_FULL:
+        case ERROR_DISK_RESOURCES_EXHAUSTED:
+          *error = PLATFORM_FILE_ERROR_NO_SPACE;
+          break;
         default:
           *error = PLATFORM_FILE_ERROR_FAILED;
       }
