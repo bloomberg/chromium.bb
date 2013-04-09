@@ -16,13 +16,13 @@ const int kSettingsIconSize = 16;
 
 // Within a notification ///////////////////////////////////////////////////////
 
-// Pixel dimensions (H = horizontal, V = vertical).
+// Pixel dimensions.
 const int kControlButtonSize = 29;
 const int kNotificationWidth = 360;
 const int kIconToTextPadding = 16;
-const int kTextTopPadding = 6;
+const int kTextTopPadding = 12;
 
-// Text sizes
+// Text sizes.
 const int kTitleFontSize = 14;
 const int kMessageFontSize = 12;
 
@@ -41,7 +41,7 @@ const int kAutocloseHighPriorityDelaySeconds = 25;
 
 // Around notifications ////////////////////////////////////////////////////////
 
-// Pixel dimensions (H = horizontal, V = vertical).
+// Pixel dimensions.
 const int kMarginBetweenItems = 10;
 
 // Colors.

@@ -14,6 +14,12 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_change_observer.h"
 
+namespace {
+
+// Compensates for padding already provided by UI elements involved.
+const int kTextTopPaddingAdjustment = -6;
+
+}  // namespace
 @interface MCNotificationController (Private)
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
 // free.
@@ -79,9 +85,11 @@
 
   // In this basic notification UI, the message body is the bottom-most
   // vertical element. If it is out of the rootView's bounds, resize the view.
-  if (NSMinY([message_ frame]) < message_center::kTextTopPadding) {
-    rootFrame.size.height += message_center::kTextTopPadding -
-        NSMinY([message_ frame]);
+  if (NSMinY([message_ frame]) <
+          message_center::kTextTopPadding + kTextTopPaddingAdjustment) {
+    rootFrame.size.height += message_center::kTextTopPadding +
+                             kTextTopPaddingAdjustment -
+                             NSMinY([message_ frame]);
   }
 
   [rootView setFrame:rootFrame];
@@ -159,7 +167,8 @@
   CGFloat delta =
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title_];
   frame.size.height = delta;
-  frame.origin.y = NSMaxY(rootFrame) - message_center::kTextTopPadding - delta;
+  frame.origin.y = NSMaxY(rootFrame) - message_center::kTextTopPadding +
+                   kTextTopPaddingAdjustment - delta;
   [title_ setFrame:frame];
 }
 
@@ -175,7 +184,8 @@
   CGFloat delta =
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
   frame.size.height = delta;
-  frame.origin.y = maxY - message_center::kTextTopPadding - delta;
+  frame.origin.y = maxY - message_center::kTextTopPadding +
+                   kTextTopPaddingAdjustment - delta;
   [message_ setFrame:frame];
 }
 

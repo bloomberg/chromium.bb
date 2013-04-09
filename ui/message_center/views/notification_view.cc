@@ -32,8 +32,8 @@ namespace {
 const int kIconColumnWidth = message_center::kNotificationIconSize;
 const int kLegacyIconSize = 40;
 const int kTextLeftPadding = kIconColumnWidth +
-    message_center::kIconToTextPadding;
-const int kTextBottomPadding = 6;
+                             message_center::kIconToTextPadding;
+const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
 const int kButtonHeight = 38;
@@ -55,21 +55,25 @@ const SkColor kDimTextBackgroundColor = SK_ColorBLACK;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
-// Static.
+// static
 views::Background* MakeBackground(
     SkColor color = message_center::kNotificationBackgroundColor) {
   return views::Background::CreateSolidBackground(color);
 }
 
-// Static.
-views::Border* MakeBorder(int top,
-                          int bottom,
-                          int left = kTextLeftPadding,
-                          int right = kTextRightPadding,
-                          SkColor color = 0x00000000) {
-  return (color == 0x00000000) ?
-         views::Border::CreateEmptyBorder(top, left, bottom, right) :
-         views::Border::CreateSolidSidedBorder(top, left, bottom, right, color);
+// static
+views::Border* MakeEmptyBorder(int top, int left, int bottom, int right) {
+  return views::Border::CreateEmptyBorder(top, left, bottom, right);
+}
+
+// static
+views::Border* MakeTextBorder(int top, int bottom) {
+  return MakeEmptyBorder(top, kTextLeftPadding, bottom, kTextRightPadding);
+}
+
+// static
+views::Border* MakeSeparatorBorder(int top, int left, SkColor color) {
+  return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
 }
 
 // ContainerView ///////////////////////////////////////////////////////////////
@@ -277,7 +281,7 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
     icon_->SetImage(image);
     icon_->SetHorizontalAlignment(views::ImageView::LEADING);
     icon_->SetVerticalAlignment(views::ImageView::LEADING);
-    icon_->set_border(MakeBorder(kButtonIconTopPadding, 0, 0, 0));
+    icon_->set_border(MakeEmptyBorder(kButtonIconTopPadding, 0, 0, 0));
     AddChildViewAt(icon_, 0);
   }
 }
@@ -293,7 +297,7 @@ void NotificationButton::SetTitle(const string16& title) {
     title_->SetElideBehavior(views::Label::ELIDE_AT_END);
     title_->SetEnabledColor(message_center::kRegularTextColor);
     title_->SetBackgroundColor(kRegularTextBackgroundColor);
-    title_->set_border(MakeBorder(kButtonTitleTopPadding, 0, 0, 0));
+    title_->set_border(MakeEmptyBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
   }
 }
@@ -363,6 +367,8 @@ NotificationView::NotificationView(const Notification& notification,
   // at the top of the notification (to the right of the icon) except for the
   // close button.
   top_view_ = new ContainerView();
+  top_view_->set_border(MakeEmptyBorder(kTextTopPadding - 8, 0,
+                                        kTextBottomPadding - 5, 0));
 
   // Create the title view if appropriate.
   title_view_ = NULL;
@@ -377,7 +383,7 @@ NotificationView::NotificationView(const Notification& notification,
     title_view_->SetFont(title_view_->font().DeriveFont(2));
     title_view_->SetEnabledColor(message_center::kRegularTextColor);
     title_view_->SetBackgroundColor(kRegularTextBackgroundColor);
-    title_view_->set_border(MakeBorder(kTextTopPadding, 3));
+    title_view_->set_border(MakeTextBorder(3, 0));
     top_view_->AddChildView(title_view_);
   }
 
@@ -395,7 +401,7 @@ NotificationView::NotificationView(const Notification& notification,
       message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
     message_view_->SetEnabledColor(message_center::kRegularTextColor);
     message_view_->SetBackgroundColor(kRegularTextBackgroundColor);
-    message_view_->set_border(MakeBorder(0, 3));
+    message_view_->set_border(MakeTextBorder(4, 1));
     top_view_->AddChildView(message_view_);
   }
 
@@ -404,7 +410,7 @@ NotificationView::NotificationView(const Notification& notification,
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     ItemView* item_view = new ItemView(items[i]);
     item_view->SetVisible(is_expanded());
-    item_view->set_border(MakeBorder(0, 4));
+    item_view->set_border(MakeTextBorder(i > 0 ? 0 : 4, 1));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
   }
@@ -438,7 +444,7 @@ NotificationView::NotificationView(const Notification& notification,
   std::vector<ButtonInfo> buttons = notification.buttons();
   for (size_t i = 0; i < buttons.size(); ++i) {
     views::View* separator = new views::ImageView();
-    separator->set_border(MakeBorder(1, 0, 0, 0, kButtonSeparatorColor));
+    separator->set_border(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
     bottom_view_->AddChildView(separator);
     NotificationButton* button = new NotificationButton(this);
     ButtonInfo button_info = buttons[i];
