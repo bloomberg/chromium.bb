@@ -49,6 +49,7 @@
 #include "content/public/browser/url_data_source.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -164,9 +165,14 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 #if defined(OS_CHROMEOS)
   // Skip loading session extensions if we are not in a user session.
   skip_session_extensions = !chromeos::UserManager::Get()->IsUserLoggedIn();
-#endif
+  if (!chrome::IsRunningInForcedAppMode()) {
+    extension_service_->component_loader()->AddDefaultComponentExtensions(
+        skip_session_extensions);
+  }
+#else
   extension_service_->component_loader()->AddDefaultComponentExtensions(
       skip_session_extensions);
+#endif
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
     CommandLine::StringType path_list = command_line->GetSwitchValueNative(
         switches::kLoadComponentExtension);
