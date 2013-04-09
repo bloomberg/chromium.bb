@@ -792,6 +792,10 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   uint8* buffer =
       resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
 
+  CHECK(buffer);
+  // skia requires that our buffer be 4-byte aligned
+  CHECK(!(reinterpret_cast<intptr_t>(buffer) & 3));
+
   ManagedTileState& managed_tile_state = tile->managed_state();
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
