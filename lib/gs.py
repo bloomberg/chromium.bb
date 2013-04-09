@@ -204,9 +204,10 @@ class GSContext(object):
     if not self._TestGSLs():
       self._ConfigureBotoConfig()
 
-  def Cat(self, path):
+  def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
-    return self._DoCommand(['cat', path], redirect_stdout=True)
+    kwargs.setdefault('redirect_stdout', True)
+    return self._DoCommand(['cat', path], **kwargs)
 
   def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
                version=None):

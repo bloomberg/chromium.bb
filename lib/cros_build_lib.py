@@ -479,8 +479,15 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   return cmd_result
 
 
-# Convenience RunCommand methods
-DebugRunCommand = functools.partial(RunCommand, debug_level=logging.DEBUG)
+# Convenience RunCommand methods.
+#
+# We don't use functools.partial because it binds the methods at import time,
+# which doesn't work well with unit tests, since it bypasses the mock that may
+# be set up for RunCommand.
+
+def DebugRunCommand(*args, **kwargs):
+  kwargs.setdefault('debug_level', logging.DEBUG)
+  return RunCommand(*args, **kwargs)
 
 
 class DieSystemExit(SystemExit):

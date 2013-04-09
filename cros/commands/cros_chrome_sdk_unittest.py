@@ -6,6 +6,7 @@
 
 """This module tests the cros image command."""
 
+import copy
 import mock
 import os
 import shutil
@@ -16,6 +17,7 @@ from chromite.buildbot import constants
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.cros.commands import init_unittest
 from chromite.lib import cache
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import git
@@ -31,6 +33,18 @@ class MockChromeSDKCommand(init_unittest.MockCommand):
   TARGET = 'chromite.cros.commands.cros_chrome_sdk.ChromeSDKCommand'
   TARGET_CLASS = cros_chrome_sdk.ChromeSDKCommand
   COMMAND = 'chrome-sdk'
+  ATTRS = ('_GOMA_URL', '_SetupEnvironment') + init_unittest.MockCommand.ATTRS
+
+  _GOMA_URL = 'Invalid URL'
+
+  def __init__(self, *args, **kwargs):
+    init_unittest.MockCommand.__init__(self, *args, **kwargs)
+    self.env = None
+
+  def _SetupEnvironment(self, *args, **kwargs):
+    env = self.backup['_SetupEnvironment'](*args, **kwargs)
+    self.env = copy.deepcopy(env)
+    return env
 
 
 class ParserTest(cros_test_lib.MockTempDirTestCase):
@@ -44,7 +58,7 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
 
 
-def _GSCopyMock(_self, path, dest):
+def _GSCopyMock(_self, path, dest, **_kwargs):
   """Used to simulate a GS Copy operation."""
   with osutils.TempDir() as tempdir:
     local_path = os.path.join(tempdir, os.path.basename(path))
@@ -65,15 +79,15 @@ def _DependencyMockCtx(f):
         self.entered = True
         # Temporarily disable outer GSContext mock before starting our mock.
         # TODO(rcui): Generalize this attribute and include in partial_mock.py.
-        if self.ext_gs_mock:
-          self.ext_gs_mock.stop()
+        for emock in self.external_mocks:
+          emock.stop()
 
         with self.gs_mock:
           return f(self, *args, **kwargs)
       finally:
         self.entered = False
-        if self.ext_gs_mock:
-          self.ext_gs_mock.start()
+        for emock in self.external_mocks:
+          emock.start()
     else:
       return f(self, *args, **kwargs)
   return new_f
@@ -101,20 +115,21 @@ class SDKFetcherMock(partial_mock.PartialMock):
   BOARD = 'x86-alex'
   VERSION = 'XXXX.X.X'
 
-  def __init__(self, gs_mock=None):
+  def __init__(self, external_mocks=None):
     """Initializes the mock.
 
     Arguments:
-      gs_mock: An already started GSContextMock instance.  stop() will be called
-        on this instance every time execution enters one our the mocked out
-        methods, and start() called on it once execution leaves the mocked out
-        method.
+      external_mocks: A list of already started PartialMock/patcher instances.
+        stop() will be called on each element every time execution enters one of
+        our the mocked out methods, and start() called on it once execution
+        leaves the mocked out method.
     """
     partial_mock.PartialMock.__init__(self)
-    self.ext_gs_mock = gs_mock
+    self.external_mocks = external_mocks or []
     self.entered = False
     self.gs_mock = gs_unittest.GSContextMock()
     self.gs_mock.SetDefaultCmdResult()
+    self.env = None
 
   @_DependencyMockCtx
   def _target__init__(self, inst, *args, **kwargs):
@@ -148,7 +163,10 @@ class SDKFetcherMock(partial_mock.PartialMock):
     return self.backup['_GetMetadata'](inst, *args, **kwargs)
 
 
-class RunThroughTest(cros_test_lib.MockTempDirTestCase):
+
+
+class RunThroughTest(cros_test_lib.MockTempDirTestCase,
+                     cros_test_lib.LoggingTestCase):
   """Run the script with most things mocked out."""
 
   VERSION_KEY = (SDKFetcherMock.BOARD, SDKFetcherMock.VERSION,
@@ -161,16 +179,31 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
       'LD': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
   }
 
-  def setUp(self):
-    self.sdk_mock = self.StartPatcher(SDKFetcherMock())
+  def SetupCommandMock(self, extra_args=None):
+    cmd_args = ['--board', SDKFetcherMock.BOARD, 'true']
+    if extra_args:
+      cmd_args.extend(extra_args)
+
     self.cmd_mock = MockChromeSDKCommand(
-        ['--board', SDKFetcherMock.BOARD, 'true'],
-        base_args=['--cache-dir', self.tempdir])
+        cmd_args, base_args=['--cache-dir', self.tempdir])
     self.StartPatcher(self.cmd_mock)
     self.cmd_mock.UnMockAttr('Run')
 
+  def setUp(self):
+    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock.SetDefaultCmdResult()
+    self.StartPatcher(self.rc_mock)
+
+    self.sdk_mock = self.StartPatcher(SDKFetcherMock(
+        external_mocks=[self.rc_mock]))
+
     self.PatchObject(osutils, 'SourceEnvironment',
                      autospec=True, return_value=self.FAKE_ENV)
+    self.rc_mock.AddCmdResult(cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD,
+                              output='8088')
+
+    # Initialized by SetupCommandMock.
+    self.cmd_mock = None
 
   @property
   def cache(self):
@@ -178,9 +211,22 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
 
   def testIt(self):
     """Test a runthrough of the script."""
-    self.cmd_mock.inst.Run()
+    self.SetupCommandMock()
+    with cros_test_lib.LoggingCapturer() as logs:
+      self.cmd_mock.inst.Run()
+      self.AssertLogsContain(logs, 'Goma:', inverted=True)
+
     with self.cache.Lookup(self.VERSION_KEY) as r:
       self.assertTrue(r.Exists())
+
+  def testGomaError(self):
+    """We print an error message when GomaError is raised."""
+    self.SetupCommandMock()
+    with cros_test_lib.LoggingCapturer() as logs:
+      self.PatchObject(cros_chrome_sdk.ChromeSDKCommand, '_FetchGoma',
+                       side_effect=cros_chrome_sdk.GomaError())
+      self.cmd_mock.inst.Run()
+      self.AssertLogsContain(logs, 'Goma:')
 
   def testSpecificComponent(self):
     """Tests that SDKFetcher.Prepare() handles |components| param properly."""
@@ -192,6 +238,72 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
         self.assertTrue(os.path.exists(ctx.key_map[c].path))
       for c in [constants.IMAGE_SCRIPTS_TAR, constants.CHROME_ENV_TAR]:
         self.assertFalse(c in ctx.key_map)
+
+  def testGomaInPath(self, inverted=False):
+    """Verify that we do indeed add Goma to the PATH."""
+    extra_args = ['--nogoma'] if inverted else None
+    self.SetupCommandMock(extra_args)
+    self.cmd_mock.inst.Run()
+
+    paths = self.cmd_mock.env['PATH']
+    found = False
+    for path in paths.split(':'):
+      if path.endswith('goma'):
+        found = True
+        break
+    assert_fn = self.assertFalse if inverted else self.assertTrue
+    assert_fn(found)
+
+  def testNoGoma(self):
+    """Verify that we do not add Goma to the PATH."""
+    self.testGomaInPath(inverted=True)
+
+
+class GomaTest(cros_test_lib.MockTempDirTestCase,
+               cros_test_lib.LoggingTestCase):
+  """Test Goma setup functionality."""
+
+  def setUp(self):
+    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock.SetDefaultCmdResult()
+    self.StartPatcher(self.rc_mock)
+
+    self.cmd_mock = MockChromeSDKCommand(
+        ['--board', SDKFetcherMock.BOARD, 'true'],
+        base_args=['--cache-dir', self.tempdir])
+    self.StartPatcher(self.cmd_mock)
+
+  def VerifyGomaError(self):
+    self.assertRaises(cros_chrome_sdk.GomaError, self.cmd_mock.inst._FetchGoma)
+
+  def testNoGomaPort(self):
+    """We print an error when gomacc is not returning a port."""
+    self.rc_mock.AddCmdResult(
+          cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD)
+    self.VerifyGomaError()
+
+  def testGomaccError(self):
+    """We print an error when gomacc exits with nonzero returncode."""
+    self.rc_mock.AddCmdResult(
+        cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD, returncode=1)
+    self.VerifyGomaError()
+
+  def testFetchError(self):
+    """We print an error when we can't fetch Goma."""
+    self.rc_mock.AddCmdResult(
+        cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD, returncode=1)
+    self.VerifyGomaError()
+
+  def testGomaStart(self):
+    """Test that we start Goma if it's not already started."""
+    # Duplicate return values.
+    self.PatchObject(cros_chrome_sdk.ChromeSDKCommand, '_GomaPort',
+                     side_effect=['', 'XXXX', 'XXXX'])
+    # Run it twice to exercise caching.
+    for _ in range(2):
+      goma_dir, goma_port = self.cmd_mock.inst._FetchGoma()
+      self.assertEquals(goma_port, 'XXXX')
+      self.assertTrue(bool(goma_dir))
 
 
 class VersionTest(cros_test_lib.MockTempDirTestCase):
@@ -215,7 +327,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.gs_mock.SetDefaultCmdResult()
-    self.sdk_mock = self.StartPatcher(SDKFetcherMock(gs_mock=self.gs_mock))
+    self.sdk_mock = self.StartPatcher(SDKFetcherMock(
+        external_mocks=[self.gs_mock]))
 
     os.environ.pop(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV, None)
     self.sdk = cros_chrome_sdk.SDKFetcher(

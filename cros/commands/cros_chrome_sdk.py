@@ -26,6 +26,18 @@ from chromite.buildbot import constants
 COMMAND_NAME = 'chrome-sdk'
 
 
+def Log(*args, **kwargs):
+  """Conditional logging.
+
+  Arguments:
+    silent: If set to True, then logs with level DEBUG.  logs with level INFO
+      otherwise.  Defaults to False.
+  """
+  silent = kwargs.pop('silent', False)
+  level = logging.DEBUG if silent else logging.INFO
+  logging.log(level, *args, **kwargs)
+
+
 class SDKError(Exception):
   """Raised by SDKFetcher."""
 
@@ -47,7 +59,7 @@ class SDKFetcher(object):
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
 
-  def __init__(self, cache_dir, board):
+  def __init__(self, cache_dir, board, silent=False):
     """Initialize the class.
 
     Arguments:
@@ -62,6 +74,7 @@ class SDKFetcher(object):
         os.path.join(self.cache_base, self.MISC_CACHE))
     self.board = board
     self.gs_base = self._GetGSBaseForBoard(board)
+    self.silent = silent
 
   @staticmethod
   def _GetGSBaseForBoard(board):
@@ -72,7 +85,8 @@ class SDKFetcher(object):
     """Worker function to fetch tarballs"""
     with osutils.TempDir(base_dir=self.tarball_cache.staging_dir) as tempdir:
       local_path = os.path.join(tempdir, os.path.basename(url))
-      self.gs_ctx.Copy(url, tempdir)
+      Log('SDK: Fetching %s', url, silent=self.silent)
+      self.gs_ctx.Copy(url, tempdir, debug_level=logging.DEBUG)
       ref.SetDefault(local_path, lock=True)
 
   def _GetMetadata(self, version):
@@ -86,7 +100,8 @@ class SDKFetcher(object):
         raw_json = osutils.ReadFile(ref.path)
       else:
         raw_json = self.gs_ctx.Cat(
-            os.path.join(version_base, constants.METADATA_JSON)).output
+            os.path.join(version_base, constants.METADATA_JSON),
+                         debug_level=logging.DEBUG).output
         ref.AssignText(raw_json)
 
     return json.loads(raw_json)
@@ -291,6 +306,10 @@ class SDKFetcher(object):
       cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
 
 
+class GomaError(Exception):
+  """Indicates error with setting up Goma."""
+
+
 @cros.CommandDecorator(COMMAND_NAME)
 class ChromeSDKCommand(cros.CrosCommand):
   """
@@ -302,6 +321,10 @@ class ChromeSDKCommand(cros.CrosCommand):
   at ~/chromite/chrome_sdk.bashrc.
   """
 
+  # Note, this URL is not accessible outside of corp.
+  _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
+               'download/goma_ctl.sh')
+
   EBUILD_ENV = (
       'CXX',
       'CC',
@@ -312,6 +335,12 @@ class ChromeSDKCommand(cros.CrosCommand):
       'GOLD_SET',
       'GYP_DEFINES',
   )
+
+  SDK_GOMA_PORT_ENV = 'SDK_GOMA_PORT'
+  SDK_GOMA_DIR_ENV = 'SDK_GOMA_DIR'
+
+  GOMACC_PORT_CMD  = ['./gomacc', 'port']
+  FETCH_GOMA_CMD  = ['wget', _GOMA_URL]
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -344,6 +373,12 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='A bashrc file used to set up the SDK shell environment. '
              'Defaults to %s.' % constants.CHROME_SDK_BASHRC)
     parser.add_argument(
+        '--chroot', type=osutils.ExpandPath,
+        help='Path to a ChromeOS chroot to use.  If set, '
+             '<chroot>/build/<board> will be used as the sysroot that Chrome '
+             'is built against.  The version shown in the SDK shell prompt '
+             'will then have an asterisk prepended to it.')
+    parser.add_argument(
         '--clang', action='store_true', default=False,
         help='Sets up the environment for building with clang.  Due to a bug '
              'with ninja, requires --make to be set.')
@@ -358,11 +393,8 @@ class ChromeSDKCommand(cros.CrosCommand):
              'and not concentrated in the out_<board> directory, so you can '
              'only have one Make config running at a time.')
     parser.add_argument(
-        '--chroot', type=osutils.ExpandPath,
-        help='Path to a ChromeOS chroot to use.  If set, '
-             '<chroot>/build/<board> will be used as the sysroot that Chrome '
-             'is built against.  The version shown in the SDK shell prompt '
-             'will then have an asterisk prepended to it.')
+        '--nogoma', action='store_false', default=True, dest='goma',
+        help="Disables Goma in the shell by removing it from the PATH.")
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
         help="Specify version of SDK to use, in the format '3912.0.0'.  "
@@ -378,6 +410,8 @@ class ChromeSDKCommand(cros.CrosCommand):
     self.board = options.board
     # Lazy initialized.
     self.sdk = None
+    # Initialized later based on options passed in.
+    self.silent = True
 
   @staticmethod
   def _CreatePS1(board, version, chroot=None):
@@ -417,7 +451,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
     return '%s -B%s' % (cmd, gold_path)
 
-  def _SetupTCEnvironment(self, sdk_ctx, options, env):
+  def _SetupTCEnvironment(self, sdk_ctx, options, env, goma_dir=None):
     """Sets up toolchain-related environment variables."""
     target_tc = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
     tc_bin = os.path.join(target_tc, 'bin')
@@ -448,7 +482,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['CXX_host'] = 'g++'
     env['CC_host'] = 'gcc'
 
-  def _SetupEnvironment(self, board, sdk_ctx, options):
+    if goma_dir:
+      env['PATH'] = '%s:%s' % (goma_dir, env['PATH'])
+
+  def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
+                        goma_port=None):
     """Sets environment variables to export to the SDK shell."""
     if options.chroot:
       sysroot = os.path.join(options.chroot, 'build', board)
@@ -461,7 +499,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     environment = os.path.join(sdk_ctx.key_map[constants.CHROME_ENV_TAR].path,
                                'environment')
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
-    self._SetupTCEnvironment(sdk_ctx, options, env)
+    self._SetupTCEnvironment(sdk_ctx, options, env, goma_dir=goma_dir)
 
     os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
     os.environ[self.sdk.SDK_BOARD_ENV] = board
@@ -469,7 +507,12 @@ class ChromeSDKCommand(cros.CrosCommand):
     # reference them in their chrome_sdk.bashrc files, as well as within the
     # chrome-sdk shell.
     for var in [self.sdk.SDK_VERSION_ENV, self.sdk.SDK_BOARD_ENV]:
-      os.environ[var.lstrip('%')] = os.environ[var]
+      env[var.lstrip('%')] = os.environ[var]
+
+    # Export Goma information.
+    if goma_dir:
+      env[self.SDK_GOMA_DIR_ENV] = goma_dir
+      env[self.SDK_GOMA_PORT_ENV] = goma_port
 
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
@@ -503,14 +546,20 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   @staticmethod
   def _VerifyGoma(user_rc):
-    """Verify that the user's goma installation is working.
+    """Verify that the user has no goma installations set up in rcfile.
+
+    If the user does have a goma installation set up, verify that it's for
+    ChromeOS.
 
     Arguments:
       user_rc: User-supplied rc file.
     """
-    user_env = osutils.SourceEnvironment(user_rc, ['PATH'], env=True)
+    user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
     goma_ctl = osutils.Which('goma_ctl.sh', user_env.get('PATH'))
     if goma_ctl is not None:
+      cros_build_lib.Warning(
+          '%s is adding Goma to the PATH.  Using that Goma instead of the '
+          'managed Goma install.' % user_rc)
       manifest = os.path.join(os.path.dirname(goma_ctl), 'MANIFEST')
       platform_env = osutils.SourceEnvironment(manifest, ['PLATFORM'])
       platform = platform_env.get('PLATFORM')
@@ -557,6 +606,49 @@ class ChromeSDKCommand(cros.CrosCommand):
       osutils.WriteFile(rc_file, contents)
       yield rc_file
 
+  def _GomaPort(self, goma_dir):
+    """Returns current active Goma port."""
+    port = cros_build_lib.RunCommandCaptureOutput(
+        self.GOMACC_PORT_CMD, cwd=goma_dir,
+        debug_level=logging.DEBUG, error_code_ok=True).output.strip()
+    return port
+
+  def _FetchGoma(self):
+    """Fetch, install, and start Goma, using cached version if it exists.
+
+    Returns:
+      A tuple (dir, port) containing the path to the cached goma/ dir and the
+      Goma port.
+    """
+    common_path = os.path.join(self.options.cache_dir, constants.COMMON_CACHE)
+    common_cache = cache.DiskCache(common_path)
+
+    ref = common_cache.Lookup(('goma',))
+    if not ref.Exists():
+      Log('Installing Goma.', silent=self.silent)
+      with osutils.TempDir() as tempdir:
+        goma_dir = os.path.join(tempdir, 'goma')
+        os.mkdir(goma_dir)
+        result = cros_build_lib.DebugRunCommand(
+            self.FETCH_GOMA_CMD, cwd=goma_dir, error_code_ok=True)
+        if result.returncode:
+          raise GomaError('Failed to fetch Goma')
+        cros_build_lib.DebugRunCommand(
+            ['bash', 'goma_ctl.sh', 'update'], cwd=goma_dir, input='2\n')
+        ref.SetDefault(goma_dir)
+    goma_dir =  os.path.join(ref.path, 'goma')
+
+    port = self._GomaPort(goma_dir)
+    if not port:
+      Log('Starting Goma.', silent=self.silent)
+      cros_build_lib.DebugRunCommand(
+          ['./goma_ctl.sh', 'ensure_start'], cwd=goma_dir)
+      port = self._GomaPort(goma_dir)
+      Log('Goma is started on port %s', port, silent=self.silent)
+      if not port:
+        raise GomaError('No Goma port detected')
+    return goma_dir, port
+
   def Run(self):
     """Perform the command."""
     if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
@@ -565,9 +657,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     if self.options.clang and not self.options.make:
       cros_build_lib.Die('--clang requires --make to be set.')
 
+    self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
-    self.sdk = SDKFetcher(self.options.cache_dir, self.options.board)
+    self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
+                          silent=self.silent)
 
     prepare_version = self.options.version
     if not prepare_version:
@@ -577,8 +671,17 @@ class ChromeSDKCommand(cros.CrosCommand):
     if not self.options.chroot:
       components.append(constants.CHROME_SYSROOT_TAR)
 
+    goma_dir = None
+    goma_port = None
+    if self.options.goma:
+      try:
+        goma_dir, goma_port = self._FetchGoma()
+      except GomaError as e:
+        logging.error('Goma: %s.  Bypass by running with --nogoma.', e)
+
     with self.sdk.Prepare(components, version=prepare_version) as ctx:
-      env = self._SetupEnvironment(self.options.board, ctx, self.options)
+      env = self._SetupEnvironment(self.options.board, ctx, self.options,
+                                   goma_dir=goma_dir, goma_port=goma_port)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_cmd = ['/bin/bash']
 
