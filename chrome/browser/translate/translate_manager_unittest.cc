@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifdef FILE_MANAGER_EXTENSION
-#include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "extensions/common/constants.h"
 #endif
 

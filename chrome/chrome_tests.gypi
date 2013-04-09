@@ -1170,7 +1170,7 @@
         'browser/chromeos/extensions/file_browser_handler_api_test.cc',
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
-        'browser/chromeos/extensions/file_manager_browsertest.cc',
+        'browser/chromeos/extensions/file_manager/file_manager_browsertest.cc',
         'browser/chromeos/extensions/info_private_apitest.cc',
         'browser/chromeos/extensions/input_method_apitest_chromeos.cc',
         'browser/chromeos/extensions/networking_private_apitest.cc',
