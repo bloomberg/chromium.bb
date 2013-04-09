@@ -297,10 +297,7 @@ ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(
 ScopedJavaLocalRef<jobject>
     DownloadControllerAndroidImpl::GetContentViewCoreFromWebContents(
     WebContents* web_contents) {
-  if (!web_contents)
-    return ScopedJavaLocalRef<jobject>();
-
-  ContentViewCore* view_core = web_contents->GetView()->GetContentNativeView();
+  ContentViewCore* view_core = ContentViewCore::FromWebContents(web_contents);
   return view_core ? view_core->GetJavaObject() :
       ScopedJavaLocalRef<jobject>();
 }

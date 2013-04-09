@@ -86,6 +86,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_ANDROID)
+#include "content/public/browser/android/content_view_core.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #endif
 
@@ -2283,8 +2284,8 @@ void WebContentsImpl::OnFindMatchRectsReply(
 void WebContentsImpl::OnOpenDateTimeDialog(
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
   date_time_chooser_->ShowDialog(
-      view_->GetContentNativeView(), GetRenderViewHost(), value.dialog_type,
-      value.year, value.month, value.day, value.hour,
+      ContentViewCore::FromWebContents(this), GetRenderViewHost(),
+      value.dialog_type, value.year, value.month, value.day, value.hour,
       value.minute, value.second);
 }
 

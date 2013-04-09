@@ -21,13 +21,13 @@ ColorChooser* ColorChooser::Create(
 namespace components {
 
 ColorChooserAndroid::ColorChooserAndroid(int identifier,
-                                         content::WebContents* tab,
+                                         content::WebContents* web_contents,
                                          SkColor initial_color)
     : ColorChooser::ColorChooser(identifier),
-      content::WebContentsObserver(tab) {
+      content::WebContentsObserver(web_contents) {
   JNIEnv* env = AttachCurrentThread();
   content::ContentViewCore* content_view_core =
-      tab->GetView()->GetContentNativeView();
+      content::ContentViewCore::FromWebContents(web_contents);
   DCHECK(content_view_core);
 
   j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(
