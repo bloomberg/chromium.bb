@@ -53,9 +53,7 @@ public:
 
     void handleUnavailablePluginIndicatorEvent(Event*);
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool allowsAcceleratedCompositing() const;
-#endif
 
 protected:
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
@@ -76,9 +74,7 @@ private:
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);
     virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool requiresLayer() const;
-#endif
 
     virtual void viewCleared();
 

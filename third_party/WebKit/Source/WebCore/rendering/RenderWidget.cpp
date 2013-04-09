@@ -30,12 +30,10 @@
 #include "HitTestResult.h"
 #include "RenderCounter.h"
 #include "RenderLayer.h"
+#include "RenderLayerBacking.h"
 #include "RenderView.h"
 #include "RenderWidgetProtector.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerBacking.h"
-#endif
 
 using namespace std;
 
@@ -159,11 +157,9 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (clipChanged && !boundsChanged)
         m_widget->clipRectChanged();
     
-#if USE(ACCELERATED_COMPOSITING)
     if (hasLayer() && layer()->isComposited())
         layer()->backing()->updateAfterWidgetResize();
-#endif
-    
+
     return boundsChanged;
 }
 

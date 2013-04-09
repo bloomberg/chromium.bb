@@ -32,13 +32,11 @@
 #include "ColorSpace.h"
 #include "FloatRect.h"
 #include "GraphicsContext.h"
-#if USE(ACCELERATED_COMPOSITING)
-#include "PlatformLayer.h"
-#endif
 #include "GraphicsTypes.h"
 #include "GraphicsTypes3D.h"
 #include "IntSize.h"
 #include "ImageBufferData.h"
+#include "PlatformLayer.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -116,9 +114,7 @@ namespace WebCore {
         AffineTransform baseTransform() const { return AffineTransform(); }
         void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
         void platformTransformColorSpace(const Vector<int>&);
-#if USE(ACCELERATED_COMPOSITING)
         PlatformLayer* platformLayer() const;
-#endif
 
         // FIXME: current implementations of this method have the restriction that they only work
         // with textures that are RGB or RGBA format, and UNSIGNED_BYTE type.

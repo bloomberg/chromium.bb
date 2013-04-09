@@ -33,13 +33,11 @@ namespace WebCore {
 
 class FloatPoint;
 class GraphicsContext;
+class GraphicsLayer;
 class PlatformGestureEvent;
 class PlatformWheelEvent;
 class ScrollAnimator;
-#if USE(ACCELERATED_COMPOSITING)
-class GraphicsLayer;
 class TiledBacking;
-#endif
 
 class ScrollableArea {
 public:
@@ -181,10 +179,8 @@ public:
     virtual bool scheduleAnimation() { return false; }
     void serviceScrollAnimations();
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual TiledBacking* tiledBacking() { return 0; }
     virtual bool usesCompositedScrolling() const { return false; }
-#endif
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -198,7 +194,6 @@ protected:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) = 0;
     virtual void invalidateScrollCornerRect(const IntRect&) = 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     friend class ScrollingCoordinator;
     virtual GraphicsLayer* layerForScrolling() const { return 0; }
     virtual GraphicsLayer* layerForHorizontalScrollbar() const { return 0; }
@@ -206,7 +201,6 @@ protected:
     virtual GraphicsLayer* layerForScrollCorner() const { return 0; }
 #if ENABLE(RUBBER_BANDING)
     virtual GraphicsLayer* layerForOverhangAreas() const { return 0; }
-#endif
 #endif
     bool hasLayerForHorizontalScrollbar() const;
     bool hasLayerForVerticalScrollbar() const;

@@ -36,6 +36,7 @@
 #include "RenderGeometryMap.h"
 #include "RenderLayer.h"
 #include "RenderLayerBacking.h"
+#include "RenderLayerCompositor.h"
 #include "RenderNamedFlowThread.h"
 #include "RenderSelectionInfo.h"
 #include "RenderWidget.h"
@@ -43,10 +44,6 @@
 #include "StyleInheritedData.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
 #include "CustomFilterGlobalContext.h"
@@ -425,14 +422,12 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
             break;
         }
 
-#if USE(ACCELERATED_COMPOSITING)
         if (RenderLayer* compositingLayer = layer->enclosingCompositingLayerForRepaint()) {
             if (!compositingLayer->backing()->paintsIntoWindow()) {
                 frameView()->setCannotBlitToWindow();
                 break;
             }
         }
-#endif
     }
 
     if (document()->ownerElement() || !view())
@@ -521,22 +516,18 @@ void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur)
 
     repaintViewRectangle(ur);
     
-#if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode()) {
         IntRect repaintRect = pixelSnappedIntRect(ur);
         compositor()->repaintCompositedLayers(&repaintRect);
     }
-#endif
 }
 
 void RenderView::repaintViewAndCompositedLayers()
 {
     repaint();
     
-#if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode())
         compositor()->repaintCompositedLayers();
-#endif
 }
 
 void RenderView::computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
@@ -653,7 +644,6 @@ void RenderView::repaintSelection() const
     }
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 // Compositing layer dimensions take outline size into account, so we have to recompute layer
 // bounds when it changes.
 // FIXME: This is ugly; it would be nice to have a better way to do this.
@@ -666,7 +656,6 @@ void RenderView::setMaximalOutlineSize(int o)
         compositor()->setCompositingLayersNeedRebuild();    // FIXME: this really just needs to be a geometry update.
     }
 }
-#endif
 
 void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* end, int endPos, SelectionRepaintMode blockRepaintMode)
 {
@@ -1066,7 +1055,6 @@ void RenderView::setBestTruncatedAt(int y, RenderBoxModelObject* forRenderer, bo
     }
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool RenderView::usesCompositing() const
 {
     return m_compositor && m_compositor->inCompositingMode();
@@ -1079,14 +1067,11 @@ RenderLayerCompositor* RenderView::compositor()
 
     return m_compositor.get();
 }
-#endif
 
 void RenderView::setIsInWindow(bool isInWindow)
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (m_compositor)
         m_compositor->setIsInWindow(isInWindow);
-#endif
 }
 
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
@@ -1139,9 +1124,7 @@ void RenderView::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addWeakPointer(m_selectionEnd);
     info.addMember(m_widgets, "widgets");
     info.addMember(m_layoutState, "layoutState");
-#if USE(ACCELERATED_COMPOSITING)
     info.addMember(m_compositor, "compositor");
-#endif
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
     info.addMember(m_customFilterGlobalContext, "customFilterGlobalContext");
 #endif

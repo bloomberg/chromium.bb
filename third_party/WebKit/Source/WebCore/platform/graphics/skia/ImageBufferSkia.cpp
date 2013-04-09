@@ -34,6 +34,7 @@
 #include "ImageBuffer.h"
 
 #include "BitmapImage.h"
+#include "Canvas2DLayerBridge.h"
 #include "Extensions3D.h"
 #include "GrContext.h"
 #include "GraphicsContext.h"
@@ -51,10 +52,6 @@
 #include "SkiaUtils.h"
 #include "WEBPImageEncoder.h"
 #include <public/Platform.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "Canvas2DLayerBridge.h"
-#endif
 
 #include <wtf/text/Base64.h>
 #include <wtf/text/WTFString.h>
@@ -92,13 +89,9 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* d
         return 0;
     SkCanvas* canvas;
     SkAutoTUnref<SkDevice> device(new SkGpuDevice(gr, texture.get()));
-#if USE(ACCELERATED_COMPOSITING)
     Canvas2DLayerBridge::ThreadMode threadMode = WebKit::Platform::current()->isThreadedCompositingEnabled() ? Canvas2DLayerBridge::Threaded : Canvas2DLayerBridge::SingleThread;
     data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), size, threadMode, texture.get()->getTextureHandle());
     canvas = data->m_layerBridge->skCanvas(device.get());
-#else
-    canvas = new SkCanvas(device.get());
-#endif
     data->m_platformContext.setAccelerated(true);
     return canvas;
 }
@@ -192,13 +185,11 @@ ImageBuffer::~ImageBuffer()
 
 GraphicsContext* ImageBuffer::context() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (m_data.m_layerBridge) {
         // We're using context acquisition as a signal that someone is about to render into our buffer and we need
         // to be ready. This isn't logically const-correct, hence the cast.
         const_cast<Canvas2DLayerBridge*>(m_data.m_layerBridge.get())->contextAcquired();
     }
-#endif
     return m_context.get();
 }
 
@@ -438,9 +429,7 @@ void ImageBufferData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) cons
     MemoryClassInfo info(memoryObjectInfo, this);
     info.addMember(m_canvas, "canvas");
     info.addMember(m_platformContext, "platformContext");
-#if USE(ACCELERATED_COMPOSITING)
     info.addMember(m_layerBridge, "layerBridge");
-#endif
 }
 
 String ImageDataToDataURL(const ImageData& imageData, const String& mimeType, const double* quality)

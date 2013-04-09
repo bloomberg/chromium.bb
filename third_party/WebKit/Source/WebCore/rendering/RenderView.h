@@ -31,12 +31,9 @@
 namespace WebCore {
 
 class FlowThreadController;
+class RenderLayerCompositor;
 class RenderQuote;
 class RenderWidget;
-
-#if USE(ACCELERATED_COMPOSITING)
-class RenderLayerCompositor;
-#endif
 
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
 class CustomFilterGlobalContext;
@@ -99,11 +96,7 @@ public:
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
 
-#if USE(ACCELERATED_COMPOSITING)
     void setMaximalOutlineSize(int o);
-#else
-    void setMaximalOutlineSize(int o) { m_maximalOutlineSize = o; }
-#endif
     int maximalOutlineSize() const { return m_maximalOutlineSize; }
 
     virtual LayoutRect viewRect() const OVERRIDE;
@@ -186,10 +179,8 @@ public:
     // Notification that this view moved into or out of a native window.
     void setIsInWindow(bool);
 
-#if USE(ACCELERATED_COMPOSITING)
     RenderLayerCompositor* compositor();
     bool usesCompositing() const;
-#endif
 
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
     CustomFilterGlobalContext* customFilterGlobalContext();
@@ -324,9 +315,7 @@ private:
     bool m_pageLogicalHeightChanged;
     LayoutState* m_layoutState;
     unsigned m_layoutStateDisableCount;
-#if USE(ACCELERATED_COMPOSITING)
     OwnPtr<RenderLayerCompositor> m_compositor;
-#endif
 #if ENABLE(CSS_SHADERS) && USE(3D_GRAPHICS)
     OwnPtr<CustomFilterGlobalContext> m_customFilterGlobalContext;
 #endif

@@ -837,7 +837,6 @@ void ScrollView::clipRectChanged()
         (*current)->clipRectChanged();
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scrollbar)
 {
     if (!graphicsLayer || !scrollbar)
@@ -870,16 +869,12 @@ static void positionScrollCornerLayer(GraphicsLayer* graphicsLayer, const IntRec
         graphicsLayer->setNeedsDisplay();
     graphicsLayer->setSize(cornerRect.size());
 }
-#endif
-
 
 void ScrollView::positionScrollbarLayers()
 {
-#if USE(ACCELERATED_COMPOSITING)
     positionScrollbarLayer(layerForHorizontalScrollbar(), horizontalScrollbar());
     positionScrollbarLayer(layerForVerticalScrollbar(), verticalScrollbar());
     positionScrollCornerLayer(layerForScrollCorner(), scrollCornerRect());
-#endif
 }
 
 void ScrollView::repaintContentRectangle(const IntRect& rect)
@@ -954,23 +949,13 @@ void ScrollView::invalidateScrollCornerRect(const IntRect& rect)
 
 void ScrollView::paintScrollbars(GraphicsContext* context, const IntRect& rect)
 {
-    if (m_horizontalScrollbar
-#if USE(ACCELERATED_COMPOSITING)
-        && !layerForHorizontalScrollbar()
-#endif
-                                      )
+    if (m_horizontalScrollbar && !layerForHorizontalScrollbar())
         paintScrollbar(context, m_horizontalScrollbar.get(), rect);
-    if (m_verticalScrollbar
-#if USE(ACCELERATED_COMPOSITING)
-        && !layerForVerticalScrollbar()
-#endif
-                                    )
+    if (m_verticalScrollbar && !layerForVerticalScrollbar())
         paintScrollbar(context, m_verticalScrollbar.get(), rect);
 
-#if USE(ACCELERATED_COMPOSITING)
     if (layerForScrollCorner())
         return;
-#endif
     paintScrollCorner(context, scrollCornerRect());
 }
 
@@ -1012,7 +997,7 @@ void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
         paintContents(context, documentDirtyRect);
     }
 
-#if USE(ACCELERATED_COMPOSITING) && ENABLE(RUBBER_BANDING)
+#if ENABLE(RUBBER_BANDING)
     if (!layerForOverhangAreas())
         calculateAndPaintOverhangAreas(context, rect);
 #else
@@ -1085,7 +1070,7 @@ void ScrollView::updateOverhangAreas()
     IntRect horizontalOverhangRect;
     IntRect verticalOverhangRect;
     calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-#if USE(ACCELERATED_COMPOSITING) && PLATFORM(CHROMIUM) && ENABLE(RUBBER_BANDING)
+#if ENABLE(RUBBER_BANDING)
     if (GraphicsLayer* overhangLayer = layerForOverhangAreas()) {
         bool hasOverhangArea = !horizontalOverhangRect.isEmpty() || !verticalOverhangRect.isEmpty();
         overhangLayer->setDrawsContent(hasOverhangArea);

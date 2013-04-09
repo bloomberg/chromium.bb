@@ -219,10 +219,8 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
             (node()->hasTagName(htmlTag) || node()->hasTagName(bodyTag))) {
             view()->repaint();
             
-#if USE(ACCELERATED_COMPOSITING)
             if (oldStyle->hasEntirelyFixedBackground() != newStyle->hasEntirelyFixedBackground())
                 view()->compositor()->rootFixedBackgroundsChanged();
-#endif
         }
         
         // When a layout hint happens and an object's position style changes, we have to do a layout
@@ -1215,10 +1213,8 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
     if (!childBox->width() || !childBox->height())
         return false;
     if (RenderLayer* childLayer = childBox->layer()) {
-#if USE(ACCELERATED_COMPOSITING)
         if (childLayer->isComposited())
             return false;
-#endif
         // FIXME: Deal with z-index.
         if (!childStyle->hasAutoZIndex())
             return false;
@@ -1396,7 +1392,6 @@ void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const
     paintFillLayerExtended(paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 static bool layersUseImage(WrappedImagePtr image, const FillLayer* layers)
 {
     for (const FillLayer* curLayer = layers; curLayer; curLayer = curLayer->next()) {
@@ -1406,7 +1401,6 @@ static bool layersUseImage(WrappedImagePtr image, const FillLayer* layers)
 
     return false;
 }
-#endif
 
 void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
@@ -1424,10 +1418,8 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
         repaintLayerRectsForImage(image, style()->maskLayers(), false);
 
 
-#if USE(ACCELERATED_COMPOSITING)
     if (hasLayer() && layer()->hasCompositedMask() && layersUseImage(image, style()->maskLayers()))
         layer()->contentChanged(MaskImageChanged);
-#endif
 }
 
 bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer* layers, bool drawingBackground)

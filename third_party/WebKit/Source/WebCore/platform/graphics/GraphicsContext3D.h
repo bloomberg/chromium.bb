@@ -448,9 +448,7 @@ public:
     PlatformGraphicsContext3D platformGraphicsContext3D() const;
     Platform3DObject platformTexture() const;
     GrContext* grContext();
-#if USE(ACCELERATED_COMPOSITING)
     PlatformLayer* platformLayer() const;
-#endif
     bool makeContextCurrent();
 
     // With multisampling on, blit from multisampleFBO to regular FBO.

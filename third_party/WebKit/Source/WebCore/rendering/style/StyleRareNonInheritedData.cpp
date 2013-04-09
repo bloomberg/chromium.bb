@@ -80,9 +80,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
 #endif // CSS3_TEXT
     , m_wrapFlow(RenderStyle::initialWrapFlow())
     , m_wrapThrough(RenderStyle::initialWrapThrough())
-#if USE(ACCELERATED_COMPOSITING)
     , m_runningAcceleratedAnimation(false)
-#endif
     , m_hasAspectRatio(false)
 #if ENABLE(CSS_COMPOSITING)
     , m_effectiveBlendMode(RenderStyle::initialBlendMode())
@@ -161,9 +159,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
 #endif // CSS3_TEXT
     , m_wrapFlow(o.m_wrapFlow)
     , m_wrapThrough(o.m_wrapThrough)
-#if USE(ACCELERATED_COMPOSITING)
     , m_runningAcceleratedAnimation(o.m_runningAcceleratedAnimation)
-#endif
     , m_hasAspectRatio(o.m_hasAspectRatio)
 #if ENABLE(CSS_COMPOSITING)
     , m_effectiveBlendMode(o.m_effectiveBlendMode)
@@ -245,9 +241,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
 #endif // CSS3_TEXT
         && m_wrapFlow == o.m_wrapFlow
         && m_wrapThrough == o.m_wrapThrough
-#if USE(ACCELERATED_COMPOSITING)
         && !m_runningAcceleratedAnimation && !o.m_runningAcceleratedAnimation
-#endif
 #if ENABLE(CSS_COMPOSITING)
         && m_effectiveBlendMode == o.m_effectiveBlendMode
 #endif

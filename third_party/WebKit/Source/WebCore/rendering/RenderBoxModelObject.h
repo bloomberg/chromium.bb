@@ -174,7 +174,6 @@ public:
 
     bool canHaveBoxInfoInRegion() const { return !isFloating() && !isReplaced() && !isInline() && !hasColumns() && !isTableCell() && isBlockFlow(); }
 
-#if USE(ACCELERATED_COMPOSITING)
     void contentChanged(ContentChangeType);
     bool hasAcceleratedCompositing() const;
 
@@ -187,7 +186,6 @@ public:
     void animationFinished(const String& name);
 
     void suspendAnimations(double time = 0);
-#endif
 
 protected:
     virtual void willBeDestroyed();

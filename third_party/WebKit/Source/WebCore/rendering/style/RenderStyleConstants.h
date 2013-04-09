@@ -45,9 +45,7 @@ enum PrintColorAdjust {
 // (8) StyleDifferenceLayout - A full layout is required.
 enum StyleDifference {
     StyleDifferenceEqual,
-#if USE(ACCELERATED_COMPOSITING)
     StyleDifferenceRecompositeLayer,
-#endif
     StyleDifferenceRepaint,
     StyleDifferenceRepaintLayer,
     StyleDifferenceLayoutPositionedMovementOnly,

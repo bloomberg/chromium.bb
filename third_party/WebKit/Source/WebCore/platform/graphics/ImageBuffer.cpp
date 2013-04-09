@@ -97,7 +97,7 @@ void ImageBuffer::convertToLuminanceMask()
     genericConvertToLuminanceMask();
 }
 
-#if USE(ACCELERATED_COMPOSITING) && !USE(SKIA)
+#if !USE(SKIA)
 PlatformLayer* ImageBuffer::platformLayer() const
 {
     return 0;

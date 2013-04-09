@@ -36,6 +36,7 @@
 #include "IntRect.h"
 #include "KURL.h"
 #include "LayoutRect.h"
+#include "PlatformLayer.h"
 #include "Timer.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>
@@ -44,9 +45,6 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringHash.h>
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "PlatformLayer.h"
-#endif
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
 #include "PlatformTextTrackMenu.h"
@@ -168,14 +166,12 @@ public:
     // A characteristic of the media file, eg. video, audio, closed captions, etc, has changed.
     virtual void mediaPlayerCharacteristicChanged(MediaPlayer*) { }
     
-#if USE(ACCELERATED_COMPOSITING)
     // whether the rendering system can accelerate the display of this MediaPlayer.
     virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*) { return false; }
 
     // called when the media player's rendering mode changed, which indicates a change in the
     // availability of the platformLayer().
     virtual void mediaPlayerRenderingModeChanged(MediaPlayer*) { }
-#endif
 
 #if ENABLE(ENCRYPTED_MEDIA)
     enum MediaKeyErrorCode { UnknownError = 1, ClientError, ServiceError, OutputError, HardwareChangeError, DomainError };
@@ -247,9 +243,7 @@ public:
     bool supportsSave() const;
     bool supportsScanning() const;
     PlatformMedia platformMedia() const;
-#if USE(ACCELERATED_COMPOSITING)
     PlatformLayer* platformLayer() const;
-#endif
 
     IntSize naturalSize();
     bool hasVideo() const;
@@ -387,12 +381,10 @@ public:
     bool canEnterFullscreen() const;
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
     // whether accelerated rendering is supported by the media engine for the current media.
     bool supportsAcceleratedRendering() const;
     // called when the rendering system flips the into or out of accelerated rendering mode.
     void acceleratedRenderingStateChanged();
-#endif
 
     bool hasSingleSecurityOrigin() const;
 

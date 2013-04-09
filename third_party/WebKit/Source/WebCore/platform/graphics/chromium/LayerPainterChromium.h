@@ -27,8 +27,6 @@
 #ifndef LayerPainterChromium_h
 #define LayerPainterChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 class SkCanvas;
 
 namespace WebCore {
@@ -43,6 +41,5 @@ public:
 };
 
 } // namespace WebCore
-#endif // USE(ACCELERATED_COMPOSITING)
-#endif // LayerPainterChromium_h
 
+#endif // LayerPainterChromium_h

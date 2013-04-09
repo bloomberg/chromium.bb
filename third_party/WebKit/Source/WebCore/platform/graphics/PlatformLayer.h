@@ -27,7 +27,6 @@
 #define PlatformLayer_h
 
 // FIXME: this file should go away.
-#if USE(ACCELERATED_COMPOSITING)
 
 namespace WebKit {
 class WebLayer;
@@ -35,7 +34,5 @@ class WebLayer;
 namespace WebCore {
 typedef WebKit::WebLayer PlatformLayer;
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif // PlatformLayer_h

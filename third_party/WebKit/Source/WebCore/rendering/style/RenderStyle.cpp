@@ -444,28 +444,14 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 
         if (rareNonInheritedData->m_transform.get() != other->rareNonInheritedData->m_transform.get()
             && *rareNonInheritedData->m_transform.get() != *other->rareNonInheritedData->m_transform.get()) {
-#if USE(ACCELERATED_COMPOSITING)
+            // Don't return early here; instead take note of the type of
+            // change, and deal with it when looking at compositing.
             changedContextSensitiveProperties |= ContextSensitivePropertyTransform;
-            // Don't return; keep looking for another change
-#else
-            return StyleDifferenceLayout;
-#endif
         }
 
         if (rareNonInheritedData->m_grid.get() != other->rareNonInheritedData->m_grid.get()
             || rareNonInheritedData->m_gridItem.get() != other->rareNonInheritedData->m_gridItem.get())
             return StyleDifferenceLayout;
-
-#if !USE(ACCELERATED_COMPOSITING)
-        if (rareNonInheritedData.get() != other->rareNonInheritedData.get()) {
-            if (rareNonInheritedData->m_transformStyle3D != other->rareNonInheritedData->m_transformStyle3D
-                || rareNonInheritedData->m_backfaceVisibility != other->rareNonInheritedData->m_backfaceVisibility
-                || rareNonInheritedData->m_perspective != other->rareNonInheritedData->m_perspective
-                || rareNonInheritedData->m_perspectiveOriginX != other->rareNonInheritedData->m_perspectiveOriginX
-                || rareNonInheritedData->m_perspectiveOriginY != other->rareNonInheritedData->m_perspectiveOriginY)
-                return StyleDifferenceLayout;
-        }
-#endif
 
 #if ENABLE(CSS_EXCLUSIONS)
         if (rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside)
@@ -640,23 +626,17 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 #endif
 
     if (rareNonInheritedData->opacity != other->rareNonInheritedData->opacity) {
-#if USE(ACCELERATED_COMPOSITING)
+        // Don't return early here; instead take note of the type of change,
+        // and deal with it when looking at compositing.
         changedContextSensitiveProperties |= ContextSensitivePropertyOpacity;
-        // Don't return; keep looking for another change.
-#else
-        return StyleDifferenceRepaintLayer;
-#endif
     }
 
 #if ENABLE(CSS_FILTERS)
     if (rareNonInheritedData->m_filter.get() != other->rareNonInheritedData->m_filter.get()
         && *rareNonInheritedData->m_filter.get() != *other->rareNonInheritedData->m_filter.get()) {
-#if USE(ACCELERATED_COMPOSITING)
+        // Don't return early here; instead take note of the type of change,
+        // and deal with it when looking at compositing.
         changedContextSensitiveProperties |= ContextSensitivePropertyFilter;
-        // Don't return; keep looking for another change.
-#else
-        return StyleDifferenceRepaintLayer;
-#endif
     }
 #endif
 
@@ -698,8 +678,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         if (rareNonInheritedData->m_clipPath != other->rareNonInheritedData->m_clipPath)
             return StyleDifferenceRepaint;
 
-
-#if USE(ACCELERATED_COMPOSITING)
     if (rareNonInheritedData.get() != other->rareNonInheritedData.get()) {
         if (rareNonInheritedData->m_transformStyle3D != other->rareNonInheritedData->m_transformStyle3D
             || rareNonInheritedData->m_backfaceVisibility != other->rareNonInheritedData->m_backfaceVisibility
@@ -708,7 +686,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareNonInheritedData->m_perspectiveOriginY != other->rareNonInheritedData->m_perspectiveOriginY)
             return StyleDifferenceRecompositeLayer;
     }
-#endif
 
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any repaint or layout.

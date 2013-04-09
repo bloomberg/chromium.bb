@@ -34,9 +34,7 @@
 
 namespace WebCore {
 
-#if USE(ACCELERATED_COMPOSITING)
 class Canvas2DLayerBridge;
-#endif
 
 class ImageBufferData {
 public:
@@ -46,9 +44,7 @@ public:
 
     OwnPtr<SkCanvas> m_canvas;
     PlatformContextSkia m_platformContext;
-#if USE(ACCELERATED_COMPOSITING)
     OwnPtr<Canvas2DLayerBridge> m_layerBridge;
-#endif
 };
 
 } // namespace WebCore

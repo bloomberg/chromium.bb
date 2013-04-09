@@ -26,8 +26,6 @@
 #ifndef RenderLayerBacking_h
 #define RenderLayerBacking_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "FloatPoint.h"
 #include "FloatPoint3D.h"
 #include "GraphicsLayer.h"
@@ -289,7 +287,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif // RenderLayerBacking_h
