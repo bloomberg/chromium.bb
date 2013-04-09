@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-IN_PROC_BROWSER_TEST_F(WebViewTest, FLAKY_StoragePersistence) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   ASSERT_TRUE(StartTestServer());
 
   // We don't care where the main browser is on this test.
@@ -909,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
 
 // Embedder has geolocation permission for this test.
 // Note that the test name prefix must be "GeolocationAPI".
-IN_PROC_BROWSER_TEST_F(WebViewTest, FLAKY_GeolocationAPIEmbedderHasAccess) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationAPIEmbedderHasAccess) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/web_view/geolocation/embedder_has_permission"))
