@@ -265,6 +265,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void ClearAccessToken(const base::ListValue* args);
   void ClearRefreshToken(const base::ListValue* args);
 
+  void ListFileEntries(const base::ListValue* args);
+
   // The last event sent to the JavaScript side.
   int last_sent_event_id_;
 
@@ -339,6 +341,10 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
       "clearRefreshToken",
       base::Bind(&DriveInternalsWebUIHandler::ClearRefreshToken,
                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "listFileEntries",
+      base::Bind(&DriveInternalsWebUIHandler::ListFileEntries,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 drive::DriveSystemService* DriveInternalsWebUIHandler::GetSystemService() {
@@ -369,7 +375,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateDeltaUpdateStatusSection();
   UpdateInFlightOperationsSection(drive_service);
   UpdateGCacheContentsSection();
-  UpdateFileSystemContentsSection(drive_service);
   UpdateCacheContentsSection(cache);
   UpdateLocalStorageUsageSection();
 
@@ -490,6 +495,11 @@ void DriveInternalsWebUIHandler::ClearRefreshToken(
     const base::ListValue* args) {
   drive::DriveSystemService* system_service = GetSystemService();
   system_service->drive_service()->ClearRefreshToken();
+}
+
+void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
+  drive::DriveSystemService* system_service = GetSystemService();
+  UpdateFileSystemContentsSection(system_service->drive_service());
 }
 
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {

@@ -257,7 +257,13 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.send('clearRefreshToken');
   });
 
+  $('button-show-file-entries').addEventListener('click', function() {
+    var button = $('button-show-file-entries');
+    button.parentNode.removeChild(button);
+    chrome.send('listFileEntries');
+  });
+
   window.setInterval(function() {
-      chrome.send('periodicUpdate');
-    }, 1000);
+    chrome.send('periodicUpdate');
+  }, 1000);
 });
