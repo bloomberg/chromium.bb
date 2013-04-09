@@ -399,13 +399,14 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   }
 }
 
-// If |data_source| is non-null and has a DocumentState associated with it,
-// the AltErrorPageResourceFetcher is reset.
+// If |data_source| is non-null and has an InternalDocumentStateData associated
+// with it, the AltErrorPageResourceFetcher is reset.
 static void StopAltErrorPageFetcher(WebDataSource* data_source) {
   if (data_source) {
-    DocumentState* document_state = DocumentState::FromDataSource(data_source);
-    if (document_state)
-      document_state->set_alt_error_page_fetcher(NULL);
+    InternalDocumentStateData* internal_data =
+        InternalDocumentStateData::FromDataSource(data_source);
+    if (internal_data)
+      internal_data->set_alt_error_page_fetcher(NULL);
   }
 }
 
@@ -1611,6 +1612,8 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   NavigationState* navigation_state = document_state->navigation_state();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
 
   ViewHostMsg_FrameNavigate_Params params;
   params.http_status_code = response.httpStatusCode();
@@ -1625,16 +1628,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     params.was_fetched_via_proxy = extra_data->was_fetched_via_proxy();
   }
   params.was_within_same_page = navigation_state->was_within_same_page();
-  if (!document_state->security_info().empty()) {
-    // SSL state specified in the request takes precedence over the one in the
-    // response.
-    // So far this is only intended for error pages that are not expected to be
-    // over ssl, so we should not get any clash.
-    DCHECK(response.securityInfo().isEmpty());
-    params.security_info = document_state->security_info();
-  } else {
-    params.security_info = response.securityInfo();
-  }
+  params.security_info = response.securityInfo();
 
   // Set the URL to be displayed in the browser UI to the user.
   params.url = GetLoadingUrl(frame);
@@ -1647,12 +1641,10 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.should_update_history = !ds->hasUnreachableURL() &&
       !response.isMultipartPayload() && (response.httpStatusCode() != 404);
 
-  params.searchable_form_url = document_state->searchable_form_url();
-  params.searchable_form_encoding =
-      document_state->searchable_form_encoding();
+  params.searchable_form_url = internal_data->searchable_form_url();
+  params.searchable_form_encoding = internal_data->searchable_form_encoding();
 
-  const PasswordForm* password_form_data =
-      document_state->password_form_data();
+  const PasswordForm* password_form_data = document_state->password_form_data();
   if (password_form_data)
     params.password_form = *password_form_data;
 
@@ -1740,8 +1732,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     }
 
     // Send the user agent override back.
-    params.is_overriding_user_agent =
-        document_state->is_overriding_user_agent();
+    params.is_overriding_user_agent = internal_data->is_overriding_user_agent();
 
     // Track the URL of the original request.
     params.original_request_url = original_request.url();
@@ -2841,18 +2832,7 @@ void RenderViewImpl::ClearEditCommands() {
 }
 
 SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
-  SSLStatus ssl_status;
-
-  DocumentState* doc_state = DocumentState::FromDataSource(frame->dataSource());
-  if (doc_state && !doc_state->security_info().empty()) {
-    DeserializeSecurityInfo(doc_state->security_info(),
-                            &ssl_status.cert_id,
-                            &ssl_status.cert_status,
-                            &ssl_status.security_bits,
-                            &ssl_status.connection_status);
-  }
-
-  return ssl_status;
+  return SSLStatus();
 }
 
 void RenderViewImpl::loadURLExternally(
@@ -3110,14 +3090,16 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->provisionalDataSource());
   NavigationState* navigation_state = document_state->navigation_state();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
 
   if (navigation_state->transition_type() == PAGE_TRANSITION_LINK)
     navigation_state->set_transition_type(PAGE_TRANSITION_FORM_SUBMIT);
 
   // Save these to be processed when the ensuing navigation is committed.
   WebSearchableFormData web_searchable_form_data(form);
-  document_state->set_searchable_form_url(web_searchable_form_data.url());
-  document_state->set_searchable_form_encoding(
+  internal_data->set_searchable_form_url(web_searchable_form_data.url());
+  internal_data->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
   scoped_ptr<PasswordForm> password_form_data =
       CreatePasswordForm(form);
@@ -3196,8 +3178,12 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     DocumentState* old_document_state =
         DocumentState::FromDataSource(webview()->mainFrame()->dataSource());
     if (old_document_state) {
-      document_state->set_is_overriding_user_agent(
-          old_document_state->is_overriding_user_agent());
+      InternalDocumentStateData* internal_data =
+          InternalDocumentStateData::FromDocumentState(document_state);
+      InternalDocumentStateData* old_internal_data =
+          InternalDocumentStateData::FromDocumentState(old_document_state);
+      internal_data->set_is_overriding_user_agent(
+          old_internal_data->is_overriding_user_agent());
     }
   }
 
@@ -3265,6 +3251,9 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
   document_state->set_request_time(params.request_time);
 
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme) &&
       params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
     // We're doing a load of a page that was restored from the last session. By
@@ -3272,7 +3261,7 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
     // can result in stale data for pages that are set to expire. We explicitly
     // override that by setting the policy here so that as necessary we load
     // from the network.
-    document_state->set_cache_policy_override(
+    internal_data->set_cache_policy_override(
         WebURLRequest::UseProtocolCachePolicy);
   }
 
@@ -3283,9 +3272,9 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
-  document_state->set_referrer_policy(params.referrer.policy);
-  document_state->set_is_overriding_user_agent(params.is_overriding_user_agent);
-  document_state->set_must_reset_scroll_and_scale_state(
+  internal_data->set_referrer_policy(params.referrer.policy);
+  internal_data->set_is_overriding_user_agent(params.is_overriding_user_agent);
+  internal_data->set_must_reset_scroll_and_scale_state(
       params.navigation_type ==
           ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_can_load_local_resources(params.can_load_local_resources);
@@ -3517,9 +3506,9 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
 void RenderViewImpl::didReceiveDocumentData(
     WebFrame* frame, const char* data, size_t data_len,
     bool& prevent_default) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  document_state->set_use_error_page(false);
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDataSource(frame->dataSource());
+  internal_data->set_use_error_page(false);
 }
 
 void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
@@ -3527,13 +3516,15 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
 
   if (document_state->commit_load_time().is_null())
     document_state->set_commit_load_time(Time::Now());
 
-  if (document_state->must_reset_scroll_and_scale_state()) {
+  if (internal_data->must_reset_scroll_and_scale_state()) {
     webview()->resetScrollAndScaleState();
-    document_state->set_must_reset_scroll_and_scale_state(false);
+    internal_data->set_must_reset_scroll_and_scale_state(false);
   }
 
   if (is_new_navigation) {
@@ -3778,6 +3769,8 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   PageTransition transition_type = PAGE_TRANSITION_LINK;
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
   NavigationState* navigation_state = document_state->navigation_state();
   transition_type = navigation_state->transition_type();
 
@@ -3792,13 +3785,13 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     request.setURL(WebURL(new_url));
   }
 
-  if (document_state->is_cache_policy_override_set())
-    request.setCachePolicy(document_state->cache_policy_override());
+  if (internal_data->is_cache_policy_override_set())
+    request.setCachePolicy(internal_data->cache_policy_override());
 
   WebKit::WebReferrerPolicy referrer_policy;
-  if (document_state && document_state->is_referrer_policy_set()) {
-    referrer_policy = document_state->referrer_policy();
-    document_state->clear_referrer_policy();
+  if (internal_data->is_referrer_policy_set()) {
+    referrer_policy = internal_data->referrer_policy();
+    internal_data->clear_referrer_policy();
   } else {
     referrer_policy = frame->document().referrerPolicy();
   }
@@ -3891,18 +3884,20 @@ void RenderViewImpl::didReceiveResponse(
     document_state->set_was_fetched_via_proxy(
         extra_data->was_fetched_via_proxy());
   }
-  document_state->set_http_status_code(http_status_code);
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+  internal_data->set_http_status_code(http_status_code);
   // Whether or not the http status code actually corresponds to an error is
   // only checked when the page is done loading, if |use_error_page| is
   // still true.
-  document_state->set_use_error_page(true);
+  internal_data->set_use_error_page(true);
 }
 
 void RenderViewImpl::didFinishResourceLoad(
     WebFrame* frame, unsigned identifier) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  if (!document_state->use_error_page())
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDataSource(frame->dataSource());
+  if (!internal_data->use_error_page())
     return;
 
   // Do not show error page when DevTools is attached.
@@ -3910,7 +3905,7 @@ void RenderViewImpl::didFinishResourceLoad(
     return;
 
   // Display error page, if appropriate.
-  int http_status_code = document_state->http_status_code();
+  int http_status_code = internal_data->http_status_code();
   if (http_status_code == 404) {
     // On 404s, try a remote search page as a fallback.
     const GURL& document_url = frame->document().url();
@@ -3923,7 +3918,7 @@ void RenderViewImpl::didFinishResourceLoad(
       original_error.reason = 404;
       original_error.unreachableURL = document_url;
 
-      document_state->set_alt_error_page_fetcher(
+      internal_data->set_alt_error_page_fetcher(
           new AltErrorPageResourceFetcher(
               error_page_url, frame, original_error,
               base::Bind(&RenderViewImpl::AltErrorPageFinished,
@@ -4400,12 +4395,11 @@ WebKit::WebString RenderViewImpl::userAgentOverride(
   else
     data_source = main_frame->dataSource();
 
-  DocumentState* document_state =
-      data_source ? DocumentState::FromDataSource(data_source) : NULL;
-  if (document_state && document_state->is_overriding_user_agent())
+  InternalDocumentStateData* internal_data = data_source ?
+      InternalDocumentStateData::FromDataSource(data_source) : NULL;
+  if (internal_data && internal_data->is_overriding_user_agent())
     return WebString::fromUTF8(renderer_preferences_.user_agent_override);
-  else
-    return WebKit::WebString();
+  return WebKit::WebString();
 }
 
 bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
@@ -5611,9 +5605,9 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // Now, create a fetcher for the error page and associate it with the data
   // source we just created via the LoadHTMLString call.  That way if another
   // navigation occurs, the fetcher will get destroyed.
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->provisionalDataSource());
-  document_state->set_alt_error_page_fetcher(
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDataSource(frame->provisionalDataSource());
+  internal_data->set_alt_error_page_fetcher(
       new AltErrorPageResourceFetcher(
           error_page_url, frame, error,
           base::Bind(&RenderViewImpl::AltErrorPageFinished,
@@ -5682,9 +5676,8 @@ void RenderViewImpl::DidFlushPaint() {
   if (!main_frame->provisionalDataSource()) {
     WebDataSource* ds = main_frame->dataSource();
     DocumentState* document_state = DocumentState::FromDataSource(ds);
-
     InternalDocumentStateData* data =
-        InternalDocumentStateData::FromDataSource(ds);
+        InternalDocumentStateData::FromDocumentState(document_state);
     if (data->did_first_visually_non_empty_layout() &&
         !data->did_first_visually_non_empty_paint()) {
       data->set_did_first_visually_non_empty_paint(true);

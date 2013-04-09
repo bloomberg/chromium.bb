@@ -11,13 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
-
-namespace webkit_glue {
-class AltErrorPageResourceFetcher;
-}
 
 namespace content {
 
@@ -131,11 +125,6 @@ class DocumentState : public WebKit::WebDataSource::ExtraData,
     web_timing_histograms_recorded_ = value;
   }
 
-  int http_status_code() const { return http_status_code_; }
-  void set_http_status_code(int http_status_code) {
-    http_status_code_ = http_status_code;
-  }
-
   // Indicator if SPDY was used as part of this page load.
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
   void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
@@ -162,15 +151,6 @@ class DocumentState : public WebKit::WebDataSource::ExtraData,
     was_fetched_via_proxy_ = value;
   }
 
-  const GURL& searchable_form_url() const { return searchable_form_url_; }
-  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
-  const std::string& searchable_form_encoding() const {
-    return searchable_form_encoding_;
-  }
-  void set_searchable_form_encoding(const std::string& encoding) {
-    searchable_form_encoding_ = encoding;
-  }
-
   // If set, contains the PasswordForm that we believe triggered the current
   // navigation (there is some ambiguity in the case of javascript initiated
   // navigations). This information is used by the PasswordManager to determine
@@ -185,33 +165,6 @@ class DocumentState : public WebKit::WebDataSource::ExtraData,
   }
   void set_password_form_data(scoped_ptr<PasswordForm> data);
 
-  const std::string& security_info() const { return security_info_; }
-  void set_security_info(const std::string& security_info) {
-    security_info_ = security_info;
-  }
-
-  // True if an error page should be used, if the http status code also
-  // indicates an error.
-  bool use_error_page() const { return use_error_page_; }
-  void set_use_error_page(bool use_error_page) {
-    use_error_page_ = use_error_page;
-  }
-
-  // True if the user agent was overridden for this page.
-  bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
-  void set_is_overriding_user_agent(bool state) {
-    is_overriding_user_agent_ = state;
-  }
-
-  // True if we have to reset the scroll and scale state of the page
-  // after the provisional load has been committed.
-  bool must_reset_scroll_and_scale_state() const {
-    return must_reset_scroll_and_scale_state_;
-  }
-  void set_must_reset_scroll_and_scale_state(bool state) {
-    must_reset_scroll_and_scale_state_ = state;
-  }
-
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -225,46 +178,6 @@ class DocumentState : public WebKit::WebDataSource::ExtraData,
   // Record the nature of this load, for use when histogramming page load times.
   LoadType load_type() const { return load_type_; }
   void set_load_type(LoadType load_type) { load_type_ = load_type; }
-
-  // Sets the cache policy. The cache policy is only used if explicitly set and
-  // by default is not set. You can mark a NavigationState as not having a cache
-  // state by way of clear_cache_policy_override.
-  void set_cache_policy_override(
-      WebKit::WebURLRequest::CachePolicy cache_policy) {
-    cache_policy_override_ = cache_policy;
-    cache_policy_override_set_ = true;
-  }
-  WebKit::WebURLRequest::CachePolicy cache_policy_override() const {
-    return cache_policy_override_;
-  }
-  void clear_cache_policy_override() {
-    cache_policy_override_set_ = false;
-    cache_policy_override_ = WebKit::WebURLRequest::UseProtocolCachePolicy;
-  }
-  bool is_cache_policy_override_set() const {
-    return cache_policy_override_set_;
-  }
-
-  // Sets the referrer policy to use. This is only used for browser initiated
-  // navigations, otherwise, the referrer policy is defined by the frame's
-  // document.
-  WebKit::WebReferrerPolicy referrer_policy() const {
-    return referrer_policy_;
-  }
-  void set_referrer_policy(WebKit::WebReferrerPolicy referrer_policy) {
-    referrer_policy_ = referrer_policy;
-    referrer_policy_set_ = true;
-  }
-  void clear_referrer_policy() {
-    referrer_policy_ = WebKit::WebReferrerPolicyDefault;
-    referrer_policy_set_ = false;
-  }
-  bool is_referrer_policy_set() const { return referrer_policy_set_; }
-
-  webkit_glue::AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
-    return alt_error_page_fetcher_.get();
-  }
-  void set_alt_error_page_fetcher(webkit_glue::AltErrorPageResourceFetcher* f);
 
   NavigationState* navigation_state() { return navigation_state_.get(); }
   void set_navigation_state(NavigationState* navigation_state);
@@ -284,36 +197,19 @@ class DocumentState : public WebKit::WebDataSource::ExtraData,
   base::Time first_paint_after_load_time_;
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
-  int http_status_code_;
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
   std::string npn_negotiated_protocol_;
   bool was_alternate_protocol_available_;
   bool was_fetched_via_proxy_;
 
-  GURL searchable_form_url_;
-  std::string searchable_form_encoding_;
   scoped_ptr<PasswordForm> password_form_data_;
-  std::string security_info_;
-
-  bool use_error_page_;
-
-  bool is_overriding_user_agent_;
-  bool must_reset_scroll_and_scale_state_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;
   bool was_referred_by_prefetcher_;
 
   LoadType load_type_;
-
-  bool cache_policy_override_set_;
-  WebKit::WebURLRequest::CachePolicy cache_policy_override_;
-
-  bool referrer_policy_set_;
-  WebKit::WebReferrerPolicy referrer_policy_;
-
-  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 
   scoped_ptr<NavigationState> navigation_state_;
 

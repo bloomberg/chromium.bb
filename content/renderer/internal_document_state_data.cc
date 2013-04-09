@@ -4,8 +4,10 @@
 
 #include "content/renderer/internal_document_state_data.h"
 
+#include "content/public/common/password_form.h"
 #include "content/public/renderer/document_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "webkit/glue/alt_error_page_resource_fetcher.h"
 
 namespace content {
 
@@ -18,24 +20,43 @@ const char kUserDataKey[] = "InternalDocumentStateData";
 
 InternalDocumentStateData::InternalDocumentStateData()
     : did_first_visually_non_empty_layout_(false),
-      did_first_visually_non_empty_paint_(false) {
+      did_first_visually_non_empty_paint_(false),
+      http_status_code_(0),
+      use_error_page_(false),
+      is_overriding_user_agent_(false),
+      must_reset_scroll_and_scale_state_(false),
+      cache_policy_override_set_(false),
+      cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
+      referrer_policy_set_(false),
+      referrer_policy_(WebKit::WebReferrerPolicyDefault) {
 }
 
 // static
 InternalDocumentStateData* InternalDocumentStateData::FromDataSource(
     WebKit::WebDataSource* ds) {
-  DocumentState* document_state = static_cast<DocumentState*>(ds->extraData());
-  DCHECK(document_state);
+  return FromDocumentState(static_cast<DocumentState*>(ds->extraData()));
+}
+
+// static
+InternalDocumentStateData* InternalDocumentStateData::FromDocumentState(
+    DocumentState* ds) {
+  if (!ds)
+    return NULL;
   InternalDocumentStateData* data = static_cast<InternalDocumentStateData*>(
-      document_state->GetUserData(&kUserDataKey));
+      ds->GetUserData(&kUserDataKey));
   if (!data) {
     data = new InternalDocumentStateData;
-    document_state->SetUserData(&kUserDataKey, data);
+    ds->SetUserData(&kUserDataKey, data);
   }
   return data;
 }
 
 InternalDocumentStateData::~InternalDocumentStateData() {
+}
+
+void InternalDocumentStateData::set_alt_error_page_fetcher(
+    webkit_glue::AltErrorPageResourceFetcher* f) {
+  alt_error_page_fetcher_.reset(f);
 }
 
 }  // namespace content
