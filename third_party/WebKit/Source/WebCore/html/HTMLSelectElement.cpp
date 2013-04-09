@@ -1062,7 +1062,7 @@ void HTMLSelectElement::reset()
     setNeedsValidityCheck();
 }
 
-#if (!PLATFORM(WIN) && !(PLATFORM(CHROMIUM) && OS(WINDOWS))) || OS(WINCE)
+#if (!PLATFORM(WIN) && !(OS(WINDOWS)))
 bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
 {
     const Page* page = document()->page();

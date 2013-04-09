@@ -53,9 +53,7 @@
 #include "WebGLContextAttributes.h"
 #include "WebGLRenderingContext.h"
 
-#if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
-#endif
 
 namespace WebCore {
 
@@ -176,16 +174,12 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     }
 
     Settings* settings = document()->settings();
-    if (settings && settings->webGLEnabled()
-#if !PLATFORM(CHROMIUM) && !PLATFORM(GTK) && !PLATFORM(QT)
-        && settings->acceleratedCompositingEnabled()
-#endif
-        ) {
+    if (settings && settings->webGLEnabled()) {
 
         // Accept the legacy "webkit-3d" name as well as the provisional "experimental-webgl" name.
         bool is3dContext = (type == "webkit-3d") || (type == "experimental-webgl");
 
-#if PLATFORM(CHROMIUM) && !OS(ANDROID)
+#if !OS(ANDROID)
         // Now that WebGL is ratified, we will also accept "webgl" as the context name in Chrome.
         is3dContext |= (type == "webgl");
 #endif
@@ -281,10 +275,8 @@ void HTMLCanvasElement::reset()
         if (m_rendererIsCanvas) {
             if (oldSize != size()) {
                 toRenderHTMLCanvas(renderer)->canvasSizeChanged();
-#if USE(ACCELERATED_COMPOSITING)
                 if (renderBox() && renderBox()->hasAcceleratedCompositing())
                     renderBox()->contentChanged(CanvasChanged);
-#endif
             }
             if (hadImageBuffer)
                 renderer->repaint();
@@ -313,13 +305,12 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
         return true;
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
     if (!m_context->isAccelerated())
         return true;
 
     if (renderBox() && renderBox()->hasAcceleratedCompositing())
         return false;
-#endif
+
     return true;
 }
 
@@ -408,13 +399,11 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
 
     String encodingMimeType = toEncodingMimeType(mimeType);
 
-#if USE(SKIA)
     // Try to get ImageData first, as that may avoid lossy conversions.
     RefPtr<ImageData> imageData = getImageData();
 
     if (imageData)
         return ImageDataToDataURL(*imageData, encodingMimeType, quality);
-#endif
 
     makeRenderingResultsAvailable();
 
@@ -486,10 +475,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
         return false;
 
-#if PLATFORM(CHROMIUM)
     if (!WebKit::Platform::current()->canAccelerate2dCanvas())
         return false;
-#endif
 
     return true;
 #else
@@ -512,21 +499,16 @@ void HTMLCanvasElement::createImageBuffer() const
 
     if (deviceSize.width() * deviceSize.height() > MaxCanvasArea)
         return;
-#if USE(SKIA)
+
     if (deviceSize.width() > MaxSkiaDim || deviceSize.height() > MaxSkiaDim)
         return;
-#endif
 
     IntSize bufferSize(deviceSize.width(), deviceSize.height());
     if (!bufferSize.width() || !bufferSize.height())
         return;
 
-    RenderingMode renderingMode = shouldAccelerate(bufferSize) ? Accelerated : 
-#if USE(SKIA)
-        UnacceleratedNonPlatformBuffer;
-#else
-        Unaccelerated;
-#endif
+    RenderingMode renderingMode = shouldAccelerate(bufferSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
+
     m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, ColorSpaceDeviceRGB, renderingMode);
     if (!m_imageBuffer)
         return;
