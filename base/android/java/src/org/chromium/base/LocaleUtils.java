@@ -4,6 +4,10 @@
 
 package org.chromium.base;
 
+import android.os.Build;
+import android.text.TextUtils;
+import android.view.View;
+
 import java.util.Locale;
 
 /**
@@ -51,6 +55,19 @@ public class LocaleUtils {
     @CalledByNative
     private static String getDisplayNameForLocale(Locale locale, Locale displayLocale) {
         return locale.getDisplayName(displayLocale);
+    }
+
+    /**
+     * @return true if the system default layout direction is RTL, false otherwise.
+     *         RTL layout support is from Jelly Bean MR1, so if the version is lower
+     *         than that, it is always false.
+     */
+    public static boolean isSystemLayoutDirectionRtl() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
+                    == View.LAYOUT_DIRECTION_RTL;
+        }
+        return false;
     }
 
     /**
