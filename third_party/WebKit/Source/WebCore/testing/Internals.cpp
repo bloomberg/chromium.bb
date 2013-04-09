@@ -1887,7 +1887,6 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionCode& ec)
     frameView->setTracksRepaints(false);
 }
 
-#if USE(LAZY_NATIVE_CURSOR)
 static const char* cursorTypeToString(Cursor::Type cursorType)
 {
     switch (cursorType) {
@@ -1940,7 +1939,6 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
     ASSERT_NOT_REACHED();
     return "UNKNOWN";
 }
-#endif
 
 String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
 {
@@ -1951,7 +1949,6 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
 
     Cursor cursor = document->frame()->eventHandler()->currentMouseCursor();
 
-#if USE(LAZY_NATIVE_CURSOR)
     StringBuilder result;
     result.append("type=");
     result.append(cursorTypeToString(cursor.type()));
@@ -1974,9 +1971,6 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
     }
 #endif
     return result.toString();
-#else
-    return "FAIL: Cursor details not available on this platform.";
-#endif
 }
 
 PassRefPtr<ArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptValue> value) const

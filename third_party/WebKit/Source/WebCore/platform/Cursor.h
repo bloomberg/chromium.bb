@@ -49,13 +49,9 @@ typedef struct HICON__ *HICON;
 typedef HICON HCURSOR;
 #endif
 
-#define WTF_USE_LAZY_NATIVE_CURSOR 1
-
 namespace WebCore {
 
     class Image;
-
-    typedef void* PlatformCursor;
 
     class Cursor {
         WTF_MAKE_FAST_ALLOCATED;
@@ -110,13 +106,8 @@ namespace WebCore {
         static const Cursor& fromType(Cursor::Type);
 
         Cursor()
-#if USE(LAZY_NATIVE_CURSOR)
             // This is an invalid Cursor and should never actually get used.
             : m_type(static_cast<Type>(-1))
-            , m_platformCursor(0)
-#else
-            : m_platformCursor(0)
-#endif // USE(LAZY_NATIVE_CURSOR)
         {
         }
 
@@ -131,7 +122,6 @@ namespace WebCore {
         ~Cursor();
         Cursor& operator=(const Cursor&);
 
-#if USE(LAZY_NATIVE_CURSOR)
         explicit Cursor(Type);
         Type type() const
         {
@@ -144,25 +134,14 @@ namespace WebCore {
         // Image scale in image pixels per logical (UI) pixel.
         float imageScaleFactor() const { return m_imageScaleFactor; }
 #endif
-        PlatformCursor platformCursor() const;
-#else
-        explicit Cursor(PlatformCursor);
-        PlatformCursor impl() const { return m_platformCursor; }
-#endif
 
      private:
-#if USE(LAZY_NATIVE_CURSOR)
-        void ensurePlatformCursor() const;
-
         Type m_type;
         RefPtr<Image> m_image;
         IntPoint m_hotSpot;
 #if ENABLE(MOUSE_CURSOR_SCALE)
         float m_imageScaleFactor;
 #endif
-#endif
-
-        mutable PlatformCursor m_platformCursor;
     };
 
     IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);

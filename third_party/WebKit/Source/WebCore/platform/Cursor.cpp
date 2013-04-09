@@ -145,8 +145,6 @@ const Cursor& Cursor::fromType(Cursor::Type type)
     return pointerCursor();
 }
 
-#if USE(LAZY_NATIVE_CURSOR)
-
 Cursor::Cursor(Image* image, const IntPoint& hotSpot)
     : m_type(Custom)
     , m_image(image)
@@ -154,7 +152,6 @@ Cursor::Cursor(Image* image, const IntPoint& hotSpot)
 #if ENABLE(MOUSE_CURSOR_SCALE)
     , m_imageScaleFactor(1)
 #endif
-    , m_platformCursor(0)
 {
 }
 
@@ -164,7 +161,6 @@ Cursor::Cursor(Image* image, const IntPoint& hotSpot, float scale)
     , m_image(image)
     , m_hotSpot(determineHotSpot(image, hotSpot))
     , m_imageScaleFactor(scale)
-    , m_platformCursor(0)
 {
 }
 #endif
@@ -174,19 +170,8 @@ Cursor::Cursor(Type type)
 #if ENABLE(MOUSE_CURSOR_SCALE)
     , m_imageScaleFactor(1)
 #endif
-    , m_platformCursor(0)
 {
 }
-
-#if !PLATFORM(MAC)
-
-PlatformCursor Cursor::platformCursor() const
-{
-    ensurePlatformCursor();
-    return m_platformCursor;
-}
-
-#endif
 
 const Cursor& pointerCursor()
 {
@@ -445,7 +430,5 @@ const Cursor& grabbingCursor()
     DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::Grabbing));
     return c;
 }
-
-#endif
 
 } // namespace WebCore
