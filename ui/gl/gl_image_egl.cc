@@ -6,9 +6,6 @@
 
 #include "ui/gl/gl_bindings.h"
 
-// TODO(kaanb): remove when crbug.com/227205 is fixed.
-#define EGL_NATIVE_BUFFER_ANDROID 0x3140
-
 namespace gfx {
 
 GLImageEGL::GLImageEGL(gfx::Size size)
