@@ -708,6 +708,10 @@ void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id, 0);
 }
 
+bool NativeTextfieldViews::HasTextBeingDragged() {
+  return initiating_drag_;
+}
+
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 

@@ -429,6 +429,11 @@ void NativeTextfieldWin::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id, 0);
 }
 
+bool NativeTextfieldWin::HasTextBeingDragged() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, ui::SimpleMenuModel::Delegate implementation:
 

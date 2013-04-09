@@ -248,6 +248,9 @@ class VIEWS_EXPORT Textfield : public View {
     return native_wrapper_;
   }
 
+  // Returns whether there is a drag operation originating from the textfield.
+  bool HasTextBeingDragged();
+
   // Overridden from View:
   virtual void Layout() OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;

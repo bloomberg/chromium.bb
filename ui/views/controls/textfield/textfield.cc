@@ -441,6 +441,10 @@ void Textfield::ExecuteCommand(int command_id) {
   native_wrapper_->ExecuteTextCommand(command_id);
 }
 
+bool Textfield::HasTextBeingDragged() {
+  return native_wrapper_->HasTextBeingDragged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 

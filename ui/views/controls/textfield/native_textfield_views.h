@@ -149,6 +149,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual int GetFontHeight() OVERRIDE;
   virtual int GetTextfieldBaseline() const OVERRIDE;
   virtual void ExecuteTextCommand(int command_id) OVERRIDE;
+  virtual bool HasTextBeingDragged() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

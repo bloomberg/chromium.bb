@@ -172,6 +172,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // ExecuteCommand to avoid name clash.
   virtual void ExecuteTextCommand(int command_id) = 0;
 
+  // Returns whether there is a drag operation originating from the textfield.
+  virtual bool HasTextBeingDragged() = 0;
+
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);
 };

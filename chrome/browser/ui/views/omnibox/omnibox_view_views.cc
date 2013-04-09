@@ -717,6 +717,9 @@ void OmniboxViewViews::AppendDropFormats(
 }
 
 int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
+  if (HasTextBeingDragged())
+    return ui::DragDropTypes::DRAG_NONE;
+
   if (data.HasURL()) {
     GURL url;
     string16 title;
@@ -727,7 +730,16 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
         return ui::DragDropTypes::DRAG_COPY;
       }
     }
+  } else if (data.HasString()) {
+    string16 text;
+    if (data.GetString(&text)) {
+      string16 collapsed_text(CollapseWhitespace(text, true));
+      if (model()->CanPasteAndGo(collapsed_text))
+        model()->PasteAndGo(collapsed_text);
+      return ui::DragDropTypes::DRAG_COPY;
+    }
   }
+
   return ui::DragDropTypes::DRAG_NONE;
 }
 
