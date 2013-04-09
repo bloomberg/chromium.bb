@@ -312,7 +312,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
 // TODO(gbillock): Don't do this. Leave for clients to do.
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)  // Implies OS_CHROMEOS
     info.name = GetDisplayNameForDevice(
-        monitor->GetStorageSize(info.location),
+        info.total_size_in_bytes,
         GetDisplayNameForSubFolder(info.name, sub_folder_path));
 #endif
 

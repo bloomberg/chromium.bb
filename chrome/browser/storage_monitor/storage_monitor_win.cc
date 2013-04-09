@@ -79,8 +79,8 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
   string16 location;
   std::string unique_id;
   string16 name;
-  bool removable;
-  uint64 total_size_in_bytes;
+  bool removable = false;
+  uint64 total_size_in_bytes = 0;
   if (!GetDeviceInfo(path, &location, &unique_id, &name, &removable,
                      &total_size_in_bytes)) {
     return false;
@@ -116,13 +116,9 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
     device_info->device_id = device_id;
     device_info->name = name;
     device_info->location = location;
+    device_info->total_size_in_bytes = total_size_in_bytes;
   }
   return true;
-}
-
-uint64 StorageMonitorWin::GetStorageSize(
-    const base::FilePath::StringType& location) const {
-  return volume_mount_watcher_->GetStorageSize(location);
 }
 
 bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(

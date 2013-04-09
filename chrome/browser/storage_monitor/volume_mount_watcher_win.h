@@ -47,10 +47,6 @@ class VolumeMountWatcherWin {
                      bool* removable,
                      uint64* total_size_in_bytes) const;
 
-  // Returns the partition size of the given mount location. Returns 0 if the
-  // location is unknown.
-  uint64 GetStorageSize(const base::FilePath::StringType& mount_point) const;
-
   // Processes DEV_BROADCAST_VOLUME messages and triggers a
   // notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);

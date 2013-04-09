@@ -57,10 +57,6 @@ class StorageMonitorCros
       const base::FilePath& path,
       chrome::StorageInfo* device_info) const OVERRIDE;
 
-  // Returns the storage size of the device present at |location|. If the
-  // device information is unavailable, returns zero.
-  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
-
   virtual void EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) OVERRIDE;

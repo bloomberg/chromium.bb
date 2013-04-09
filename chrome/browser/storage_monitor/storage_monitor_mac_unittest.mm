@@ -168,18 +168,10 @@ TEST_F(StorageMonitorMacTest, GetStorageInfo) {
   EXPECT_EQ(device_id_, info.device_id);
   EXPECT_EQ(ASCIIToUTF16("977 KB Test Display Name"), info.name);
   EXPECT_EQ(mount_point_.value(), info.location);
-  EXPECT_EQ(1000000ULL, info.total_size_in_bytes);
+  EXPECT_EQ(kTestSize, info.total_size_in_bytes);
 
   EXPECT_FALSE(monitor_->GetStorageInfoForPath(
       base::FilePath("/non/matching/path"), &info));
-}
-
-TEST_F(StorageMonitorMacTest, GetStorageSize) {
-  UpdateDisk(disk_info_, StorageMonitorMac::UPDATE_DEVICE_ADDED);
-  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
-
-  EXPECT_EQ(kTestSize,
-            monitor_->GetStorageSize("/unused_test_directory"));
 }
 
 // Test that mounting a DMG doesn't send a notification.

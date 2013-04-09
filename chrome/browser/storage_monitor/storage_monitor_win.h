@@ -42,9 +42,6 @@ class StorageMonitorWin : public StorageMonitor {
       string16* device_location,
       string16* storage_object_id) const OVERRIDE;
 
-  virtual uint64 GetStorageSize(
-      const base::FilePath::StringType& location) const OVERRIDE;
-
  private:
   class PortableDeviceNotifications;
   friend class test::TestStorageMonitorWin;

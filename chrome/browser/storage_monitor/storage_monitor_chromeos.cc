@@ -232,13 +232,6 @@ bool StorageMonitorCros::GetStorageInfoForPath(
   return true;
 }
 
-uint64 StorageMonitorCros::GetStorageSize(
-    const std::string& device_location) const {
-  MountMap::const_iterator info_it = mount_map_.find(device_location);
-  return (info_it != mount_map_.end()) ?
-      info_it->second.total_size_in_bytes : 0;
-}
-
 // Callback executed when the unmount call is run by DiskMountManager.
 // Forwards result to |EjectDevice| caller.
 void NotifyUnmountResult(

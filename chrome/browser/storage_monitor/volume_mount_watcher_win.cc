@@ -322,15 +322,6 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
   return true;
 }
 
-uint64 VolumeMountWatcherWin::GetStorageSize(
-    const base::FilePath::StringType& mount_point) const {
-  MountPointDeviceMetadataMap::const_iterator iter =
-      device_metadata_.find(mount_point);
-  if (iter != device_metadata_.end())
-    return iter->second.total_size_in_bytes;
-  return 0;
-}
-
 void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (event_type) {

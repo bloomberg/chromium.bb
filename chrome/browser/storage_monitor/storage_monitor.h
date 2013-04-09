@@ -65,12 +65,6 @@ class StorageMonitor {
       const base::FilePath& path,
       StorageInfo* device_info) const = 0;
 
-  // Returns the storage size of the device present at |location|. If the
-  // device information is unavailable, returns zero.
-  // TODO(gbillock): delete this in favor of GetStorageInfoForPath.
-  virtual uint64 GetStorageSize(
-      const base::FilePath::StringType& location) const = 0;
-
 // TODO(gbillock): make this either unnecessary (implementation-specific) or
 // platform-independent.
 #if defined(OS_WIN)

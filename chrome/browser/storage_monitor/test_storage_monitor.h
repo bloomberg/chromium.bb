@@ -23,9 +23,6 @@ class TestStorageMonitor : public chrome::StorageMonitor {
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 
-  virtual uint64 GetStorageSize(
-      const base::FilePath::StringType& location) const OVERRIDE;
-
 #if defined(OS_WIN)
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,

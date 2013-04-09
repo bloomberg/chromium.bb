@@ -47,10 +47,6 @@ class StorageMonitorLinux : public StorageMonitor,
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 
-  // Returns the storage partition size of the device present at |location|.
-  // If the requested information is unavailable, returns 0.
-  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
-
  protected:
   // Gets device information given a |device_path| and |mount_point|.
   typedef base::Callback<scoped_ptr<StorageInfo>(

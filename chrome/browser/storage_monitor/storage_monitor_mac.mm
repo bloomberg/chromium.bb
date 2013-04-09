@@ -287,13 +287,6 @@ bool StorageMonitorMac::GetStorageInfoForPath(const base::FilePath& path,
   return false;
 }
 
-uint64 StorageMonitorMac::GetStorageSize(const std::string& location) const {
-  StorageInfo info;
-  if (!FindDiskWithMountPoint(base::FilePath(location), &info))
-    return 0;
-  return info.total_size_in_bytes;
-}
-
 void StorageMonitorMac::EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) {

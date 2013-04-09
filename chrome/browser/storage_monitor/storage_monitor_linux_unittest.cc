@@ -261,6 +261,14 @@ class StorageMonitorLinuxTest : public testing::Test {
     return monitor_.get();
   }
 
+  uint64 GetStorageSize(const base::FilePath& path) {
+    StorageInfo info;
+    if (!notifier()->GetStorageInfoForPath(path, &info))
+      return 0;
+
+    return info.total_size_in_bytes;
+  }
+
  private:
   // Create a directory named |dir| relative to the test directory.
   // Set |with_dcim_dir| to true if the created directory will have a "DCIM"
@@ -694,11 +702,11 @@ TEST_F(StorageMonitorLinuxTest, DevicePartitionSize) {
   EXPECT_EQ(0, observer().detach_calls());
 
   EXPECT_EQ(GetDevicePartitionSize(kDeviceDCIM1),
-            notifier()->GetStorageSize(test_path_a.value()));
+            GetStorageSize(test_path_a));
   EXPECT_EQ(GetDevicePartitionSize(kDeviceNoDCIM),
-            notifier()->GetStorageSize(test_path_b.value()));
+            GetStorageSize(test_path_b));
   EXPECT_EQ(GetDevicePartitionSize(kInvalidPath),
-            notifier()->GetStorageSize(kInvalidPath));
+            GetStorageSize(base::FilePath(kInvalidPath)));
 }
 
 }  // namespace

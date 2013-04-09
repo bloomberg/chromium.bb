@@ -290,15 +290,6 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
   return true;
 }
 
-uint64 StorageMonitorLinux::GetStorageSize(const std::string& location) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  MountMap::const_iterator mount_info = mount_info_map_.find(
-      base::FilePath(location));
-  return (mount_info != mount_info_map_.end()) ?
-      mount_info->second.storage_info.total_size_in_bytes : 0;
-}
-
 void StorageMonitorLinux::SetGetDeviceInfoCallbackForTest(
     const GetDeviceInfoCallback& get_device_info_callback) {
   get_device_info_callback_ = get_device_info_callback;

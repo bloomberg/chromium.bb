@@ -15,6 +15,7 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -184,7 +185,11 @@ void StorageMonitorCrosTest::UnmountDevice(
 
 uint64 StorageMonitorCrosTest::GetDeviceStorageSize(
     const std::string& device_location) {
-  return monitor_->GetStorageSize(device_location);
+  chrome::StorageInfo info;
+  if (!monitor_->GetStorageInfoForPath(base::FilePath(device_location), &info))
+    return 0;
+
+  return info.total_size_in_bytes;
 }
 
 base::FilePath StorageMonitorCrosTest::CreateMountPoint(

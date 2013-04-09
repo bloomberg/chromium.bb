@@ -31,13 +31,9 @@ bool TestStorageMonitor::GetStorageInfoForPath(
         MediaStorageUtil::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
     device_info->name = path.BaseName().LossyDisplayName();
     device_info->location = path.value();
+    device_info->total_size_in_bytes = 0;
   }
   return true;
-}
-
-uint64 TestStorageMonitor::GetStorageSize(
-    const base::FilePath::StringType& location) const {
-  return 0;
 }
 
 #if defined(OS_WIN)
