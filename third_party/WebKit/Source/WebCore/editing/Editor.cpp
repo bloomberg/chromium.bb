@@ -368,7 +368,6 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
         pasteAsPlainText(text, canSmartReplaceWithPasteboard(pasteboard));
 }
 
-#if !PLATFORM(MAC)
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
 {
     RefPtr<Range> range = selectedRange();
@@ -377,7 +376,6 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
     if (fragment && shouldInsertFragment(fragment, range, EditorInsertActionPasted))
         pasteAsFragment(fragment, canSmartReplaceWithPasteboard(pasteboard), chosePlainText);
 }
-#endif
 
 bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
 {
