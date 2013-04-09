@@ -19,6 +19,10 @@ namespace base {
 class FilePath;
 }
 
+namespace fileapi {
+class FileSystemURL;
+}
+
 namespace drive {
 
 class PlatformFileInfoProto;
@@ -112,8 +116,13 @@ base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path);
 
 // Extracts the Drive path from the given path located under the Drive mount
 // point. Returns an empty path if |path| is not under the Drive mount point.
-// Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
+// Examples: ExtractDrivePath("/special/drive/foo.txt") => "drive/foo.txt"
 base::FilePath ExtractDrivePath(const base::FilePath& path);
+
+// Extracts the Drive path (e.g., "drive/foo.txt") from the filesystem URL.
+// Returns an empty path if |url| does not point under Drive mount point.
+base::FilePath ExtractDrivePathFromFileSystemUrl(
+    const fileapi::FileSystemURL& url);
 
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)

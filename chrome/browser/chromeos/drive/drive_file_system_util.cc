@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "webkit/fileapi/file_system_url.h"
 
 using content::BrowserThread;
 
@@ -276,6 +277,13 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
     extracted = extracted.Append(components[i]);
   }
   return extracted;
+}
+
+base::FilePath ExtractDrivePathFromFileSystemUrl(
+    const fileapi::FileSystemURL& url) {
+  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
+    return base::FilePath();
+  return ExtractDrivePath(url.path());
 }
 
 std::string EscapeCacheFileName(const std::string& filename) {

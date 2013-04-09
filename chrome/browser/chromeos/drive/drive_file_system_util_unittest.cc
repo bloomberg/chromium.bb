@@ -5,8 +5,16 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 
 namespace drive {
 namespace util {
@@ -74,6 +82,73 @@ TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
             ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
                 "/special/drive/subdir/foo.txt")));
+}
+
+TEST(DriveFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
+  // Set up file system context for testing.
+  base::ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  MessageLoop message_loop;
+  scoped_refptr<fileapi::ExternalMountPoints> mount_points =
+      fileapi::ExternalMountPoints::CreateRefCounted();
+  scoped_refptr<fileapi::FileSystemContext> context(
+      new fileapi::FileSystemContext(
+          fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+          mount_points,
+          NULL,  // special_storage_policy
+          NULL,  // quota_manager_proxy,
+          temp_dir_.path(),  // partition_path
+          fileapi::CreateAllowFileAccessOptions()));
+
+  // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
+  const std::string& drive_mount_name =
+      GetDriveMountPointPath().BaseName().AsUTF8Unsafe();
+  mount_points->RegisterRemoteFileSystem(
+      drive_mount_name,
+      fileapi::kFileSystemTypeDrive,
+      NULL,  // RemoteFileSystemProxyInterface
+      GetDriveMountPointPath());
+  EXPECT_EQ(
+      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
+      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
+          "filesystem:chrome-extension://dummy-id/external/" +
+          drive_mount_name + "/foo/bar"))));
+
+  // Virtual mount name should not affect the extracted path.
+  mount_points->RevokeFileSystem(drive_mount_name);
+  mount_points->RegisterRemoteFileSystem(
+      "drive2",
+      fileapi::kFileSystemTypeDrive,
+      NULL,  // RemoteFileSystemProxyInterface
+      GetDriveMountPointPath());
+  EXPECT_EQ(
+      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
+      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
+          "filesystem:chrome-extension://dummy-id/external/drive2/foo/bar"))));
+
+  // Type:"external" + virtual_path:"Downloads/foo" is not a Drive path.
+  mount_points->RegisterFileSystem(
+      "Downloads",
+      fileapi::kFileSystemTypeNativeLocal,
+      temp_dir_.path());
+  EXPECT_EQ(
+      base::FilePath(),
+      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
+          "filesystem:chrome-extension://dummy-id/external/Downloads/foo"))));
+
+  // Type:"isolated" + virtual_path:"isolated_id/name" mapped on a Drive path.
+  std::string isolated_name;
+  std::string isolated_id =
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          fileapi::kFileSystemTypeNativeForPlatformApp,
+          GetDriveMountPointPath().AppendASCII("bar/buz"),
+          &isolated_name);
+  EXPECT_EQ(
+      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/bar/buz"),
+      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
+          "filesystem:chrome-extension://dummy-id/isolated/" +
+          isolated_id + "/" + isolated_name))));
 }
 
 TEST(DriveFileSystemUtilTest, EscapeUnescapeCacheFileName) {

@@ -49,9 +49,10 @@ bool DriveTaskExecutor::ExecuteAndNotify(
   std::vector<base::FilePath> raw_paths;
   for (std::vector<FileSystemURL>::const_iterator url = file_urls.begin();
        url != file_urls.end(); ++url) {
-    if (!url->is_valid() || url->type() != fileapi::kFileSystemTypeDrive)
+    base::FilePath path = util::ExtractDrivePathFromFileSystemUrl(*url);
+    if (path.empty())
       return false;
-    raw_paths.push_back(url->virtual_path());
+    raw_paths.push_back(path);
   }
 
   DriveSystemService* system_service =
