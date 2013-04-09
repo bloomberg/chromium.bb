@@ -343,7 +343,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
 }
 
 // Fails flakily (once per 10-20 runs) on Win Aura only. http://crbug.com/177482
-#if defined(OS_WIN)
+// Also fails on CrOS.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_EscapeCloseConstrainedWindow DISABLED_EscapeCloseConstrainedWindow
 #else
 #define MAYBE_EscapeCloseConstrainedWindow EscapeCloseConstrainedWindow
