@@ -47,8 +47,8 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
   }
   ShGetInfo(compiler, SH_MAPPED_NAME_MAX_LENGTH, &mapped_name_len);
   if (name_len <= 1 || mapped_name_len <= 1) return;
-  scoped_array<char> name(new char[name_len]);
-  scoped_array<char> mapped_name(new char[mapped_name_len]);
+  scoped_ptr<char[]> name(new char[name_len]);
+  scoped_ptr<char[]> mapped_name(new char[mapped_name_len]);
 
   ANGLEGetInfoType num_vars = 0;
   ShGetInfo(compiler, var_type, &num_vars);
@@ -92,8 +92,8 @@ void GetNameHashingInfo(
   ShGetInfo(compiler, SH_NAME_MAX_LENGTH, &name_max_len);
   ShGetInfo(compiler, SH_HASHED_NAME_MAX_LENGTH, &hashed_name_max_len);
 
-  scoped_array<char> name(new char[name_max_len]);
-  scoped_array<char> hashed_name(new char[hashed_name_max_len]);
+  scoped_ptr<char[]> name(new char[name_max_len]);
+  scoped_ptr<char[]> hashed_name(new char[hashed_name_max_len]);
 
   for (ANGLEGetInfoType i = 0; i < hashed_names_count; ++i) {
     ShGetNameHashingEntry(compiler, i, name.get(), hashed_name.get());

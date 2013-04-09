@@ -259,7 +259,7 @@ void BufferManager::DoBufferData(
     GLenum usage,
     const GLvoid* data) {
   // Clear the buffer to 0 if no initial data was passed in.
-  scoped_array<int8> zero;
+  scoped_ptr<int8[]> zero;
   if (!data) {
     zero.reset(new int8[size]);
     memset(zero.get(), 0, size);

@@ -89,7 +89,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     }
 
     size_t size_;
-    scoped_array<int8> data_;
+    ::scoped_ptr<int8[]> data_;
 
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };

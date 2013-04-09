@@ -182,7 +182,7 @@ void Program::UpdateLogInfo() {
     set_log_info(NULL);
     return;
   }
-  scoped_array<char> temp(new char[max_len]);
+  scoped_ptr<char[]> temp(new char[max_len]);
   GLint len = 0;
   glGetProgramInfoLog(service_id_, max_len, &len, temp.get());
   DCHECK(max_len == 0 || len < max_len);
@@ -298,7 +298,7 @@ void Program::Update() {
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len]);
+  scoped_ptr<char[]> name_buffer(new char[max_len]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length = 0;
     GLsizei size = 0;
@@ -493,7 +493,7 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     glGetShaderiv(shader->service_id(),
                   GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
                   &max_len);
-    scoped_array<char> temp(new char[max_len]);
+    scoped_ptr<char[]> temp(new char[max_len]);
     GLint len = 0;
     glGetTranslatedShaderSourceANGLE(
         shader->service_id(), max_len, &len, temp.get());
@@ -516,7 +516,7 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     // All translated shaders must compile.
     GLint max_len = 0;
     glGetShaderiv(shader->service_id(), GL_INFO_LOG_LENGTH, &max_len);
-    scoped_array<char> temp(new char[max_len]);
+    scoped_ptr<char[]> temp(new char[max_len]);
     GLint len = 0;
     glGetShaderInfoLog(shader->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);

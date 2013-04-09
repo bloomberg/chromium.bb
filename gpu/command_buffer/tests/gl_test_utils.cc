@@ -130,7 +130,7 @@ bool GLTestHelper::CheckPixels(
     GLint x, GLint y, GLsizei width, GLsizei height, GLint tolerance,
     const uint8* color) {
   GLsizei size = width * height * 4;
-  scoped_array<uint8> pixels(new uint8[size]);
+  scoped_ptr<uint8[]> pixels(new uint8[size]);
   memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
   int bad_count = 0;
@@ -202,7 +202,7 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   int num_pixels = width * height;
   int size = num_pixels * 4;
-  scoped_array<uint8> data(new uint8[size]);
+  scoped_ptr<uint8[]> data(new uint8[size]);
   uint8* pixels = data.get();
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 

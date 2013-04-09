@@ -40,7 +40,7 @@ TEST_F(GLTest, BasicFBO) {
   GLuint fbo = 0;
   glGenFramebuffers(1, &fbo);
   glBindTexture(GL_TEXTURE_2D, tex);
-  scoped_array<uint8> pixels(new uint8 [16*16*4]);
+  scoped_ptr<uint8[]> pixels(new uint8 [16*16*4]);
   memset(pixels.get(), 0, 16*16*4);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels.get());

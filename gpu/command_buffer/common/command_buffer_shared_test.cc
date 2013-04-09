@@ -55,7 +55,7 @@ void WriteToState(int32 *buffer,
 }
 
 TEST_F(CommandBufferSharedTest, TestConsistency) {
-  scoped_array<int32> buffer;
+  scoped_ptr<int32[]> buffer;
   buffer.reset(new int32[kSize]);
   base::Thread consumer("Reader Thread");
 

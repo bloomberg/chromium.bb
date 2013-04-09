@@ -152,7 +152,7 @@ void ProgramCache::ComputeProgramHash(
   const size_t map_size = CalculateMapSize(bind_attrib_location_map);
   const size_t total_size = shader0_size + shader1_size + map_size;
 
-  scoped_array<unsigned char> buffer(new unsigned char[total_size]);
+  scoped_ptr<unsigned char[]> buffer(new unsigned char[total_size]);
   memcpy(buffer.get(), hashed_shader_0, shader0_size);
   memcpy(&buffer[shader0_size], hashed_shader_1, shader1_size);
   if (map_size != 0) {

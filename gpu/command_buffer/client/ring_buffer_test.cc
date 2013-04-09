@@ -203,7 +203,7 @@ class RingBufferWrapperTest : public BaseRingBufferTest {
   }
 
   scoped_ptr<RingBufferWrapper> allocator_;
-  scoped_array<int8> buffer_;
+  scoped_ptr<int8[]> buffer_;
   int8* buffer_start_;
 };
 

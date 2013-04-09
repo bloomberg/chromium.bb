@@ -410,8 +410,8 @@ TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
   fragment_shader_->UpdateSource("al sdfkjdk");
   fragment_shader_->FlagSourceAsCompiled(true);
 
-  scoped_array<char> bigTestBinary =
-      scoped_array<char>(new char[kEvictingBinaryLength]);
+  scoped_ptr<char[]> bigTestBinary =
+      scoped_ptr<char[]>(new char[kEvictingBinaryLength]);
   for (size_t i = 0; i < kEvictingBinaryLength; ++i) {
     bigTestBinary[i] = i % 250;
   }

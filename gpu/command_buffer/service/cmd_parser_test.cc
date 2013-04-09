@@ -60,7 +60,7 @@ class CommandParserTest : public testing::Test {
  private:
   unsigned int buffer_entry_count_;
   scoped_ptr<AsyncAPIMock> api_mock_;
-  scoped_array<CommandBufferEntry> buffer_;
+  scoped_ptr<CommandBufferEntry[]> buffer_;
   Sequence sequence_;
 };
 
@@ -307,7 +307,7 @@ TEST_F(CommandParserTest, SetBuffer) {
   EXPECT_EQ(2, parser->get());
   Mock::VerifyAndClearExpectations(api_mock());
 
-  scoped_array<CommandBufferEntry> buffer2(new CommandBufferEntry[2]);
+  scoped_ptr<CommandBufferEntry[]> buffer2(new CommandBufferEntry[2]);
   parser->SetBuffer(
       buffer2.get(), sizeof(CommandBufferEntry) * 2, 0,
       sizeof(CommandBufferEntry) * 2);

@@ -21,7 +21,7 @@
 // texture ID's in the tree, replacing them with the matching new textures.
 class TextureGenerator : public RenderNodeVisitor {
  public:
-  typedef scoped_array<uint8> ImagePtr;
+  typedef scoped_ptr<uint8[]> ImagePtr;
   typedef std::vector<Tile>::iterator tile_iter;
 
   explicit TextureGenerator(RenderNode* root);
@@ -51,9 +51,9 @@ class TextureGenerator : public RenderNodeVisitor {
 
   TextureGenStage stage_;
   std::set<int> discovered_ids_;
-  scoped_array<GLuint> tex_ids_;
+  scoped_ptr<GLuint[]> tex_ids_;
   std::map<int, int> remapped_ids_;
-  scoped_array<ImagePtr> image_data_;
+  scoped_ptr<ImagePtr[]> image_data_;
   int images_generated_;
   std::set<int> ids_for_completed_textures_;
 };

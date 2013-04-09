@@ -235,7 +235,7 @@ static void ReportAnyShaderCompilationErrors(GLuint shader, ShaderID id) {
   // Get the length of the log string
   GLsizei length;
   glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-  scoped_array<GLchar> log(new GLchar[length+1]);
+  scoped_ptr<GLchar[]> log(new GLchar[length+1]);
   glGetShaderInfoLog(shader, length, NULL, log.get());
   LOG(ERROR) << log.get() << " in shader " << ShaderNameFromID(id);
 }

@@ -159,7 +159,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   // A copy of the data in the buffer. This data is only kept if the target
   // is backed_ = true.
-  scoped_array<int8> shadow_;
+  scoped_ptr<int8[]> shadow_;
 
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;

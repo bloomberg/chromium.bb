@@ -2001,7 +2001,7 @@ bool BackTexture::AllocateStorage(
     return false;
   }
 
-  scoped_array<char> zero_data;
+  scoped_ptr<char[]> zero_data;
   if (zero) {
     zero_data.reset(new char[image_size]);
     memset(zero_data.get(), 0, image_size);
@@ -2675,7 +2675,7 @@ bool GLES2DecoderImpl::GenBuffersHelper(GLsizei n, const GLuint* client_ids) {
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenBuffersARB(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateBuffer(client_ids[ii], service_ids[ii]);
@@ -2690,7 +2690,7 @@ bool GLES2DecoderImpl::GenFramebuffersHelper(
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenFramebuffersEXT(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateFramebuffer(client_ids[ii], service_ids[ii]);
@@ -2705,7 +2705,7 @@ bool GLES2DecoderImpl::GenRenderbuffersHelper(
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenRenderbuffersEXT(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateRenderbuffer(client_ids[ii], service_ids[ii]);
@@ -2719,7 +2719,7 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
   glGenTextures(n, service_ids.get());
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateTexture(client_ids[ii], service_ids[ii]);
@@ -4439,7 +4439,7 @@ void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
   DCHECK(params);
   GLsizei num_written = 0;
   if (GetNumValuesReturnedForGLGet(pname, &num_written)) {
-    scoped_array<GLint> values(new GLint[num_written]);
+    scoped_ptr<GLint[]> values(new GLint[num_written]);
     if (!state_.GetStateAsGLint(pname, values.get(), &num_written)) {
       GetHelper(pname, values.get(), &num_written);
     }
@@ -4456,7 +4456,7 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
   GLsizei num_written = 0;
   if (!state_.GetStateAsGLfloat(pname, params, &num_written)) {
     if (GetHelper(pname, NULL, &num_written)) {
-      scoped_array<GLint> values(new GLint[num_written]);
+      scoped_ptr<GLint[]> values(new GLint[num_written]);
       GetHelper(pname, values.get(), &num_written);
       for (GLsizei ii = 0; ii < num_written; ++ii) {
         params[ii] = static_cast<GLfloat>(values[ii]);
@@ -5518,7 +5518,7 @@ void GLES2DecoderImpl::DoUniform1fv(
     return;
   }
   if (type == GL_BOOL) {
-    scoped_array<GLint> temp(new GLint[count]);
+    scoped_ptr<GLint[]> temp(new GLint[count]);
     for (GLsizei ii = 0; ii < count; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -5539,7 +5539,7 @@ void GLES2DecoderImpl::DoUniform2fv(
   }
   if (type == GL_BOOL_VEC2) {
     GLsizei num_values = count * 2;
-    scoped_array<GLint> temp(new GLint[num_values]);
+    scoped_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -5560,7 +5560,7 @@ void GLES2DecoderImpl::DoUniform3fv(
   }
   if (type == GL_BOOL_VEC3) {
     GLsizei num_values = count * 3;
-    scoped_array<GLint> temp(new GLint[num_values]);
+    scoped_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -5581,7 +5581,7 @@ void GLES2DecoderImpl::DoUniform4fv(
   }
   if (type == GL_BOOL_VEC4) {
     GLsizei num_values = count * 4;
-    scoped_array<GLint> temp(new GLint[num_values]);
+    scoped_ptr<GLint[]> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
@@ -6160,7 +6160,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
         attrib->type() == GL_FIXED) {
       int num_elements = attrib->size() * kSizeOfFloat;
       int size = num_elements * num_vertices;
-      scoped_array<float> data(new float[size]);
+      scoped_ptr<float[]> data(new float[size]);
       const int32* src = reinterpret_cast<const int32 *>(
           attrib->buffer()->GetRange(attrib->offset(), size));
       const int32* end = src + num_elements;
@@ -7534,7 +7534,7 @@ bool GLES2DecoderImpl::ClearLevel(
   }
 
   // Assumes the size has already been checked.
-  scoped_array<char> zero(new char[size]);
+  scoped_ptr<char[]> zero(new char[size]);
   memset(zero.get(), 0, size);
   glBindTexture(bind_target, service_id);
 
@@ -7758,7 +7758,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     framebuffer_manager()->IncFramebufferStateChangeCount();
   }
 
-  scoped_array<int8> zero;
+  scoped_ptr<int8[]> zero;
   if (!data) {
     zero.reset(new int8[image_size]);
     memset(zero.get(), 0, image_size);
@@ -8388,7 +8388,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
           GL_INVALID_VALUE, "glCopyTexSubImage2D", "dimensions too large");
       return;
     }
-    scoped_array<char> zero(new char[pixels_size]);
+    scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height,
@@ -8717,7 +8717,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(
     if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
         result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
       GLsizei num_values = result->GetNumResults();
-      scoped_array<GLint> temp(new GLint[num_values]);
+      scoped_ptr<GLint[]> temp(new GLint[num_values]);
       glGetUniformiv(service_id, real_location, temp.get());
       GLfloat* dst = result->GetData();
       for (GLsizei ii = 0; ii < num_values; ++ii) {
@@ -9126,7 +9126,7 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
   // We have to copy them since we use them twice so the client
   // can't change them between the time we validate them and the time we use
   // them.
-  scoped_array<GLenum> enums(new GLenum[count]);
+  scoped_ptr<GLenum[]> enums(new GLenum[count]);
   memcpy(enums.get(), pnames, pnames_size);
 
   // Count up the space needed for the result.
@@ -9462,7 +9462,7 @@ bool GLES2DecoderImpl::GenVertexArraysOESHelper(
       CreateVertexAttribManager(client_ids[ii], 0);
     }
   } else {
-    scoped_array<GLuint> service_ids(new GLuint[n]);
+    scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
 
     glGenVertexArraysOES(n, service_ids.get());
     for (GLsizei ii = 0; ii < n; ++ii) {

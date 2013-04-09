@@ -136,7 +136,7 @@ void MemoryProgramCache::SaveLinkedProgram(
   if (length == 0 || static_cast<unsigned int>(length) > max_size_bytes_) {
     return;
   }
-  scoped_array<char> binary(new char[length]);
+  scoped_ptr<char[]> binary(new char[length]);
   glGetProgramBinary(program,
                      length,
                      NULL,
@@ -252,7 +252,7 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
                          &fragment_uniforms);
     }
 
-    scoped_array<char> binary(new char[proto->program().length()]);
+    scoped_ptr<char[]> binary(new char[proto->program().length()]);
     memcpy(binary.get(), proto->program().c_str(), proto->program().length());
 
     store_[proto->sha()] = new ProgramCacheValue(proto->program().length(),

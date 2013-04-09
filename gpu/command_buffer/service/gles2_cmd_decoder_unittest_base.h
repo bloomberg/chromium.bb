@@ -519,7 +519,7 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual int32 GetGetOffset() OVERRIDE;
 
    private:
-    scoped_array<int8> data_;
+    scoped_ptr<int8[]> data_;
     gpu::Buffer valid_buffer_;
     gpu::Buffer invalid_buffer_;
   };

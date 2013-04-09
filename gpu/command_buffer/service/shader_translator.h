@@ -136,8 +136,8 @@ class GPU_EXPORT ShaderTranslator
   void ClearResults();
 
   ShHandle compiler_;
-  scoped_array<char> translated_shader_;
-  scoped_array<char> info_log_;
+  scoped_ptr<char[]> translated_shader_;
+  scoped_ptr<char[]> info_log_;
   VariableMap attrib_map_;
   VariableMap uniform_map_;
   NameMap name_map_;

@@ -165,7 +165,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   typedef base::hash_map<std::string, bool> FramebufferComboCompleteMap;
   static FramebufferComboCompleteMap* framebuffer_combo_complete_map_;
 
-  scoped_array<GLenum> draw_buffers_;
+  scoped_ptr<GLenum[]> draw_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(Framebuffer);
 };

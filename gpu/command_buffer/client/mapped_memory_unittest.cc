@@ -108,7 +108,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
   }
 
   scoped_ptr<MemoryChunk> chunk_;
-  scoped_array<uint8> buffer_;
+  scoped_ptr<uint8[]> buffer_;
 };
 
 #ifndef _MSC_VER

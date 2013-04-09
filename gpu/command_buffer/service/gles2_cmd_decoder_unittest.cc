@@ -2341,8 +2341,8 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   GLint unpadded_row_size = emu.ComputeImageDataSize(in_read_width, 1);
-  scoped_array<int8> zero(new int8[unpadded_row_size]);
-  scoped_array<int8> pack(new int8[kPackAlignment]);
+  scoped_ptr<int8[]> zero(new int8[unpadded_row_size]);
+  scoped_ptr<int8[]> pack(new int8[kPackAlignment]);
   memset(zero.get(), 0, unpadded_row_size);
   memset(pack.get(), kInitialMemoryValue, kPackAlignment);
   for (GLint yy = 0; yy < in_read_height; ++yy) {

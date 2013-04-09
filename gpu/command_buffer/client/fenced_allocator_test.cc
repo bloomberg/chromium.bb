@@ -417,7 +417,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
   }
 
   scoped_ptr<FencedAllocatorWrapper> allocator_;
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
 };
 
 // Checks basic alloc and free.

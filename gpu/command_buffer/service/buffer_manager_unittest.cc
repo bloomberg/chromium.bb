@@ -208,7 +208,7 @@ TEST_F(BufferManagerTest, DoBufferSubData) {
   EXPECT_FALSE(DoBufferSubData(buffer, 0, -1, data));
   DoBufferData(buffer, 1, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   const int size = 0x20000;
-  scoped_array<uint8> temp(new uint8[size]);
+  scoped_ptr<uint8[]> temp(new uint8[size]);
   EXPECT_FALSE(DoBufferSubData(buffer, 0 - size, size, temp.get()));
   EXPECT_FALSE(DoBufferSubData(buffer, 1, size / 2, temp.get()));
 }
