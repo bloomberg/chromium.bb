@@ -101,6 +101,8 @@
     'push_stamp': '<(intermediate_dir)/push.stamp',
     'link_stamp': '<(intermediate_dir)/link.stamp',
     'codegen_input_paths': [],
+    'keystore_path': '<(DEPTH)/build/android/ant/chromium-debug.keystore',
+    'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'source_dir': '<(java_in_dir)/src',
     'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
@@ -557,12 +559,11 @@
         '-DAPP_MANIFEST_VERSION_NAME=<(app_manifest_version_name)',
         '-DASSET_DIR=<(asset_location)',
         '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DFINAL_APK_PATH=<(final_apk_path)',
-        '-DKEYSTORE_PATH=<(DEPTH)/build/android/ant/chromium-debug.keystore',
         '-DNATIVE_LIBS_DIR=<(apk_package_native_libs_dir)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DRESOURCE_DIR=<(resource_dir)',
         '-DSOURCE_DIR=<(source_dir)',
+        '-DUNSIGNED_APK_PATH=<(unsigned_apk_path)',
 
         '-Dbasedir=.',
         '-buildfile',
@@ -573,6 +574,28 @@
         # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
         '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ]
+    },
+    {
+      'action_name': 'finalize_apk',
+      'message': 'Signing/aligning <(_target_name) APK.',
+      'inputs': [
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/finalize_apk.py',
+        '<(unsigned_apk_path)',
+      ],
+      'outputs': [
+        '<(final_apk_path)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/gyp/finalize_apk.py',
+        '--android-sdk-root=<(android_sdk_root)',
+        '--unsigned-apk-path=<(unsigned_apk_path)',
+        '--final-apk-path=<(final_apk_path)',
+        '--keystore-path=<(keystore_path)',
+
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+      ],
     },
   ],
 }
