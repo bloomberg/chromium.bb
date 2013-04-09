@@ -238,9 +238,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     return managed_memory_policy_.bytes_limit_when_visible;
   }
 
-  void SetViewportSize(gfx::Size layout_viewport_size,
-                       gfx::Size device_viewport_size);
-  gfx::Size layout_viewport_size() const { return layout_viewport_size_; }
+  void SetViewportSize(gfx::Size device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
@@ -430,7 +428,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   bool wheel_scrolling_;
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
-  gfx::Size layout_viewport_size_;
   gfx::Size device_viewport_size_;
   float overdraw_bottom_height_;
   float device_scale_factor_;

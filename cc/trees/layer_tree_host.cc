@@ -37,6 +37,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace {
 static int s_num_layer_tree_instances;
@@ -342,7 +343,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
                                          max_page_scale_factor_);
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
 
-  host_impl->SetViewportSize(layout_viewport_size_, device_viewport_size_);
+  host_impl->SetViewportSize(device_viewport_size_);
   host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
@@ -380,22 +381,34 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   commit_number_++;
 }
 
+gfx::Size LayerTreeHost::PinchZoomScrollbarSize(
+    WebKit::WebScrollbar::Orientation orientation) const {
+  gfx::Size viewport_size = gfx::ToCeiledSize(
+      gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor()));
+  gfx::Size size;
+  int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
+  if (orientation == WebKit::WebScrollbar::Horizontal)
+    size = gfx::Size(viewport_size.width() - track_width, track_width);
+  else
+    size = gfx::Size(track_width, viewport_size.height() - track_width);
+  return size;
+}
+
 void LayerTreeHost::SetPinchZoomScrollbarsBoundsAndPosition() {
   if (!pinch_zoom_scrollbar_horizontal_ || !pinch_zoom_scrollbar_vertical_)
     return;
 
-  gfx::Size size = layout_viewport_size();
-  int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
+  gfx::Size horizontal_size =
+      PinchZoomScrollbarSize(WebKit::WebScrollbar::Horizontal);
+  gfx::Size vertical_size =
+      PinchZoomScrollbarSize(WebKit::WebScrollbar::Vertical);
 
-  pinch_zoom_scrollbar_horizontal_->SetBounds(
-      gfx::Size(size.width() - track_width, track_width));
+  pinch_zoom_scrollbar_horizontal_->SetBounds(horizontal_size);
   pinch_zoom_scrollbar_horizontal_->SetPosition(
-      gfx::PointF(0, size.height() - track_width));
-
-  pinch_zoom_scrollbar_vertical_->SetBounds(
-      gfx::Size(track_width, size.height() - track_width));
+      gfx::PointF(0, vertical_size.height()));
+  pinch_zoom_scrollbar_vertical_->SetBounds(vertical_size);
   pinch_zoom_scrollbar_vertical_->SetPosition(
-      gfx::PointF(size.width() - track_width, 0));
+      gfx::PointF(horizontal_size.width(), 0));
 }
 
 static scoped_refptr<ScrollbarLayer> CreatePinchZoomScrollbar(
@@ -623,13 +636,10 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetViewportSize(gfx::Size layout_viewport_size,
-                                    gfx::Size device_viewport_size) {
-  if (layout_viewport_size == layout_viewport_size_ &&
-      device_viewport_size == device_viewport_size_)
+void LayerTreeHost::SetViewportSize(gfx::Size device_viewport_size) {
+  if (device_viewport_size == device_viewport_size_)
     return;
 
-  layout_viewport_size_ = layout_viewport_size;
   device_viewport_size_ = device_viewport_size;
 
   SetPinchZoomScrollbarsBoundsAndPosition();
@@ -712,7 +722,7 @@ void LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
   if (!root_layer())
     return;
 
-  if (layout_viewport_size().IsEmpty())
+  if (device_viewport_size().IsEmpty())
     return;
 
   if (memory_allocation_limit_bytes) {

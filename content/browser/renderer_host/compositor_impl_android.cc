@@ -207,7 +207,7 @@ void CompositorImpl::SetVisible(bool visible) {
 
     host_->SetVisible(true);
     host_->SetSurfaceReady();
-    host_->SetViewportSize(size_, size_);
+    host_->SetViewportSize(size_);
     host_->set_has_transparent_background(has_transparent_background_);
   }
 }
@@ -223,7 +223,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->SetViewportSize(size, size);
+    host_->SetViewportSize(size);
   root_layer_->SetBounds(size);
 }
 

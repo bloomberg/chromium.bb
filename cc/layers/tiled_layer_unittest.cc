@@ -229,8 +229,7 @@ TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
-  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000),
-                                    gfx::Size(1000, 1000));
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
   // The tile size is 100x100, so this invalidates and then paints two tiles.
   layer->SetBounds(gfx::Size(100, 200));
@@ -579,7 +578,6 @@ TEST_F(TiledLayerTest, PaintSmallAnimatedLayersImmediately) {
     int layer_height = 5 * FakeTiledLayer::tile_size().height();
     int memory_for_layer = layer_width * layer_height * 4;
     layer_tree_host_->SetViewportSize(
-        gfx::Size(viewport_width, viewport_height),
         gfx::Size(viewport_width, viewport_height));
 
     // Use 10x5 tiles to run out of memory.
@@ -881,7 +879,7 @@ TEST_F(TiledLayerTest, SkipsDrawGetsReset) {
   child_layer->InvalidateContentRect(content_rect);
 
   layer_tree_host_->SetRootLayer(root_layer);
-  layer_tree_host_->SetViewportSize(gfx::Size(300, 300), gfx::Size(300, 300));
+  layer_tree_host_->SetViewportSize(gfx::Size(300, 300));
 
   layer_tree_host_->UpdateLayers(queue_.get(), memory_limit);
 
@@ -951,7 +949,7 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
   layer->InvalidateContentRect(content_rect);
 
   layer_tree_host_->SetRootLayer(layer);
-  layer_tree_host_->SetViewportSize(gfx::Size(300, 200), gfx::Size(300, 200));
+  layer_tree_host_->SetViewportSize(gfx::Size(300, 200));
 
   // Full update of all 6 tiles.
   layer_tree_host_->UpdateLayers(queue_.get(),
@@ -1073,7 +1071,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
 
   // The tile size is 100x100.
 
-  layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+  layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(layer);
 
@@ -1133,7 +1131,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
 
   // The tile size is 100x100.
 
-  layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+  layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(layer);
 
@@ -1201,7 +1199,7 @@ TEST_F(TiledLayerTest, TilesNotPaintedWithoutInvalidation) {
 
   // The tile size is 100x100.
 
-  layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+  layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(layer);
 
@@ -1245,7 +1243,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndTransforms) {
 
   // This makes sure the painting works when the occluded region (in screen
   // space) is transformed differently than the layer.
-  layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+  layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(layer);
   gfx::Transform screen_transform;
@@ -1281,7 +1279,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   // This makes sure the painting works when the content space is scaled to
   // a different layer space. In this case tiles are scaled to be 200x200
   // pixels, which means none should be occluded.
-  layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+  layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
   layer->SetBounds(gfx::Size(600, 600));
   layer->SetRasterScale(0.5);
   CalcDrawProps(layer);
@@ -1366,8 +1364,7 @@ TEST_F(TiledLayerTest, VisibleContentOpaqueRegion) {
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
-  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000),
-                                    gfx::Size(1000, 1000));
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
   // The tile size is 100x100, so this invalidates and then paints two tiles in
   // various ways.
@@ -1482,8 +1479,7 @@ TEST_F(TiledLayerTest, Pixels_paintedMetrics) {
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
-  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000),
-                                    gfx::Size(1000, 1000));
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
   // The tile size is 100x100, so this invalidates and then paints two tiles in
   // various ways.
@@ -1575,7 +1571,7 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
   child2->draw_properties().drawable_content_rect = root_rect;
 
   layer_tree_host_->SetRootLayer(root);
-  layer_tree_host_->SetViewportSize(root_rect.size(), root_rect.size());
+  layer_tree_host_->SetViewportSize(root_rect.size());
 
   // With a huge memory limit, all layers should update and push their textures.
   root->InvalidateContentRect(root_rect);

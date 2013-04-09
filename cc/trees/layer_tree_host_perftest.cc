@@ -89,7 +89,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
   virtual void BuildTree() OVERRIDE {
     gfx::Size viewport = gfx::Size(720, 1038);
-    layer_tree_host()->SetViewportSize(viewport, viewport);
+    layer_tree_host()->SetViewportSize(viewport);
     scoped_refptr<Layer> root = ParseTreeFromJson(json_,
                                                   &fake_content_layer_client_);
     ASSERT_TRUE(root.get());

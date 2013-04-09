@@ -421,7 +421,7 @@ void LayerTreeTest::SetupTree() {
   gfx::Size root_bounds = layer_tree_host_->root_layer()->bounds();
   gfx::Size device_root_bounds = gfx::ToCeiledSize(
       gfx::ScaleSize(root_bounds, layer_tree_host_->device_scale_factor()));
-  layer_tree_host_->SetViewportSize(root_bounds, device_root_bounds);
+  layer_tree_host_->SetViewportSize(device_root_bounds);
 }
 
 void LayerTreeTest::Timeout() {

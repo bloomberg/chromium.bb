@@ -523,10 +523,6 @@ gfx::Size LayerTreeImpl::device_viewport_size() const {
   return layer_tree_host_impl_->device_viewport_size();
 }
 
-gfx::Size LayerTreeImpl::layout_viewport_size() const {
-  return layer_tree_host_impl_->layout_viewport_size();
-}
-
 std::string LayerTreeImpl::layer_tree_as_text() const {
   return layer_tree_host_impl_->LayerTreeAsText();
 }

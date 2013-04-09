@@ -27,6 +27,7 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
@@ -104,6 +105,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void Layout();
   void BeginCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
+  gfx::Size PinchZoomScrollbarSize(
+      WebKit::WebScrollbar::Orientation orientation) const;
   void SetPinchZoomScrollbarsBoundsAndPosition();
   void CreateAndAddPinchZoomScrollbars();
   void WillCommit();
@@ -176,11 +179,9 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-  void SetViewportSize(gfx::Size layout_viewport_size,
-                       gfx::Size device_viewport_size);
+  void SetViewportSize(gfx::Size device_viewport_size);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
 
-  gfx::Size layout_viewport_size() const { return layout_viewport_size_; }
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
   float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
@@ -301,7 +302,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
 
-  gfx::Size layout_viewport_size_;
   gfx::Size device_viewport_size_;
   float overdraw_bottom_height_;
   float device_scale_factor_;

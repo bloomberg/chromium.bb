@@ -45,7 +45,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void setRootLayer(const WebKit::WebLayer& layer);
   virtual void clearRootLayer();
   virtual void setViewportSize(
-      const WebKit::WebSize& layout_viewport_size,
+      const WebKit::WebSize& unused_deprecated,
       const WebKit::WebSize& device_viewport_size);
   virtual WebKit::WebSize layoutViewportSize() const;
   virtual WebKit::WebSize deviceViewportSize() const;

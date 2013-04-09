@@ -600,7 +600,7 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
   }
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(), gfx::Size());
+    layer_tree_host()->SetViewportSize(gfx::Size());
     PostAddAnimationToMainThread(content_);
   }
 

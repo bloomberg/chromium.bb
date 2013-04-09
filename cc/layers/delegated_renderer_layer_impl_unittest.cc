@@ -43,7 +43,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
                                            &proxy_,
                                            &stats_instrumentation_);
     host_impl_->InitializeRenderer(CreateFakeOutputSurface());
-    host_impl_->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+    host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
  protected:
@@ -69,7 +69,7 @@ class DelegatedRendererLayerImplTestSimple
     scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
         FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 4);
 
-    host_impl_->SetViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
 
     layer_before->SetPosition(gfx::Point(20, 20));
@@ -466,7 +466,7 @@ class DelegatedRendererLayerImplTestTransform
     scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
         FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 2);
 
-    host_impl_->SetViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
@@ -869,7 +869,7 @@ class DelegatedRendererLayerImplTestClip
     scoped_ptr<LayerImpl> origin_layer =
         LayerImpl::Create(host_impl_->active_tree(), 4);
 
-    host_impl_->SetViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
+    host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));

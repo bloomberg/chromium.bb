@@ -1365,16 +1365,13 @@ bool LayerTreeHostImpl::InitializeRenderer(
   return true;
 }
 
-void LayerTreeHostImpl::SetViewportSize(gfx::Size layout_viewport_size,
-                                        gfx::Size device_viewport_size) {
-  if (layout_viewport_size == layout_viewport_size_ &&
-      device_viewport_size == device_viewport_size_)
+void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
+  if (device_viewport_size == device_viewport_size_)
     return;
 
   if (pending_tree_ && device_viewport_size_ != device_viewport_size)
     active_tree_->SetViewportSizeInvalid();
 
-  layout_viewport_size_ = layout_viewport_size;
   device_viewport_size_ = device_viewport_size;
 
   UpdateMaxScrollOffset();

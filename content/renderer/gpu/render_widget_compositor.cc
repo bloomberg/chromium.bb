@@ -364,13 +364,13 @@ void RenderWidgetCompositor::clearRootLayer() {
 }
 
 void RenderWidgetCompositor::setViewportSize(
-    const WebSize& layout_viewport_size,
+    const WebSize&,
     const WebSize& device_viewport_size) {
-  layer_tree_host_->SetViewportSize(layout_viewport_size, device_viewport_size);
+  layer_tree_host_->SetViewportSize(device_viewport_size);
 }
 
 WebSize RenderWidgetCompositor::layoutViewportSize() const {
-  return layer_tree_host_->layout_viewport_size();
+  return layer_tree_host_->device_viewport_size();
 }
 
 WebSize RenderWidgetCompositor::deviceViewportSize() const {

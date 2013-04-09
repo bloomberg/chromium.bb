@@ -301,7 +301,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportSize(bounds, bounds);
+    layer_tree_host()->SetViewportSize(bounds);
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 

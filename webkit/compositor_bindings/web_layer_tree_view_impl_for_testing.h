@@ -35,7 +35,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void setSurfaceReady();
   virtual void setRootLayer(const WebKit::WebLayer& layer);
   virtual void clearRootLayer();
-  virtual void setViewportSize(const WebKit::WebSize& layout_viewport_size,
+  virtual void setViewportSize(const WebKit::WebSize& unused_deprecated,
                                const WebKit::WebSize& device_viewport_size);
   virtual WebKit::WebSize layoutViewportSize() const;
   virtual WebKit::WebSize deviceViewportSize() const;

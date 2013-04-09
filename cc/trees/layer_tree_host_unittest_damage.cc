@@ -82,7 +82,7 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
       case 2:
         // Cause visible damage.
         content_->SetNeedsDisplayRect(
-            gfx::Rect(layer_tree_host()->layout_viewport_size()));
+            gfx::Rect(layer_tree_host()->device_viewport_size()));
         break;
       case 3:
         // Cause non-visible damage.

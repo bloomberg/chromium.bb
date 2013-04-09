@@ -303,13 +303,13 @@ class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
     num_commits_++;
     if (num_commits_ == 1) {
       // Make the viewport empty so the host says it can't draw.
-      layer_tree_host()->SetViewportSize(gfx::Size(0, 0), gfx::Size(0, 0));
+      layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
     } else if (num_commits_ == 2) {
       char pixels[4];
       layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
     } else if (num_commits_ == 3) {
       // Let it draw so we go idle and end the test.
-      layer_tree_host()->SetViewportSize(gfx::Size(1, 1), gfx::Size(1, 1));
+      layer_tree_host()->SetViewportSize(gfx::Size(1, 1));
       done_ = true;
       EndTest();
     }
@@ -449,7 +449,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   LayerTreeHostTestCommit() {}
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(20, 20), gfx::Size(20, 20));
+    layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
     layer_tree_host()->SetPageScaleFactorAndLimits(5.f, 5.f, 5.f);
 
@@ -457,7 +457,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    EXPECT_EQ(gfx::Size(20, 20), impl->layout_viewport_size());
+    EXPECT_EQ(gfx::Size(20, 20), impl->device_viewport_size());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
     EXPECT_EQ(5.f, impl->active_tree()->page_scale_factor());
 
@@ -594,7 +594,7 @@ class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
   }
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+    layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->AddChild(update_check_layer_);
 
     PostSetNeedsCommitToMainThread();
@@ -649,9 +649,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
         child_layer_(ContentLayer::Create(&client_)) {}
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(40, 40), gfx::Size(60, 60));
+    layer_tree_host()->SetViewportSize(gfx::Size(60, 60));
     layer_tree_host()->SetDeviceScaleFactor(1.5);
-    EXPECT_EQ(gfx::Size(40, 40), layer_tree_host()->layout_viewport_size());
     EXPECT_EQ(gfx::Size(60, 60), layer_tree_host()->device_viewport_size());
 
     root_layer_->AddChild(child_layer_);
@@ -683,7 +682,6 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     ASSERT_EQ(1u, impl->active_tree()->root_layer()->children().size());
 
     // Device viewport is scaled.
-    EXPECT_EQ(gfx::Size(40, 40), impl->layout_viewport_size());
     EXPECT_EQ(gfx::Size(60, 60), impl->device_viewport_size());
 
     LayerImpl* root = impl->active_tree()->root_layer();
@@ -1031,12 +1029,10 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         child_->SetNeedsDisplay();
         scrollbar_with_paints_->SetNeedsDisplay();
         scrollbar_without_paints_->SetNeedsDisplay();
-        layer_tree_host()->SetViewportSize(gfx::Size(10, 10),
-                                           gfx::Size(10, 10));
+        layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
         break;
       case 4:
-        layer_tree_host()->SetViewportSize(gfx::Size(10, 20),
-                                           gfx::Size(10, 20));
+        layer_tree_host()->SetViewportSize(gfx::Size(10, 20));
         break;
       case 5:
         break;
@@ -1140,8 +1136,7 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
   }
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(100, 100),
-                                       gfx::Size(100, 100));
+    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
 
     root_layer_->SetBounds(gfx::Size(100, 100));
     surface_layer1_->SetBounds(gfx::Size(100, 100));
@@ -1319,7 +1314,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->SetRootLayer(layer_);
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
+    layer_tree_host()->SetViewportSize(gfx::Size(10, 20));
 
     gfx::Transform identity_matrix;
     SetLayerPropertiesForTesting(layer_.get(),
@@ -1446,7 +1441,7 @@ class LayerTreeHostTestContinuousCommit : public LayerTreeHostTest {
       : num_commit_complete_(0), num_draw_layers_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+    layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
     PostSetNeedsCommitToMainThread();
@@ -1487,7 +1482,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
       : num_commit_complete_(0), num_draw_layers_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+    layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
     content_layer_ = ContentLayer::Create(&client_);
@@ -1720,7 +1715,7 @@ class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
     layer_->SetBounds(bounds_);
     // Outside viewport so tiles don't have to be initialized for commit.
     layer_->SetPosition(gfx::Point(100, 100));
-    layer_tree_host()->SetViewportSize(bounds_, bounds_);
+    layer_tree_host()->SetViewportSize(bounds_);
     layer_tree_host()->SetRootLayer(layer_);
 
     EXPECT_TRUE(layer_tree_host()->InitializeRendererIfNeeded());
@@ -1810,8 +1805,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         num_commits_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(100, 100),
-                                       gfx::Size(100, 100));
+    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
     root_layer_->SetBounds(gfx::Size(100, 100));
     child_layer1_->SetBounds(gfx::Size(100, 100));
     child_layer2_->SetBounds(gfx::Size(100, 100));
@@ -1941,8 +1935,7 @@ class LayerTreeHostTestPinchZoomScrollbarResize : public LayerTreeHostTest {
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(100, 100));
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetViewportSize(gfx::Size(100, 100),
-                                       gfx::Size(100, 100));
+    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1960,15 +1953,14 @@ class LayerTreeHostTestPinchZoomScrollbarResize : public LayerTreeHostTest {
     if (!layer1->Orientation() == WebKit::WebScrollbar::Horizontal)
       std::swap(layer1, layer2);
 
-    gfx::Size viewport_size = layer_tree_host()->layout_viewport_size();
+    gfx::Size viewport_size = layer_tree_host()->device_viewport_size();
     EXPECT_EQ(viewport_size.width() - thickness, layer1->bounds().width());
     EXPECT_EQ(viewport_size.height() - thickness, layer2->bounds().height());
 
     switch (num_commits_) {
       case 1:
         // Resizing the viewport should also resize the pinch-zoom scrollbars.
-        layer_tree_host()->SetViewportSize(gfx::Size(120, 150),
-                                           gfx::Size(120, 150));
+        layer_tree_host()->SetViewportSize(gfx::Size(120, 150));
         break;
       default:
         EndTest();

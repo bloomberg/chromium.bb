@@ -7,6 +7,7 @@
 #include "cc/input/pinch_zoom_scrollbar_geometry.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace cc {
 
@@ -39,14 +40,7 @@ WebKit::WebPoint PinchZoomScrollbar::location() const {
 }
 
 WebKit::WebSize PinchZoomScrollbar::size() const {
-  gfx::Size viewport_size = owner_->layout_viewport_size();
-  gfx::Size size;
-  int track_width = PinchZoomScrollbarGeometry::kTrackWidth;
-  if (orientation_ == WebKit::WebScrollbar::Horizontal)
-    size = gfx::Size(viewport_size.width() - track_width, track_width);
-  else
-    size = gfx::Size(track_width, viewport_size.height() - track_width);
-  return WebKit::WebSize(size);
+  return owner_->PinchZoomScrollbarSize(orientation_);
 }
 
 bool PinchZoomScrollbar::enabled() const {

@@ -634,7 +634,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   DCHECK_GT(scale, 0);
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
-    host_->SetViewportSize(size_in_pixel, size_in_pixel);
+    host_->SetViewportSize(size_in_pixel);
     root_web_layer_->SetBounds(size_in_pixel);
 
     next_draw_is_resize_ = true;

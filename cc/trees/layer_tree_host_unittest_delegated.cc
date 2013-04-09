@@ -1033,7 +1033,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
  public:
   virtual void BeginTest() OVERRIDE {
     // Prevent drawing with resources that are sent to the grandparent.
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size());
+    layer_tree_host()->SetViewportSize(gfx::Size());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1148,7 +1148,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
  public:
   virtual void BeginTest() OVERRIDE {
     // Prevent drawing with resources that are sent to the grandparent.
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10), gfx::Size());
+    layer_tree_host()->SetViewportSize(gfx::Size());
     PostSetNeedsCommitToMainThread();
   }
 
