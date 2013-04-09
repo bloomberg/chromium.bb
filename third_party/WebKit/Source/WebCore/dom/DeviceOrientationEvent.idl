@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=DEVICE_ORIENTATION,
-] interface DeviceOrientationEvent : Event {
+interface DeviceOrientationEvent : Event {
     [Custom] readonly attribute double alpha;
     [Custom] readonly attribute double beta;
     [Custom] readonly attribute double gamma;

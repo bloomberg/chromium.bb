@@ -239,7 +239,6 @@ static void logCanCachePageDecision(Page* page)
         PCLOG("   -Page settings says b/f cache disabled");
         rejectReasons |= 1 << DisabledPageCache;
     }
-#if ENABLE(DEVICE_ORIENTATION)
     if (DeviceMotionController::isActiveAt(page)) {
         PCLOG("   -Page is using DeviceMotion");
         rejectReasons |= 1 << UsesDeviceMotion;
@@ -248,7 +247,6 @@ static void logCanCachePageDecision(Page* page)
         PCLOG("   -Page is using DeviceOrientation");
         rejectReasons |= 1 << UsesDeviceOrientation;
     }
-#endif
 #if ENABLE(PROXIMITY_EVENTS)
     if (DeviceProximityController::isActiveAt(page)) {
         PCLOG("   -Page is using DeviceProximity");
@@ -382,10 +380,8 @@ bool PageCache::canCache(Page* page) const
         && canCachePageContainingThisFrame(page->mainFrame())
         && page->backForward()->isActive()
         && page->settings()->usesPageCache()
-#if ENABLE(DEVICE_ORIENTATION)
         && !DeviceMotionController::isActiveAt(page)
         && !DeviceOrientationController::isActiveAt(page)
-#endif
 #if ENABLE(PROXIMITY_EVENTS)
         && !DeviceProximityController::isActiveAt(page)
 #endif

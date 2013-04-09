@@ -358,10 +358,8 @@ namespace WebCore {
         using RefCounted<DOMWindow>::ref;
         using RefCounted<DOMWindow>::deref;
 
-#if ENABLE(DEVICE_ORIENTATION)
         DEFINE_ATTRIBUTE_EVENT_LISTENER(devicemotion);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceorientation);
-#endif
 
 #if ENABLE(PROXIMITY_EVENTS)
         DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitdeviceproximity);

@@ -292,8 +292,8 @@
     attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchend;
     attribute [Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] EventListener ontouchcancel;
 
-    attribute [Conditional=DEVICE_ORIENTATION,EnabledAtRuntime] EventListener ondevicemotion;
-    attribute [Conditional=DEVICE_ORIENTATION,EnabledAtRuntime] EventListener ondeviceorientation;
+    attribute [EnabledAtRuntime] EventListener ondevicemotion;
+    attribute [EnabledAtRuntime] EventListener ondeviceorientation;
 
     attribute [Conditional=PROXIMITY_EVENTS] EventListener onwebkitdeviceproximity;
 
@@ -546,8 +546,8 @@
     attribute TransitionEventConstructor WebKitTransitionEvent;
     attribute WheelEventConstructor WheelEvent;
     attribute XMLHttpRequestProgressEventConstructor XMLHttpRequestProgressEvent;
-    [Conditional=DEVICE_ORIENTATION, EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
-    [Conditional=DEVICE_ORIENTATION, EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
+    [EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
+    [EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
     [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchConstructor Touch;
     [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
     [Conditional=TOUCH_EVENTS, EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;

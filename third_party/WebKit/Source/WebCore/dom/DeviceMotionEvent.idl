@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=DEVICE_ORIENTATION,
-] interface DeviceMotionEvent : Event {
+interface DeviceMotionEvent : Event {
     [Custom] readonly attribute Acceleration acceleration;
     [Custom] readonly attribute Acceleration accelerationIncludingGravity;
     [Custom] readonly attribute RotationRate rotationRate;

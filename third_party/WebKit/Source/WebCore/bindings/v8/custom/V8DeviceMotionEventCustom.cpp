@@ -26,8 +26,6 @@
 #include "config.h"
 #include "V8DeviceMotionEvent.h"
 
-#if ENABLE(DEVICE_ORIENTATION)
-
 #include "DeviceMotionData.h"
 #include "V8Binding.h"
 
@@ -174,5 +172,3 @@ v8::Handle<v8::Value> V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(con
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(DEVICE_ORIENTATION)

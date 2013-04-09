@@ -118,7 +118,6 @@ public:
     virtual void clearGeolocationOverride(ErrorString*);
     virtual void setDeviceOrientationOverride(ErrorString*, double, double, double);
     virtual void clearDeviceOrientationOverride(ErrorString*);
-    virtual void canOverrideDeviceOrientation(ErrorString*, bool*);
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
     virtual void getCompositingBordersVisible(ErrorString*, bool* out_param);

@@ -1183,15 +1183,6 @@ void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString*)
     m_deviceOrientation.clear();
 }
 
-void InspectorPageAgent::canOverrideDeviceOrientation(ErrorString*, bool* outParam)
-{
-#if ENABLE(DEVICE_ORIENTATION)
-    *outParam = true;
-#else
-    *outParam = false;
-#endif
-}
-
 DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrientationData* deviceOrientation)
 {
     if (m_deviceOrientation)

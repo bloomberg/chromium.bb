@@ -42,7 +42,6 @@ var Preferences = {
 }
 
 var Capabilities = {
-    canOverrideDeviceOrientation: false,
     canShowFPSCounter: false,
     canContinuouslyPaint: false,
     canInspectWorkers: false
