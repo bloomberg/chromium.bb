@@ -325,7 +325,7 @@ static void GotOrientation(JNIEnv* env, jobject obj,
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kTestJniClassPath)));
+      base::android::GetClass(env, kTestJniClassPath).obj()));
   static const JNINativeMethod kMethodsTestJni[] = {
     { "nativeInit",
 "("
@@ -483,7 +483,7 @@ static jint Init(JNIEnv* env, jobject obj);
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kTestJniClassPath)));
+      base::android::GetClass(env, kTestJniClassPath).obj()));
   static const JNINativeMethod kMethodsMyInnerClass[] = {
     { "nativeInit",
 "("
@@ -574,7 +574,7 @@ static jint Init(JNIEnv* env, jobject obj);
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kTestJniClassPath)));
+      base::android::GetClass(env, kTestJniClassPath).obj()));
   static const JNINativeMethod kMethodsMyOtherInnerClass[] = {
     { "nativeInit",
 "("
@@ -679,7 +679,7 @@ static jint Init(JNIEnv* env, jobject obj);
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kTestJniClassPath)));
+      base::android::GetClass(env, kTestJniClassPath).obj()));
   static const JNINativeMethod kMethodsMyOtherInnerClass[] = {
     { "nativeInit",
 "("
@@ -1505,9 +1505,9 @@ static ScopedJavaLocalRef<jobject> Java_TestJni_getCompressFormatList(JNIEnv*
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kTestJniClassPath)));
+      base::android::GetClass(env, kTestJniClassPath).obj()));
   g_InfoBar_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kInfoBarClassPath)));
+      base::android::GetClass(env, kInfoBarClassPath).obj()));
   return true;
 }
 
@@ -1870,7 +1870,7 @@ static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_InputStream_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kInputStreamClassPath)));
+      base::android::GetClass(env, kInputStreamClassPath).obj()));
   return true;
 }
 }  // namespace JNI_InputStream

@@ -301,11 +301,11 @@ static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_InnerStructA_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kInnerStructAClassPath)));
+      base::android::GetClass(env, kInnerStructAClassPath).obj()));
   g_SampleForTests_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kSampleForTestsClassPath)));
+      base::android::GetClass(env, kSampleForTestsClassPath).obj()));
   g_InnerStructB_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kInnerStructBClassPath)));
+      base::android::GetClass(env, kInnerStructBClassPath).obj()));
   static const JNINativeMethod kMethodsSampleForTests[] = {
     { "nativeInit",
 "("

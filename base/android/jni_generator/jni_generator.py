@@ -878,7 +878,7 @@ jclass g_${JAVA_CLASS}_clazz = NULL;""")
     """Returns the imlementation of FindClass for all known classes."""
     template = Template("""\
   g_${JAVA_CLASS}_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, k${JAVA_CLASS}ClassPath)));""")
+      base::android::GetClass(env, k${JAVA_CLASS}ClassPath).obj()));""")
     ret = []
     for clazz in self.GetUniqueClasses(self.called_by_natives):
       values = {'JAVA_CLASS': clazz}
