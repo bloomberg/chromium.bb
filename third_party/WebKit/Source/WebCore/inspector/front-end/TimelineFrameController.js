@@ -61,43 +61,68 @@ WebInspector.TimelineFrameController.prototype = {
 
     _addRecord: function(record)
     {
-        var records;
         if (record.isBackground)
             return;
-        if (record.type === WebInspector.TimelineModel.RecordType.Program)
+        var records;
+        var programRecord;
+        if (record.type === WebInspector.TimelineModel.RecordType.Program) {
+            programRecord = record;
+            if (this._lastFrame)
+                this._lastFrame.timeByCategory["other"] += WebInspector.TimelineModel.durationInSeconds(programRecord);
             records = record["children"] || [];
-        else
+        } else
             records = [record];
-        records.forEach(this._innerAddRecord, this);
+        records.forEach(this._innerAddRecord.bind(this, programRecord));
     },
 
-    _innerAddRecord: function(record)
+    /**
+     * @param {Object} programRecord
+     * @param {Object} record
+     */
+    _innerAddRecord: function(programRecord, record)
     {
-        if (record.type === WebInspector.TimelineModel.RecordType.BeginFrame && this._lastFrame)
-            this._flushFrame(record);
+        var isFrameRecord = record.type === WebInspector.TimelineModel.RecordType.BeginFrame;
+        var programTimeCarryover = isFrameRecord && programRecord ? WebInspector.TimelineModel.endTimeInSeconds(programRecord) - WebInspector.TimelineModel.startTimeInSeconds(record) : 0;
+        if (isFrameRecord && this._lastFrame)
+            this._flushFrame(record, programTimeCarryover);
         else {
             if (!this._lastFrame)
-                this._lastFrame = this._createFrame(record);
+                this._lastFrame = this._createFrame(record, programTimeCarryover);
             if (!record.thread)
                 WebInspector.TimelineModel.aggregateTimeForRecord(this._lastFrame.timeByCategory, record);
-            this._lastFrame.cpuTime += WebInspector.TimelineModel.durationInSeconds(record);
+            var duration = WebInspector.TimelineModel.durationInSeconds(record);
+            this._lastFrame.cpuTime += duration;
+            this._lastFrame.timeByCategory["other"] -= duration;
         }
     },
 
-    _flushFrame: function(record)
+    /**
+     * @param {Object} record
+     * @param {number} programTimeCarryover
+     */
+    _flushFrame: function(record, programTimeCarryover)
     {
         this._lastFrame.endTime = WebInspector.TimelineModel.startTimeInSeconds(record);
         this._lastFrame.duration = this._lastFrame.endTime - this._lastFrame.startTime;
+        this._lastFrame.timeByCategory["other"] -= programTimeCarryover;
+        // Alternatively, we could compute CPU time as sum of all Program events.
+        // This way it's a bit more flexible, as it works in case there's no program events.
+        this._lastFrame.cpuTime += this._lastFrame.timeByCategory["other"];
         this._overviewPane.addFrame(this._lastFrame);
         this._presentationModel.addFrame(this._lastFrame);
-        this._lastFrame = this._createFrame(record);
+        this._lastFrame = this._createFrame(record, programTimeCarryover);
     },
 
-    _createFrame: function(record)
+    /**
+     * @param {Object} record
+     * @param {number} programTimeCarryover
+     */
+    _createFrame: function(record, programTimeCarryover)
     {
         var frame = new WebInspector.TimelineFrame();
         frame.startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
         frame.startTimeOffset = this._model.recordOffsetInSeconds(record);
+        frame.timeByCategory["other"] = programTimeCarryover;
         return frame;
     },
 

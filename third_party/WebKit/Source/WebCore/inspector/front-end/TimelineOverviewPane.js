@@ -826,16 +826,18 @@ WebInspector.TimelineFrameOverview.prototype = {
             this._context.scale(width / this._maxInnerBarWidth, 1);
             this._context.fillStyle = this._fillStyles[category];
             this._context.fillRect(0, y, this._maxInnerBarWidth, Math.floor(height));
+            this._context.strokeStyle = WebInspector.TimelinePresentationModel.categories()[category].borderColor;
+            this._context.beginPath();
+            this._context.moveTo(0, y);
+            this._context.lineTo(this._maxInnerBarWidth, y);
+            this._context.stroke();
             this._context.restore();
 
-            this._context.strokeStyle = WebInspector.TimelinePresentationModel.categories()[category].borderColor;
-            this._context.strokeRect(x, y, width, Math.floor(height));
             bottomOffset -= height - 1;
         }
-        // Draw a contour for the rest of frame time that we did not instrument.
-        var nonCPUTime = frame.duration - frame.cpuTime;
-        var y0 = Math.floor(bottomOffset - nonCPUTime * scale) + 0.5;
-        var y1 = Math.floor(bottomOffset) + 0.5;
+        // Draw a contour for the total frame time.
+        var y0 = Math.floor(this._canvas.height - frame.duration * scale) + 0.5;
+        var y1 = this._canvas.height + 0.5;
 
         this._context.strokeStyle = "rgb(90, 90, 90)";
         this._context.beginPath();

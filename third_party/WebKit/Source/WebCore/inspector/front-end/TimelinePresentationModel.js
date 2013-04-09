@@ -46,11 +46,11 @@ WebInspector.TimelinePresentationModel.categories = function()
     if (WebInspector.TimelinePresentationModel._categories)
         return WebInspector.TimelinePresentationModel._categories;
     WebInspector.TimelinePresentationModel._categories = {
-        program: new WebInspector.TimelineCategory("program", WebInspector.UIString("Program"), -1, "#BBBBBB", "#DDDDDD", "#FFFFFF"),
         loading: new WebInspector.TimelineCategory("loading", WebInspector.UIString("Loading"), 0, "#5A8BCC", "#8EB6E9", "#70A2E3"),
         scripting: new WebInspector.TimelineCategory("scripting", WebInspector.UIString("Scripting"), 1, "#D8AA34", "#F3D07A", "#F1C453"),
         rendering: new WebInspector.TimelineCategory("rendering", WebInspector.UIString("Rendering"), 2, "#8266CC", "#AF9AEB", "#9A7EE6"),
-        painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), 2, "#5FA050", "#8DC286", "#71B363")
+        painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), 2, "#5FA050", "#8DC286", "#71B363"),
+        other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), -1, "#BBBBBB", "#DDDDDD", "#EEEEEE")
     };
     return WebInspector.TimelinePresentationModel._categories;
 };
@@ -68,7 +68,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
 
     var recordStyles = {};
     recordStyles[recordTypes.Root] = { title: "#root", category: categories["loading"] };
-    recordStyles[recordTypes.Program] = { title: WebInspector.UIString("Program"), category: categories["program"] };
+    recordStyles[recordTypes.Program] = { title: WebInspector.UIString("Other"), category: categories["other"] };
     recordStyles[recordTypes.EventDispatch] = { title: WebInspector.UIString("Event"), category: categories["scripting"] };
     recordStyles[recordTypes.BeginFrame] = { title: WebInspector.UIString("Frame Start"), category: categories["rendering"] };
     recordStyles[recordTypes.ScheduleStyleRecalculation] = { title: WebInspector.UIString("Schedule Style Recalculation"), category: categories["rendering"] };
@@ -122,7 +122,7 @@ WebInspector.TimelinePresentationModel.recordStyle = function(record)
     if (!result) {
         result = {
             title: WebInspector.UIString("Unknown: %s", record.type),
-            category: WebInspector.TimelinePresentationModel.categories()["program"]
+            category: WebInspector.TimelinePresentationModel.categories()["other"]
         };
         recordStyles[record.type] = result;
     }
