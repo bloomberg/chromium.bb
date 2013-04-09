@@ -11,11 +11,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "media/audio/audio_manager_base.h"
-#endif
-
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Exactly;
@@ -70,13 +65,6 @@ class AudioInputControllerTest : public testing::Test {
   virtual ~AudioInputControllerTest() {}
 
  protected:
-  virtual void SetUp() {
-#if defined(OS_ANDROID)
-    media::AudioManagerBase::RegisterAudioManager(
-        base::android::AttachCurrentThread());
-#endif
-  }
-
   MessageLoop message_loop_;
 
  private:
