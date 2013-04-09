@@ -10,6 +10,7 @@ import subprocess
 
 import constants
 
+
 def RunCmd(args, cwd=None):
   """Opens a subprocess to execute a program and returns its return value.
 
@@ -23,8 +24,7 @@ def RunCmd(args, cwd=None):
     Return code from the command execution.
   """
   logging.info(str(args) + ' ' + (cwd or ''))
-  p = subprocess.Popen(args=args, cwd=cwd)
-  return p.wait()
+  return subprocess.call(args, cwd=cwd)
 
 
 def GetCmdOutput(args, cwd=None, shell=False):
@@ -43,6 +43,7 @@ def GetCmdOutput(args, cwd=None, shell=False):
   """
   (_, output) = GetCmdStatusAndOutput(args, cwd, shell)
   return output
+
 
 def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   """Executes a subprocess and returns its exit code and output.
@@ -66,6 +67,7 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     logging.critical(stderr)
   logging.info(stdout[:4096])  # Truncate output longer than 4k.
   return (exit_code, stdout)
+
 
 class OutDirectory(object):
   _out_directory = os.path.join(constants.CHROME_DIR, 'out')
