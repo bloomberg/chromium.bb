@@ -336,13 +336,8 @@ static PassRefPtr<InspectorObject> buildObjectForHighlight(FrameView* mainView, 
     object->setString("marginColor", highlight.marginColor.serialized());
 
     FloatRect visibleRect = mainView->visibleContentRect();
-    if (!mainView->delegatesScrolling()) {
-        object->setNumber("scrollX", visibleRect.x());
-        object->setNumber("scrollY", visibleRect.y());
-    } else {
-        object->setNumber("scrollX", 0);
-        object->setNumber("scrollY", 0);
-    }
+    object->setNumber("scrollX", visibleRect.x());
+    object->setNumber("scrollY", visibleRect.y());
 
     return object.release();
 }

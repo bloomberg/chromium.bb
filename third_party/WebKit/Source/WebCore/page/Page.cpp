@@ -700,7 +700,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     FrameView* view = document->view();
 
     if (scale == m_pageScaleFactor) {
-        if (view && (view->scrollPosition() != origin || view->delegatesScrolling()))
+        if (view && view->scrollPosition() != origin)
             view->setScrollPosition(origin);
         return;
     }

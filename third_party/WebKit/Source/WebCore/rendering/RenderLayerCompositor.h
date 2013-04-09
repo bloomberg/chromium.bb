@@ -335,7 +335,6 @@ private:
     FixedPositionViewportConstraints computeFixedViewportConstraints(RenderLayer*) const;
     StickyPositionViewportConstraints computeStickyViewportConstraints(RenderLayer*) const;
 
-    bool requiresScrollLayer(RootLayerAttachment) const;
     bool requiresHorizontalScrollbarLayer() const;
     bool requiresVerticalScrollbarLayer() const;
     bool requiresScrollCornerLayer() const;

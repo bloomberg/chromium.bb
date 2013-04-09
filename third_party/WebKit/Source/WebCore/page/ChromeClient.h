@@ -155,9 +155,6 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) = 0;
     virtual void invalidateContentsForSlowScroll(const IntRect&) = 0;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) = 0;
-#if USE(TILED_BACKING_STORE)
-    virtual void delegatedScrollRequested(const IntPoint&) = 0;
-#endif
     virtual IntPoint screenToRootView(const IntPoint&) const = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
     virtual PlatformPageClient platformPageClient() const = 0;
@@ -285,10 +282,6 @@ public:
     virtual void exitFullScreenForElement(Element*) { }
     virtual void fullScreenRendererChanged(RenderBox*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }
-
-#if USE(TILED_BACKING_STORE)
-    virtual IntRect visibleRectForTiledBackingStore() const { return IntRect(); }
-#endif
 
 #if PLATFORM(MAC)
     virtual NSResponder *firstResponder() { return 0; }

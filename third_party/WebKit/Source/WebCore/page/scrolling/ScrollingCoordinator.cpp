@@ -534,16 +534,9 @@ GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameVie
     return renderView->compositor()->scrollLayer();
 }
 
-GraphicsLayer* ScrollingCoordinator::counterScrollingLayerForFrameView(FrameView* frameView)
+GraphicsLayer* ScrollingCoordinator::counterScrollingLayerForFrameView(FrameView*)
 {
-    Frame* frame = frameView->frame();
-    if (!frame)
-        return 0;
-
-    RenderView* renderView = frame->contentRenderer();
-    if (!renderView)
-        return 0;
-    return renderView->compositor()->fixedRootBackgroundLayer();
+    return 0;
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)

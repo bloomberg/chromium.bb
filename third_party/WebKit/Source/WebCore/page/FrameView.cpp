@@ -78,17 +78,12 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 #include "RenderLayerCompositor.h"
-#include "TiledBacking.h"
 #endif
 
 #if ENABLE(SVG)
 #include "RenderSVGRoot.h"
 #include "SVGDocument.h"
 #include "SVGSVGElement.h"
-#endif
-
-#if USE(TILED_BACKING_STORE)
-#include "TiledBackingStore.h"
 #endif
 
 #if PLATFORM(CHROMIUM)
@@ -743,29 +738,6 @@ void FrameView::updateCompositingLayersAfterLayout()
     renderView->compositor()->updateCompositingLayers(CompositingUpdateAfterLayout);
 }
 
-void FrameView::clearBackingStores()
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return;
-
-    RenderLayerCompositor* compositor = renderView->compositor();
-    ASSERT(compositor->inCompositingMode());
-    compositor->enableCompositingMode(false);
-    compositor->clearBackingForAllLayers();
-}
-
-void FrameView::restoreBackingStores()
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return;
-
-    RenderLayerCompositor* compositor = renderView->compositor();
-    compositor->enableCompositingMode(true);
-    compositor->updateCompositingLayers(CompositingUpdateAfterLayout);
-}
-
 bool FrameView::usesCompositedScrolling() const
 {
     RenderView* renderView = this->renderView();
@@ -1155,10 +1127,7 @@ void FrameView::layout(bool allowSubtree)
 
                     m_firstLayout = false;
                     m_firstLayoutCallbackPending = true;
-                    if (useFixedLayout() && !fixedLayoutSize().isEmpty() && delegatesScrolling())
-                        m_lastViewportSize = fixedLayoutSize();
-                    else
-                        m_lastViewportSize = visibleContentRect(IncludeScrollbars).size();
+                    m_lastViewportSize = visibleContentRect(IncludeScrollbars).size();
                     m_lastZoomFactor = root->style()->zoom();
 
                     // Set the initial vMode to AlwaysOn if we're auto.
@@ -1756,15 +1725,6 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     ScrollView::setScrollPosition(newScrollPosition);
 }
 
-void FrameView::delegatesScrollingDidChange()
-{
-#if USE(ACCELERATED_COMPOSITING)
-    // When we switch to delgatesScrolling mode, we should destroy the scrolling/clipping layers in RenderLayerCompositor.
-    if (hasCompositedContent())
-        clearBackingStores();
-#endif
-}
-
 void FrameView::setFixedVisibleContentRect(const IntRect& visibleContentRect)
 {
     bool visibleContentSizeDidChange = false;
@@ -1894,15 +1854,6 @@ bool FrameView::isRubberBandInProgress() const
 
 bool FrameView::requestScrollPositionUpdate(const IntPoint& position)
 {
-#if ENABLE(THREADED_SCROLLING)
-    if (Page* page = m_frame->page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-            return scrollingCoordinator->requestScrollPositionUpdate(this, position);
-    }
-#else
-    UNUSED_PARAM(position);
-#endif
-
     return false;
 }
 
@@ -2528,21 +2479,13 @@ void FrameView::performPostLayoutTasks()
             scrollingCoordinator->frameViewLayoutUpdated(this);
     }
 
-#if USE(ACCELERATED_COMPOSITING)
-    if (renderView && renderView->usesCompositing())
-        renderView->compositor()->frameViewDidLayout();
-#endif
-
     scrollToAnchor();
 
     m_actionScheduler->resume();
 
     if (renderView && !renderView->printing()) {
         IntSize currentSize;
-        if (useFixedLayout() && !fixedLayoutSize().isEmpty() && delegatesScrolling())
-            currentSize = fixedLayoutSize();
-        else
-            currentSize = visibleContentRect(IncludeScrollbars).size();
+        currentSize = visibleContentRect(IncludeScrollbars).size();
         float currentZoomFactor = renderView->style()->zoom();
         bool resized = !m_firstLayout && (currentSize != m_lastViewportSize || currentZoomFactor != m_lastZoomFactor);
         m_lastViewportSize = currentSize;
@@ -3462,8 +3405,7 @@ IntRect FrameView::convertFromRenderer(const RenderObject* renderer, const IntRe
     IntRect rect = pixelSnappedIntRect(enclosingLayoutRect(renderer->localToAbsoluteQuad(FloatRect(rendererRect)).boundingBox()));
 
     // Convert from page ("absolute") to FrameView coordinates.
-    if (!delegatesScrolling())
-        rect.moveBy(-scrollPosition());
+    rect.moveBy(-scrollPosition());
 
     return rect;
 }
@@ -3473,8 +3415,7 @@ IntRect FrameView::convertToRenderer(const RenderObject* renderer, const IntRect
     IntRect rect = viewRect;
     
     // Convert from FrameView coords into page ("absolute") coordinates.
-    if (!delegatesScrolling())
-        rect.moveBy(scrollPosition());
+    rect.moveBy(scrollPosition());
 
     // FIXME: we don't have a way to map an absolute rect down to a local quad, so just
     // move the rect for now.
@@ -3487,8 +3428,7 @@ IntPoint FrameView::convertFromRenderer(const RenderObject* renderer, const IntP
     IntPoint point = roundedIntPoint(renderer->localToAbsolute(rendererPoint, UseTransforms));
 
     // Convert from page ("absolute") to FrameView coordinates.
-    if (!delegatesScrolling())
-        point.moveBy(-scrollPosition());
+    point.moveBy(-scrollPosition());
     return point;
 }
 
@@ -3497,8 +3437,7 @@ IntPoint FrameView::convertToRenderer(const RenderObject* renderer, const IntPoi
     IntPoint point = viewPoint;
 
     // Convert from FrameView coords into page ("absolute") coordinates.
-    if (!delegatesScrolling())
-        point += IntSize(scrollX(), scrollY());
+    point += IntSize(scrollX(), scrollY());
 
     return roundedIntPoint(renderer->absoluteToLocal(point, UseTransforms));
 }
@@ -3703,17 +3642,6 @@ bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
     if (!isScrollable())
         return false;
 #endif
-
-    if (delegatesScrolling()) {
-        IntSize offset = scrollOffset();
-        IntSize newOffset = IntSize(offset.width() - wheelEvent.deltaX(), offset.height() - wheelEvent.deltaY());
-        if (offset != newOffset) {
-            ScrollView::scrollTo(newOffset);
-            scrollPositionChanged();
-            frame()->loader()->client()->didChangeScrollOffset();
-        }
-        return true;
-    }
 
     // We don't allow mouse wheeling to happen in a ScrollView that has had its scrollbars explicitly disabled.
     if (!canHaveScrollbars())

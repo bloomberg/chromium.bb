@@ -114,11 +114,6 @@ void CachedFrameBase::restore()
     // cached page.
     frame->script()->updatePlatformScriptObjects();
 
-#if USE(ACCELERATED_COMPOSITING)
-    if (m_isComposited)
-        frame->view()->restoreBackingStores();
-#endif
-
     frame->loader()->client()->didRestoreFromPageCache();
 
     // Reconstruct the FrameTree
@@ -177,11 +172,6 @@ CachedFrame::CachedFrame(Frame* frame)
     m_document->domWindow()->suspendForPageCache();
 
     frame->loader()->client()->savePlatformDataToCachedFrame(this);
-
-#if USE(ACCELERATED_COMPOSITING)
-    if (m_isComposited && pageCache()->shouldClearBackingStores())
-        frame->view()->clearBackingStores();
-#endif
 
     // documentWillSuspendForPageCache() can set up a layout timer on the FrameView, so clear timers after that.
     frame->clearTimers();

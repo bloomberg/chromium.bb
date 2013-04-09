@@ -53,7 +53,6 @@
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "StyleResolver.h"
-#include "TiledBacking.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringBuilder.h>
@@ -99,7 +98,6 @@ RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
     , m_artificiallyInflatedBounds(false)
     , m_boundsConstrainedByClipping(false)
     , m_isMainFrameRenderViewLayer(false)
-    , m_usingTiledCacheLayer(false)
     , m_requiresOwnBackingStore(true)
 #if ENABLE(CSS_FILTERS)
     , m_canCompositeFilters(false)
@@ -111,12 +109,6 @@ RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
         Page* page = frame ? frame->page() : 0;
         if (page && frame && page->mainFrame() == frame) {
             m_isMainFrameRenderViewLayer = true;
-
-#if PLATFORM(MAC)
-            // FIXME: It's a little weird that we base this decision on whether there's a scrolling coordinator or not.
-            if (page->scrollingCoordinator())
-                m_usingTiledCacheLayer = true;
-#endif
         }
     }
     
@@ -204,9 +196,6 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
 #endif
     
     m_graphicsLayer = createGraphicsLayer(layerName);
-
-    if (m_usingTiledCacheLayer)
-        m_childContainmentLayer = createGraphicsLayer("TiledBacking Flattening Layer");
 
     if (m_isMainFrameRenderViewLayer) {
         m_graphicsLayer->setContentsOpaque(true);
@@ -310,9 +299,6 @@ bool RenderLayerBacking::shouldClipCompositedBounds() const
 {
     // Scrollbar layers use this layer for relative positioning, so don't clip.
     if (layerForHorizontalScrollbar() || layerForVerticalScrollbar())
-        return false;
-
-    if (m_usingTiledCacheLayer)
         return false;
 
     if (!compositor()->compositingConsultsOverlap())
@@ -438,11 +424,6 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
 
     if (layerConfigChanged)
         updateInternalHierarchy();
-
-    if (GraphicsLayer* flatteningLayer = tileCacheFlatteningLayer()) {
-        flatteningLayer->removeFromParent();
-        m_graphicsLayer->addChild(flatteningLayer);
-    }
 
     if (updateMaskLayer(renderer->hasMask()))
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
@@ -889,7 +870,7 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
     }
     
     if (needsDescendantClip) {
-        if (!m_childContainmentLayer && !m_usingTiledCacheLayer) {
+        if (!m_childContainmentLayer) {
             m_childContainmentLayer = createGraphicsLayer("Child clipping Layer");
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;
@@ -1207,22 +1188,6 @@ void RenderLayerBacking::updateBackgroundColor(bool isSimpleContainer)
 
 void RenderLayerBacking::updateRootLayerConfiguration()
 {
-    if (!m_usingTiledCacheLayer)
-        return;
-
-    Color backgroundColor;
-    bool viewIsTransparent = compositor()->viewHasTransparentBackground(&backgroundColor);
-
-    if (m_backgroundLayerPaintsFixedRootBackground && m_backgroundLayer) {
-        m_backgroundLayer->setBackgroundColor(backgroundColor);
-        m_backgroundLayer->setContentsOpaque(!viewIsTransparent);
-
-        m_graphicsLayer->setBackgroundColor(Color());
-        m_graphicsLayer->setContentsOpaque(false);
-    } else {
-        m_graphicsLayer->setBackgroundColor(backgroundColor);
-        m_graphicsLayer->setContentsOpaque(!viewIsTransparent);
-    }
 }
 
 static bool supportsDirectBoxDecorationsComposition(const RenderObject* renderer)
@@ -1566,9 +1531,6 @@ GraphicsLayer* RenderLayerBacking::childForSuperlayers() const
 
 bool RenderLayerBacking::paintsIntoWindow() const
 {
-    if (m_usingTiledCacheLayer)
-        return false;
-
     if (m_owningLayer->isRootLayer()) {
         return compositor()->rootLayerAttachment() != RenderLayerCompositor::RootLayerAttachedViaEnclosingFrame;
     }
@@ -1728,9 +1690,6 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
         paintIntoLayer(graphicsLayer, &context, dirtyRect, PaintBehaviorNormal, paintingPhase);
-
-        if (m_usingTiledCacheLayer)
-            renderer()->frame()->view()->setLastPaintTime(currentTime());
 
         InspectorInstrumentation::didPaint(renderer(), &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {

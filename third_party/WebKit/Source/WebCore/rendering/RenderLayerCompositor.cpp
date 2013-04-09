@@ -2030,15 +2030,6 @@ bool RenderLayerCompositor::needsContentsCompositingLayer(const RenderLayer* lay
     return layer->hasNegativeZOrderList();
 }
 
-bool RenderLayerCompositor::requiresScrollLayer(RootLayerAttachment attachment) const
-{
-    // This applies when the application UI handles scrolling, in which case RenderLayerCompositor doesn't need to manage it.
-    if (m_renderView->frameView()->delegatesScrolling())
-        return false;
-
-    return true;
-}
-
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
 {
     if (!scrollbar)
@@ -2466,45 +2457,37 @@ void RenderLayerCompositor::ensureRootLayer()
         m_rootContentLayer->setMasksToBounds(true);
     }
 
-    if (requiresScrollLayer(expectedAttachment)) {
-        if (!m_overflowControlsHostLayer) {
-            ASSERT(!m_scrollLayer);
-            ASSERT(!m_clipLayer);
+    if (!m_overflowControlsHostLayer) {
+        ASSERT(!m_scrollLayer);
+        ASSERT(!m_clipLayer);
 
-            // Create a layer to host the clipping layer and the overflow controls layers.
-            m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        // Create a layer to host the clipping layer and the overflow controls layers.
+        m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 #ifndef NDEBUG
-            m_overflowControlsHostLayer->setName("overflow controls host");
+        m_overflowControlsHostLayer->setName("overflow controls host");
 #endif
 
-            // Create a clipping layer if this is an iframe
-            m_clipLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        // Create a clipping layer if this is an iframe
+        m_clipLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 #ifndef NDEBUG
-            m_clipLayer->setName("frame clipping");
+        m_clipLayer->setName("frame clipping");
 #endif
-            m_clipLayer->setMasksToBounds(true);
-            
-            m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_clipLayer->setMasksToBounds(true);
+
+        m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 #ifndef NDEBUG
-            m_scrollLayer->setName("frame scrolling");
+        m_scrollLayer->setName("frame scrolling");
 #endif
-            if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
+        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+            scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
 
-            // Hook them up
-            m_overflowControlsHostLayer->addChild(m_clipLayer.get());
-            m_clipLayer->addChild(m_scrollLayer.get());
-            m_scrollLayer->addChild(m_rootContentLayer.get());
+        // Hook them up
+        m_overflowControlsHostLayer->addChild(m_clipLayer.get());
+        m_clipLayer->addChild(m_scrollLayer.get());
+        m_scrollLayer->addChild(m_rootContentLayer.get());
 
-            frameViewDidChangeSize();
-            frameViewDidScroll();
-        }
-    } else {
-        if (m_overflowControlsHostLayer) {
-            m_overflowControlsHostLayer = nullptr;
-            m_clipLayer = nullptr;
-            m_scrollLayer = nullptr;
-        }
+        frameViewDidChangeSize();
+        frameViewDidScroll();
     }
 
     // Check to see if we have to change the attachment

@@ -56,7 +56,6 @@ ScrollView::ScrollView()
     , m_useFixedLayout(false)
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
-    , m_delegatesScrolling(false)
 {
     platformInit();
 }
@@ -193,15 +192,6 @@ void ScrollView::setPaintsEntireContents(bool paintsEntireContents)
 void ScrollView::setClipsRepaints(bool clipsRepaints)
 {
     m_clipsRepaints = clipsRepaints;
-}
-
-void ScrollView::setDelegatesScrolling(bool delegatesScrolling)
-{
-    if (m_delegatesScrolling == delegatesScrolling)
-        return;
-
-    m_delegatesScrolling = delegatesScrolling;
-    delegatesScrollingDidChange();
 }
 
 IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
@@ -346,12 +336,6 @@ void ScrollView::scrollTo(const IntSize& newOffset)
     if (scrollbarsSuppressed())
         return;
 
-#if USE(TILED_BACKING_STORE)
-    if (delegatesScrolling()) {
-        hostWindow()->delegatedScrollRequested(IntPoint(newOffset));
-        return;
-    }
-#endif
     repaintFixedElementsAfterScrolling();
     scrollContents(scrollDelta);
     updateFixedElementsAfterScrolling();
@@ -370,13 +354,6 @@ void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
 {
     if (prohibitsScrolling())
         return;
-
-#if USE(TILED_BACKING_STORE)
-    if (delegatesScrolling()) {
-        hostWindow()->delegatedScrollRequested(scrollPoint);
-        return;
-    }
-#endif
 
     IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
@@ -684,9 +661,6 @@ IntRect ScrollView::contentsToRootView(const IntRect& contentsRect) const
 
 IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
 {
-    if (delegatesScrolling())
-        return convertFromContainingWindow(windowPoint);
-
     IntPoint viewPoint = convertFromContainingWindow(windowPoint);
     IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
     return viewPoint + offsetInDocument;
@@ -694,9 +668,6 @@ IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
 
 IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
 {
-    if (delegatesScrolling())
-        return convertToContainingWindow(contentsPoint);
-
     IntSize offsetInDocument = scrollOffset() + IntSize(0, headerHeight());
     IntPoint viewPoint = contentsPoint - offsetInDocument;
     return convertToContainingWindow(viewPoint);  
@@ -704,9 +675,6 @@ IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
 
 IntRect ScrollView::windowToContents(const IntRect& windowRect) const
 {
-    if (delegatesScrolling())
-        return convertFromContainingWindow(windowRect);
-
     IntRect viewRect = convertFromContainingWindow(windowRect);
     IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
     viewRect.move(offsetInDocument);
@@ -715,9 +683,6 @@ IntRect ScrollView::windowToContents(const IntRect& windowRect) const
 
 IntRect ScrollView::contentsToWindow(const IntRect& contentsRect) const
 {
-    if (delegatesScrolling())
-        return convertToContainingWindow(contentsRect);
-
     IntRect viewRect = contentsRect;
     viewRect.move(-scrollOffset() + IntSize(0, headerHeight()));
     return convertToContainingWindow(viewRect);

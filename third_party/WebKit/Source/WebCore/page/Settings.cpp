@@ -496,10 +496,6 @@ void Settings::setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy en
 void Settings::setTiledBackingStoreEnabled(bool enabled)
 {
     m_tiledBackingStoreEnabled = enabled;
-#if USE(TILED_BACKING_STORE)
-    if (m_page->mainFrame())
-        m_page->mainFrame()->setTiledBackingStoreEnabled(enabled);
-#endif
 }
 
 void Settings::setScrollingPerformanceLoggingEnabled(bool enabled)

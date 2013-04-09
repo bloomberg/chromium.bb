@@ -137,9 +137,6 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE { }
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE { }
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) { }
-#if USE(TILED_BACKING_STORE)
-    virtual void delegatedScrollRequested(const IntPoint&) { }
-#endif
     virtual void scheduleAnimation() { }
 
     virtual IntPoint screenToRootView(const IntPoint& p) const OVERRIDE { return p; }

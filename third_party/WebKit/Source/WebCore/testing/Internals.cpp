@@ -1184,17 +1184,6 @@ String Internals::rangeAsText(const Range* range, ExceptionCode& ec)
     return range->text();
 }
 
-void Internals::setDelegatesScrolling(bool enabled, Document* document, ExceptionCode& ec)
-{
-    // Delegate scrolling is valid only on mainframe's view.
-    if (!document || !document->view() || !document->page() || document->page()->mainFrame() != document->frame()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    document->view()->setDelegatesScrolling(enabled);
-}
-
 #if ENABLE(TOUCH_ADJUSTMENT)
 PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionCode& ec)
 {

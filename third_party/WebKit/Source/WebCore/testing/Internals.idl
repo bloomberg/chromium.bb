@@ -136,7 +136,6 @@
     [RaisesException] unsigned long lengthFromRange(Element scope, Range range);
     [RaisesException] DOMString rangeAsText(Range range);
 
-    [RaisesException] void setDelegatesScrolling(boolean enabled, Document document);
 #if defined(ENABLE_TOUCH_ADJUSTMENT) && ENABLE_TOUCH_ADJUSTMENT
     [RaisesException] DOMPoint touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);
     [RaisesException] Node touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);

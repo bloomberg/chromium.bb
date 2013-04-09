@@ -115,13 +115,8 @@ public:
 
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-#if USE(ACCELERATED_COMPOSITING)
     void updateCompositingLayersAfterStyleChange();
     void updateCompositingLayersAfterLayout();
-
-    void clearBackingStores();
-    void restoreBackingStores();
-#endif
 
     bool hasCompositedContent() const;
     bool hasCompositingAncestor() const;
@@ -403,8 +398,6 @@ private:
     virtual void repaintContentRectangle(const IntRect&);
     virtual void contentsResized() OVERRIDE;
     virtual void visibleContentsResized();
-
-    virtual void delegatesScrollingDidChange();
 
     // Override ScrollView methods to do point conversion via renderers, in order to
     // take transforms into account.

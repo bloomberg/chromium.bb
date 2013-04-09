@@ -116,12 +116,6 @@ public:
     bool clipsRepaints() const { return m_clipsRepaints; }
     void setClipsRepaints(bool);
 
-    // By default programmatic scrolling is handled by WebCore and not by the UI application.
-    // In the case of using a tiled backing store, this mode can be set, so that the scroll requests
-    // are delegated to the UI application.
-    bool delegatesScrolling() const { return m_delegatesScrolling; }
-    void setDelegatesScrolling(bool);
-
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
@@ -297,7 +291,6 @@ protected:
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
 
     virtual void visibleContentsResized() = 0;
-    virtual void delegatesScrollingDidChange() { }
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
@@ -354,7 +347,6 @@ private:
 
     bool m_paintsEntireContents;
     bool m_clipsRepaints;
-    bool m_delegatesScrolling;
 
     void init();
     void destroy();

@@ -37,7 +37,6 @@ class GraphicsLayer;
 class PlatformGestureEvent;
 class PlatformWheelEvent;
 class ScrollAnimator;
-class TiledBacking;
 
 class ScrollableArea {
 public:
@@ -179,7 +178,6 @@ public:
     virtual bool scheduleAnimation() { return false; }
     void serviceScrollAnimations();
 
-    virtual TiledBacking* tiledBacking() { return 0; }
     virtual bool usesCompositedScrolling() const { return false; }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;

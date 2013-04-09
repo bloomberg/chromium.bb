@@ -37,7 +37,6 @@ namespace WebCore {
 
 class KeyframeList;
 class RenderLayerCompositor;
-class TiledBacking;
 
 enum CompositingLayerType {
     NormalCompositingLayer, // non-tiled layer with backing store
@@ -77,8 +76,8 @@ public:
     GraphicsLayer* graphicsLayer() const { return m_graphicsLayer.get(); }
 
     // Layer to clip children
-    bool hasClippingLayer() const { return (m_childContainmentLayer && !m_usingTiledCacheLayer); }
-    GraphicsLayer* clippingLayer() const { return !m_usingTiledCacheLayer ? m_childContainmentLayer.get() : 0; }
+    bool hasClippingLayer() const { return m_childContainmentLayer; }
+    GraphicsLayer* clippingLayer() const { return m_childContainmentLayer.get(); }
 
     // Layer to get clipped by ancestor
     bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer != 0; }
@@ -246,9 +245,6 @@ private:
 
     bool shouldClipCompositedBounds() const;
 
-    bool hasTiledBackingFlatteningLayer() const { return (m_childContainmentLayer && m_usingTiledCacheLayer); }
-    GraphicsLayer* tileCacheFlatteningLayer() const { return m_usingTiledCacheLayer ? m_childContainmentLayer.get() : 0; }
-
     void paintIntoLayer(const GraphicsLayer*, GraphicsContext*, const IntRect& paintDirtyRect, PaintBehavior, GraphicsLayerPaintingPhase);
 
     static CSSPropertyID graphicsLayerToCSSProperty(AnimatedPropertyID);
@@ -278,7 +274,6 @@ private:
     bool m_artificiallyInflatedBounds; // bounds had to be made non-zero to make transform-origin work
     bool m_boundsConstrainedByClipping;
     bool m_isMainFrameRenderViewLayer;
-    bool m_usingTiledCacheLayer;
     bool m_requiresOwnBackingStore;
 #if ENABLE(CSS_FILTERS)
     bool m_canCompositeFilters;

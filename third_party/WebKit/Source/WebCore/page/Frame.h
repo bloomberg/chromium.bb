@@ -40,10 +40,6 @@
 #include "ScriptController.h"
 #include "UserScriptTypes.h"
 
-#if USE(TILED_BACKING_STORE)
-#include "TiledBackingStoreClient.h"
-#endif
-
 namespace WebCore {
 
     class Document;
@@ -52,11 +48,6 @@ namespace WebCore {
     class HTMLTableCellElement;
     class RegularExpression;
     class RenderPart;
-    class TiledBackingStore;
-
-#if !USE(TILED_BACKING_STORE)
-    class TiledBackingStoreClient { };
-#endif
 
     class TreeScope;
 
@@ -69,7 +60,7 @@ namespace WebCore {
     };
     typedef unsigned LayerTreeFlags;
 
-    class Frame : public RefCounted<Frame>, public TiledBackingStoreClient {
+    class Frame : public RefCounted<Frame> {
     public:
         static PassRefPtr<Frame> create(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
 
@@ -211,25 +202,6 @@ namespace WebCore {
 #endif
 
         bool m_inViewSourceMode;
-
-#if USE(TILED_BACKING_STORE)
-    // FIXME: The tiled backing store belongs in FrameView, not Frame.
-
-    public:
-        TiledBackingStore* tiledBackingStore() const { return m_tiledBackingStore.get(); }
-        void setTiledBackingStoreEnabled(bool);
-
-    private:
-        // TiledBackingStoreClient interface
-        virtual void tiledBackingStorePaintBegin();
-        virtual void tiledBackingStorePaint(GraphicsContext*, const IntRect&);
-        virtual void tiledBackingStorePaintEnd(const Vector<IntRect>& paintedArea);
-        virtual IntRect tiledBackingStoreContentsRect();
-        virtual IntRect tiledBackingStoreVisibleRect();
-        virtual Color tiledBackingStoreBackgroundColor() const;
-
-        OwnPtr<TiledBackingStore> m_tiledBackingStore;
-#endif
 
         int m_activeDOMObjectsAndAnimationsSuspendedCount;
     };
