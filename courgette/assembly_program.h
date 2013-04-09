@@ -124,7 +124,7 @@ class AssemblyProgram {
 
   // Sharing instructions that emit a single byte saves a lot of space.
   Instruction* GetByteInstruction(uint8 byte);
-  scoped_array<Instruction*> byte_instruction_cache_;
+  scoped_ptr<Instruction*[]> byte_instruction_cache_;
 
   uint64 image_base_;  // Desired or mandated base address of image.
 

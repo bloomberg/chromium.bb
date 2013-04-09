@@ -393,7 +393,7 @@ class ChromeAsyncSocketTest
 
   std::string DrainRead(size_t buf_size) {
     std::string read;
-    scoped_array<char> buf(new char[buf_size]);
+    scoped_ptr<char[]> buf(new char[buf_size]);
     size_t len_read;
     while (true) {
       bool success =

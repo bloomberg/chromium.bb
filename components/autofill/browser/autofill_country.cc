@@ -871,7 +871,7 @@ class CountryNames {
   // the |buffer| is resized.
   const std::string GetSortKey(const icu::Collator& collator,
                                const string16& str,
-                               scoped_array<uint8_t>* buffer,
+                               scoped_ptr<uint8_t[]>* buffer,
                                int32_t* buffer_size) const;
 
   // Maps from common country names, including 2- and 3-letter country codes,
@@ -954,7 +954,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
   std::map<std::string, std::string> localized_names;
   const icu::Collator* collator = GetCollatorForLocale(locale);
   int32_t buffer_size = 1000;
-  scoped_array<uint8_t> buffer(new uint8_t[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
 
   for (CountryDataMap::Iterator it = CountryDataMap::Begin();
        it != CountryDataMap::End();
@@ -984,7 +984,7 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   // source string length.
   // [1] http://userguide.icu-project.org/collation/api#TOC-Examples
   int32_t buffer_size = country_name.size() * 4;
-  scoped_array<uint8_t> buffer(new uint8_t[buffer_size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   std::string sort_key = GetSortKey(*collator,
                                     country_name,
                                     &buffer,
@@ -1021,7 +1021,7 @@ icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
 
 const std::string CountryNames::GetSortKey(const icu::Collator& collator,
                                            const string16& str,
-                                           scoped_array<uint8_t>* buffer,
+                                           scoped_ptr<uint8_t[]>* buffer,
                                            int32_t* buffer_size) const {
   DCHECK(buffer);
   DCHECK(buffer_size);

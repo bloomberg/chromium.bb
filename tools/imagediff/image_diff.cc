@@ -77,7 +77,7 @@ class Image {
     if (byte_length == 0)
       return false;
 
-    scoped_array<unsigned char> source(new unsigned char[byte_length]);
+    scoped_ptr<unsigned char[]> source(new unsigned char[byte_length]);
     if (fread(source.get(), 1, byte_length, stdin) != byte_length)
       return false;
 

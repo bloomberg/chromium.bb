@@ -47,7 +47,7 @@ PP_Resource PPB_DeviceRef_Shared::CreateResourceArray(
     ResourceObjectType type,
     PP_Instance instance,
     const std::vector<DeviceRefData>& devices) {
-  scoped_array<PP_Resource> elements;
+  scoped_ptr<PP_Resource[]> elements;
   size_t size = devices.size();
   if (size > 0) {
     elements.reset(new PP_Resource[size]);

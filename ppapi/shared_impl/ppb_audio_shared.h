@@ -109,7 +109,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 
   // Internal buffer for client's integer audio data.
   int client_buffer_size_bytes_;
-  scoped_array<uint8_t> client_buffer_;
+  scoped_ptr<uint8_t[]> client_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Shared);
 };

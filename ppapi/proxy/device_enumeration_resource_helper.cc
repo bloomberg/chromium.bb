@@ -184,7 +184,7 @@ void DeviceEnumerationResourceHelper::OnPluginMsgNotifyDeviceChange(
 
   CHECK(monitor_callback_.get());
 
-  scoped_array<PP_Resource> elements;
+  scoped_ptr<PP_Resource[]> elements;
   uint32_t size = devices.size();
   if (size > 0) {
     elements.reset(new PP_Resource[size]);

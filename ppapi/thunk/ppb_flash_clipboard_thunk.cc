@@ -70,7 +70,7 @@ int32_t WriteData_4_0(PP_Instance instance,
                       uint32_t data_item_count,
                       const PP_Flash_Clipboard_Format formats[],
                       const PP_Var data_items[]) {
-  scoped_array<uint32_t> new_formats(new uint32_t[data_item_count]);
+  scoped_ptr<uint32_t[]> new_formats(new uint32_t[data_item_count]);
   for (uint32_t i = 0; i < data_item_count; ++i)
     new_formats[i] = static_cast<uint32_t>(formats[i]);
   return WriteData(instance, clipboard_type, data_item_count,

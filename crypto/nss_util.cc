@@ -69,7 +69,7 @@ static const base::FilePath::CharType kReadOnlyCertDB[] =
 std::string GetNSSErrorMessage() {
   std::string result;
   if (PR_GetErrorTextLength()) {
-    scoped_array<char> error_text(new char[PR_GetErrorTextLength() + 1]);
+    scoped_ptr<char[]> error_text(new char[PR_GetErrorTextLength() + 1]);
     PRInt32 copied = PR_GetErrorText(error_text.get());
     result = std::string(error_text.get(), copied);
   } else {
