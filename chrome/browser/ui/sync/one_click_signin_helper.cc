@@ -373,6 +373,8 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
 
 // Tells when we are in the process of showing either the signin to chrome page
 // or the one click sign in to chrome page.
+// NOTE: This should only be used for logging purposes since it relies on hard
+// coded URLs that could change.
 bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
                         std::string email) {
   GURL::Replacements replacements;
@@ -381,8 +383,14 @@ bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
       GURL(GaiaUrls::GetInstance()->service_login_url()).ReplaceComponents(
           replacements);
 
+  GURL clean_one_click_url =
+      GURL(GaiaUrls::GetInstance()->gaia_login_form_realm() +
+           "ChromeLoginPrompt").ReplaceComponents(replacements);
+
   return (url.ReplaceComponents(replacements) == clean_login_url &&
-          source != SyncPromoUI::SOURCE_UNKNOWN) || !email.empty();
+          source != SyncPromoUI::SOURCE_UNKNOWN) ||
+      (url.ReplaceComponents(replacements) == clean_one_click_url &&
+       !email.empty());
 }
 
 }  // namespace
@@ -1189,7 +1197,7 @@ void OneClickSigninHelper::DidStopLoading(
 
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
-      if (SyncPromoUI::UseWebBasedSigninFlow()) {
+      if (SyncPromoUI::UseWebBasedSigninFlow() && showing_signin_) {
         LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
       } else {
         OneClickInfoBarDelegateImpl::Create(

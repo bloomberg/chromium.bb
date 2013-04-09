@@ -206,6 +206,7 @@ class OneClickSigninHelper
   // Tracks if we are in the process of showing the signin or one click
   // interstitial page. It's set to true the first time we load one of those
   // pages and set to false when transient state is cleaned.
+  // Note: This should only be used for logging purposes.
   bool showing_signin_;
 
   // Information about the account that has just logged in.
