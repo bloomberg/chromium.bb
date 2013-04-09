@@ -158,16 +158,20 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   init_params.top_level = true;
-  window_->Init(init_params);
   gfx::Rect window_bounds = create_params.bounds;
-  window_bounds.Inset(-GetFrameInsets());
+  bool position_specified =
+      window_bounds.x() != INT_MIN && window_bounds.y() != INT_MIN;
+  if (position_specified && !window_bounds.IsEmpty())
+    init_params.bounds = window_bounds;
+  window_->Init(init_params);
+
+  gfx::Rect adjusted_bounds = window_bounds;
+  adjusted_bounds.Inset(-GetFrameInsets());
   // Center window if no position was specified.
-  if (create_params.bounds.x() == INT_MIN ||
-      create_params.bounds.y() == INT_MIN) {
-    window_->CenterWindow(window_bounds.size());
-  } else if (!window_bounds.IsEmpty()) {
-    window_->SetBounds(window_bounds);
-  }
+  if (!position_specified)
+    window_->CenterWindow(adjusted_bounds.size());
+  else if (!adjusted_bounds.IsEmpty() && adjusted_bounds != window_bounds)
+    window_->SetBounds(adjusted_bounds);
 
   // Register accelarators supported by app windows.
   // TODO(jeremya/stevenjb): should these be registered for panels too?
