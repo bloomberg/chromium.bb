@@ -25,23 +25,23 @@
 
     // DOM Level 1
 
-    [ObjCLegacyUnnamedParameters] boolean hasFeature([Optional=DefaultIsUndefined] DOMString feature, 
+     boolean hasFeature([Optional=DefaultIsUndefined] DOMString feature, 
                                       [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
 
     // DOM Level 2
 
-    [ObjCLegacyUnnamedParameters] DocumentType createDocumentType([TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName,
+     DocumentType createDocumentType([TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName,
                                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString publicId,
                                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString systemId)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters] Document createDocument([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+     Document createDocument([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
                                            [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName, 
                                            [TreatNullAs=NullString,Optional=DefaultIsUndefined] DocumentType doctype)
         raises(DOMException);
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 
-    [ObjCLegacyUnnamedParameters] CSSStyleSheet createCSSStyleSheet([Optional=DefaultIsUndefined] DOMString title,
+     CSSStyleSheet createCSSStyleSheet([Optional=DefaultIsUndefined] DOMString title,
                                                      [Optional=DefaultIsUndefined] DOMString media)
         raises(DOMException);
 

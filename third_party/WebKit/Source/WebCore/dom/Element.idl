@@ -28,7 +28,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute([Optional=DefaultIsUndefined] DOMString name);
-    [ObjCLegacyUnnamedParameters] void setAttribute([Optional=DefaultIsUndefined] DOMString name,
+     void setAttribute([Optional=DefaultIsUndefined] DOMString name,
                                      [Optional=DefaultIsUndefined] DOMString value)
         raises(DOMException);
     void removeAttribute([Optional=DefaultIsUndefined] DOMString name);
@@ -47,22 +47,22 @@
 
     // DOM Level 2 Core
 
-    [ObjCLegacyUnnamedParameters] DOMString getAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     DOMString getAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                             [Optional=DefaultIsUndefined] DOMString localName);
-    [ObjCLegacyUnnamedParameters] void setAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     void setAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                        [Optional=DefaultIsUndefined] DOMString qualifiedName, 
                                        [Optional=DefaultIsUndefined] DOMString value)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
+     void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
                                           DOMString localName);
-    [ObjCLegacyUnnamedParameters] NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                    [Optional=DefaultIsUndefined] DOMString localName);
-    [ObjCLegacyUnnamedParameters] Attr getAttributeNodeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     Attr getAttributeNodeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                            [Optional=DefaultIsUndefined] DOMString localName);
     Attr setAttributeNodeNS([Optional=DefaultIsUndefined] Attr newAttr)
         raises(DOMException);
     boolean hasAttribute(DOMString name);
-    [ObjCLegacyUnnamedParameters] boolean hasAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     boolean hasAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                           [Optional=DefaultIsUndefined] DOMString localName);
 
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;

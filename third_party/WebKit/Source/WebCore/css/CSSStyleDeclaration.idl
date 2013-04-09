@@ -37,7 +37,7 @@
     [TreatReturnedNullStringAs=Null] DOMString          removeProperty([Optional=DefaultIsUndefined] DOMString propertyName)
         raises(DOMException);
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority([Optional=DefaultIsUndefined] DOMString propertyName);
-    [ObjCLegacyUnnamedParameters] void setProperty([Optional=DefaultIsUndefined] DOMString propertyName, 
+     void setProperty([Optional=DefaultIsUndefined] DOMString propertyName, 
                                     [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString value, 
                                     [Optional=DefaultIsUndefined] DOMString priority)
         raises(DOMException);

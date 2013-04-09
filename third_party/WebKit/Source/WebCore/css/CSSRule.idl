@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     CustomToJSObject,
-    ObjCPolymorphic,
+    
     DependentLifetime,
     SkipVTableValidation
 ] interface CSSRule {

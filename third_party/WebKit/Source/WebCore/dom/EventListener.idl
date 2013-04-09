@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    ObjCProtocol,
+    
     CPPPureInterface,
     OmitConstructor
 ] interface EventListener {

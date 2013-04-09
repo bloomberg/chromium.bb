@@ -20,19 +20,19 @@
 
 // Introduced in DOM Level 2:
 [
-    ObjCProtocol,
+    
     CPPPureInterface,
     OmitConstructor,
     CustomToJSObject,
     NoWrapperCache,
     EventTarget
 ] interface EventTarget {
-    [ObjCLegacyUnnamedParameters] void addEventListener(DOMString type, 
+    void addEventListener(DOMString type, 
                                          EventListener listener, 
                                          [Optional] boolean useCapture);
-    [ObjCLegacyUnnamedParameters] void removeEventListener(DOMString type, 
-                                            EventListener listener, 
-                                            [Optional] boolean useCapture);
+    void removeEventListener(DOMString type, 
+                                         EventListener listener, 
+                                         [Optional] boolean useCapture);
     boolean dispatchEvent(Event event)
         raises(EventException);
 };

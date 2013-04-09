@@ -21,7 +21,7 @@
 [
     CustomToJSObject,
     EventTarget,
-    ObjCPolymorphic,
+    
     DependentLifetime
 ] interface Node
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
@@ -57,10 +57,10 @@
     readonly attribute [PerWorldBindings] Node             nextSibling;
     readonly attribute [PerWorldBindings] Document         ownerDocument;
 
-    [ObjCLegacyUnnamedParameters, Custom, PerWorldBindings] Node insertBefore([CustomReturn] Node newChild,
+    [Custom, PerWorldBindings] Node insertBefore([CustomReturn] Node newChild,
                                                             Node refChild)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters, Custom] Node replaceChild(Node newChild,
+    [Custom] Node replaceChild(Node newChild,
                                                             [CustomReturn] Node oldChild)
         raises(DOMException);
     [Custom, PerWorldBindings] Node removeChild([CustomReturn] Node oldChild)
@@ -75,7 +75,7 @@
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters] boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
+     boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
                                        [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
 
     readonly attribute [TreatReturnedNullStringAs=Null, PerWorldBindings] DOMString        namespaceURI;

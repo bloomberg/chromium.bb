@@ -31,7 +31,7 @@ interface MutationEvent : Event {
     readonly attribute DOMString      attrName;
     readonly attribute unsigned short attrChange;
 
-    [ObjCLegacyUnnamedParameters] void initMutationEvent([Optional=DefaultIsUndefined] DOMString type, 
+     void initMutationEvent([Optional=DefaultIsUndefined] DOMString type, 
                                           [Optional=DefaultIsUndefined] boolean canBubble, 
                                           [Optional=DefaultIsUndefined] boolean cancelable, 
                                           [Optional=DefaultIsUndefined] Node relatedNode, 

@@ -79,10 +79,6 @@ NamedGetter
 NoWrapperCache
 NotEnumerable
 NumericIndexedGetter
-ObjCCustomImplementation
-ObjCLegacyUnnamedParameters
-ObjCPolymorphic
-ObjCProtocol
 OmitConstructor
 Optional=|DefaultIsNullString|DefaultIsUndefined
 PassContext

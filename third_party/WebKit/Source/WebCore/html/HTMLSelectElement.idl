@@ -44,7 +44,7 @@
 #endif
     Node item([IsIndex,Optional=DefaultIsUndefined] unsigned long index);
     Node namedItem([Optional=DefaultIsUndefined] DOMString name);
-    [ObjCLegacyUnnamedParameters] void add([Optional=DefaultIsUndefined] HTMLElement element,
+     void add([Optional=DefaultIsUndefined] HTMLElement element,
                             [Optional=DefaultIsUndefined] HTMLElement before) raises(DOMException);
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // In JavaScript, we support both option index and option object parameters.

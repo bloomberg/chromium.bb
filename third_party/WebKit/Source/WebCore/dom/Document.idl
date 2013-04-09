@@ -35,7 +35,7 @@
     [ReturnNewObject] Comment createComment([Optional=DefaultIsUndefined] DOMString data);
     [ReturnNewObject] CDATASection createCDATASection([Optional=DefaultIsUndefined] DOMString data)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters, ReturnNewObject] ProcessingInstruction createProcessingInstruction([Optional=DefaultIsUndefined] DOMString target,
+    [ReturnNewObject] ProcessingInstruction createProcessingInstruction([Optional=DefaultIsUndefined] DOMString target,
                                                                                  [Optional=DefaultIsUndefined] DOMString data)
         raises (DOMException);
     [ReturnNewObject] Attr createAttribute([Optional=DefaultIsUndefined] DOMString name)
@@ -46,18 +46,18 @@
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters, ReturnNewObject, DeliverCustomElementCallbacks]
+    [ReturnNewObject, DeliverCustomElementCallbacks]
     Node importNode([Optional=DefaultIsUndefined] Node importedNode,
                     [Optional] boolean deep)
         raises (DOMException);
-    [ObjCLegacyUnnamedParameters, ReturnNewObject, DeliverCustomElementCallbacks]
+    [ReturnNewObject, DeliverCustomElementCallbacks]
     Element createElementNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                             [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName)
         raises (DOMException);
-    [ObjCLegacyUnnamedParameters, ReturnNewObject] Attr createAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+    [ReturnNewObject] Attr createAttributeNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                                           [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString qualifiedName)
         raises (DOMException);
-    [ObjCLegacyUnnamedParameters] NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
+     NodeList getElementsByTagNameNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI,
                                                    [Optional=DefaultIsUndefined] DOMString localName);
     [PerWorldBindings] Element            getElementById([Optional=DefaultIsUndefined] DOMString elementId);
 
@@ -95,12 +95,12 @@
 
     // DOM Level 2 Tranversal and Range (DocumentTraversal interface)
 
-    [ObjCLegacyUnnamedParameters] NodeIterator createNodeIterator([Optional=DefaultIsUndefined] Node root,
+     NodeIterator createNodeIterator([Optional=DefaultIsUndefined] Node root,
                                                    [Optional=DefaultIsUndefined] unsigned long whatToShow,
                                                    [Optional=DefaultIsUndefined] NodeFilter filter,
                                                    [Optional=DefaultIsUndefined] boolean expandEntityReferences)
         raises(DOMException);
-    [ObjCLegacyUnnamedParameters] TreeWalker createTreeWalker([Optional=DefaultIsUndefined] Node root,
+     TreeWalker createTreeWalker([Optional=DefaultIsUndefined] Node root,
                                                [Optional=DefaultIsUndefined] unsigned long whatToShow,
                                                [Optional=DefaultIsUndefined] NodeFilter filter,
                                                [Optional=DefaultIsUndefined] boolean expandEntityReferences)
@@ -116,15 +116,15 @@
 
     // DOM Level 2 Style (DocumentCSS interface)
 
-    [ObjCLegacyUnnamedParameters] CSSStyleDeclaration getOverrideStyle([Optional=DefaultIsUndefined] Element element,
+     CSSStyleDeclaration getOverrideStyle([Optional=DefaultIsUndefined] Element element,
                                                         [Optional=DefaultIsUndefined] DOMString pseudoElement);
 
     // DOM Level 3 XPath (XPathEvaluator interface)
-    [ObjCLegacyUnnamedParameters] XPathExpression createExpression([Optional=DefaultIsUndefined] DOMString expression,
+     XPathExpression createExpression([Optional=DefaultIsUndefined] DOMString expression,
                                                     [Optional=DefaultIsUndefined] XPathNSResolver resolver)
         raises(DOMException);
     XPathNSResolver    createNSResolver(Node nodeResolver);
-    [ObjCLegacyUnnamedParameters, Custom] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
+    [Custom] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
                                                   [Optional=DefaultIsUndefined] Node contextNode,
                                                   [Optional=DefaultIsUndefined] XPathNSResolver resolver,
                                                   [Optional=DefaultIsUndefined] unsigned short type,
@@ -211,21 +211,6 @@
 
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
     CSSStyleDeclaration createCSSStyleDeclaration();
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // DOM Level 2 Style Interface
-    [ObjCLegacyUnnamedParameters, ObjCUseDefaultView] CSSStyleDeclaration getComputedStyle(Element element,
-                                                                  DOMString pseudoElement);
-
-    // WebKit extension
-    // FIXME: remove the first version once [Optional] is implemented for Objective-C.
-    [ObjCUseDefaultView] CSSRuleList getMatchedCSSRules(Element element,
-                                              DOMString pseudoElement);
-    [ObjCUseDefaultView] CSSRuleList getMatchedCSSRules(Element element,
-                                              DOMString pseudoElement,
-                                              [Optional] boolean authorOnly);
-                                              
 #endif
 
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP

@@ -36,10 +36,10 @@
     readonly attribute Node commonAncestorContainer
         getter raises(DOMException);
 
-    [ObjCLegacyUnnamedParameters] void setStart([Optional=DefaultIsUndefined] Node refNode, 
+     void setStart([Optional=DefaultIsUndefined] Node refNode, 
                                  [Optional=DefaultIsUndefined] long offset)
         raises(RangeException, DOMException);
-    [ObjCLegacyUnnamedParameters] void setEnd([Optional=DefaultIsUndefined] Node refNode, 
+     void setEnd([Optional=DefaultIsUndefined] Node refNode, 
                                [Optional=DefaultIsUndefined] long offset)
         raises(RangeException, DOMException);
     void setStartBefore([Optional=DefaultIsUndefined] Node refNode)
@@ -63,7 +63,7 @@
     const unsigned short END_TO_END     = 2;
     const unsigned short END_TO_START   = 3;
 
-    [ObjCLegacyUnnamedParameters] short compareBoundaryPoints([Optional=DefaultIsUndefined] CompareHow how,
+     short compareBoundaryPoints([Optional=DefaultIsUndefined] CompareHow how,
                                                [Optional=DefaultIsUndefined] Range sourceRange)
         raises(DOMException);
 

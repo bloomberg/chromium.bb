@@ -21,7 +21,6 @@
 // Introduced in DOM Level 2:
 [
     CustomToJSObject,
-    ObjCPolymorphic,
     GenerateIsReachable=ImplOwnerNodeRoot
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;

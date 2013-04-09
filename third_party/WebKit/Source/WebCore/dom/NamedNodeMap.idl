@@ -41,7 +41,7 @@
 
     // Introduced in DOM Level 2:
 
-    [ObjCLegacyUnnamedParameters] Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+     Node getNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
                                        [Optional=DefaultIsUndefined] DOMString localName)
         // FIXME: the implementation does take an exceptioncode parameter.
         /*raises(DOMException)*/;
@@ -49,7 +49,7 @@
     Node setNamedItemNS([Optional=DefaultIsUndefined] Node node)
         raises(DOMException);
 
-    [ObjCLegacyUnnamedParameters] Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
+     Node removeNamedItemNS([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString namespaceURI, 
                                           [Optional=DefaultIsUndefined] DOMString localName)
         raises(DOMException);
 

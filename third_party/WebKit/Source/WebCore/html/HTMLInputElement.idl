@@ -50,7 +50,7 @@
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
 #if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [ObjCImplementedAsUnsignedLong] attribute DOMString size; // DOM level 2 changed this to a long, but ObjC API is a string
+    attribute DOMString size; // DOM level 2 changed this to a long, but ObjC API is a string
 #else
     attribute unsigned long size setter raises(DOMException); // Changed string -> long -> unsigned long
 #endif

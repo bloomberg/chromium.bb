@@ -22,7 +22,7 @@
 [
     CustomToJSObject,
     ConstructorTemplate=Event,
-    ObjCPolymorphic,
+    
     SkipVTableValidation
 ] interface Event {
 
@@ -62,7 +62,7 @@
 
     void               stopPropagation();
     void               preventDefault();
-    [ObjCLegacyUnnamedParameters] void initEvent([Optional=DefaultIsUndefined] DOMString eventTypeArg, 
+     void initEvent([Optional=DefaultIsUndefined] DOMString eventTypeArg, 
                                   [Optional=DefaultIsUndefined] boolean canBubbleArg, 
                                   [Optional=DefaultIsUndefined] boolean cancelableArg);
 

@@ -20,7 +20,7 @@
 
 [
     CustomToJSObject,
-    ObjCPolymorphic,
+    
     DependentLifetime,
     ImplementationLacksVTable
 ] interface CSSValue {

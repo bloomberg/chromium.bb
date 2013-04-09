@@ -19,7 +19,7 @@
  */
 
 [
-    ObjCProtocol,
+    
     OmitConstructor,
     SkipVTableValidation
 ] interface XPathNSResolver {

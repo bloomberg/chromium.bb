@@ -24,7 +24,7 @@
     CustomToJSObject,
     GenerateIsReachable=ImplOwnerNodeRoot,
     DependentLifetime,
-    ObjCPolymorphic,
+    
     SkipVTableValidation
 ] interface HTMLCollection {
     readonly attribute unsigned long length;

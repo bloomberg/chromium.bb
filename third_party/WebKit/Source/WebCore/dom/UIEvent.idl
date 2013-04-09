@@ -24,7 +24,7 @@
     [InitializedByEventConstructor] readonly attribute DOMWindow view;
     [InitializedByEventConstructor] readonly attribute long detail;
     
-    [ObjCLegacyUnnamedParameters] void initUIEvent([Optional=DefaultIsUndefined] DOMString type, 
+     void initUIEvent([Optional=DefaultIsUndefined] DOMString type, 
                                     [Optional=DefaultIsUndefined] boolean canBubble, 
                                     [Optional=DefaultIsUndefined] boolean cancelable, 
                                     [Optional=DefaultIsUndefined] DOMWindow view, 
