@@ -38,6 +38,19 @@ body.loaded {
   opacity: 0.8;
 }
 
+body[new-ui] ::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+body[new-ui] ::-webkit-scrollbar-track {
+  padding: 5px;
+}
+
+body[new-ui] ::-webkit-scrollbar-thumb {
+  background-color: rgb(180, 180, 180);
+}
+
 #butter-bar-container {
   -webkit-box-pack: center;
   display: -webkit-box;
@@ -1097,6 +1110,8 @@ input.rename {
 body[new-ui] .preview-panel {
   background-color: white;
   border-top: 1px solid #d4d4d4;
+  height: 51px;
+  padding: 0 12px 0 7px;
 }
 
 .preview-panel[visibility=hiding] {
@@ -1117,6 +1132,11 @@ body[new-ui] .preview-panel {
   padding-left: 39px;
 }
 
+body[new-ui] .preview-thumbnails {
+  padding-left: 25px;
+}
+
+
 .preview-thumbnails > .thumbnail {
   -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #f2f2f2;
@@ -1125,6 +1145,14 @@ body[new-ui] .preview-panel {
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
   position: relative;
   width: 45px;
+}
+
+body[new-ui] .preview-thumbnails > .thumbnail {
+  -webkit-box-shadow: 0 1px 1px rgba(80, 80, 80, 0.5);
+  border: 1px solid #fff;
+  height: 35px;
+  margin: 0 0 0 -25px;  /* Overlapped images. */
+  width: 35px;
 }
 
 body[new-ui] .preview-thumbnails > .thumbnail {
@@ -1137,6 +1165,14 @@ body[new-ui] .preview-thumbnails > .thumbnail {
   overflow: hidden;
   position: relative;
   width: 45px;
+}
+
+body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
+  -webkit-box-sizing: border-box;
+  background-size: 35px 35px;
+  border: 1px solid white;
+  height: 35px;
+  width: 35px;
 }
 
 .preview-thumbnails > .popup {
