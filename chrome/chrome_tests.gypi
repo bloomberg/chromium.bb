@@ -1574,6 +1574,7 @@
         'browser/ui/webui/options/settings_format_browsertest.js',
         'browser/ui/webui/policy_ui_browsertest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
+        'browser/ui/webui/signin/profile_signin_confirmation_dialog_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/web_ui_test_handler.cc',
         'browser/ui/webui/web_ui_test_handler.h',

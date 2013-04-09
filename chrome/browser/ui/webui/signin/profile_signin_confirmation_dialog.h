@@ -77,6 +77,7 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
   friend class ProfileSigninConfirmationDialogTest;
+  friend class ProfileSigninConfirmationDialogBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSigninConfirmationDialogTest,
                            DoNotPromptForNewProfile);
   FRIEND_TEST_ALL_PREFIXES(ProfileSigninConfirmationDialogTest,
@@ -89,6 +90,8 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
                            PromptForNewProfile_TypedURLs);
   FRIEND_TEST_ALL_PREFIXES(ProfileSigninConfirmationDialogTest,
                            PromptForNewProfile_Restarted);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSigninConfirmationDialogBrowserTest,
+                           HasNotBeenShutdown);
 
   // Weak ptr to delegate.
   ConstrainedWebDialogDelegate* delegate_;

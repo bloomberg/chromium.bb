@@ -151,7 +151,7 @@ class ProfileImpl : public Profile {
               base::SequencedTaskRunner* sequenced_task_runner);
 
   // Does final initialization. Should be called after prefs were loaded.
-  void DoFinalInit(bool is_new_profile);
+  void DoFinalInit();
 
   void InitHostZoomMap();
 

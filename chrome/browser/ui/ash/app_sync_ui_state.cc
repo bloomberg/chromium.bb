@@ -44,9 +44,7 @@ bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
   if (!ProfileSyncServiceFactory::HasProfileSyncService(profile))
     return false;
 
-  const bool is_new_profile = profile->GetPrefs()->GetInitializationStatus() ==
-      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
-  return is_new_profile;
+  return profile->IsNewProfile();
 #else
   return false;
 #endif

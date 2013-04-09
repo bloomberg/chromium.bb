@@ -303,8 +303,7 @@ bool ProfileSigninConfirmationDialog::HasBookmarks() {
 }
 
 bool ProfileSigninConfirmationDialog::HasBeenShutdown() {
-  return profile_->GetPrefs()->GetInitializationStatus() !=
-    PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
+  return !profile_->IsNewProfile();
 }
 
 void ProfileSigninConfirmationDialog::OnHistoryQueryResults(

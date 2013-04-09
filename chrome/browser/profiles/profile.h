@@ -362,6 +362,10 @@ class Profile : public content::BrowserContext {
     return 0 == accessibility_pause_level_;
   }
 
+  // Returns whether the profile is new.  A profile is new if the browser has
+  // not been shut down since the profile was created.
+  bool IsNewProfile();
+
   // Checks whether sync is configurable by the user. Returns false if sync is
   // disabled or controlled by configuration management.
   bool IsSyncAccessible();

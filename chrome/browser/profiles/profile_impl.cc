@@ -427,7 +427,7 @@ ProfileImpl::ProfileImpl(
   }
 }
 
-void ProfileImpl::DoFinalInit(bool is_new_profile) {
+void ProfileImpl::DoFinalInit() {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
@@ -549,7 +549,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 
   // Creation has been finished.
   if (delegate_)
-    delegate_->OnProfileCreated(this, true, is_new_profile);
+    delegate_->OnProfileCreated(this, true, IsNewProfile());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
@@ -746,10 +746,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prerender::PrerenderManagerFactory::GetForProfile(this),
       predictor_));
 
-  bool is_new_profile = prefs_->GetInitializationStatus() ==
-      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
-  ChromeVersionService::OnProfileLoaded(prefs_.get(), is_new_profile);
-  DoFinalInit(is_new_profile);
+  ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
+  DoFinalInit();
 }
 
 bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {

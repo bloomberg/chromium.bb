@@ -8,6 +8,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -136,6 +137,16 @@ bool Profile::IsGuestSession() const {
 #else
   return false;
 #endif
+}
+
+bool Profile::IsNewProfile() {
+  // The profile has been shut down if the prefs were loaded from disk, unless
+  // first-run autoimport wrote them and reloaded the pref service.
+  // TODO(dconnelly): revisit this when crbug.com/22142 (unifying the profile
+  // import code) is fixed.
+  return GetOriginalProfile()->GetPrefs()->GetInitializationStatus() ==
+      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE ||
+          first_run::DidPerformProfileImport(NULL);
 }
 
 bool Profile::IsSyncAccessible() {
