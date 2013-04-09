@@ -404,6 +404,11 @@ struct NaClApp {
   int                       faulted_thread_fd_write;
 #endif
 
+  /*
+   * Cache of sysconf(_SC_NPROCESSORS_ONLN) (or equivalent) result.
+   */
+  int sc_nprocessors_onln;
+
   const struct NaClValidatorInterface *validator;
 };
 
@@ -415,6 +420,10 @@ void  NaClAppIncrVerbosity(void);
  * Initializes a NaCl application with the default parameters
  * and the specified syscall table.
  *
+ * If invoked after the outer sandbox is enabled, the caller is
+ * responsible for initializing the sc_nprocessors_onln member to a
+ * sane value.
+ *
  * nap is a pointer to the NaCl object that is being filled in.
  *
  * table is the NaCl syscall table. The syscall table must contain at least
@@ -425,8 +434,17 @@ void  NaClAppIncrVerbosity(void);
  */
 int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
                                 struct NaClSyscallTableEntry *table) NACL_WUR;
-
-int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
+/*
+ * Standard Ctor for NaClApp objects.  Installs default syscall
+ * handlers.
+ *
+ * If invoked after the outer sandbox is enabled, the caller is
+ * responsible for initializing the sc_nprocessors_onln member to a
+ * sane value.
+ *
+ * nap is a pointer to the NaCl object that is being filled in.
+ */
+int NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
 
 /*
  * Loads a NaCl ELF file into memory in preparation for running it.

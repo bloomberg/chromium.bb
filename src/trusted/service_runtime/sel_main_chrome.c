@@ -63,6 +63,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #endif
 #if NACL_LINUX || NACL_OSX
   args->urandom_fd = -1;
+  args->number_of_cores = -1;  /* unknown */
 #endif
 #if NACL_LINUX
   args->prereserved_sandbox_size = 0;
@@ -191,6 +192,17 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
 #if NACL_LINUX
   g_prereserved_sandbox_size = args->prereserved_sandbox_size;
+#endif
+#if NACL_LINUX || NACL_OSX
+  /*
+   * Overwrite value of sc_nprocessors_onln set in NaClAppCtor.  In
+   * the Chrome embedding, the outer sandbox was already enabled when
+   * the NaClApp Ctor was invoked, so a bogus value was written in
+   * sc_nprocessors_onln.
+   */
+  if (-1 != args->number_of_cores) {
+    nap->sc_nprocessors_onln = args->number_of_cores;
+  }
 #endif
 
   if (args->create_memory_object_func != NULL)

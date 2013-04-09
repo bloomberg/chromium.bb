@@ -96,13 +96,25 @@ struct NaClChromeMainArgs {
    * provided.
    */
   int urandom_fd;
+
+  /*
+   * The result of sysconf(_SC_NPROCESSORS_ONLN).  The Chrome
+   * outer-sandbox prevents the glibc implementation of sysconf from
+   * working -- which just reads /proc/cpuinfo or similar file -- so
+   * instead, the launcher should fill this in.  In principle this is
+   * optional and may be -1, but this will make
+   * sysconf(_SC_NPROCESSORS_ONLN) fail and result in some NaCl
+   * modules failing.
+   */
+  int number_of_cores;
 #endif
 
 #if NACL_LINUX
   /*
-   * Size of address space reserved at address zero onwards for the sandbox.
-   * This is optional and may be 0 if no address space has been reserved, though
-   * some sandboxes (such as ARM) might fail in that case.
+   * Size of address space reserved at address zero onwards for the
+   * sandbox.  This is optional and may be 0 if no address space has
+   * been reserved, though some sandboxes (such as ARM) might fail in
+   * that case.
    */
   size_t prereserved_sandbox_size;
 #endif

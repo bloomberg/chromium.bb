@@ -77,7 +77,6 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
                        int32_t name,
                        int32_t *result) {
   int32_t         retval = -NACL_ABI_EINVAL;
-  static int32_t  number_of_workers = -1;
   int32_t         result_value;
 
   NaClLog(3,
@@ -86,20 +85,15 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
           (uintptr_t) natp, name, (uintptr_t) result);
 
   switch (name) {
-#ifdef _SC_NPROCESSORS_ONLN
     case NACL_ABI__SC_NPROCESSORS_ONLN: {
-      if (-1 == number_of_workers) {
-        number_of_workers = sysconf(_SC_NPROCESSORS_ONLN);
-      }
-      if (-1 == number_of_workers) {
-        /* failed to get the number of processors */
+      if (-1 == natp->nap->sc_nprocessors_onln) {
+        /* Unable to get the number of processors at startup. */
         retval = -NACL_ABI_EINVAL;
         goto cleanup;
       }
-      result_value = number_of_workers;
+      result_value = natp->nap->sc_nprocessors_onln;
       break;
     }
-#endif
     case NACL_ABI__SC_SENDMSG_MAX_SIZE: {
       /* TODO(sehr,bsy): this value needs to be determined at run time. */
       const int32_t kImcSendMsgMaxSize = 1 << 16;

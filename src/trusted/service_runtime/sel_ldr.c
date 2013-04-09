@@ -258,6 +258,18 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->faulted_thread_fd_write = -1;
 #endif
 
+
+#if NACL_LINUX || NACL_OSX
+  /*
+   * Try to pre-cache information that we can't obtain with the outer
+   * sandbox on.  If the outer sandbox has already been enabled, this
+   * will just set sc_nprocessors_onln to -1, and it is the
+   * responsibility of the caller to replace this with a sane value
+   * after the Ctor returns.
+   */
+  nap->sc_nprocessors_onln = sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+
   return 1;
 
  cleanup_desc_mu:

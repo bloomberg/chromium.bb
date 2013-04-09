@@ -3,6 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import atexit
+import multiprocessing
+import os
+import tempfile
+
 Import('env')
 
 time_test_is_broken_on_this_os=False
@@ -192,3 +197,34 @@ node = env.CommandSelLdrTestNacl('sysconf_pagesize_test.out',
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_sysconf_pagesize_test')
+
+# We create the temporary file at runtime rather than insisting on an
+# empty file as checked-in testdata.  Unfortunately, our trybot
+# infrastructure doesn't like empty files as a patch, so try jobs
+# would always fail.
+
+temporary_file = tempfile.mktemp()
+
+def Cleanup():
+  try:
+    os.unlink(temporary_file)
+  except OSError:
+    pass
+
+atexit.register(Cleanup)
+os.close(os.open(temporary_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0600))
+
+sysconf_nprocessors_nexe = env.ComponentProgram('sysconf_nprocessors_test',
+                                                ['sysconf_nprocessors.c'],
+                                                EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'sysconf_nprocessors_test.out',
+    sysconf_nprocessors_nexe,
+    filter_regex='"= ' + str(multiprocessing.cpu_count()) + ' processors"',
+    filter_inverse=True,
+    stdout_golden=temporary_file)
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_sysconf_nprocessors_test')
