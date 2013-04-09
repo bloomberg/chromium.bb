@@ -79,18 +79,14 @@ public:
 
     virtual bool popsMenuByArrowKeys() const OVERRIDE { return true; }
 
-#if ENABLE(METER_ELEMENT)
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const OVERRIDE;
     virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool supportsMeter(ControlPart) const;
-#endif
 
-#if ENABLE(PROGRESS_ELEMENT)
     // Returns the repeat interval of the animation for the progress bar.
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
     // Returns the duration of the animation for the progress bar.
     virtual double animationDurationForProgressBar(RenderProgress*) const;
-#endif
 
     virtual Color systemColor(int cssValueId) const;
     // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
@@ -116,10 +112,8 @@ protected:
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&);
     virtual void adjustMenuListButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
 
-#if ENABLE(PROGRESS_ELEMENT)
     virtual void adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&);
-#endif
 
     virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
     virtual void adjustSliderTrackStyle(StyleResolver*, RenderStyle*, Element*) const;
@@ -194,16 +188,12 @@ private:
     NSSliderCell* sliderThumbVertical() const;
     NSTextFieldCell* textField() const;
 
-#if ENABLE(METER_ELEMENT)
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
     NSLevelIndicatorCell* levelIndicatorFor(const RenderMeter*) const;
-#endif
 
-#if ENABLE(PROGRESS_ELEMENT)
     int minimumProgressBarHeight(RenderStyle*) const;
     const IntSize* progressBarSizes() const;
     const int* progressBarMargins(NSControlSize) const;
-#endif
 
 private:
     mutable RetainPtr<NSPopUpButtonCell> m_popupButton;

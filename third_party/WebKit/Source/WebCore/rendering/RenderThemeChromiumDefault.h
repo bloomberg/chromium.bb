@@ -80,9 +80,7 @@ public:
 
     virtual bool popsMenuBySpaceOrReturn() const OVERRIDE { return true; }
 
-#if ENABLE(PROGRESS_ELEMENT)
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&);
-#endif
 
     virtual bool shouldOpenPickerWithF4Key() const OVERRIDE;
 

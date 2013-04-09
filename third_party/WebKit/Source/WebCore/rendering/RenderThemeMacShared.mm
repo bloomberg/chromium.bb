@@ -31,6 +31,7 @@
 #import "GraphicsContextCG.h"
 #import "HTMLInputElement.h"
 #import "HTMLMediaElement.h"
+#import "HTMLMeterElement.h"
 #import "HTMLNames.h"
 #import "HTMLPlugInImageElement.h"
 #import "Image.h"
@@ -42,6 +43,7 @@
 #import "RenderLayer.h"
 #import "RenderMedia.h"
 #import "RenderMediaControls.h"
+#import "RenderMeter.h"
 #import "RenderSlider.h"
 #import "RenderView.h"
 #import "SharedBuffer.h"
@@ -59,11 +61,6 @@
 #import <math.h>
 
 #import "RenderProgress.h"
-
-#if ENABLE(METER_ELEMENT)
-#include "RenderMeter.h"
-#include "HTMLMeterElement.h"
-#endif
 
 using namespace std;
 
@@ -835,8 +832,6 @@ bool RenderThemeMacShared::paintMenuList(RenderObject* o, const PaintInfo& paint
     return false;
 }
 
-#if ENABLE(METER_ELEMENT)
-
 IntSize RenderThemeMacShared::meterSizeForBounds(const RenderMeter* renderMeter, const IntRect& bounds) const
 {
     if (NoControlPart == renderMeter->style()->appearance())
@@ -937,9 +932,6 @@ NSLevelIndicatorCell* RenderThemeMacShared::levelIndicatorFor(const RenderMeter*
     return cell;
 }
 
-#endif
-
-#if ENABLE(PROGRESS_ELEMENT)
 const IntSize* RenderThemeMacShared::progressBarSizes() const
 {
     static const IntSize sizes[3] = { IntSize(0, 20), IntSize(0, 12), IntSize(0, 12) };
@@ -1028,7 +1020,6 @@ bool RenderThemeMacShared::paintProgressBar(RenderObject* renderObject, const Pa
     paintInfo.context->drawImageBuffer(imageBuffer.get(), ColorSpaceDeviceRGB, inflatedRect.location());
     return false;
 }
-#endif
 
 const float baseFontSize = 11.0f;
 const float baseArrowHeight = 4.0f;

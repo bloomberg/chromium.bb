@@ -82,12 +82,10 @@ public:
     virtual void adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
-#if ENABLE(PROGRESS_ELEMENT)
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const OVERRIDE;
     virtual double animationDurationForProgressBar(RenderProgress*) const OVERRIDE;
     virtual void adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-#endif
 
     virtual bool shouldOpenPickerWithF4Key() const OVERRIDE;
 

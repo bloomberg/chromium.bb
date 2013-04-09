@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#if ENABLE(PROGRESS_ELEMENT)
+
 #include "RenderProgress.h"
 
 #include "HTMLNames.h"
@@ -113,5 +113,3 @@ HTMLProgressElement* RenderProgress::progressElement() const
 }    
 
 } // namespace WebCore
-
-#endif

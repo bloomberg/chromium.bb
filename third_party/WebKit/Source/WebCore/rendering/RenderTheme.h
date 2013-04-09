@@ -41,12 +41,8 @@ class FileList;
 class HTMLInputElement;
 class PopupMenu;
 class RenderMenuList;
-#if ENABLE(METER_ELEMENT)
 class RenderMeter;
-#endif
-#if ENABLE(PROGRESS_ELEMENT)
 class RenderProgress;
-#endif
 
 class RenderTheme : public RefCounted<RenderTheme> {
 protected:
@@ -185,12 +181,10 @@ public:
     // Method for painting the caps lock indicator
     virtual bool paintCapsLockIndicator(RenderObject*, const PaintInfo&, const IntRect&) { return 0; };
 
-#if ENABLE(PROGRESS_ELEMENT)
     // Returns the repeat interval of the animation for the progress bar.
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
     // Returns the duration of the animation for the progress bar.
     virtual double animationDurationForProgressBar(RenderProgress*) const;
-#endif
 
 #if ENABLE(VIDEO)
     // Media controls
@@ -209,10 +203,8 @@ public:
     virtual IntPoint volumeSliderOffsetFromMuteButton(RenderBox*, const IntSize&) const;
 #endif
 
-#if ENABLE(METER_ELEMENT)
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const;
     virtual bool supportsMeter(ControlPart) const;
-#endif
 
 #if ENABLE(DATALIST_ELEMENT)
     // Returns the threshold distance for snapping to a slider tick mark.
@@ -283,15 +275,11 @@ protected:
     virtual void adjustMenuListButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
 
-#if ENABLE(METER_ELEMENT)
     virtual void adjustMeterStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&);
-#endif
 
-#if ENABLE(PROGRESS_ELEMENT)
     virtual void adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
-#endif
 
 #if ENABLE(INPUT_SPEECH)
     virtual void adjustInputFieldSpeechButtonStyle(StyleResolver*, RenderStyle*, Element*) const;

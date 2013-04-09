@@ -127,10 +127,8 @@ public:
     virtual void adjustMenuListButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&);
 
-#if ENABLE(PROGRESS_ELEMENT)
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
     virtual double animationDurationForProgressBar(RenderProgress*) const;
-#endif
 
     // These methods define the padding for the MenuList's inner block.
     virtual int popupInternalPaddingLeft(RenderStyle*) const;
@@ -158,7 +156,6 @@ protected:
 
     static void setSizeIfAuto(RenderStyle*, const IntSize&);
 
-#if ENABLE(PROGRESS_ELEMENT)
     IntRect determinateProgressValueRectFor(RenderProgress*, const IntRect&) const;
     IntRect indeterminateProgressValueRectFor(RenderProgress*, const IntRect&) const;
     IntRect progressValueRectFor(RenderProgress*, const IntRect&) const;
@@ -172,7 +169,6 @@ protected:
         bool m_needsFlipping;
         const PaintInfo& m_paintInfo;
     };
-#endif
 
 private:
     virtual Color disabledTextColor(const Color& textColor, const Color&) const OVERRIDE { return textColor; }

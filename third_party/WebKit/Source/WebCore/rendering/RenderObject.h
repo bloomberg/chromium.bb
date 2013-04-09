@@ -339,12 +339,8 @@ public:
     virtual bool isListMarker() const { return false; }
     virtual bool isMedia() const { return false; }
     virtual bool isMenuList() const { return false; }
-#if ENABLE(METER_ELEMENT)
     virtual bool isMeter() const { return false; }
-#endif
-#if ENABLE(PROGRESS_ELEMENT)
     virtual bool isProgress() const { return false; }
-#endif
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderButton() const { return false; }
     virtual bool isRenderIFrame() const { return false; }

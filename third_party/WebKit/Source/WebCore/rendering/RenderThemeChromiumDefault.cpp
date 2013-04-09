@@ -359,8 +359,6 @@ bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const Pai
     return false;
 }
 
-#if ENABLE(PROGRESS_ELEMENT)
-
 bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isProgress())
@@ -381,8 +379,6 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
     WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartProgressBar, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
     return false;
 }
-
-#endif
 
 bool RenderThemeChromiumDefault::shouldOpenPickerWithF4Key() const
 {

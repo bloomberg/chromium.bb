@@ -21,7 +21,6 @@
 #ifndef AccessibilityProgressIndicator_h
 #define AccessibilityProgressIndicator_h
 
-#if ENABLE(PROGRESS_ELEMENT)
 #include "AccessibilityRenderObject.h"
 
 namespace WebCore {
@@ -50,7 +49,5 @@ private:
 
 
 } // namespace WebCore
-
-#endif // ENABLE(PROGRESS_ELEMENT)
 
 #endif // AccessibilityProgressIndicator_h

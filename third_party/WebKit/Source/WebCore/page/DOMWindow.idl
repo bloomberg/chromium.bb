@@ -430,9 +430,7 @@
     attribute HTMLMarqueeElementConstructor HTMLMarqueeElement;
     attribute HTMLMenuElementConstructor HTMLMenuElement;
     attribute HTMLMetaElementConstructor HTMLMetaElement;
-#if defined(ENABLE_METER_ELEMENT) && ENABLE_METER_ELEMENT
     attribute HTMLMeterElementConstructor HTMLMeterElement;
-#endif
     attribute HTMLModElementConstructor HTMLModElement;
     attribute HTMLOListElementConstructor HTMLOListElement;
     attribute HTMLObjectElementConstructor HTMLObjectElement;
@@ -442,9 +440,7 @@
     attribute HTMLParagraphElementConstructor HTMLParagraphElement;
     attribute HTMLParamElementConstructor HTMLParamElement;
     attribute HTMLPreElementConstructor HTMLPreElement;
-#if defined(ENABLE_PROGRESS_ELEMENT) && ENABLE_PROGRESS_ELEMENT
     attribute HTMLProgressElementConstructor HTMLProgressElement;
-#endif
     attribute HTMLQuoteElementConstructor HTMLQuoteElement;
     attribute HTMLScriptElementConstructor HTMLScriptElement;
     attribute HTMLSelectElementConstructor HTMLSelectElement;

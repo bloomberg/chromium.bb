@@ -1043,7 +1043,6 @@ output {
     -webkit-user-modify: read-only !important;
 }
 
-#if defined(ENABLE_METER_ELEMENT) && ENABLE_METER_ELEMENT
 /* meter */
 
 meter {
@@ -1091,9 +1090,7 @@ meter::-webkit-meter-even-less-good-value {
     -webkit-user-modify: read-only !important;
     box-sizing: border-box;
 }
-#endif
 
-#if defined(ENABLE_PROGRESS_ELEMENT) && ENABLE_PROGRESS_ELEMENT
 /* progress */
 
 progress {
@@ -1128,7 +1125,6 @@ progress::-webkit-progress-value {
     -webkit-user-modify: read-only !important;
     box-sizing: border-box;
 }
-#endif
 
 /* inline elements */
 
