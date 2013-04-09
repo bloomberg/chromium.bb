@@ -634,7 +634,7 @@ static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propert
     return positionList.release();
 }
 
-static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSPropertyID propertyID, RenderView* renderView)
+static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSPropertyID propertyID, const RenderObject* renderer, RenderView* renderView)
 {
     if (!style)
         return 0;
@@ -657,22 +657,21 @@ static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSProper
             return 0;
     }
 
-    if (style->hasOutOfFlowPosition()) {
-        if (l.type() == WebCore::Fixed)
-            return zoomAdjustedPixelValue(l.value(), style);
-        else if (l.isViewportPercentage())
-            return zoomAdjustedPixelValue(valueForLength(l, 0, renderView), style);
-        return cssValuePool().createValue(l);
-    }
-
-    if (style->hasInFlowPosition()) {
+    if (l.isPercent() && renderer && renderer->isBox()) {
+        LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
+            toRenderBox(renderer)->containingBlockLogicalWidthForContent() :
+            toRenderBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+        return zoomAdjustedPixelValue(valueForLength(l, containingBlockSize, 0), style);
+    } if (l.isViewportPercentage())
+        return zoomAdjustedPixelValue(valueForLength(l, 0, renderView), style);
+    if (l.isAuto()) {
         // FIXME: It's not enough to simply return "auto" values for one offset if the other side is defined.
         // In other words if left is auto and right is not auto, then left's computed value is negative right().
         // So we should get the opposite length unit and see if it is auto.
         return cssValuePool().createValue(l);
     }
 
-    return cssValuePool().createIdentifierValue(CSSValueAuto);
+    return zoomAdjustedPixelValueForLength(l, style);
 }
 
 PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(RenderStyle* style, const Color& color) const
@@ -1477,21 +1476,25 @@ static PassRefPtr<CSSPrimitiveValue> fontWeightFromStyle(RenderStyle* style)
 static bool isLayoutDependentProperty(CSSPropertyID propertyID)
 {
     switch (propertyID) {
-    case CSSPropertyWidth:
+    case CSSPropertyBottom:
     case CSSPropertyHeight:
+    case CSSPropertyLeft:
     case CSSPropertyMargin:
-    case CSSPropertyMarginTop:
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:
     case CSSPropertyMarginRight:
+    case CSSPropertyMarginTop:
     case CSSPropertyPadding:
-    case CSSPropertyPaddingTop:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:
     case CSSPropertyPaddingRight:
+    case CSSPropertyPaddingTop:
+    case CSSPropertyRight:
+    case CSSPropertyTop:
     case CSSPropertyWebkitPerspectiveOrigin:
-    case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyWebkitTransform:
+    case CSSPropertyWebkitTransformOrigin:
+    case CSSPropertyWidth:
 #if ENABLE(CSS_FILTERS)
     case CSSPropertyWebkitFilter:
 #endif
@@ -1735,7 +1738,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBorderLeftWidth:
             return zoomAdjustedPixelValue(style->borderLeftWidth(), style.get());
         case CSSPropertyBottom:
-            return getPositionOffsetValue(style.get(), CSSPropertyBottom, m_node->document()->renderView());
+            return getPositionOffsetValue(style.get(), CSSPropertyBottom, renderer, m_node->document()->renderView());
         case CSSPropertyWebkitBoxAlign:
             return cssValuePool().createValue(style->boxAlign());
 #if ENABLE(CSS_BOX_DECORATION_BREAK)
@@ -1979,7 +1982,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->imageResolution(), CSSPrimitiveValue::CSS_DPPX);
 #endif
         case CSSPropertyLeft:
-            return getPositionOffsetValue(style.get(), CSSPropertyLeft, m_node->document()->renderView());
+            return getPositionOffsetValue(style.get(), CSSPropertyLeft, renderer, m_node->document()->renderView());
         case CSSPropertyLetterSpacing:
             if (!style->letterSpacing())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -2122,7 +2125,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyPosition:
             return cssValuePool().createValue(style->position());
         case CSSPropertyRight:
-            return getPositionOffsetValue(style.get(), CSSPropertyRight, m_node->document()->renderView());
+            return getPositionOffsetValue(style.get(), CSSPropertyRight, renderer, m_node->document()->renderView());
         case CSSPropertyWebkitRubyPosition:
             return cssValuePool().createValue(style->rubyPosition());
         case CSSPropertyTableLayout:
@@ -2200,7 +2203,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextTransform:
             return cssValuePool().createValue(style->textTransform());
         case CSSPropertyTop:
-            return getPositionOffsetValue(style.get(), CSSPropertyTop, m_node->document()->renderView());
+            return getPositionOffsetValue(style.get(), CSSPropertyTop, renderer, m_node->document()->renderView());
         case CSSPropertyUnicodeBidi:
             return cssValuePool().createValue(style->unicodeBidi());
         case CSSPropertyVerticalAlign:
