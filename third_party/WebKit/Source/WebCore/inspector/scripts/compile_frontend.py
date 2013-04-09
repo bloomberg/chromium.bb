@@ -124,6 +124,7 @@ modules = [
         "dependencies": ["common"],
         "sources": [
             "Checkbox.js",
+            "CodeMirrorTextEditor.js",
             "ContextMenu.js",
             "DOMSyntaxHighlighter.js",
             "DataGrid.js",

@@ -332,25 +332,136 @@ difflib.SequenceMatcher = function(baseText, newText) { }
 difflib.SequenceMatcher.prototype.get_opcodes = function() { return []; }
 
 /** @constructor */
-WebInspector.CodeMirrorTextEditor = function(url, delegate) { }
-
-/** @constructor */
 WebInspector.AceTextEditor = function(url, delegate) { }
 
 /** @constructor */
 var CodeMirror = function() { }
-CodeMirror.prototype.replaceSelection = function(str1, str2, str3) { }
-/** @return {Element} */
-CodeMirror.prototype.getInputField = function() { }
-CodeMirror.prototype.getCursor = function() { }
-CodeMirror.prototype.setCursor = function(arg) { }
-CodeMirror.prototype.getLine = function() { }
-CodeMirror.prototype.getValue = function() { }
-CodeMirror.prototype.setValue = function(arg) { }
-CodeMirror.prototype.clearGutter = function(arg) { }
-CodeMirror.prototype.setGutterMarker = function(arg1, arg2, arg3) { }
-CodeMirror.prototype.clearHistory = function() { }
-CodeMirror.prototype.markText = function(arg1, arg2, arg3) { }
+CodeMirror.prototype = {
+    addKeyMap: function(map) { },
+    addLineClass: function(handle, where, cls) { },
+    addLineWidget: function(handle, node, options) { },
+    /**
+     * @param {string|Object} spec
+     * @param {Object=} options
+     */
+    addOverlay: function(spec, options) { },
+    addWidget: function(pos, node, scroll, vert, horiz) { },
+    charCoords: function(pos, mode) { },
+    clearGutter: function(gutterID) { },
+    clearHistory: function() { },
+    clipPos: function(pos) { },
+    coordsChar: function(coords, mode) { },
+    cursorCoords: function(start, mode) { },
+    defaultCharWidth: function() { },
+    defaultTextHeight: function() { },
+    deleteH: function(dir, unit) { },
+    eachLine: function(from, to, op) { },
+    execCommand: function(cmd) { },
+    extendSelection: function(from, to) { },
+    findMarksAt: function(pos) { },
+    findPosH: function(from, amount, unit, visually) { },
+    findPosV: function(from, amount, unit, goalColumn) { },
+    firstLine: function() { },
+    focus: function() { },
+    getAllMarks: function() { },
+    getCursor: function(start) { },
+    getDoc: function() { },
+    getGutterElement: function() { },
+    getHistory: function() { },
+    getInputField: function(){ },
+    getLine: function(line) { },
+    getLineHandle: function(line) { },
+    getLineNumber: function(line) { },
+    getMode: function() { },
+    getOption: function(option) { },
+    getRange: function(from, to, lineSep) { },
+    getScrollInfo: function() { },
+    getScrollerElement: function() { },
+    getSelection: function() { },
+    getStateAfter: function(line) { },
+    getTokenAt: function(pos) { },
+    getValue: function(lineSep) { },
+    getViewport: function() { },
+    getWrapperElement: function() { },
+    hasFocus: function() { },
+    historySize: function() { },
+    indentLine: function(n, dir, aggressive) { },
+    indentSelection: function(how) { },
+    indexFromPos: function(coords) { },
+    isClean: function() { },
+    iterLinkedDocs: function(f) { },
+    lastLine: function() { },
+    lineCount: function() { },
+    lineInfo: function(line) { },
+    linkedDoc: function(options) { },
+    markClean: function() { },
+    markText: function(from, to, options) { },
+    moveH: function(dir, unit) { },
+    moveV: function(dir, unit) { },
+    off: function(type, f) { },
+    on: function(type, f) { },
+    operation: function(f) { },
+    posFromIndex: function(off) { },
+    redo: function() { },
+    refresh: function() { },
+    removeKeyMap: function(map) { },
+    removeLine: function(line) { },
+    removeLineClass: function(handle, where, cls) { },
+    removeLineWidget: function(widget) { },
+    removeOverlay: function(spec) { },
+    replaceRange: function(code, from, to, origin) { },
+    replaceSelection: function(code, collapse, origin) { },
+    scrollIntoView: function(pos, margin) { },
+    scrollTo: function(x, y) { },
+    setBookmark: function(pos, options) { },
+    setCursor: function(line, ch, extend) { },
+    setExtending: function(val) { },
+    setGutterMarker: function(line, gutterID, value) { },
+    setHistory: function(histData) { },
+    setLine: function(line, text) { },
+    setOption: function(option, value) { },
+    setSelection: function(anchor, head) { },
+    setSize: function(width, height) { },
+    setValue: function(code) { },
+    somethingSelected: function() { },
+    swapDoc: function(doc) { },
+    undo: function() { },
+    unlinkDoc: function(other) { }
+}
+/** @type {number} */
+CodeMirror.prototype.lineCount;
+CodeMirror.Pass;
+
+/** @constructor */
+CodeMirror.Pos = function(line, ch) { }
+/** type {number} */
+CodeMirror.Pos.prototype.line;
+/** type {number} */
+CodeMirror.Pos.prototype.ch;
+
+/** @constructor */
+CodeMirror.StringStream = function() { }
+CodeMirror.StringStream.prototype = {
+    backUp: function (n) { },
+    column: function () { },
+    current: function () { },
+    eat: function (match) { },
+    eatSpace: function () { },
+    eatWhile: function (match) { },
+    eol: function () { },
+    indentation: function () { },
+    /**
+     * @param {RegExp|string} pattern
+     * @param {boolean=} consume
+     * @param {boolean=} caseInsensitive
+     */
+    match: function (pattern, consume, caseInsensitive) { },
+    next: function () { },
+    peek: function () { },
+    skipTo: function (ch) { },
+    skipToEnd: function () { },
+    sol: function () { }
+}
 
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }

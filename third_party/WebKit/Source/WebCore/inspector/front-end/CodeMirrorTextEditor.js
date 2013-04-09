@@ -101,7 +101,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (lineNumber >= this._codeMirror.lineCount || column > this._codeMirror.getLine(lineNumber).length || lineNumber < 0 || column < 0)
             return null;
 
-        var metrics = this._codeMirror.cursorCoords(CodeMirror.Pos(lineNumber, column));
+        var metrics = this._codeMirror.cursorCoords(new CodeMirror.Pos(lineNumber, column));
 
         return {
             x: metrics.left,
@@ -132,13 +132,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number} column
-     * @return {?{startColumn: number, endColumn: number, token: string}}
+     * @return {?{startColumn: number, endColumn: number, type: string}}
      */
     tokenAtTextPosition: function(lineNumber, column)
     {
         if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount())
             return null;
-        var token = this._codeMirror.getTokenAt(CodeMirror.Pos(lineNumber, column || 1));
+        var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, column || 1));
         if (!token || !token.type)
             return null;
         var convertedType = null;
@@ -229,6 +229,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @param {string} regex
+     * @param {string} cssClass
+     * @return {Object}
+     */
+    highlightRegex: function(regex, cssClass) { },
+
+    /**
      * @return {Element}
      */
     defaultFocusedElement: function()
@@ -253,7 +260,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     endUpdates: function()
     {
-        if (!--this._nestedUpdatesCounter);
+        if (!--this._nestedUpdatesCounter)
             this._codeMirror.refresh();
     },
 
@@ -262,7 +269,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     revealLine: function(lineNumber)
     {
-        var pos = CodeMirror.Pos(lineNumber, 0);
+        var pos = new CodeMirror.Pos(lineNumber, 0);
         var topLine = this._topScrolledLine();
         var bottomLine = this._bottomScrolledLine();
 
@@ -288,7 +295,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (target)
             this._delegate.populateLineGutterContextMenu(contextMenu, parseInt(target.textContent, 10) - 1);
         else
-            this._delegate.populateTextAreaContextMenu(contextMenu, null);
+            this._delegate.populateTextAreaContextMenu(contextMenu, 0);
         contextMenu.show();
     },
 
@@ -446,7 +453,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var end = totalLines - 1;
         while (end - begin > 1) {
             var middle = (begin + end) >> 1;
-            var coords = this._codeMirror.charCoords(CodeMirror.Pos(middle, 0), "local");
+            coords = this._codeMirror.charCoords(new CodeMirror.Pos(middle, 0), "local");
             if (coords.top >= top)
                 end = middle;
             else
@@ -483,7 +490,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         function performScroll()
         {
-            var pos = CodeMirror.Pos(lineNumber, 0);
+            var pos = new CodeMirror.Pos(lineNumber, 0);
             var coords = this._codeMirror.charCoords(pos, "local");
             this._codeMirror.scrollTo(0, coords.top);
         }
@@ -494,7 +501,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @return {WebInspector.TextRange}
      */
-    selection: function(textRange)
+    selection: function()
     {
         var start = this._codeMirror.getCursor(true);
         var end = this._codeMirror.getCursor(false);
@@ -553,7 +560,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var lineCount = this.linesCount;
         var lastLine = this._codeMirror.getLine(lineCount - 1);
-        return this._toRange({ line: 0, ch: 0 }, { line: lineCount - 1, ch: lastLine.length });
+        return this._toRange(new CodeMirror.Pos(0, 0), new CodeMirror.Pos(lineCount - 1, lastLine.length));
     },
 
     /**
@@ -607,11 +614,15 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             delete handle.attributes[name];
     },
 
+    /**
+     * @param {WebInspector.TextRange} range
+     * @return {{start: CodeMirror.Pos, end: CodeMirror.Pos}}
+     */
     _toPos: function(range)
     {
         return {
-            start: {line: range.startLine, ch: range.startColumn},
-            end: {line: range.endLine, ch: range.endColumn}
+            start: new CodeMirror.Pos(range.startLine, range.startColumn),
+            end: new CodeMirror.Pos(range.endLine, range.endColumn)
         }
     },
 
@@ -623,6 +634,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     __proto__: WebInspector.View.prototype
 }
 
+/**
+ * @constructor
+ * @param {CodeMirror} codeMirror
+ */
 WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 {
     this._codeMirror = codeMirror;
@@ -665,6 +680,9 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     _addHighlight: function(token, selectionStart)
     {
         const tokenFirstChar = token.charAt(0);
+        /**
+         * @param {CodeMirror.StringStream} stream
+         */
         function nextToken(stream)
         {
             if (stream.match(token) && (stream.eol() || !WebInspector.TextUtils.isWordChar(stream.peek())))
@@ -688,6 +706,10 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     }
 }
 
+/**
+ * @constructor
+ * @param {CodeMirror} codeMirror
+ */
 WebInspector.CodeMirrorTextEditor.BlockIndentController = function(codeMirror)
 {
     codeMirror.addKeyMap(this);
@@ -711,6 +733,10 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
     }
 }
 
+/**
+ * @constructor
+ * @param {CodeMirror} codeMirror
+ */
 WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
 {
     function moveLeft(shift, codeMirror)
