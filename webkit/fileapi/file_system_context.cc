@@ -305,6 +305,18 @@ webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(
       url, offset, expected_modification_time, this);
 }
 
+FileStreamWriter* FileSystemContext::CreateFileStreamWriter(
+    const FileSystemURL& url,
+    int64 offset) {
+  if (!url.is_valid())
+    return NULL;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(url.type());
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->CreateFileStreamWriter(url, offset, this);
+}
+
 void FileSystemContext::RegisterMountPointProvider(
     FileSystemType type,
     FileSystemMountPointProvider* provider) {

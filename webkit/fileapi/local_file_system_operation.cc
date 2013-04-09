@@ -601,13 +601,10 @@ base::Closure LocalFileSystemOperation::GetWriteClosure(
                       base::Owned(this), callback, result);
   }
 
-  FileSystemMountPointProvider* provider = file_system_context()->
-      GetMountPointProvider(url.type());
-  DCHECK(provider);
-  scoped_ptr<FileStreamWriter> writer(provider->CreateFileStreamWriter(
-          url, offset, file_system_context()));
+  scoped_ptr<FileStreamWriter> writer(
+      file_system_context()->CreateFileStreamWriter(url, offset));
 
-  if (!writer.get()) {
+  if (!writer) {
     // Write is not supported.
     return base::Bind(&LocalFileSystemOperation::DidFailWrite,
                       base::Owned(this), callback,

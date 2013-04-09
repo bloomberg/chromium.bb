@@ -44,6 +44,7 @@ class AsyncFileUtil;
 class CopyOrMoveFileValidatorFactory;
 class ExternalFileSystemMountPointProvider;
 class ExternalMountPoints;
+class FileStreamWriter;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
 class FileSystemOperation;
@@ -184,6 +185,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       const FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time);
+
+  // Creates new FileStreamWriter instance to write into a file pointed by
+  // |url| from |offset|.
+  FileStreamWriter* CreateFileStreamWriter(
+      const FileSystemURL& url,
+      int64 offset);
 
   // Register a filesystem provider. The ownership of |provider| is
   // transferred to this instance.
