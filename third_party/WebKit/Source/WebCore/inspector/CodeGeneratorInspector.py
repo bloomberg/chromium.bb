@@ -40,11 +40,6 @@ except ImportError:
 
 import CodeGeneratorInspectorStrings
 
-# TODO(mkwst): Remove all of this logic.
-DOMAIN_DEFINE_NAME_MAP = {
-}
-
-
 # Manually-filled map of type name replacements.
 TYPE_NAME_FIX_MAP = {
     "RGBA": "Rgba",  # RGBA is reported to be conflicting with a define name in Windows CE.
@@ -177,22 +172,6 @@ class DomainNameFixes:
         class Res(object):
             skip_js_bind = domain_name in cls.skip_js_bind_domains
             agent_field_name = field_name_res
-
-            @staticmethod
-            def get_guard():
-                if domain_name in DOMAIN_DEFINE_NAME_MAP:
-                    define_name = DOMAIN_DEFINE_NAME_MAP[domain_name]
-
-                    class Guard:
-                        @staticmethod
-                        def generate_open(output):
-                            output.append("#if ENABLE(%s)\n" % define_name)
-
-                        @staticmethod
-                        def generate_close(output):
-                            output.append("#endif // ENABLE(%s)\n" % define_name)
-
-                    return Guard
 
         return Res
 
@@ -922,9 +901,6 @@ class TypeBindings:
                                     validator_writer = generate_context.validator_writer
 
                                     domain_fixes = DomainNameFixes.get_fixed_data(context_domain_name)
-                                    domain_guard = domain_fixes.get_guard()
-                                    if domain_guard:
-                                        domain_guard.generate_open(validator_writer)
 
                                     validator_writer.newline("void %s%s::assertCorrectValue(InspectorValue* value)\n" % (helper.full_name_prefix_for_impl, enum_name))
                                     validator_writer.newline("{\n")
@@ -938,9 +914,6 @@ class TypeBindings:
                                             condition_list.append("s == \"%s\"" % enum_item)
                                         validator_writer.newline("    ASSERT(%s);\n" % " || ".join(condition_list))
                                     validator_writer.newline("}\n")
-
-                                    if domain_guard:
-                                        domain_guard.generate_close(validator_writer)
 
                                     validator_writer.newline("\n\n")
 
@@ -1265,9 +1238,6 @@ class TypeBindings:
                                     validator_writer = generate_context.validator_writer
 
                                     domain_fixes = DomainNameFixes.get_fixed_data(context_domain_name)
-                                    domain_guard = domain_fixes.get_guard()
-                                    if domain_guard:
-                                        domain_guard.generate_open(validator_writer)
 
                                     validator_writer.newline("void %s%s::assertCorrectValue(InspectorValue* value)\n" % (helper.full_name_prefix_for_impl, class_name))
                                     validator_writer.newline("{\n")
@@ -1303,9 +1273,6 @@ class TypeBindings:
                                         validator_writer.newline("      FATAL(\"Unexpected properties in object: %s\\n\", object->toJSONString().ascii().data());\n")
                                         validator_writer.newline("    }\n")
                                     validator_writer.newline("}\n")
-
-                                    if domain_guard:
-                                        domain_guard.generate_close(validator_writer)
 
                                     validator_writer.newline("\n\n")
 
@@ -1850,12 +1817,6 @@ class Generator:
 
             domain_fixes = DomainNameFixes.get_fixed_data(domain_name)
 
-            domain_guard = domain_fixes.get_guard()
-
-            if domain_guard:
-                for l in first_cycle_guardable_list_list:
-                    domain_guard.generate_open(l)
-
             agent_field_name = domain_fixes.agent_field_name
 
             frontend_method_declaration_lines = []
@@ -1905,9 +1866,6 @@ class Generator:
             Generator.backend_setters_list.append("    virtual void registerAgent(%s* %s) { ASSERT(!m_%s); m_%s = %s; }" % (agent_interface_name, agent_field_name, agent_field_name, agent_field_name, agent_field_name))
             Generator.backend_field_list.append("    %s* m_%s;" % (agent_interface_name, agent_field_name))
 
-            if domain_guard:
-                for l in reversed(first_cycle_guardable_list_list):
-                    domain_guard.generate_close(l)
             Generator.backend_js_domain_initializer_list.append("\n")
 
     @staticmethod
@@ -2248,14 +2206,11 @@ class Generator:
             writer = Writer(out, "")
             for domain_data in type_map.domains():
                 domain_fixes = DomainNameFixes.get_fixed_data(domain_data.name())
-                domain_guard = domain_fixes.get_guard()
 
                 namespace_declared = []
 
                 def namespace_lazy_generator():
                     if not namespace_declared:
-                        if domain_guard:
-                            domain_guard.generate_open(out)
                         writer.newline("namespace ")
                         writer.append(domain_data.name())
                         writer.append(" {\n")
@@ -2270,9 +2225,6 @@ class Generator:
                     writer.append("} // ")
                     writer.append(domain_data.name())
                     writer.append("\n\n")
-
-                    if domain_guard:
-                        domain_guard.generate_close(out)
 
         def create_type_builder_caller(generate_pass_id):
             def call_type_builder(type_data, writer_getter):
