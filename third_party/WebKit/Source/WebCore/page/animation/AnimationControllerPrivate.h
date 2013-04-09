@@ -77,9 +77,7 @@ public:
 
     void suspendAnimations();
     void resumeAnimations();
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     void animationFrameCallbackFired();
-#endif
 
     void suspendAnimationsForDocument(Document*);
     void resumeAnimationsForDocument(Document*);

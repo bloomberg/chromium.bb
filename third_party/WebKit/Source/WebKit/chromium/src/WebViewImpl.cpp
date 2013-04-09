@@ -4002,7 +4002,6 @@ WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
     return m_rootGraphicsLayer;
 }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 void WebViewImpl::scheduleAnimation()
 {
     if (isAcceleratedCompositingActive()) {
@@ -4014,7 +4013,6 @@ void WebViewImpl::scheduleAnimation()
     } else
             m_client->scheduleAnimation();
 }
-#endif
 
 void WebViewImpl::paintRootLayer(GraphicsContext& context, const IntRect& contentRect)
 {

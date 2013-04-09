@@ -70,9 +70,7 @@ public:
     virtual void invalidateRect(const IntRect&);
     virtual void setFrameRect(const IntRect&);
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual bool scheduleAnimation();
-#endif
 
     Frame* frame() const { return m_frame.get(); }
     void clearFrame();
@@ -115,9 +113,7 @@ public:
 
     bool needsFullRepaint() const { return m_doFullRepaint; }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
-#endif
 
 #if USE(ACCELERATED_COMPOSITING)
     void updateCompositingLayersAfterStyleChange();

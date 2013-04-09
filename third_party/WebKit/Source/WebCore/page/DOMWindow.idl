@@ -194,13 +194,11 @@
     [Custom] long setInterval(any handler, [Optional=DefaultIsUndefined] long timeout);
     void clearInterval([Optional=DefaultIsUndefined] long handle);
 
-#if defined(ENABLE_REQUEST_ANIMATION_FRAME) && ENABLE_REQUEST_ANIMATION_FRAME
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
     void cancelAnimationFrame(long id);
     [MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame([Callback] RequestAnimationFrameCallback callback);
     [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
-#endif
 
     // Base64
     DOMString atob([TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString string)

@@ -81,6 +81,7 @@
 #include "PageTransitionEvent.h"
 #include "Performance.h"
 #include "PlatformScreen.h"
+#include "RequestAnimationFrameCallback.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScheduledAction.h"
 #include "Screen.h"
@@ -104,10 +105,6 @@
 #include <wtf/MathExtras.h>
 #include <wtf/text/Base64.h>
 #include <wtf/text/WTFString.h>
-
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-#include "RequestAnimationFrameCallback.h"
-#endif
 
 using std::min;
 using std::max;
@@ -1554,7 +1551,6 @@ void DOMWindow::clearInterval(int timeoutId)
     DOMTimer::removeById(context, timeoutId);
 }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 int DOMWindow::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
 {
     callback->m_useLegacyTimeBase = false;
@@ -1576,7 +1572,6 @@ void DOMWindow::cancelAnimationFrame(int id)
     if (Document* d = document())
         d->cancelAnimationFrame(id);
 }
-#endif
 
 #if ENABLE(CSS3_CONDITIONAL_RULES)
 DOMWindowCSS* DOMWindow::css()

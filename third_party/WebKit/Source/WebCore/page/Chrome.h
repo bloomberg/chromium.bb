@@ -84,9 +84,7 @@ public:
     virtual void setCursor(const Cursor&) OVERRIDE;
     virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE;
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual void scheduleAnimation() OVERRIDE;
-#endif
 
     void scrollRectIntoView(const IntRect&) const;
 

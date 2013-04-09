@@ -536,9 +536,7 @@ public:
     WebCore::GraphicsLayerFactory* graphicsLayerFactory() const;
     void registerForAnimations(WebLayer*);
 #endif
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     void scheduleAnimation();
-#endif
 
     virtual void setVisibilityState(WebPageVisibilityState, bool);
 

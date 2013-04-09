@@ -141,6 +141,7 @@
 #include "RenderTextControl.h"
 #include "RenderView.h"
 #include "RenderWidget.h"
+#include "RequestAnimationFrameCallback.h"
 #include "ResourceLoader.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SchemeRegistry.h"
@@ -150,6 +151,7 @@
 #include "ScriptElement.h"
 #include "ScriptEventListener.h"
 #include "ScriptRunner.h"
+#include "ScriptedAnimationController.h"
 #include "ScrollingCoordinator.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
@@ -220,11 +222,6 @@
 #include "MathMLElement.h"
 #include "MathMLElementFactory.h"
 #include "MathMLNames.h"
-#endif
-
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-#include "RequestAnimationFrameCallback.h"
-#include "ScriptedAnimationController.h"
 #endif
 
 #if ENABLE(MICRODATA)
@@ -671,12 +668,10 @@ void Document::dispose()
 
     m_cssCanvasElements.clear();
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
-#endif
 }
 
 Element* Document::getElementById(const AtomicString& id) const
@@ -2068,12 +2063,10 @@ void Document::detach()
     m_fullScreenChangeEventTargetQueue.clear();
     m_fullScreenErrorEventTargetQueue.clear();
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
-#endif
 
     RenderObject* render = renderer();
 
@@ -4906,18 +4899,14 @@ void Document::resumeScheduledTasks()
 
 void Document::suspendScriptedAnimationControllerCallbacks()
 {
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->suspend();
-#endif
 }
 
 void Document::resumeScriptedAnimationControllerCallbacks()
 {
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->resume();
-#endif
 }
 
 String Document::displayStringModifiedByEncoding(const String& str) const
@@ -5534,7 +5523,6 @@ void Document::loadEventDelayTimerFired(Timer<Document>*)
         frame()->loader()->checkCompleted();
 }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
 {
     if (!m_scriptedAnimationController) {
@@ -5562,7 +5550,6 @@ void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
         return;
     m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
-#endif
 
 #if ENABLE(TOUCH_EVENTS)
 PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force, ExceptionCode&) const
@@ -6012,9 +5999,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 #if ENABLE(TOUCH_EVENTS)
     info.addMember(m_touchEventTargets, "touchEventTargets");
 #endif
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     info.addMember(m_scriptedAnimationController, "scriptedAnimationController");
-#endif
     info.addMember(m_pendingTasksTimer, "pendingTasksTimer");
     info.addMember(m_textAutosizer, "textAutosizer");
     info.addMember(m_visualUpdatesSuppressionTimer, "visualUpdatesSuppressionTimer");

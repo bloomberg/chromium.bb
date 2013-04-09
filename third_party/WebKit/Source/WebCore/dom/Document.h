@@ -129,15 +129,17 @@ class ProcessingInstruction;
 class Range;
 class RegisteredEventListener;
 class RenderArena;
-class RenderView;
 class RenderFullScreen;
-class ScriptableDocumentParser;
+class RenderView;
+class RequestAnimationFrameCallback;
 class ScriptElementData;
 class ScriptRunner;
+class ScriptableDocumentParser;
+class ScriptedAnimationController;
 class SecurityOrigin;
+class SegmentedString;
 class SelectorQueryCache;
 class SerializedScriptValue;
-class SegmentedString;
 class Settings;
 class StyleResolver;
 class StyleSheet;
@@ -167,11 +169,6 @@ struct AnnotatedRegionValue;
 #if ENABLE(TOUCH_EVENTS)
 class Touch;
 class TouchList;
-#endif
-
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-class RequestAnimationFrameCallback;
-class ScriptedAnimationController;
 #endif
 
 #if ENABLE(MICRODATA)
@@ -1075,11 +1072,9 @@ public:
 
     const DocumentTiming* timing() const { return &m_documentTiming; }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
-#endif
 
     virtual EventTarget* errorEventTarget();
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack>);
@@ -1509,9 +1504,7 @@ private:
 
     double m_lastHandledUserGestureTimestamp;
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
-#endif
 
     Timer<Document> m_pendingTasksTimer;
     Vector<OwnPtr<Task> > m_pendingTasks;

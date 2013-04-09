@@ -469,7 +469,6 @@ void FrameView::setFrameRect(const IntRect& newRect)
 #endif
 }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 bool FrameView::scheduleAnimation()
 {
     if (hostWindow()) {
@@ -478,7 +477,6 @@ bool FrameView::scheduleAnimation()
     }
     return false;
 }
-#endif
 
 void FrameView::setMarginWidth(LayoutUnit w)
 {
@@ -2275,7 +2273,6 @@ void FrameView::unscheduleRelayout()
     m_delayedLayout = false;
 }
 
-#if ENABLE(REQUEST_ANIMATION_FRAME)
 void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext()) {
@@ -2290,7 +2287,6 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (size_t i = 0; i < documents.size(); ++i)
         documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
-#endif
 
 bool FrameView::isTransparent() const
 {

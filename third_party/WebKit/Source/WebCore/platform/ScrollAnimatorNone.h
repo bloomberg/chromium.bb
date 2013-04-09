@@ -33,10 +33,6 @@
 
 #if ENABLE(SMOOTH_SCROLLING)
 
-#if !ENABLE(REQUEST_ANIMATION_FRAME)
-#error "SMOOTH_SCROLLING requires REQUEST_ANIMATION_FRAME to be enabled."
-#endif
-
 #include "FloatPoint.h"
 #include "ScrollAnimator.h"
 #include "Timer.h"

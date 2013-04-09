@@ -55,12 +55,10 @@ static inline FrameView* mainFrameView(Page* page)
 
 void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
 {
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     FrameView* view = mainFrameView(page);
     if (!view)
         return;
     view->serviceScriptedAnimations(monotonicFrameBeginTime);
-#endif
 }
 
 void PageWidgetDelegate::layout(Page* page)

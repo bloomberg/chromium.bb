@@ -117,9 +117,7 @@ public:
     virtual void invalidateRootView(const WebCore::IntRect&);
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&);
     virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&);
-#if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual void scheduleAnimation();
-#endif
     virtual void scroll(
         const WebCore::IntSize& scrollDelta, const WebCore::IntRect& rectToScroll,
         const WebCore::IntRect& clipRect);

@@ -63,6 +63,7 @@ namespace WebCore {
     class PageConsole;
     class Performance;
     class PostMessageTimer;
+    class RequestAnimationFrameCallback;
     class ScheduledAction;
     class Screen;
     class ScriptCallStack;
@@ -71,10 +72,6 @@ namespace WebCore {
     class Storage;
     class StyleMedia;
     class DOMWindowCSS;
-
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-    class RequestAnimationFrameCallback;
-#endif
 
     struct WindowFeatures;
 
@@ -262,11 +259,9 @@ namespace WebCore {
         void clearInterval(int timeoutId);
 
         // WebKit animation extensions
-#if ENABLE(REQUEST_ANIMATION_FRAME)
         int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
         int webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
         void cancelAnimationFrame(int id);
-#endif
 
 #if ENABLE(CSS3_CONDITIONAL_RULES)
         DOMWindowCSS* css();
