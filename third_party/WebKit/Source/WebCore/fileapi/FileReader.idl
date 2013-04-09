@@ -30,7 +30,6 @@
  */
 
 [
-    Conditional=BLOB,
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,

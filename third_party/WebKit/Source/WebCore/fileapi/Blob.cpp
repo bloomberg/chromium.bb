@@ -86,7 +86,6 @@ Blob::~Blob()
     ThreadableBlobRegistry::unregisterBlobURL(m_internalURL);
 }
 
-#if ENABLE(BLOB)
 PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
 {
     // When we slice a file for the first time, we obtain a snapshot of the file by capturing its current size and modification time.
@@ -133,6 +132,5 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
 
     return Blob::create(blobData.release(), length);
 }
-#endif
 
 } // namespace WebCore

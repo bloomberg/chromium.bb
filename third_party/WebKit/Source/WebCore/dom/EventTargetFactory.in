@@ -6,7 +6,7 @@ DedicatedWorkerContext
 DOMApplicationCache
 DOMWindow
 EventSource
-FileReader conditional=BLOB
+FileReader
 FileWriter
 FontLoader conditional=FONT_LOAD_EVENTS
 IDBDatabase

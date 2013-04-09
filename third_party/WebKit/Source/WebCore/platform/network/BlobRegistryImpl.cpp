@@ -32,8 +32,6 @@
 #include "config.h"
 #include "BlobRegistryImpl.h"
 
-#if ENABLE(BLOB)
-
 #include "BlobResourceHandle.h"
 #include "BlobStorageData.h"
 #include "ResourceError.h"
@@ -192,5 +190,3 @@ BlobStorageData* BlobRegistryImpl::getBlobDataFromURL(const KURL& url) const
 }
 
 } // namespace WebCore
-
-#endif

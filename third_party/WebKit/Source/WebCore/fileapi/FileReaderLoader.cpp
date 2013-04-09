@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(BLOB)
-
 #include "FileReaderLoader.h"
 
 #include "Blob.h"
@@ -395,5 +393,3 @@ void FileReaderLoader::setRange(unsigned start, unsigned length)
 #endif // ENABLE(STREAM)
 
 } // namespace WebCore
- 
-#endif // ENABLE(BLOB)

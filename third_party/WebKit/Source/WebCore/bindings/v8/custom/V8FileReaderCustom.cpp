@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(BLOB)
-
 #include "V8FileReader.h"
 
 #include "ScriptExecutionContext.h"
@@ -50,5 +48,3 @@ v8::Handle<v8::Value> V8FileReader::resultAttrGetterCustom(v8::Local<v8::String>
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(BLOB)

@@ -117,10 +117,8 @@ ScriptExecutionContext::~ScriptExecutionContext()
         ASSERT((*iter)->scriptExecutionContext() == this);
         (*iter)->contextDestroyed();
     }
-#if ENABLE(BLOB)
     if (m_publicURLManager)
         m_publicURLManager->contextDestroyed();
-#endif
 }
 
 void ScriptExecutionContext::processMessagePortMessagesSoon()
@@ -339,14 +337,12 @@ int ScriptExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
-#if ENABLE(BLOB)
 PublicURLManager& ScriptExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
         m_publicURLManager = PublicURLManager::create();
     return *m_publicURLManager;
 }
-#endif
 
 void ScriptExecutionContext::adjustMinimumTimerInterval(double oldMinimumTimerInterval)
 {
@@ -390,9 +386,7 @@ void ScriptExecutionContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
     info.addMember(m_activeDOMObjects, "activeDOMObjects");
     info.addMember(m_timeouts, "timeouts");
     info.addMember(m_pendingExceptions, "pendingExceptions");
-#if ENABLE(BLOB)
     info.addMember(m_publicURLManager, "publicURLManager");
-#endif
 }
 
 ScriptExecutionContext::Task::~Task()
