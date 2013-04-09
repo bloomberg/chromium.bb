@@ -87,6 +87,7 @@ int SimpleEntryImpl::DoomEntry(WeakPtr<SimpleIndex> index,
 }
 
 void SimpleEntryImpl::Doom() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 #if defined(OS_POSIX)
   // This call to static SimpleEntryImpl::DoomEntry() will just erase the
   // underlying files. On POSIX, this is fine; the files are still open on the
@@ -99,6 +100,7 @@ void SimpleEntryImpl::Doom() {
 }
 
 void SimpleEntryImpl::Close() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (!synchronous_entry_in_use_by_worker_) {
     WorkerPool::PostTask(FROM_HERE,
                          base::Bind(&SimpleSynchronousEntry::Close,
@@ -111,18 +113,22 @@ void SimpleEntryImpl::Close() {
 }
 
 std::string SimpleEntryImpl::GetKey() const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   return key_;
 }
 
 Time SimpleEntryImpl::GetLastUsed() const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   return last_used_;
 }
 
 Time SimpleEntryImpl::GetLastModified() const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   return last_modified_;
 }
 
 int32 SimpleEntryImpl::GetDataSize(int index) const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   return data_size_[index];
 }
 
@@ -131,6 +137,7 @@ int SimpleEntryImpl::ReadData(int index,
                               net::IOBuffer* buf,
                               int buf_len,
                               const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Add support for overlapping reads. The net::HttpCache does
   // make overlapping read requests when multiple transactions access the same
   // entry as read only. This might make calling SimpleSynchronousEntry::Close()
@@ -159,6 +166,7 @@ int SimpleEntryImpl::WriteData(int index,
                                int buf_len,
                                const CompletionCallback& callback,
                                bool truncate) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (synchronous_entry_in_use_by_worker_) {
     NOTIMPLEMENTED();
     CHECK(false);
@@ -181,6 +189,7 @@ int SimpleEntryImpl::ReadSparseData(int64 offset,
                                     net::IOBuffer* buf,
                                     int buf_len,
                                     const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
@@ -190,6 +199,7 @@ int SimpleEntryImpl::WriteSparseData(int64 offset,
                                      net::IOBuffer* buf,
                                      int buf_len,
                                      const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
@@ -199,22 +209,26 @@ int SimpleEntryImpl::GetAvailableRange(int64 offset,
                                        int len,
                                        int64* start,
                                        const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
 }
 
 bool SimpleEntryImpl::CouldBeSparse() const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   return false;
 }
 
 void SimpleEntryImpl::CancelSparseIO() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
 }
 
 int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
@@ -234,6 +248,7 @@ SimpleEntryImpl::SimpleEntryImpl(
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 }
 
 // static
@@ -279,6 +294,7 @@ void SimpleEntryImpl::EntryOperationComplete(
 }
 
 void SimpleEntryImpl::SetSynchronousData() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(!synchronous_entry_in_use_by_worker_);
   // TODO(felipeg): These copies to avoid data races are not optimal. While
   // adding an IO thread index (for fast misses etc...), we can store this data

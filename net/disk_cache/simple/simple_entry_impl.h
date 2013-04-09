@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_disk_format.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -109,6 +110,10 @@ class SimpleEntryImpl : public Entry {
   // functions. Copies data from |synchronous_entry_| into |this|, so that
   // values can be returned during our next IO operation.
   void SetSynchronousData();
+
+  // All nonstatic SimpleEntryImpl methods should always be called on the IO
+  // thread, in all cases. |io_thread_checker_| documents and enforces this.
+  base::ThreadChecker io_thread_checker_;
 
   base::WeakPtrFactory<SimpleEntryImpl> weak_ptr_factory_;
 
