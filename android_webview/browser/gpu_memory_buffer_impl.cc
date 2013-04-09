@@ -17,7 +17,7 @@ namespace android_webview {
 // Provides hardware rendering functions from the Android glue layer.
 AwDrawGLFunctionTable* g_gl_draw_functions = NULL;
 
-GpuMemoryBufferImpl::GpuMemoryBufferImpl(const gfx::Size& size)
+GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::Size size)
     : buffer_id_(g_gl_draw_functions->create_graphic_buffer(
           size.width(), size.height())),
       size_(size) {
@@ -29,9 +29,10 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
   buffer_id_ = 0;
 }
 
-void GpuMemoryBufferImpl::MapForWrite(void** vaddr) {
+void GpuMemoryBufferImpl::Map(gfx::GpuMemoryBuffer::AccessMode mode,
+    void** vaddr) {
   DCHECK(buffer_id_ != 0);
-  int err = g_gl_draw_functions->lock_for_write(buffer_id_, vaddr);
+  int err = g_gl_draw_functions->lock(buffer_id_, mode, vaddr);
   DCHECK(err == 0);
 }
 

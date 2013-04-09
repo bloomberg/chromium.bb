@@ -18,12 +18,17 @@ class Size;
 //
 // THREADING CONSIDERATIONS:
 //
-// This interface is thread-safe. However, multiple threads calling
-// MapForWrite() simultaneously may result in undefined behavior
-// and is not allowed.
+// This interface is thread-safe. However, multiple threads mapping
+// a buffer for Write or ReadOrWrite simultaneously may result in undefined
+// behavior and is not allowed.
 class GpuMemoryBuffer {
  public:
   typedef base::Callback<scoped_ptr<gfx::GpuMemoryBuffer>(gfx::Size)> Create;
+  enum AccessMode {
+    READ_ONLY,
+    WRITE_ONLY,
+    READ_OR_WRITE,
+  };
 
   // Frees a previously allocated buffer. Freeing a buffer that is still
   // mapped in any process is undefined behavior.
@@ -32,7 +37,7 @@ class GpuMemoryBuffer {
   // Maps the buffer so the client can write the bitmap data in |*vaddr|
   // subsequently. This call may block, for instance if the hardware needs
   // to finish rendering or if CPU caches need to be synchronized.
-  virtual void MapForWrite(void** vaddr) = 0;
+  virtual void Map(AccessMode mode, void** vaddr) = 0;
 
   // Unmaps the buffer. Called after all changes to the buffer are
   // completed.

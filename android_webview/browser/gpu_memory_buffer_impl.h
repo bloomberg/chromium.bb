@@ -17,11 +17,12 @@ namespace android_webview {
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   static void SetAwDrawGLFunctionTable(AwDrawGLFunctionTable* table);
-  GpuMemoryBufferImpl(const gfx::Size& size);
+  GpuMemoryBufferImpl(gfx::Size size);
   virtual ~GpuMemoryBufferImpl();
 
   // methods from GpuMemoryBuffer
-  virtual void MapForWrite(void** vaddr) OVERRIDE;
+  virtual void Map(gfx::GpuMemoryBuffer::AccessMode mode,
+      void** vaddr) OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual void* GetNativeBuffer() OVERRIDE;
   virtual uint32 GetStride() OVERRIDE;
