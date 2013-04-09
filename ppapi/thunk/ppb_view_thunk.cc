@@ -64,6 +64,20 @@ PP_Bool GetClipRect(PP_Resource resource, struct PP_Rect* clip) {
   return enter.object()->GetClipRect(clip);
 }
 
+float GetDeviceScale(PP_Resource resource) {
+  EnterResource<PPB_View_API> enter(resource, true);
+  if (enter.failed())
+    return 0.0f;
+  return enter.object()->GetDeviceScale();
+}
+
+float GetCSSScale(PP_Resource resource) {
+  EnterResource<PPB_View_API> enter(resource, true);
+  if (enter.failed())
+    return 0.0f;
+  return enter.object()->GetCSSScale();
+}
+
 const PPB_View_1_0 g_ppb_view_thunk_1_0 = {
   &IsView,
   &GetRect,
@@ -73,10 +87,25 @@ const PPB_View_1_0 g_ppb_view_thunk_1_0 = {
   &GetClipRect
 };
 
+const PPB_View_1_1 g_ppb_view_thunk_1_1 = {
+  &IsView,
+  &GetRect,
+  &IsFullscreen,
+  &IsVisible,
+  &IsPageVisible,
+  &GetClipRect,
+  &GetDeviceScale,
+  &GetCSSScale
+};
+
 }  // namespace
 
 const PPB_View_1_0* GetPPB_View_1_0_Thunk() {
   return &g_ppb_view_thunk_1_0;
+}
+
+const PPB_View_1_1* GetPPB_View_1_1_Thunk() {
+  return &g_ppb_view_thunk_1_1;
 }
 
 }  // namespace thunk

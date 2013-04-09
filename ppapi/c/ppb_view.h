@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_view.idl modified Fri Feb 17 09:09:15 2012. */
+/* From ppb_view.idl modified Fri Mar 29 11:55:32 2013. */
 
 #ifndef PPAPI_C_PPB_VIEW_H_
 #define PPAPI_C_PPB_VIEW_H_
@@ -17,7 +17,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_VIEW_INTERFACE_1_0 "PPB_View;1.0"
-#define PPB_VIEW_INTERFACE PPB_VIEW_INTERFACE_1_0
+#define PPB_VIEW_INTERFACE_1_1 "PPB_View;1.1"
+#define PPB_VIEW_INTERFACE PPB_VIEW_INTERFACE_1_1
 
 /**
  * @file
@@ -35,7 +36,7 @@
  * You will receive new view information using
  * <code>PPP_Instance.DidChangeView</code>.
  */
-struct PPB_View_1_0 {
+struct PPB_View_1_1 {
   /**
    * IsView() determines if the given resource is a valid
    * <code>PPB_View</code> resource. Note that <code>PPB_ViewChanged</code>
@@ -167,9 +168,47 @@ struct PPB_View_1_0 {
    * clip rect was filled in, <code>PP_FALSE</code> if not.
    */
   PP_Bool (*GetClipRect)(PP_Resource resource, struct PP_Rect* clip);
+  /**
+   * GetDeviceScale returns the scale factor between device pixels and Density
+   * Independent Pixels (DIPs, also known as logical pixels or UI pixels on
+   * some platforms). This allows the developer to render their contents at
+   * device resolution, even as coordinates / sizes are given in DIPs through
+   * the API.
+   *
+   * Note that the coordinate system for Pepper APIs is DIPs. Also note that
+   * one DIP might not equal one CSS pixel - when page scale/zoom is in effect.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_View</code> resource.
+   *
+   * @return A <code>float</code> value representing the number of device pixels
+   * per DIP. If the resource is invalid, the value will be 0.0.
+   */
+  float (*GetDeviceScale)(PP_Resource resource);
+  /**
+   * GetCSSScale returns the scale factor between DIPs and CSS pixels. This
+   * allows proper scaling between DIPs - as sent via the Pepper API - and CSS
+   * pixel coordinates used for Web content.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_View</code> resource.
+   *
+   * @return css_scale A <code>float</code> value representing the number of
+   * DIPs per CSS pixel. If the resource is invalid, the value will be 0.0.
+   */
+  float (*GetCSSScale)(PP_Resource resource);
 };
 
-typedef struct PPB_View_1_0 PPB_View;
+typedef struct PPB_View_1_1 PPB_View;
+
+struct PPB_View_1_0 {
+  PP_Bool (*IsView)(PP_Resource resource);
+  PP_Bool (*GetRect)(PP_Resource resource, struct PP_Rect* rect);
+  PP_Bool (*IsFullscreen)(PP_Resource resource);
+  PP_Bool (*IsVisible)(PP_Resource resource);
+  PP_Bool (*IsPageVisible)(PP_Resource resource);
+  PP_Bool (*GetClipRect)(PP_Resource resource, struct PP_Rect* clip);
+};
 /**
  * @}
  */

@@ -148,6 +148,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Fullscreen_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Gamepad_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageData_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_InputEvent_1_0;
@@ -170,6 +171,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoReader_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Graphics3D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_InputEvent_0_1;
@@ -691,6 +693,64 @@ int32_t Pnacl_M14_PPB_Graphics2D_Flush(PP_Resource graphics_2d, struct PP_Comple
 }
 
 /* End wrapper methods for PPB_Graphics2D_1_0 */
+
+/* Begin wrapper methods for PPB_Graphics2D_1_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M27_PPB_Graphics2D_Create(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->Create(instance, size, is_always_opaque);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M27_PPB_Graphics2D_IsGraphics2D(PP_Resource resource) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->IsGraphics2D(resource);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M27_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->Describe(graphics_2d, size, is_always_opqaue);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Graphics2D_PaintImageData(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  iface->PaintImageData(graphics_2d, image_data, top_left, src_rect);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Graphics2D_Scroll(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  iface->Scroll(graphics_2d, clip_rect, amount);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Graphics2D_ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  iface->ReplaceContents(graphics_2d, image_data);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M27_PPB_Graphics2D_Flush(PP_Resource graphics_2d, struct PP_CompletionCallback callback) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->Flush(graphics_2d, callback);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M27_PPB_Graphics2D_SetScale(PP_Resource resource, float scale) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->SetScale(resource, scale);
+}
+
+static __attribute__((pnaclcall))
+float Pnacl_M27_PPB_Graphics2D_GetScale(PP_Resource resource) {
+  const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
+  return iface->GetScale(resource);
+}
+
+/* End wrapper methods for PPB_Graphics2D_1_1 */
 
 /* Begin wrapper methods for PPB_Graphics3D_1_0 */
 
@@ -1273,6 +1333,8 @@ void Pnacl_M28_PPB_VideoWriter_Close(PP_Resource writer) {
 /* End wrapper methods for PPB_VideoWriter_0_1 */
 
 /* Not generating wrapper methods for PPB_View_1_0 */
+
+/* Not generating wrapper methods for PPB_View_1_1 */
 
 /* Begin wrapper methods for PPB_WebSocket_1_0 */
 
@@ -4137,6 +4199,18 @@ struct PPB_Graphics2D_1_0 Pnacl_Wrappers_PPB_Graphics2D_1_0 = {
     .Flush = (int32_t (*)(PP_Resource graphics_2d, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_Graphics2D_Flush
 };
 
+struct PPB_Graphics2D_1_1 Pnacl_Wrappers_PPB_Graphics2D_1_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque))&Pnacl_M27_PPB_Graphics2D_Create,
+    .IsGraphics2D = (PP_Bool (*)(PP_Resource resource))&Pnacl_M27_PPB_Graphics2D_IsGraphics2D,
+    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue))&Pnacl_M27_PPB_Graphics2D_Describe,
+    .PaintImageData = (void (*)(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect))&Pnacl_M27_PPB_Graphics2D_PaintImageData,
+    .Scroll = (void (*)(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount))&Pnacl_M27_PPB_Graphics2D_Scroll,
+    .ReplaceContents = (void (*)(PP_Resource graphics_2d, PP_Resource image_data))&Pnacl_M27_PPB_Graphics2D_ReplaceContents,
+    .Flush = (int32_t (*)(PP_Resource graphics_2d, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_Graphics2D_Flush,
+    .SetScale = (PP_Bool (*)(PP_Resource resource, float scale))&Pnacl_M27_PPB_Graphics2D_SetScale,
+    .GetScale = (float (*)(PP_Resource resource))&Pnacl_M27_PPB_Graphics2D_GetScale
+};
+
 struct PPB_Graphics3D_1_0 Pnacl_Wrappers_PPB_Graphics3D_1_0 = {
     .GetAttribMaxValue = (int32_t (*)(PP_Resource instance, int32_t attribute, int32_t* value))&Pnacl_M15_PPB_Graphics3D_GetAttribMaxValue,
     .Create = (PP_Resource (*)(PP_Instance instance, PP_Resource share_context, const int32_t attrib_list[]))&Pnacl_M15_PPB_Graphics3D_Create,
@@ -4281,6 +4355,8 @@ struct PPB_VideoWriter_0_1 Pnacl_Wrappers_PPB_VideoWriter_0_1 = {
 };
 
 /* Not generating wrapper interface for PPB_View_1_0 */
+
+/* Not generating wrapper interface for PPB_View_1_1 */
 
 struct PPB_WebSocket_1_0 Pnacl_Wrappers_PPB_WebSocket_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M18_PPB_WebSocket_Create,
@@ -5050,6 +5126,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1 = {
+  .iface_macro = PPB_GRAPHICS_2D_INTERFACE_1_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics2D_1_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0 = {
   .iface_macro = PPB_GRAPHICS_3D_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics3D_1_0,
@@ -5178,6 +5260,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1 = {
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0 = {
   .iface_macro = PPB_VIEW_INTERFACE_1_0,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1 = {
+  .iface_macro = PPB_VIEW_INTERFACE_1_1,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
@@ -5868,6 +5956,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Fullscreen_1_0,
   &Pnacl_WrapperInfo_PPB_Gamepad_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_0,
+  &Pnacl_WrapperInfo_PPB_Graphics2D_1_1,
   &Pnacl_WrapperInfo_PPB_Graphics3D_1_0,
   &Pnacl_WrapperInfo_PPB_ImageData_1_0,
   &Pnacl_WrapperInfo_PPB_InputEvent_1_0,
@@ -5890,6 +5979,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VideoReader_0_1,
   &Pnacl_WrapperInfo_PPB_VideoWriter_0_1,
   &Pnacl_WrapperInfo_PPB_View_1_0,
+  &Pnacl_WrapperInfo_PPB_View_1_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2,

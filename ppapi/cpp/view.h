@@ -118,6 +118,26 @@ class View : public Resource {
   /// @return The rectangle representing the visible part of the module
   /// instance. If the resource is invalid, the empty rectangle is returned.
   Rect GetClipRect() const;
+
+  /// GetDeviceScale returns the scale factor between device pixels and DIPs
+  /// (also known as logical pixels or UI pixels on some platforms). This allows
+  /// the developer to render their contents at device resolution, even as
+  /// coordinates / sizes are given in DIPs through the API.
+  ///
+  /// Note that the coordinate system for Pepper APIs is DIPs. Also note that
+  /// one DIP might not equal one CSS pixel - when page scale/zoom is in effect.
+  ///
+  /// @return A <code>float</code> value representing the number of device
+  /// pixels per DIP.
+  float GetDeviceScale() const;
+
+  /// GetCSSScale returns the scale factor between DIPs and CSS pixels. This
+  /// allows proper scaling between DIPs - as sent via the Pepper API - and CSS
+  /// pixel coordinates used for Web content.
+  ///
+  /// @return A <code>float</code> value representing the number of DIPs per CSS
+  /// pixel.
+  float GetCSSScale() const;
 };
 
 }  // namespace pp

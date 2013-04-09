@@ -352,6 +352,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_scaling',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/scaling/scaling.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_scroll',
       'dependencies': [
         'ppapi_example_skeleton',

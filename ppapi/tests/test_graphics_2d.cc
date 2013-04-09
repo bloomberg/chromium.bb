@@ -59,6 +59,7 @@ void TestGraphics2D::RunTests(const std::string& filter) {
   RUN_TEST(Humongous, filter);
   RUN_TEST(InitToZero, filter);
   RUN_TEST(Describe, filter);
+  RUN_TEST(Scale, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Paint, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Scroll, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Replace, filter);
@@ -364,6 +365,44 @@ std::string TestGraphics2D::TestDescribe() {
     return "Describe failed";
   if (size.width != w || size.height != h ||
       is_always_opaque != PP_FromBool(always_opaque))
+    return "Mismatch of data.";
+
+  PASS();
+}
+
+std::string TestGraphics2D::TestScale() {
+  // Tests GetScale/SetScale
+  const int w = 20, h = 16;
+  const float scale = 1.0f/2.0f;
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
+  if (dc.is_null())
+    return "Failure creating a boring device";
+  if (dc.GetScale() != 1.0f)
+    return "GetScale returned unexpected value before SetScale";
+  if (!dc.SetScale(scale))
+    return "SetScale failed";
+  if (dc.GetScale() != scale)
+    return "GetScale mismatch with prior SetScale";
+  // Try setting a few invalid scale factors. Ensure that we catch these errors
+  // and don't change the actual scale
+  if (dc.SetScale(-1.0f))
+    return "SetScale(-1f) did not fail";
+  if (dc.SetScale(0.0f))
+    return "SetScale(0.0f) did not fail";
+  if (dc.GetScale() != scale)
+    return "SetScale with invalid parameter overwrote the scale";
+
+  // Verify that the context has the specified number of pixels, despite the
+  // non-identity scale
+  PP_Size size;
+  size.width = -1;
+  size.height = -1;
+  PP_Bool is_always_opaque = PP_FALSE;
+  if (!graphics_2d_interface_->Describe(dc.pp_resource(), &size,
+                                        &is_always_opaque))
+    return "Describe failed";
+  if (size.width != w || size.height != h ||
+      is_always_opaque != PP_FromBool(false))
     return "Mismatch of data.";
 
   PASS();

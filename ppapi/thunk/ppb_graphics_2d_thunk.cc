@@ -93,7 +93,7 @@ float GetScale(PP_Resource graphics_2d) {
   return enter.object()->GetScale();
 }
 
-const PPB_Graphics2D g_ppb_graphics_2d_thunk = {
+const PPB_Graphics2D_1_0 g_ppb_graphics_2d_1_0_thunk = {
   &Create,
   &IsGraphics2D,
   &Describe,
@@ -101,6 +101,18 @@ const PPB_Graphics2D g_ppb_graphics_2d_thunk = {
   &Scroll,
   &ReplaceContents,
   &Flush
+};
+
+const PPB_Graphics2D_1_1 g_ppb_graphics_2d_1_1_thunk = {
+  &Create,
+  &IsGraphics2D,
+  &Describe,
+  &PaintImageData,
+  &Scroll,
+  &ReplaceContents,
+  &Flush,
+  &SetScale,
+  &GetScale
 };
 
 const PPB_Graphics2D_Dev g_ppb_graphics_2d_dev_thunk = {
@@ -111,7 +123,11 @@ const PPB_Graphics2D_Dev g_ppb_graphics_2d_dev_thunk = {
 }  // namespace
 
 const PPB_Graphics2D_1_0* GetPPB_Graphics2D_1_0_Thunk() {
-  return &g_ppb_graphics_2d_thunk;
+  return &g_ppb_graphics_2d_1_0_thunk;
+}
+
+const PPB_Graphics2D_1_1* GetPPB_Graphics2D_1_1_Thunk() {
+  return &g_ppb_graphics_2d_1_1_thunk;
 }
 
 const PPB_Graphics2D_Dev_0_1* GetPPB_Graphics2D_Dev_0_1_Thunk() {

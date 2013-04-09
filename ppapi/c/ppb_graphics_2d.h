@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Thu Mar 28 10:10:42 2013. */
+/* From ppb_graphics_2d.idl modified Sun Mar 31 14:34:56 2013. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -19,7 +19,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
-#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
+#define PPB_GRAPHICS_2D_INTERFACE_1_1 "PPB_Graphics2D;1.1"
+#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_1
 
 /**
  * @file
@@ -35,7 +36,7 @@
 /**
  * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
  */
-struct PPB_Graphics2D_1_0 {
+struct PPB_Graphics2D_1_1 {
   /**
    * Create() creates a 2D graphics context. The returned graphics context will
    * not be bound to the module instance on creation (call BindGraphics() on
@@ -247,9 +248,57 @@ struct PPB_Graphics2D_1_0 {
    */
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);
+  /**
+   * SetScale() sets the scale factor that will be applied when painting the
+   * graphics context onto the output device. Typically, if rendering at device
+   * resolution is desired, the context would be created with the width and
+   * height scaled up by the view's GetDeviceScale and SetScale called with a
+   * scale of 1.0 / GetDeviceScale(). For example, if the view resource passed
+   * to DidChangeView has a rectangle of (w=200, h=100) and a device scale of
+   * 2.0, one would call Create with a size of (w=400, h=200) and then call
+   * SetScale with 0.5. One would then treat each pixel in the context as a
+   * single device pixel.
+   *
+   * @param[in] resource A <code>Graphics2D</code> context resource.
+   * @param[in] scale The scale to apply when painting.
+   *
+   * @return Returns <code>PP_TRUE</code> on success or <code>PP_FALSE</code> if
+   * the resource is invalid or the scale factor is 0 or less.
+   */
+  PP_Bool (*SetScale)(PP_Resource resource, float scale);
+  /***
+   * GetScale() gets the scale factor that will be applied when painting the
+   * graphics context onto the output device.
+   *
+   * @param[in] resource A <code>Graphics2D</code> context resource.
+   *
+   * @return Returns the scale factor for the graphics context. If the resource
+   * is not a valid <code>Graphics2D</code> context, this will return 0.0.
+   */
+  float (*GetScale)(PP_Resource resource);
 };
 
-typedef struct PPB_Graphics2D_1_0 PPB_Graphics2D;
+typedef struct PPB_Graphics2D_1_1 PPB_Graphics2D;
+
+struct PPB_Graphics2D_1_0 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        const struct PP_Size* size,
+                        PP_Bool is_always_opaque);
+  PP_Bool (*IsGraphics2D)(PP_Resource resource);
+  PP_Bool (*Describe)(PP_Resource graphics_2d,
+                      struct PP_Size* size,
+                      PP_Bool* is_always_opqaue);
+  void (*PaintImageData)(PP_Resource graphics_2d,
+                         PP_Resource image_data,
+                         const struct PP_Point* top_left,
+                         const struct PP_Rect* src_rect);
+  void (*Scroll)(PP_Resource graphics_2d,
+                 const struct PP_Rect* clip_rect,
+                 const struct PP_Point* amount);
+  void (*ReplaceContents)(PP_Resource graphics_2d, PP_Resource image_data);
+  int32_t (*Flush)(PP_Resource graphics_2d,
+                   struct PP_CompletionCallback callback);
+};
 /**
  * @}
  */

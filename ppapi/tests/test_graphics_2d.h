@@ -96,6 +96,7 @@ class TestGraphics2D : public TestCase {
   std::string TestHumongous();
   std::string TestInitToZero();
   std::string TestDescribe();
+  std::string TestScale();
   std::string TestPaint();
   std::string TestScroll();
   std::string TestReplace();
