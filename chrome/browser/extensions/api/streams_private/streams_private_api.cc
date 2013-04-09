@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_input_module_constants.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "content/public/browser/stream_handle.h"
@@ -47,12 +48,15 @@ StreamsPrivateAPI::~StreamsPrivateAPI() {
 
 void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     const std::string& extension_id,
+    const content::WebContents* web_contents,
     scoped_ptr<content::StreamHandle> stream) {
   // Create the event's arguments value.
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(new base::StringValue(stream->GetMimeType()));
   event_args->Append(new base::StringValue(stream->GetOriginalURL().spec()));
   event_args->Append(new base::StringValue(stream->GetURL().spec()));
+  event_args->Append(
+      new base::FundamentalValue(ExtensionTabUtil::GetTabId(web_contents)));
 
   scoped_ptr<Event> event(new Event(events::kOnExecuteMimeTypeHandler,
                                     event_args.Pass()));

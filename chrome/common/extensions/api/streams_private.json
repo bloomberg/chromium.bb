@@ -28,6 +28,11 @@
             "name": "streamUrl",
             "type": "string",
             "description": "The URL that the stream can be read from."
+          },
+          {
+            "name": "tabId",
+            "type": "integer",
+            "description": "The ID of the tab that opened the stream. If the stream is not opened in a tab, it will be -1."
           }
         ]
       }

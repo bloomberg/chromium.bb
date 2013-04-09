@@ -104,40 +104,35 @@ bool ExtensionCanHandleMimeType(const Extension* extension,
   return handler->CanHandleMIMEType(mime_type);
 }
 
-// Retrieves Profile for a render view host specified by |render_process_id| and
-// |render_view_id|.
-Profile* GetProfile(int render_process_id, int render_view_id) {
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!render_view_host)
-    return NULL;
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(render_view_host);
-  if (!web_contents)
-    return NULL;
-
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  if (!browser_context)
-    return NULL;
-
-  return Profile::FromBrowserContext(browser_context);
-}
-
 void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
                                      int render_process_id,
                                      int render_view_id,
                                      const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  Profile* profile = GetProfile(render_process_id, render_view_id);
+  content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  if (!web_contents)
+    return;
+
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if (!browser_context)
+    return;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile)
     return;
 
   StreamsPrivateAPI* streams_private = StreamsPrivateAPI::Get(profile);
   if (!streams_private)
     return;
-  streams_private->ExecuteMimeTypeHandler(extension_id, stream.Pass());
+  streams_private->ExecuteMimeTypeHandler(
+      extension_id, web_contents, stream.Pass());
 }
 
 }  // end namespace
