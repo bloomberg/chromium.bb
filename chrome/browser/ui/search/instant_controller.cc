@@ -1171,31 +1171,32 @@ void InstantController::ShowInstantOverlay(const content::WebContents* contents,
     ShowOverlay(height, units);
 }
 
-void InstantController::FocusOmnibox(const content::WebContents* contents) {
+void InstantController::FocusOmnibox(const content::WebContents* contents,
+                                     OmniboxFocusState state) {
   if (!extended_enabled_)
     return;
 
   DCHECK(IsContentsFrom(instant_tab(), contents));
-  browser_->FocusOmnibox(true);
-}
 
-void InstantController::StartCapturingKeyStrokes(
-    const content::WebContents* contents) {
-  if (!extended_enabled_)
-    return;
-
-  DCHECK(IsContentsFrom(instant_tab(), contents));
-  browser_->FocusOmnibox(false);
-}
-
-void InstantController::StopCapturingKeyStrokes(
-    content::WebContents* contents) {
-  // Nothing to do if omnibox doesn't have invisible focus.
-  if (!extended_enabled_ || omnibox_focus_state_ != OMNIBOX_FOCUS_INVISIBLE)
-    return;
-
-  DCHECK(IsContentsFrom(instant_tab(), contents));
-  contents->GetView()->Focus();
+  // Do not add a default case in the switch block for the following reasons:
+  // (1) Explicitly handle the new states. If new states are added in the
+  // OmniboxFocusState, the compiler will warn the developer to handle the new
+  // states.
+  // (2) An attacker may control the renderer and sends the browser process a
+  // malformed IPC. This function responds to the invalid |state| values by
+  // doing nothing instead of crashing the browser process (intentional no-op).
+  switch (state) {
+    case OMNIBOX_FOCUS_VISIBLE:
+      browser_->FocusOmnibox(true);
+      break;
+    case OMNIBOX_FOCUS_INVISIBLE:
+      browser_->FocusOmnibox(false);
+      break;
+    case OMNIBOX_FOCUS_NONE:
+      if (omnibox_focus_state_ != OMNIBOX_FOCUS_INVISIBLE)
+        contents->GetView()->Focus();
+      break;
+  }
 }
 
 void InstantController::NavigateToURL(const content::WebContents* contents,

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/browser/ui/search/instant_page.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -245,10 +246,8 @@ class InstantController : public InstantPage::Delegate,
       const content::WebContents* contents,
       int height,
       InstantSizeUnits units) OVERRIDE;
-  virtual void FocusOmnibox(const content::WebContents* contents) OVERRIDE;
-  virtual void StartCapturingKeyStrokes(
-      const content::WebContents* contents) OVERRIDE;
-  virtual void StopCapturingKeyStrokes(content::WebContents* contents) OVERRIDE;
+  virtual void FocusOmnibox(const content::WebContents* contents,
+                            OmniboxFocusState state) OVERRIDE;
   virtual void NavigateToURL(
       const content::WebContents* contents,
       const GURL& url,

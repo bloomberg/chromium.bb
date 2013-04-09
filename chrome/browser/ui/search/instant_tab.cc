@@ -24,14 +24,6 @@ bool InstantTab::ShouldProcessFocusOmnibox() {
   return true;
 }
 
-bool InstantTab::ShouldProcessStartCapturingKeyStrokes() {
-  return true;
-}
-
-bool InstantTab::ShouldProcessStopCapturingKeyStrokes() {
-  return true;
-}
-
 bool InstantTab::ShouldProcessNavigateToURL() {
   return true;
 }

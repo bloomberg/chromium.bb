@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
@@ -31,18 +32,6 @@ namespace gfx {
 class Image;
 class Rect;
 }
-
-// Omnibox focus state.
-enum OmniboxFocusState {
-  // Not focused.
-  OMNIBOX_FOCUS_NONE,
-
-  // Visibly focused.
-  OMNIBOX_FOCUS_VISIBLE,
-
-  // Invisibly focused, i.e. focused with a hidden caret.
-  OMNIBOX_FOCUS_INVISIBLE,
-};
 
 // Reasons why the Omnibox focus state could change.
 enum OmniboxFocusChangeReason {

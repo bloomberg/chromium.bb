@@ -24,8 +24,6 @@ class InstantTab : public InstantPage {
   // Overridden from InstantPage:
   virtual bool ShouldProcessSetSuggestions() OVERRIDE;
   virtual bool ShouldProcessFocusOmnibox() OVERRIDE;
-  virtual bool ShouldProcessStartCapturingKeyStrokes() OVERRIDE;
-  virtual bool ShouldProcessStopCapturingKeyStrokes() OVERRIDE;
   virtual bool ShouldProcessNavigateToURL() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTab);

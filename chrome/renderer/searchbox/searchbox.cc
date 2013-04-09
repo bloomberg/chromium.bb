@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -99,17 +100,20 @@ void SearchBox::ShowInstantOverlay(int height, InstantSizeUnits units) {
 
 void SearchBox::FocusOmnibox() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), render_view()->GetPageId()));
+      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      OMNIBOX_FOCUS_VISIBLE));
 }
 
 void SearchBox::StartCapturingKeyStrokes() {
-  render_view()->Send(new ChromeViewHostMsg_StartCapturingKeyStrokes(
-      render_view()->GetRoutingID(), render_view()->GetPageId()));
+  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
+      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      OMNIBOX_FOCUS_INVISIBLE));
 }
 
 void SearchBox::StopCapturingKeyStrokes() {
-  render_view()->Send(new ChromeViewHostMsg_StopCapturingKeyStrokes(
-      render_view()->GetRoutingID(), render_view()->GetPageId()));
+  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
+      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      OMNIBOX_FOCUS_NONE));
 }
 
 void SearchBox::NavigateToURL(const GURL& url,

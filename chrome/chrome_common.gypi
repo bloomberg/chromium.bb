@@ -363,6 +363,7 @@
         'common/nacl_types.h',
         'common/omaha_query_params.cc',
         'common/omaha_query_params.h',
+        'common/omnibox_focus_state.h',
         'common/one_click_signin_messages.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',

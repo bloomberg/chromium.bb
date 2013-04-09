@@ -141,14 +141,6 @@ bool InstantPage::ShouldProcessFocusOmnibox() {
   return false;
 }
 
-bool InstantPage::ShouldProcessStartCapturingKeyStrokes() {
-  return false;
-}
-
-bool InstantPage::ShouldProcessStopCapturingKeyStrokes() {
-  return false;
-}
-
 bool InstantPage::ShouldProcessNavigateToURL() {
   return false;
 }
@@ -176,10 +168,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantOverlay,
                         OnShowInstantOverlay)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StartCapturingKeyStrokes,
-                        OnStartCapturingKeyStrokes);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StopCapturingKeyStrokes,
-                        OnStopCapturingKeyStrokes);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
@@ -243,27 +231,11 @@ void InstantPage::OnShowInstantOverlay(int page_id,
   }
 }
 
-void InstantPage::OnFocusOmnibox(int page_id) {
+void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
     if (ShouldProcessFocusOmnibox())
-      delegate_->FocusOmnibox(contents());
-  }
-}
-
-void InstantPage::OnStartCapturingKeyStrokes(int page_id) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessStartCapturingKeyStrokes())
-      delegate_->StartCapturingKeyStrokes(contents());
-  }
-}
-
-void InstantPage::OnStopCapturingKeyStrokes(int page_id) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessStopCapturingKeyStrokes())
-      delegate_->StopCapturingKeyStrokes(contents());
+      delegate_->FocusOmnibox(contents(), state);
   }
 }
 

@@ -21,6 +21,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/search_types.h"
 #include "chrome/common/translate_errors.h"
@@ -118,6 +119,7 @@ IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(InstantSizeUnits)
 IPC_ENUM_TRAITS(InstantSuggestionType)
+IPC_ENUM_TRAITS(OmniboxFocusState)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
@@ -686,8 +688,9 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,
                     InstantSizeUnits /* units */)
 
 // Sent by Instant to focus the omnibox.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusOmnibox,
-                    int /* page_id */)
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
+                    int /* page_id */,
+                    OmniboxFocusState /* state */)
 
 // Sent by Instant to show any attached bars.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxShowBars,
@@ -695,12 +698,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxShowBars,
 
 // Sent by Instant to hide any attached bars.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxHideBars,
-                    int /* page_id */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StartCapturingKeyStrokes,
-                    int /* page_id */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StopCapturingKeyStrokes,
                     int /* page_id */)
 
 // The currently displayed PDF has an unsupported feature.
