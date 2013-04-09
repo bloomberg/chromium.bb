@@ -31,8 +31,6 @@
 #include "config.h"
 #include "PerformanceTiming.h"
 
-#if ENABLE(WEB_TIMING)
-
 #include "Document.h"
 #include "DocumentLoadTiming.h"
 #include "DocumentLoader.h"
@@ -365,5 +363,3 @@ unsigned long long PerformanceTiming::monotonicTimeToIntegerMilliseconds(double 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_TIMING)

@@ -32,7 +32,7 @@
 #ifndef PerformanceEntry_h
 #define PerformanceEntry_h
 
-#if ENABLE(WEB_TIMING) && ENABLE(PERFORMANCE_TIMELINE)
+#if ENABLE(PERFORMANCE_TIMELINE)
 
 #include "Performance.h"
 #include <wtf/PassRefPtr.h>
@@ -71,5 +71,5 @@ private:
 
 }
 
-#endif // !ENABLE(WEB_TIMING) && ENABLE(PERFORMANCE_TIMELINE)
+#endif // ENABLE(PERFORMANCE_TIMELINE)
 #endif // !defined(PerformanceEntry_h)

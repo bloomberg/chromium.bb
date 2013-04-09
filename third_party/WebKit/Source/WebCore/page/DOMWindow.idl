@@ -177,9 +177,7 @@
     [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, [Optional] MessagePort messagePort, DOMString targetOrigin);
 #endif
 
-#if defined(ENABLE_WEB_TIMING) && ENABLE_WEB_TIMING
     [Replaceable] readonly attribute Performance performance;
-#endif
 
     // Timers
     [Custom] long setTimeout(any handler, [Optional=DefaultIsUndefined] long timeout);

@@ -390,9 +390,7 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 #endif
 
-#if ENABLE(WEB_TIMING)
         Performance* performance() const;
-#endif
 
         // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
         // when its document is no longer the document that is displayed in its
@@ -454,9 +452,7 @@ namespace WebCore {
         mutable RefPtr<Storage> m_localStorage;
         mutable RefPtr<DOMApplicationCache> m_applicationCache;
 
-#if ENABLE(WEB_TIMING)
         mutable RefPtr<Performance> m_performance;
-#endif
 
 #if ENABLE(CSS3_CONDITIONAL_RULES)
         mutable RefPtr<DOMWindowCSS> m_css;

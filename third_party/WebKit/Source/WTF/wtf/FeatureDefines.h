@@ -466,10 +466,6 @@
 #define ENABLE_WEB_AUDIO 0
 #endif
 
-#if !defined(ENABLE_WEB_TIMING)
-#define ENABLE_WEB_TIMING 0
-#endif
-
 #if !defined(ENABLE_XHR_TIMEOUT)
 #define ENABLE_XHR_TIMEOUT 0
 #endif

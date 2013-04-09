@@ -43,8 +43,6 @@
 #include "ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
-#if ENABLE(WEB_TIMING)
-
 #include "Frame.h"
 
 namespace WebCore {
@@ -255,5 +253,3 @@ double Performance::now() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(WEB_TIMING)

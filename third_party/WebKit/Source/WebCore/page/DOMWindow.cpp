@@ -420,9 +420,7 @@ DOMWindow::~DOMWindow()
         ASSERT(!m_toolbar);
         ASSERT(!m_console);
         ASSERT(!m_navigator);
-#if ENABLE(WEB_TIMING)
         ASSERT(!m_performance);
-#endif
         ASSERT(!m_location);
         ASSERT(!m_media);
         ASSERT(!m_sessionStorage);
@@ -577,9 +575,7 @@ void DOMWindow::resetDOMWindowProperties()
     m_toolbar = 0;
     m_console = 0;
     m_navigator = 0;
-#if ENABLE(WEB_TIMING)
     m_performance = 0;
-#endif
     m_location = 0;
     m_media = 0;
     m_sessionStorage = 0;
@@ -717,7 +713,6 @@ Navigator* DOMWindow::navigator() const
     return m_navigator.get();
 }
 
-#if ENABLE(WEB_TIMING)
 Performance* DOMWindow::performance() const
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -726,7 +721,6 @@ Performance* DOMWindow::performance() const
         m_performance = Performance::create(m_frame);
     return m_performance.get();
 }
-#endif
 
 Location* DOMWindow::location() const
 {

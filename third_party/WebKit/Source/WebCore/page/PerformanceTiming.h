@@ -31,8 +31,6 @@
 #ifndef PerformanceTiming_h
 #define PerformanceTiming_h
 
-#if ENABLE(WEB_TIMING)
-
 #include "DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -84,5 +82,4 @@ private:
 
 }
 
-#endif // !ENABLE(WEB_TIMING)
 #endif // !defined(PerformanceTiming_h)

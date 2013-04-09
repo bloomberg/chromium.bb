@@ -32,8 +32,6 @@
 #ifndef Performance_h
 #define Performance_h
 
-#if ENABLE(WEB_TIMING)
-
 #include "DOMWindowProperty.h"
 #include "EventTarget.h"
 #include "MemoryInfo.h"
@@ -117,7 +115,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(WEB_TIMING)
 
 #endif // Performance_h
