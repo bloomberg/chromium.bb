@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -186,6 +188,14 @@ void ParseResourceEntryForUploadRangeAndRun(
   callback.Run(response, entry.Pass());
 }
 
+// It is necessary to escape ' to \' in the query's string value.
+// See also: https://developers.google.com/drive/search-parameters
+std::string EscapeQueryStringValue(const std::string& str) {
+  std::string result;
+  ReplaceChars(str, "'", "\\'", &result);
+  return result;
+}
+
 // The resource ID for the root directory for Drive API is defined in the spec:
 // https://developers.google.com/drive/folder
 const char kDriveApiRootDirectoryResourceId[] = "root";
@@ -264,6 +274,7 @@ std::string DriveAPIService::GetRootResourceId() const {
   return kDriveApiRootDirectoryResourceId;
 }
 
+// TODO(hidehiko): Get rid of this method.
 void DriveAPIService::GetResourceList(
     const GURL& url,
     int64 start_changestamp,
@@ -288,8 +299,14 @@ void DriveAPIService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetFilelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // override url
+          "",  // search query
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::GetResourceListInDirectory(
@@ -299,8 +316,22 @@ void DriveAPIService::GetResourceListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  // Because children.list method on Drive API v2 returns only the list of
+  // children's references, but we need all file resource list.
+  // So, here we use files.list method instead, with setting parents query.
+  // After the migration from GData WAPI to Drive API v2, we should clean the
+  // code up by moving the resposibility to include "parents" in the query
+  // to client side.
+  runner_->StartOperationWithRetry(
+      new GetFilelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // override url
+          base::StringPrintf(
+              "'%s' in parents",
+              EscapeQueryStringValue(directory_resource_id).c_str()),
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::Search(const std::string& search_query,
@@ -309,8 +340,14 @@ void DriveAPIService::Search(const std::string& search_query,
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetFilelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // override url
+          search_query,
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::SearchInDirectory(
@@ -322,8 +359,17 @@ void DriveAPIService::SearchInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetFilelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // override url
+          base::StringPrintf(
+              "%s and '%s' in parents",
+              search_query.c_str(),
+              EscapeQueryStringValue(directory_resource_id).c_str()),
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::GetChangeList(int64 start_changestamp,
@@ -331,8 +377,14 @@ void DriveAPIService::GetChangeList(int64 start_changestamp,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new GetChangelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          GURL(),  // override url
+          start_changestamp,
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::ContinueGetResourceList(
@@ -341,8 +393,12 @@ void DriveAPIService::ContinueGetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new drive::ContinueGetFileListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          override_url,
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::GetFilelist(
