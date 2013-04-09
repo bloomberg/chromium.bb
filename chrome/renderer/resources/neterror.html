@@ -32,15 +32,6 @@ body {
 </if>
 }
 
-ul {
-  margin: 0;
-  padding-bottom: 0;
-}
-
-li {
-  padding-top: 2px;
-}
-
 h1 {
   color: #666;
   margin: 10px 0px 25px 0px;
@@ -48,22 +39,9 @@ h1 {
   font-size: 1.5em;
 }
 
-h2 {
-  font-weight: normal;
-  margin: 0;
-  padding: 0;
-}
-
 a {
-  color: #00c;
-}
-
-a:active {
-  color: #f00;
-}
-
-a:visited {
-  color: #551a8b;
+  color: #15c;
+  text-decoration: none;
 }
 
 #content-top {
@@ -134,13 +112,26 @@ button {
   display: none;
 }
 
+.suggestions {
+  margin-top: 18px;
+}
+
+.suggestionHeader {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.suggestionBody {
+  color: #777;
+}
+
 /* Increase line height at higher resolutions. */
 @media (min-width: 641px) and (min-height: 641px) {
   #details {
     line-height: 18px;
   }
   #help-box-inner {
-    line-height: 20px;
+    line-height: 18px;
   }
 }
 
@@ -160,6 +151,12 @@ button {
   }
   #details {
     margin: 15px;
+  }
+  .suggestions {
+    margin-top: 10px;
+  }
+  .suggestionHeader {
+    margin-bottom: 0px;
   }
 }
 
@@ -218,44 +215,9 @@ function toggleHelpBox() {
      <span jsvalues=".innerHTML:msg"></span>
     </div>
 
-    <div id="suggestions" jsdisplay="suggestionsHeading">
-     <h2 i18n-content="suggestionsHeading"></h2>
-     <ul>
-      <li jsselect="suggestionsHomepage">
-        <span jscontent="suggestionsHomepageMsg"></span>
-        <a jscontent="hostName" jsvalues="href:homePage"></a>
-      </li>
-      <li jsselect="suggestionsCheckConnection">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsDNSConfig">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsDisableNetworkPrediction">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsFirewallConfig">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsProxyConfig">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsProxyDisable">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsDisableExtension">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsLearnMore">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsViewPolicies">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-      <li jsselect="suggestionsContactAdministrator">
-        <span jsvalues=".innerHTML:msg"></span>
-      </li>
-     </ul>
+    <div class="suggestions" jsselect="suggestions">
+      <div class="suggestionHeader" jsvalues=".innerHTML:header"></div>
+      <div class="suggestionBody" jsvalues=".innerHTML:body"></div>
     </div>
    </div>
   </div>

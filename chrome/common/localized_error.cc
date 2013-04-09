@@ -50,15 +50,14 @@ static const char kAppWarningLearnMoreUrl[] =
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE                  = 0,
   SUGGEST_RELOAD                = 1 << 0,
-  SUGGEST_HOSTNAME              = 1 << 1,
-  SUGGEST_CHECK_CONNECTION      = 1 << 2,
-  SUGGEST_DNS_CONFIG            = 1 << 3,
-  SUGGEST_FIREWALL_CONFIG       = 1 << 4,
-  SUGGEST_PROXY_CONFIG          = 1 << 5,
-  SUGGEST_DISABLE_EXTENSION     = 1 << 6,
-  SUGGEST_LEARNMORE             = 1 << 7,
-  SUGGEST_VIEW_POLICIES         = 1 << 8,
-  SUGGEST_CONTACT_ADMINISTRATOR = 1 << 9,
+  SUGGEST_CHECK_CONNECTION      = 1 << 1,
+  SUGGEST_DNS_CONFIG            = 1 << 2,
+  SUGGEST_FIREWALL_CONFIG       = 1 << 3,
+  SUGGEST_PROXY_CONFIG          = 1 << 4,
+  SUGGEST_DISABLE_EXTENSION     = 1 << 5,
+  SUGGEST_LEARNMORE             = 1 << 6,
+  SUGGEST_VIEW_POLICIES         = 1 << 7,
+  SUGGEST_CONTACT_ADMINISTRATOR = 1 << 8,
 };
 
 struct LocalizedErrorMap {
@@ -277,7 +276,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_BLOCKED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED,
    IDS_ERRORPAGES_DETAILS_BLOCKED,
-   SUGGEST_DISABLE_EXTENSION,
+   SUGGEST_RELOAD | SUGGEST_DISABLE_EXTENSION,
   },
   {net::ERR_NETWORK_CHANGED,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -446,14 +445,6 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     options.suggestions = SUGGEST_NONE;
   }
 
-  // If there are any suggestions other than reload, populate the suggestion
-  // heading (reload has a button, rather than a suggestion in the list).
-  if ((options.suggestions & ~SUGGEST_RELOAD) != SUGGEST_NONE) {
-    error_strings->SetString(
-        "suggestionsHeading",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING));
-  }
-
   string16 failed_url_string(UTF8ToUTF16(failed_url.spec()));
   // URLs are always LTR.
   if (rtl)
@@ -498,6 +489,8 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   error_strings->SetString("errorCode",
       l10n_util::GetStringFUTF16(IDS_ERRORPAGES_ERROR_CODE, error_string));
 
+  base::ListValue* suggestions = new base::ListValue();
+
   // Platform specific instructions for diagnosing network issues on OSX and
   // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -536,55 +529,50 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     error_strings->Set("reload", reload_button);
   }
 
-  if (options.suggestions & SUGGEST_HOSTNAME) {
-    // Only show the "Go to hostname" suggestion if the failed_url has a path.
-    if (std::string() == failed_url.path()) {
-      DictionaryValue* suggest_home_page = new DictionaryValue;
-      suggest_home_page->SetString("suggestionsHomepageMsg",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HOMEPAGE));
-      string16 homepage(ASCIIToUTF16(failed_url.GetWithEmptyPath().spec()));
-      // URLs are always LTR.
-      if (rtl)
-        base::i18n::WrapStringWithLTRFormatting(&homepage);
-      suggest_home_page->SetString("homePage", homepage);
-      // TODO(tc): we actually want the unicode hostname
-      suggest_home_page->SetString("hostName", failed_url.host());
-      error_strings->Set("suggestionsHomepage", suggest_home_page);
-    }
-  }
-
   if (options.suggestions & SUGGEST_CHECK_CONNECTION) {
     DictionaryValue* suggest_check_connection = new DictionaryValue;
-    suggest_check_connection->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION));
-    error_strings->Set("suggestionsCheckConnection", suggest_check_connection);
+    suggest_check_connection->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER));
+    suggest_check_connection->SetString("body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY));
+    suggestions->Append(suggest_check_connection);
   }
 
   if (options.suggestions & SUGGEST_DNS_CONFIG) {
     DictionaryValue* suggest_dns_config = new DictionaryValue;
-    suggest_dns_config->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG));
-    error_strings->Set("suggestionsDNSConfig", suggest_dns_config);
+    suggest_dns_config->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER));
+    suggest_dns_config->SetString("body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_BODY));
+    suggestions->Append(suggest_dns_config);
 
     DictionaryValue* suggest_network_prediction = GetStandardMenuItemsText();
-    suggest_network_prediction->SetString("msg",
+    suggest_network_prediction->SetString("header",
         l10n_util::GetStringUTF16(
-            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION));
+            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_HEADER));
+    suggest_network_prediction->SetString("body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY));
     suggest_network_prediction->SetString(
         "noNetworkPredictionTitle",
         l10n_util::GetStringUTF16(
             IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION));
-    error_strings->Set("suggestionsDisableNetworkPrediction",
-                       suggest_network_prediction);
+    suggestions->Append(suggest_network_prediction);
   }
 
   if (options.suggestions & SUGGEST_FIREWALL_CONFIG) {
     DictionaryValue* suggest_firewall_config = new DictionaryValue;
-    suggest_firewall_config->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG));
-    suggest_firewall_config->SetString("productName",
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    error_strings->Set("suggestionsFirewallConfig", suggest_firewall_config);
+    suggest_firewall_config->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER));
+    suggest_firewall_config->SetString("body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_BODY));
+    suggestions->Append(suggest_firewall_config);
   }
 
   if (options.suggestions & SUGGEST_PROXY_CONFIG) {
@@ -593,8 +581,11 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
 #else
     DictionaryValue* suggest_proxy_config = GetStandardMenuItemsText();
 #endif  // defined(OS_CHROMEOS)
-    suggest_proxy_config->SetString("msg",
-        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG,
+    suggest_proxy_config->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_HEADER));
+    suggest_proxy_config->SetString("body",
+        l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_BODY,
             l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM)));
 #if defined(OS_CHROMEOS)
@@ -613,15 +604,39 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     suggest_proxy_config->SetString("proxyTitle",
         l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
 #endif  // defined(OS_CHROMEOS)
-    error_strings->Set("suggestionsProxyConfig", suggest_proxy_config);
+
+    suggestions->Append(suggest_proxy_config);
   }
 
   if (options.suggestions & SUGGEST_DISABLE_EXTENSION) {
-    DictionaryValue* suggestion = new DictionaryValue;
-    suggestion->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION));
-    suggestion->SetString("reloadUrl", failed_url_string);
-    error_strings->Set("suggestionsDisableExtension", suggestion);
+    DictionaryValue* suggest_disable_extension = new DictionaryValue;
+    // There's only a header for this suggestion.
+    suggest_disable_extension->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER));
+    suggestions->Append(suggest_disable_extension);
+  }
+
+  if (options.suggestions & SUGGEST_VIEW_POLICIES) {
+    DictionaryValue* suggest_view_policies = new DictionaryValue;
+    suggest_view_policies->SetString(
+        "header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER));
+    suggest_view_policies->SetString(
+        "body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY));
+    suggestions->Append(suggest_view_policies);
+  }
+
+  if (options.suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
+    DictionaryValue* suggest_contant_administrator = new DictionaryValue;
+    suggest_contant_administrator->SetString(
+        "body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR_BODY));
+    suggestions->Append(suggest_contant_administrator);
   }
 
   if (options.suggestions & SUGGEST_LEARNMORE) {
@@ -645,28 +660,15 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
       learn_more_url = learn_more_url.ReplaceComponents(repl);
 
       DictionaryValue* suggest_learn_more = new DictionaryValue;
-      suggest_learn_more->SetString("msg",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE));
+      // There's only a body for this suggestion.
+      suggest_learn_more->SetString("body",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_BODY));
       suggest_learn_more->SetString("learnMoreUrl", learn_more_url.spec());
-      error_strings->Set("suggestionsLearnMore", suggest_learn_more);
+      suggestions->Append(suggest_learn_more);
     }
   }
 
-  if (options.suggestions & SUGGEST_VIEW_POLICIES) {
-    DictionaryValue* suggestion = new DictionaryValue;
-    suggestion->SetString("msg",
-                          l10n_util::GetStringUTF16(
-                              IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES));
-    error_strings->Set("suggestionsViewPolicies", suggestion);
-  }
-
-  if (options.suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
-    DictionaryValue* suggestion = new DictionaryValue;
-    suggestion->SetString("msg",
-                          l10n_util::GetStringUTF16(
-                              IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR));
-    error_strings->Set("suggestionsContactAdministrator", suggestion);
-  }
+  error_strings->Set("suggestions", suggestions);
 }
 
 string16 LocalizedError::GetErrorDetails(const WebKit::WebURLError& error) {
@@ -738,7 +740,7 @@ void LocalizedError::GetAppErrorStrings(
   DictionaryValue* suggest_learn_more = new DictionaryValue();
   suggest_learn_more->SetString("msg",
                                 l10n_util::GetStringUTF16(
-                                    IDS_ERRORPAGES_SUGGESTION_LEARNMORE));
+                                    IDS_ERRORPAGES_SUGGESTION_LEARNMORE_BODY));
   suggest_learn_more->SetString("learnMoreUrl", learn_more_url.spec());
   error_strings->Set("suggestionsLearnMore", suggest_learn_more);
 #endif  // defined(OS_CHROMEOS)
