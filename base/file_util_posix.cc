@@ -541,7 +541,8 @@ bool CreateDirectory(const FilePath& full_path) {
 base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
   const int kMaxAttempts = 20;
   for (int attempts = 0; attempts < kMaxAttempts; attempts++) {
-    int uniquifier = GetUniquePathNumber(path, FILE_PATH_LITERAL(""));
+    int uniquifier =
+        GetUniquePathNumber(path, base::FilePath::StringType());
     if (uniquifier < 0)
       break;
     base::FilePath test_path = (uniquifier == 0) ? path :

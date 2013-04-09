@@ -196,7 +196,7 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   // initialized with a const string.
   ASSERT_FALSE(serializer.Serialize(*root_dict));
 
-  std::string test_serialization = "";
+  std::string test_serialization;
   JSONStringValueSerializer mutable_serializer(&test_serialization);
   ASSERT_TRUE(mutable_serializer.Serialize(*root_dict));
   ASSERT_EQ(original_serialization, test_serialization);

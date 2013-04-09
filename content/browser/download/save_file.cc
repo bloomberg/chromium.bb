@@ -20,7 +20,7 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
             GURL(),
             0,
             calculate_hash,
-            "",
+            std::string(),
             scoped_ptr<net::FileStream>(),
             net::BoundNetLog()),
       info_(info) {

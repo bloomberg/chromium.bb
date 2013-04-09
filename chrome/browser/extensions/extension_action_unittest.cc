@@ -15,7 +15,7 @@ using extensions::ActionInfo;
 TEST(ExtensionActionTest, Title) {
   ActionInfo action_info;
   action_info.default_title = "Initial Title";
-  ExtensionAction action("", ActionInfo::TYPE_PAGE, action_info);
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, action_info);
 
   ASSERT_EQ("Initial Title", action.GetTitle(1));
   action.SetTitle(ExtensionAction::kDefaultTabId, "foo");
@@ -31,8 +31,7 @@ TEST(ExtensionActionTest, Title) {
 }
 
 TEST(ExtensionActionTest, Visibility) {
-  ExtensionAction action("", ActionInfo::TYPE_PAGE,
-                         ActionInfo());
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, ActionInfo());
 
   ASSERT_FALSE(action.GetIsVisible(1));
   action.SetAppearance(ExtensionAction::kDefaultTabId, ExtensionAction::ACTIVE);
@@ -53,8 +52,8 @@ TEST(ExtensionActionTest, Visibility) {
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
 
-  ExtensionAction browser_action("", ActionInfo::TYPE_BROWSER,
-                                 ActionInfo());
+  ExtensionAction browser_action(
+      std::string(), ActionInfo::TYPE_BROWSER, ActionInfo());
   ASSERT_TRUE(browser_action.GetIsVisible(1));
 }
 
@@ -62,8 +61,8 @@ TEST(ExtensionActionTest, ScriptBadgeAnimation) {
   // Supports the icon animation.
   MessageLoop message_loop;
 
-  ExtensionAction script_badge("", ActionInfo::TYPE_SCRIPT_BADGE,
-                               ActionInfo());
+  ExtensionAction script_badge(
+      std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
   EXPECT_FALSE(script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId));
   script_badge.SetAppearance(ExtensionAction::kDefaultTabId,
                              ExtensionAction::ACTIVE);
@@ -86,8 +85,8 @@ TEST(ExtensionActionTest, GetAttention) {
   // Supports the icon animation.
   scoped_ptr<MessageLoop> message_loop(new MessageLoop);
 
-  ExtensionAction script_badge("", ActionInfo::TYPE_SCRIPT_BADGE,
-                               ActionInfo());
+  ExtensionAction script_badge(
+      std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
   EXPECT_FALSE(script_badge.GetIsVisible(1));
   EXPECT_FALSE(script_badge.GetIconAnimation(1));
   script_badge.SetAppearance(1, ExtensionAction::WANTS_ATTENTION);
@@ -107,8 +106,8 @@ TEST(ExtensionActionTest, GetAttention) {
 TEST(ExtensionActionTest, Icon) {
   ActionInfo action_info;
   action_info.default_icon.Add(16, "icon16.png");
-  ExtensionAction page_action("", ActionInfo::TYPE_PAGE,
-                              action_info);
+  ExtensionAction page_action(
+      std::string(), ActionInfo::TYPE_PAGE, action_info);
   ASSERT_TRUE(page_action.default_icon());
   EXPECT_EQ("icon16.png",
             page_action.default_icon()->Get(
@@ -119,8 +118,7 @@ TEST(ExtensionActionTest, Icon) {
 }
 
 TEST(ExtensionActionTest, Badge) {
-  ExtensionAction action("", ActionInfo::TYPE_PAGE,
-                         ActionInfo());
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ("", action.GetBadgeText(1));
   action.SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("foo", action.GetBadgeText(1));
@@ -135,8 +133,7 @@ TEST(ExtensionActionTest, Badge) {
 }
 
 TEST(ExtensionActionTest, BadgeTextColor) {
-  ExtensionAction action("", ActionInfo::TYPE_PAGE,
-                         ActionInfo());
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ(0x00000000u, action.GetBadgeTextColor(1));
   action.SetBadgeTextColor(ExtensionAction::kDefaultTabId, 0xFFFF0000u);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeTextColor(1));
@@ -151,8 +148,7 @@ TEST(ExtensionActionTest, BadgeTextColor) {
 }
 
 TEST(ExtensionActionTest, BadgeBackgroundColor) {
-  ExtensionAction action("", ActionInfo::TYPE_PAGE,
-                         ActionInfo());
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, ActionInfo());
   ASSERT_EQ(0x00000000u, action.GetBadgeBackgroundColor(1));
   action.SetBadgeBackgroundColor(ExtensionAction::kDefaultTabId,
                                  0xFFFF0000u);
@@ -176,7 +172,7 @@ TEST(ExtensionActionTest, PopupUrl) {
 
   ActionInfo action_info;
   action_info.default_popup_url = url_foo;
-  ExtensionAction action("", ActionInfo::TYPE_PAGE, action_info);
+  ExtensionAction action(std::string(), ActionInfo::TYPE_PAGE, action_info);
 
   ASSERT_EQ(url_foo, action.GetPopupUrl(1));
   ASSERT_EQ(url_foo, action.GetPopupUrl(100));

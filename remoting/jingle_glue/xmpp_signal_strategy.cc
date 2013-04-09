@@ -91,9 +91,10 @@ void XmppSignalStrategy::Connect() {
 
   task_runner_.reset(new jingle_glue::TaskPump());
   xmpp_client_ = new buzz::XmppClient(task_runner_.get());
-  xmpp_client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
-  xmpp_client_->SignalStateChange.connect(
-      this, &XmppSignalStrategy::OnConnectionStateChanged);
+  xmpp_client_->Connect(
+      settings, std::string(), socket, CreatePreXmppAuth(settings));
+  xmpp_client_->SignalStateChange
+      .connect(this, &XmppSignalStrategy::OnConnectionStateChanged);
   xmpp_client_->engine()->AddStanzaHandler(this, buzz::XmppEngine::HL_TYPE);
   xmpp_client_->Start();
 
@@ -156,7 +157,7 @@ std::string XmppSignalStrategy::GetNextId() {
   if (!xmpp_client_) {
     // If the connection has been terminated then it doesn't matter
     // what Id we return.
-    return "";
+    return std::string();
   }
   return xmpp_client_->NextId();
 }

@@ -10,7 +10,11 @@ namespace em = enterprise_management;
 namespace policy {
 
 MockCloudPolicyClient::MockCloudPolicyClient()
-    : CloudPolicyClient("", "", USER_AFFILIATION_NONE, NULL, NULL) {}
+    : CloudPolicyClient(std::string(),
+                        std::string(),
+                        USER_AFFILIATION_NONE,
+                        NULL,
+                        NULL) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}
 

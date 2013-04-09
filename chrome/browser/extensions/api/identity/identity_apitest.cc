@@ -508,7 +508,7 @@ class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
-  RunAndCheckBounds("", 0, 0, 0, 0);
+  RunAndCheckBounds(std::string(), 0, 0, 0, 0);
   RunAndCheckBounds("\"width\": 100, \"height\": 200", 0, 0, 100, 200);
   RunAndCheckBounds("\"left\": 100, \"top\": 200", 100, 200, 0, 0);
   RunAndCheckBounds(

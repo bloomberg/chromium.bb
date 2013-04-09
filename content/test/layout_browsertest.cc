@@ -155,8 +155,8 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
   test_controller_->set_printer(printer.release());
 
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
-  ASSERT_TRUE(
-      test_controller_->PrepareForLayoutTest(url, layout_test_dir_, false, ""));
+  ASSERT_TRUE(test_controller_->PrepareForLayoutTest(
+      url, layout_test_dir_, false, std::string()));
   base::RunLoop run_loop;
   run_loop.Run();
   LOG(INFO) << "Navigation completed.";
@@ -195,9 +195,10 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
 std::string InProcessBrowserLayoutTest::SaveResults(const std::string& expected,
                                                     const std::string& actual) {
   base::FilePath cwd;
-  EXPECT_TRUE(file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &cwd));
-  base::FilePath expected_filename = cwd.Append(
-      FILE_PATH_LITERAL("expected.txt"));
+  EXPECT_TRUE(file_util::CreateNewTempDirectory(
+      base::FilePath::StringType(), &cwd));
+  base::FilePath expected_filename =
+      cwd.Append(FILE_PATH_LITERAL("expected.txt"));
   base::FilePath actual_filename = cwd.Append(FILE_PATH_LITERAL("actual.txt"));
   EXPECT_NE(-1, file_util::WriteFile(expected_filename,
                                      expected.c_str(),

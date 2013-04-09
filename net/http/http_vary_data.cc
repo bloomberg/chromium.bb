@@ -105,7 +105,7 @@ std::string HttpVaryData::GetRequestValue(
   if (request_info.extra_headers.GetHeader(request_header, &result))
     return result;
 
-  return "";
+  return std::string();
 }
 
 // static

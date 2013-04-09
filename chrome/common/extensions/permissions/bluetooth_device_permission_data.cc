@@ -18,9 +18,7 @@ const char* kDeviceAddressKey = "deviceAddress";
 
 namespace extensions {
 
-BluetoothDevicePermissionData::BluetoothDevicePermissionData()
-  : device_address_("") {
-}
+BluetoothDevicePermissionData::BluetoothDevicePermissionData() {}
 
 BluetoothDevicePermissionData::BluetoothDevicePermissionData(
     const std::string& device_address) : device_address_(device_address) {

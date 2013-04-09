@@ -941,7 +941,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
       ofu()->DeleteDirectory(context.get(), url));
 
-  FileSystemURL root = CreateURLFromUTF8("");
+  FileSystemURL root = CreateURLFromUTF8(std::string());
   EXPECT_FALSE(DirectoryExists(url));
   EXPECT_FALSE(PathExists(url));
   context.reset(NewContext(NULL));
@@ -1081,7 +1081,7 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectory) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadRootWithSlash) {
-  TestReadDirectoryHelper(CreateURLFromUTF8(""));
+  TestReadDirectoryHelper(CreateURLFromUTF8(std::string()));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadRootWithEmptyString) {

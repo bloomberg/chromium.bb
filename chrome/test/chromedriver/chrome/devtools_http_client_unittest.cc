@@ -64,8 +64,7 @@ TEST(ParseWebViewsInfo, WithoutDebuggerUrl) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, views_info.GetSize());
   ExpectEqual(
-      WebViewInfo(
-          "1", "", "http://page1", WebViewInfo::kPage),
+      WebViewInfo("1", std::string(), "http://page1", WebViewInfo::kPage),
       views_info.Get(0));
 }
 

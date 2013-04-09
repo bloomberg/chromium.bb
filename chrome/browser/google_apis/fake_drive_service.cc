@@ -340,10 +340,10 @@ void FakeDriveService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceList(GURL(),  // no next feed
-                  0,  // start changestamp
-                  "",  // empty search query
-                  "",  // no directory resource id,
+  GetResourceList(GURL(),         // no next feed
+                  0,              // start changestamp
+                  std::string(),  // empty search query
+                  std::string(),  // no directory resource id,
                   callback);
 }
 
@@ -354,9 +354,9 @@ void FakeDriveService::GetResourceListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceList(GURL(),  // no next feed
-                  0,  // start changestamp
-                  "",  // empty search query
+  GetResourceList(GURL(),         // no next feed
+                  0,              // start changestamp
+                  std::string(),  // empty search query
                   directory_resource_id,
                   callback);
 }
@@ -367,10 +367,10 @@ void FakeDriveService::Search(const std::string& search_query,
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  GetResourceList(GURL(),  // no next feed
-                  0,  // start changestamp
+  GetResourceList(GURL(),         // no next feed
+                  0,              // start changestamp
                   search_query,
-                  "",  // no directory resource id,
+                  std::string(),  // no directory resource id,
                   callback);
 }
 
@@ -395,10 +395,10 @@ void FakeDriveService::GetChangeList(int64 start_changestamp,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceList(GURL(),  // no next feed
+  GetResourceList(GURL(),         // no next feed
                   start_changestamp,
-                  "",  // empty search query
-                  "",  // no directory resource id,
+                  std::string(),  // empty search query
+                  std::string(),  // no directory resource id,
                   callback);
 }
 

@@ -79,7 +79,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
   EXPECT_EQ("baz.com", GetDomainFromURL("http://baz.com"));              // none
   EXPECT_EQ("baz.com.", GetDomainFromURL("http://baz.com."));            // none
 
-  EXPECT_EQ("", GetDomainFromURL(""));
+  EXPECT_EQ("", GetDomainFromURL(std::string()));
   EXPECT_EQ("", GetDomainFromURL("http://"));
   EXPECT_EQ("", GetDomainFromURL("file:///C:/file.html"));
   EXPECT_EQ("", GetDomainFromURL("http://foo.com.."));
@@ -108,7 +108,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
   EXPECT_EQ("baz.com", GetDomainFromHost("baz.com"));                  // none
   EXPECT_EQ("baz.com.", GetDomainFromHost("baz.com."));                // none
 
-  EXPECT_EQ("", GetDomainFromHost(""));
+  EXPECT_EQ("", GetDomainFromHost(std::string()));
   EXPECT_EQ("", GetDomainFromHost("foo.com.."));
   EXPECT_EQ("", GetDomainFromHost("..."));
   EXPECT_EQ("", GetDomainFromHost("192.168.0.1"));
@@ -143,7 +143,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://baz.com", true));      // none
   EXPECT_EQ(4U, GetRegistryLengthFromURL("http://baz.com.", true));     // none
 
-  EXPECT_EQ(std::string::npos, GetRegistryLengthFromURL("", false));
+  EXPECT_EQ(std::string::npos, GetRegistryLengthFromURL(std::string(), false));
   EXPECT_EQ(std::string::npos, GetRegistryLengthFromURL("http://", false));
   EXPECT_EQ(std::string::npos,
             GetRegistryLengthFromURL("file:///C:/file.html", false));
@@ -177,7 +177,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   EXPECT_EQ(3U, GetRegistryLengthFromHost("baz.com", true));            // none
   EXPECT_EQ(4U, GetRegistryLengthFromHost("baz.com.", true));           // none
 
-  EXPECT_EQ(std::string::npos, GetRegistryLengthFromHost("", false));
+  EXPECT_EQ(std::string::npos, GetRegistryLengthFromHost(std::string(), false));
   EXPECT_EQ(0U, GetRegistryLengthFromHost("foo.com..", false));
   EXPECT_EQ(0U, GetRegistryLengthFromHost("..", false));
   EXPECT_EQ(0U, GetRegistryLengthFromHost("192.168.0.1", false));

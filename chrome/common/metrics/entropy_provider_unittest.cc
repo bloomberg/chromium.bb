@@ -200,7 +200,7 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
     trials[i]->UseOneTimeRandomization();
 
     for (int j = 0; j < 100; ++j)
-      trials[i]->AppendGroup("", 1);
+      trials[i]->AppendGroup(std::string(), 1);
   }
 
   // The trials are most likely to give different results since they have
@@ -228,7 +228,7 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
     trials[i]->UseOneTimeRandomization();
 
     for (int j = 0; j < 100; ++j)
-      trials[i]->AppendGroup("", 1);
+      trials[i]->AppendGroup(std::string(), 1);
   }
 
   // The trials are most likely to give different results since they have

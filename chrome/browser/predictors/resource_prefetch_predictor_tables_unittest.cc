@@ -167,34 +167,45 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
 void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
   google.last_visit = base::Time::FromInternalValue(10);
-  google.resources.push_back(ResourceRow(
-      "",
-      "http://www.google.com/style.css",
-      ResourceType::STYLESHEET,
-      6, 2, 0, 1.0));
-  google.resources.push_back(ResourceRow(
-      "",
-      "http://www.google.com/image.png",
-      ResourceType::IMAGE,
-      6, 4, 1, 4.2));
-  google.resources.push_back(ResourceRow(
-      "",
-      "http://www.google.com/a.xml",
-      ResourceType::LAST_TYPE,
-      1, 0, 0, 6.1));
-  google.resources.push_back(ResourceRow(
-      "",
-      "http://www.resources.google.com/script.js",
-      ResourceType::SCRIPT,
-      12, 0, 0, 8.5));
+  google.resources.push_back(ResourceRow(std::string(),
+                                         "http://www.google.com/style.css",
+                                         ResourceType::STYLESHEET,
+                                         6,
+                                         2,
+                                         0,
+                                         1.0));
+  google.resources.push_back(ResourceRow(std::string(),
+                                         "http://www.google.com/image.png",
+                                         ResourceType::IMAGE,
+                                         6,
+                                         4,
+                                         1,
+                                         4.2));
+  google.resources.push_back(ResourceRow(std::string(),
+                                         "http://www.google.com/a.xml",
+                                         ResourceType::LAST_TYPE,
+                                         1,
+                                         0,
+                                         0,
+                                         6.1));
+  google.resources
+      .push_back(ResourceRow(std::string(),
+                             "http://www.resources.google.com/script.js",
+                             ResourceType::SCRIPT,
+                             12,
+                             0,
+                             0,
+                             8.5));
 
   PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
   yahoo.last_visit = base::Time::FromInternalValue(7);
-  yahoo.resources.push_back(ResourceRow(
-      "",
-      "http://www.yahoo.com/image.png",
-      ResourceType::IMAGE,
-      120, 1, 1, 10.0));
+  yahoo.resources.push_back(ResourceRow(std::string(),
+                                        "http://www.yahoo.com/image.png",
+                                        ResourceType::IMAGE,
+                                        120,
+                                        1,
+                                        1,
+                                        10.0));
 
   tables_->UpdateData(google, yahoo);
 
@@ -276,59 +287,78 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   {  // Url data.
     PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
     google.last_visit = base::Time::FromInternalValue(1);
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/style.css",
-        ResourceType::STYLESHEET,
-        5, 2, 1, 1.1));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/script.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 2.1));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/image.png",
-        ResourceType::IMAGE,
-        6, 3, 0, 2.2));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/a.font",
-        ResourceType::LAST_TYPE,
-        2, 0, 0, 5.1));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://www.resources.google.com/script.js",
-        ResourceType::SCRIPT,
-        11, 0, 0, 8.5));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://www.google.com/style.css",
+                                           ResourceType::STYLESHEET,
+                                           5,
+                                           2,
+                                           1,
+                                           1.1));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://www.google.com/script.js",
+                                           ResourceType::SCRIPT,
+                                           4,
+                                           0,
+                                           1,
+                                           2.1));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://www.google.com/image.png",
+                                           ResourceType::IMAGE,
+                                           6,
+                                           3,
+                                           0,
+                                           2.2));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://www.google.com/a.font",
+                                           ResourceType::LAST_TYPE,
+                                           2,
+                                           0,
+                                           0,
+                                           5.1));
+    google.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.resources.google.com/script.js",
+                               ResourceType::SCRIPT,
+                               11,
+                               0,
+                               0,
+                               8.5));
 
     PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com");
     reddit.last_visit = base::Time::FromInternalValue(2);
-    reddit.resources.push_back(ResourceRow(
-        "",
-        "http://reddit-resource.com/script1.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 1.0));
-    reddit.resources.push_back(ResourceRow(
-        "",
-        "http://reddit-resource.com/script2.js",
-        ResourceType::SCRIPT,
-        2, 0, 0, 2.1));
+    reddit.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://reddit-resource.com/script1.js",
+                               ResourceType::SCRIPT,
+                               4,
+                               0,
+                               1,
+                               1.0));
+    reddit.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://reddit-resource.com/script2.js",
+                               ResourceType::SCRIPT,
+                               2,
+                               0,
+                               0,
+                               2.1));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com");
     yahoo.last_visit = base::Time::FromInternalValue(3);
-    yahoo.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/image.png",
-        ResourceType::IMAGE,
-        20, 1, 0, 10.0));
+    yahoo.resources.push_back(ResourceRow(std::string(),
+                                          "http://www.google.com/image.png",
+                                          ResourceType::IMAGE,
+                                          20,
+                                          1,
+                                          0,
+                                          10.0));
 
     test_url_data_.clear();
     test_url_data_.insert(std::make_pair("http://www.google.com", google));
     test_url_data_.insert(std::make_pair("http://www.reddit.com", reddit));
     test_url_data_.insert(std::make_pair("http://www.yahoo.com", yahoo));
 
-    PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, "");
+    PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, std::string());
     tables_->UpdateData(google, empty_host_data);
     tables_->UpdateData(reddit, empty_host_data);
     tables_->UpdateData(yahoo, empty_host_data);
@@ -337,45 +367,61 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   {  // Host data.
     PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
     facebook.last_visit = base::Time::FromInternalValue(4);
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/style.css",
-        ResourceType::STYLESHEET,
-        5, 2, 1, 1.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/script.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 2.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/image.png",
-        ResourceType::IMAGE,
-        6, 3, 0, 2.2));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/a.font",
-        ResourceType::LAST_TYPE,
-        2, 0, 0, 5.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.resources.facebook.com/script.js",
-        ResourceType::SCRIPT,
-        11, 0, 0, 8.5));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/style.css",
+                               ResourceType::STYLESHEET,
+                               5,
+                               2,
+                               1,
+                               1.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/script.js",
+                               ResourceType::SCRIPT,
+                               4,
+                               0,
+                               1,
+                               2.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/image.png",
+                               ResourceType::IMAGE,
+                               6,
+                               3,
+                               0,
+                               2.2));
+    facebook.resources.push_back(ResourceRow(std::string(),
+                                             "http://www.facebook.com/a.font",
+                                             ResourceType::LAST_TYPE,
+                                             2,
+                                             0,
+                                             0,
+                                             5.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.resources.facebook.com/script.js",
+                               ResourceType::SCRIPT,
+                               11,
+                               0,
+                               0,
+                               8.5));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
     yahoo.last_visit = base::Time::FromInternalValue(5);
-    yahoo.resources.push_back(ResourceRow(
-        "",
-        "http://www.google.com/image.png",
-        ResourceType::IMAGE,
-        20, 1, 0, 10.0));
+    yahoo.resources.push_back(ResourceRow(std::string(),
+                                          "http://www.google.com/image.png",
+                                          ResourceType::IMAGE,
+                                          20,
+                                          1,
+                                          0,
+                                          10.0));
 
     test_host_data_.clear();
     test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
     test_host_data_.insert(std::make_pair("www.yahoo.com", yahoo));
 
-    PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, "");
+    PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, std::string());
     tables_->UpdateData(empty_url_data, facebook);
     tables_->UpdateData(empty_url_data, yahoo);
   }

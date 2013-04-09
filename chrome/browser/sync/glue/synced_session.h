@@ -74,7 +74,7 @@ struct SyncedSession {
       case SyncedSession::TYPE_TABLET:
         return "tablet";
       default:
-        return "";
+        return std::string();
     }
   }
 

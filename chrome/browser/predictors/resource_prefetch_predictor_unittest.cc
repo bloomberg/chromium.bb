@@ -176,9 +176,8 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
       profile_(new TestingProfile()),
       predictor_(NULL),
       mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
-      empty_url_data_(PREFETCH_KEY_TYPE_URL, ""),
-      empty_host_data_(PREFETCH_KEY_TYPE_HOST, "") {
-}
+      empty_url_data_(PREFETCH_KEY_TYPE_URL, std::string()),
+      empty_host_data_(PREFETCH_KEY_TYPE_HOST, std::string()) {}
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
   profile_.reset(NULL);
@@ -214,52 +213,70 @@ void ResourcePrefetchPredictorTest::InitializeSampleData() {
   {  // Url data.
     PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
     google.last_visit = base::Time::FromInternalValue(1);
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/style1.css",
-        ResourceType::STYLESHEET,
-        3, 2, 1, 1.0));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/script3.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 2.1));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/script4.js",
-        ResourceType::SCRIPT,
-        11, 0, 0, 2.1));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/image1.png",
-        ResourceType::IMAGE,
-        6, 3, 0, 2.2));
-    google.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/a.font",
-        ResourceType::LAST_TYPE,
-        2, 0, 0, 5.1));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/style1.css",
+                                           ResourceType::STYLESHEET,
+                                           3,
+                                           2,
+                                           1,
+                                           1.0));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script3.js",
+                                           ResourceType::SCRIPT,
+                                           4,
+                                           0,
+                                           1,
+                                           2.1));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script4.js",
+                                           ResourceType::SCRIPT,
+                                           11,
+                                           0,
+                                           0,
+                                           2.1));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/image1.png",
+                                           ResourceType::IMAGE,
+                                           6,
+                                           3,
+                                           0,
+                                           2.2));
+    google.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/a.font",
+                                           ResourceType::LAST_TYPE,
+                                           2,
+                                           0,
+                                           0,
+                                           5.1));
 
     PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com/");
     reddit.last_visit = base::Time::FromInternalValue(2);
-    reddit.resources.push_back(ResourceRow(
-        "",
-        "http://reddit-resource.com/script1.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 1.0));
-    reddit.resources.push_back(ResourceRow(
-        "",
-        "http://reddit-resource.com/script2.js",
-        ResourceType::SCRIPT,
-        2, 0, 0, 2.1));
+    reddit.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://reddit-resource.com/script1.js",
+                               ResourceType::SCRIPT,
+                               4,
+                               0,
+                               1,
+                               1.0));
+    reddit.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://reddit-resource.com/script2.js",
+                               ResourceType::SCRIPT,
+                               2,
+                               0,
+                               0,
+                               2.1));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com/");
     yahoo.last_visit = base::Time::FromInternalValue(3);
-    yahoo.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/image.png",
-        ResourceType::IMAGE,
-        20, 1, 0, 10.0));
+    yahoo.resources.push_back(ResourceRow(std::string(),
+                                          "http://google.com/image.png",
+                                          ResourceType::IMAGE,
+                                          20,
+                                          1,
+                                          0,
+                                          10.0));
 
     test_url_data_.clear();
     test_url_data_.insert(std::make_pair("http://www.google.com/", google));
@@ -270,39 +287,55 @@ void ResourcePrefetchPredictorTest::InitializeSampleData() {
   {  // Host data.
     PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
     facebook.last_visit = base::Time::FromInternalValue(4);
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/style.css",
-        ResourceType::STYLESHEET,
-        5, 2, 1, 1.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/script.js",
-        ResourceType::SCRIPT,
-        4, 0, 1, 2.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/image.png",
-        ResourceType::IMAGE,
-        6, 3, 0, 2.2));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.facebook.com/a.font",
-        ResourceType::LAST_TYPE,
-        2, 0, 0, 5.1));
-    facebook.resources.push_back(ResourceRow(
-        "",
-        "http://www.resources.facebook.com/script.js",
-        ResourceType::SCRIPT,
-        11, 0, 0, 8.5));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/style.css",
+                               ResourceType::STYLESHEET,
+                               5,
+                               2,
+                               1,
+                               1.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/script.js",
+                               ResourceType::SCRIPT,
+                               4,
+                               0,
+                               1,
+                               2.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.facebook.com/image.png",
+                               ResourceType::IMAGE,
+                               6,
+                               3,
+                               0,
+                               2.2));
+    facebook.resources.push_back(ResourceRow(std::string(),
+                                             "http://www.facebook.com/a.font",
+                                             ResourceType::LAST_TYPE,
+                                             2,
+                                             0,
+                                             0,
+                                             5.1));
+    facebook.resources
+        .push_back(ResourceRow(std::string(),
+                               "http://www.resources.facebook.com/script.js",
+                               ResourceType::SCRIPT,
+                               11,
+                               0,
+                               0,
+                               8.5));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
     yahoo.last_visit = base::Time::FromInternalValue(5);
-    yahoo.resources.push_back(ResourceRow(
-        "",
-        "http://google.com/image.png",
-        ResourceType::IMAGE,
-        20, 1, 0, 10.0));
+    yahoo.resources.push_back(ResourceRow(std::string(),
+                                          "http://google.com/image.png",
+                                          ResourceType::IMAGE,
+                                          20,
+                                          1,
+                                          0,
+                                          10.0));
 
     test_host_data_.clear();
     test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
@@ -343,9 +376,14 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   // Single navigation but history count is low, so should not record.
   AddUrlToHistory("http://www.google.com", 1);
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.google.com",
+                              "http://www.google.com",
+                              ResourceType::MAIN_FRAME,
+                              std::string(),
+                              false);
   predictor_->RecordURLRequest(main_frame);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
 
@@ -364,15 +402,27 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   predictor_->RecordUrlResponse(resource3);
 
   PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style1.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 1.0));
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script1.js",
-      ResourceType::SCRIPT, 1, 0, 0, 2.0));
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script2.js",
-      ResourceType::SCRIPT, 1, 0, 0, 3.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/style1.css",
+                                            ResourceType::STYLESHEET,
+                                            1,
+                                            0,
+                                            0,
+                                            1.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/script1.js",
+                                            ResourceType::SCRIPT,
+                                            1,
+                                            0,
+                                            0,
+                                            2.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/script2.js",
+                                            ResourceType::SCRIPT,
+                                            1,
+                                            0,
+                                            0,
+                                            3.0));
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
@@ -384,9 +434,14 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   // resources and also for number of resources saved.
   AddUrlToHistory("http://www.google.com", 4);
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.google.com",
+                              "http://www.google.com",
+                              ResourceType::MAIN_FRAME,
+                              std::string(),
+                              false);
   predictor_->RecordURLRequest(main_frame);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
 
@@ -424,18 +479,34 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
       resource7.resource_type);
 
   PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style1.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 1.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script1.js",
-      ResourceType::SCRIPT, 1, 0, 0, 2.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script2.js",
-      ResourceType::SCRIPT, 1, 0, 0, 3.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style2.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 7.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/style1.css",
+                                           ResourceType::STYLESHEET,
+                                           1,
+                                           0,
+                                           0,
+                                           1.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script1.js",
+                                           ResourceType::SCRIPT,
+                                           1,
+                                           0,
+                                           0,
+                                           2.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script2.js",
+                                           ResourceType::SCRIPT,
+                                           1,
+                                           0,
+                                           0,
+                                           3.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/style2.css",
+                                           ResourceType::STYLESHEET,
+                                           1,
+                                           0,
+                                           0,
+                                           7.0));
   EXPECT_CALL(*mock_tables_, UpdateData(url_data, empty_host_data_));
 
   PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
@@ -461,9 +532,14 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   EXPECT_EQ(3, static_cast<int>(predictor_->url_table_cache_->size()));
   EXPECT_EQ(2, static_cast<int>(predictor_->host_table_cache_->size()));
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.google.com",
+                              "http://www.google.com",
+                              ResourceType::MAIN_FRAME,
+                              std::string(),
+                              false);
   predictor_->RecordURLRequest(main_frame);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
 
@@ -501,18 +577,34 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
       resource7.resource_type);
 
   PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style1.css",
-      ResourceType::STYLESHEET, 4, 2, 0, 1.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script1.js",
-      ResourceType::SCRIPT, 1, 0, 0, 2.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script4.js",
-      ResourceType::SCRIPT, 11, 1, 1, 2.1));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script2.js",
-      ResourceType::SCRIPT, 1, 0, 0, 3.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/style1.css",
+                                           ResourceType::STYLESHEET,
+                                           4,
+                                           2,
+                                           0,
+                                           1.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script1.js",
+                                           ResourceType::SCRIPT,
+                                           1,
+                                           0,
+                                           0,
+                                           2.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script4.js",
+                                           ResourceType::SCRIPT,
+                                           11,
+                                           1,
+                                           1,
+                                           2.1));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://google.com/script2.js",
+                                           ResourceType::SCRIPT,
+                                           1,
+                                           0,
+                                           0,
+                                           3.0));
   EXPECT_CALL(*mock_tables_, UpdateData(url_data, empty_host_data_));
 
   EXPECT_CALL(*mock_tables_,
@@ -520,18 +612,34 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                                     PREFETCH_KEY_TYPE_HOST));
 
   PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style1.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 1.0));
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script1.js",
-      ResourceType::SCRIPT, 1, 0, 0, 2.0));
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/script2.js",
-      ResourceType::SCRIPT, 1, 0, 0, 3.0));
-  host_data.resources.push_back(ResourceRow(
-      "", "http://google.com/style2.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 7.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/style1.css",
+                                            ResourceType::STYLESHEET,
+                                            1,
+                                            0,
+                                            0,
+                                            1.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/script1.js",
+                                            ResourceType::SCRIPT,
+                                            1,
+                                            0,
+                                            0,
+                                            2.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/script2.js",
+                                            ResourceType::SCRIPT,
+                                            1,
+                                            0,
+                                            0,
+                                            3.0));
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/style2.css",
+                                            ResourceType::STYLESHEET,
+                                            1,
+                                            0,
+                                            0,
+                                            7.0));
   EXPECT_CALL(*mock_tables_, UpdateData(empty_url_data_, host_data));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
@@ -552,9 +660,14 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   EXPECT_EQ(3, static_cast<int>(predictor_->url_table_cache_->size()));
   EXPECT_EQ(2, static_cast<int>(predictor_->host_table_cache_->size()));
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, 1, "http://www.nike.com", "http://www.nike.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.nike.com",
+                              "http://www.nike.com",
+                              ResourceType::MAIN_FRAME,
+                              std::string(),
+                              false);
   predictor_->RecordURLRequest(main_frame);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
 
@@ -575,12 +688,20 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                                     PREFETCH_KEY_TYPE_HOST));
 
   PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.nike.com/");
-  url_data.resources.push_back(ResourceRow(
-      "", "http://nike.com/style1.css",
-      ResourceType::STYLESHEET, 1, 0, 0, 1.0));
-  url_data.resources.push_back(ResourceRow(
-      "", "http://nike.com/image2.png",
-      ResourceType::IMAGE, 1, 0, 0, 2.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://nike.com/style1.css",
+                                           ResourceType::STYLESHEET,
+                                           1,
+                                           0,
+                                           0,
+                                           1.0));
+  url_data.resources.push_back(ResourceRow(std::string(),
+                                           "http://nike.com/image2.png",
+                                           ResourceType::IMAGE,
+                                           1,
+                                           0,
+                                           0,
+                                           2.0));
   EXPECT_CALL(*mock_tables_, UpdateData(url_data, empty_host_data_));
 
   PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.nike.com");
@@ -647,15 +768,27 @@ TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
 }
 
 TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
-  URLRequestSummary summary1 = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
-  URLRequestSummary summary2 = CreateURLRequestSummary(
-      1, 2, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
-  URLRequestSummary summary3 = CreateURLRequestSummary(
-      2, 1, "http://www.yahoo.com", "http://www.yahoo.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary summary1 = CreateURLRequestSummary(1,
+                                                       1,
+                                                       "http://www.google.com",
+                                                       "http://www.google.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
+  URLRequestSummary summary2 = CreateURLRequestSummary(1,
+                                                       2,
+                                                       "http://www.google.com",
+                                                       "http://www.google.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
+  URLRequestSummary summary3 = CreateURLRequestSummary(2,
+                                                       1,
+                                                       "http://www.yahoo.com",
+                                                       "http://www.yahoo.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
 
   predictor_->OnMainFrameRequest(summary1);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
@@ -665,12 +798,20 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
   EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
 
   // Insert anther with same navigation id. It should replace.
-  URLRequestSummary summary4 = CreateURLRequestSummary(
-      1, 1, "http://www.nike.com", "http://www.nike.com",
-      ResourceType::MAIN_FRAME, "", false);
-  URLRequestSummary summary5 = CreateURLRequestSummary(
-      1, 2, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary summary4 = CreateURLRequestSummary(1,
+                                                       1,
+                                                       "http://www.nike.com",
+                                                       "http://www.nike.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
+  URLRequestSummary summary5 = CreateURLRequestSummary(1,
+                                                       2,
+                                                       "http://www.google.com",
+                                                       "http://www.google.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
 
   predictor_->OnMainFrameRequest(summary4);
   EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
@@ -681,9 +822,13 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
   predictor_->OnMainFrameRequest(summary5);
   EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
 
-  URLRequestSummary summary6 = CreateURLRequestSummary(
-      3, 1, "http://www.shoes.com", "http://www.shoes.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary summary6 = CreateURLRequestSummary(3,
+                                                       1,
+                                                       "http://www.shoes.com",
+                                                       "http://www.shoes.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
   predictor_->OnMainFrameRequest(summary6);
   EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
 
@@ -696,15 +841,27 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
 }
 
 TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRedirect) {
-  URLRequestSummary summary1 = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
-  URLRequestSummary summary2 = CreateURLRequestSummary(
-      1, 2, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
-  URLRequestSummary summary3 = CreateURLRequestSummary(
-      2, 1, "http://www.yahoo.com", "http://www.yahoo.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary summary1 = CreateURLRequestSummary(1,
+                                                       1,
+                                                       "http://www.google.com",
+                                                       "http://www.google.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
+  URLRequestSummary summary2 = CreateURLRequestSummary(1,
+                                                       2,
+                                                       "http://www.google.com",
+                                                       "http://www.google.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
+  URLRequestSummary summary3 = CreateURLRequestSummary(2,
+                                                       1,
+                                                       "http://www.yahoo.com",
+                                                       "http://www.yahoo.com",
+                                                       ResourceType::MAIN_FRAME,
+                                                       std::string(),
+                                                       false);
 
   predictor_->OnMainFrameRedirect(summary1);
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
@@ -731,9 +888,14 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
 
   // Add an inflight navigation.
-  URLRequestSummary main_frame1 = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      ResourceType::MAIN_FRAME, "", false);
+  URLRequestSummary main_frame1 =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.google.com",
+                              "http://www.google.com",
+                              ResourceType::MAIN_FRAME,
+                              std::string(),
+                              false);
   predictor_->OnMainFrameRequest(main_frame1);
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
 

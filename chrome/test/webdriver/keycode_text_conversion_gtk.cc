@@ -23,7 +23,7 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
     gdk_key_code = gdk_keyval_to_upper(gdk_key_code);
   guint32 unicode_char = gdk_keyval_to_unicode(gdk_key_code);
   if (!unicode_char)
-    return "";
+    return std::string();
   gchar buffer[6];
   gint length = g_unichar_to_utf8(unicode_char, buffer);
   return std::string(buffer, length);

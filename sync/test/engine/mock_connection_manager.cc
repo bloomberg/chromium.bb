@@ -43,7 +43,6 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       store_birthday_("Store BDay!"),
       store_birthday_sent_(false),
       client_stuck_(false),
-      commit_time_rename_prepended_string_(""),
       countdown_to_postbuffer_fail_(0),
       directory_(directory),
       mid_commit_observer_(NULL),

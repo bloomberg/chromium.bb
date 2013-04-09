@@ -74,8 +74,8 @@ scoped_ptr<Cookie> CreateCookie(
   cookie->host_only = net::cookie_util::DomainIsHostOnly(
       canonical_cookie.Domain());
   // A non-UTF8 path is invalid, so we just replace it with an empty string.
-  cookie->path = IsStringUTF8(canonical_cookie.Path()) ?
-      canonical_cookie.Path() : "";
+  cookie->path = IsStringUTF8(canonical_cookie.Path()) ? canonical_cookie.Path()
+                                                       : std::string();
   cookie->secure = canonical_cookie.IsSecure();
   cookie->http_only = canonical_cookie.IsHttpOnly();
   cookie->session = !canonical_cookie.IsPersistent();

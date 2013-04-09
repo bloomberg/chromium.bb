@@ -92,7 +92,7 @@ std::string UserScriptSlave::GetExtensionIdForIsolatedWorld(
     if (iter->second == isolated_world_id)
       return iter->first;
   }
-  return "";
+  return std::string();
 }
 
 // static

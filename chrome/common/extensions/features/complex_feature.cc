@@ -76,7 +76,7 @@ std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
                                                    Manifest::Type type,
                                                    const GURL& url) const {
   if (result == IS_AVAILABLE)
-    return "";
+    return std::string();
 
   // TODO(justinlin): Form some kind of combined availabilities/messages from
   // SimpleFeatures.

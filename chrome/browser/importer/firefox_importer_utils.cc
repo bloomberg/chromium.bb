@@ -255,12 +255,12 @@ std::string ReadBrowserConfigProp(const base::FilePath& app_path,
                                   const std::string& pref_key) {
   std::string content;
   if (!ReadPrefFile(app_path.AppendASCII("browserconfig.properties"), &content))
-    return "";
+    return std::string();
 
   // This file has the syntax: key=value.
   size_t prop_index = content.find(pref_key + "=");
   if (prop_index == std::string::npos)
-    return "";
+    return std::string();
 
   size_t start = prop_index + pref_key.length();
   size_t stop = std::string::npos;
@@ -270,7 +270,7 @@ std::string ReadBrowserConfigProp(const base::FilePath& app_path,
   if (start == std::string::npos ||
       stop == std::string::npos || (start == stop)) {
     LOG(WARNING) << "Firefox property " << pref_key << " could not be parsed.";
-    return "";
+    return std::string();
   }
 
   return content.substr(start + 1, stop - start - 1);
@@ -280,7 +280,7 @@ std::string ReadPrefsJsValue(const base::FilePath& profile_path,
                              const std::string& pref_key) {
   std::string content;
   if (!ReadPrefFile(profile_path.AppendASCII("prefs.js"), &content))
-    return "";
+    return std::string();
 
   return GetPrefsJsValue(content, pref_key);
 }
@@ -411,7 +411,7 @@ std::string GetPrefsJsValue(const std::string& content,
   if (start == std::string::npos || stop == std::string::npos ||
       stop < start) {
     LOG(WARNING) << "Firefox property " << pref_key << " could not be parsed.";
-    return "";
+    return std::string();
   }
 
   // String values have double quotes we don't need to return to the caller.

@@ -151,7 +151,7 @@ TEST_F(ExtensionAlarmsTest, Create) {
   CreateAlarm("[null, {\"delayInMinutes\": 0}]");
 
   const Alarm* alarm =
-      alarm_manager_->GetAlarm(extension_->id(), "");
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10000, alarm->js_alarm->scheduled_time);
@@ -179,7 +179,7 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
   CreateAlarm("[null, {\"periodInMinutes\": 0.001}]");
 
   const Alarm* alarm =
-      alarm_manager_->GetAlarm(extension_->id(), "");
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10060, alarm->js_alarm->scheduled_time);
@@ -205,7 +205,7 @@ TEST_F(ExtensionAlarmsTest, CreateAbsolute) {
   CreateAlarm("[null, {\"when\": 10001}]");
 
   const Alarm* alarm =
-      alarm_manager_->GetAlarm(extension_->id(), "");
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10001, alarm->js_alarm->scheduled_time);
@@ -217,7 +217,7 @@ TEST_F(ExtensionAlarmsTest, CreateAbsolute) {
   // MessageLoop when that happens.
   MessageLoop::current()->Run();
 
-  ASSERT_FALSE(alarm_manager_->GetAlarm(extension_->id(), ""));
+  ASSERT_FALSE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
 
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
   EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
@@ -228,7 +228,7 @@ TEST_F(ExtensionAlarmsTest, CreateRepeatingWithQuickFirstCall) {
   CreateAlarm("[null, {\"when\": 10001, \"periodInMinutes\": 0.001}]");
 
   const Alarm* alarm =
-      alarm_manager_->GetAlarm(extension_->id(), "");
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10001, alarm->js_alarm->scheduled_time);
@@ -240,13 +240,13 @@ TEST_F(ExtensionAlarmsTest, CreateRepeatingWithQuickFirstCall) {
   // MessageLoop when that happens.
   MessageLoop::current()->Run();
 
-  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), ""));
+  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
   EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre(""));
 
   test_clock_.SetNow(base::Time::FromDoubleT(10.7));
   MessageLoop::current()->Run();
 
-  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), ""));
+  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
   EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre("", ""));
 }
 

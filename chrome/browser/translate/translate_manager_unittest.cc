@@ -16,7 +16,7 @@
 typedef testing::Test TranslateManagerTest;
 
 TEST_F(TranslateManagerTest, CheckTranslatableURL) {
-  GURL empty_url = GURL("");
+  GURL empty_url = GURL(std::string());
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(empty_url));
 
   std::string chrome = std::string(chrome::kChromeUIScheme) + "://flags";

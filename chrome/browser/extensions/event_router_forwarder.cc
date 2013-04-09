@@ -26,7 +26,7 @@ void EventRouterForwarder::BroadcastEventToRenderers(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args,
     const GURL& event_url) {
-  HandleEvent("", event_name, event_args.Pass(), 0, true, event_url);
+  HandleEvent(std::string(), event_name, event_args.Pass(), 0, true, event_url);
 }
 
 void EventRouterForwarder::DispatchEventToRenderers(
@@ -37,8 +37,12 @@ void EventRouterForwarder::DispatchEventToRenderers(
     const GURL& event_url) {
   if (!profile)
     return;
-  HandleEvent("", event_name, event_args.Pass(), profile,
-              use_profile_to_restrict_events, event_url);
+  HandleEvent(std::string(),
+              event_name,
+              event_args.Pass(),
+              profile,
+              use_profile_to_restrict_events,
+              event_url);
 }
 
 void EventRouterForwarder::BroadcastEventToExtension(

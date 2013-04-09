@@ -87,7 +87,7 @@ COMPILE_ASSERT(LargeOrdinal::kRadix == 256,
 // IsValid() should return false for all of them.
 TEST(Ordinal, Invalid) {
   // Length criterion.
-  EXPECT_FALSE(TestOrdinal("").IsValid());
+  EXPECT_FALSE(TestOrdinal(std::string()).IsValid());
   EXPECT_FALSE(LongOrdinal("0001").IsValid());
 
   const char kBeforeZero[] = { '0' - 1, '\0' };

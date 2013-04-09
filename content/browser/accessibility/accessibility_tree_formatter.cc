@@ -80,28 +80,28 @@ void AccessibilityTreeFormatter::Initialize() {}
 // static
 const base::FilePath::StringType
 AccessibilityTreeFormatter::GetActualFileSuffix() {
-  return FILE_PATH_LITERAL("");
+  return base::FilePath::StringType();
 }
 
 // static
 const base::FilePath::StringType
 AccessibilityTreeFormatter::GetExpectedFileSuffix() {
-  return FILE_PATH_LITERAL("");
+  return base::FilePath::StringType();
 }
 
 // static
 const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
-  return "";
+  return std::string();
 }
 
 // static
 const std::string AccessibilityTreeFormatter::GetAllowString() {
-  return "";
+  return std::string();
 }
 
 // static
 const std::string AccessibilityTreeFormatter::GetDenyString() {
-  return "";
+  return std::string();
 }
 #endif
 

@@ -251,7 +251,7 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(
   return new net::URLRequestTestJob(request,
                                     network_delegate,
                                     net::URLRequestTestJob::test_headers(),
-                                    "",
+                                    std::string(),
                                     true);
 }
 

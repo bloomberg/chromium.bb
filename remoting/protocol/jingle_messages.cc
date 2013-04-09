@@ -124,10 +124,9 @@ JingleMessage::NamedCandidate::NamedCandidate(
 
 // static
 bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
-  return
-      stanza->Name() == QName(kJabberNamespace, "iq") &&
-      stanza->Attr(QName("", "type")) == "set" &&
-      stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
+  return stanza->Name() == QName(kJabberNamespace, "iq") &&
+         stanza->Attr(QName(std::string(), "type")) == "set" &&
+         stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
 }
 
 // static
@@ -373,7 +372,7 @@ scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
 
   std::string type;
   std::string error_text;
-  QName name("");
+  QName name;
   switch (error_type) {
     case BAD_REQUEST:
       type = "modify";

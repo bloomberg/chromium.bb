@@ -457,8 +457,13 @@ TEST_P(SyncSetupHandlerTest, DisplayBasicLogin) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", false, GoogleServiceAuthError::NONE, "", true, "");
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           false,
+                           GoogleServiceAuthError::NONE,
+                           std::string(),
+                           true,
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -494,8 +499,13 @@ TEST_P(SyncSetupHandlerTest, DisplayForceLogin) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", false, GoogleServiceAuthError::NONE, "", true, "");
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           false,
+                           GoogleServiceAuthError::NONE,
+                           std::string(),
+                           true,
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -679,7 +689,7 @@ TEST_P(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     // Fake a failed signin attempt.
-    handler_->TryLogin(kTestUser, kTestPassword, "", "");
+    handler_->TryLogin(kTestUser, kTestPassword, std::string(), std::string());
     GoogleServiceAuthError error(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
     handler_->SigninFailed(error);
@@ -695,9 +705,13 @@ TEST_P(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", false, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-        kTestUser, true, "");
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           false,
+                           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+                           kTestUser,
+                           true,
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -718,7 +732,7 @@ TEST_P(SyncSetupHandlerTest, HandleCaptcha) {
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     // Fake a failed signin attempt that requires a captcha.
-    handler_->TryLogin(kTestUser, kTestPassword, "", "");
+    handler_->TryLogin(kTestUser, kTestPassword, std::string(), std::string());
     GoogleServiceAuthError error =
         GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
             "token", GURL(kTestCaptchaImageUrl), GURL(kTestCaptchaUnlockUrl));
@@ -734,9 +748,13 @@ TEST_P(SyncSetupHandlerTest, HandleCaptcha) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", false, GoogleServiceAuthError::CAPTCHA_REQUIRED,
-        kTestUser, true, kTestCaptchaImageUrl);
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           false,
+                           GoogleServiceAuthError::CAPTCHA_REQUIRED,
+                           kTestUser,
+                           true,
+                           kTestCaptchaImageUrl);
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -758,7 +776,7 @@ TEST_P(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
     ASSERT_EQ(1U, web_ui_.call_data().size());
     // Fake a successful GAIA request (gaia credentials valid, but signin not
     // complete yet).
-    handler_->TryLogin(kTestUser, kTestPassword, "", "");
+    handler_->TryLogin(kTestUser, kTestPassword, std::string(), std::string());
     handler_->GaiaCredentialsValid();
     ASSERT_EQ(2U, web_ui_.call_data().size());
     EXPECT_EQ("SyncSetupOverlay.showSuccessAndSettingUp",
@@ -780,9 +798,13 @@ TEST_P(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", true, GoogleServiceAuthError::NONE,
-        kTestUser, true, "");
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           true,
+                           GoogleServiceAuthError::NONE,
+                           kTestUser,
+                           true,
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -803,7 +825,7 @@ TEST_P(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
     ASSERT_EQ(1U, web_ui_.call_data().size());
     // Fake a successful GAIA request (gaia credentials valid, but signin not
     // complete yet).
-    handler_->TryLogin(kTestUser, kTestPassword, "", "");
+    handler_->TryLogin(kTestUser, kTestPassword, std::string(), std::string());
     handler_->GaiaCredentialsValid();
     ASSERT_EQ(2U, web_ui_.call_data().size());
     EXPECT_EQ("SyncSetupOverlay.showSuccessAndSettingUp",
@@ -826,9 +848,13 @@ TEST_P(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
     // Now make sure that the appropriate params are being passed.
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(
-        dictionary, "", false, GoogleServiceAuthError::SERVICE_UNAVAILABLE,
-        kTestUser, true, "");
+    CheckShowSyncSetupArgs(dictionary,
+                           std::string(),
+                           false,
+                           GoogleServiceAuthError::SERVICE_UNAVAILABLE,
+                           kTestUser,
+                           true,
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -837,7 +863,7 @@ TEST_P(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
 
 TEST_P(SyncSetupHandlerTest, TestSyncEverything) {
   std::string args = GetConfiguration(
-      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_PASSWORDS);
+      NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -855,7 +881,7 @@ TEST_P(SyncSetupHandlerTest, TestSyncEverything) {
 
 TEST_P(SyncSetupHandlerTest, TurnOnEncryptAll) {
   std::string args = GetConfiguration(
-      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_ALL_DATA);
+      NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_ALL_DATA);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -874,7 +900,7 @@ TEST_P(SyncSetupHandlerTest, TurnOnEncryptAll) {
 
 TEST_P(SyncSetupHandlerTest, TestPassphraseStillRequired) {
   std::string args = GetConfiguration(
-      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_PASSWORDS);
+      NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -990,8 +1016,11 @@ TEST_P(SyncSetupHandlerTest, TestSyncIndividualTypes) {
   for (it = user_selectable_types.First(); it.Good(); it.Inc()) {
     syncer::ModelTypeSet type_to_set;
     type_to_set.Put(it.Get());
-    std::string args = GetConfiguration(
-        NULL, CHOOSE_WHAT_TO_SYNC, type_to_set, "", ENCRYPT_PASSWORDS);
+    std::string args = GetConfiguration(NULL,
+                                        CHOOSE_WHAT_TO_SYNC,
+                                        type_to_set,
+                                        std::string(),
+                                        ENCRYPT_PASSWORDS);
     ListValue list_args;
     list_args.Append(new StringValue(args));
     EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -1010,8 +1039,11 @@ TEST_P(SyncSetupHandlerTest, TestSyncIndividualTypes) {
 }
 
 TEST_P(SyncSetupHandlerTest, TestSyncAllManually) {
-  std::string args = GetConfiguration(
-      NULL, CHOOSE_WHAT_TO_SYNC, GetAllTypes(), "", ENCRYPT_PASSWORDS);
+  std::string args = GetConfiguration(NULL,
+                                      CHOOSE_WHAT_TO_SYNC,
+                                      GetAllTypes(),
+                                      std::string(),
+                                      ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -1074,12 +1106,12 @@ TEST_P(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
     // We should display a login screen with a non-editable username filled in.
     CheckShowSyncSetupArgs(dictionary,
-                           "",
+                           std::string(),
                            false,
                            GoogleServiceAuthError::NONE,
                            kTestUser,
                            false,
-                           "");
+                           std::string());
   } else {
     ASSERT_FALSE(handler_->is_configuring_sync());
     ASSERT_TRUE(handler_->have_signin_tracker());
@@ -1244,9 +1276,9 @@ TEST_P(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername) {
   DictionaryValue args;
   args.SetString("user", "user@not_allowed.com");
   args.SetString("pass", "password");
-  args.SetString("captcha", "");
-  args.SetString("otp", "");
-  args.SetString("accessCode", "");
+  args.SetString("captcha", std::string());
+  args.SetString("otp", std::string());
+  args.SetString("accessCode", std::string());
   std::string json;
   base::JSONWriter::Write(&args, &json);
   ListValue list_args;
@@ -1267,8 +1299,13 @@ TEST_P(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername) {
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   std::string err = l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED);
-  CheckShowSyncSetupArgs(
-      dictionary, err, false, GoogleServiceAuthError::NONE, "", true, "");
+  CheckShowSyncSetupArgs(dictionary,
+                         err,
+                         false,
+                         GoogleServiceAuthError::NONE,
+                         std::string(),
+                         true,
+                         std::string());
   handler_->CloseSyncSetup();
   EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(

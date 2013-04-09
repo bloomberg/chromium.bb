@@ -158,11 +158,13 @@ bool KeyCodeFromShorthandKey(char16 key_utf16,
 }  // namespace
 
 KeyEvent CreateKeyDownEvent(ui::KeyboardCode key_code, int modifiers) {
-  return KeyEvent(kRawKeyDownEventType, modifiers, "", "", key_code);
+  return KeyEvent(
+      kRawKeyDownEventType, modifiers, std::string(), std::string(), key_code);
 }
 
 KeyEvent CreateKeyUpEvent(ui::KeyboardCode key_code, int modifiers) {
-  return KeyEvent(kKeyUpEventType, modifiers, "", "", key_code);
+  return KeyEvent(
+      kKeyUpEventType, modifiers, std::string(), std::string(), key_code);
 }
 
 KeyEvent CreateCharEvent(const std::string& unmodified_text,

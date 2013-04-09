@@ -118,8 +118,11 @@ TEST(CommandExecutorImplTest, CommandThatReturnsError) {
   StatusCode status_code;
   scoped_ptr<base::Value> value;
   std::string out_session_id;
-  executor.ExecuteCommand("simpleCommand", params, "",
-                          &status_code, &value,
+  executor.ExecuteCommand("simpleCommand",
+                          params,
+                          std::string(),
+                          &status_code,
+                          &value,
                           &out_session_id);
   ASSERT_EQ(kUnknownError, status_code);
   ASSERT_TRUE(value);

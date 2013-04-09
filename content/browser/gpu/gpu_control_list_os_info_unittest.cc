@@ -33,12 +33,12 @@ TEST_F(OsInfoTest, ValidOsInfo) {
     GpuControlList::kOsAny
   };
   for (size_t i = 0; i < arraysize(os); ++i) {
-    OsInfo info(os[i], "=", "10.6", "");
+    OsInfo info(os[i], "=", "10.6", std::string());
     EXPECT_TRUE(info.IsValid());
     EXPECT_EQ(os_type[i], info.type());
   }
   {
-    OsInfo info("any", "any", "", "");
+    OsInfo info("any", "any", std::string(), std::string());
     EXPECT_TRUE(info.IsValid());
   }
 }
@@ -54,15 +54,15 @@ TEST_F(OsInfoTest, InvalidOsInfo) {
   };
   for (size_t i = 0; i < arraysize(os); ++i) {
     {
-      OsInfo info(os[i], "", "", "");
+      OsInfo info(os[i], std::string(), std::string(), std::string());
       EXPECT_FALSE(info.IsValid());
     }
     {
-      OsInfo info(os[i], "=", "", "");
+      OsInfo info(os[i], "=", std::string(), std::string());
       EXPECT_FALSE(info.IsValid());
     }
     {
-      OsInfo info(os[i], "", "10.6", "");
+      OsInfo info(os[i], std::string(), "10.6", std::string());
       EXPECT_FALSE(info.IsValid());
     }
   }
@@ -74,34 +74,32 @@ TEST_F(OsInfoTest, InvalidOsInfo) {
     "Android",
   };
   for (size_t i = 0; i < arraysize(os_cap); ++i) {
-    OsInfo info(os_cap[i], "=", "10.6", "");
+    OsInfo info(os_cap[i], "=", "10.6", std::string());
     EXPECT_FALSE(info.IsValid());
   }
 }
 
 TEST_F(OsInfoTest, OsComparison) {
   {
-    OsInfo info("any", "any", "", "");
+    OsInfo info("any", "any", std::string(), std::string());
     const GpuControlList::OsType os_type[] = {
-      GpuControlList::kOsWin,
-      GpuControlList::kOsLinux,
-      GpuControlList::kOsMacosx,
-      GpuControlList::kOsChromeOS,
+      GpuControlList::kOsWin, GpuControlList::kOsLinux,
+      GpuControlList::kOsMacosx, GpuControlList::kOsChromeOS,
       GpuControlList::kOsAndroid,
     };
     for (size_t i = 0; i < arraysize(os_type); ++i) {
-      EXPECT_TRUE(info.Contains(os_type[i], ""));
+      EXPECT_TRUE(info.Contains(os_type[i], std::string()));
       EXPECT_TRUE(info.Contains(os_type[i], "7.8"));
     }
   }
   {
-    OsInfo info("win", ">=", "6", "");
+    OsInfo info("win", ">=", "6", std::string());
     EXPECT_FALSE(info.Contains(GpuControlList::kOsMacosx, "10.8.3"));
     EXPECT_FALSE(info.Contains(GpuControlList::kOsLinux, "10"));
     EXPECT_FALSE(info.Contains(GpuControlList::kOsChromeOS, "13"));
     EXPECT_FALSE(info.Contains(GpuControlList::kOsAndroid, "7"));
     EXPECT_FALSE(info.Contains(GpuControlList::kOsAny, "7"));
-    EXPECT_FALSE(info.Contains(GpuControlList::kOsWin, ""));
+    EXPECT_FALSE(info.Contains(GpuControlList::kOsWin, std::string()));
     EXPECT_TRUE(info.Contains(GpuControlList::kOsWin, "6"));
     EXPECT_TRUE(info.Contains(GpuControlList::kOsWin, "6.1"));
     EXPECT_TRUE(info.Contains(GpuControlList::kOsWin, "7"));

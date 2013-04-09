@@ -68,7 +68,7 @@ bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
 
   if (!plugin_cdm_delegate_->GenerateKeyRequest(
       key_system, type, init_data, init_data_length)) {
-    ReportFailureToCallPlugin(key_system, "");
+    ReportFailureToCallPlugin(key_system, std::string());
     return false;
   }
 

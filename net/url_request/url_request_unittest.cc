@@ -2577,7 +2577,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequest) {
       &network_delegate);
 
   {
-    URLRequest r(test_server_.GetURL(""), &d, &context);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &context);
 
     r.Start();
     MessageLoop::current()->Run();
@@ -2626,21 +2626,21 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestSynchronously1) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::SYNCHRONOUS,
                                BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestSynchronously2) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::SYNCHRONOUS,
                                BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestSynchronously3) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::SYNCHRONOUS,
                                BlockingNetworkDelegate::ON_HEADERS_RECEIVED,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 // The following 3 tests check that the network delegate can cancel a request
@@ -2649,21 +2649,21 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestAsynchronously1) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::AUTO_CALLBACK,
                                BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestAsynchronously2) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::AUTO_CALLBACK,
                                BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequestAsynchronously3) {
   ASSERT_TRUE(test_server_.Start());
   NetworkDelegateCancelRequest(BlockingNetworkDelegate::AUTO_CALLBACK,
                                BlockingNetworkDelegate::ON_HEADERS_RECEIVED,
-                               test_server_.GetURL(""));
+                               test_server_.GetURL(std::string()));
 }
 
 // Tests that the network delegate can block and redirect a request to a new
@@ -2992,7 +2992,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting1) {
   context.Init();
 
   {
-    URLRequest r(test_server_.GetURL(""), &d, &context);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &context);
 
     r.Start();
     MessageLoop::current()->Run();
@@ -3028,7 +3028,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting2) {
   context.Init();
 
   {
-    URLRequest r(test_server_.GetURL(""), &d, &context);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &context);
 
     r.Start();
     MessageLoop::current()->Run();
@@ -3063,7 +3063,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting3) {
   context.Init();
 
   {
-    URLRequest r(test_server_.GetURL(""), &d, &context);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &context);
 
     r.Start();
     MessageLoop::current()->Run();
@@ -3147,7 +3147,7 @@ TEST_F(URLRequestTestHTTP, GetTest_NoCache) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -3213,7 +3213,7 @@ TEST_F(URLRequestTestHTTP, GetTest) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -3235,7 +3235,7 @@ TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -3319,7 +3319,7 @@ TEST_F(URLRequestTestHTTP, HTTPSToHTTPRedirectNoRefererTest) {
   // An https server is sent a request with an https referer,
   // and responds with a redirect to an http url. The http
   // server should not be sent the referer.
-  GURL http_destination = test_server_.GetURL("");
+  GURL http_destination = test_server_.GetURL(std::string());
   TestDelegate d;
   URLRequest req(https_test_server.GetURL(
       "server-redirect?" + http_destination.spec()), &d, &default_context_);
@@ -3336,9 +3336,9 @@ TEST_F(URLRequestTestHTTP, HTTPSToHTTPRedirectNoRefererTest) {
 TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
   ASSERT_TRUE(test_server_.Start());
 
-  GURL destination_url = test_server_.GetURL("");
-  GURL original_url = test_server_.GetURL(
-      "server-redirect?" + destination_url.spec());
+  GURL destination_url = test_server_.GetURL(std::string());
+  GURL original_url =
+      test_server_.GetURL("server-redirect?" + destination_url.spec());
   TestDelegate d;
   URLRequest req(original_url, &d, &default_context_);
   req.Start();
@@ -3374,9 +3374,9 @@ TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
 TEST_F(URLRequestTestHTTP, MultipleRedirectTest) {
   ASSERT_TRUE(test_server_.Start());
 
-  GURL destination_url = test_server_.GetURL("");
-  GURL middle_redirect_url = test_server_.GetURL(
-      "server-redirect?" + destination_url.spec());
+  GURL destination_url = test_server_.GetURL(std::string());
+  GURL middle_redirect_url =
+      test_server_.GetURL("server-redirect?" + destination_url.spec());
   GURL original_url = test_server_.GetURL(
       "server-redirect?" + middle_redirect_url.spec());
   TestDelegate d;
@@ -3492,7 +3492,7 @@ TEST_F(URLRequestTestHTTP, CancelTest2) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     d.set_cancel_in_response_started(true);
 
@@ -3513,7 +3513,7 @@ TEST_F(URLRequestTestHTTP, CancelTest3) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     d.set_cancel_in_received_data(true);
 
@@ -3537,7 +3537,7 @@ TEST_F(URLRequestTestHTTP, CancelTest4) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server_.GetURL(std::string()), &d, &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -4496,7 +4496,7 @@ TEST_F(HTTPSRequestTest, HTTPSGetTest) {
 
   TestDelegate d;
   {
-    URLRequest r(test_server.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server.GetURL(std::string()), &d, &default_context_);
     r.Start();
     EXPECT_TRUE(r.is_pending());
 
@@ -4526,7 +4526,7 @@ TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
     TestDelegate d;
     {
       d.set_allow_certificate_errors(err_allowed);
-      URLRequest r(test_server.GetURL(""), &d, &default_context_);
+      URLRequest r(test_server.GetURL(std::string()), &d, &default_context_);
 
       r.Start();
       EXPECT_TRUE(r.is_pending());
@@ -4561,7 +4561,7 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
     TestDelegate d;
     {
       d.set_allow_certificate_errors(err_allowed);
-      URLRequest r(test_server.GetURL(""), &d, &default_context_);
+      URLRequest r(test_server.GetURL(std::string()), &d, &default_context_);
 
       r.Start();
       EXPECT_TRUE(r.is_pending());
@@ -4605,7 +4605,7 @@ TEST_F(HTTPSRequestTest, TLSv1Fallback) {
   TestURLRequestContext context(true);
   context.Init();
   d.set_allow_certificate_errors(true);
-  URLRequest r(test_server.GetURL(""), &d, &context);
+  URLRequest r(test_server.GetURL(std::string()), &d, &context);
   r.Start();
 
   MessageLoop::current()->Run();
@@ -4784,7 +4784,7 @@ TEST_F(HTTPSRequestTest, SSLv3Fallback) {
   TestURLRequestContext context(true);
   context.Init();
   d.set_allow_certificate_errors(true);
-  URLRequest r(test_server.GetURL(""), &d, &context);
+  URLRequest r(test_server.GetURL(std::string()), &d, &context);
   r.Start();
 
   MessageLoop::current()->Run();
@@ -4832,7 +4832,7 @@ TEST_F(HTTPSRequestTest, ClientAuthTest) {
 
   SSLClientAuthTestDelegate d;
   {
-    URLRequest r(test_server.GetURL(""), &d, &default_context_);
+    URLRequest r(test_server.GetURL(std::string()), &d, &default_context_);
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -5072,7 +5072,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
     TestDelegate d;
     d.set_allow_certificate_errors(true);
-    URLRequest r(test_server.GetURL(""), &d, &context_);
+    URLRequest r(test_server.GetURL(std::string()), &d, &context_);
     r.Start();
 
     MessageLoop::current()->Run();

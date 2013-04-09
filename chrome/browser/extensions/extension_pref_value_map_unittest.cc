@@ -45,7 +45,7 @@ class ExtensionPrefValueMapTestBase : public BASECLASS {
   // Returns an empty string if the key is not set.
   std::string GetValue(const char * key, bool incognito) const {
     const Value *value = epvm_.GetEffectivePrefValue(key, incognito, NULL);
-    std::string string_value = "";
+    std::string string_value;
     if (value)
       value->GetAsString(&string_value);
     return string_value;

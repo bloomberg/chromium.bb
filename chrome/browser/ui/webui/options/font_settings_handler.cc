@@ -188,8 +188,8 @@ void FontSettingsHandler::FontsListHasLoaded(
       option->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
     } else {
       // Add empty name/value to indicate a separator item.
-      option->Append(new base::StringValue(""));
-      option->Append(new base::StringValue(""));
+      option->Append(new base::StringValue(std::string()));
+      option->Append(new base::StringValue(std::string()));
     }
     encoding_list.Append(option);
   }

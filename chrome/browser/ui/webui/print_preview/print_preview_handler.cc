@@ -866,7 +866,7 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
       sticky_settings->save_path()->Append(default_filename),
       &file_type_info,
       0,
-      FILE_PATH_LITERAL(""),
+      base::FilePath::StringType(),
       platform_util::GetTopLevel(
           preview_web_contents()->GetView()->GetNativeView()),
       NULL);

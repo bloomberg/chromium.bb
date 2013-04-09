@@ -344,7 +344,7 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockObserver observer(item);
 
-  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed, "");
+  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed, std::string());
   ASSERT_TRUE(observer.CheckUpdated());
   EXPECT_EQ(kDownloadSpeed, item->CurrentSpeed());
 }
@@ -545,7 +545,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   DownloadItemImpl* safe_item = CreateDownloadItem();
   MockObserver safe_observer(safe_item);
 
-  safe_item->OnAllDataSaved("");
+  safe_item->OnAllDataSaved(std::string());
   EXPECT_TRUE(safe_observer.CheckUpdated());
   safe_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   EXPECT_TRUE(safe_observer.CheckUpdated());
@@ -555,7 +555,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
       CreateDownloadItem();
   MockObserver unsafeurl_observer(unsafeurl_item);
 
-  unsafeurl_item->OnAllDataSaved("");
+  unsafeurl_item->OnAllDataSaved(std::string());
   EXPECT_TRUE(unsafeurl_observer.CheckUpdated());
   unsafeurl_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
   EXPECT_TRUE(unsafeurl_observer.CheckUpdated());
@@ -567,7 +567,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
       CreateDownloadItem();
   MockObserver unsafefile_observer(unsafefile_item);
 
-  unsafefile_item->OnAllDataSaved("");
+  unsafefile_item->OnAllDataSaved(std::string());
   EXPECT_TRUE(unsafefile_observer.CheckUpdated());
   unsafefile_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
   EXPECT_TRUE(unsafefile_observer.CheckUpdated());
@@ -697,7 +697,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
       .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
                                        final_path));
   EXPECT_CALL(*download_file, Detach());
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   RunAllPendingInMessageLoops();
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
@@ -862,7 +862,7 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, Detach());
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   RunAllPendingInMessageLoops();
 
   ASSERT_TRUE(item->IsComplete());
@@ -889,7 +889,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
       .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
                                        base::FilePath(kDummyPath)));
   EXPECT_CALL(*download_file, Detach());
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   RunAllPendingInMessageLoops();
 
   ASSERT_TRUE(item->IsComplete());
@@ -937,7 +937,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_ReturnTrue) {
   // Drive the delegate interaction.
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
       .WillOnce(Return(true));
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_FALSE(item->IsDangerous());
 
@@ -966,7 +966,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockOnce) {
       .WillOnce(DoAll(SaveArg<1>(&delegate_callback),
                       Return(false)))
       .WillOnce(Return(true));
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   ASSERT_FALSE(delegate_callback.is_null());
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
@@ -1001,7 +1001,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
       .WillOnce(DoAll(SaveArg<1>(&delegate_callback),
                       Return(false)))
       .WillOnce(Return(true));
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   ASSERT_FALSE(delegate_callback.is_null());
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
@@ -1047,7 +1047,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
       .WillOnce(DoAll(SaveArg<1>(&delegate_callback),
                       Return(false)))
       .WillOnce(Return(true));
-  item->DestinationObserverAsWeakPtr()->DestinationCompleted("");
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   ASSERT_FALSE(delegate_callback.is_null());
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();

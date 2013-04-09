@@ -112,8 +112,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // you expect a failed upgrade.
   const extensions::Extension* InstallExtension(const base::FilePath& path,
                                                 int expected_change) {
-    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
-                                    expected_change);
+    return InstallOrUpdateExtension(
+        std::string(), path, INSTALL_UI_TYPE_NONE, expected_change);
   }
 
   // Same as above, but an install source other than Manifest::INTERNAL can be
@@ -122,8 +122,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       const base::FilePath& path,
       int expected_change,
       extensions::Manifest::Location install_source) {
-    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
-                                    expected_change, install_source);
+    return InstallOrUpdateExtension(std::string(),
+                                    path,
+                                    INSTALL_UI_TYPE_NONE,
+                                    expected_change,
+                                    install_source);
   }
 
   // Installs extension as if it came from the Chrome Webstore.
@@ -144,22 +147,27 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   const extensions::Extension* InstallExtensionWithUI(
       const base::FilePath& path,
       int expected_change) {
-    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NORMAL,
-                                    expected_change);
+    return InstallOrUpdateExtension(
+        std::string(), path, INSTALL_UI_TYPE_NORMAL, expected_change);
   }
 
   const extensions::Extension* InstallExtensionWithUIAutoConfirm(
       const base::FilePath& path,
       int expected_change,
       Browser* browser) {
-    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_AUTO_CONFIRM,
-                                    expected_change, browser, false);
+    return InstallOrUpdateExtension(std::string(),
+                                    path,
+                                    INSTALL_UI_TYPE_AUTO_CONFIRM,
+                                    expected_change,
+                                    browser,
+                                    false);
   }
 
   // Begins install process but simulates a user cancel.
   const extensions::Extension* StartInstallButCancel(
       const base::FilePath& path) {
-    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_CANCEL, 0);
+    return InstallOrUpdateExtension(
+        std::string(), path, INSTALL_UI_TYPE_CANCEL, 0);
   }
 
   void ReloadExtension(const std::string& extension_id);

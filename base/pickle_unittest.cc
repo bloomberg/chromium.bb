@@ -134,7 +134,7 @@ TEST(PickleTest, UnalignedSize) {
 
 TEST(PickleTest, ZeroLenStr) {
   Pickle pickle;
-  EXPECT_TRUE(pickle.WriteString(""));
+  EXPECT_TRUE(pickle.WriteString(std::string()));
 
   PickleIterator iter(pickle);
   std::string outstr;
@@ -144,7 +144,7 @@ TEST(PickleTest, ZeroLenStr) {
 
 TEST(PickleTest, ZeroLenWStr) {
   Pickle pickle;
-  EXPECT_TRUE(pickle.WriteWString(L""));
+  EXPECT_TRUE(pickle.WriteWString(std::wstring()));
 
   PickleIterator iter(pickle);
   std::string outstr;

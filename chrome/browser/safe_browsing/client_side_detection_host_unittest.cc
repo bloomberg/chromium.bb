@@ -635,11 +635,11 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPHostMap) {
   BrowseInfo* browse_info = GetBrowseInfo();
 
   // Empty IP or host are skipped
-  UpdateIPHostMap("250.10.10.10", "");
+  UpdateIPHostMap("250.10.10.10", std::string());
   ASSERT_EQ(0U, browse_info->ips.size());
-  UpdateIPHostMap("", "google.com/");
+  UpdateIPHostMap(std::string(), "google.com/");
   ASSERT_EQ(0U, browse_info->ips.size());
-  UpdateIPHostMap("", "");
+  UpdateIPHostMap(std::string(), std::string());
   ASSERT_EQ(0U, browse_info->ips.size());
 
   std::set<std::string> expected_hosts;

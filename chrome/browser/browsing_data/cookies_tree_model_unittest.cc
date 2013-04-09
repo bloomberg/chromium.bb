@@ -416,7 +416,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
     SCOPED_TRACE("After removing");
     EXPECT_EQ(1, cookies_model->GetRoot()->GetTotalNodeCount());
     EXPECT_EQ(0, cookies_model->GetRoot()->child_count());
-    EXPECT_EQ(std::string(""), GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ(std::string(), GetDisplayedCookies(cookies_model.get()));
     EXPECT_TRUE(mock_browsing_data_cookie_helper_->AllDeleted());
     EXPECT_TRUE(mock_browsing_data_database_helper_->AllDeleted());
     EXPECT_TRUE(mock_browsing_data_local_storage_helper_->AllDeleted());

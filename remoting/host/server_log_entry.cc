@@ -140,7 +140,7 @@ scoped_ptr<XmlElement> ServerLogEntry::ToStanza() const {
       kChromotingXmlNamespace, kLogEntry)));
   ValuesMap::const_iterator iter;
   for (iter = values_map_.begin(); iter != values_map_.end(); ++iter) {
-    stanza->AddAttr(QName("", iter->first), iter->second);
+    stanza->AddAttr(QName(std::string(), iter->first), iter->second);
   }
   return stanza.Pass();
 }

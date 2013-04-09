@@ -409,23 +409,23 @@ bool FeedbackHandler::Init() {
       std::string query_str = *it;
       if (StartsWithASCII(query_str, std::string(kSessionIDParameter), true)) {
         ReplaceFirstSubstringAfterOffset(
-            &query_str, 0, kSessionIDParameter, "");
+            &query_str, 0, kSessionIDParameter, std::string());
         if (!base::StringToInt(query_str, &session_id))
           return false;
       } else if (StartsWithASCII(*it, std::string(kTabIndexParameter), true)) {
         ReplaceFirstSubstringAfterOffset(
-            &query_str, 0, kTabIndexParameter, "");
+            &query_str, 0, kTabIndexParameter, std::string());
         if (!base::StringToInt(query_str, &index))
           return false;
       } else if (StartsWithASCII(*it, std::string(kCustomPageUrlParameter),
                                  true)) {
         ReplaceFirstSubstringAfterOffset(
-            &query_str, 0, kCustomPageUrlParameter, "");
+            &query_str, 0, kCustomPageUrlParameter, std::string());
         custom_page_url = query_str;
       } else if (StartsWithASCII(*it, std::string(kCategoryTagParameter),
                                  true)) {
         ReplaceFirstSubstringAfterOffset(
-            &query_str, 0, kCategoryTagParameter, "");
+            &query_str, 0, kCategoryTagParameter, std::string());
         category_tag_ = query_str;
 #if defined(OS_CHROMEOS)
       } else if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {

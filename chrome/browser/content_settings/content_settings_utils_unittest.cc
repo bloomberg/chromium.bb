@@ -11,7 +11,7 @@
 TEST(ContentSettingsUtilsTest, ParsePatternString) {
   content_settings::PatternPair pattern_pair;
 
-  pattern_pair = content_settings::ParsePatternString("");
+  pattern_pair = content_settings::ParsePatternString(std::string());
   EXPECT_FALSE(pattern_pair.first.IsValid());
   EXPECT_FALSE(pattern_pair.second.IsValid());
 

@@ -285,7 +285,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
   // Convert the flags to switches.
   ConvertFlagsToSwitches(&prefs_, &command_line);
   EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
-  EXPECT_EQ(std::string(""), command_line.GetSwitchValueASCII(kSwitch1));
+  EXPECT_EQ(std::string(), command_line.GetSwitchValueASCII(kSwitch1));
   EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
   EXPECT_EQ(std::string(kValueForSwitch2),
             command_line.GetSwitchValueASCII(kSwitch2));

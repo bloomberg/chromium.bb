@@ -166,22 +166,30 @@ std::string TestX509CertificatePrivate::TestValidCertificate() {
       PP_X509CERTIFICATE_PRIVATE_SUBJECT_COUNTRY_NAME, "US"));
   ASSERT_TRUE(FieldMatchesString(certificate,
       PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME, "Google Inc"));
-  ASSERT_TRUE(FieldMatchesString(certificate,
-      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME, ""));
+  ASSERT_TRUE(FieldMatchesString(
+      certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME,
+      std::string()));
 
   ASSERT_TRUE(FieldMatchesString(certificate,
       PP_X509CERTIFICATE_PRIVATE_ISSUER_COMMON_NAME, "Thawte SGC CA"));
-  ASSERT_TRUE(FieldMatchesString(certificate,
-      PP_X509CERTIFICATE_PRIVATE_ISSUER_LOCALITY_NAME, ""));
-  ASSERT_TRUE(FieldMatchesString(certificate,
-      PP_X509CERTIFICATE_PRIVATE_ISSUER_STATE_OR_PROVINCE_NAME, ""));
-  ASSERT_TRUE(FieldMatchesString(certificate,
-      PP_X509CERTIFICATE_PRIVATE_ISSUER_COUNTRY_NAME, "ZA"));
+  ASSERT_TRUE(
+      FieldMatchesString(certificate,
+                         PP_X509CERTIFICATE_PRIVATE_ISSUER_LOCALITY_NAME,
+                         std::string()));
+  ASSERT_TRUE(FieldMatchesString(
+      certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_STATE_OR_PROVINCE_NAME,
+      std::string()));
+  ASSERT_TRUE(FieldMatchesString(
+      certificate, PP_X509CERTIFICATE_PRIVATE_ISSUER_COUNTRY_NAME, "ZA"));
   ASSERT_TRUE(FieldMatchesString(certificate,
       PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
       "Thawte Consulting (Pty) Ltd."));
-  ASSERT_TRUE(FieldMatchesString(certificate,
-      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME, ""));
+  ASSERT_TRUE(FieldMatchesString(
+      certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME,
+      std::string()));
 
   ASSERT_FALSE(FieldIsNull(certificate,
       PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER));

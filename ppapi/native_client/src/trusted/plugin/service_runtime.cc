@@ -846,7 +846,7 @@ nacl::string ServiceRuntime::GetCrashLogOutput() {
   if (NULL != subprocess_.get()) {
     return subprocess_->GetCrashLogOutput();
   } else {
-    return "";
+    return std::string();
   }
 }
 

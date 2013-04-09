@@ -67,12 +67,20 @@ bool ProxyConfigDictionary::HasBypassList() const {
 
 // static
 DictionaryValue* ProxyConfigDictionary::CreateDirect() {
-  return CreateDictionary(ProxyPrefs::MODE_DIRECT, "", false, "", "");
+  return CreateDictionary(ProxyPrefs::MODE_DIRECT,
+                          std::string(),
+                          false,
+                          std::string(),
+                          std::string());
 }
 
 // static
 DictionaryValue* ProxyConfigDictionary::CreateAutoDetect() {
-  return CreateDictionary(ProxyPrefs::MODE_AUTO_DETECT, "", false, "", "");
+  return CreateDictionary(ProxyPrefs::MODE_AUTO_DETECT,
+                          std::string(),
+                          false,
+                          std::string(),
+                          std::string());
 }
 
 // static
@@ -80,7 +88,10 @@ DictionaryValue* ProxyConfigDictionary::CreatePacScript(
     const std::string& pac_url,
     bool pac_mandatory) {
   return CreateDictionary(ProxyPrefs::MODE_PAC_SCRIPT,
-                          pac_url, pac_mandatory, "", "");
+                          pac_url,
+                          pac_mandatory,
+                          std::string(),
+                          std::string());
 }
 
 // static
@@ -88,8 +99,11 @@ DictionaryValue* ProxyConfigDictionary::CreateFixedServers(
     const std::string& proxy_server,
     const std::string& bypass_list) {
   if (!proxy_server.empty()) {
-    return CreateDictionary(
-        ProxyPrefs::MODE_FIXED_SERVERS, "", false, proxy_server, bypass_list);
+    return CreateDictionary(ProxyPrefs::MODE_FIXED_SERVERS,
+                            std::string(),
+                            false,
+                            proxy_server,
+                            bypass_list);
   } else {
     return CreateDirect();
   }
@@ -97,7 +111,11 @@ DictionaryValue* ProxyConfigDictionary::CreateFixedServers(
 
 // static
 DictionaryValue* ProxyConfigDictionary::CreateSystem() {
-  return CreateDictionary(ProxyPrefs::MODE_SYSTEM, "", false, "", "");
+  return CreateDictionary(ProxyPrefs::MODE_SYSTEM,
+                          std::string(),
+                          false,
+                          std::string(),
+                          std::string());
 }
 
 // static

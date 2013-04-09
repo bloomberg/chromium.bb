@@ -219,7 +219,7 @@ TEST_F(SingleLoginAttemptTest, RedirectInvalidPort) {
 // Fire an empty redirect and make sure the delegate does not get a
 // redirect.
 TEST_F(SingleLoginAttemptTest, RedirectEmpty) {
-  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(""));
+  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(std::string()));
   FireRedirect(redirect_error.get());
   EXPECT_EQ(IDLE, fake_delegate_.state());
 }
@@ -227,7 +227,7 @@ TEST_F(SingleLoginAttemptTest, RedirectEmpty) {
 // Fire a redirect with a missing text element and make sure the
 // delegate does not get a redirect.
 TEST_F(SingleLoginAttemptTest, RedirectMissingText) {
-  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(""));
+  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(std::string()));
   redirect_error->RemoveChildAfter(redirect_error->FirstChild());
   FireRedirect(redirect_error.get());
   EXPECT_EQ(IDLE, fake_delegate_.state());
@@ -236,7 +236,7 @@ TEST_F(SingleLoginAttemptTest, RedirectMissingText) {
 // Fire a redirect with a missing see-other-host element and make sure
 // the delegate does not get a redirect.
 TEST_F(SingleLoginAttemptTest, RedirectMissingSeeOtherHost) {
-  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(""));
+  scoped_ptr<buzz::XmlElement> redirect_error(MakeRedirectError(std::string()));
   redirect_error->RemoveChildAfter(NULL);
   FireRedirect(redirect_error.get());
   EXPECT_EQ(IDLE, fake_delegate_.state());

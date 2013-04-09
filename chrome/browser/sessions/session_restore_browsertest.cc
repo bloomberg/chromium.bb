@@ -985,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
     ASSERT_TRUE(controller->GetDefaultSessionStorageNamespace());
 
     content::SessionStorageNamespaceMap session_storage_namespace_map;
-    session_storage_namespace_map[""] =
+    session_storage_namespace_map[std::string()] =
         controller->GetDefaultSessionStorageNamespace();
     scoped_ptr<content::WebContents> web_contents(
         content::WebContents::CreateWithSessionStorage(

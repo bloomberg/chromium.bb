@@ -30,12 +30,11 @@ ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context,
   devtools_http_handler_ = DevToolsHttpHandler::Start(
 #if defined(OS_ANDROID)
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
-          kSocketName,
-          base::Bind(&CanUserConnectToDevTools)),
+          kSocketName, base::Bind(&CanUserConnectToDevTools)),
 #else
       new net::TCPListenSocketFactory("127.0.0.1", port),
 #endif
-      "",
+      std::string(),
       this);
 }
 
@@ -61,7 +60,7 @@ base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
 }
 
 std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
-  return "";
+  return std::string();
 }
 
 RenderViewHost* ShellDevToolsDelegate::CreateNewTarget() {
@@ -80,7 +79,7 @@ ShellDevToolsDelegate::GetTargetType(RenderViewHost*) {
 
 std::string ShellDevToolsDelegate::GetViewDescription(
     content::RenderViewHost*) {
-  return "";
+  return std::string();
 }
 
 }  // namespace content

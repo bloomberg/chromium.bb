@@ -137,7 +137,7 @@ std::string ComponentLoader::Add(const std::string& manifest_contents,
   DictionaryValue* manifest = ParseManifest(manifest_contents);
   if (manifest)
     return Add(manifest, root_directory);
-  return "";
+  return std::string();
 }
 
 std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,

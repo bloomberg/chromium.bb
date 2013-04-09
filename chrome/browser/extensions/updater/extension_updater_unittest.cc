@@ -432,7 +432,7 @@ static void ExtractParameters(const std::string& params,
     if (!key_val.empty()) {
       std::string key = key_val[0];
       EXPECT_TRUE(result->find(key) == result->end());
-      (*result)[key] = (key_val.size() == 2) ? key_val[1] : "";
+      (*result)[key] = (key_val.size() == 2) ? key_val[1] : std::string();
     } else {
       NOTREACHED();
     }
@@ -637,7 +637,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // Make sure that an empty update URL data string does not cause a ap=
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
-    fetch_data.AddExtension(id, version, &kNeverPingedData, "", "");
+    fetch_data.AddExtension(
+        id, version, &kNeverPingedData, std::string(), std::string());
 
     std::map<std::string, std::string> params;
     VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
@@ -653,7 +654,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // Make sure that an update URL data string causes an appropriate ap=
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
-    fetch_data.AddExtension(id, version, &kNeverPingedData, "bar", "");
+    fetch_data.AddExtension(
+        id, version, &kNeverPingedData, "bar", std::string());
     std::map<std::string, std::string> params;
     VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
     EXPECT_EQ(id, params["id"]);
@@ -668,7 +670,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // Make sure that an update URL data string causes an appropriate ap=
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
-    fetch_data.AddExtension(id, version, &kNeverPingedData, "a=1&b=2&c", "");
+    fetch_data.AddExtension(
+        id, version, &kNeverPingedData, "a=1&b=2&c", std::string());
     std::map<std::string, std::string> params;
     VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
     EXPECT_EQ(id, params["id"]);
@@ -738,14 +741,12 @@ class ExtensionUpdaterTest : public testing::Test {
     // installed and available at v2.0).
     const std::string id1 = id_util::GenerateId("1");
     const std::string id2 = id_util::GenerateId("2");
-    fetch_data.AddExtension(id1, "1.0.0.0",
-                            &kNeverPingedData, kEmptyUpdateUrlData, "");
-    AddParseResult(id1, "1.1",
-                   "http://localhost/e1_1.1.crx", &updates);
-    fetch_data.AddExtension(id2, "2.0.0.0",
-                            &kNeverPingedData, kEmptyUpdateUrlData, "");
-    AddParseResult(id2, "2.0.0.0",
-                   "http://localhost/e2_2.0.crx", &updates);
+    fetch_data.AddExtension(
+        id1, "1.0.0.0", &kNeverPingedData, kEmptyUpdateUrlData, std::string());
+    AddParseResult(id1, "1.1", "http://localhost/e1_1.1.crx", &updates);
+    fetch_data.AddExtension(
+        id2, "2.0.0.0", &kNeverPingedData, kEmptyUpdateUrlData, std::string());
+    AddParseResult(id2, "2.0.0.0", "http://localhost/e2_2.0.crx", &updates);
 
     EXPECT_CALL(delegate, IsExtensionPending(_)).WillRepeatedly(Return(false));
     EXPECT_CALL(delegate, GetExtensionExistingVersion(id1, _))
@@ -782,8 +783,11 @@ class ExtensionUpdaterTest : public testing::Test {
     std::list<std::string>::const_iterator it;
     for (it = ids_for_update_check.begin();
          it != ids_for_update_check.end(); ++it) {
-      fetch_data.AddExtension(*it, "1.0.0.0",
-                              &kNeverPingedData, kEmptyUpdateUrlData, "");
+      fetch_data.AddExtension(*it,
+                              "1.0.0.0",
+                              &kNeverPingedData,
+                              kEmptyUpdateUrlData,
+                              std::string());
       AddParseResult(*it, "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
 
@@ -816,10 +820,14 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_ptr<ManifestFetchData> fetch3(new ManifestFetchData(kUpdateUrl, 0));
     scoped_ptr<ManifestFetchData> fetch4(new ManifestFetchData(kUpdateUrl, 0));
     ManifestFetchData::PingData zeroDays(0, 0, true);
-    fetch1->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
-    fetch2->AddExtension("2222", "2.0", &zeroDays, kEmptyUpdateUrlData, "");
-    fetch3->AddExtension("3333", "3.0", &zeroDays, kEmptyUpdateUrlData, "");
-    fetch4->AddExtension("4444", "4.0", &zeroDays, kEmptyUpdateUrlData, "");
+    fetch1->AddExtension(
+        "1111", "1.0", &zeroDays, kEmptyUpdateUrlData, std::string());
+    fetch2->AddExtension(
+        "2222", "2.0", &zeroDays, kEmptyUpdateUrlData, std::string());
+    fetch3->AddExtension(
+        "3333", "3.0", &zeroDays, kEmptyUpdateUrlData, std::string());
+    fetch4->AddExtension(
+        "4444", "4.0", &zeroDays, kEmptyUpdateUrlData, std::string());
 
     // This will start the first fetcher and queue the others. The next in queue
     // is started as each fetcher receives its response.
@@ -927,7 +935,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     scoped_ptr<ManifestFetchData> fetch(new ManifestFetchData(kUpdateUrl, 0));
     ManifestFetchData::PingData zeroDays(0, 0, true);
-    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
+    fetch->AddExtension(
+        "1111", "1.0", &zeroDays, kEmptyUpdateUrlData, std::string());
 
     // This will start the first fetcher.
     downloader.StartUpdateCheck(fetch.Pass());
@@ -954,7 +963,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // For response codes that are not in the 5xx range ExtensionDownloader
     // should not retry.
     fetch.reset(new ManifestFetchData(kUpdateUrl, 0));
-    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
+    fetch->AddExtension(
+        "1111", "1.0", &zeroDays, kEmptyUpdateUrlData, std::string());
 
     // This will start the first fetcher.
     downloader.StartUpdateCheck(fetch.Pass());
@@ -1006,7 +1016,7 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL test_url("http://localhost/extension.crx");
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    std::string hash = "";
+    std::string hash;
     Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
@@ -1142,8 +1152,8 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string id1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string id2 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
-    std::string hash1 = "";
-    std::string hash2 = "";
+    std::string hash1;
+    std::string hash2;
 
     std::string version1 = "0.1";
     std::string version2 = "0.1";
@@ -1357,7 +1367,7 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher->set_url(fetched_urls[0]);
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(500);
-    fetcher->SetResponseString("");
+    fetcher->SetResponseString(std::string());
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
@@ -1442,8 +1452,11 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ManifestFetchData fetch_data(update_url, 0);
     const Extension* extension = tmp[0];
-    fetch_data.AddExtension(extension->id(), extension->VersionString(),
-                            &kNeverPingedData, kEmptyUpdateUrlData, "");
+    fetch_data.AddExtension(extension->id(),
+                            extension->VersionString(),
+                            &kNeverPingedData,
+                            kEmptyUpdateUrlData,
+                            std::string());
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
 
@@ -1647,7 +1660,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // Extensions with empty IDs should be rejected.
-  EXPECT_FALSE(downloader->AddPendingExtension("", GURL(), 0));
+  EXPECT_FALSE(downloader->AddPendingExtension(std::string(), GURL(), 0));
   downloader->StartAllPending();
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 

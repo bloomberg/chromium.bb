@@ -357,11 +357,11 @@ std::string TestImeInputEvent::TestImeCancel() {
   expected_events_.clear();
   expected_events_.push_back(CreateImeCompositionStartEvent());
   expected_events_.push_back(update_event);
-  expected_events_.push_back(CreateImeCompositionEndEvent(""));
+  expected_events_.push_back(CreateImeCompositionEndEvent(std::string()));
 
   // Simulate the case when IME canceled composition.
   ASSERT_TRUE(SimulateInputEvent(update_event));
-  ASSERT_TRUE(SimulateInputEvent(CreateImeCompositionEndEvent("")));
+  ASSERT_TRUE(SimulateInputEvent(CreateImeCompositionEndEvent(std::string())));
 
   ASSERT_TRUE(expected_events_.empty());
   PASS();
@@ -417,7 +417,7 @@ std::string TestImeInputEvent::TestImeUnawareCancel() {
 
   // Test for IME-unaware plugins. Cancel won't issue any events.
   ASSERT_TRUE(SimulateInputEvent(update_event));
-  ASSERT_TRUE(SimulateInputEvent(CreateImeCompositionEndEvent("")));
+  ASSERT_TRUE(SimulateInputEvent(CreateImeCompositionEndEvent(std::string())));
 
   ASSERT_TRUE(expected_events_.empty());
   PASS();

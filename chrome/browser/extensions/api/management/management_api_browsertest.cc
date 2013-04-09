@@ -257,15 +257,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   // This should succeed when user accepts dialog.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
-  SetEnabled(true, true, "");
+  SetEnabled(true, true, std::string());
 
   // Crash the extension. Mock a reload by disabling and then enabling. The
   // extension should be reloaded and enabled.
   ASSERT_TRUE(CrashEnabledExtension(kId));
-  SetEnabled(false, true, "");
-  SetEnabled(true, true, "");
-  const Extension* extension = ExtensionSystem::Get(browser()->profile())->
-      extension_service()->GetExtensionById(kId, false);
+  SetEnabled(false, true, std::string());
+  SetEnabled(true, true, std::string());
+  const Extension* extension = ExtensionSystem::Get(browser()->profile())
+      ->extension_service()->GetExtensionById(kId, false);
   EXPECT_TRUE(extension);
 }
 

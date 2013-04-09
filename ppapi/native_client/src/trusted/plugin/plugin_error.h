@@ -109,7 +109,7 @@ class ErrorInfo {
   }
 
   void Reset() {
-    SetReport(ERROR_UNKNOWN, "");
+    SetReport(ERROR_UNKNOWN, std::string());
   }
 
   void SetReport(PluginErrorCode error_code, const std::string& message) {

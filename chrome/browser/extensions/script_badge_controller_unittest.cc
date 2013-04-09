@@ -138,7 +138,7 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
       web_contents(),
       id_map,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
-      GURL(""));
+      GURL(std::string()));
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre(GetScriptBadge(*extension)));
   EXPECT_THAT(location_bar_updated.events, testing::Gt(0));
@@ -167,7 +167,7 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
         web_contents(),
         id_map,
         web_contents()->GetController().GetActiveEntry()->GetPageID(),
-        GURL(""));
+        GURL(std::string()));
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
                 testing::ElementsAre(GetScriptBadge(*extension)));

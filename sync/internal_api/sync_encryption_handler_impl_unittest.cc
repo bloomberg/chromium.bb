@@ -91,7 +91,8 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     encryption_handler_.reset(
         new SyncEncryptionHandlerImpl(user_share(),
                                       &encryptor_,
-                                      "", ""  /* bootstrap tokens */));
+                                      std::string(),
+                                      std::string() /* bootstrap tokens */));
     encryption_handler_->AddObserver(&observer_);
   }
 
@@ -347,7 +348,8 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
   StrictMock<SyncEncryptionHandlerObserverMock> observer2;
   SyncEncryptionHandlerImpl handler2(user_share(),
                                      &encryptor_,
-                                     "", ""  /* bootstrap tokens */);
+                                     std::string(),
+                                     std::string() /* bootstrap tokens */);
   handler2.AddObserver(&observer2);
 
   // Just set the sensitive types (shouldn't trigger any notifications).
@@ -611,9 +613,8 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
     WriteTransaction trans(FROM_HERE, user_share());
     EXPECT_FALSE(GetCryptographer()->is_initialized());
     EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-    EXPECT_FALSE(
-        encryption_handler()->SetKeystoreKeys(BuildEncryptionKeyProto(""),
-                                              trans.GetWrappedTrans()));
+    EXPECT_FALSE(encryption_handler()->SetKeystoreKeys(
+        BuildEncryptionKeyProto(std::string()), trans.GetWrappedTrans()));
     EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
   }
   Mock::VerifyAndClearExpectations(observer());
@@ -679,7 +680,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   // token.
   SyncEncryptionHandlerImpl handler2(user_share(),
                                      &encryptor_,
-                                     "",  // Cryptographer bootstrap.
+                                     std::string(),  // Cryptographer bootstrap.
                                      keystore_bootstrap);
 
   {

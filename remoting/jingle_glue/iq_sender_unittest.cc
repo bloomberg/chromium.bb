@@ -91,9 +91,9 @@ TEST_F(IqSenderTest, SendIq) {
   });
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName("", "type"), "result");
-  response->AddAttr(QName("", "id"), kStanzaId);
-  response->AddAttr(QName("", "from"), kTo);
+  response->AddAttr(QName(std::string(), "type"), "result");
+  response->AddAttr(QName(std::string(), "id"), kStanzaId);
+  response->AddAttr(QName(std::string(), "from"), kTo);
 
   XmlElement* result = new XmlElement(
       QName("test:namespace", "response-body"));
@@ -123,9 +123,9 @@ TEST_F(IqSenderTest, InvalidFrom) {
   });
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName("", "type"), "result");
-  response->AddAttr(QName("", "id"), kStanzaId);
-  response->AddAttr(QName("", "from"), "different_user@domain.com");
+  response->AddAttr(QName(std::string(), "type"), "result");
+  response->AddAttr(QName(std::string(), "id"), kStanzaId);
+  response->AddAttr(QName(std::string(), "from"), "different_user@domain.com");
 
   XmlElement* result = new XmlElement(
       QName("test:namespace", "response-body"));
@@ -143,9 +143,9 @@ TEST_F(IqSenderTest, IdMatchingHack) {
   });
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName("", "type"), "result");
-  response->AddAttr(QName("", "id"), "DIFFERENT_ID");
-  response->AddAttr(QName("", "from"), kTo);
+  response->AddAttr(QName(std::string(), "type"), "result");
+  response->AddAttr(QName(std::string(), "id"), "DIFFERENT_ID");
+  response->AddAttr(QName(std::string(), "from"), kTo);
 
   XmlElement* result = new XmlElement(
       QName("test:namespace", "response-body"));

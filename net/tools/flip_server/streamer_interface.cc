@@ -131,11 +131,13 @@ int StreamerSM::PostAcceptHook() {
   }
   // The Streamer interface is used to stream HTTPS connections, so we
   // will always use the https_server_ip/port here.
-  sm_other_interface_->InitSMConnection(NULL, sm_other_interface_,
-                                        epoll_server_, -1,
+  sm_other_interface_->InitSMConnection(NULL,
+                                        sm_other_interface_,
+                                        epoll_server_,
+                                        -1,
                                         acceptor_->https_server_ip_,
                                         acceptor_->https_server_port_,
-                                        "",
+                                        std::string(),
                                         false);
 
   return 1;

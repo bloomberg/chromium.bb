@@ -607,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 
   // Deleting the omnibox text should hide the overlay.
-  SetOmniboxText("");
+  SetOmniboxText(std::string());
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
   EXPECT_TRUE(CheckVisibilityIs(overlay, false));
 

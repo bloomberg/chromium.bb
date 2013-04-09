@@ -56,7 +56,7 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
                                     file_path,
                                     NULL,
                                     0,
-                                    FILE_PATH_LITERAL(""),
+                                    base::FilePath::StringType(),
                                     NULL,
                                     NULL);
     file_selection_initialisation_in_progress = false;

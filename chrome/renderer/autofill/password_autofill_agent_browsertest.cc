@@ -251,7 +251,7 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
 
   // Only the username should have been autocompleted.
   // TODO(jcivelli): may be we should not event fill the username?
-  CheckTextFieldsState(kAliceUsername, true, "", false);
+  CheckTextFieldsState(kAliceUsername, true, std::string(), false);
 }
 
 // Tests that having a non-matching username precludes the autocomplete.
@@ -263,7 +263,7 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
   SimulateOnFillPasswordForm(fill_data_);
 
   // Neither field should be autocompleted.
-  CheckTextFieldsState("bogus", false, "", false);
+  CheckTextFieldsState("bogus", false, std::string(), false);
 }
 
 // Tests that having a matching username does not preclude the autocomplete.
@@ -288,7 +288,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordClearOnEdit) {
   SimulateUsernameChange("alicia", true);
 
   // The password should have been cleared.
-  CheckTextFieldsState("alicia", false, "", false);
+  CheckTextFieldsState("alicia", false, std::string(), false);
 }
 
 // Tests that we only autocomplete on focus lost and with a full username match
@@ -299,27 +299,27 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   SimulateOnFillPasswordForm(fill_data_);
 
   // No auto-fill should have taken place.
-  CheckTextFieldsState("", false, "", false);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 
   // No autocomplete should happen when text is entered in the username.
   SimulateUsernameChange("a", true);
-  CheckTextFieldsState("a", false, "", false);
+  CheckTextFieldsState("a", false, std::string(), false);
   SimulateUsernameChange("al", true);
-  CheckTextFieldsState("al", false, "", false);
+  CheckTextFieldsState("al", false, std::string(), false);
   SimulateUsernameChange(kAliceUsername, true);
-  CheckTextFieldsState(kAliceUsername, false, "", false);
+  CheckTextFieldsState(kAliceUsername, false, std::string(), false);
 
   // Autocomplete should happen only when the username textfield is blurred with
   // a full match.
   username_element_.setValue("a");
   autofill_agent_->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("a", false, "", false);
+  CheckTextFieldsState("a", false, std::string(), false);
   username_element_.setValue("al");
   autofill_agent_->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("al", false, "", false);
+  CheckTextFieldsState("al", false, std::string(), false);
   username_element_.setValue("alices");
   autofill_agent_->textFieldDidEndEditing(username_element_);
-  CheckTextFieldsState("alices", false, "", false);
+  CheckTextFieldsState("alices", false, std::string(), false);
   username_element_.setValue(ASCIIToUTF16(kAliceUsername));
   autofill_agent_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
@@ -351,7 +351,7 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   // Test that deleting does not trigger autocomplete.
   SimulateKeyDownEvent(username_element_, ui::VKEY_BACK);
   SimulateUsernameChange("alic", true);
-  CheckTextFieldsState("alic", false, "", false);
+  CheckTextFieldsState("alic", false, std::string(), false);
   CheckUsernameSelection(4, 4);  // No selection.
   // Reset the last pressed key to something other than backspace.
   SimulateKeyDownEvent(username_element_, ui::VKEY_A);
@@ -361,7 +361,7 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   // practice the username should no longer be 'alice' and the selected range
   // should be empty.
   SimulateUsernameChange("alf", true);
-  CheckTextFieldsState("alf", false, "", false);
+  CheckTextFieldsState("alf", false, std::string(), false);
   CheckUsernameSelection(3, 3);  // No selection.
 
   // Ok, so now the user removes all the text and enters the letter 'b'.
@@ -379,7 +379,7 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   // want case-sensitive autocompletion, so the username and the selected range
   // should be empty.
   SimulateUsernameChange("c", true);
-  CheckTextFieldsState("c", false, "", false);
+  CheckTextFieldsState("c", false, std::string(), false);
   CheckUsernameSelection(1, 1);
 }
 
@@ -419,7 +419,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
                                                WebKit::WebString(),
                                                0);
   // Autocomplete should not have kicked in.
-  CheckTextFieldsState("", false, "", false);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 }  // namespace autofill

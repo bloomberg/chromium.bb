@@ -154,7 +154,7 @@ TEST(ExternalMountPointsTest, GetVirtualPath) {
   // A mount point with an empty path.
   mount_points->RegisterFileSystem("empty_path",
                                    fileapi::kFileSystemTypeNativeLocal,
-                                   base::FilePath(FPL("")));
+                                   base::FilePath());
 
   struct TestCase {
     const base::FilePath::CharType* const local_path;
@@ -271,7 +271,7 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
                                    base::FilePath(DRIVE FPL("/a/b/c(1)")));
   mount_points->RegisterFileSystem("empty_path",
                                    fileapi::kFileSystemTypeSyncable,
-                                   base::FilePath(FPL("")));
+                                   base::FilePath());
   mount_points->RegisterFileSystem("mount",
                                    fileapi::kFileSystemTypeDrive,
                                    base::FilePath(DRIVE FPL("/root")));
@@ -382,7 +382,7 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
                                    base::FilePath(DRIVE FPL("/a/b/c(1)")));
   mount_points->RegisterFileSystem("empty_path",
                                    fileapi::kFileSystemTypeSyncable,
-                                   base::FilePath(FPL("")));
+                                   base::FilePath());
   mount_points->RegisterFileSystem("mount",
                                    fileapi::kFileSystemTypeDrive,
                                    base::FilePath(DRIVE FPL("/root")));

@@ -29,7 +29,8 @@ class PolicyWatcherTest : public testing::Test {
     nat_true_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
     nat_false_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
     nat_one_.SetInteger(PolicyWatcher::kNatPolicyName, 1);
-    domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName,
+                            std::string());
     domain_full_.SetString(PolicyWatcher::kHostDomainPolicyName, kHostDomain);
     SetDefaults(nat_true_others_default_);
     nat_true_others_default_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
@@ -37,17 +38,19 @@ class PolicyWatcherTest : public testing::Test {
     nat_false_others_default_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
     SetDefaults(domain_empty_others_default_);
     domain_empty_others_default_.SetString(PolicyWatcher::kHostDomainPolicyName,
-                                           "");
+                                           std::string());
     SetDefaults(domain_full_others_default_);
     domain_full_others_default_.SetString(PolicyWatcher::kHostDomainPolicyName,
                                           kHostDomain);
     nat_true_domain_empty_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
-    nat_true_domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    nat_true_domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName,
+                                     std::string());
     nat_true_domain_full_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
     nat_true_domain_full_.SetString(PolicyWatcher::kHostDomainPolicyName,
                                    kHostDomain);
     nat_false_domain_empty_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
-    nat_false_domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    nat_false_domain_empty_.SetString(PolicyWatcher::kHostDomainPolicyName,
+                                      std::string());
     nat_false_domain_full_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
     nat_false_domain_full_.SetString(PolicyWatcher::kHostDomainPolicyName,
                                     kHostDomain);
@@ -55,9 +58,9 @@ class PolicyWatcherTest : public testing::Test {
     nat_true_domain_empty_others_default_.SetBoolean(
         PolicyWatcher::kNatPolicyName, true);
     nat_true_domain_empty_others_default_.SetString(
-        PolicyWatcher::kHostDomainPolicyName, "");
-    unknown_policies_.SetString("UnknownPolicyOne", "");
-    unknown_policies_.SetString("UnknownPolicyTwo", "");
+        PolicyWatcher::kHostDomainPolicyName, std::string());
+    unknown_policies_.SetString("UnknownPolicyOne", std::string());
+    unknown_policies_.SetString("UnknownPolicyTwo", std::string());
 
     const char kOverrideNatTraversalToFalse[] =
       "{ \"RemoteAccessHostFirewallTraversal\": false }";
@@ -117,13 +120,14 @@ class PolicyWatcherTest : public testing::Test {
   void SetDefaults(base::DictionaryValue& dict) {
     dict.SetBoolean(PolicyWatcher::kNatPolicyName, true);
     dict.SetBoolean(PolicyWatcher::kHostRequireTwoFactorPolicyName, false);
-    dict.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    dict.SetString(PolicyWatcher::kHostDomainPolicyName, std::string());
     dict.SetBoolean(PolicyWatcher::kHostMatchUsernamePolicyName, false);
     dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                    kDefaultHostTalkGadgetPrefix);
     dict.SetBoolean(PolicyWatcher::kHostRequireCurtainPolicyName, false);
-    dict.SetString(PolicyWatcher::kHostTokenUrlPolicyName, "");
-    dict.SetString(PolicyWatcher::kHostTokenValidationUrlPolicyName, "");
+    dict.SetString(PolicyWatcher::kHostTokenUrlPolicyName, std::string());
+    dict.SetString(PolicyWatcher::kHostTokenValidationUrlPolicyName,
+                   std::string());
 #if !defined(NDEBUG)
     dict.SetString(PolicyWatcher::kHostDebugOverridePoliciesName, "");
 #endif

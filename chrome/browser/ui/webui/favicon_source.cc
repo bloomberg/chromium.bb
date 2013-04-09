@@ -253,10 +253,8 @@ void FaviconSource::OnFaviconDataAvailable(
 
 void FaviconSource::SendDefaultResponse(
     const content::URLDataSource::GotDataCallback& callback) {
-  SendDefaultResponse(IconRequest(callback,
-                                  "",
-                                  16,
-                                  ui::SCALE_FACTOR_100P));
+  SendDefaultResponse(
+      IconRequest(callback, std::string(), 16, ui::SCALE_FACTOR_100P));
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {

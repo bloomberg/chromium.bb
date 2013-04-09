@@ -344,9 +344,9 @@ size_t IconTheme::MatchesSize(SubDirInfo* info, size_t size) {
 
 std::string IconTheme::ReadLine(FILE* fp) {
   if (!fp)
-    return "";
+    return std::string();
 
-  std::string result = "";
+  std::string result;
   const size_t kBufferSize = 100;
   char buffer[kBufferSize];
   while ((fgets(buffer, kBufferSize - 1, fp)) != NULL) {

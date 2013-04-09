@@ -338,12 +338,12 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, AllowException) {
 
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      "",
-      CONTENT_SETTING_ALLOW);
+  browser()->profile()->GetHostContentSettingsMap()
+      ->SetContentSetting(ContentSettingsPattern::FromURL(url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
 
   string16 expected_title(ASCIIToUTF16("OK"));
   content::TitleWatcher title_watcher(
@@ -357,12 +357,12 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath().AppendASCII("clicktoplay.html"));
 
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      "",
-      CONTENT_SETTING_BLOCK);
+  browser()->profile()->GetHostContentSettingsMap()
+      ->SetContentSetting(ContentSettingsPattern::FromURL(url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                          std::string(),
+                          CONTENT_SETTING_BLOCK);
 
   string16 expected_title(ASCIIToUTF16("Click To Play"));
   content::TitleWatcher title_watcher(

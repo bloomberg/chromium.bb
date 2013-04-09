@@ -66,7 +66,7 @@ KeySystems::KeySystems() {
     for (size_t j = 0; j < mime_type_codecs.size(); ++j)
       codecs.insert(mime_type_codecs[j]);
     // Support the MIME type string alone, without codec(s) specified.
-    codecs.insert("");
+    codecs.insert(std::string());
 
     // Key systems can be repeated, so there may already be an entry.
     KeySystemMappings::iterator key_system_iter =
@@ -113,7 +113,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
   if (codecs.empty())
-    return IsSupportedKeySystemWithContainerAndCodec(mime_type, "", key_system);
+    return IsSupportedKeySystemWithContainerAndCodec(
+        mime_type, std::string(), key_system);
 
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (!IsSupportedKeySystemWithContainerAndCodec(

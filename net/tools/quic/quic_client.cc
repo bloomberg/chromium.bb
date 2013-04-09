@@ -43,8 +43,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
 
 QuicClient::~QuicClient() {
   if (connected()) {
-    session()->connection()->SendConnectionClosePacket(
-        QUIC_PEER_GOING_AWAY, "");
+    session()->connection()
+        ->SendConnectionClosePacket(QUIC_PEER_GOING_AWAY, std::string());
   }
 }
 

@@ -376,7 +376,7 @@ void PeerConnectionTracker::TrackCreateDataChannel(
 }
 
 void PeerConnectionTracker::TrackStop(RTCPeerConnectionHandler* pc_handler) {
-  SendPeerConnectionUpdate(pc_handler, "stop", "");
+  SendPeerConnectionUpdate(pc_handler, "stop", std::string());
 }
 
 void PeerConnectionTracker::TrackSignalingStateChange(
@@ -430,7 +430,7 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
 
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
     RTCPeerConnectionHandler* pc_handler) {
-  SendPeerConnectionUpdate(pc_handler, "onRenegotiationNeeded", "");
+  SendPeerConnectionUpdate(pc_handler, "onRenegotiationNeeded", std::string());
 }
 
 void PeerConnectionTracker::TrackCreateDTMFSender(

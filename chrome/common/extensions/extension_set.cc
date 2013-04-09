@@ -77,11 +77,11 @@ std::string ExtensionSet::GetExtensionOrAppIDByURL(
   DCHECK(!info.origin().isNull());
 
   if (info.url().SchemeIs(extensions::kExtensionScheme))
-    return info.origin().isUnique() ? "" : info.url().host();
+    return info.origin().isUnique() ? std::string() : info.url().host();
 
   const Extension* extension = GetExtensionOrAppByURL(info);
   if (!extension)
-    return "";
+    return std::string();
 
   return extension->id();
 }

@@ -283,7 +283,7 @@ void FeedbackUtil::SendReport(scoped_refptr<FeedbackData> data) {
   // CHROMEOS_RELEASE_VERSION from /etc/lsb-release
 #if !defined(OS_CHROMEOS)
   // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
-  std::string os_version = "";
+  std::string os_version;
   SetOSVersion(&os_version);
   AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
 #endif

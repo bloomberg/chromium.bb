@@ -71,9 +71,8 @@ TEST_F(WebApplicationTest, AppDirWithId) {
 TEST_F(WebApplicationTest, AppDirWithUrl) {
   base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
   base::FilePath result(web_app::GetWebAppDataDirectory(
-      profile_path, "", GURL("http://example.com")));
+      profile_path, std::string(), GURL("http://example.com")));
   base::FilePath expected = profile_path.AppendASCII("Web Applications")
-                                  .AppendASCII("example.com")
-                                  .AppendASCII("http_80");
+      .AppendASCII("example.com").AppendASCII("http_80");
   EXPECT_EQ(expected, result);
 }

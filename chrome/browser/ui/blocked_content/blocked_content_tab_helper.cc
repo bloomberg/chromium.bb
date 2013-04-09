@@ -110,10 +110,8 @@ void BlockedContentTabHelper::AddPopup(content::WebContents* new_contents,
 
   if (creator.is_valid() &&
       profile->GetHostContentSettingsMap()->GetContentSetting(
-          creator,
-          creator,
-          CONTENT_SETTINGS_TYPE_POPUPS,
-          "") == CONTENT_SETTING_ALLOW) {
+          creator, creator, CONTENT_SETTINGS_TYPE_POPUPS, std::string()) ==
+          CONTENT_SETTING_ALLOW) {
     content::WebContentsDelegate* delegate = web_contents()->GetDelegate();
     if (delegate) {
       delegate->AddNewContents(web_contents(),

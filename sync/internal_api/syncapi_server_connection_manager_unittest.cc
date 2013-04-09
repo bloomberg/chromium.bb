@@ -45,7 +45,7 @@ class BlockingHttpPost : public HttpPostProviderInterface {
   }
   virtual const std::string GetResponseHeaderValue(
       const std::string& name) const OVERRIDE {
-    return "";
+    return std::string();
   }
   virtual void Abort() OVERRIDE {
     wait_for_abort_.Signal();

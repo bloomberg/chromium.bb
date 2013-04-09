@@ -295,7 +295,7 @@ bool BeginInstallWithManifestFunction::RunImpl() {
 void BeginInstallWithManifestFunction::SetResultCode(ResultCode code) {
   switch (code) {
     case ERROR_NONE:
-      SetResult(Value::CreateStringValue(""));
+      SetResult(Value::CreateStringValue(std::string()));
       break;
     case UNKNOWN_ERROR:
       SetResult(Value::CreateStringValue("unknown_error"));
@@ -338,7 +338,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
       Extension::FROM_WEBSTORE,
       id,
       localized_name_,
-      "",
+      std::string(),
       &error);
 
   if (!dummy_extension_) {

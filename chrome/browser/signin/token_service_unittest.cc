@@ -225,7 +225,7 @@ TEST_F(TokenServiceTest, OnTokenSuccessUpdate) {
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService),
             "token2");
 
-  service_->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "");
+  service_->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, std::string());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService), "");
 }

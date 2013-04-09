@@ -867,7 +867,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           kTestContentType,
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
-          "",  // No etag.
+          std::string(),  // No etag.
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));

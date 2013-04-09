@@ -180,7 +180,7 @@ bool GetXModifierMask(Display* display, int modifier, int* x_modifier) {
 std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   int x_key_code = KeyboardCodeToXKeyCode(key_code);
   if (x_key_code == -1)
-    return "";
+    return std::string();
 
   XEvent event;
   memset(&event, 0, sizeof(XEvent));
@@ -211,7 +211,7 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   uint16 character = ui::GetCharacterFromXEvent(&event);
 
   if (!character)
-    return "";
+    return std::string();
   return UTF16ToUTF8(string16(1, character));
 }
 

@@ -38,7 +38,7 @@ void CertificateManagerModel::Refresh() {
   chrome::UnlockSlotsIfNecessary(
       modules,
       chrome::kCryptoModulePasswordListCerts,
-      "",  // unused.
+      std::string(),  // unused.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
                  base::Unretained(this)));
 }
@@ -95,9 +95,8 @@ string16 CertificateManagerModel::GetColumnText(
           x509_certificate_model::GetTokenName(cert.os_cert_handle()));
       break;
     case COL_SERIAL_NUMBER:
-      rv = ASCIIToUTF16(
-          x509_certificate_model::GetSerialNumberHexified(
-              cert.os_cert_handle(), ""));
+      rv = ASCIIToUTF16(x509_certificate_model::GetSerialNumberHexified(
+          cert.os_cert_handle(), std::string()));
       break;
     case COL_EXPIRES_ON:
       if (!cert.valid_expiry().is_null())

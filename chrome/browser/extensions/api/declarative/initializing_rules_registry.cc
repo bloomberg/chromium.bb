@@ -39,7 +39,7 @@ std::string InitializingRulesRegistry::RemoveRules(
   if (!error.empty())
     return error;
   RemoveUsedRuleIdentifiers(extension_id, rule_identifiers);
-  return "";
+  return std::string();
 }
 
 std::string InitializingRulesRegistry::RemoveAllRules(
@@ -48,7 +48,7 @@ std::string InitializingRulesRegistry::RemoveAllRules(
   if (!error.empty())
     return error;
   RemoveAllUsedRuleIdentifiers(extension_id);
-  return "";
+  return std::string();
 }
 
 std::string InitializingRulesRegistry::GetRules(
@@ -122,7 +122,7 @@ std::string InitializingRulesRegistry::CheckAndFillInOptionalRules(
       used_rule_identifiers_[extension_id].insert(*(rule->id));
     }
   }
-  return "";
+  return std::string();
 }
 
 void InitializingRulesRegistry::FillInOptionalPriorities(

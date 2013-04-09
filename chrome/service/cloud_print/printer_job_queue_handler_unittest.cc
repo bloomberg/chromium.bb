@@ -81,7 +81,7 @@ TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {
 
   std::set<std::string> expected_tags;
   expected_tags.insert("^own");
-  expected_tags.insert("");
+  expected_tags.insert(std::string());
   std::set<std::string> actual_tags;
   actual_tags.insert(jobs[0].tags_.begin(), jobs[0].tags_.end());
 

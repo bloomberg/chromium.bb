@@ -116,7 +116,7 @@ ACTION_P2(CreateAsyncMockDeviceManagementJob, service, mock_job) {
 MockDeviceManagementJob::~MockDeviceManagementJob() {}
 
 MockDeviceManagementService::MockDeviceManagementService()
-    : DeviceManagementService("") {}
+    : DeviceManagementService(std::string()) {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
 

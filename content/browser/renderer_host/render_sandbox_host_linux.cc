@@ -278,7 +278,7 @@ class SandboxIPCProcess  {
     if (family.name.data()) {
       reply.WriteString(family.name.data());
     } else {
-      reply.WriteString("");
+      reply.WriteString(std::string());
     }
     reply.WriteBool(family.isBold);
     reply.WriteBool(family.isItalic);

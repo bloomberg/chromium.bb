@@ -132,15 +132,16 @@ GtkKeyBindingsHandler* GtkKeyBindingsHandler::GetHandlerOwner(
 }
 
 void GtkKeyBindingsHandler::BackSpace(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched("DeleteBackward", "");
+  GetHandlerOwner(text_view)
+      ->EditCommandMatched("DeleteBackward", std::string());
 }
 
 void GtkKeyBindingsHandler::CopyClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched("Copy", "");
+  GetHandlerOwner(text_view)->EditCommandMatched("Copy", std::string());
 }
 
 void GtkKeyBindingsHandler::CutClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched("Cut", "");
+  GetHandlerOwner(text_view)->EditCommandMatched("Cut", std::string());
 }
 
 void GtkKeyBindingsHandler::DeleteFromCursor(
@@ -191,7 +192,7 @@ void GtkKeyBindingsHandler::DeleteFromCursor(
     count = -count;
   for (; count > 0; --count) {
     for (const char* const* p = commands; *p; ++p)
-      owner->EditCommandMatched(*p, "");
+      owner->EditCommandMatched(*p, std::string());
   }
 }
 
@@ -247,7 +248,7 @@ void GtkKeyBindingsHandler::MoveCursor(
   if (count < 0)
     count = -count;
   for (; count > 0; --count)
-    owner->EditCommandMatched(command, "");
+    owner->EditCommandMatched(command, std::string());
 }
 
 void GtkKeyBindingsHandler::MoveViewport(
@@ -256,18 +257,18 @@ void GtkKeyBindingsHandler::MoveViewport(
 }
 
 void GtkKeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched("Paste", "");
+  GetHandlerOwner(text_view)->EditCommandMatched("Paste", std::string());
 }
 
 void GtkKeyBindingsHandler::SelectAll(GtkTextView* text_view, gboolean select) {
   if (select)
-    GetHandlerOwner(text_view)->EditCommandMatched("SelectAll", "");
+    GetHandlerOwner(text_view)->EditCommandMatched("SelectAll", std::string());
   else
-    GetHandlerOwner(text_view)->EditCommandMatched("Unselect", "");
+    GetHandlerOwner(text_view)->EditCommandMatched("Unselect", std::string());
 }
 
 void GtkKeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
-  GetHandlerOwner(text_view)->EditCommandMatched("SetMark", "");
+  GetHandlerOwner(text_view)->EditCommandMatched("SetMark", std::string());
 }
 
 void GtkKeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {

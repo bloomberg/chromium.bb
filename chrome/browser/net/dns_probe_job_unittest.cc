@@ -54,7 +54,7 @@ void DnsProbeJobTest::RunProbe(MockDnsClientRule::Result good_result,
   const uint16 kTypeA = net::dns_protocol::kTypeA;
   MockDnsClientRuleList rules;
   rules.push_back(MockDnsClientRule("google.com", kTypeA, good_result));
-  rules.push_back(MockDnsClientRule("", kTypeA, bad_result));
+  rules.push_back(MockDnsClientRule(std::string(), kTypeA, bad_result));
 
   scoped_ptr<DnsClient> dns_client = CreateMockDnsClient(config, rules);
   dns_client->SetConfig(config);

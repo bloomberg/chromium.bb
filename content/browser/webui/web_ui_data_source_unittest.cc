@@ -141,7 +141,7 @@ TEST_F(WebUIDataSourceTest, NamedResource) {
 TEST_F(WebUIDataSourceTest, MimeType) {
   const char* html = "text/html";
   const char* js = "application/javascript";
-  EXPECT_EQ(GetMimeType(""), html);
+  EXPECT_EQ(GetMimeType(std::string()), html);
   EXPECT_EQ(GetMimeType("foo"), html);
   EXPECT_EQ(GetMimeType("foo.html"), html);
   EXPECT_EQ(GetMimeType(".js"), js);

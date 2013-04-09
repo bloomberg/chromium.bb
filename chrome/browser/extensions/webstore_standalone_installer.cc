@@ -80,7 +80,7 @@ void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
     DictionaryValue* webstore_data) {
   if (!CheckRequestorAlive()) {
-    CompleteInstall("");
+    CompleteInstall(std::string());
     return;
   }
 
@@ -141,13 +141,13 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   // Assume ownership of webstore_data.
   webstore_data_.reset(webstore_data);
 
-  scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-      this,
-      id_,
-      manifest,
-      "",  // We don't have any icon data.
-      icon_url,
-      profile_->GetRequestContext());
+  scoped_refptr<WebstoreInstallHelper> helper =
+      new WebstoreInstallHelper(this,
+                                id_,
+                                manifest,
+                                std::string(),  // We don't have any icon data.
+                                icon_url,
+                                profile_->GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
   helper->Start();
@@ -165,7 +165,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
   CHECK_EQ(id_, id);
 
   if (!CheckRequestorAlive()) {
-    CompleteInstall("");
+    CompleteInstall(std::string());
     return;
   }
 
@@ -190,7 +190,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseFailure(
 
 void WebstoreStandaloneInstaller::InstallUIProceed() {
   if (!CheckRequestorAlive()) {
-    CompleteInstall("");
+    CompleteInstall(std::string());
     return;
   }
 
@@ -219,7 +219,7 @@ void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
 void WebstoreStandaloneInstaller::OnExtensionInstallSuccess(
     const std::string& id) {
   CHECK_EQ(id_, id);
-  CompleteInstall("");
+  CompleteInstall(std::string());
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallFailure(

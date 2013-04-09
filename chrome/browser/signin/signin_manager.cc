@@ -305,9 +305,8 @@ std::string SigninManager::SigninTypeToString(
   }
 
   NOTREACHED();
-  return "";
+  return std::string();
 }
-
 
 bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& username,
@@ -468,7 +467,8 @@ void SigninManager::StartSignInWithOAuth(const std::string& username,
   scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
   const std::string& locale = g_browser_process->GetApplicationLocale();
 
-  client_login_->StartClientOAuth(username, password, scopes, "", locale);
+  client_login_->StartClientOAuth(
+      username, password, scopes, std::string(), locale);
 
   // Register for token availability.  The signin manager will pre-login the
   // user when the GAIA service token is ready for use.  Only do this if we
@@ -549,10 +549,9 @@ void SigninManager::SignOut() {
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
   // Erase (now) stale information from AboutSigninInternals.
-  NotifyDiagnosticsObservers(USERNAME, "");
-  NotifyDiagnosticsObservers(LSID, "");
-  NotifyDiagnosticsObservers(
-      signin_internals_util::SID, "");
+  NotifyDiagnosticsObservers(USERNAME, std::string());
+  NotifyDiagnosticsObservers(LSID, std::string());
+  NotifyDiagnosticsObservers(signin_internals_util::SID, std::string());
 
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   content::NotificationService::current()->Notify(

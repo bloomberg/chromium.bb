@@ -221,20 +221,21 @@ TEST_F(SavePackageTest, MAYBE_TestLongSavePackageFilename) {
 
   base::FilePath::StringType filename;
   // Test that the filename is successfully shortened to fit.
-  ASSERT_TRUE(GetGeneratedFilename(true, "", url, false, &filename));
+  ASSERT_TRUE(GetGeneratedFilename(true, std::string(), url, false, &filename));
   EXPECT_TRUE(filename.length() < long_file.length());
   EXPECT_FALSE(HasOrdinalNumber(filename));
 
   // Test that the filename is successfully shortened to fit, and gets an
   // an ordinal appended.
-  ASSERT_TRUE(GetGeneratedFilename(true, "", url, false, &filename));
+  ASSERT_TRUE(GetGeneratedFilename(true, std::string(), url, false, &filename));
   EXPECT_TRUE(filename.length() < long_file.length());
   EXPECT_TRUE(HasOrdinalNumber(filename));
 
   // Test that the filename is successfully shortened to fit, and gets a
   // different ordinal appended.
   base::FilePath::StringType filename2;
-  ASSERT_TRUE(GetGeneratedFilename(true, "", url, false, &filename2));
+  ASSERT_TRUE(
+      GetGeneratedFilename(true, std::string(), url, false, &filename2));
   EXPECT_TRUE(filename2.length() < long_file.length());
   EXPECT_TRUE(HasOrdinalNumber(filename2));
   EXPECT_NE(filename, filename2);

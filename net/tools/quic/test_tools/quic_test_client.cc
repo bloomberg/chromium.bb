@@ -85,7 +85,7 @@ string QuicTestClient::SendCustomSynchronousRequest(
 string QuicTestClient::SendSynchronousRequest(const string& uri) {
   if (SendRequest(uri) == 0) {
     DLOG(ERROR) << "Failed to the request for uri:" << uri;
-    return "";
+    return std::string();
   }
   WaitForResponse();
   return response_;

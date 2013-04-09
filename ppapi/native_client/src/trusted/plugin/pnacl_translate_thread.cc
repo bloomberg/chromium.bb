@@ -224,9 +224,7 @@ void PnaclTranslateThread::DoTranslate() {
   }
   PLUGIN_PRINTF(("PnaclTranslateThread done with chunks\n"));
   // Finish llc.
-  if(!llc_subprocess_->InvokeSrpcMethod("StreamEnd",
-                                       "",
-                                       &params)) {
+  if (!llc_subprocess_->InvokeSrpcMethod("StreamEnd", std::string(), &params)) {
     PLUGIN_PRINTF(("PnaclTranslateThread StreamEnd failed\n"));
     if (llc_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {

@@ -11,7 +11,7 @@ namespace base {
 namespace i18n {
 
 TEST(CharIteratorsTest, TestUTF8) {
-  std::string empty("");
+  std::string empty;
   UTF8CharIterator empty_iter(&empty);
   ASSERT_TRUE(empty_iter.end());
   ASSERT_EQ(0, empty_iter.array_pos());

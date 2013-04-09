@@ -153,12 +153,7 @@ UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
 
 UpdateDetails::~UpdateDetails() {}
 
-
-ExtensionDownloader::ExtensionFetch::ExtensionFetch()
-    : id(""),
-      url(),
-      package_hash(""),
-      version("") {}
+ExtensionDownloader::ExtensionFetch::ExtensionFetch() : url() {}
 
 ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& id,
@@ -220,7 +215,11 @@ bool ExtensionDownloader::AddPendingExtension(const std::string& id,
   Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
-  return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, update_url, "",
+  return AddExtensionData(id,
+                          version,
+                          Manifest::TYPE_UNKNOWN,
+                          update_url,
+                          std::string(),
                           request_id);
 }
 
@@ -249,7 +248,10 @@ void ExtensionDownloader::StartBlacklistUpdate(
       new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl(),
                             request_id));
   DCHECK(blacklist_fetch->base_url().SchemeIsSecure());
-  blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data, "",
+  blacklist_fetch->AddExtension(kBlacklistAppID,
+                                version,
+                                &ping_data,
+                                std::string(),
                                 kDefaultInstallSource);
   StartUpdateCheck(blacklist_fetch.Pass());
 }

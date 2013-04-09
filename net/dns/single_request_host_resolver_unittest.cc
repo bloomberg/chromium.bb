@@ -68,7 +68,7 @@ TEST(SingleRequestHostResolverTest, NormalResolve) {
   // Create a host resolver dependency that returns address "199.188.1.166"
   // for resolutions of "watsup".
   MockHostResolver resolver;
-  resolver.rules()->AddIPLiteralRule("watsup", "199.188.1.166", "");
+  resolver.rules()->AddIPLiteralRule("watsup", "199.188.1.166", std::string());
 
   SingleRequestHostResolver single_request_resolver(&resolver);
 

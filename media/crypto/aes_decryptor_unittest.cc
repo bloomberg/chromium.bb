@@ -242,11 +242,13 @@ class AesDecryptorTest : public testing::Test {
   void GenerateKeyRequest(const uint8* key_id, int key_id_size) {
     std::string key_id_string(reinterpret_cast<const char*>(key_id),
                               key_id_size);
-    EXPECT_CALL(*this, KeyMessage(kClearKeySystem,
-                                  StrNe(""), StrEq(key_id_string), ""))
+    EXPECT_CALL(
+        *this,
+        KeyMessage(
+            kClearKeySystem, StrNe(std::string()), StrEq(key_id_string), ""))
         .WillOnce(SaveArg<1>(&session_id_string_));
-    EXPECT_TRUE(decryptor_.GenerateKeyRequest(kClearKeySystem, "",
-                                              key_id, key_id_size));
+    EXPECT_TRUE(decryptor_.GenerateKeyRequest(
+        kClearKeySystem, std::string(), key_id, key_id_size));
   }
 
   void AddKeyAndExpectToSucceed(const uint8* key_id, int key_id_size,
@@ -325,8 +327,9 @@ class AesDecryptorTest : public testing::Test {
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
-  EXPECT_CALL(*this, KeyMessage(kClearKeySystem, StrNe(""), "", ""));
-  EXPECT_TRUE(decryptor_.GenerateKeyRequest(kClearKeySystem, "", NULL, 0));
+  EXPECT_CALL(*this, KeyMessage(kClearKeySystem, StrNe(std::string()), "", ""));
+  EXPECT_TRUE(
+      decryptor_.GenerateKeyRequest(kClearKeySystem, std::string(), NULL, 0));
 }
 
 TEST_F(AesDecryptorTest, NormalWebMDecryption) {

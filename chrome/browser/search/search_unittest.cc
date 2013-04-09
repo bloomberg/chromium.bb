@@ -22,7 +22,7 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
   uint64 group_number = 0;
   const uint64 ZERO = 0;
 
-  EXPECT_FALSE(GetFieldTrialInfo("", &flags, &group_number));
+  EXPECT_FALSE(GetFieldTrialInfo(std::string(), &flags, &group_number));
   EXPECT_EQ(ZERO, group_number);
   EXPECT_EQ(ZERO, flags.size());
 
@@ -62,9 +62,10 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
   EXPECT_EQ(uint64(3), flags.size());
   EXPECT_EQ(true, GetBoolValueForFlagWithDefault("bar", false, flags));
   EXPECT_EQ(uint64(7), GetUInt64ValueForFlagWithDefault("baz", 0, flags));
-  EXPECT_EQ("dogs", GetStringValueForFlagWithDefault("cat", "", flags));
-  EXPECT_EQ("default", GetStringValueForFlagWithDefault(
-      "moose", "default", flags));
+  EXPECT_EQ("dogs",
+            GetStringValueForFlagWithDefault("cat", std::string(), flags));
+  EXPECT_EQ("default",
+            GetStringValueForFlagWithDefault("moose", "default", flags));
 
   group_number = 0;
   flags.clear();

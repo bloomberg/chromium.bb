@@ -11,7 +11,7 @@ namespace util {
 
 TEST(GenerateIfMatchHeaderTest, GenerateIfMatchHeader) {
   // The header matched to all etag should be returned for empty etag.
-  EXPECT_EQ("If-Match: *", GenerateIfMatchHeader(""));
+  EXPECT_EQ("If-Match: *", GenerateIfMatchHeader(std::string()));
 
   // Otherwise, the returned header should be matched to the given etag.
   EXPECT_EQ("If-Match: abcde", GenerateIfMatchHeader("abcde"));

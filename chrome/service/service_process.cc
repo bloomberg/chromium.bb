@@ -175,7 +175,8 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   } else {
     // If no command-line value was specified, read the last used locale from
     // the prefs.
-    locale = service_prefs_->GetString(prefs::kApplicationLocale, "");
+    locale =
+        service_prefs_->GetString(prefs::kApplicationLocale, std::string());
     // If no locale was specified anywhere, use the default one.
     if (locale.empty())
       locale = kDefaultServiceProcessLocale;

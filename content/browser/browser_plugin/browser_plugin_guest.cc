@@ -92,7 +92,7 @@ static std::string RetrieveDownloadURLFromRequestId(
       ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
   if (url_request)
     return url_request->url().possibly_invalid_spec();
-  return "";
+  return std::string();
 }
 
 }

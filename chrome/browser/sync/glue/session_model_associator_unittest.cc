@@ -375,7 +375,7 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
 // Create tab specifics with an empty favicon. Ensure it gets ignored and not
 // stored into the synced favicon lookups.
 TEST_F(SyncSessionModelAssociatorTest, LoadEmptyFavicon) {
-  std::string favicon = "";
+  std::string favicon;
   std::string favicon_url = "http://www.faviconurl.com/favicon.ico";
   std::string page_url = "http://www.faviconurl.com/page.html";
   sync_pb::SessionTab tab;

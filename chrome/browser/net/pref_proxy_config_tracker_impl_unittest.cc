@@ -135,9 +135,9 @@ TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
-  pref_service_->SetManagedPref(
-      prefs::kProxy,
-      ProxyConfigDictionary::CreateFixedServers("http://example.com:3128", ""));
+  pref_service_->SetManagedPref(prefs::kProxy,
+                                ProxyConfigDictionary::CreateFixedServers(
+                                    "http://example.com:3128", std::string()));
   loop_.RunUntilIdle();
 
   net::ProxyConfig actual_config;

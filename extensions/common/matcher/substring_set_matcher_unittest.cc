@@ -117,7 +117,7 @@ TEST(SubstringSetMatcherTest, TestMatcher) {
   // String    abcde
   // Pattern 1
   // Pattern 2 abcdef
-  TestTwoPatterns("abcde", "", "abcdef", true, false);
+  TestTwoPatterns("abcde", std::string(), "abcdef", true, false);
 }
 
 TEST(SubstringSetMatcherTest, RegisterAndRemove) {

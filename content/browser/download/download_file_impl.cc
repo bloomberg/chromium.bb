@@ -108,8 +108,8 @@ void DownloadFileImpl::RenameAndUniquify(
 
   base::FilePath new_path(full_path);
 
-  int uniquifier =
-      file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+  int uniquifier = file_util::GetUniquePathNumber(
+      new_path, base::FilePath::StringType());
   if (uniquifier > 0) {
     new_path = new_path.InsertBeforeExtensionASCII(
         base::StringPrintf(" (%d)", uniquifier));

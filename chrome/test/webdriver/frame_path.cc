@@ -8,7 +8,7 @@
 
 namespace webdriver {
 
-FramePath::FramePath() : path_("") {}
+FramePath::FramePath() {}
 
 FramePath::FramePath(const FramePath& other) : path_(other.path_) {}
 

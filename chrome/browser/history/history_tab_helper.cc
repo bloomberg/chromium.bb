@@ -53,7 +53,8 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
 void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
   HistoryService* hs = GetHistoryService();
   if (hs)
-    hs->SetPageTitle(entry.GetVirtualURL(), entry.GetTitleForDisplay(""));
+    hs->SetPageTitle(entry.GetVirtualURL(),
+                     entry.GetTitleForDisplay(std::string()));
 }
 
 history::HistoryAddPageArgs

@@ -89,7 +89,7 @@ TEST_F(TokenServiceTableTest, MAYBE_TokenServiceGetSet) {
   out_map.clear();
 
   // try blanking it - won't remove it from the db though!
-  EXPECT_TRUE(table_->SetTokenForService(service, ""));
+  EXPECT_TRUE(table_->SetTokenForService(service, std::string()));
   EXPECT_TRUE(table_->GetAllTokens(&out_map));
   EXPECT_EQ(out_map.find(service)->second, "");
   out_map.clear();

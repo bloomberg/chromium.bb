@@ -40,7 +40,7 @@ std::string P2PNotificationTargetToString(P2PNotificationTarget target) {
       return kNotifyAll;
     default:
       NOTREACHED();
-      return "";
+      return std::string();
   }
 }
 
@@ -171,8 +171,9 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                       ObjectIdLessThan());
   registrar_.UpdateRegisteredIds(handler, ids);
   const P2PNotificationData notification_data(
-      invalidator_client_id_, NOTIFY_SELF,
-      ObjectIdSetToInvalidationMap(new_ids, ""));
+      invalidator_client_id_,
+      NOTIFY_SELF,
+      ObjectIdSetToInvalidationMap(new_ids, std::string()));
   SendNotificationData(notification_data);
 }
 
@@ -224,8 +225,10 @@ void P2PInvalidator::OnNotificationsEnabled() {
   registrar_.UpdateInvalidatorState(INVALIDATIONS_ENABLED);
   if (just_turned_on) {
     const P2PNotificationData notification_data(
-        invalidator_client_id_, NOTIFY_SELF,
-        ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""));
+        invalidator_client_id_,
+        NOTIFY_SELF,
+        ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(),
+                                     std::string()));
     SendNotificationData(notification_data);
   }
 }
@@ -256,10 +259,11 @@ void P2PInvalidator::OnIncomingNotification(
   if (!notification_data.ResetFromString(notification.data)) {
     LOG(WARNING) << "Could not parse notification data from "
                  << notification.data;
-    notification_data =
-        P2PNotificationData(
-            invalidator_client_id_, NOTIFY_ALL,
-            ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""));
+    notification_data = P2PNotificationData(
+        invalidator_client_id_,
+        NOTIFY_ALL,
+        ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(),
+                                     std::string()));
   }
   if (!notification_data.IsTargeted(invalidator_client_id_)) {
     DVLOG(1) << "Not a target of the notification -- "

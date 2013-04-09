@@ -1723,7 +1723,7 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
   // the script download.
   EXPECT_TRUE(fetcher->has_pending_request());
   EXPECT_EQ(GURL("http://wpad/wpad.dat"), fetcher->pending_request_url());
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   // Next it should be trying the custom PAC url.
   EXPECT_TRUE(fetcher->has_pending_request());
@@ -1872,12 +1872,12 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   // It should be trying to auto-detect first -- fail the download.
   EXPECT_TRUE(fetcher->has_pending_request());
   EXPECT_EQ(GURL("http://wpad/wpad.dat"), fetcher->pending_request_url());
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   // Next it should be trying the custom PAC url -- fail the download.
   EXPECT_TRUE(fetcher->has_pending_request());
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   // Since we never managed to initialize a ProxyResolver, nothing should have
   // been sent to it.
@@ -2251,7 +2251,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   //
   // We simulate a failed download attempt, the proxy service should now
   // fall-back to DIRECT connections.
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   ASSERT_TRUE(resolver->pending_requests().empty());
 
@@ -2604,7 +2604,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   // to download the script.
   EXPECT_TRUE(fetcher->has_pending_request());
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   MessageLoop::current()->RunUntilIdle();
 
@@ -2771,7 +2771,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
 
   // This time we will fail the download, to simulate a PAC script change.
-  fetcher->NotifyFetchCompletion(ERR_FAILED, "");
+  fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
   // Drain the message loop, so ProxyService is notified of the change
   // and has a chance to re-configure itself.

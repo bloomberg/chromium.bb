@@ -21,7 +21,7 @@ TEST(NetLogWebSocketHandshakeParameterTest, ToValue) {
   list->Append(new StringValue("Upgrade: WebSocket"));
   list->Append(new StringValue("Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5"));
   list->Append(new StringValue("Origin: http://example.com"));
-  list->Append(new StringValue(""));
+  list->Append(new StringValue(std::string()));
   list->Append(new StringValue("\\x00\\x01\\x0a\\x0d\\xff\\xfe\\x0d\\x0a"));
 
   DictionaryValue expected;

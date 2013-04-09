@@ -60,7 +60,8 @@ int ProducerToInt(scoped_ptr<SpdyFrameProducer> producer) {
 // -- be careful to not call any functions that expect the session to
 // be there.
 SpdyStream* MakeTestStream(RequestPriority priority) {
-  return new SpdyStream(NULL, "", priority, 0, 0, false, BoundNetLog());
+  return new SpdyStream(
+      NULL, std::string(), priority, 0, 0, false, BoundNetLog());
 }
 
 // Add some frame producers of different priority. The producers

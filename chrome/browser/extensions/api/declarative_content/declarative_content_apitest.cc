@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       tab, "document.body.innerHTML = '<input type=\"password\">';"));
   // Give the mutation observer a chance to run and send back the
   // matching-selector update.
-  ASSERT_TRUE(content::ExecuteScript(tab, ""));
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   EXPECT_TRUE(page_action->GetIsVisible(tab_id));
 
   // Remove it again to make sure that reverts the action.
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       tab, "document.body.innerHTML = 'Hello world';"));
   // Give the mutation observer a chance to run and send back the
   // matching-selector update.
-  ASSERT_TRUE(content::ExecuteScript(tab, ""));
+  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 

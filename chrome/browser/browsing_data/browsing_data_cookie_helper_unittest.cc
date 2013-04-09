@@ -277,8 +277,10 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDomainCookie) {
   helper->AddChangedCookie(origin, origin, "A=1; Domain=.www.google.com",
                            net::CookieOptions());
   // Try adding invalid cookies that will be ignored.
-  helper->AddChangedCookie(origin, origin, "", net::CookieOptions());
-  helper->AddChangedCookie(origin, origin, "C=bad guy; Domain=wrongdomain.com",
+  helper->AddChangedCookie(origin, origin, std::string(), net::CookieOptions());
+  helper->AddChangedCookie(origin,
+                           origin,
+                           "C=bad guy; Domain=wrongdomain.com",
                            net::CookieOptions());
 
   helper->StartFetching(

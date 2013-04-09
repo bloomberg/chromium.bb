@@ -113,7 +113,7 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
          threat_type == SB_THREAT_TYPE_BINARY_MALWARE_HASH ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
-      url_prefix_, "report", client_name_, version_, "");
+      url_prefix_, "report", client_name_, version_, std::string());
   std::string threat_list = "none";
   switch (threat_type) {
     case SB_THREAT_TYPE_URL_MALWARE:

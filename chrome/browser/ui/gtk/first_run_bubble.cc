@@ -44,10 +44,12 @@ FirstRunBubble::FirstRunBubble(Browser* browser,
     : browser_(browser),
       bubble_(NULL) {
   GtkThemeService* theme_service = GtkThemeService::GetFrom(browser->profile());
-  GtkWidget* title = theme_service->BuildLabel("", ui::kGdkBlack);
-  char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
+  GtkWidget* title = theme_service->BuildLabel(std::string(), ui::kGdkBlack);
+  char* markup = g_markup_printf_escaped(
+      kSearchLabelMarkup,
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_TITLE,
-          GetDefaultSearchEngineName(browser->profile())).c_str());
+                                GetDefaultSearchEngineName(browser->profile()))
+          .c_str());
   gtk_label_set_markup(GTK_LABEL(title), markup);
   g_free(markup);
 

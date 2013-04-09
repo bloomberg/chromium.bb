@@ -30,13 +30,14 @@ TEST(ECSignatureCreatorTest, BasicTest) {
   ASSERT_TRUE(key_original.get());
 
   std::vector<uint8> key_info;
-  ASSERT_TRUE(key_original->ExportEncryptedPrivateKey("", 1000, &key_info));
+  ASSERT_TRUE(
+      key_original->ExportEncryptedPrivateKey(std::string(), 1000, &key_info));
   std::vector<uint8> pubkey_info;
   ASSERT_TRUE(key_original->ExportPublicKey(&pubkey_info));
 
   scoped_ptr<crypto::ECPrivateKey> key(
-      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo("", key_info,
-                                                              pubkey_info));
+      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+          std::string(), key_info, pubkey_info));
   ASSERT_TRUE(key.get());
   ASSERT_TRUE(key->key() != NULL);
 

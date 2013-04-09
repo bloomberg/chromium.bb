@@ -147,7 +147,7 @@ string16 MediaGalleriesDialogController::GetHeader() const {
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() const {
-  std::string extension_name(extension_ ? extension_->name() : "");
+  std::string extension_name(extension_ ? extension_->name() : std::string());
   return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT,
                                     UTF8ToUTF16(extension_name));
 }
@@ -184,7 +184,9 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
       user_data_dir,
-      NULL, 0, FILE_PATH_LITERAL(""),
+      NULL,
+      0,
+      base::FilePath::StringType(),
       web_contents_->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

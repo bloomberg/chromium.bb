@@ -375,7 +375,7 @@ std::string TestURLLoader::TestEmptyDataPOST() {
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.AppendDataToBody("", 0);
-  return LoadAndCompareBody(request, "");
+  return LoadAndCompareBody(request, std::string());
 }
 
 std::string TestURLLoader::TestBinaryDataPOST() {
@@ -558,11 +558,12 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
   // valid token (containing special characters like CR, LF).
   // http://www.w3.org/TR/XMLHttpRequest/
   {
-    ASSERT_EQ(OpenUntrusted("cOnNeCt", ""), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("tRaCk", ""), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("tRaCe", ""), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", ""),
-                            PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("cOnNeCt", std::string()), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("tRaCk", std::string()), PP_ERROR_NOACCESS);
+    ASSERT_EQ(OpenUntrusted("tRaCe", std::string()), PP_ERROR_NOACCESS);
+    ASSERT_EQ(
+        OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", std::string()),
+        PP_ERROR_NOACCESS);
   }
   // HTTP methods are restricted only for untrusted loaders. Try all headers
   // that are forbidden by http://www.w3.org/TR/XMLHttpRequest/.
@@ -619,9 +620,9 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
 std::string TestURLLoader::TestTrustedHttpRequests() {
   // Trusted requests can use restricted methods.
   {
-    ASSERT_EQ(OpenTrusted("cOnNeCt", ""), PP_OK);
-    ASSERT_EQ(OpenTrusted("tRaCk", ""), PP_OK);
-    ASSERT_EQ(OpenTrusted("tRaCe", ""), PP_OK);
+    ASSERT_EQ(OpenTrusted("cOnNeCt", std::string()), PP_OK);
+    ASSERT_EQ(OpenTrusted("tRaCk", std::string()), PP_OK);
+    ASSERT_EQ(OpenTrusted("tRaCe", std::string()), PP_OK);
   }
   // Trusted requests can use restricted headers.
   {

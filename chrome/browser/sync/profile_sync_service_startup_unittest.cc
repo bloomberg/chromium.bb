@@ -189,9 +189,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
   sync_->SetSetupInProgress(true);
-  sync_->signin()->StartSignIn("test_user", "", "", "");
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+  sync_->signin()
+      ->StartSignIn("test_user", std::string(), std::string(), std::string());
+  TokenServiceFactory::GetForProfile(profile_.get())
+      ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "sync_token");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   sync_->SetSetupInProgress(false);
@@ -235,7 +236,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   sync_->SetSetupInProgress(true);
-  sync_->signin()->StartSignIn("test_user", "", "", "");
+  sync_->signin()
+      ->StartSignIn("test_user", std::string(), std::string(), std::string());
   // NOTE: Unlike StartFirstTime, this test does not issue any auth tokens.
   token_service->LoadTokensFromDB();
   sync_->SetSetupInProgress(false);
@@ -269,9 +271,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->SetSetupInProgress(true);
-  sync_->signin()->StartSignIn("test_user", "", "", "");
-  token_service->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+  sync_->signin()
+      ->StartSignIn("test_user", std::string(), std::string(), std::string());
+  token_service->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                       "sync_token");
   sync_->SetSetupInProgress(false);
   MessageLoop::current()->Run();
 

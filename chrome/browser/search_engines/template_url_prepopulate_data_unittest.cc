@@ -167,7 +167,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetInteger("id", 1002);
   entry->SetString("name", "bar");
   entry->SetString("keyword", "bark");
-  entry->SetString("encoding", "");
+  entry->SetString("encoding", std::string());
   overrides->Append(entry->DeepCopy());
   entry->SetInteger("id", 1003);
   entry->SetString("name", "baz");

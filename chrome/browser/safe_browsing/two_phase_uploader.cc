@@ -63,7 +63,7 @@ void TwoPhaseUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!status.is_success()) {
     LOG(ERROR) << "URLFetcher failed, status=" << status.status()
                << " err=" << status.error();
-    Finish(status.error(), response_code, "");
+    Finish(status.error(), response_code, std::string());
     return;
   }
 
@@ -83,7 +83,7 @@ void TwoPhaseUploader::OnURLFetchComplete(const net::URLFetcher* source) {
         if (!source->GetResponseHeaders()->EnumerateHeader(
               NULL, kLocationHeader, &location)) {
           LOG(ERROR) << "no location header";
-          Finish(net::OK, response_code, "");
+          Finish(net::OK, response_code, std::string());
           return;
         }
         DVLOG(1) << "upload location: " << location;

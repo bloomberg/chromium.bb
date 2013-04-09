@@ -70,7 +70,7 @@ TEST(StringUtilTest, TruncateUTF8ToByteSize) {
   std::string output;
 
   // Empty strings and invalid byte_size arguments
-  EXPECT_FALSE(Truncated("", 0, &output));
+  EXPECT_FALSE(Truncated(std::string(), 0, &output));
   EXPECT_EQ(output, "");
   EXPECT_TRUE(Truncated("\xe1\x80\xbf", 0, &output));
   EXPECT_EQ(output, "");
@@ -319,7 +319,7 @@ TEST(StringUtilTest, CollapseWhitespaceASCII) {
 }
 
 TEST(StringUtilTest, ContainsOnlyWhitespaceASCII) {
-  EXPECT_TRUE(ContainsOnlyWhitespaceASCII(""));
+  EXPECT_TRUE(ContainsOnlyWhitespaceASCII(std::string()));
   EXPECT_TRUE(ContainsOnlyWhitespaceASCII(" "));
   EXPECT_TRUE(ContainsOnlyWhitespaceASCII("\t"));
   EXPECT_TRUE(ContainsOnlyWhitespaceASCII("\t \r \n  "));
@@ -712,7 +712,7 @@ void TokenizeTest() {
   EXPECT_EQ(r[2], STR(" three"));
   r.clear();
 
-  size = Tokenize(STR(""), STR(","), &r);
+  size = Tokenize(STR(), STR(","), &r);
   EXPECT_EQ(0U, size);
   ASSERT_EQ(0U, r.size());
   r.clear();
@@ -761,7 +761,7 @@ TEST(StringUtilTest, JoinString) {
   in.push_back("c");
   EXPECT_EQ("a,b,c", JoinString(in, ','));
 
-  in.push_back("");
+  in.push_back(std::string());
   EXPECT_EQ("a,b,c,", JoinString(in, ','));
   in.push_back(" ");
   EXPECT_EQ("a|b|c|| ", JoinString(in, '|'));
@@ -780,7 +780,7 @@ TEST(StringUtilTest, JoinStringWithString) {
   parts.push_back("c");
   EXPECT_EQ("a, b, c", JoinString(parts, separator));
 
-  parts.push_back("");
+  parts.push_back(std::string());
   EXPECT_EQ("a, b, c, ", JoinString(parts, separator));
   parts.push_back(" ");
   EXPECT_EQ("a|b|c|| ", JoinString(parts, "|"));
@@ -812,10 +812,10 @@ TEST(StringUtilTest, StartsWith) {
   EXPECT_TRUE(StartsWithASCII("JavaScript:url", "javascript", false));
   EXPECT_FALSE(StartsWithASCII("java", "javascript", true));
   EXPECT_FALSE(StartsWithASCII("java", "javascript", false));
-  EXPECT_FALSE(StartsWithASCII("", "javascript", false));
-  EXPECT_FALSE(StartsWithASCII("", "javascript", true));
-  EXPECT_TRUE(StartsWithASCII("java", "", false));
-  EXPECT_TRUE(StartsWithASCII("java", "", true));
+  EXPECT_FALSE(StartsWithASCII(std::string(), "javascript", false));
+  EXPECT_FALSE(StartsWithASCII(std::string(), "javascript", true));
+  EXPECT_TRUE(StartsWithASCII("java", std::string(), false));
+  EXPECT_TRUE(StartsWithASCII("java", std::string(), true));
 
   EXPECT_TRUE(StartsWith(L"javascript:url", L"javascript", true));
   EXPECT_FALSE(StartsWith(L"JavaScript:url", L"javascript", true));
@@ -823,10 +823,10 @@ TEST(StringUtilTest, StartsWith) {
   EXPECT_TRUE(StartsWith(L"JavaScript:url", L"javascript", false));
   EXPECT_FALSE(StartsWith(L"java", L"javascript", true));
   EXPECT_FALSE(StartsWith(L"java", L"javascript", false));
-  EXPECT_FALSE(StartsWith(L"", L"javascript", false));
-  EXPECT_FALSE(StartsWith(L"", L"javascript", true));
-  EXPECT_TRUE(StartsWith(L"java", L"", false));
-  EXPECT_TRUE(StartsWith(L"java", L"", true));
+  EXPECT_FALSE(StartsWith(std::wstring(), L"javascript", false));
+  EXPECT_FALSE(StartsWith(std::wstring(), L"javascript", true));
+  EXPECT_TRUE(StartsWith(L"java", std::wstring(), false));
+  EXPECT_TRUE(StartsWith(L"java", std::wstring(), true));
 }
 
 TEST(StringUtilTest, EndsWith) {
@@ -838,14 +838,14 @@ TEST(StringUtilTest, EndsWith) {
   EXPECT_FALSE(EndsWith(L".plug", L".plugin", false));
   EXPECT_FALSE(EndsWith(L"Foo.plugin Bar", L".plugin", true));
   EXPECT_FALSE(EndsWith(L"Foo.plugin Bar", L".plugin", false));
-  EXPECT_FALSE(EndsWith(L"", L".plugin", false));
-  EXPECT_FALSE(EndsWith(L"", L".plugin", true));
-  EXPECT_TRUE(EndsWith(L"Foo.plugin", L"", false));
-  EXPECT_TRUE(EndsWith(L"Foo.plugin", L"", true));
+  EXPECT_FALSE(EndsWith(std::wstring(), L".plugin", false));
+  EXPECT_FALSE(EndsWith(std::wstring(), L".plugin", true));
+  EXPECT_TRUE(EndsWith(L"Foo.plugin", std::wstring(), false));
+  EXPECT_TRUE(EndsWith(L"Foo.plugin", std::wstring(), true));
   EXPECT_TRUE(EndsWith(L".plugin", L".plugin", false));
   EXPECT_TRUE(EndsWith(L".plugin", L".plugin", true));
-  EXPECT_TRUE(EndsWith(L"", L"", false));
-  EXPECT_TRUE(EndsWith(L"", L"", true));
+  EXPECT_TRUE(EndsWith(std::wstring(), std::wstring(), false));
+  EXPECT_TRUE(EndsWith(std::wstring(), std::wstring(), true));
 }
 
 TEST(StringUtilTest, GetStringFWithOffsets) {
@@ -1142,10 +1142,10 @@ TEST(StringUtilTest, ReplaceChars) {
 TEST(StringUtilTest, ContainsOnlyChars) {
   // Providing an empty list of characters should return false but for the empty
   // string.
-  EXPECT_TRUE(ContainsOnlyChars("", ""));
-  EXPECT_FALSE(ContainsOnlyChars("Hello", ""));
+  EXPECT_TRUE(ContainsOnlyChars(std::string(), std::string()));
+  EXPECT_FALSE(ContainsOnlyChars("Hello", std::string()));
 
-  EXPECT_TRUE(ContainsOnlyChars("", "1234"));
+  EXPECT_TRUE(ContainsOnlyChars(std::string(), "1234"));
   EXPECT_TRUE(ContainsOnlyChars("1", "1234"));
   EXPECT_TRUE(ContainsOnlyChars("1", "4321"));
   EXPECT_TRUE(ContainsOnlyChars("123", "4321"));

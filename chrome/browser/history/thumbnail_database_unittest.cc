@@ -414,7 +414,7 @@ TEST_F(ThumbnailDatabaseTest, UpgradeToVersion6) {
   EXPECT_EQ(url, GURL(statement.ColumnString(1)));
   EXPECT_EQ(TOUCH_ICON, statement.ColumnInt(2));
   // Any previous data in sizes should be cleared.
-  EXPECT_EQ(std::string(""), statement.ColumnString(3));
+  EXPECT_EQ(std::string(), statement.ColumnString(3));
 
   statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT icon_id, last_updated, image_data, width, height "
@@ -854,7 +854,7 @@ TEST_F(ThumbnailDatabaseTest, FaviconSizesToAndFromString) {
 
   // Valid input.
   FaviconSizes sizes_empty;
-  ThumbnailDatabase::DatabaseStringToFaviconSizes("", &sizes_empty);
+  ThumbnailDatabase::DatabaseStringToFaviconSizes(std::string(), &sizes_empty);
   EXPECT_EQ(0u, sizes_empty.size());
 
   FaviconSizes sizes_valid;

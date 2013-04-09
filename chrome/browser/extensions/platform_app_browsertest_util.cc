@@ -142,13 +142,13 @@ ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
     const Extension* extension) {
   ShellWindow::CreateParams params;
   return ShellWindow::Create(
-      browser()->profile(), extension, GURL(""), params);
+      browser()->profile(), extension, GURL(std::string()), params);
 }
 
 ShellWindow* PlatformAppBrowserTest::CreateShellWindowFromParams(
     const Extension* extension, const ShellWindow::CreateParams& params) {
   return ShellWindow::Create(
-      browser()->profile(), extension, GURL(""), params);
+      browser()->profile(), extension, GURL(std::string()), params);
 }
 
 void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {

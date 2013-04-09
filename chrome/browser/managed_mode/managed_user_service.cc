@@ -154,10 +154,10 @@ void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 ManagedModeURLFilter::BLOCK,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kManagedModeLocalPassphrase,
-                               "",
+                               std::string(),
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kManagedModeLocalSalt,
-                               "",
+                               std::string(),
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -203,7 +203,7 @@ bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
                                      string16* error) const {
   string16 tmp_error;
   // |extension| can be NULL in unit tests.
-  if (ExtensionManagementPolicyImpl(extension ? extension->id() : "",
+  if (ExtensionManagementPolicyImpl(extension ? extension->id() : std::string(),
                                     &tmp_error))
     return true;
 
@@ -244,7 +244,8 @@ bool ManagedUserService::UserMayModifySettings(
     const extensions::Extension* extension,
     string16* error) const {
   // |extension| can be NULL in unit tests.
-  return ExtensionManagementPolicyImpl(extension ? extension->id() : "", error);
+  return ExtensionManagementPolicyImpl(
+      extension ? extension->id() : std::string(), error);
 }
 
 void ManagedUserService::Observe(int type,

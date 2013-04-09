@@ -164,20 +164,19 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     std::vector<GURL> url_chain;
     url_chain.push_back(GURL("foo-url"));
 
-    DownloadRow download(
-        base::FilePath(FILE_PATH_LITERAL("foo-path")),
-        base::FilePath(FILE_PATH_LITERAL("foo-path")),
-        url_chain,
-        GURL(""),
-        time,
-        time,
-        0,
-        512,
-        state,
-        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-        content::DOWNLOAD_INTERRUPT_REASON_NONE,
-        0,
-        0);
+    DownloadRow download(base::FilePath(FILE_PATH_LITERAL("foo-path")),
+                         base::FilePath(FILE_PATH_LITERAL("foo-path")),
+                         url_chain,
+                         GURL(std::string()),
+                         time,
+                         time,
+                         0,
+                         512,
+                         state,
+                         content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                         content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                         0,
+                         0);
     return db_->CreateDownload(download);
   }
 
@@ -317,7 +316,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
     int64 db_handle = 0;
     // Null path.
     s.BindInt64(0, ++db_handle);
-    s.BindString(1, "");
+    s.BindString(1, std::string());
     s.BindString(2, "http://whatever.com/index.html");
     s.BindInt64(3, now.ToTimeT());
     s.BindInt64(4, 100);
@@ -464,20 +463,19 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
   CreateBackendAndDatabase();
   base::Time now(base::Time::Now());
   std::vector<GURL> url_chain;
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("foo-path")),
-      base::FilePath(FILE_PATH_LITERAL("foo-path")),
-      url_chain,
-      GURL(""),
-      now,
-      now,
-      0,
-      512,
-      DownloadItem::COMPLETE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      content::DOWNLOAD_INTERRUPT_REASON_NONE,
-      0,
-      0);
+  DownloadRow download(base::FilePath(FILE_PATH_LITERAL("foo-path")),
+                       base::FilePath(FILE_PATH_LITERAL("foo-path")),
+                       url_chain,
+                       GURL(std::string()),
+                       now,
+                       now,
+                       0,
+                       512,
+                       DownloadItem::COMPLETE,
+                       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                       content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                       0,
+                       0);
 
   // Creating records without any urls should fail.
   EXPECT_EQ(DownloadDatabase::kUninitializedHandle,

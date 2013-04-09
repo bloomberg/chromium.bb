@@ -78,7 +78,10 @@ void ServiceClient::Core::RegisterHost(
   post_body.SetString("data.publicKey", public_key);
   std::string post_body_str;
   base::JSONWriter::Write(&post_body, &post_body_str);
-  MakeGaiaRequest(net::URLFetcher::POST, "", post_body_str, oauth_access_token,
+  MakeGaiaRequest(net::URLFetcher::POST,
+                  std::string(),
+                  post_body_str,
+                  oauth_access_token,
                   delegate);
 }
 
@@ -88,8 +91,11 @@ void ServiceClient::Core::UnregisterHost(
     Delegate* delegate) {
   DCHECK(pending_request_type_ == PENDING_REQUEST_NONE);
   pending_request_type_ = PENDING_REQUEST_UNREGISTER_HOST;
-  MakeGaiaRequest(net::URLFetcher::DELETE_REQUEST, host_id, "",
-                  oauth_access_token, delegate);
+  MakeGaiaRequest(net::URLFetcher::DELETE_REQUEST,
+                  host_id,
+                  std::string(),
+                  oauth_access_token,
+                  delegate);
 }
 
 void ServiceClient::Core::MakeGaiaRequest(

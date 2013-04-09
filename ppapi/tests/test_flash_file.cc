@@ -285,12 +285,10 @@ std::string TestFlashFile::TestGetDirContents() {
   CloseFileHandle(file_handle);
   ASSERT_TRUE(FileModuleLocal::CreateDir(instance_, dirname));
 
-  ASSERT_TRUE(FileModuleLocal::GetDirContents(instance_, "", &result));
-  FileModuleLocal::DirEntry expected[] =
-    { {"..", true},
-      {filename, false},
-      {dirname, true}
-    };
+  ASSERT_TRUE(
+      FileModuleLocal::GetDirContents(instance_, std::string(), &result));
+  FileModuleLocal::DirEntry expected[] = { { "..", true }, { filename, false },
+                                           { dirname, true } };
   size_t expected_size = sizeof(expected) / sizeof(expected[0]);
 
   std::sort(expected, expected + expected_size, DirEntryLessThan);
@@ -329,7 +327,8 @@ std::string TestFlashFile::TestCreateTemporaryFile() {
 std::string TestFlashFile::GetItemCountUnderModuleLocalRoot(
     size_t* item_count) {
   std::vector<FileModuleLocal::DirEntry> contents;
-  ASSERT_TRUE(FileModuleLocal::GetDirContents(instance_, "", &contents));
+  ASSERT_TRUE(
+      FileModuleLocal::GetDirContents(instance_, std::string(), &contents));
   *item_count = contents.size();
   PASS();
 }

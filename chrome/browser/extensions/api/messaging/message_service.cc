@@ -216,7 +216,7 @@ void MessageService::OpenChannelToNativeApp(
   }
 
   if (!has_permission) {
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, std::string());
     port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
                               kMissingPermissionError);
     return;
@@ -247,7 +247,7 @@ void MessageService::OpenChannelToNativeApp(
   if (!native_process.get()) {
     LOG(ERROR) << "Failed to create native process.";
     // Treat it as a disconnect.
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, std::string());
     port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
                               kReceivingEndDoesntExistError);
     return;
@@ -320,7 +320,8 @@ bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
 
   if (!params->receiver.get() || !params->receiver->GetRenderProcessHost()) {
     // Treat it as a disconnect.
-    ExtensionMessagePort port(params->source, MSG_ROUTING_CONTROL, "");
+    ExtensionMessagePort port(
+        params->source, MSG_ROUTING_CONTROL, std::string());
     port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(params->receiver_port_id),
                               kReceivingEndDoesntExistError);
     return false;

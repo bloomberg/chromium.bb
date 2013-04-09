@@ -115,7 +115,7 @@ TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
 TEST_F(FileSystemUtilTest, IsAbsolutePath) {
   EXPECT_TRUE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("/")));
   EXPECT_TRUE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("/foo/bar")));
-  EXPECT_FALSE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("")));
+  EXPECT_FALSE(VirtualPath::IsAbsolute(base::FilePath::StringType()));
   EXPECT_FALSE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("foo/bar")));
 }
 

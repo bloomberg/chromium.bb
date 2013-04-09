@@ -79,7 +79,7 @@ std::string GetTypeSignature(const base::Value& value) {
       return "a{sv}";
     default:
       DLOG(ERROR) << "Unexpected type " << value.GetType();
-      return "";
+      return std::string();
   }
 }
 

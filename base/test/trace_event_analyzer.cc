@@ -140,7 +140,7 @@ std::string TraceEvent::GetKnownArgAsString(const std::string& name) const {
   if (GetArgAsString(name, &arg_string))
     return arg_string;
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 double TraceEvent::GetKnownArgAsDouble(const std::string& name) const {

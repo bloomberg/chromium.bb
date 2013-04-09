@@ -63,7 +63,8 @@ class IndexedDBTest : public UIPerfTest {
 
   bool GetResults(TabProxy* tab, ResultsMap* results) {
     std::wstring json_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
+    bool succeeded = tab->ExecuteAndExtractString(
+        std::wstring(),
         L"window.domAutomationController.send("
         L"    JSON.stringify(automation.getResults()));",
         &json_wide);
@@ -84,8 +85,8 @@ class IndexedDBTest : public UIPerfTest {
 
     ResultsMap::const_iterator it = results.begin();
     for (; it != results.end(); ++it)
-      perf_test::PrintResultList(it->first, "", trace_name, it->second, "ms",
-                                 false);
+      perf_test::PrintResultList(
+          it->first, std::string(), trace_name, it->second, "ms", false);
   }
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTest);

@@ -66,7 +66,7 @@ class Handler : public content::WebContentsObserver {
 
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE {
     base::ListValue val;
-    callback_.Run(kRendererDestroyed, -1, GURL(""), val);
+    callback_.Run(kRendererDestroyed, -1, GURL(std::string()), val);
     delete this;
   }
 

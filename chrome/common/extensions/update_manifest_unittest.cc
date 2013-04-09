@@ -120,7 +120,7 @@ TEST(ExtensionUpdateManifestTest, TestUpdateManifest) {
   UpdateManifest parser;
 
   // Test parsing of a number of invalid xml cases
-  EXPECT_FALSE(parser.Parse(""));
+  EXPECT_FALSE(parser.Parse(std::string()));
   EXPECT_FALSE(parser.errors().empty());
 
   EXPECT_TRUE(parser.Parse(kMissingAppId));

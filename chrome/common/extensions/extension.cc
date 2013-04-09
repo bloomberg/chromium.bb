@@ -437,8 +437,8 @@ bool Extension::ParsePermissions(const char* key,
   if (manifest_->HasKey(key)) {
     const ListValue* permissions = NULL;
     if (!manifest_->GetList(key, &permissions)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidPermissions, "");
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermissions,
+                                                   std::string());
       return false;
     }
 

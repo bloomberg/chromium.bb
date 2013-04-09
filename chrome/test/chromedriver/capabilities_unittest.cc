@@ -21,7 +21,7 @@ TEST(ParseCapabilities, WithAndroidPackage) {
 TEST(ParseCapabilities, EmptyAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.android_package", "");
+  caps.SetString("chromeOptions.android_package", std::string());
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }

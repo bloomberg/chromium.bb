@@ -411,7 +411,8 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DATABASE, ""));
+  scoped_ptr<TaskToken> token(
+      GetToken(FROM_HERE, TASK_TYPE_DATABASE, std::string()));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::UnregisterOriginForTrackingChanges,
@@ -442,7 +443,8 @@ void DriveFileSyncService::EnableOriginForTrackingChanges(
   if (!metadata_store_->IsOriginDisabled(origin))
     return;
 
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DATABASE, ""));
+  scoped_ptr<TaskToken> token(
+      GetToken(FROM_HERE, TASK_TYPE_DATABASE, std::string()));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::EnableOriginForTrackingChanges,
@@ -463,7 +465,8 @@ void DriveFileSyncService::DisableOriginForTrackingChanges(
       !metadata_store_->IsIncrementalSyncOrigin(origin))
     return;
 
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DATABASE, ""));
+  scoped_ptr<TaskToken> token(
+      GetToken(FROM_HERE, TASK_TYPE_DATABASE, std::string()));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::DisableOriginForTrackingChanges,

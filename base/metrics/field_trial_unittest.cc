@@ -86,7 +86,7 @@ TEST_F(FieldTrialTest, Registration) {
   EXPECT_EQ(name1, trial1->trial_name());
   EXPECT_EQ("", trial1->group_name_internal());
 
-  trial1->AppendGroup("", 7);
+  trial1->AppendGroup(std::string(), 7);
 
   EXPECT_EQ(trial1, FieldTrialList::Find(name1));
   EXPECT_FALSE(FieldTrialList::Find(name2));
@@ -221,7 +221,7 @@ TEST_F(FieldTrialTest, OneWinner) {
   std::string winner_name;
 
   for (int i = 1; i <= group_count; ++i) {
-    int might_win = trial->AppendGroup("", 1);
+    int might_win = trial->AppendGroup(std::string(), 1);
 
     // Because we keep appending groups, we want to see if the last group that
     // was added has been assigned or not.

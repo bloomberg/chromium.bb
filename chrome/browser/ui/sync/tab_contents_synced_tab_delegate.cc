@@ -43,7 +43,7 @@ Profile* TabContentsSyncedTabDelegate::profile() const {
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
   const scoped_refptr<const extensions::Extension> extension_app(
       extensions::TabHelper::FromWebContents(web_contents_)->extension_app());
-  return (extension_app.get() ? extension_app->id() : "");
+  return (extension_app.get() ? extension_app->id() : std::string());
 }
 
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {

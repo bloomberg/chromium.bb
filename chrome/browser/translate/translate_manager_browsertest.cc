@@ -538,7 +538,7 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
   RenderViewHostTester::TestOnMessageReceived(
       rvh(),
       ChromeViewHostMsg_PageTranslated(
-          2, 0, "", "en", TranslateErrors::UNKNOWN_LANGUAGE));
+          2, 0, std::string(), "en", TranslateErrors::UNKNOWN_LANGUAGE));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,

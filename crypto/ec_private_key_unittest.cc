@@ -23,7 +23,7 @@ TEST(ECPrivateKeyUnitTest, OpenSSLStub) {
 // back the same exact public key, and the private key should have the same
 // value and elliptic curve params.
 TEST(ECPrivateKeyUnitTest, InitRandomTest) {
-  const std::string password1 = "";
+  const std::string password1;
   const std::string password2 = "test";
 
   scoped_ptr<crypto::ECPrivateKey> keypair1(
@@ -86,7 +86,7 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
 }
 
 TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
-  const std::string password1 = "";
+  const std::string password1;
   const std::string password2 = "test";
 
   scoped_ptr<crypto::ECPrivateKey> keypair1(

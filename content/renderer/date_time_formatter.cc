@@ -95,7 +95,7 @@ const std::string DateTimeFormatter::FormatString() const {
   UErrorCode success = U_ZERO_ERROR;
   if (year_ == 0 && month_ == 0 && day_ == 0 &&
       hour_ == 0 && minute_ == 0 && second_ == 0) {
-    return "";
+    return std::string();
   }
 
   std::string result;
@@ -113,7 +113,7 @@ const std::string DateTimeFormatter::FormatString() const {
       return result;
   }
   LOG(WARNING) << "Calendar not created: error " <<  success;
-  return "";
+  return std::string();
 }
 
 void DateTimeFormatter::ExtractType(

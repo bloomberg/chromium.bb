@@ -36,7 +36,8 @@ int main(int argc, char**argv) {
 
   // Do work here.
   MessageLoop loop;
-  HttpServer server("", 80);   // TODO(mbelshe): make port configurable
+  HttpServer server(std::string(),
+                    80);  // TODO(mbelshe): make port configurable
   MessageLoop::current()->Run();
 
   if (parsed_command_line.HasSwitch("stats")) {

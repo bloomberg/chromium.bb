@@ -46,7 +46,7 @@ std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
 }
 
 std::string RemoveWindowsStyleAccelerators(const std::string& label) {
-  return ConvertAmpersandsTo(label, "");
+  return ConvertAmpersandsTo(label, std::string());
 }
 
 // Replaces all ampersands in |label| with two ampersands. This effectively

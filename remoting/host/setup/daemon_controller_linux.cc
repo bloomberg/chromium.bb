@@ -318,7 +318,7 @@ void DaemonControllerLinux::DoGetVersion(
     const GetVersionCallback& done_callback) {
   base::FilePath script_path;
   if (!GetScriptPath(&script_path)) {
-    done_callback.Run("");
+    done_callback.Run(std::string());
     return;
   }
   CommandLine command_line(script_path);
@@ -331,14 +331,14 @@ void DaemonControllerLinux::DoGetVersion(
   if (!result || exit_code != 0) {
     LOG(ERROR) << "Failed to run \"" << command_line.GetCommandLineString()
                << "\". Exit code: " << exit_code;
-    done_callback.Run("");
+    done_callback.Run(std::string());
     return;
   }
 
   TrimWhitespaceASCII(version, TRIM_ALL, &version);
   if (!ContainsOnlyChars(version, "0123456789.")) {
     LOG(ERROR) << "Received invalid host version number: " << version;
-    done_callback.Run("");
+    done_callback.Run(std::string());
     return;
   }
 

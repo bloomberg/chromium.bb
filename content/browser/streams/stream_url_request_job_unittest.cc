@@ -169,7 +169,7 @@ TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
 
   net::HttpRequestHeaders extra_headers;
   extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=1-3");
-  TestRequest("GET", kStreamURL, extra_headers, 405, "");
+  TestRequest("GET", kStreamURL, extra_headers, 405, std::string());
 }
 
 }  // namespace content

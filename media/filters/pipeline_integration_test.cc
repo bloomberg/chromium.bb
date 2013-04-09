@@ -316,7 +316,8 @@ class MockMediaSource {
     DCHECK(init_data.get());
     DCHECK_GT(init_data_size, 0);
     CHECK(!need_key_cb_.is_null());
-    need_key_cb_.Run("", "", type, init_data.Pass(), init_data_size);
+    need_key_cb_.Run(
+        std::string(), std::string(), type, init_data.Pass(), init_data_size);
   }
 
  private:

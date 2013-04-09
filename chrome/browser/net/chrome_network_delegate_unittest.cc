@@ -234,7 +234,7 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOn) {
                        "q=goog&" + kBothParameters);
 
   // Test that another website is not affected, without parameters.
-  CheckAddedParameters("http://google.com/finance", "");
+  CheckAddedParameters("http://google.com/finance", std::string());
 
   // Test that another website is not affected, with parameters.
   CheckAddedParameters("http://google.com/finance?q=goog", "q=goog");
@@ -255,10 +255,10 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOff) {
   SetDelegate(delegate.get());
 
   // Test the home page.
-  CheckAddedParameters("http://google.com/", "");
+  CheckAddedParameters("http://google.com/", std::string());
 
   // Test the search home page.
-  CheckAddedParameters("http://google.com/webhp", "");
+  CheckAddedParameters("http://google.com/webhp", std::string());
 
   // Test the home page with parameters.
   CheckAddedParameters("http://google.com/search?q=google",

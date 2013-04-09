@@ -210,7 +210,7 @@ double Statement::ColumnDouble(int col) const {
 
 std::string Statement::ColumnString(int col) const {
   if (!CheckValid())
-    return "";
+    return std::string();
 
   const char* str = reinterpret_cast<const char*>(
       sqlite3_column_text(ref_->stmt(), col));

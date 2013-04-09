@@ -109,15 +109,15 @@ TEST(OAuthRequestSignerTest, SignGet2) {
   parameters["oauth_nonce"] = "4d4hZW9DygWQujP2tz06UN";
   std::string signed_text;
   ASSERT_TRUE(OAuthRequestSigner::SignURL(
-                  request_url,
-                  parameters,
-                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
-                  OAuthRequestSigner::GET_METHOD,
-                  "anonymous",  // oauth_consumer_key
-                  "anonymous",  // consumer secret
-                  "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
-                  "", // token secret
-                  &signed_text));
+      request_url,
+      parameters,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::GET_METHOD,
+      "anonymous",                       // oauth_consumer_key
+      "anonymous",                       // consumer secret
+      "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
+      std::string(),                     // token secret
+      &signed_text));
   ASSERT_EQ(signed_text,
             "https://accounts.google.com/OAuthGetAccessToken"
             "?oauth_consumer_key=anonymous"
@@ -137,14 +137,14 @@ TEST(OAuthRequestSignerTest, ParseAndSignGet1) {
                    "&oauth_timestamp=1308152953");
   std::string signed_text;
   ASSERT_TRUE(OAuthRequestSigner::ParseAndSign(
-                  request_url,
-                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
-                  OAuthRequestSigner::GET_METHOD,
-                  "anonymous",  // oauth_consumer_key
-                  "anonymous",  // consumer secret
-                  "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
-                  "", // token secret
-                  &signed_text));
+      request_url,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::GET_METHOD,
+      "anonymous",                       // oauth_consumer_key
+      "anonymous",                       // consumer secret
+      "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
+      std::string(),                     // token secret
+      &signed_text));
   ASSERT_EQ("https://www.google.com/accounts/o8/GetOAuthToken"
             "?oauth_consumer_key=anonymous"
             "&oauth_nonce=2oiE_aHdk5qRTz0L9C8Lq0g"
@@ -164,14 +164,14 @@ TEST(OAuthRequestSignerTest, ParseAndSignGet2) {
                    "&oauth_nonce=4d4hZW9DygWQujP2tz06UN");
   std::string signed_text;
   ASSERT_TRUE(OAuthRequestSigner::ParseAndSign(
-                  request_url,
-                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
-                  OAuthRequestSigner::GET_METHOD,
-                  "anonymous",  // oauth_consumer_key
-                  "anonymous",  // consumer secret
-                  "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
-                  "", // token secret
-                  &signed_text));
+      request_url,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::GET_METHOD,
+      "anonymous",                       // oauth_consumer_key
+      "anonymous",                       // consumer secret
+      "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
+      std::string(),                     // token secret
+      &signed_text));
   ASSERT_EQ(signed_text,
             "https://accounts.google.com/OAuthGetAccessToken"
             "?oauth_consumer_key=anonymous"
@@ -220,15 +220,15 @@ TEST(OAuthRequestSignerTest, SignPost2) {
   parameters["oauth_nonce"] = "17171717171717171";
   std::string signed_text;
   ASSERT_TRUE(OAuthRequestSigner::SignURL(
-                  request_url,
-                  parameters,
-                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
-                  OAuthRequestSigner::POST_METHOD,
-                  "anonymous",  // oauth_consumer_key
-                  "anonymous",  // consumer secret
-                  "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
-                  "", // token secret
-                  &signed_text));
+      request_url,
+      parameters,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::POST_METHOD,
+      "anonymous",                       // oauth_consumer_key
+      "anonymous",                       // consumer secret
+      "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
+      std::string(),                     // token secret
+      &signed_text));
   ASSERT_EQ(signed_text,
             "oauth_consumer_key=anonymous"
             "&oauth_nonce=17171717171717171"
@@ -273,14 +273,14 @@ TEST(OAuthRequestSignerTest, ParseAndSignPost2) {
                    "&oauth_nonce=17171717171717171");
   std::string signed_text;
   ASSERT_TRUE(OAuthRequestSigner::ParseAndSign(
-                  request_url,
-                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
-                  OAuthRequestSigner::POST_METHOD,
-                  "anonymous",  // oauth_consumer_key
-                  "anonymous",  // consumer secret
-                  "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
-                  "", // token secret
-                  &signed_text));
+      request_url,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::POST_METHOD,
+      "anonymous",                       // oauth_consumer_key
+      "anonymous",                       // consumer secret
+      "4/CcC-hgdj1TNnWaX8NTQ76YDXCBEK",  // oauth_token
+      std::string(),                     // token secret
+      &signed_text));
   ASSERT_EQ(signed_text,
             "oauth_consumer_key=anonymous"
             "&oauth_nonce=17171717171717171"

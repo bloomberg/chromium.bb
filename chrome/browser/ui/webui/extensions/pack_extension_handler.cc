@@ -184,8 +184,12 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   load_extension_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   load_extension_dialog_->SelectFile(
-      type, select_title, base::FilePath(), &info, file_type_index,
-      FILE_PATH_LITERAL(""),
+      type,
+      select_title,
+      base::FilePath(),
+      &info,
+      file_type_index,
+      base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }

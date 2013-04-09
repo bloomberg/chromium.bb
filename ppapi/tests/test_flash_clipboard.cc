@@ -253,7 +253,7 @@ std::string TestFlashClipboard::TestInvalidFormat() {
 std::string TestFlashClipboard::TestRegisterCustomFormat() {
   // Test an empty name is rejected.
   uint32_t format_id =
-      pp::flash::Clipboard::RegisterCustomFormat(instance_, "");
+      pp::flash::Clipboard::RegisterCustomFormat(instance_, std::string());
   ASSERT_EQ(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
 
   // Test a valid format name.

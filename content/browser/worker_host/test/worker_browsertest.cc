@@ -300,11 +300,11 @@ class WorkerTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleWorker) {
-  RunTest("single_worker.html", "");
+  RunTest("single_worker.html", std::string());
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, MultipleWorkers) {
-  RunTest("multi_worker.html", "");
+  RunTest("multi_worker.html", std::string());
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleSharedWorker) {
@@ -320,10 +320,10 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, MultipleSharedWorkers) {
 // http://crbug.com/30021
 IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
   // Load a non-incognito tab and have it create a shared worker
-  RunTest("incognito_worker.html", "");
+  RunTest("incognito_worker.html", std::string());
 
   // Incognito worker should not share with non-incognito
-  RunTest(CreateOffTheRecordBrowser(), "incognito_worker.html", "");
+  RunTest(CreateOffTheRecordBrowser(), "incognito_worker.html", std::string());
 }
 
 // Make sure that auth dialog is displayed from worker context.
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
 
 // Flaky, http://crbug.com/59786.
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerClose) {
-  RunTest("worker_close.html", "");
+  RunTest("worker_close.html", std::string());
   ASSERT_TRUE(WaitForWorkerProcessCount(0));
 }
 

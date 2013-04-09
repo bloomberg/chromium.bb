@@ -423,9 +423,10 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       params.title,
       default_file_name,
       select_file_types_.get(),
-      select_file_types_.get() && !select_file_types_->extensions.empty() ?
-          1 : 0,  // 1-based index of default extension to show.
-      FILE_PATH_LITERAL(""),
+      select_file_types_.get() && !select_file_types_->extensions.empty()
+          ? 1
+          : 0,  // 1-based index of default extension to show.
+      base::FilePath::StringType(),
       owning_window,
 #if defined(OS_ANDROID)
       &accept_types);

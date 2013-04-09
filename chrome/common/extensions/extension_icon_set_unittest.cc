@@ -62,7 +62,7 @@ TEST(ExtensionIconSet, Values) {
   EXPECT_TRUE(icons.ContainsPath("foo"));
   EXPECT_TRUE(icons.ContainsPath("bar"));
   EXPECT_FALSE(icons.ContainsPath("baz"));
-  EXPECT_FALSE(icons.ContainsPath(""));
+  EXPECT_FALSE(icons.ContainsPath(std::string()));
 
   icons.Clear();
   EXPECT_FALSE(icons.ContainsPath("foo"));
@@ -83,7 +83,7 @@ TEST(ExtensionIconSet, FindSize) {
   EXPECT_EQ(extension_misc::EXTENSION_ICON_INVALID,
             icons.GetIconSizeFromPath("baz"));
   EXPECT_EQ(extension_misc::EXTENSION_ICON_INVALID,
-            icons.GetIconSizeFromPath(""));
+            icons.GetIconSizeFromPath(std::string()));
 
   icons.Clear();
   EXPECT_EQ(extension_misc::EXTENSION_ICON_INVALID,
