@@ -34,6 +34,16 @@ class DriveURLRequestJobTest : public testing::Test {
     url_request_context_.reset(new net::TestURLRequestContext);
     delegate_.reset(new net::TestDelegate);
     network_delegate_.reset(new net::TestNetworkDelegate);
+
+    // TODO(tedv): Using the NetworkDelegate with the URLRequestContext
+    // with set_network_delegate() instead of a NULL delegate causes
+    // unit test failures, which should be fixed.  This occurs because
+    // the TestNetworkDelegate generates a failure if an failed request
+    // is generated before the OnBeforeURLRequest() method is called,
+    // and DriveURLRequestJob::Start() does not call OnBeforeURLRequest().
+    // There is further discussion of this at:
+    // https://codereview.chromium.org/13079008/
+    //url_request_context_.set_network_delegate(network_delegate_.get());
   }
 
   MessageLoopForIO message_loop_;
@@ -47,7 +57,7 @@ class DriveURLRequestJobTest : public testing::Test {
 TEST_F(DriveURLRequestJobTest, NonGetMethod) {
   net::TestURLRequest request(
       util::FilePathToDriveURL(base::FilePath::FromUTF8Unsafe("file")),
-      delegate_.get(), url_request_context_.get());
+      delegate_.get(), url_request_context_.get(), NULL);
   request.set_method("POST");  // Set non "GET" method.
 
   scoped_refptr<DriveURLRequestJob> job(
