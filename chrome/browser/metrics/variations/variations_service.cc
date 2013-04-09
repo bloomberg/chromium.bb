@@ -125,8 +125,9 @@ VariationsService::VariationsService(PrefService* local_state)
   resource_request_allowed_notifier_->Init(this);
 }
 
-VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier)
-    : local_state_(NULL),
+VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier,
+                                     PrefService* local_state)
+    : local_state_(local_state),
       variations_server_url_(GetVariationsServerURL(NULL)),
       create_trials_from_seed_called_(false),
       resource_request_allowed_notifier_(notifier) {
@@ -192,9 +193,10 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   // the scheduler deems appropriate. Using Unretained is fine here since the
   // lifespan of request_scheduler_ is guaranteed to be shorter than that of
   // this service.
-  request_scheduler_.reset(new VariationsRequestScheduler(
+  request_scheduler_.reset(VariationsRequestScheduler::Create(
       base::Bind(&VariationsService::FetchVariationsSeed,
-          base::Unretained(this))));
+          base::Unretained(this)), local_state_));
+  request_scheduler_->Start();
 }
 
 bool VariationsService::GetNetworkTime(base::Time* network_time,

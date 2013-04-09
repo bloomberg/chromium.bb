@@ -4,9 +4,6 @@
 
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 
-#include "base/message_loop.h"
-#include "chrome/browser/metrics/variations/variations_service.h"
-
 namespace chrome_variations {
 
 namespace {
@@ -18,20 +15,34 @@ const int kSeedFetchPeriodHours = 5;
 
 VariationsRequestScheduler::VariationsRequestScheduler(
     const base::Closure& task) : task_(task) {
-  // Call the task immediately.
-  task.Run();
-
-  // Repeat this periodically.
-  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(kSeedFetchPeriodHours),
-               task);
 }
 
 VariationsRequestScheduler::~VariationsRequestScheduler() {
+}
+
+void VariationsRequestScheduler::Start() {
+  // Call the task and repeat it periodically.
+  task_.Run();
+  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(kSeedFetchPeriodHours),
+               task_);
 }
 
 void VariationsRequestScheduler::Reset() {
   if (timer_.IsRunning())
     timer_.Reset();
 }
+
+base::Closure VariationsRequestScheduler::task() const {
+  return task_;
+}
+
+#if !defined(OS_ANDROID)
+// static
+VariationsRequestScheduler* VariationsRequestScheduler::Create(
+    const base::Closure& task,
+    PrefService* local_state) {
+  return new VariationsRequestScheduler(task);
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace chrome_variations

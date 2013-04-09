@@ -26,8 +26,9 @@ namespace {
 // A test class used to validate expected functionality in VariationsService.
 class TestVariationsService : public VariationsService {
  public:
-  explicit TestVariationsService(TestRequestAllowedNotifier* test_notifier)
-      : VariationsService(test_notifier),
+  TestVariationsService(TestRequestAllowedNotifier* test_notifier,
+                        PrefService* local_state)
+      : VariationsService(test_notifier, local_state),
         fetch_attempted_(false) {
     // Set this so StartRepeatedVariationsSeedFetch can be called in tests.
     SetCreateTrialsFromSeedCalledForTesting(true);
@@ -391,7 +392,8 @@ TEST(VariationsServiceTest, LoadSeed) {
   VariationsService::RegisterPrefs(prefs.registry());
   prefs.SetString(prefs::kVariationsSeed, base64_seed);
 
-  TestVariationsService variations_service(new TestRequestAllowedNotifier);
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           &prefs);
   TrialsSeed loaded_seed;
   EXPECT_TRUE(variations_service.LoadTrialsSeedFromPref(&prefs, &loaded_seed));
 
@@ -418,10 +420,11 @@ TEST(VariationsServiceTest, StoreSeed) {
   const TrialsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
 
-  TestVariationsService variations_service(new TestRequestAllowedNotifier);
-
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
+
+  TestVariationsService variations_service(new TestRequestAllowedNotifier,
+                                           &prefs);
 
   EXPECT_TRUE(variations_service.StoreSeedData(serialized_seed, now, &prefs));
   // Make sure the pref was actually set.
@@ -518,11 +521,13 @@ TEST(VariationsServiceTest, RequestsInitiallyNotAllowed) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
   TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
-  TestVariationsService test_service(test_notifier);
+  TestVariationsService test_service(test_notifier, &prefs);
 
   // Force the notifier to initially disallow requests.
   test_notifier->SetRequestsAllowedOverride(false);
@@ -537,11 +542,13 @@ TEST(VariationsServiceTest, RequestsInitiallyAllowed) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
   TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
-  TestVariationsService test_service(test_notifier);
+  TestVariationsService test_service(test_notifier, &prefs);
 
   test_notifier->SetRequestsAllowedOverride(true);
   test_service.StartRepeatedVariationsSeedFetch();

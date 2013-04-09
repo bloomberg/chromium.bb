@@ -991,6 +991,8 @@
         'browser/metrics/variations/variations_registry_syncer_win.h',
         'browser/metrics/variations/variations_request_scheduler.cc',
         'browser/metrics/variations/variations_request_scheduler.h',
+        'browser/metrics/variations/variations_request_scheduler_mobile.cc',
+        'browser/metrics/variations/variations_request_scheduler_mobile.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/native_window_notification_source.h',
@@ -2613,6 +2615,12 @@
             'browser/sessions/session_service.h',
             'browser/sessions/session_service_factory.cc',
             'browser/sessions/session_service_factory.h',
+          ],
+        }],
+        ['OS!="android" and OS!="ios"', {
+          'sources!': [
+            'browser/metrics/variations/variations_request_scheduler_mobile.cc',
+            'browser/metrics/variations/variations_request_scheduler_mobile.h',
           ],
         }],
         ['OS=="android"', {

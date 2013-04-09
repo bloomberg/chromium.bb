@@ -82,7 +82,8 @@ class VariationsService
 
   // This constructor exists for injecting a mock notifier. It is meant for
   // testing only. This instance will take ownership of |notifier|.
-  explicit VariationsService(ResourceRequestAllowedNotifier* notifier);
+  VariationsService(ResourceRequestAllowedNotifier* notifier,
+                    PrefService* local_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);

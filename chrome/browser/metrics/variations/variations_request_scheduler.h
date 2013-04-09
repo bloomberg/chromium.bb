@@ -8,17 +8,31 @@
 #include "base/bind.h"
 #include "base/timer.h"
 
+class PrefService;
+
 namespace chrome_variations {
 
 // A helper class that makes VariationsService requests at the correct times.
 class VariationsRequestScheduler {
  public:
-  // |task| is the closure to call when the scheduler deems ready.
-  explicit VariationsRequestScheduler(const base::Closure& task);
   virtual ~VariationsRequestScheduler();
 
+  // Starts the task on a schedule.
+  virtual void Start();
+
   // Resets the scheduler if it is currently on a timer.
-  void Reset();
+  virtual void Reset();
+
+  // Factory method for this class.
+  static VariationsRequestScheduler* Create(const base::Closure& task,
+                                            PrefService* local_state);
+
+ protected:
+  // |task| is the closure to call when the scheduler deems ready.
+  explicit VariationsRequestScheduler(const base::Closure& task);
+
+  // Getter for derived classes.
+  base::Closure task() const;
 
  private:
   // The task scheduled by this class.
@@ -28,6 +42,8 @@ class VariationsRequestScheduler {
   // member so if VariationsRequestScheduler goes out of scope, the timer is
   // automatically canceled.
   base::RepeatingTimer<VariationsRequestScheduler> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsRequestScheduler);
 };
 
 }  // namespace chrome_variations
