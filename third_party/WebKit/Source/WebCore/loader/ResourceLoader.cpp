@@ -206,24 +206,15 @@ void ResourceLoader::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPol
 }
     
 
-void ResourceLoader::addDataOrBuffer(const char* data, int length, SharedBuffer* buffer, DataPayloadType dataPayloadType)
+void ResourceLoader::addData(const char* data, int length)
 {
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return;
-
-    if (dataPayloadType == DataPayloadWholeResource) {
-        m_resourceData = buffer ? ResourceBuffer::adoptSharedBuffer(buffer) : ResourceBuffer::create(data, length);
-        return;
-    }
         
-    if (!m_resourceData)
-        m_resourceData = buffer ? ResourceBuffer::adoptSharedBuffer(buffer) : ResourceBuffer::create(data, length);
-    else {
-        if (buffer)
-            m_resourceData->append(buffer);
-        else
-            m_resourceData->append(data, length);
-    }
+    if (m_resourceData)
+        m_resourceData->append(data, length);
+    else
+        m_resourceData = ResourceBuffer::create(data, length);
 }
 
 void ResourceLoader::clearResourceData()
@@ -262,10 +253,6 @@ void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceRes
         frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
 }
 
-void ResourceLoader::didSendData(unsigned long long, unsigned long long)
-{
-}
-
 void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
 {
     ASSERT(!m_reachedTerminalState);
@@ -283,56 +270,14 @@ void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
         frameLoader()->notifier()->didReceiveResponse(this, m_response);
 }
 
-void ResourceLoader::didReceiveData(const char* data, int length, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    // The following assertions are not quite valid here, since a subclass
-    // might override didReceiveData in a way that invalidates them. This
-    // happens with the steps listed in 3266216
-    // ASSERT(con == connection);
-    // ASSERT(!m_reachedTerminalState);
-
-    didReceiveDataOrBuffer(data, length, 0, encodedDataLength, dataPayloadType);
-}
-
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
-{
-    didDownloadData(length);
-}
-
-void ResourceLoader::didDownloadData(int length)
 {
     if (!m_cancelled && !fastMallocSize(documentLoader()->applicationCacheHost()))
         CRASH();
     if (!m_cancelled && !fastMallocSize(documentLoader()->frame()))
         CRASH();
-}
-
-void ResourceLoader::didReceiveDataOrBuffer(const char* data, int length, PassRefPtr<SharedBuffer> prpBuffer, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    // This method should only get data+length *OR* a SharedBuffer.
-    ASSERT(!prpBuffer || (!data && !length));
-
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-    RefPtr<SharedBuffer> buffer = prpBuffer;
-
-    addDataOrBuffer(data, length, buffer.get(), dataPayloadType);
-    
-    // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
-    // However, with today's computers and networking speeds, this won't happen in practice.
-    // Could be an issue with a giant local file.
-    if (m_options.sendLoadCallbacks == SendCallbacks && m_frame)
-        frameLoader()->notifier()->didReceiveData(this, buffer ? buffer->data() : data, buffer ? buffer->size() : length, static_cast<int>(encodedDataLength));
-}
-
-void ResourceLoader::willStopBufferingData(const char* data, int length)
-{
-    if (m_options.dataBufferingPolicy == DoNotBufferData)
-        return;
-
-    ASSERT(!m_resourceData);
-    m_resourceData = ResourceBuffer::create(data, length);
+    RefPtr<ResourceLoader> protect(this);
+    m_resource->didDownloadData(length);
 }
 
 void ResourceLoader::didFinishLoading(double finishTime)
@@ -466,7 +411,9 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 
 void ResourceLoader::didSendData(ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    didSendData(bytesSent, totalBytesToBeSent);
+    ASSERT(m_state == Initialized);
+    RefPtr<ResourceLoader> protect(this);
+    m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
 void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse& response)
@@ -479,8 +426,44 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
 void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int length, int encodedDataLength)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_frame.get(), identifier(), encodedDataLength);
-    didReceiveData(data, length, encodedDataLength, DataPayloadBytes);
+
+    if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
+        return;
+    ASSERT(!m_resource->resourceToRevalidate());
+    ASSERT(!m_resource->errorOccurred());
+    ASSERT(m_state == Initialized);
+
+    // Reference the object in this method since the additional processing can do
+    // anything including removing the last reference to this object.
+    RefPtr<ResourceLoader> protect(this);
+
+    addData(data, length);
+
+    // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
+    // However, with today's computers and networking speeds, this won't happen in practice.
+    // Could be an issue with a giant local file.
+    if (m_options.sendLoadCallbacks == SendCallbacks && m_frame)
+        frameLoader()->notifier()->didReceiveData(this, data, length, static_cast<int>(encodedDataLength));
+
+    if (!m_loadingMultipartContent)
+        sendDataToResource(data, length);
+
     InspectorInstrumentation::didReceiveResourceData(cookie);
+}
+
+void ResourceLoader::sendDataToResource(const char* data, int length)
+{
+    // There are two cases where we might need to create our own SharedBuffer instead of copying the one in ResourceLoader.
+    // (1) Multipart content: The loader delivers the data in a multipart section all at once, then sends eof.
+    //     The resource data will change as the next part is loaded, so we need to make a copy.
+    // (2) Our client requested that the data not be buffered at the ResourceLoader level via ResourceLoaderOptions. In this case,
+    //     ResourceLoader::resourceData() will be null. However, unlike the multipart case, we don't want to tell the CachedResource
+    //     that all data has been received yet.
+    if (m_loadingMultipartContent || !resourceData()) {
+        RefPtr<ResourceBuffer> copiedData = ResourceBuffer::create(data, length);
+        m_resource->data(copiedData.release(), m_loadingMultipartContent);
+    } else
+        m_resource->data(resourceData(), false);
 }
 
 void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)

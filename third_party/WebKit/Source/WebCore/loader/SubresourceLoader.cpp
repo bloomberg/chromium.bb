@@ -117,13 +117,6 @@ void SubresourceLoader::willSendRequest(ResourceRequest& newRequest, const Resou
         cancel();
 }
 
-void SubresourceLoader::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
-{
-    ASSERT(m_state == Initialized);
-    RefPtr<SubresourceLoader> protect(this);
-    m_resource->didSendData(bytesSent, totalBytesToBeSent);
-}
-
 void SubresourceLoader::didReceiveResponse(const ResourceResponse& response)
 {
     ASSERT(!response.isNull());
@@ -178,38 +171,6 @@ void SubresourceLoader::didReceiveResponse(const ResourceResponse& response)
     checkForHTTPStatusCodeError();
 }
 
-void SubresourceLoader::didReceiveData(const char* data, int length, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    didReceiveDataOrBuffer(data, length, 0, encodedDataLength, dataPayloadType);
-}
-
-void SubresourceLoader::didReceiveDataOrBuffer(const char* data, int length, PassRefPtr<SharedBuffer> prpBuffer, long long encodedDataLength, DataPayloadType dataPayloadType)
-{
-    if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
-        return;
-    ASSERT(!m_resource->resourceToRevalidate());
-    ASSERT(!m_resource->errorOccurred());
-    ASSERT(m_state == Initialized);
-    // Reference the object in this method since the additional processing can do
-    // anything including removing the last reference to this object; one example of this is 3266216.
-    RefPtr<SubresourceLoader> protect(this);
-    RefPtr<SharedBuffer> buffer = prpBuffer;
-    
-    ResourceLoader::didReceiveDataOrBuffer(data, length, buffer, encodedDataLength, dataPayloadType);
-
-    if (!m_loadingMultipartContent)
-        sendDataToResource(buffer ? buffer->data() : data, buffer ? buffer->size() : length);
-}
-
-void SubresourceLoader::didDownloadData(int length)
-{
-    // Reference the object in this method since the additional processing can do
-    // anything including removing the last reference to this object; one example of this is 3266216.
-    RefPtr<SubresourceLoader> protect(this);
-    ResourceLoader::didDownloadData(length);
-    m_resource->didDownloadData(length);
-}
-
 bool SubresourceLoader::checkForHTTPStatusCodeError()
 {
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
@@ -219,21 +180,6 @@ bool SubresourceLoader::checkForHTTPStatusCodeError()
     m_resource->error(CachedResource::LoadError);
     cancel();
     return true;
-}
-
-void SubresourceLoader::sendDataToResource(const char* data, int length)
-{
-    // There are two cases where we might need to create our own SharedBuffer instead of copying the one in ResourceLoader. 
-    // (1) Multipart content: The loader delivers the data in a multipart section all at once, then sends eof. 
-    //     The resource data will change as the next part is loaded, so we need to make a copy. 
-    // (2) Our client requested that the data not be buffered at the ResourceLoader level via ResourceLoaderOptions. In this case, 
-    //     ResourceLoader::resourceData() will be null. However, unlike the multipart case, we don't want to tell the CachedResource 
-    //     that all data has been received yet. 
-    if (m_loadingMultipartContent || !resourceData()) { 
-        RefPtr<ResourceBuffer> copiedData = ResourceBuffer::create(data, length); 
-        m_resource->data(copiedData.release(), m_loadingMultipartContent);
-    } else 
-        m_resource->data(resourceData(), false);
 }
 
 void SubresourceLoader::didReceiveCachedMetadata(const char* data, int length)

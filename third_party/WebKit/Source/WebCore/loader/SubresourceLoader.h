@@ -49,22 +49,15 @@ private:
     virtual bool init(const ResourceRequest&) OVERRIDE;
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse) OVERRIDE;
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didReceiveResponse(const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveData(const char*, int, long long encodedDataLength, DataPayloadType) OVERRIDE;
     virtual void didReceiveCachedMetadata(const char*, int) OVERRIDE;
     virtual void didFinishLoading(double finishTime) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void willCancel(const ResourceError&) OVERRIDE;
     virtual void didCancel(const ResourceError&) OVERRIDE { }
-
-    virtual void didDownloadData(int) OVERRIDE;
     virtual void releaseResources() OVERRIDE;
 
     bool checkForHTTPStatusCodeError();
-    void sendDataToResource(const char*, int);
-
-    void didReceiveDataOrBuffer(const char*, int, PassRefPtr<SharedBuffer>, long long encodedDataLength, DataPayloadType);
 };
 
 }

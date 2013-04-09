@@ -81,11 +81,8 @@ public:
     void clearResourceData();
     
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
     virtual void didReceiveResponse(const ResourceResponse&);
-    virtual void didReceiveData(const char*, int, long long encodedDataLength, DataPayloadType);
     virtual void didReceiveCachedMetadata(const char*, int) { }
-    void willStopBufferingData(const char*, int);
     virtual void didFinishLoading(double finishTime);
     virtual void didFail(const ResourceError&);
     void didChangePriority(ResourceLoadPriority);
@@ -100,10 +97,8 @@ public:
     virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE { didReceiveCachedMetadata(data, length); }
     virtual void didFinishLoading(ResourceHandle*, double finishTime) OVERRIDE;
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
-    virtual void willStopBufferingData(ResourceHandle*, const char* data, int length) { willStopBufferingData(data, length); } 
     virtual bool shouldUseCredentialStorage(ResourceHandle*) OVERRIDE { return shouldUseCredentialStorage(); }
-    virtual void didDownloadData(ResourceHandle*, int);
-    virtual void didDownloadData(int);
+    virtual void didDownloadData(ResourceHandle*, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); } 
     ResourceHandle* handle() const { return m_handle.get(); }
@@ -126,7 +121,7 @@ protected:
 
     bool cancelled() const { return m_cancelled; }
 
-    void didReceiveDataOrBuffer(const char*, int, PassRefPtr<SharedBuffer>, long long encodedDataLength, DataPayloadType);
+    void sendDataToResource(const char*, int);
 
     RefPtr<ResourceHandle> m_handle;
     RefPtr<Frame> m_frame;
@@ -136,7 +131,7 @@ protected:
     virtual void willCancel(const ResourceError&) = 0;
     virtual void didCancel(const ResourceError&) = 0;
 
-    void addDataOrBuffer(const char*, int, SharedBuffer*, DataPayloadType);
+    void addData(const char*, int);
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
