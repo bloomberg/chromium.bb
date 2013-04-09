@@ -133,6 +133,9 @@ const char kEnableGpuSandbox[]              = "enable-gpu-sandbox";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
+// Disables HTML-based desktop notifications.
+const char kDisableHTMLNotifications[]      = "disable-html-notifications";
+
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 

@@ -1,0 +1,9 @@
+{
+  "name": "notifications test",
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": [ "tabs", "notifications" ],
+  "background": {
+    "scripts": ["background.js"]
+  }
+}

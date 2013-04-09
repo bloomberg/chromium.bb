@@ -156,6 +156,10 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_util.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "ui/base/ui_base_paths.h"
 #endif
@@ -1191,6 +1195,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     if (content::IsThreadedCompositingEnabled())
       command_line->AppendSwitch(switches::kEnableThreadedCompositing);
+
+#if defined(ENABLE_MESSAGE_CENTER)
+    if (message_center::IsRichNotificationEnabled())
+      command_line->AppendSwitch(switches::kDisableHTMLNotifications);
+#endif
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {

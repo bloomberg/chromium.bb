@@ -57,6 +57,7 @@ extern const char kReduceGpuSandbox[];
 extern const char kEnableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
+CONTENT_EXPORT extern const char kDisableHTMLNotifications[];
 extern const char kDisableHistogramCustomizer[];
 extern const char kDisableImageTransportSurface[];
 CONTENT_EXPORT extern const char kDisableJava[];
