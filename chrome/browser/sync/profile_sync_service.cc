@@ -326,6 +326,9 @@ void ProfileSyncService::RegisterAuthNotifications() {
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  content::Source<TokenService>(token_service));
   registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKENS_CLEARED,
+                 content::Source<TokenService>(token_service));
+  registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
@@ -1890,6 +1893,13 @@ void ProfileSyncService::Observe(int type,
         backend_->UpdateCredentials(GetCredentials());
       else
         TryStart();
+      break;
+    }
+    case chrome::NOTIFICATION_TOKENS_CLEARED: {
+      // GetCredentials() will generate invalid credentials to cause the backend
+      // to generate an auth error.
+      if (backend_.get())
+        backend_->UpdateCredentials(GetCredentials());
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:

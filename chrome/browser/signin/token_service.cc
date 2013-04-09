@@ -184,13 +184,6 @@ void TokenService::SaveAuthTokenToDB(const std::string& service,
 
 void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Try to track down http://crbug.com/121755 - we should never clear the
-  // token DB while we're still logged in.
-  if (profile_) {
-    std::string user = profile_->GetPrefs()->GetString(
-        prefs::kGoogleServicesUsername);
-    CHECK(user.empty());
-  }
   if (web_data_service_.get())
     web_data_service_->RemoveAllTokens();
 

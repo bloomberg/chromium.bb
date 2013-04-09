@@ -188,6 +188,9 @@ class TokenService : public GaiaAuthConsumer,
       WebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
+  // Gets the list of all service names for which tokens will be retrieved.
+  static void GetServiceNames(std::vector<std::string>* names);
+
  protected:
   // Saves OAuth2 credentials.
   void SaveOAuth2Credentials(const ClientOAuthResult& result);
@@ -195,9 +198,6 @@ class TokenService : public GaiaAuthConsumer,
   void set_tokens_loaded(bool loaded) {
     tokens_loaded_ = loaded;
   }
-
-  // Gets the list of all service names for which tokens will be retrieved.
-  static void GetServiceNames(std::vector<std::string>* names);
 
  private:
   void FireTokenAvailableNotification(const std::string& service,
