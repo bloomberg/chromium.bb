@@ -340,8 +340,9 @@ class ChromiumWritableFile : public WritableFile {
   virtual Status Flush() {
     Status result;
     if (HANDLE_EINTR(fflush_unlocked(file_))) {
-      result = Status::IOError(filename_, strerror(errno));
-      uma_logger_->RecordErrorAt(kWritableFileFlush);
+      int saved_errno = errno;
+      result = Status::IOError(filename_, strerror(saved_errno));
+      uma_logger_->RecordSpecificError(kWritableFileFlush, saved_errno);
     }
     return result;
   }
@@ -382,8 +383,9 @@ class ChromiumEnv : public Env, public UMALogger {
     FILE* f = fopen_internal(fname.c_str(), "rb");
     if (f == NULL) {
       *result = NULL;
-      RecordErrorAt(kNewSequentialFile);
-      return Status::IOError(fname, strerror(errno));
+      int saved_errno = errno;
+      RecordSpecificError(kNewSequentialFile, saved_errno);
+      return Status::IOError(fname, strerror(saved_errno));
     } else {
       *result = new ChromiumSequentialFile(fname, f, this);
       return Status::OK();
@@ -614,8 +616,9 @@ class ChromiumEnv : public Env, public UMALogger {
     FILE* f = fopen_internal(fname.c_str(), "w");
     if (f == NULL) {
       *result = NULL;
-      RecordErrorAt(kNewLogger);
-      return Status::IOError(fname, strerror(errno));
+      int saved_errno = errno;
+      RecordSpecificError(kNewLogger, saved_errno);
+      return Status::IOError(fname, strerror(saved_errno));
     } else {
       if (!sync_parent(fname)) {
         fclose(f);
@@ -730,6 +733,9 @@ void ChromiumEnv::InitHistograms(const std::string& uma_title) {
 
   uma_name.append(".");
   MakeErrnoHistogram(uma_name, kWritableFileAppend);
+  MakeErrnoHistogram(uma_name, kNewSequentialFile);
+  MakeErrnoHistogram(uma_name, kWritableFileFlush);
+  MakeErrnoHistogram(uma_name, kNewLogger);
   MakePlatformFileErrorHistogram(uma_name, kNewRandomAccessFile);
   MakePlatformFileErrorHistogram(uma_name, kLockFile);
 
