@@ -54,6 +54,10 @@ class AppListService : public ProfileInfoCacheObserver {
   // Returns true if the app list is visible.
   virtual bool IsAppListVisible() const;
 
+  // Enable the app list. What this does specifically will depend on the host
+  // operating system and shell.
+  virtual void EnableAppList();
+
   // ProfileInfoCacheObserver overrides:
   virtual void OnProfileAdded(const base::FilePath& profilePath) OVERRIDE;
   virtual void OnProfileWillBeRemoved(

@@ -136,6 +136,7 @@ void EnableAppLauncher(base::Callback<void(bool)> callback) {
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       apps::switches::kShowAppListShortcut,
                                       true);
+    AppListService::Get()->EnableAppList();
     callback.Run(true);
   }
 #else

@@ -211,6 +211,8 @@ class AppListController : public AppListService {
 
   virtual bool IsAppListVisible() const OVERRIDE;
 
+  virtual void EnableAppList() OVERRIDE;
+
   // ProfileInfoCacheObserver override:
   // We need to watch for profile removal to keep kAppListProfile updated.
   virtual void OnProfileWillBeRemoved(
@@ -832,6 +834,45 @@ void AppListController::FreeAnyKeepAliveForView() {
     keep_alive_.reset(NULL);
 }
 
+base::FilePath GetAppListTaskbarShortcutPath(
+    const base::FilePath& user_data_dir) {
+  const string16 shortcut_name = l10n_util::GetStringUTF16(
+      IDS_APP_LIST_SHORTCUT_NAME);
+  return user_data_dir.Append(shortcut_name).AddExtension(installer::kLnkExt);
+}
+
+void CreateAppListTaskbarShortcutOnFileThread(
+    const base::FilePath& user_data_dir,
+    const string16& app_model_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+
+  base::win::ShortcutProperties shortcut_properties;
+  shortcut_properties.set_target(chrome_exe);
+  shortcut_properties.set_working_dir(chrome_exe.DirName());
+
+  string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
+  shortcut_properties.set_arguments(wide_switches);
+  shortcut_properties.set_description(l10n_util::GetStringUTF16(
+      IDS_APP_LIST_SHORTCUT_NAME));
+
+  shortcut_properties.set_icon(chrome_exe, kAppListIconIndex);
+  shortcut_properties.set_app_id(app_model_id);
+
+  const base::FilePath shortcut_path(
+      GetAppListTaskbarShortcutPath(user_data_dir));
+  base::win::CreateOrUpdateShortcutLink(shortcut_path, shortcut_properties,
+                                        base::win::SHORTCUT_CREATE_ALWAYS);
+
+  if (!base::win::TaskbarPinShortcutLink(shortcut_path.value().c_str()))
+    LOG(WARNING) << "Failed to pin AppList using " << shortcut_path.value();
+}
+
 // Check that a taskbar shortcut exists if it should, or does not exist if
 // it should not. A taskbar shortcut should exist if the switch
 // kShowAppListShortcut is set. The shortcut will be created or deleted in
@@ -846,10 +887,8 @@ void CheckAppListTaskbarShortcutOnFileThread(
     const string16& app_model_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  const string16 shortcut_name = l10n_util::GetStringUTF16(
-      IDS_APP_LIST_SHORTCUT_NAME);
-  const base::FilePath shortcut_path(user_data_dir.Append(shortcut_name)
-      .AddExtension(installer::kLnkExt));
+  const base::FilePath shortcut_path(
+      GetAppListTaskbarShortcutPath(user_data_dir));
   const bool should_show =
       CommandLine::ForCurrentProcess()->HasSwitch(
           apps::switches::kShowAppListShortcut);
@@ -857,29 +896,7 @@ void CheckAppListTaskbarShortcutOnFileThread(
   // This will not reshow a shortcut if it has been unpinned manually by the
   // user, as that will not delete the shortcut file.
   if (should_show && !file_util::PathExists(shortcut_path)) {
-    base::FilePath chrome_exe;
-    if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      NOTREACHED();
-      return;
-    }
-
-    base::win::ShortcutProperties shortcut_properties;
-    shortcut_properties.set_target(chrome_exe);
-    shortcut_properties.set_working_dir(chrome_exe.DirName());
-
-    string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
-    shortcut_properties.set_arguments(wide_switches);
-    shortcut_properties.set_description(shortcut_name);
-
-    shortcut_properties.set_icon(chrome_exe, kAppListIconIndex);
-    shortcut_properties.set_app_id(app_model_id);
-
-    base::win::CreateOrUpdateShortcutLink(shortcut_path, shortcut_properties,
-                                          base::win::SHORTCUT_CREATE_ALWAYS);
-
-    if (!base::win::TaskbarPinShortcutLink(shortcut_path.value().c_str()))
-      LOG(WARNING) << "Failed to pin AppList using " << shortcut_path.value();
-
+    CreateAppListTaskbarShortcutOnFileThread(user_data_dir, app_model_id);
     return;
   }
 
@@ -943,6 +960,15 @@ Profile* AppListController::GetCurrentAppListProfile() {
 
 bool AppListController::IsAppListVisible() const {
   return current_view_ && current_view_->GetWidget()->IsVisible();
+}
+
+void AppListController::EnableAppList() {
+  base::FilePath user_data_dir(
+      g_browser_process->profile_manager()->user_data_dir());
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateAppListTaskbarShortcutOnFileThread, user_data_dir,
+                 GetAppModelId()));
 }
 
 }  // namespace

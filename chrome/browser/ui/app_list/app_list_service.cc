@@ -131,6 +131,8 @@ Profile* AppListService::GetCurrentAppListProfile() { return NULL; }
 
 bool AppListService::IsAppListVisible() const { return false; }
 
+void AppListService::EnableAppList() {}
+
 void AppListService::OnProfileAdded(const base::FilePath& profilePath) {}
 
 void AppListService::OnProfileWillBeRemoved(
