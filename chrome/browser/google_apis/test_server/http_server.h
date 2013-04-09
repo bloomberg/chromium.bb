@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/tcp_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 namespace google_apis {
 namespace test_server {

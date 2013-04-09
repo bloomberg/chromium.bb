@@ -122,7 +122,7 @@ bool Socket::InitUnixSocket(const std::string& path, bool abstract) {
   family_ = PF_UNIX;
   addr_.addr_un.sun_family = family_;
   if (abstract) {
-    // Copied from net/base/unix_domain_socket_posix.cc
+    // Copied from net/socket/unix_domain_socket_posix.cc
     // Convert the path given into abstract socket name. It must start with
     // the '\0' character, so we are adding it. |addr_len| must specify the
     // length of the structure exactly, as potentially the socket name may

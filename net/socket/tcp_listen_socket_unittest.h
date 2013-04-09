@@ -10,9 +10,9 @@
 #if defined(OS_WIN)
 #include <winsock2.h>
 #elif defined(OS_POSIX)
-#include <sys/socket.h>
-#include <errno.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <sys/socket.h>
 #endif
 
 #include "base/basictypes.h"
@@ -24,8 +24,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "net/base/net_util.h"
-#include "net/base/tcp_listen_socket.h"
 #include "net/base/winsock_init.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

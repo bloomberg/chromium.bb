@@ -10,12 +10,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
 #include "grit/shell_resources.h"
-#include "net/base/tcp_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
-#include "net/base/unix_domain_socket_posix.h"
+#include "net/socket/unix_domain_socket_posix.h"
 
 namespace {
 const char kSocketName[] = "content_shell_devtools_remote";

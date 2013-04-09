@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_UNIX_DOMAIN_SOCKET_POSIX_H_
-#define NET_BASE_UNIX_DOMAIN_SOCKET_POSIX_H_
+#ifndef NET_SOCKET_UNIX_DOMAIN_SOCKET_POSIX_H_
+#define NET_SOCKET_UNIX_DOMAIN_SOCKET_POSIX_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
-#include "net/base/stream_listen_socket.h"
+#include "net/socket/stream_listen_socket.h"
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
 // Feature only supported on Linux currently. This lets the Unix Domain Socket
@@ -117,4 +117,4 @@ class NET_EXPORT UnixDomainSocketWithAbstractNamespaceFactory
 
 }  // namespace net
 
-#endif  // NET_BASE_UNIX_DOMAIN_SOCKET_POSIX_H_
+#endif  // NET_SOCKET_UNIX_DOMAIN_SOCKET_POSIX_H_

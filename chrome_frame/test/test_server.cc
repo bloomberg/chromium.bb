@@ -16,9 +16,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "net/base/tcp_listen_socket.h"
 #include "net/base/winsock_init.h"
 #include "net/http/http_util.h"
+#include "net/socket/tcp_listen_socket.h"
 
 namespace test_server {
 const char kDefaultHeaderTemplate[] =

@@ -15,18 +15,18 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/product.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/product.h"
 #include "chrome_frame/html_utils.h"
-#include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/test_scrubber.h"
+#include "chrome_frame/utils.h"
 #include "net/base/mime_util.h"
-#include "net/base/stream_listen_socket.h"
 #include "net/http/http_util.h"
+#include "net/socket/stream_listen_socket.h"
 
 using chrome_frame_test::kChromeFrameLongNavigationTimeout;
 using chrome_frame_test::kChromeFrameVeryLongNavigationTimeout;

@@ -7,7 +7,7 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "content/public/browser/devtools_http_handler.h"
-#include "net/base/tcp_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 RemoteDebuggingServer::RemoteDebuggingServer(
     Profile* profile,

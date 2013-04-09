@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/stream_listen_socket.h"
 #include "net/http/http_status_code.h"
+#include "net/socket/stream_listen_socket.h"
 
 namespace net {
 

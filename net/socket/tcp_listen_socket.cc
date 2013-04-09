@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/tcp_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 #if defined(OS_WIN)
 // winsock2.h must be included first in order to ensure it is included before
 // windows.h.
 #include <winsock2.h>
 #elif defined(OS_POSIX)
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include "net/base/net_errors.h"
 #endif
 

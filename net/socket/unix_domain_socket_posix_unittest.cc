@@ -29,7 +29,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "net/base/unix_domain_socket_posix.h"
+#include "net/socket/unix_domain_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::queue;

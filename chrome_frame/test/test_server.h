@@ -42,7 +42,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/message_loop.h"
-#include "net/base/stream_listen_socket.h"
+#include "net/socket/stream_listen_socket.h"
 
 namespace test_server {
 

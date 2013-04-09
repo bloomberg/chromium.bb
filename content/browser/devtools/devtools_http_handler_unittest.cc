@@ -7,7 +7,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
-#include "net/base/stream_listen_socket.h"
+#include "net/socket/stream_listen_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

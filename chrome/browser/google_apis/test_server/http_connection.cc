@@ -5,7 +5,7 @@
 #include "chrome/browser/google_apis/test_server/http_connection.h"
 
 #include "chrome/browser/google_apis/test_server/http_response.h"
-#include "net/base/stream_listen_socket.h"
+#include "net/socket/stream_listen_socket.h"
 
 namespace google_apis {
 namespace test_server {

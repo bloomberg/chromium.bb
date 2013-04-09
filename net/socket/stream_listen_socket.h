@@ -13,8 +13,8 @@
 // thread always and that all other methods (including constructor and
 // destructor) should also be called from the same thread.
 
-#ifndef NET_BASE_STREAM_LISTEN_SOCKET_H_
-#define NET_BASE_STREAM_LISTEN_SOCKET_H_
+#ifndef NET_SOCKET_STREAM_LISTEN_SOCKET_H_
+#define NET_SOCKET_STREAM_LISTEN_SOCKET_H_
 
 #include "build/build_config.h"
 
@@ -31,7 +31,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
-#include "net/base/stream_listen_socket.h"
+#include "net/socket/stream_listen_socket.h"
 
 #if defined(OS_POSIX)
 typedef int SocketDescriptor;
@@ -152,4 +152,4 @@ class NET_EXPORT StreamListenSocketFactory {
 
 }  // namespace net
 
-#endif  // NET_BASE_STREAM_LISTEN_SOCKET_H_
+#endif  // NET_SOCKET_STREAM_LISTEN_SOCKET_H_

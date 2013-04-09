@@ -6,9 +6,9 @@
 
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "net/base/stream_listen_socket.h"
 #include "net/server/http_server.h"
 #include "net/server/web_socket.h"
+#include "net/socket/stream_listen_socket.h"
 
 namespace net {
 

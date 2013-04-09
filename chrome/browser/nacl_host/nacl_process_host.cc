@@ -46,7 +46,7 @@
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "net/base/net_util.h"
-#include "net/base/tcp_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 #if defined(OS_POSIX)

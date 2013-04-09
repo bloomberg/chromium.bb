@@ -4,8 +4,8 @@
 
 #include "chrome/browser/android/dev_tools_server.h"
 
-#include <cstring>
 #include <pwd.h>
+#include <cstring>
 
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
@@ -21,9 +21,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
-#include "jni/DevToolsServer_jni.h"
 #include "grit/devtools_discovery_page_resources.h"
-#include "net/base/unix_domain_socket_posix.h"
+#include "jni/DevToolsServer_jni.h"
+#include "net/socket/unix_domain_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
