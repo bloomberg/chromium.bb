@@ -1315,6 +1315,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (dragging())
     return;
 
+  tooltip_->Close();
+
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
     return;
@@ -1329,8 +1331,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
   // the call.
   if (!IsUsableEvent(event))
     return;
-
-  tooltip_->Close();
 
   {
     // Slow down activation animations if shift key is pressed.
