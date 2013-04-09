@@ -26,8 +26,8 @@ class AutocheckoutBubbleViews : public views::BubbleDelegateView,
                                 public views::ButtonListener,
                                 public AutocheckoutBubble {
  public:
-  explicit AutocheckoutBubbleViews(
-      scoped_ptr<AutocheckoutBubbleController> controller);
+  AutocheckoutBubbleViews(scoped_ptr<AutocheckoutBubbleController> controller,
+                          views::View* anchor_view);
 
   // AutocheckoutBubble:
   virtual void ShowBubble() OVERRIDE;
@@ -39,6 +39,8 @@ class AutocheckoutBubbleViews : public views::BubbleDelegateView,
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
