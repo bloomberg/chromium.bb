@@ -85,9 +85,10 @@ int main(int argc, const char* argv[]) {
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
   llvm::outs() << "==== BEGIN EDITS ====\n";
-  for (const Replacement& r : replacements) {
-    llvm::outs() << "r:" << r.getFilePath() << ":" << r.getOffset() << ":"
-                 << r.getLength() << ":" << r.getReplacementText() << "\n";
+  for (Replacements::const_iterator it = replacements.begin();
+       it != replacements.end(); ++it) {
+    llvm::outs() << "r:" << it->getFilePath() << ":" << it->getOffset() << ":"
+                 << it->getLength() << ":" << it->getReplacementText() << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 

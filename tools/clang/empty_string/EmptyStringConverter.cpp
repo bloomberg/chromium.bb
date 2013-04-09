@@ -96,7 +96,7 @@ class EmptyStringConverter {
 };
 
 void EmptyStringConverter::SetupMatchers(MatchFinder* match_finder) {
-  const auto& constructor_call =
+  const clang::ast_matchers::StatementMatcher& constructor_call =
       id("call",
          constructExpr(
              hasDeclaration(methodDecl(ofClass(hasName("std::basic_string")))),
@@ -189,9 +189,10 @@ int main(int argc, const char* argv[]) {
   // Only the <replacement text> field can contain embedded ":" characters.
   // TODO(dcheng): Use a more clever serialization.
   llvm::outs() << "==== BEGIN EDITS ====\n";
-  for (const Replacement& r : replacements) {
-    llvm::outs() << "r:" << r.getFilePath() << ":" << r.getOffset() << ":"
-                 << r.getLength() << ":" << r.getReplacementText() << "\n";
+  for (Replacements::const_iterator it = replacements.begin();
+       it != replacements.end(); ++it) {
+    llvm::outs() << "r:" << it->getFilePath() << ":" << it->getOffset() << ":"
+                 << it->getLength() << ":" << it->getReplacementText() << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 
