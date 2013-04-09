@@ -72,7 +72,6 @@
       '../accessibility',
       '../accessibility/chromium',
       '../bindings',
-      '../bindings/generic',
       '../bindings/v8',
       '../bindings/v8/custom',
       '../css',
@@ -2013,7 +2012,6 @@
 
         # Exclude most of bindings, except of the V8-related parts.
         ['exclude', 'bindings/[^/]+/'],
-        ['include', 'bindings/generic/'],
         ['include', 'bindings/v8/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
