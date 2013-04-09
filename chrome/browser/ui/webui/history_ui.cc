@@ -995,17 +995,17 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         // TODO(dubroy): Use the sane time instead once it is available.
         if (visit_time.is_null())
           visit_time = time;
+
+        web_history_query_results_.push_back(
+            HistoryEntry(
+                HistoryEntry::REMOTE_ENTRY,
+                GURL(url),
+                title,
+                visit_time,
+                timestamps,
+                !search_text.empty(),
+                string16()));
       }
-      GURL gurl(url);
-      web_history_query_results_.push_back(
-          HistoryEntry(
-              HistoryEntry::REMOTE_ENTRY,
-              gurl,
-              title,
-              visit_time,
-              timestamps,
-              !search_text.empty(),
-              string16()));
     }
   } else if (results_value) {
     NOTREACHED() << "Failed to parse JSON response.";
