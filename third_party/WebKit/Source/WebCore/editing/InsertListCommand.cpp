@@ -303,7 +303,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         insertNodeAfter(nodeToInsert, listNode);
 
     VisiblePosition insertionPoint = VisiblePosition(positionBeforeNode(placeholder.get()));
-    moveParagraphs(start, end, insertionPoint, true);
+    moveParagraphs(start, end, insertionPoint, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
 }
 
 static Element* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const QualifiedName& listTag)

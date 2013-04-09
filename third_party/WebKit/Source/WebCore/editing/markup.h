@@ -63,7 +63,7 @@ bool isPlainTextMarkup(Node*);
 void replaceChildrenWithFragment(ContainerNode*, PassRefPtr<DocumentFragment>, ExceptionCode&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionCode&);
 
-String createMarkup(const Range*, Vector<Node*>* = 0, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs);
+String createMarkup(const Range*, Vector<Node*>* = 0, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = 0);
 String createMarkup(const Node*, EChildrenOnly = IncludeNode, Vector<Node*>* = 0, EAbsoluteURLs = DoNotResolveURLs, Vector<QualifiedName>* tagNamesToSkip = 0);
 
 String createFullMarkup(const Node*);

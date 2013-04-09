@@ -503,7 +503,7 @@ static bool isElementPresentational(const Node* node)
         || node->hasTagName(iTag) || node->hasTagName(emTag) || node->hasTagName(bTag) || node->hasTagName(strongTag);
 }
 
-static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate)
+static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
     Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION);
     ASSERT(commonAncestor);
@@ -528,7 +528,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
 
     Node* checkAncestor = specialCommonAncestor ? specialCommonAncestor : commonAncestor;
     if (checkAncestor->renderer()) {
-        Node* newSpecialCommonAncestor = highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isElementPresentational, CanCrossEditingBoundary, checkAncestor->renderer()->containingBlock()->node());
+        Node* newSpecialCommonAncestor = highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isElementPresentational, CanCrossEditingBoundary, constrainingAncestor);
         if (newSpecialCommonAncestor)
             specialCommonAncestor = newSpecialCommonAncestor;
     }
@@ -551,7 +551,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange? 
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
 static String createMarkupInternal(Document* document, const Range* range, const Range* updatedRange, Vector<Node*>* nodes,
-    EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs)
+    EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(document);
     ASSERT(range);
@@ -572,7 +572,7 @@ static String createMarkupInternal(Document* document, const Range* range, const
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
         fullySelectedRoot = body;
-    Node* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate);
+    Node* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
     StyledMarkupAccumulator accumulator(nodes, shouldResolveURLs, shouldAnnotate, updatedRange, specialCommonAncestor);
     Node* pastEnd = updatedRange->pastLastNode();
 
@@ -636,7 +636,7 @@ static String createMarkupInternal(Document* document, const Range* range, const
     return accumulator.takeResults();
 }
 
-String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs)
+String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     if (!range)
         return emptyString();
@@ -647,7 +647,7 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
 
     const Range* updatedRange = range;
 
-    return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs);
+    return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document* document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)

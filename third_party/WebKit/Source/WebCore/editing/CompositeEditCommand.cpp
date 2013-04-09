@@ -1124,17 +1124,15 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
         insertNodeAt(createBreakElement(document()), beforeParagraph.deepEquivalent());
     }
 }
-    
-    
-// This moves a paragraph preserving its style.
-void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle)
+
+void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
 {
     ASSERT(isStartOfParagraph(startOfParagraphToMove));
     ASSERT(isEndOfParagraph(endOfParagraphToMove));
-    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, preserveSelection, preserveStyle);
+    moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, preserveSelection, preserveStyle, constrainingAncestor);
 }
 
-void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle)
+void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, bool preserveSelection, bool preserveStyle, Node* constrainingAncestor)
 {
     if (startOfParagraphToMove == destination)
         return;
@@ -1183,10 +1181,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // FIXME: This is an inefficient way to preserve style on nodes in the paragraph to move. It
     // shouldn't matter though, since moved paragraphs will usually be quite small.
-    RefPtr<DocumentFragment> fragment;
-    // This used to use a ternary for initialization, but that confused some versions of GCC, see bug 37912
-    if (startOfParagraphToMove != endOfParagraphToMove)
-        fragment = createFragmentFromMarkup(document(), createMarkup(range.get(), 0, DoNotAnnotateForInterchange, true), "");
+    RefPtr<DocumentFragment> fragment = startOfParagraphToMove != endOfParagraphToMove ?
+        createFragmentFromMarkup(document(), createMarkup(range.get(), 0, DoNotAnnotateForInterchange, true, DoNotResolveURLs, constrainingAncestor), "") : 0;
 
     // A non-empty paragraph's style is moved when we copy and move it.  We don't move 
     // anything if we're given an empty paragraph, but an empty paragraph can have style
