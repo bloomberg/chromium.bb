@@ -435,6 +435,7 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback,
       UploadMode upload_mode,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
@@ -453,6 +454,7 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
 
  private:
   const UploadRangeCallback callback_;
+  const ProgressCallback progress_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };

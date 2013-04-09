@@ -605,7 +605,8 @@ void DriveAPIService::ResumeUpload(
     int64 content_length,
     const std::string& content_type,
     const scoped_refptr<net::IOBuffer>& buf,
-    const UploadRangeCallback& callback) {
+    const UploadRangeCallback& callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -621,7 +622,8 @@ void DriveAPIService::ResumeUpload(
           content_length,
           content_type,
           buf,
-          base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));
+          base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback),
+          progress_callback));
 }
 
 void DriveAPIService::GetUploadStatus(

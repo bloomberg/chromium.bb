@@ -656,6 +656,7 @@ ResumeUploadOperation::ResumeUploadOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
+    const ProgressCallback& progress_callback,
     UploadMode upload_mode,
     const base::FilePath& drive_file_path,
     const GURL& upload_location,
@@ -674,7 +675,8 @@ ResumeUploadOperation::ResumeUploadOperation(
                                 content_length,
                                 content_type,
                                 buf),
-      callback_(callback) {
+      callback_(callback),
+      progress_callback_(progress_callback) {
   DCHECK(!callback_.is_null());
 }
 

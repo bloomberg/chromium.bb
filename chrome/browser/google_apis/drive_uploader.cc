@@ -360,7 +360,8 @@ void DriveUploader::ReadCompletionCallback(
       info_ptr->buf,
       base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info)));
+                 base::Passed(&upload_file_info)),
+      ProgressCallback());
 }
 
 void DriveUploader::OnUploadRangeResponseReceived(

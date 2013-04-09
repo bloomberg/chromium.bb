@@ -473,8 +473,8 @@ typedef base::Callback<void(
 // Performs the operation for resuming the upload of a file.
 class ResumeUploadOperation : public ResumeUploadOperationBase {
  public:
-  // See also ResumeUploadOperationBase's comment for parameters meaining.
-  // |callback| must not be null.
+  // See also ResumeUploadOperationBase's comment for parameters meaning.
+  // |callback| must not be null. |progress_callback| may be null.
   ResumeUploadOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
@@ -486,7 +486,8 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback);
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback);
   virtual ~ResumeUploadOperation();
 
  protected:
@@ -497,6 +498,7 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
 
  private:
   const UploadRangeCallback callback_;
+  const ProgressCallback progress_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };

@@ -122,7 +122,8 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback) OVERRIDE {
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback) OVERRIDE {
     const int64 expected_size = expected_upload_content_.size();
 
     // The upload range should start from the current first unreceived byte.
@@ -210,7 +211,8 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback) OVERRIDE {
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
   }
 };
@@ -250,7 +252,8 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback) OVERRIDE {
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),

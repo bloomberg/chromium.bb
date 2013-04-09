@@ -79,6 +79,9 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& open_url)>
     AuthorizeAppCallback;
 
+// Callback used for ResumeUpload().
+typedef base::Callback<void(int64 progress)> ProgressCallback;
+
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
@@ -349,7 +352,7 @@ class DriveServiceInterface {
       const InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.
-  // |callback| must not be null.
+  // |callback| must not be null. |progress_callback| may be null.
   virtual void ResumeUpload(
       UploadMode upload_mode,
       const base::FilePath& drive_file_path,
@@ -359,7 +362,8 @@ class DriveServiceInterface {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback) = 0;
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
   // |upload_mode|, |drive_file_path| and |content_length| should be set to

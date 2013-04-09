@@ -174,7 +174,8 @@ class FakeDriveService : public DriveServiceInterface {
       int64 content_length,
       const std::string& content_type,
       const scoped_refptr<net::IOBuffer>& buf,
-      const UploadRangeCallback& callback) OVERRIDE;
+      const UploadRangeCallback& callback,
+      const ProgressCallback& progress_callback) OVERRIDE;
   virtual void GetUploadStatus(
       UploadMode upload_mode,
       const base::FilePath& drive_file_path,

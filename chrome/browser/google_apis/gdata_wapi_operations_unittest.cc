@@ -893,6 +893,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
+      ProgressCallback(),
       UPLOAD_NEW_FILE,
       base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
@@ -1047,6 +1048,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         CreateComposedCallback(
             base::Bind(&test_util::RunAndQuit),
             test_util::CreateCopyResultCallback(&response, &new_entry)),
+        ProgressCallback(),
         UPLOAD_NEW_FILE,
         base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
         upload_url,
@@ -1191,6 +1193,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
+      ProgressCallback(),
       UPLOAD_NEW_FILE,
       base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
@@ -1282,6 +1285,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
+      ProgressCallback(),
       UPLOAD_EXISTING_FILE,
       base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,
@@ -1375,6 +1379,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
+      ProgressCallback(),
       UPLOAD_EXISTING_FILE,
       base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,

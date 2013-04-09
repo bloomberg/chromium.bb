@@ -1833,7 +1833,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       upload_location,
       0, 13, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, response.code);
@@ -1865,7 +1866,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       GURL("https://foo.com/"),
       0, 13, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, response.code);
@@ -1897,7 +1899,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       upload_location,
       0, 13, 15, "text/plain",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
@@ -1909,7 +1912,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       upload_location,
       14, 15, 15, "text/plain",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, response.code);
@@ -1946,7 +1950,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       upload_location,
       0, 13, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
@@ -1958,7 +1963,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       upload_location,
       14, 15, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
-      test_util::CreateCopyResultCallback(&response, &entry));
+      test_util::CreateCopyResultCallback(&response, &entry),
+      ProgressCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, response.code);

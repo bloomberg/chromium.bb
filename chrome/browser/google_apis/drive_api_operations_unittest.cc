@@ -647,7 +647,8 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
           buffer,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)));
+              test_util::CreateCopyResultCallback(&response, &new_entry)),
+          ProgressCallback());
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -739,7 +740,8 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
           buffer,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)));
+              test_util::CreateCopyResultCallback(&response, &new_entry)),
+          ProgressCallback());
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -836,7 +838,8 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
             buffer,
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
-                test_util::CreateCopyResultCallback(&response, &new_entry)));
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
     resume_operation->Start(
         kTestDriveApiAuthToken, kTestUserAgent,
         base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -934,7 +937,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
           buffer,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)));
+              test_util::CreateCopyResultCallback(&response, &new_entry)),
+          ProgressCallback());
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -1021,7 +1025,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
           buffer,
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)));
+              test_util::CreateCopyResultCallback(&response, &new_entry)),
+          ProgressCallback());
   resume_operation->Start(
       kTestDriveApiAuthToken, kTestUserAgent,
       base::Bind(&test_util::DoNothingForReAuthenticateCallback));
