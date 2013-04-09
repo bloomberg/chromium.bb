@@ -50,12 +50,18 @@ class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
  public:
   ChangeListToEntryProtoMapUMAStats()
     : num_regular_files_(0),
-      num_hosted_documents_(0) {
+      num_hosted_documents_(0),
+      num_shared_with_me_entries_(0) {
   }
 
-  // Increment number of files.
+  // Increments number of files.
   void IncrementNumFiles(bool is_hosted_document) {
     is_hosted_document ? num_hosted_documents_++ : num_regular_files_++;
+  }
+
+  // Increments number of shared-with-me entries.
+  void IncrementNumSharedWithMeEntries() {
+    num_shared_with_me_entries_++;
   }
 
   // Updates UMA histograms with file counts.
@@ -65,11 +71,14 @@ class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
     UMA_HISTOGRAM_COUNTS("Drive.NumberOfHostedDocuments",
                          num_hosted_documents_);
     UMA_HISTOGRAM_COUNTS("Drive.NumberOfTotalFiles", num_total_files);
+    UMA_HISTOGRAM_COUNTS("Drive.NumberOfSharedWithMeEntries",
+                         num_shared_with_me_entries_);
   }
 
  private:
   int num_regular_files_;
   int num_hosted_documents_;
+  int num_shared_with_me_entries_;
 };
 
 ChangeListProcessor::ChangeListProcessor(
@@ -373,11 +382,14 @@ void ChangeListProcessor::FeedToEntryProtoMap(
         continue;
 
       // Count the number of files.
-      if (uma_stats && !entry_proto->file_info().is_directory()) {
-        uma_stats->IncrementNumFiles(
-            entry_proto->file_specific_info().is_hosted_document());
+      if (uma_stats) {
+        if (!entry_proto->file_info().is_directory()) {
+          uma_stats->IncrementNumFiles(
+              entry_proto->file_specific_info().is_hosted_document());
+        }
+        if (entry_proto->shared_with_me())
+          uma_stats->IncrementNumSharedWithMeEntries();
       }
-      // TODO(haruki): Metric for the num of the entries in "other" directory.
 
       std::pair<DriveEntryProtoMap::iterator, bool> ret = entry_proto_map_.
           insert(std::make_pair(entry_proto->resource_id(), DriveEntryProto()));
