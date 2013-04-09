@@ -124,7 +124,7 @@
                                                     [Optional=DefaultIsUndefined] XPathNSResolver resolver)
         raises(DOMException);
     XPathNSResolver    createNSResolver(Node nodeResolver);
-    [ObjCLegacyUnnamedParameters, V8Custom] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
+    [ObjCLegacyUnnamedParameters, Custom] XPathResult evaluate([Optional=DefaultIsUndefined] DOMString expression,
                                                   [Optional=DefaultIsUndefined] Node contextNode,
                                                   [Optional=DefaultIsUndefined] XPathNSResolver resolver,
                                                   [Optional=DefaultIsUndefined] unsigned short type,

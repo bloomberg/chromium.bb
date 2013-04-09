@@ -29,7 +29,7 @@
     ExtendsDOMGlobalObject,
     IsWorkerContext,
     OmitConstructor,
-    V8CustomToJSObject,
+    CustomToJSObject,
     NoWrapperCache
 ] interface WorkerContext {
 

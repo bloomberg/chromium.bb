@@ -21,7 +21,7 @@
 
 [
     Conditional=SVG,
-    V8CustomToJSObject
+    CustomToJSObject
 ] interface SVGDocument : Document {
     readonly attribute SVGSVGElement        rootElement;
 

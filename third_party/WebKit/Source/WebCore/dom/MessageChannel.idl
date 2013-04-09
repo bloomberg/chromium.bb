@@ -27,7 +27,7 @@
 [
     Constructor,
     CallWith=ScriptExecutionContext,
-    V8CustomConstructor,
+    CustomConstructor,
     ImplementationLacksVTable
 ] interface MessageChannel {
 

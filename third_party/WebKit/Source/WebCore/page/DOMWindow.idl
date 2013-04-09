@@ -33,9 +33,9 @@
     EventTarget,
     ExtendsDOMGlobalObject,
     ReplaceableConstructor,
-    V8CustomToJSObject,
+    CustomToJSObject,
     NoWrapperCache,
-    V8CustomIndexedGetter,
+    CustomIndexedGetter,
     InterfaceName=Window
 ] interface DOMWindow {
     // DOM Level 0
@@ -53,7 +53,7 @@
 #if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
     attribute [DoNotCheckSecurity, CustomSetter, Unforgeable] Location location;
 #endif
-    [Replaceable, CustomGetter, V8CustomSetter] readonly attribute Event event;
+    [Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
 
     DOMSelection getSelection();
 
@@ -128,7 +128,7 @@
     [DoNotCheckSecurity, Unforgeable] readonly attribute DOMWindow window;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  DOMWindow frames;
 
-    [Replaceable, DoNotCheckSecurityOnGetter, V8CustomSetter] readonly attribute DOMWindow opener;
+    [Replaceable, DoNotCheckSecurityOnGetter, CustomSetter] readonly attribute DOMWindow opener;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow parent;
     [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute DOMWindow top;
 
@@ -312,8 +312,8 @@
     boolean dispatchEvent(Event evt)
         raises(EventException);
 
-    [V8Custom] void captureEvents(/*in long eventFlags*/);
-    [V8Custom] void releaseEvents(/*in long eventFlags*/);
+    [Custom] void captureEvents(/*in long eventFlags*/);
+    [Custom] void releaseEvents(/*in long eventFlags*/);
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // Global constructors

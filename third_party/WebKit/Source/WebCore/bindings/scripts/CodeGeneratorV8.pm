@@ -174,7 +174,7 @@ sub GetGenerateIsReachable
 sub GetCustomIsReachable
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"CustomIsReachable"} || $interface->extendedAttributes->{"V8CustomIsReachable"};
+    return $interface->extendedAttributes->{"CustomIsReachable"};
 }
 
 sub GenerateOpaqueRootForGC
@@ -523,7 +523,7 @@ public:
 
 END
 
-    my $customWrap = !!($interface->extendedAttributes->{"CustomToJSObject"} or $interface->extendedAttributes->{"V8CustomToJSObject"});
+    my $customWrap = !!($interface->extendedAttributes->{"CustomToJSObject"});
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if @parents;
     } elsif ($noWrap) {
@@ -781,32 +781,32 @@ sub IsConstructable
 {
     my $interface = shift;
 
-    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"V8CustomConstructor"} || $interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"ConstructorTemplate"};
+    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"ConstructorTemplate"};
 }
 
 sub HasCustomConstructor
 {
     my $interface = shift;
 
-    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"V8CustomConstructor"};
+    return $interface->extendedAttributes->{"CustomConstructor"};
 }
 
 sub HasCustomGetter
 {
     my $attrExt = shift;
-    return $attrExt->{"Custom"} || $attrExt->{"V8Custom"} || $attrExt->{"CustomGetter"} || $attrExt->{"V8CustomGetter"};
+    return $attrExt->{"Custom"} || $attrExt->{"CustomGetter"};
 }
 
 sub HasCustomSetter
 {
     my $attrExt = shift;
-    return $attrExt->{"Custom"} || $attrExt->{"V8Custom"} || $attrExt->{"CustomSetter"} || $attrExt->{"V8CustomSetter"};
+    return $attrExt->{"Custom"} || $attrExt->{"CustomSetter"};
 }
 
 sub HasCustomMethod
 {
     my $attrExt = shift;
-    return $attrExt->{"Custom"} || $attrExt->{"V8Custom"};
+    return $attrExt->{"Custom"};
 }
 
 sub IsReadonly
@@ -2458,7 +2458,7 @@ sub GenerateSingleBatchedAttribute
         # $constructorType ~= /Constructor$/ indicates that it is NamedConstructor.
         # We do not generate the header file for NamedConstructor of class XXXX,
         # since we generate the NamedConstructor declaration into the header file of class XXXX.
-        if ($constructorType !~ /Constructor$/ || $attribute->signature->extendedAttributes->{"V8CustomConstructor"} || $attribute->signature->extendedAttributes->{"CustomConstructor"}) {
+        if ($constructorType !~ /Constructor$/ || $attribute->signature->extendedAttributes->{"CustomConstructor"}) {
             AddToImplIncludes("V8${constructorType}.h", $attribute->signature->extendedAttributes->{"Conditional"});
         }
         $data = "&V8${constructorType}::info";

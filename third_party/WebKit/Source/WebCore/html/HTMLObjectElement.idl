@@ -20,7 +20,7 @@
 
 [
     CustomNamedSetter,
-    V8CustomIndexedGetter,
+    CustomIndexedGetter,
     CustomCall
 ] interface HTMLObjectElement : HTMLElement {
     readonly attribute HTMLFormElement form;

@@ -22,7 +22,7 @@
 
 [
     Conditional=SVG,
-    V8CustomToJSObject
+    CustomToJSObject
 ] interface SVGElement : Element {
     [Reflect] attribute DOMString id;
     [TreatNullAs=NullString] attribute DOMString xmlbase setter raises(DOMException);

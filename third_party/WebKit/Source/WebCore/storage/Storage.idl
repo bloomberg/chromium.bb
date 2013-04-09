@@ -27,7 +27,7 @@
     NamedGetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    V8CustomIndexedGetter,
+    CustomIndexedGetter,
     CustomNamedSetter,
 ] interface Storage {
     [NotEnumerable] readonly attribute unsigned long length getter raises(DOMException);

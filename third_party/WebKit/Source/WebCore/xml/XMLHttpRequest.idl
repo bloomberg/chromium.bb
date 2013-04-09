@@ -40,7 +40,7 @@ enum XMLHttpRequestResponseType {
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,
-    V8CustomConstructor,
+    CustomConstructor,
     EventTarget
 ] interface XMLHttpRequest {
     // From XMLHttpRequestEventTarget

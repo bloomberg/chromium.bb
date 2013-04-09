@@ -22,7 +22,7 @@
     CustomIndexedSetter,
     NamedGetter,
     GenerateIsReachable=ImplOwnerNodeRoot,
-    V8CustomIndexedGetter,
+    CustomIndexedGetter,
     DependentLifetime,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;

@@ -38,8 +38,8 @@
     [CallWith=ScriptArguments|ScriptState] void dir();
     [CallWith=ScriptArguments|ScriptState] void dirxml();
     [CallWith=ScriptArguments|ScriptState] void table();
-    [V8Custom, CallWith=ScriptArguments|ScriptState] void trace();
-    [V8Custom, CallWith=ScriptArguments|ScriptState, ImplementedAs=assertCondition] void assert(boolean condition);
+    [Custom, CallWith=ScriptArguments|ScriptState] void trace();
+    [Custom, CallWith=ScriptArguments|ScriptState, ImplementedAs=assertCondition] void assert(boolean condition);
     [CallWith=ScriptArguments|ScriptState] void count();
     [CallWith=ScriptArguments] void markTimeline();
 

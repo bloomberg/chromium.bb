@@ -21,7 +21,7 @@
 [
     CustomNamedSetter,
     CustomCall,
-    V8CustomIndexedGetter,
+    CustomIndexedGetter,
     SkipVTableValidation
 ] interface HTMLEmbedElement : HTMLElement {
 attribute [Reflect] DOMString align;

@@ -40,6 +40,7 @@ CustomDeleteProperty
 CustomEnumerateProperty
 CustomGetOwnPropertySlot
 CustomGetter
+CustomIndexedGetter
 CustomIndexedSetter
 CustomIsReachable
 CustomNamedGetter
@@ -61,7 +62,7 @@ EnabledPerContext=*
 EnforceRange
 EventTarget
 ExtendsDOMGlobalObject
-GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerNodeRoot
+GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
 Immutable
 ImplementationLacksVTable
 ImplementationNamespace=*
@@ -103,13 +104,4 @@ TreatUndefinedAs=NullString
 TypedArray=*
 URL
 Unforgeable
-V8Custom
-V8CustomConstructor
-V8CustomGetter
-V8CustomIndexedGetter
-V8CustomIsReachable
-V8CustomSetter
-V8CustomToJSObject
-V8GenerateIsReachable=ImplDocument|ImplElementRoot|ImplOwnerRoot|ImplOwnerNodeRoot
 WrapAsFunction
-

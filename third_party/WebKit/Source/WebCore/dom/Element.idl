@@ -19,7 +19,7 @@
  */
 
 [
-    V8CustomToJSObject,
+    CustomToJSObject,
     SkipVTableValidation
 ] interface Element : Node {
 

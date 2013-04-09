@@ -19,7 +19,7 @@
  */
 
 [
-    V8CustomToJSObject,
+    CustomToJSObject,
     SkipVTableValidation
 ] interface HTMLElement : Element {
              // iht.com relies on id returning the empty string when no id is present. 
