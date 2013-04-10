@@ -1431,6 +1431,7 @@ WebInspector.NetworkLogView.prototype = {
             command.push(escape(header.name + ": " + header.value));
         }
         command = command.concat(data);
+        command.push("--compressed");
         return command.join(" ");
     }, 
 
