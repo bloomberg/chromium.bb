@@ -653,9 +653,6 @@ const VisibleSelection& Page::selection() const
 
 void Page::setDefersLoading(bool defers)
 {
-    if (!m_settings->loadDeferringEnabled())
-        return;
-
     ASSERT(!m_defersLoadingCallCount);
     if (defers == m_defersLoading)
         return;

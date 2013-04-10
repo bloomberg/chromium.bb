@@ -102,7 +102,6 @@ openGLMultisamplingEnabled initial=true
 privilegedWebGLExtensionsEnabled initial=false
 accelerated2dCanvasEnabled initial=false
 antialiased2dCanvasEnabled initial=true
-loadDeferringEnabled initial=true
 webAudioEnabled initial=false
 fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
