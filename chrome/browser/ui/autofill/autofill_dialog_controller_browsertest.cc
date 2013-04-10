@@ -78,9 +78,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       : AutofillDialogControllerImpl(contents,
                                      form_data,
                                      GURL(),
-                                     metric_logger,
                                      dialog_type,
-                                     base::Bind(&MockCallback)) {
+                                     base::Bind(&MockCallback)),
+        metric_logger_(metric_logger) {
     DisableWallet();
   }
 
@@ -105,6 +105,13 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   AutofillDialogView* view() { return AutofillDialogControllerImpl::view(); }
 
  private:
+  // To specify our own metric logger.
+  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
+    return metric_logger_;
+  }
+
+  const AutofillMetrics& metric_logger_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
 

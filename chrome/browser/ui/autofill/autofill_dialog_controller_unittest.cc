@@ -138,9 +138,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
-                                     metric_logger,
                                      dialog_type,
                                      callback),
+        metric_logger_(metric_logger),
         ALLOW_THIS_IN_INITIALIZER_LIST(test_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this)) {}
@@ -176,6 +176,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  private:
+  // To specify our own metric logger.
+  virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
+    return metric_logger_;
+  }
+
+  const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   testing::NiceMock<TestWalletClient> test_wallet_client_;
 

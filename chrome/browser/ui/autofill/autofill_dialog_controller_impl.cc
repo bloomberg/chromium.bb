@@ -230,7 +230,8 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
 
-  metric_logger_.LogDialogInitialUserState(dialog_type_, initial_user_state_);
+  GetMetricLogger().LogDialogInitialUserState(
+      dialog_type_, initial_user_state_);
 }
 
 // static
@@ -239,7 +240,6 @@ base::WeakPtr<AutofillDialogControllerImpl>
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const AutofillMetrics& metric_logger,
     const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
@@ -248,7 +248,6 @@ base::WeakPtr<AutofillDialogControllerImpl>
       new AutofillDialogControllerImpl(contents,
                                        form_structure,
                                        source_url,
-                                       metric_logger,
                                        dialog_type,
                                        callback);
   return autofill_dialog_controller->weak_ptr_factory_.GetWeakPtr();
@@ -270,18 +269,18 @@ void AutofillDialogControllerImpl::Show() {
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
   // Log any relevant security exceptions.
-  metric_logger_.LogDialogSecurityMetric(
+  GetMetricLogger().LogDialogSecurityMetric(
       dialog_type_,
       AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    metric_logger_.LogDialogSecurityMetric(
+    GetMetricLogger().LogDialogSecurityMetric(
         dialog_type_,
         AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
   }
 
   if (!invoked_from_same_origin_) {
-    metric_logger_.LogDialogSecurityMetric(
+    GetMetricLogger().LogDialogSecurityMetric(
         dialog_type_,
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
@@ -1081,7 +1080,7 @@ void AutofillDialogControllerImpl::ViewClosed() {
         autocheckout_is_running_ ?
             AutofillMetrics::AUTOCHECKOUT_SUCCEEDED :
             AutofillMetrics::AUTOCHECKOUT_FAILED;
-    metric_logger_.LogAutocheckoutDuration(
+    GetMetricLogger().LogAutocheckoutDuration(
         base::Time::Now() - autocheckout_started_timestamp_,
         metric);
   }
@@ -1210,7 +1209,7 @@ void AutofillDialogControllerImpl::OnCancel() {
   if (callback_.is_null())
     return;
 
-  metric_logger_.LogDialogUiDuration(
+  GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       dialog_type_,
       AutofillMetrics::DIALOG_CANCELED);
@@ -1249,7 +1248,7 @@ content::WebContents* AutofillDialogControllerImpl::web_contents() {
 
 void AutofillDialogControllerImpl::OnPopupShown(
     content::KeyboardListener* listener) {
-  metric_logger_.LogDialogPopupEvent(
+  GetMetricLogger().LogDialogPopupEvent(
       dialog_type_, AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
@@ -1285,7 +1284,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
     view_->UpdateSection(section);
   }
 
-  metric_logger_.LogDialogPopupEvent(
+  GetMetricLogger().LogDialogPopupEvent(
       dialog_type_, AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
@@ -1556,7 +1555,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const AutofillMetrics& metric_logger,
     const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback)
@@ -1578,7 +1576,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
       input_showing_popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      metric_logger_(metric_logger),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),
       is_submitting_(false),
@@ -2045,7 +2042,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
       wallet_items_->google_transaction_id());
   callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
 
-  metric_logger_.LogDialogUiDuration(
+  GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
       dialog_type_,
       AutofillMetrics::DIALOG_ACCEPTED);

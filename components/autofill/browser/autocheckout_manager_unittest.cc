@@ -248,7 +248,6 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const AutofillMetrics& metric_logger,
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) OVERRIDE {

@@ -74,7 +74,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
@@ -225,7 +224,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
@@ -479,7 +477,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 
   // For logging UMA metrics.
-  const AutofillMetrics& metric_logger_;
+  const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   base::Time autocheckout_started_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;

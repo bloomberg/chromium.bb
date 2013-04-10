@@ -779,7 +779,7 @@ void AutofillManager::ShowRequestAutocompleteDialog(
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   manager_delegate_->ShowRequestAutocompleteDialog(
-      form, source_url, *metric_logger_, dialog_type, callback);
+      form, source_url, dialog_type, callback);
 }
 
 void AutofillManager::SetTestDelegate(
