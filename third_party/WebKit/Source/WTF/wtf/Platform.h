@@ -550,50 +550,6 @@
 /* Include feature macros */
 #include <wtf/FeatureDefines.h>
 
-#define ENABLE_DEBUG_WITH_BREAKPOINT 0
-#define ENABLE_SAMPLING_COUNTERS 0
-#define ENABLE_SAMPLING_FLAGS 0
-#define ENABLE_SAMPLING_REGIONS 0
-#define ENABLE_OPCODE_SAMPLING 0
-#define ENABLE_CODEBLOCK_SAMPLING 0
-#if ENABLE(CODEBLOCK_SAMPLING) && !ENABLE(OPCODE_SAMPLING)
-#error "CODEBLOCK_SAMPLING requires OPCODE_SAMPLING"
-#endif
-#if ENABLE(OPCODE_SAMPLING) || ENABLE(SAMPLING_FLAGS) || ENABLE(SAMPLING_REGIONS)
-#define ENABLE_SAMPLING_THREAD 1
-#endif
-
-#if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32_64)
-#if (CPU(X86_64) && (OS(UNIX) || OS(WINDOWS))) \
-    || (CPU(IA64) && !CPU(IA64_32)) \
-    || CPU(ALPHA) \
-    || CPU(SPARC64) \
-    || CPU(S390X) \
-    || CPU(PPC64)
-#define WTF_USE_JSVALUE64 1
-#else
-#define WTF_USE_JSVALUE32_64 1
-#endif
-#endif /* !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32_64) */
-
-/* Disable the JIT on versions of GCC prior to 4.1 */
-#if !defined(ENABLE_JIT) && COMPILER(GCC) && !GCC_VERSION_AT_LEAST(4, 1, 0)
-#define ENABLE_JIT 0
-#endif
-
-#if !defined(ENABLE_JIT) && CPU(SH4) && PLATFORM(QT)
-#define ENABLE_JIT 1
-#endif
-
-/* The JIT is enabled by default on all x86, x86-64, ARM & MIPS platforms. */
-#if !defined(ENABLE_JIT) \
-    && (CPU(X86) || CPU(X86_64) || CPU(ARM) || CPU(MIPS)) \
-    && (OS(DARWIN) || !COMPILER(GCC) || GCC_VERSION_AT_LEAST(4, 1, 0)) \
-    && !OS(WINCE) \
-    && !(OS(QNX) && !PLATFORM(QT)) /* We use JIT in QNX Qt */
-#define ENABLE_JIT 1
-#endif
-
 /* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
    https://bugs.webkit.org/show_bug.cgi?id=112830 */
 #if USE(CG)
@@ -614,43 +570,6 @@
 #define ENABLE_THREADING_OPENMP 1
 #elif !defined(THREADING_GENERIC)
 #define ENABLE_THREADING_GENERIC 1
-#endif
-
-#if USE(GLIB)
-#include <wtf/gobject/GTypedefs.h>
-#endif
-
-/* FIXME: This define won't be needed once #27551 is fully landed. However, 
-   since most ports try to support sub-project independence, adding new headers
-   to WTF causes many ports to break, and so this way we can address the build
-   breakages one port at a time. */
-#if !defined(WTF_USE_EXPORT_MACROS) && (PLATFORM(MAC) || PLATFORM(QT) || PLATFORM(WX))
-#define WTF_USE_EXPORT_MACROS 1
-#endif
-
-#if !defined(WTF_USE_EXPORT_MACROS_FOR_TESTING) && (PLATFORM(GTK) || PLATFORM(WIN))
-#define WTF_USE_EXPORT_MACROS_FOR_TESTING 1
-#endif
-
-#if (PLATFORM(QT) && !OS(DARWIN) && !OS(WINDOWS)) || PLATFORM(GTK)
-#define WTF_USE_UNIX_DOMAIN_SOCKETS 1
-#endif
-
-#if !defined(ENABLE_COMPARE_AND_SWAP) && (OS(WINDOWS) || (COMPILER(GCC) && (CPU(X86) || CPU(X86_64) || CPU(ARM_THUMB2))))
-#define ENABLE_COMPARE_AND_SWAP 1
-#endif
-
-#define ENABLE_OBJECT_MARK_LOGGING 0
-
-#if !defined(ENABLE_PARALLEL_GC) && !ENABLE(OBJECT_MARK_LOGGING) && (PLATFORM(MAC) || PLATFORM(IOS) || PLATFORM(GTK)) && ENABLE(COMPARE_AND_SWAP)
-#define ENABLE_PARALLEL_GC 1
-#elif PLATFORM(QT)
-// Parallel GC is temporarily disabled on Qt because of regular crashes, see https://bugs.webkit.org/show_bug.cgi?id=90957 for details
-#define ENABLE_PARALLEL_GC 0
-#endif
-
-#if !defined(ENABLE_GC_VALIDATION) && !defined(NDEBUG)
-#define ENABLE_GC_VALIDATION 1
 #endif
 
 #if !defined(WTF_USE_ZLIB)
