@@ -34,7 +34,8 @@ void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
 }
 
 void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
-  if (request_->method() != net::HttpRequestHeaders::kGetMethod)
+  if (request_->method() != net::HttpRequestHeaders::kGetMethod ||
+      request_->response_info().did_use_http_auth)
     return;
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(

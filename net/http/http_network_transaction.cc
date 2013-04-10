@@ -774,6 +774,9 @@ void HttpNetworkTransaction::BuildRequestHeaders(bool using_proxy) {
         &request_headers_);
 
   request_headers_.MergeFrom(request_->extra_headers);
+  response_.did_use_http_auth =
+      request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||
+      request_headers_.HasHeader(HttpRequestHeaders::kProxyAuthorization);
 }
 
 int HttpNetworkTransaction::DoInitRequestBody() {

@@ -75,6 +75,9 @@ class NET_EXPORT HttpResponseInfo {
   // transparent proxy may have been involved.
   bool was_fetched_via_proxy;
 
+  // Whether the request use http proxy or server authentication.
+  bool did_use_http_auth;
+
   // Remote address of the socket which fetched this resource.
   //
   // NOTE: If the response was served from the cache (was_cached is true),
