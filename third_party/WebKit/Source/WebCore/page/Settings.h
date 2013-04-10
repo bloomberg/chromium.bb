@@ -258,8 +258,6 @@ namespace WebCore {
 #if ENABLE(TOUCH_EVENTS)
         bool m_touchEventEmulationEnabled : 1;
 #endif
-        bool m_scrollingPerformanceLoggingEnabled : 1;
-
         double m_timeWithoutMouseMovementBeforeHidingControls;
 
         Timer<Settings> m_setImageLoadingSettingsTimer;
