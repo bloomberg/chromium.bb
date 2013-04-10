@@ -29,6 +29,7 @@
 #include "config.h"
 #include "AccessibilityRenderObject.h"
 
+#include "AXObjectCache.h"
 #include "AccessibilityImageMapLink.h"
 #include "AccessibilitySVGRoot.h"
 #include "AccessibilitySpinButton.h"
@@ -42,6 +43,7 @@
 #include "HitTestResult.h"
 #include "LocalizedStrings.h"
 #include "NodeTraversal.h"
+#include "Page.h"
 #include "ProgressTracker.h"
 #include "RenderFieldset.h"
 #include "RenderFileUploadControl.h"
@@ -53,6 +55,7 @@
 #include "RenderMenuList.h"
 #include "RenderTextControlSingleLine.h"
 #include "RenderTextFragment.h"
+#include "RenderWidget.h"
 #include "RenderedPosition.h"
 #include "SVGImage.h"
 #include "SVGImageChromeClient.h"
