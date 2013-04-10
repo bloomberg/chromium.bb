@@ -2469,6 +2469,7 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
+            '../ui/keyboard/keyboard.gyp:keyboard',
           ],
           'conditions': [
             ['OS=="win"', {

@@ -123,6 +123,11 @@ bool ShellDelegateImpl::RotatePaneFocus(Shell::Direction direction) {
 void ShellDelegateImpl::ShowKeyboardOverlay() {
 }
 
+keyboard::KeyboardControllerProxy*
+    ShellDelegateImpl::CreateKeyboardControllerProxy() {
+  return NULL;
+}
+
 void ShellDelegateImpl::ShowTaskManager() {
 }
 

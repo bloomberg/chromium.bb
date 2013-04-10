@@ -14920,6 +14920,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       See, also http://translate.google.com/about/ .
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
+      Virtual Keyboard
+    </message>
+    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on the virtual keyboard">
+      Enable virtual keyboard support.
+    </message>
+
     <!-- Toast experiment. -->
     <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chrome the default browser">
       Make it my default browser

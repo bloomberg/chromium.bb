@@ -138,6 +138,8 @@
         'browser/ui/app_modal_dialogs/javascript_dialog_manager.cc',
         'browser/ui/app_modal_dialogs/javascript_dialog_manager.h',
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
+        'browser/ui/ash/ash_keyboard_controller_proxy.cc',
+        'browser/ui/ash/ash_keyboard_controller_proxy.h',
         'browser/ui/ash/app_list/app_list_controller_ash.h',
         'browser/ui/ash/app_list/app_list_controller_ash.cc',
         'browser/ui/ash/app_list/app_list_service_ash.cc',

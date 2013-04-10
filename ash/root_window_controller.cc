@@ -49,6 +49,8 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view_model.h"
@@ -290,6 +292,10 @@ void RootWindowController::InitForPrimaryDisplay() {
   }
   if (Shell::GetInstance()->delegate()->IsUserLoggedIn())
     shelf_->CreateLauncher();
+
+  // TODO(bryeung): Move this to CreateContainersInRootWindow when the
+  // keyboard controller will take care of deferring creation of the keyboard.
+  InitKeyboard();
 }
 
 void RootWindowController::CreateContainers() {
@@ -495,6 +501,24 @@ bool RootWindowController::IsImmersiveMode() const {
   }
   return false;
 }
+
+void RootWindowController::InitKeyboard() {
+  if (keyboard::IsKeyboardEnabled()) {
+    aura::Window* parent = root_window();
+
+    keyboard::KeyboardControllerProxy* proxy =
+        Shell::GetInstance()->delegate()->CreateKeyboardControllerProxy();
+    keyboard_controller_.reset(
+        new keyboard::KeyboardController(proxy));
+    aura::Window* keyboard_container =
+        keyboard_controller_->GetContainerWindow();
+    parent->AddChild(keyboard_container);
+    // TODO(bryeung): move this to the controller on visibility changed
+    parent->StackChildAtTop(keyboard_container);
+    keyboard_container->Show();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:

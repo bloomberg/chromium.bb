@@ -30,6 +30,10 @@ class RootWindowEventFilter;
 }
 }
 
+namespace keyboard {
+class KeyboardController;
+}
+
 namespace ash {
 class StackingController;
 class ShelfWidget;
@@ -174,10 +178,15 @@ class ASH_EXPORT RootWindowController {
   // types in the shell UI.
   void CreateContainersInRootWindow(aura::RootWindow* root_window);
 
+  // Initializes the virtual keyboard.
+  void InitKeyboard();
+
   scoped_ptr<aura::RootWindow> root_window_;
   RootWindowLayoutManager* root_window_layout_;
 
   scoped_ptr<StackingController> stacking_controller_;
+
+  scoped_ptr<keyboard::KeyboardController> keyboard_controller_;
 
   // The shelf for managing the launcher and the status widget.
   scoped_ptr<ShelfWidget> shelf_;

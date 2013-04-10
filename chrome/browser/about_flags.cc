@@ -35,6 +35,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/surface/surface_switches.h"
 
 #if defined(ENABLE_MESSAGE_CENTER)
@@ -1308,6 +1309,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableTranslateAlphaLanguages)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-virtual-keyboard",
+    IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME,
+    IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

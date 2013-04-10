@@ -11,6 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace keyboard {
+class KeyboardControllerProxy;
+}
+
 namespace ash {
 namespace test {
 
@@ -43,6 +47,8 @@ class TestShellDelegate : public ShellDelegate {
   virtual void RestoreTab() OVERRIDE;
   virtual bool RotatePaneFocus(Shell::Direction direction) OVERRIDE;
   virtual void ShowKeyboardOverlay() OVERRIDE;
+  virtual keyboard::KeyboardControllerProxy*
+      CreateKeyboardControllerProxy() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback(

@@ -110,6 +110,11 @@ bool TestShellDelegate::RotatePaneFocus(Shell::Direction direction) {
 void TestShellDelegate::ShowKeyboardOverlay() {
 }
 
+keyboard::KeyboardControllerProxy*
+    TestShellDelegate::CreateKeyboardControllerProxy() {
+  return NULL;
+}
+
 void TestShellDelegate::ShowTaskManager() {
 }
 

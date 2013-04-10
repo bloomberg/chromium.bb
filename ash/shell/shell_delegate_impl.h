@@ -10,6 +10,10 @@
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 
+namespace keyboard {
+class KeyboardControllerProxy;
+}
+
 namespace ash {
 namespace shell {
 
@@ -44,6 +48,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void RestoreTab() OVERRIDE;
   virtual bool RotatePaneFocus(Shell::Direction direction) OVERRIDE;
   virtual void ShowKeyboardOverlay() OVERRIDE;
+  virtual keyboard::KeyboardControllerProxy*
+      CreateKeyboardControllerProxy() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback(

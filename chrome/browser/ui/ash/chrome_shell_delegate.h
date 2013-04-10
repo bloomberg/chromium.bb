@@ -21,6 +21,14 @@ namespace ash {
 class WindowPositioner;
 }
 
+namespace content {
+class WebContents;
+}
+
+namespace keyboard {
+class KeyboardControllerProxy;
+}
+
 class ChromeLauncherController;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
@@ -60,6 +68,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void RestoreTab() OVERRIDE;
   virtual bool RotatePaneFocus(ash::Shell::Direction direction) OVERRIDE;
   virtual void ShowKeyboardOverlay() OVERRIDE;
+  virtual keyboard::KeyboardControllerProxy*
+      CreateKeyboardControllerProxy() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleHighContrast() OVERRIDE;

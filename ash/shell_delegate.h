@@ -34,6 +34,10 @@ namespace views {
 class Widget;
 }
 
+namespace keyboard {
+class KeyboardControllerProxy;
+}
+
 namespace ash {
 
 class CapsLockDelegate;
@@ -153,6 +157,10 @@ class ASH_EXPORT ShellDelegate {
 
   // Shows the keyboard shortcut overlay.
   virtual void ShowKeyboardOverlay() = 0;
+
+  // Create a shell-specific keyboard::KeyboardControllerProxy
+  virtual keyboard::KeyboardControllerProxy*
+      CreateKeyboardControllerProxy() = 0;
 
   // Shows the task manager window.
   virtual void ShowTaskManager() = 0;

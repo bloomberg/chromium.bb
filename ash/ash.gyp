@@ -37,6 +37,7 @@
         '../ui/ui.gyp:ui_resources',
         '../ui/views/controls/webview/webview.gyp:webview',
         '../ui/views/views.gyp:views',
+        '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         'ash_resources',
         'ash_wallpaper_resources',
