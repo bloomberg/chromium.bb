@@ -103,6 +103,7 @@
       <if expr="not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="common/bookmark_bar_folder.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_APPS_SHORTCUT" file="common/apps_bookmark_bar_icon.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_CHOOSE_FILE" file="choose_file.png" />
         <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_RECORD_VIDEO" file="record_video.png" />

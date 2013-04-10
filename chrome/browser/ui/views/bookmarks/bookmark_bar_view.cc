@@ -1389,7 +1389,7 @@ views::TextButton* BookmarkBarView::CreateAppsPageShortcutButton() {
       IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP));
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button->SetIcon(*rb.GetImageSkiaNamed(IDR_WEBSTORE_ICON_16));
+  button->SetIcon(*rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
   button->set_context_menu_controller(this);
   button->set_tag(kAppsShortcutButtonTag);
   return button;
@@ -1720,8 +1720,7 @@ void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
   // the flat background.  We keep it present for layout, but don't draw it.
   bookmarks_separator_view_->SetVisible(
       browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH &&
-      (other_bookmarked_button_->visible() ||
-          apps_page_shortcut_->visible()));
+      other_bookmarked_button_->visible());
 }
 
 gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
@@ -1766,6 +1765,17 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
   // visible region and made invisible.
+
+  // Start with the apps page shortcut button.
+  if (apps_page_shortcut_->visible()) {
+    if (!compute_bounds_only) {
+      apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
+                                     height);
+    }
+    x += apps_page_shortcut_pref.width() + kButtonPadding;
+  }
+
+  // Then go through the bookmark buttons.
   if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded()) {
     gfx::Size pref = instructions_->GetPreferredSize();
     if (!compute_bounds_only) {
@@ -1829,15 +1839,6 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
                                           height);
     }
     x += other_bookmarked_pref.width() + kButtonPadding;
-  }
-
-  // The app page shortcut button.
-  if (apps_page_shortcut_->visible()) {
-    if (!compute_bounds_only) {
-      apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
-                                     height);
-    }
-    x += apps_page_shortcut_pref.width() + kButtonPadding;
   }
 
   // Set the preferred size computed so far.
