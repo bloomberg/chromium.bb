@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG&FILTERS
+    Conditional=SVG
 ] interface SVGFEPointLightElement : SVGElement {
     readonly attribute SVGAnimatedNumber x;
     readonly attribute SVGAnimatedNumber y;

@@ -22,7 +22,6 @@
 #ifndef FEMorphology_h
 #define FEMorphology_h
 
-#if ENABLE(FILTERS)
 #include "FilterEffect.h"
 #include "Filter.h"
 
@@ -89,7 +88,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // FEMorphology_h

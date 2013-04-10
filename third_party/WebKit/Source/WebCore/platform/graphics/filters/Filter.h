@@ -20,7 +20,6 @@
 #ifndef Filter_h
 #define Filter_h
 
-#if ENABLE(FILTERS)
 #include "FloatRect.h"
 #include "FloatSize.h"
 #include "ImageBuffer.h"
@@ -59,7 +58,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // Filter_h

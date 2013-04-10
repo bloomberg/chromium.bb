@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEConvolveMatrix.h"
 
 #include "Filter.h"
@@ -535,5 +534,3 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts, int indent)
 }
 
 }; // namespace WebCore
-
-#endif // ENABLE(FILTERS)

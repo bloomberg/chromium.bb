@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEOffset.h"
 
 #include "SkOffsetImageFilter.h"
@@ -40,5 +39,3 @@ SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

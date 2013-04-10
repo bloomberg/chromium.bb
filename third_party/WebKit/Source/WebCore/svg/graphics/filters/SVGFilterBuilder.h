@@ -21,7 +21,7 @@
 #ifndef SVGFilterBuilder_h
 #define SVGFilterBuilder_h
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "FilterEffect.h"
 
 #include <wtf/HashMap.h>
@@ -82,5 +82,5 @@ private:
     
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(FILTERS)
+#endif // ENABLE(SVG)
 #endif // SVGFilterBuilder_h

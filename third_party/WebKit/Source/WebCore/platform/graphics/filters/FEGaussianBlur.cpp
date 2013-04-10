@@ -24,7 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEGaussianBlur.h"
 
 #include "FEGaussianBlurNEON.h"
@@ -323,5 +322,3 @@ float FEGaussianBlur::calculateStdDeviation(float radius)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

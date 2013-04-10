@@ -23,7 +23,6 @@
 #ifndef FEConvolveMatrix_h
 #define FEConvolveMatrix_h
 
-#if ENABLE(FILTERS)
 #include "FilterEffect.h"
 #include "FloatPoint.h"
 #include "FloatSize.h"
@@ -133,7 +132,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // FEConvolveMatrix_h

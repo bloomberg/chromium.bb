@@ -21,7 +21,7 @@
 #ifndef SVGFEMergeElement_h
 #define SVGFEMergeElement_h
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "FEMerge.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 

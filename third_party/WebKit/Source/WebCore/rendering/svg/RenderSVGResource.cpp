@@ -167,10 +167,9 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
 {
     ASSERT(object);
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object)) {
-#if ENABLE(FILTERS)
         if (RenderSVGResourceFilter* filter = resources->filter())
             filter->removeClientFromCache(object);
-#endif
+
         if (RenderSVGResourceMasker* masker = resources->masker())
             masker->removeClientFromCache(object);
 

@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEDiffuseLighting.h"
 
 #include "LightSource.h"
@@ -139,5 +138,3 @@ TextStream& FEDiffuseLighting::externalRepresentation(TextStream& ts, int indent
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

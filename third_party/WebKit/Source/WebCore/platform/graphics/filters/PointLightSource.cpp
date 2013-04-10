@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "PointLightSource.h"
 
 #include "TextStream.h"
@@ -87,5 +86,3 @@ TextStream& PointLightSource::externalRepresentation(TextStream& ts) const
 }
 
 }; // namespace WebCore
-
-#endif // ENABLE(FILTERS)

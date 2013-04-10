@@ -22,7 +22,6 @@
 #ifndef FEComposite_h
 #define FEComposite_h
 
-#if ENABLE(FILTERS)
 #include "FilterEffect.h"
 
 #include "Filter.h"
@@ -94,7 +93,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // FEComposite_h

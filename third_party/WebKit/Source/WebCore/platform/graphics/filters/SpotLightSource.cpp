@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "SpotLightSource.h"
 
 #include "TextStream.h"
@@ -194,5 +193,3 @@ TextStream& SpotLightSource::externalRepresentation(TextStream& ts) const
 }
 
 }; // namespace WebCore
-
-#endif // ENABLE(FILTERS)

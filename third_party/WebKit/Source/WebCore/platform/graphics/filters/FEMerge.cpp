@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEMerge.h"
 
 #include "Filter.h"
@@ -91,5 +90,3 @@ TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
