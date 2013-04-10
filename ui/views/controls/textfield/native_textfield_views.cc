@@ -121,8 +121,10 @@ bool NativeTextfieldViews::ExceededDragThresholdFromLastClickLocation(
 bool NativeTextfieldViews::OnMouseDragged(const ui::MouseEvent& event) {
   // Don't adjust the cursor on a potential drag and drop, or if the mouse
   // movement from the last mouse click does not exceed the drag threshold.
-  if (initiating_drag_ || !ExceededDragThresholdFromLastClickLocation(event))
+  if (initiating_drag_ || !ExceededDragThresholdFromLastClickLocation(event) ||
+      !event.IsOnlyLeftMouseButton()) {
     return true;
+  }
 
   OnBeforeUserAction();
   // TODO: Remove once NativeTextfield implementations are consolidated to
@@ -1353,33 +1355,35 @@ void NativeTextfieldViews::TrackMouseClicks(const ui::MouseEvent& event) {
 }
 
 void NativeTextfieldViews::HandleMousePressEvent(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
+  if (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())
     textfield_->RequestFocus();
 
-    initiating_drag_ = false;
-    bool can_drag = true;
+  if (!event.IsOnlyLeftMouseButton())
+    return;
 
-    switch (aggregated_clicks_) {
-      case 0:
-        if (can_drag && GetRenderText()->IsPointInSelection(event.location()))
-          initiating_drag_ = true;
-        else
-          MoveCursorTo(event.location(), event.IsShiftDown());
-        break;
-      case 1:
-        MoveCursorTo(event.location(), false);
-        model_->SelectWord();
-        OnCaretBoundsChanged();
-        break;
-      case 2:
-        model_->SelectAll(false);
-        OnCaretBoundsChanged();
-        break;
-      default:
-        NOTREACHED();
-    }
-    SchedulePaint();
+  initiating_drag_ = false;
+  bool can_drag = true;
+
+  switch (aggregated_clicks_) {
+    case 0:
+      if (can_drag && GetRenderText()->IsPointInSelection(event.location()))
+        initiating_drag_ = true;
+      else
+        MoveCursorTo(event.location(), event.IsShiftDown());
+      break;
+    case 1:
+      MoveCursorTo(event.location(), false);
+      model_->SelectWord();
+      OnCaretBoundsChanged();
+      break;
+    case 2:
+      model_->SelectAll(false);
+      OnCaretBoundsChanged();
+      break;
+    default:
+      NOTREACHED();
   }
+  SchedulePaint();
 }
 
 bool NativeTextfieldViews::ImeEditingAllowed() const {
