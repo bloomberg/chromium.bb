@@ -136,6 +136,7 @@ ThreadableWebSocketChannel::SendResult WebSocketChannel::send(const String& mess
     LOG(Network, "WebSocketChannel %p send() Sending String '%s'", this, message.utf8().data());
     CString utf8 = message.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
     enqueueTextFrame(utf8);
+    processOutgoingFrameQueue();
     // According to WebSocket API specification, WebSocket.send() should return void instead
     // of boolean. However, our implementation still returns boolean due to compatibility
     // concern (see bug 65850).
@@ -149,6 +150,7 @@ ThreadableWebSocketChannel::SendResult WebSocketChannel::send(const ArrayBuffer&
 {
     LOG(Network, "WebSocketChannel %p send() Sending ArrayBuffer %p byteOffset=%u byteLength=%u", this, &binaryData, byteOffset, byteLength);
     enqueueRawFrame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
+    processOutgoingFrameQueue();
     return ThreadableWebSocketChannel::SendSuccess;
 }
 
@@ -156,6 +158,7 @@ ThreadableWebSocketChannel::SendResult WebSocketChannel::send(const Blob& binary
 {
     LOG(Network, "WebSocketChannel %p send() Sending Blob '%s'", this, binaryData.url().elidedString().utf8().data());
     enqueueBlobFrame(WebSocketFrame::OpCodeBinary, binaryData);
+    processOutgoingFrameQueue();
     return ThreadableWebSocketChannel::SendSuccess;
 }
 
@@ -163,6 +166,7 @@ bool WebSocketChannel::send(const char* data, int length)
 {
     LOG(Network, "WebSocketChannel %p send() Sending char* data=%p length=%d", this, data, length);
     enqueueRawFrame(WebSocketFrame::OpCodeBinary, data, length);
+    processOutgoingFrameQueue();
     return true;
 }
 
@@ -473,6 +477,7 @@ void WebSocketChannel::startClosingHandshake(int code, const String& reason)
         buf.append(reason.utf8().data(), reason.utf8().length());
     }
     enqueueRawFrame(WebSocketFrame::OpCodeClose, buf.data(), buf.size());
+    processOutgoingFrameQueue();
 
     m_closing = true;
     if (m_client)
@@ -652,6 +657,7 @@ bool WebSocketChannel::processFrame()
     case WebSocketFrame::OpCodePing:
         enqueueRawFrame(WebSocketFrame::OpCodePong, frame.payload, frame.payloadLength);
         skipBuffer(frameEnd - m_buffer.data());
+        processOutgoingFrameQueue();
         break;
 
     case WebSocketFrame::OpCodePong:
@@ -677,7 +683,6 @@ void WebSocketChannel::enqueueTextFrame(const CString& string)
     frame->frameType = QueuedFrameTypeString;
     frame->stringData = string;
     m_outgoingFrameQueue.append(frame.release());
-    processOutgoingFrameQueue();
 }
 
 void WebSocketChannel::enqueueRawFrame(WebSocketFrame::OpCode opCode, const char* data, size_t dataLength)
@@ -690,7 +695,6 @@ void WebSocketChannel::enqueueRawFrame(WebSocketFrame::OpCode opCode, const char
     if (dataLength)
         memcpy(frame->vectorData.data(), data, dataLength);
     m_outgoingFrameQueue.append(frame.release());
-    processOutgoingFrameQueue();
 }
 
 void WebSocketChannel::enqueueBlobFrame(WebSocketFrame::OpCode opCode, const Blob& blob)
@@ -701,7 +705,6 @@ void WebSocketChannel::enqueueBlobFrame(WebSocketFrame::OpCode opCode, const Blo
     frame->frameType = QueuedFrameTypeBlob;
     frame->blobData = Blob::create(blob.url(), blob.type(), blob.size());
     m_outgoingFrameQueue.append(frame.release());
-    processOutgoingFrameQueue();
 }
 
 void WebSocketChannel::processOutgoingFrameQueue()
