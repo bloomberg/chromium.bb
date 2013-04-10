@@ -2,7 +2,6 @@
 # FIXME: Add support for custom getters/setters.
 
 defaultTextEncodingName type=String
-localStorageDatabasePath type=String
 editableLinkBehavior type=EditableLinkBehavior, initial=EditableLinkDefaultBehavior
 textDirectionSubmenuInclusionBehavior type=TextDirectionSubmenuInclusionBehavior, initial=TextDirectionSubmenuAutomaticallyIncluded
 passwordEchoDurationInSeconds type=double, initial=1

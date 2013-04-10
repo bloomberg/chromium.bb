@@ -268,14 +268,8 @@ void PageGroup::setShouldTrackVisitedLinks(bool shouldTrack)
 StorageNamespace* PageGroup::localStorage()
 {
     if (!m_localStorage) {
-        // Need a page in this page group to query the settings for the local storage database path.
-        // Having these parameters attached to the page settings is unfortunate since these settings are
-        // not per-page (and, in fact, we simply grab the settings from some page at random), but
-        // at this point we're stuck with it.
-        Page* page = *m_pages.begin();
-        const String& path = page->settings()->localStorageDatabasePath();
         unsigned quota = m_groupSettings->localStorageQuotaBytes();
-        m_localStorage = StorageNamespace::localStorageNamespace(path, quota);
+        m_localStorage = StorageNamespace::localStorageNamespace(quota);
     }
 
     return m_localStorage.get();

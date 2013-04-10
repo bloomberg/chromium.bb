@@ -38,7 +38,7 @@ class StorageArea;
 
 class StorageNamespace : public RefCounted<StorageNamespace> {
 public:
-    static PassRefPtr<StorageNamespace> localStorageNamespace(const String& path, unsigned quota);
+    static PassRefPtr<StorageNamespace> localStorageNamespace(unsigned quota);
     static PassRefPtr<StorageNamespace> sessionStorageNamespace(Page*, unsigned quota);
 
     virtual ~StorageNamespace() { }
