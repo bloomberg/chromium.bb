@@ -136,6 +136,10 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
 void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     const base::Callback<void(bool)>& callback) {
+#if !defined(TOOLKIT_VIEWS)
+  callback.Run(false);
+  NOTIMPLEMENTED();
+#else
   HideAutocheckoutBubble();
 
   // Convert |bounding_box| to be in screen space.
@@ -150,6 +154,7 @@ void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
               web_contents_->GetView()->GetTopLevelNativeWindow(),
               callback)));
   autocheckout_bubble_->ShowBubble();
+#endif  // #if !defined(TOOLKIT_VIEWS)
 }
 
 void TabAutofillManagerDelegate::HideAutocheckoutBubble() {
