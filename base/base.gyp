@@ -1119,7 +1119,6 @@
             'android/java/src/org/chromium/base/BuildInfo.java',
             'android/java/src/org/chromium/base/CpuFeatures.java',
             'android/java/src/org/chromium/base/ImportantFileWriterAndroid.java',
-            'android/java/src/org/chromium/base/LocaleUtils.java',
             'android/java/src/org/chromium/base/PathService.java',
             'android/java/src/org/chromium/base/PathUtils.java',
             'android/java/src/org/chromium/base/PowerMonitor.java',

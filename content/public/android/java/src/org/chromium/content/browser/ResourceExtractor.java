@@ -13,8 +13,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.ui.LocalizationUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,7 +70,7 @@ public class ResourceExtractor {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             HashSet<String> filenames = (HashSet<String>) prefs.getStringSet(
                     PAK_FILENAMES, new HashSet<String>());
-            String currentLocale = LocaleUtils.getDefaultLocale();
+            String currentLocale = LocalizationUtils.getDefaultLocale();
             String currentLanguage = currentLocale.split("-", 2)[0];
 
             if (prefs.getString(LAST_LANGUAGE, "").equals(currentLanguage)

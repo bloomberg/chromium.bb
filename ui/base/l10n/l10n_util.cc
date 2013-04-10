@@ -30,7 +30,7 @@
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/locale_utils.h"
+#include "ui/base/l10n/l10n_util_android.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -413,7 +413,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 #elif defined(OS_ANDROID)
 
   // On Android, query java.util.Locale for the default locale.
-  candidates.push_back(base::android::GetDefaultLocale());
+  candidates.push_back(GetDefaultLocale());
 
 #elif defined(OS_LINUX)
   // If we're on a different Linux system, we have glib.
@@ -488,8 +488,7 @@ string16 GetDisplayNameForLocale(const std::string& locale,
   // TODO(wangxianzhu): remove the special handling of zh-Hans and zh-Hant once
   // Android Java API supports scripts.
   if (!StartsWithASCII(locale_code, "zh-Han", true)) {
-    display_name = base::android::GetDisplayNameForLocale(locale_code,
-                                                          display_locale);
+    display_name = GetDisplayNameForLocale(locale_code, display_locale);
   } else
 #endif
   {

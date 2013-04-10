@@ -52,8 +52,6 @@
           'android/jni_registrar.h',
           'android/jni_string.cc',
           'android/jni_string.h',
-          'android/locale_utils.cc',
-          'android/locale_utils.h',
           'android/path_service_android.cc',
           'android/path_service_android.h',
           'android/path_utils.cc',

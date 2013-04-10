@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base;
+package org.chromium.ui;
+
+import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 import android.os.Build;
 import android.text.TextUtils;
@@ -13,15 +16,15 @@ import java.util.Locale;
 /**
  * This class provides the locale related methods for the native library.
  */
-@JNINamespace("base::android")
-public class LocaleUtils {
+@JNINamespace("l10n_util")
+public class LocalizationUtils {
 
     // This is mirrored from base/i18n/rtl.h. Please keep in sync.
     public static final int UNKNOWN_DIRECTION = 0;
     public static final int RIGHT_TO_LEFT = 1;
     public static final int LEFT_TO_RIGHT = 2;
 
-    private LocaleUtils() { /* cannot be instantiated */ }
+    private LocalizationUtils() { /* cannot be instantiated */ }
 
     /**
      * @return the default locale, translating Android deprecated

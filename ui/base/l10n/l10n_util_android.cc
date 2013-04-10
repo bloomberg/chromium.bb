@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/locale_utils.h"
+#include "ui/base/l10n/l10n_util_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -10,11 +10,10 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "jni/LocaleUtils_jni.h"
+#include "jni/LocalizationUtils_jni.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
-namespace base {
-namespace android {
+namespace l10n_util {
 
 jboolean IsRTL(JNIEnv* env, jclass clazz) {
   return base::i18n::IsRTL();
@@ -27,8 +26,9 @@ jint GetFirstStrongCharacterDirection(JNIEnv* env, jclass clazz,
 }
 
 std::string GetDefaultLocale() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> locale = Java_LocaleUtils_getDefaultLocale(env);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> locale = Java_LocalizationUtils_getDefaultLocale(
+      env);
   return ConvertJavaStringToUTF8(locale);
 }
 
@@ -63,32 +63,32 @@ ScopedJavaLocalRef<jobject> NewJavaLocale(
       locale, uloc_getCountry, ULOC_COUNTRY_CAPACITY);
   std::string variant = GetLocaleComponent(
       locale, uloc_getVariant, ULOC_FULLNAME_CAPACITY);
-  return Java_LocaleUtils_getJavaLocale(env,
-          ConvertUTF8ToJavaString(env, language).obj(),
-          ConvertUTF8ToJavaString(env, country).obj(),
-          ConvertUTF8ToJavaString(env, variant).obj());
+  return Java_LocalizationUtils_getJavaLocale(env,
+          base::android::ConvertUTF8ToJavaString(env, language).obj(),
+          base::android::ConvertUTF8ToJavaString(env, country).obj(),
+          base::android::ConvertUTF8ToJavaString(env, variant).obj());
 }
 
 }  // namespace
 
 string16 GetDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale) {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_locale =
       NewJavaLocale(env, locale);
   ScopedJavaLocalRef<jobject> java_display_locale =
       NewJavaLocale(env, display_locale);
 
   ScopedJavaLocalRef<jstring> java_result(
-      Java_LocaleUtils_getDisplayNameForLocale(env,
-                                              java_locale.obj(),
-                                              java_display_locale.obj()));
+      Java_LocalizationUtils_getDisplayNameForLocale(
+          env,
+          java_locale.obj(),
+          java_display_locale.obj()));
   return ConvertJavaStringToUTF16(java_result);
 }
 
-bool RegisterLocaleUtils(JNIEnv* env) {
+bool RegisterLocalizationUtil(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace android
-}  // namespace base
+}  // namespace l10n_util
