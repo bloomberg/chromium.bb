@@ -42,6 +42,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -534,8 +535,7 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
 GLES2Decoder::GLES2Decoder()
     : initialized_(false),
       debug_(false),
-      log_commands_(false),
-      log_synthesized_gl_errors_(true) {
+      log_commands_(false) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -638,7 +638,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
-  virtual void SetMsgCallback(const MsgCallback& callback) OVERRIDE;
+  virtual Logger* GetLogger() OVERRIDE;
+
   virtual void SetShaderCacheCallback(
       const ShaderCacheCallback& callback) OVERRIDE;
   virtual void SetWaitSyncPointCallback(
@@ -960,7 +961,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   void LogClientServiceMapping(
       const char* function_name, GLuint client_id, GLuint service_id) {
     if (service_logging_) {
-      DLOG(INFO) << "[" << GetLogPrefix() << "] " << function_name
+      DLOG(INFO) << "[" << logger_.GetLogPrefix() << "] " << function_name
                  << ": client_id = " << client_id
                  << ", service_id = " << service_id;
     }
@@ -1603,11 +1604,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
     GLsizei width, GLsizei height, GLenum format,
     Texture* texture);
 
-  void LogMessage(const char* filename, int line, const std::string& msg);
   void RenderWarning(const char* filename, int line, const std::string& msg);
   void PerformanceWarning(
       const char* filename, int line, const std::string& msg);
-  const std::string& GetLogPrefix() const;
 
   const FeatureInfo::FeatureFlags& features() const {
     return feature_info_->feature_flags();
@@ -1648,6 +1647,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;
+
+  DebugMarkerManager debug_marker_manager_;
+  Logger logger_;
 
   // All the state for this context.
   ContextState state_;
@@ -1729,7 +1731,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   base::Callback<void(gfx::Size)> resize_callback_;
 
-  MsgCallback msg_callback_;
   WaitSyncPointCallback wait_sync_point_callback_;
 
   ShaderCacheCallback shader_cache_callback_;
@@ -1750,13 +1751,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // The last error message set.
   std::string last_error_;
 
-  int log_message_count_;
-
   // The current decoder error.
   error::Error current_decoder_error_;
-
-  DebugMarkerManager debug_marker_manager_;
-  std::string this_in_hex_;
 
   bool use_shader_translator_;
   scoped_refptr<ShaderTranslator> vertex_translator_;
@@ -2204,6 +2200,7 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
       group_(group),
+      logger_(&debug_marker_manager_),
       state_(group_->feature_info()),
       error_bits_(0),
       unpack_flip_y_(false),
@@ -2227,7 +2224,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_has_stencil_(false),
       backbuffer_needs_clear_bits_(0),
       teximage2d_faster_than_texsubimage2d_(true),
-      log_message_count_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -2245,9 +2241,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       viewport_max_height_(0),
       texture_upload_count_(0) {
   DCHECK(group);
-
-  GLES2DecoderImpl* this_temp = this;
-  this_in_hex_ = HexEncode(&this_temp, sizeof(this_temp));
 
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
@@ -3127,8 +3120,8 @@ void GLES2DecoderImpl::SetResizeCallback(
   resize_callback_ = callback;
 }
 
-void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
-  msg_callback_ = callback;
+Logger* GLES2DecoderImpl::GetLogger() {
+  return &logger_;
 }
 
 void GLES2DecoderImpl::SetShaderCacheCallback(
@@ -3575,7 +3568,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   if (log_commands()) {
     // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
     // LOG(INFO), tried VLOG(1), no luck.
-    LOG(ERROR) << "[" << GetLogPrefix() << "]" << "cmd: "
+    LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]" << "cmd: "
                << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
@@ -3600,7 +3593,7 @@ error::Error GLES2DecoderImpl::DoCommand(
       if (debug()) {
         GLenum error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-          LOG(ERROR) << "[" << GetLogPrefix() << "] "
+          LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
                      << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
                      << GetCommandName(command);
           LOCAL_SET_GL_ERROR(error, "DoCommand", "GL error from driver");
@@ -5733,8 +5726,8 @@ void GLES2DecoderImpl::SetGLError(
     unsigned error, const char* function_name, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    LogMessage(filename, line,
-               GetLogPrefix() + ": " + std::string("GL ERROR :") +
+    logger_.LogMessage(filename, line,
+               logger_.GetLogPrefix() + ": " + std::string("GL ERROR :") +
                GLES2Util::GetStringEnum(error) + " : " +
                function_name + ": " + msg);
   }
@@ -5771,44 +5764,15 @@ void GLES2DecoderImpl::SetGLErrorInvalidParam(
   }
 }
 
-const std::string& GLES2DecoderImpl::GetLogPrefix() const {
-  const std::string& prefix(debug_marker_manager_.GetMarker());
-  return prefix.empty() ? this_in_hex_ : prefix;
-}
-
-void GLES2DecoderImpl::LogMessage(
-    const char* filename, int line, const std::string& msg) {
-  if (log_message_count_ < kMaxLogMessages ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGLErrorLimit)) {
-    ++log_message_count_;
-    // LOG this unless logging is turned off as any chromium code that
-    // generates these errors probably has a bug.
-    if (log_synthesized_gl_errors()) {
-      ::logging::LogMessage(
-          filename, line, ::logging::LOG_ERROR).stream() << msg;
-    }
-    if (!msg_callback_.is_null()) {
-      msg_callback_.Run(0, msg);
-    }
-  } else {
-    if (log_message_count_ == kMaxLogMessages) {
-      ++log_message_count_;
-      LOG(ERROR)
-          << "Too many GL errors, not reporting any more for this context."
-          << " use --disable-gl-error-limit to see all errors.";
-    }
-  }
-}
-
 void GLES2DecoderImpl::RenderWarning(
     const char* filename, int line, const std::string& msg) {
-  LogMessage(filename, line, std::string("RENDER WARNING: ") + msg);
+  logger_.LogMessage(filename, line, std::string("RENDER WARNING: ") + msg);
 }
 
 void GLES2DecoderImpl::PerformanceWarning(
     const char* filename, int line, const std::string& msg) {
-  LogMessage(filename, line, std::string("PERFORMANCE WARNING: ") + msg);
+  logger_.LogMessage(filename, line, std::string("PERFORMANCE WARNING: ")
+                     + msg);
 }
 
 void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
@@ -5843,8 +5807,8 @@ void GLES2DecoderImpl::ClearRealGLErrors(
   while ((error = glGetError()) != GL_NO_ERROR) {
     if (error != GL_OUT_OF_MEMORY) {
       // GL_OUT_OF_MEMORY can legally happen on lost device.
-      LogMessage(filename, line,
-                 GetLogPrefix() + ": " + std::string("GL ERROR :") +
+      logger_.LogMessage(filename, line,
+                 logger_.GetLogPrefix() + ": " + std::string("GL ERROR :") +
                  GLES2Util::GetStringEnum(error) + " : " +
                  function_name + ": was unhandled");
       NOTREACHED() << "GL error " << error << " was unhandled.";
@@ -10035,7 +9999,7 @@ error::Error GLES2DecoderImpl::HandleGenMailboxCHROMIUM(
 void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
                                                 const GLbyte* mailbox) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoProduceTextureCHROMIUM",
-      "context", GetLogPrefix(),
+      "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(mailbox[0]));
 
   Texture* texture = GetTextureInfoForTarget(target);
@@ -10074,7 +10038,7 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
                                                 const GLbyte* mailbox) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoConsumeTextureCHROMIUM",
-      "context", GetLogPrefix(),
+      "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(mailbox[0]));
 
   Texture* texture = GetTextureInfoForTarget(target);

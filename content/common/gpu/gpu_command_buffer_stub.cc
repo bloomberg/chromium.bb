@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
@@ -509,7 +510,7 @@ void GpuCommandBufferStub::OnInitialize(
     decoder_->set_log_commands(true);
   }
 
-  decoder_->SetMsgCallback(
+  decoder_->GetLogger()->SetMsgCallback(
       base::Bind(&GpuCommandBufferStub::SendConsoleMessage,
                  base::Unretained(this)));
   decoder_->SetShaderCacheCallback(

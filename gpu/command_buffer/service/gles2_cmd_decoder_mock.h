@@ -110,7 +110,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD3(ClearRealGLErrors, void(
       const char* file, int line, const char* filename));
 
-  MOCK_METHOD1(SetMsgCallback, void(const MsgCallback& callback));
+  MOCK_METHOD0(GetLogger, Logger*());
   MOCK_METHOD1(SetShaderCacheCallback,
                void(const ShaderCacheCallback& callback));
   MOCK_METHOD1(SetWaitSyncPointCallback,

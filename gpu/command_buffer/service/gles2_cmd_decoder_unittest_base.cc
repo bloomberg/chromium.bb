@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -258,7 +259,7 @@ void GLES2DecoderTestBase::InitDecoder(
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
-  decoder_->set_log_synthesized_gl_errors(false);
+  decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
   decoder_->Initialize(
       surface_, context_, false, surface_->GetSize(), DisallowedFeatures(),
       NULL, attribs);

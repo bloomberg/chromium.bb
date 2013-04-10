@@ -70,6 +70,8 @@
     'command_buffer/service/id_manager.cc',
     'command_buffer/service/image_manager.cc',
     'command_buffer/service/image_manager.h',
+    'command_buffer/service/logger.cc',
+    'command_buffer/service/logger.h',
     'command_buffer/service/mailbox_manager.cc',
     'command_buffer/service/mailbox_manager.h',
     'command_buffer/service/memory_program_cache.h',

@@ -63,6 +63,7 @@ namespace gles2 {
 
 class ContextGroup;
 class GLES2Util;
+class Logger;
 class QueryManager;
 class VertexArrayManager;
 
@@ -87,7 +88,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                                 public CommonDecoder {
  public:
   typedef error::Error Error;
-  typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;
   typedef base::Callback<bool(uint32 id)> WaitSyncPointCallback;
 
   // Creates a decoder.
@@ -119,18 +119,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Set to true to LOG every command.
   void set_log_commands(bool log_commands) {
     log_commands_ = log_commands;
-  }
-
-  bool log_synthesized_gl_errors() const {
-    return log_synthesized_gl_errors_;
-  }
-
-  // Defaults to true. Set to false for the gpu_unittests as they
-  // are explicitly checking errors are generated and so don't need the numerous
-  // messages. Otherwise, chromium code that generates these errors likely has a
-  // bug.
-  void set_log_synthesized_gl_errors(bool enabled) {
-    log_synthesized_gl_errors_ = enabled;
   }
 
   // Initializes the graphics context. Can create an offscreen
@@ -286,7 +274,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
       const char* file, int line, const char* filename) = 0;
 
   // A callback for messages from the decoder.
-  virtual void SetMsgCallback(const MsgCallback& callback) = 0;
   virtual void SetShaderCacheCallback(const ShaderCacheCallback& callback) = 0;
 
   // Sets the callback for waiting on a sync point. The callback returns the
@@ -310,6 +297,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Used for testing only
   static void set_testing_force_is_angle(bool force);
 
+  virtual Logger* GetLogger() = 0;
+
  protected:
   GLES2Decoder();
 
@@ -317,7 +306,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   bool initialized_;
   bool debug_;
   bool log_commands_;
-  bool log_synthesized_gl_errors_;
   static bool testing_force_is_angle_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
