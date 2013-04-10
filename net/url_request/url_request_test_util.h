@@ -107,9 +107,6 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 
 class TestURLRequest : public URLRequest {
  public:
-  // todo(tedv): Remove this interface in favor of the one below it.
-  TestURLRequest(
-      const GURL& url, Delegate* delegate, TestURLRequestContext* context);
   TestURLRequest(
       const GURL& url, Delegate* delegate,
       TestURLRequestContext* context, NetworkDelegate* network_delegate);
