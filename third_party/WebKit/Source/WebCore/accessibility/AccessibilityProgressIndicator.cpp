@@ -22,9 +22,7 @@
 #include "AccessibilityProgressIndicator.h"
 
 #include "FloatConversion.h"
-#include "HTMLNames.h"
 #include "HTMLProgressElement.h"
-#include "RenderObject.h"
 #include "RenderProgress.h"
 
 namespace WebCore {

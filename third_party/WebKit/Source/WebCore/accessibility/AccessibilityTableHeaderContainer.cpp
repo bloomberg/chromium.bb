@@ -29,8 +29,6 @@
 #include "config.h"
 #include "AccessibilityTableHeaderContainer.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityTable.h"
 
 using namespace std;
 

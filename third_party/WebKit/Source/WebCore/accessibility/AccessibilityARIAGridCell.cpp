@@ -29,7 +29,6 @@
 #include "config.h"
 #include "AccessibilityARIAGridCell.h"
 
-#include "AccessibilityObject.h"
 #include "AccessibilityTable.h"
 #include "AccessibilityTableRow.h"
 

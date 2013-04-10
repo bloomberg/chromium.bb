@@ -31,11 +31,8 @@
 
 #include "AXObjectCache.h"
 #include "AccessibilityListBoxOption.h"
-#include "HTMLNames.h"
 #include "HTMLSelectElement.h"
-#include "HitTestResult.h"
 #include "RenderListBox.h"
-#include "RenderObject.h"
 
 using namespace std;
 

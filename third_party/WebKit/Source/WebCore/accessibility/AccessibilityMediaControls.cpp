@@ -33,14 +33,7 @@
 
 #include "AccessibilityMediaControls.h"
 
-#include "AXObjectCache.h"
-#include "HTMLInputElement.h"
-#include "HTMLMediaElement.h"
-#include "HTMLNames.h"
 #include "LocalizedStrings.h"
-#include "MediaControlElements.h"
-#include "RenderObject.h"
-#include "RenderSlider.h"
 
 namespace WebCore {
 

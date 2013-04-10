@@ -31,9 +31,6 @@
 
 #include "AXObjectCache.h"
 #include "HTMLInputElement.h"
-#include "HTMLNames.h"
-#include "RenderObject.h"
-#include "RenderSlider.h"
 #include "SliderThumbElement.h"
 
 namespace WebCore {

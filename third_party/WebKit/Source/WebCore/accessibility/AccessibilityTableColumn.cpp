@@ -31,10 +31,7 @@
 
 #include "AXObjectCache.h"
 #include "AccessibilityTableCell.h"
-#include "HTMLNames.h"
-#include "RenderTable.h"
 #include "RenderTableCell.h"
-#include "RenderTableSection.h"
 
 using namespace std;
 

@@ -29,8 +29,6 @@
 #include "config.h"
 #include "AccessibilityList.h"
 
-#include "AXObjectCache.h"
-#include "HTMLNames.h"
 #include "RenderObject.h"
 
 using namespace std;

@@ -30,16 +30,10 @@
 #include "AccessibilityListBoxOption.h"
 
 #include "AXObjectCache.h"
-#include "AccessibilityListBox.h"
-#include "Element.h"
-#include "HTMLElement.h"
-#include "HTMLNames.h"
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
-#include "IntRect.h"
 #include "RenderListBox.h"
-#include "RenderObject.h"
 
 using namespace std;
 

@@ -31,9 +31,6 @@
 
 #include "AXObjectCache.h"
 #include "AccessibilityRenderObject.h"
-#include "Document.h"
-#include "HTMLNames.h"
-#include "RenderBoxModelObject.h"
 
 namespace WebCore {
     

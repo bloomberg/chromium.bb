@@ -29,9 +29,7 @@
 #include "config.h"
 #include "AccessibilityARIAGridRow.h"
 
-#include "AccessibilityObject.h"
 #include "AccessibilityTable.h"
-#include "RenderObject.h"
 
 using namespace std;
 

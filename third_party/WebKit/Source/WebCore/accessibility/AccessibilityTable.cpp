@@ -32,16 +32,11 @@
 #include "AXObjectCache.h"
 #include "AccessibilityTableCell.h"
 #include "AccessibilityTableColumn.h"
-#include "AccessibilityTableHeaderContainer.h"
 #include "AccessibilityTableRow.h"
-#include "HTMLNames.h"
 #include "HTMLTableCaptionElement.h"
 #include "HTMLTableCellElement.h"
 #include "HTMLTableElement.h"
-#include "RenderObject.h"
-#include "RenderTable.h"
 #include "RenderTableCell.h"
-#include "RenderTableSection.h"
 
 namespace WebCore {
 
