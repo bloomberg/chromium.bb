@@ -18,6 +18,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_simple_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
@@ -43,8 +44,18 @@ const int kButtonIconTopPadding = 11;
 const int kButtonIconToTitlePadding = 16;
 const int kButtonTitleTopPadding = 0;
 
-const size_t kTitleCharacterLimit = 100;
-const size_t kMessageCharacterLimit = 200;
+// Line limits.
+const size_t kTitleLineLimit = 3;
+const size_t kMessageCollapsedLineLimit = 3;
+const size_t kMessageExpandedLineLimit = 7;
+
+// Character limits: Displayed text will be subject to the line limits above,
+// but we also remove trailing characters from text to reduce processing cost.
+// Character limit = pixels per line * line limit / min. pixels per character.
+const size_t kTitleCharacterLimit =
+    message_center::kNotificationWidth * kTitleLineLimit / 4;
+const size_t kMessageCharacterLimit =
+    message_center::kNotificationWidth * kMessageExpandedLineLimit / 3;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
@@ -74,38 +85,6 @@ views::Border* MakeTextBorder(int top, int bottom) {
 // static
 views::Border* MakeSeparatorBorder(int top, int left, SkColor color) {
   return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
-}
-
-// ContainerView ///////////////////////////////////////////////////////////////
-
-// ContainerViews are vertical BoxLayout views that propagates their childrens'
-// ChildPreferredSizeChanged() and ChildVisibilityChanged() calls.
-class ContainerView : public views::View {
- public:
-  ContainerView();
-  virtual ~ContainerView();
-
- protected:
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void ChildVisibilityChanged(View* child) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContainerView);
-};
-
-ContainerView::ContainerView() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-}
-
-ContainerView::~ContainerView() {
-}
-
-void ContainerView::ChildPreferredSizeChanged(View* child) {
-  PreferredSizeChanged();
-}
-
-void ContainerView::ChildVisibilityChanged(View* child) {
-  PreferredSizeChanged();
 }
 
 // ItemView ////////////////////////////////////////////////////////////////////
@@ -199,8 +178,7 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
 
   gfx::Size draw_size(GetImageSizeForWidth(width()));
   if (!draw_size.IsEmpty()) {
-    gfx::Rect draw_bounds = GetLocalBounds();
-    draw_bounds.Inset(GetInsets());
+    gfx::Rect draw_bounds = GetContentsBounds();
     draw_bounds.ClampToCenteredSize(draw_size);
 
     gfx::Size image_size(image_.size());
@@ -366,41 +344,33 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
-  top_view_ = new ContainerView();
-  top_view_->set_border(MakeEmptyBorder(kTextTopPadding - 8, 0,
-                                        kTextBottomPadding - 5, 0));
+  top_view_ = new views::View();
+  top_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  top_view_->set_border(MakeEmptyBorder(
+      kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
 
   // Create the title view if appropriate.
   title_view_ = NULL;
   if (!notification.title().empty()) {
-    title_view_ = new views::Label(
-        MaybeTruncateText( notification.title(), kTitleCharacterLimit));
-    title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      title_view_->SetMultiLine(true);
-    else
-      title_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    title_view_->SetFont(title_view_->font().DeriveFont(2));
-    title_view_->SetEnabledColor(message_center::kRegularTextColor);
-    title_view_->SetBackgroundColor(kRegularTextBackgroundColor);
+    title_view_ = new BoundedLabel(
+        ui::TruncateString(notification.title(), kTitleCharacterLimit),
+        views::Label().font().DeriveFont(2), kTitleLineLimit);
+    title_view_->SetColors(message_center::kRegularTextColor,
+                           kRegularTextBackgroundColor);
     title_view_->set_border(MakeTextBorder(3, 0));
     top_view_->AddChildView(title_view_);
   }
 
-  // Create the message view if appropriate.
+  // Create the message view if appropriate. Its line limit is given a bogus
+  // value here, it will be reset in Layout() after this view's width is set.
   message_view_ = NULL;
   if (!notification.message().empty()) {
-    message_view_ = new views::Label(
-        MaybeTruncateText(notification.message(), kMessageCharacterLimit));
+    message_view_ = new BoundedLabel(
+        ui::TruncateString(notification.message(), kMessageCharacterLimit), 0);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
-    message_view_->set_collapse_when_hidden(true);
-    message_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (is_expanded())
-      message_view_->SetMultiLine(true);
-    else
-      message_view_->SetElideBehavior(views::Label::ELIDE_AT_END);
-    message_view_->SetEnabledColor(message_center::kRegularTextColor);
-    message_view_->SetBackgroundColor(kRegularTextBackgroundColor);
+    message_view_->SetColors(message_center::kRegularTextColor,
+                             kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(4, 1));
     top_view_->AddChildView(message_view_);
   }
@@ -430,7 +400,9 @@ NotificationView::NotificationView(const Notification& notification,
 
   // Create the bottom_view_, which collects into a vertical box all content
   // below the notification icon except for the expand button.
-  bottom_view_ = new ContainerView();
+  bottom_view_ = new views::View();
+  bottom_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   // Create the image view if appropriate.
   image_view_ = NULL;
@@ -453,10 +425,6 @@ NotificationView::NotificationView(const Notification& notification,
     action_buttons_.push_back(button);
     bottom_view_->AddChildView(button);
   }
-
-  // Hide the expand button if appropriate.
-  bool expandable = item_views_.size() || image_view_;
-  expand_button()->SetVisible(expandable && !is_expanded());
 
   // Put together the different content and control views. Layering those allows
   // for proper layout logic and it also allows the close and expand buttons to
@@ -493,28 +461,42 @@ void NotificationView::Layout() {
   int content_width = width() - insets.width();
   int content_right = width() - insets.right();
 
+  // Before any resizing, set or adjust the number of message lines.
+  if (message_view_)
+    message_view_->SetLineLimit(GetMessageLineLimit());
+
+  // Background.
   background_view_->SetBounds(insets.left(), insets.top(),
                               content_width, height() - insets.height());
 
+  // Top views.
   int top_height = top_view_->GetHeightForWidth(content_width);
   top_view_->SetBounds(insets.left(), insets.top(), content_width, top_height);
 
+  // Icon.
   int icon_size = message_center::kNotificationIconSize;
   icon_view_->SetBounds(insets.left(), insets.top(), icon_size, icon_size);
 
+  // Bottom views.
   int bottom_y = insets.top() + std::max(top_height, icon_size);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
 
+  // Close button.
   gfx::Size close_size(close_button()->GetPreferredSize());
   close_button()->SetBounds(content_right - close_size.width(), insets.top(),
                             close_size.width(), close_size.height());
 
-  gfx::Size expand_size(expand_button()->GetPreferredSize());
-  int expand_y = bottom_y - expand_size.height();
-  expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
-                             expand_size.width(), expand_size.height());
+  // Expand button.
+  if (!IsExpansionNeeded()) {
+    expand_button()->SetVisible(false);
+  } else {
+    gfx::Size expand_size(expand_button()->GetPreferredSize());
+    int expand_y = bottom_y - expand_size.height();
+    expand_button()->SetBounds(content_right - expand_size.width(), expand_y,
+                               expand_size.width(), expand_size.height());
+  }
 }
 
 void NotificationView::ButtonPressed(views::Button* sender,
@@ -530,10 +512,12 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // Let the superclass handled anything other than action buttons.
   MessageView::ButtonPressed(sender, event);
 
-  // Show and hide subviews appropriately on expansion.
+  // Adjust notification subviews for expansion.
   if (sender == expand_button()) {
     if (message_view_ && item_views_.size())
       message_view_->SetVisible(false);
+    else if (message_view_)
+      message_view_->SetLineLimit(GetMessageLineLimit());
     for (size_t i = 0; i < item_views_.size(); ++i)
       item_views_[i]->SetVisible(true);
     if (image_view_)
@@ -544,14 +528,28 @@ void NotificationView::ButtonPressed(views::Button* sender,
   }
 }
 
-string16 NotificationView::MaybeTruncateText(const string16& text,
-                                             size_t limit) {
-  // Currently just truncate the text by the total number of characters.
-  // TODO(mukai): add better assumption like number of lines.
-  if (!is_expanded())
-    return text;
+bool NotificationView::IsExpansionNeeded() {
+  if (is_expanded())
+    return false;
+  if (image_view_ || item_views_.size())
+    return true;
+  size_t title_lines = title_view_ ? title_view_->GetActualLines() : 0;
+  size_t message_lines = message_view_ ? message_view_->GetPreferredLines() : 0;
+  return (title_lines + message_lines > kMessageCollapsedLineLimit);
+}
 
-  return ui::TruncateString(text, limit);
+size_t NotificationView::GetMessageLineLimit() {
+  // Return limit for expanded notifications, except for image notifications
+  // that always have collapsed messages to leave room for the image.
+  if (is_expanded() && !image_view_)
+    return kMessageExpandedLineLimit;
+
+  // If there's a title ensure title + message lines <= collapsed line limit.
+  if (title_view_)
+    return kMessageCollapsedLineLimit - title_view_->GetLinesForWidth(width());
+
+  // If there's no title we get an extra line because message lines are shorter.
+  return kMessageCollapsedLineLimit + 1;
 }
 
 }  // namespace message_center

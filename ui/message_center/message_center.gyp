@@ -50,6 +50,8 @@
         'notification_types.h',
         'notifier_settings.cc',
         'notifier_settings.h',
+        'views/bounded_label.cc',
+        'views/bounded_label.h',
         'views/message_bubble_base.cc',
         'views/message_bubble_base.h',
         'views/message_center_bubble.cc',
@@ -119,12 +121,14 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            # Compositor is needed by message_center_view_unittest.cc.
+            # Compositor is needed by message_center_view_unittest.cc
+            # and for the fonts used by bounded_label_unittest.cc.
             '../compositor/compositor.gyp:compositor',
             '../compositor/compositor.gyp:compositor_test_support',
             '../views/views.gyp:views',
           ],
           'sources': [
+            'views/bounded_label_unittest.cc',
             'views/message_center_view_unittest.cc',
           ],
         }],

@@ -10,12 +10,9 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 
-namespace views {
-class Label;
-}  // namespace views
-
 namespace message_center {
 
+class BoundedLabel;
 class NotificationChangeObserver;
 
 // View that displays all current types of notification (web, basic, image, and
@@ -49,15 +46,14 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
                    bool expanded);
 
  private:
-  // Truncate the very long text if we should. See crbug.com/222151 for the
-  // details.
-  string16 MaybeTruncateText(const string16& text, size_t limit);
+  bool IsExpansionNeeded();
+  size_t GetMessageLineLimit();
 
   // Weak references to NotificationView descendants owned by their parents.
   views::View* background_view_;
   views::View* top_view_;
-  views::Label* title_view_;
-  views::Label* message_view_;
+  BoundedLabel* title_view_;
+  BoundedLabel* message_view_;
   std::vector<views::View*> item_views_;
   views::View* icon_view_;
   views::View* bottom_view_;
