@@ -199,6 +199,10 @@ bool ProfileSyncService::ShouldEnablePasswordSyncForAndroid() const {
       sync_prefs_.GetPreferredDataTypes(registered_types);
   if (!preferred_types.Has(syncer::PASSWORDS))
     return false;
+  // If backend has not completed initializing we cannot check if the
+  // cryptographer is ready.
+  if (!sync_initialized())
+    return false;
   // On Android we do not want to prompt user to enter a passphrase. If
   // passwords cannot be decrypted we just disable them.
   syncer::ReadTransaction trans(FROM_HERE, GetUserShare());
@@ -716,6 +720,8 @@ void ProfileSyncService::NotifyObservers() {
 void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
+  // Clear the data type errors as well.
+  failed_datatypes_handler_.OnUserChoseDatatypes();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
