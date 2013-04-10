@@ -130,8 +130,8 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
-    CHECK(extension != NULL);
-    return extension->HasAPIPermission(permission) &&
+    return extension &&
+        extension->HasAPIPermission(permission) &&
         process_map_.Contains(id, process_id);
   }
 
