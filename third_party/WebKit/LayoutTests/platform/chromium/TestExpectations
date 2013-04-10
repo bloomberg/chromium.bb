@@ -3775,18 +3775,6 @@ webkit.org/b/113483 [ Debug ] inspector/console/console-css-warnings.html [ Skip
 
 webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.html [ Pass Timeout ]
 
-Bug(ojan) editing/deleting/5206311-1.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) editing/deleting/delete-leading-ws-001.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) editing/inserting/insert-div-025.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) editing/pasteboard/5028447.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) editing/selection/after-line-wrap.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) editing/style/create-block-for-style-012.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) fast/repaint/inline-outline-repaint.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) fast/text/whitespace/nbsp-mode-and-linewraps.html [ Failure ImageOnlyFailure Pass ]
-Bug(ojan) [ Mac ] editing/inserting/typing-at-end-of-line.html [ Failure ]
-Bug(ojan) [ Mac ] editing/selection/wrapped-line-caret-1.html [ Failure ]
-Bug(ojan) [ Mac ] editing/selection/wrapped-line-caret-2.html [ Failure ]
-
 webkit.org/b/113555 [ Win7 Debug ] fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
 webkit.org/b/113673 [ Win ] fast/exclusions/shape-outside-floats/shape-outside-floats-non-zero-y.html [ ImageOnlyFailure ]
