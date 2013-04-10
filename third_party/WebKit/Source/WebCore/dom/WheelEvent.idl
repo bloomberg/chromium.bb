@@ -19,7 +19,6 @@
  */
 
 [
-    ConstructorConditional=DOM4_EVENTS_CONSTRUCTOR,
     ConstructorTemplate=Event
 ] interface WheelEvent : MouseEvent {
     const unsigned long              DOM_DELTA_PIXEL = 0x00;

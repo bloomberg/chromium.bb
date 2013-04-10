@@ -19,7 +19,6 @@
  */
 
 [
-    ConstructorConditional=DOM4_EVENTS_CONSTRUCTOR,
     ConstructorTemplate=Event
 ] interface KeyboardEvent : UIEvent {
 
