@@ -1835,6 +1835,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdySessionSocketNotConnectedGetLocalAddress"
+    enum="BooleanSuccess">
+  <summary>
+    SpdySession::GetLocalAddress returned ERR_SOCKET_NOT_CONNECTED.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySessionSocketNotConnectedGetPeerAddress"
+    enum="BooleanSuccess">
+  <summary>
+    SpdySession::GetPeerAddress returned ERR_SOCKET_NOT_CONNECTED.
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdySessionsWithStalls">
   <summary>The count of SPDY Sessions with or without stalls.</summary>
 </histogram>
