@@ -39,6 +39,7 @@ namespace WebCore {
 class SharedGraphicsContext3DImpl {
 public:
     SharedGraphicsContext3DImpl() : m_context(0) { }
+
     PassRefPtr<GraphicsContext3D> getOrCreateContext()
     {
         bool wasCreated = false;
@@ -56,21 +57,6 @@ public:
                 m_context = GraphicsContext3DPrivate::createGraphicsContextFromExternalWebContextAndGrContext(webContext, grContext);
                 wasCreated = true;
             }
-
-            // FIXME: Don't fallback to the legacy path when chromium supports the new offscreen methods.
-        } else
-        {
-            // If we lost the context, or can't make it current, create a new one.
-            if (m_context && (!m_context->makeContextCurrent() || (m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)))
-                m_context.clear();
-
-            if (!m_context) {
-                createContext();
-                wasCreated = true;
-            }
-
-            if (m_context && !m_context->makeContextCurrent())
-                m_context.clear();
         }
 
         if (m_context && wasCreated)
@@ -78,21 +64,6 @@ public:
         return m_context;
     }
 
-    PassRefPtr<GraphicsContext3D> getContext()
-    {
-        return m_context;
-    }
-
-    PassRefPtr<GraphicsContext3D> createContext()
-    {
-        GraphicsContext3D::Attributes attributes;
-        attributes.depth = false;
-        attributes.stencil = true;
-        attributes.antialias = false;
-        attributes.shareResources = true;
-        m_context = GraphicsContext3D::create(attributes, 0);
-        return m_context;
-    }
 private:
     RefPtr<GraphicsContext3D> m_context;
 };
@@ -103,32 +74,5 @@ PassRefPtr<GraphicsContext3D> SharedGraphicsContext3D::get()
     return impl.getOrCreateContext();
 }
 
-enum ContextOperation {
-    Get, Create
-};
-
-static PassRefPtr<GraphicsContext3D> getOrCreateContextForImplThread(ContextOperation op)
-{
-    DEFINE_STATIC_LOCAL(SharedGraphicsContext3DImpl, impl, ());
-    return op == Create ? impl.createContext() : impl.getContext();
-}
-
-PassRefPtr<GraphicsContext3D> SharedGraphicsContext3D::getForImplThread()
-{
-    return getOrCreateContextForImplThread(Get);
-}
-
-bool SharedGraphicsContext3D::haveForImplThread()
-{
-    ASSERT(isMainThread());
-    return getOrCreateContextForImplThread(Get);
-}
-
-bool SharedGraphicsContext3D::createForImplThread()
-{
-    ASSERT(isMainThread());
-    return getOrCreateContextForImplThread(Create);
-}
-
-}
+}  // namespace WebCore
 
