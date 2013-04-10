@@ -45,7 +45,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   virtual int GetBaseline() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
