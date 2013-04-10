@@ -967,7 +967,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PINCH_SCALE_NAME,
     IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION,
     kOsLinux | kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnablePinch),
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch, switches::kDisablePinch),
+  },
+  {
+    "pinch-zoom-scrollbars",
+    IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_NAME,
+    IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(cc::switches::kEnablePinchZoomScrollbars,
+                              cc::switches::kDisablePinchZoomScrollbars)
   },
   {
     "app-list-show-apps-only",

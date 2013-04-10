@@ -116,6 +116,7 @@ CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableUserMediaScreenCapturing[];
 extern const char kEnablePinch[];
+extern const char kDisablePinch[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnablePruneGpuCommandBuffers[];

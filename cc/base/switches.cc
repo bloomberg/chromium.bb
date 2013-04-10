@@ -80,6 +80,10 @@ const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
 const char kMaxUnusedResourceMemoryUsagePercentage[] =
     "max-unused-resource-memory-usage-percentage";
 
+// Causes overlay scrollbars to appear when zoomed in ChromeOS/Windows.
+const char kEnablePinchZoomScrollbars[]     = "enable-pinch-zoom-scrollbars";
+const char kDisablePinchZoomScrollbars[]    = "disable-pinch-zoom-scrollbars";
+
 // Causes the compositor to render to textures which are then sent to the parent
 // through the texture mailbox mechanism.
 // Requires --enable-compositor-frame-message.

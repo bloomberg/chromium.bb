@@ -845,6 +845,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,
     switches::kEnablePinch,
+    switches::kDisablePinch,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
@@ -917,6 +918,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePerTilePainting,
+    cc::switches::kEnablePinchZoomScrollbars,
+    cc::switches::kDisablePinchZoomScrollbars,
     cc::switches::kEnablePredictionBenchmarking,
     cc::switches::kEnableRightAlignedScheduling,
     cc::switches::kEnableTopControlsPositionCalculation,

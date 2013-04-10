@@ -6882,6 +6882,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION" desc="Description of the flag to turn on experiental pinch to scale.">
         Enables experimental support for scale using pinch.
       </message>
+      <message name="IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_NAME" desc="Name for the Pinch Zoom Scrollbars feature.">
+        Enable overlay pinch-zoom scrollbars.
+      </message>
+      <message name="IDS_FLAGS_PINCH_ZOOM_SCROLLBARS_DESCRIPTION" desc="Description for the Pinch Zoom Scrollbars feature.">
+        While zoomed in, overlay scrollbars will be visible during scrolling.
+      </message>
       <message name="IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_NAME" desc="Name of the flag to show only apps in app list search.">
         Enable apps only search for app list.
       </message>

@@ -182,6 +182,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.show_overdraw_in_tracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
 
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+  settings.use_pinch_zoom_scrollbars =
+      cmd->HasSwitch(cc::switches::kEnablePinchZoomScrollbars);
+#endif
+
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =
       cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);

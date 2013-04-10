@@ -39,6 +39,8 @@ CC_EXPORT extern const char kCompositeToMailbox[];
 CC_EXPORT extern const char kMaxPrepaintTileDistance[];
 CC_EXPORT extern const char kMaxTilesForInterestArea[];
 CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
+CC_EXPORT extern const char kEnablePinchZoomScrollbars[];
+CC_EXPORT extern const char kDisablePinchZoomScrollbars[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kEnablePartialSwap[];

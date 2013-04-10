@@ -3330,11 +3330,9 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
         webview()->setFixedLayoutSize(WebSize(width, height));
     }
   }
-
-  if (command_line.HasSwitch(switches::kEnablePinch))
-    webview()->setPageScaleFactorLimits(1, 4);
-  else
-    webview()->setPageScaleFactorLimits(1, 1);
+  float maxPageScaleFactor =
+      command_line.HasSwitch(switches::kEnablePinch) ? 4.f : 1.f ;
+  webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);
 }
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
