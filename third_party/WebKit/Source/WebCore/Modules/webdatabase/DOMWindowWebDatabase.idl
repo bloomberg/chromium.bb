@@ -28,8 +28,6 @@
     Supplemental=DOMWindow
 ] interface DOMWindowWebDatabase {
     [EnabledAtRuntime, MeasureAs=OpenWebDatabase, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback, Optional] DatabaseCallback creationCallback);
-#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
     attribute SQLExceptionConstructor SQLException;
-#endif
 };
 
