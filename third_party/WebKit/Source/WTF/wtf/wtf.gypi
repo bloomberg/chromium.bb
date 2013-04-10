@@ -85,7 +85,6 @@
             'MemoryInstrumentationHashMap.h',
             'MemoryInstrumentationHashSet.h',
             'MemoryInstrumentationListHashSet.h',
-            'MemoryInstrumentationParsedURL.h',
             'MemoryInstrumentationSequence.h',
             'MemoryInstrumentationString.h',
             'MemoryInstrumentationVector.h',
