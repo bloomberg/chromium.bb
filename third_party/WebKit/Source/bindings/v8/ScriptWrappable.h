@@ -43,10 +43,16 @@ class ScriptWrappable {
 public:
     ScriptWrappable()
     {
+#ifndef NDEBUG
+        m_init = false;
+#endif
     }
 
     template <class C> static void init(C *object)
     {
+#ifndef NDEBUG
+        object->m_init = true;
+#endif
     }
 
     v8::Handle<v8::Object> wrapper() const
@@ -72,6 +78,9 @@ public:
 protected:
     ~ScriptWrappable()
     {
+#ifndef NDEBUG
+        ASSERT(m_init);
+#endif
     }
 
 private:
@@ -93,6 +102,11 @@ private:
     // Stores a masked wrapper to prevent attackers from overwriting this field
     // with a phony wrapper.
     v8::Persistent<v8::Object> m_maskedWrapper;
+
+#ifndef NDEBUG
+    bool m_init;
+#endif
+
 };
 
 template<>
