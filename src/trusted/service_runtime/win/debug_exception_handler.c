@@ -378,7 +378,7 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   struct NaClAppThread appthread_copy;
   struct NaClApp app_copy;
   uint32_t context_user_addr;
-  struct NaClSignalContext tmp_context;
+  struct NaClSignalContext sig_context;
 
   context.ContextFlags = CONTEXT_SEGMENTS | CONTEXT_INTEGER | CONTEXT_CONTROL;
   if (!GetThreadContext(thread_handle, &context)) {
@@ -436,18 +436,24 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   }
 #endif
 
+  if (app_copy.enable_faulted_thread_queue) {
+    return QueueFaultedThread(process_handle, thread_handle,
+                              appthread_copy.nap, &app_copy, natp_remote,
+                              exception_code, exception_event);
+  }
+
+  NaClSignalContextFromHandler(&sig_context, &context);
+  appthread_copy.nap = &app_copy;
+  if (!NaClSignalCheckSandboxInvariants(&sig_context, &appthread_copy)) {
+    return FALSE;
+  }
+
   /*
    * If trusted code accidentally jumped to untrusted code, don't let
    * the untrusted exception handler take over.
    */
   if ((appthread_copy.suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
     return FALSE;
-  }
-
-  if (app_copy.enable_faulted_thread_queue) {
-    return QueueFaultedThread(process_handle, thread_handle,
-                              appthread_copy.nap, &app_copy, natp_remote,
-                              exception_code, exception_event);
   }
 
   exception_stack = appthread_copy.exception_stack;
@@ -516,8 +522,7 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   new_stack.context.stack_ptr = (uint32_t) context.Rsp;
   new_stack.context.frame_ptr = (uint32_t) context.Rbp;
 #endif
-  NaClSignalContextFromHandler(&tmp_context, &context);
-  NaClUserRegisterStateFromSignalContext(&new_stack.context.regs, &tmp_context);
+  NaClUserRegisterStateFromSignalContext(&new_stack.context.regs, &sig_context);
   if (!WRITE_MEM(process_handle,
                  (struct NaClExceptionFrame *) (app_copy.mem_start
                                                 + exception_stack),
@@ -532,15 +537,6 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   context.Rdi = context_user_addr;  /* Argument 1 */
   context.Rip = app_copy.mem_start + app_copy.exception_handler;
   context.Rsp = app_copy.mem_start + exception_stack;
-  /*
-   * The x86-64 sandbox allows %rsp/%rbp to point temporarily to the
-   * lower 4GB of address space.  It should not be possible to fault
-   * while %rsp/%rbp is in this state; otherwise, we have safety
-   * problems when the debug stub is not enabled.  For portability,
-   * and to be on the safe side, we reset %rbp to zero in untrusted
-   * address space.
-   */
-  context.Rbp = app_copy.mem_start;
 #endif
 
   context.EFlags &= ~NACL_X86_DIRECTION_FLAG;

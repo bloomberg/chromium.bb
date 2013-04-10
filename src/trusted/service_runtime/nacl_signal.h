@@ -153,6 +153,9 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
                                        int *is_untrusted,
                                        struct NaClAppThread **result_thread);
 
+int NaClSignalCheckSandboxInvariants(const struct NaClSignalContext *regs,
+                                     struct NaClAppThread *natp);
+
 /*
  * A basic handler which will exit with -signal_number when
  * a signal is encountered in the untrusted code, otherwise

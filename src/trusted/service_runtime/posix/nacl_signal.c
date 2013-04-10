@@ -209,6 +209,9 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
    */
   const uint32_t kReturnAddr = 0;
 
+  if (!NaClSignalCheckSandboxInvariants(regs, natp)) {
+    return 0;
+  }
   if (nap->exception_handler == 0) {
     return 0;
   }
@@ -253,18 +256,6 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   regs->rdi = context_user_addr; /* Argument 1 */
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
-  /*
-   * We cannot leave %rbp unmodified because the x86-64 sandbox allows
-   * %rbp to point temporarily to the lower 4GB of address space, and
-   * we could have received an asynchronous signal while %rbp is in
-   * this state.  Even SIGSEGV can be asynchronous if sent with
-   * kill().
-   *
-   * For now, reset %rbp to zero in untrusted address space.  In the
-   * future, we might want to allow the stack to be unwound past the
-   * exception frame, and so we might want to treat %rbp differently.
-   */
-  regs->rbp = nap->mem_start;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   frame->context.frame_ptr = regs->r11;
   regs->lr = kReturnAddr;

@@ -69,6 +69,10 @@ static INLINE uintptr_t NaClUserToSysAddr(struct NaClApp  *nap,
 
 static INLINE int NaClIsUserAddr(struct NaClApp  *nap,
                                  uintptr_t       sysaddr) {
+  /*
+   * Note that NaClIsUserAddr() is used in the Windows debug exception
+   * handler so must remain safe to use on a copy of NaClApp.
+   */
   return nap->mem_start <= sysaddr &&
          sysaddr < nap->mem_start + ((uintptr_t) 1U << nap->addr_bits);
 }

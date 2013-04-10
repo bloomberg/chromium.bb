@@ -156,6 +156,50 @@ int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
           prog_ctr >= NACL_TRAMPOLINE_END);
 }
 
+/*
+ * Sanity checks: Reject unsafe register state that untrusted code
+ * should not be able to set unless there is a sandbox hole.  We do
+ * this in an attempt to prevent such a hole from being exploitable.
+ */
+int NaClSignalCheckSandboxInvariants(const struct NaClSignalContext *regs,
+                                     struct NaClAppThread *natp) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  if (regs->cs != natp->user.cs ||
+      regs->ds != natp->user.ds ||
+      regs->es != natp->user.es ||
+      regs->fs != natp->user.fs ||
+      regs->gs != natp->user.gs ||
+      regs->ss != natp->user.ss) {
+    return 0;
+  }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  /*
+   * Untrusted code can temporarily set %rsp/%rbp to be in the 0..4GB
+   * range but it should not be able to generate a fault while in that
+   * state.
+   */
+  if (regs->r15 != natp->user.r15 ||
+      !NaClIsUserAddr(natp->nap, regs->stack_ptr) ||
+      !NaClIsUserAddr(natp->nap, regs->rbp)) {
+    return 0;
+  }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  if (!NaClIsUserAddr(natp->nap, regs->stack_ptr) ||
+      regs->r9 != (uintptr_t) &natp->user.tls_value1) {
+    return 0;
+  }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  if (!NaClIsUserAddr(natp->nap, regs->stack_ptr) ||
+      regs->t6 != NACL_CONTROL_FLOW_MASK ||
+      regs->t7 != NACL_DATA_FLOW_MASK) {
+    return 0;
+  }
+#else
+# error Unsupported architecture
+#endif
+  return 1;
+}
+
 void NaClSignalHandleUntrusted(int signal,
                                const struct NaClSignalContext *regs,
                                int is_untrusted) {

@@ -153,9 +153,9 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   assert(frame_top <= stack_top);
 
 #if defined(__x86_64__)
-  /* Check that %rbp has been reset to a safe value. */
-  assert(entry_regs->rbp == entry_regs->r15);
+  /* Check that %rsp and %rbp have safe, %r15-extended values. */
   assert(entry_regs->stack_ptr >> 32 == entry_regs->r15 >> 32);
+  assert(entry_regs->rbp >> 32 == entry_regs->r15 >> 32);
 #endif
 
   /*
