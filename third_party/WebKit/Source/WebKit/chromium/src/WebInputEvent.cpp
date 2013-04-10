@@ -75,11 +75,14 @@ COMPILE_ASSERT(sizeof(WebTouchEvent) == sizeof(SameSizeAsWebTouchEvent), WebTouc
 static const char* staticKeyIdentifiers(unsigned short keyCode)
 {
     switch (keyCode) {
-    case VKEY_MENU:
+    case VKEY_LMENU:
+    case VKEY_RMENU:
         return "Alt";
-    case VKEY_CONTROL:
+    case VKEY_LCONTROL:
+    case VKEY_RCONTROL:
         return "Control";
-    case VKEY_SHIFT:
+    case VKEY_LSHIFT:
+    case VKEY_RSHIFT:
         return "Shift";
     case VKEY_CAPITAL:
         return "CapsLock";
