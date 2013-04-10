@@ -264,11 +264,6 @@ class PatchProcessingQueue(AbstractPatchQueue):
         # The new port system has no concept of xvfb yet.
         if port_name == 'chromium-xvfb':
             return 'chromium'
-        # ApplePort.determine_full_port_name asserts if the name doesn't include version.
-        if port_name == 'mac':
-            return 'mac-' + platform.os_version
-        if port_name == 'win':
-            return 'win-future'
         return port_name
 
     def begin_work_queue(self):

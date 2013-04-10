@@ -39,10 +39,6 @@ _log = logging.getLogger(__name__)
 def _baseline_search_hypergraph(host, port_names):
     hypergraph = {}
 
-    # These edges in the hypergraph aren't visible on build.webkit.org,
-    # but they impose constraints on how we optimize baselines.
-    hypergraph.update(_VIRTUAL_PORTS)
-
     # FIXME: Should we get this constant from somewhere?
     fallback_path = ['LayoutTests']
 
@@ -56,13 +52,6 @@ def _baseline_search_hypergraph(host, port_names):
     return hypergraph
 
 
-_VIRTUAL_PORTS = {
-    'mac-future': ['LayoutTests/platform/mac-future', 'LayoutTests/platform/mac', 'LayoutTests'],
-    'win-future': ['LayoutTests/platform/win-future', 'LayoutTests/platform/win', 'LayoutTests'],
-    'qt-unknown': ['LayoutTests/platform/qt-unknown', 'LayoutTests/platform/qt', 'LayoutTests'],
-}
-
-
 # FIXME: Should this function be somewhere more general?
 def _invert_dictionary(dictionary):
     inverted_dictionary = {}
@@ -74,6 +63,7 @@ def _invert_dictionary(dictionary):
     return inverted_dictionary
 
 
+# FIXME: This class is massively more complicated than necessary now that we only need to support Chromium baselines.
 class BaselineOptimizer(object):
     def __init__(self, host, port_names):
         self._host = host
@@ -190,12 +180,9 @@ class BaselineOptimizer(object):
                 return index, directory
         assert False, "result %s not found in fallback_path %s, %s" % (current_result, fallback_path, results_by_directory)
 
+    # FIXME: Inline this function into its callers.
     def _filtered_results_by_port_name(self, results_by_directory):
-        results_by_port_name = self._results_by_port_name(results_by_directory)
-        for port_name in _VIRTUAL_PORTS.keys():
-            if port_name in results_by_port_name:
-                del results_by_port_name[port_name]
-        return results_by_port_name
+        return self._results_by_port_name(results_by_directory)
 
     def _platform(self, filename):
         platform_dir = 'LayoutTests' + self._filesystem.sep + 'platform' + self._filesystem.sep

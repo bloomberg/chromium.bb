@@ -58,52 +58,14 @@ _exact_matches = {
     "WebKit Mac10.7": {"port_name": "chromium-mac-lion", "is_debug": False},
     "WebKit Mac10.7 (dbg)": {"port_name": "chromium-mac-lion", "is_debug": True},
     "WebKit Mac10.8": {"port_name": "chromium-mac-mountainlion", "is_debug": False},
-
-    # These builders are on build.webkit.org.
-    "Apple MountainLion Release WK1 (Tests)": {"port_name": "mac-mountainlion", "is_debug": False, "rebaseline_override_dir": "mac"},
-    "Apple MountainLion Debug WK1 (Tests)": {"port_name": "mac-mountainlion", "is_debug": True, "rebaseline_override_dir": "mac"},
-    "Apple MountainLion Release WK2 (Tests)": {"port_name": "mac-mountainlion-wk2", "is_debug": False, "rebaseline_override_dir": "mac"},
-    "Apple MountainLion Debug WK2 (Tests)": {"port_name": "mac-mountainlion-wk2", "is_debug": True, "rebaseline_override_dir": "mac"},
-    "Apple Lion Release WK1 (Tests)": {"port_name": "mac-lion", "is_debug": False},
-    "Apple Lion Debug WK1 (Tests)": {"port_name": "mac-lion", "is_debug": True},
-    "Apple Lion Release WK2 (Tests)": {"port_name": "mac-lion-wk2", "is_debug": False},
-    "Apple Lion Debug WK2 (Tests)": {"port_name": "mac-lion-wk2", "is_debug": True},
-
-    "Apple Win XP Debug (Tests)": {"port_name": "win-xp", "is_debug": True},
-    # FIXME: Remove rebaseline_override_dir once there is an Apple buildbot that corresponds to platform/win.
-    "Apple Win 7 Release (Tests)": {"port_name": "win-7sp0", "is_debug": False, "rebaseline_override_dir": "win"},
-
-    "GTK Linux 32-bit Release": {"port_name": "gtk", "is_debug": False},
-    "GTK Linux 64-bit Debug": {"port_name": "gtk", "is_debug": True},
-    "GTK Linux 64-bit Release": {"port_name": "gtk", "is_debug": False},
-    "GTK Linux 64-bit Release WK2 (Tests)": {"port_name": "gtk-wk2", "is_debug": False},
-
-    # FIXME: Remove rebaseline_override_dir once there are Qt bots for all the platform/qt-* directories.
-    "Qt Linux Release": {"port_name": "qt-linux", "is_debug": False, "rebaseline_override_dir": "qt"},
-
-    "EFL Linux 64-bit Release": {"port_name": "efl", "is_debug": False},
-    "EFL Linux 64-bit Release WK2": {"port_name": "efl-wk2", "is_debug": False},
-    "EFL Linux 64-bit Debug WK2": {"port_name": "efl-wk2", "is_debug": True},
 }
 
 
 _fuzzy_matches = {
-    # These builders are on build.webkit.org.
-    r"SnowLeopard": "mac-snowleopard",
-    r"Apple Lion": "mac-lion",
-    r"Windows": "win",
-    r"GTK": "gtk",
-    r"Qt": "qt",
-    r"Chromium Mac": "chromium-mac",
-    r"Chromium Linux": "chromium-linux",
-    r"Chromium Win": "chromium-win",
 }
 
 
 _ports_without_builders = [
-    "qt-mac",
-    "qt-win",
-    "qt-wk2",
     # FIXME: Move to _extact_matches.
     "chromium-android",
 ]

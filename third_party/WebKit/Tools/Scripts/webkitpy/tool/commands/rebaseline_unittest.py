@@ -83,14 +83,6 @@ class TestRebaselineTest(_BaseTestCase):
 
     def test_baseline_directory(self):
         command = self.command
-        self.assertMultiLineEqual(command._baseline_directory("Apple Win XP Debug (Tests)"), "/mock-checkout/LayoutTests/platform/win-xp")
-        self.assertMultiLineEqual(command._baseline_directory("Apple Win 7 Release (Tests)"), "/mock-checkout/LayoutTests/platform/win")
-        self.assertMultiLineEqual(command._baseline_directory("Apple Lion Release WK1 (Tests)"), "/mock-checkout/LayoutTests/platform/mac-lion")
-        self.assertMultiLineEqual(command._baseline_directory("Apple Lion Release WK2 (Tests)"), "/mock-checkout/LayoutTests/platform/mac-wk2")
-        self.assertMultiLineEqual(command._baseline_directory("GTK Linux 64-bit Debug"), "/mock-checkout/LayoutTests/platform/gtk-wk1")
-        self.assertMultiLineEqual(command._baseline_directory("GTK Linux 64-bit Release WK2 (Tests)"), "/mock-checkout/LayoutTests/platform/gtk-wk2")
-        self.assertMultiLineEqual(command._baseline_directory("EFL Linux 64-bit Release WK2"), "/mock-checkout/LayoutTests/platform/efl-wk2")
-        self.assertMultiLineEqual(command._baseline_directory("Qt Linux Release"), "/mock-checkout/LayoutTests/platform/qt")
         self.assertMultiLineEqual(command._baseline_directory("WebKit Mac10.7"), "/mock-checkout/LayoutTests/platform/chromium-mac-lion")
         self.assertMultiLineEqual(command._baseline_directory("WebKit Mac10.6"), "/mock-checkout/LayoutTests/platform/chromium-mac-snowleopard")
 
@@ -337,7 +329,7 @@ class TestRebaselineExpectations(_BaseTestCase):
         # FIXME: change this to use the test- ports.
         calls = filter(lambda x: x != ['qmake', '-v'], self.tool.executive.calls)
         self.assertEqual(len(calls), 1)
-        self.assertEqual(len(calls[0]), 36)
+        self.assertEqual(len(calls[0]), 14)
 
     def test_rebaseline_expectations_noop(self):
         self._zero_out_test_expectations()

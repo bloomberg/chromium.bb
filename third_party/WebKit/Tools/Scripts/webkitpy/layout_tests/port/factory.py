@@ -45,15 +45,6 @@ def platform_options(use_globs=False):
         optparse.make_option('--chromium-android', action='store_const', dest='platform',
             const=('chromium-android*' if use_globs else 'chromium-android'),
             help=('Alias for --platform=chromium-android*' if use_globs else 'Alias for --platform=chromium')),
-        optparse.make_option('--efl', action='store_const', dest='platform',
-            const=('efl*' if use_globs else 'efl'),
-            help=('Alias for --platform=efl*' if use_globs else 'Alias for --platform=efl')),
-        optparse.make_option('--gtk', action='store_const', dest='platform',
-            const=('gtk*' if use_globs else 'gtk'),
-            help=('Alias for --platform=gtk*' if use_globs else 'Alias for --platform=gtk')),
-        optparse.make_option('--qt', action='store_const', dest="platform",
-            const=('qt*' if use_globs else 'qt'),
-            help=('Alias for --platform=qt' if use_globs else 'Alias for --platform=qt')),
         ]
 
 
@@ -84,13 +75,8 @@ class PortFactory(object):
         'chromium_linux.ChromiumLinuxPort',
         'chromium_mac.ChromiumMacPort',
         'chromium_win.ChromiumWinPort',
-        'efl.EflPort',
-        'gtk.GtkPort',
-        'mac.MacPort',
         'mock_drt.MockDRTPort',
-        'qt.QtPort',
         'test.TestPort',
-        'win.WinPort',
     )
 
     def __init__(self, host):
@@ -101,9 +87,9 @@ class PortFactory(object):
         if platform.is_linux() or platform.is_freebsd():
             return 'chromium-linux'
         elif platform.is_mac():
-            return 'mac'
+            return 'chromium-mac'
         elif platform.is_win():
-            return 'win'
+            return 'chromium-win'
         raise NotImplementedError('unknown platform: %s' % platform)
 
     def get(self, port_name=None, options=None, **kwargs):

@@ -248,7 +248,7 @@ class MiscTests(Base):
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False):
-        port = MockHost().port_factory.get('qt')
+        port = MockHost().port_factory.get('test-win-xp')
         port._filesystem.write_text_file(port._filesystem.join(port.layout_tests_dir(), 'failures/expected/text.html'), 'foo')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = expectations
@@ -287,7 +287,7 @@ class SkippedTests(Base):
                    skips=['failures/expected'])
 
     def test_skipped_entry_dont_exist(self):
-        port = MockHost().port_factory.get('qt')
+        port = MockHost().port_factory.get('test-win-xp')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = ''
         port.expectations_dict = lambda: expectations_dict

@@ -36,11 +36,7 @@ from webkitpy.layout_tests.port import chromium_linux
 from webkitpy.layout_tests.port import chromium_mac
 from webkitpy.layout_tests.port import chromium_win
 from webkitpy.layout_tests.port import factory
-from webkitpy.layout_tests.port import gtk
-from webkitpy.layout_tests.port import mac
-from webkitpy.layout_tests.port import qt
 from webkitpy.layout_tests.port import test
-from webkitpy.layout_tests.port import win
 
 
 class FactoryTest(unittest.TestCase):
@@ -55,25 +51,6 @@ class FactoryTest(unittest.TestCase):
         host = MockSystemHost(os_name=os_name, os_version=os_version)
         port = factory.PortFactory(host).get(port_name, options=options)
         self.assertIsInstance(port, cls)
-
-    def test_mac(self):
-        self.assert_port(port_name='mac-lion', cls=mac.MacPort)
-        self.assert_port(port_name='mac-lion-wk2', cls=mac.MacPort)
-        self.assert_port(port_name='mac', os_name='mac', os_version='lion', cls=mac.MacPort)
-        self.assert_port(port_name=None,  os_name='mac', os_version='lion', cls=mac.MacPort)
-
-    def test_win(self):
-        self.assert_port(port_name='win-xp', cls=win.WinPort)
-        self.assert_port(port_name='win-xp-wk2', cls=win.WinPort)
-        self.assert_port(port_name='win', os_name='win', os_version='xp', cls=win.WinPort)
-        self.assert_port(port_name=None, os_name='win', os_version='xp', cls=win.WinPort)
-        self.assert_port(port_name=None, os_name='win', os_version='xp', options=self.webkit_options, cls=win.WinPort)
-
-    def test_gtk(self):
-        self.assert_port(port_name='gtk', cls=gtk.GtkPort)
-
-    def test_qt(self):
-        self.assert_port(port_name='qt', cls=qt.QtPort)
 
     def test_chromium_mac(self):
         self.assert_port(port_name='chromium-mac', os_name='mac', os_version='snowleopard',
