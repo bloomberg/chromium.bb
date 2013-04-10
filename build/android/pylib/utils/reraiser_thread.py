@@ -21,8 +21,16 @@ class TimeoutError(Exception):
 class ReraiserThread(threading.Thread):
   """Thread class that can reraise exceptions."""
 
-  def __init__(self, func, args=[], kwargs={}):
-    super(ReraiserThread, self).__init__()
+  def __init__(self, func, args=[], kwargs={}, name=None):
+    """Initialize thread.
+
+    Args:
+      func: callable to call on a new thread.
+      args: list of positional arguments for callable, defaults to empty.
+      kwargs: dictionary of keyword arguments for callable, defaults to empty.
+      name: thread name, defaults to Thread-N.
+    """
+    super(ReraiserThread, self).__init__(name=name)
     self.daemon = True
     self._func = func
     self._args = args
@@ -104,11 +112,10 @@ class ReraiserThreadGroup(object):
     try:
       self._JoinAll(watcher)
     except TimeoutError:
-      alive_thread_ids = (t.ident for t in self._threads if t.isAlive())
-      for thread_id in alive_thread_ids:
-        stack = sys._current_frames()[thread_id]
+      for thread in (t for t in self._threads if t.isAlive()):
+        stack = sys._current_frames()[thread.ident]
         logging.critical('*' * 80)
-        logging.critical('Stack dump for timed out ThreadId = %s', thread_id)
+        logging.critical('Stack dump for timed out thread \'%s\'', thread.name)
         logging.critical('*' * 80)
         for filename, lineno, name, line in traceback.extract_stack(stack):
           logging.critical('File: "%s", line %d, in %s', filename, lineno, name)

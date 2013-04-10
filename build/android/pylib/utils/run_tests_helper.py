@@ -13,7 +13,7 @@ class CustomFormatter(logging.Formatter):
   """Custom log formatter."""
 
   #override
-  def __init__(self, fmt=''):
+  def __init__(self, fmt='%(threadName)-4s  %(message)s'):
     # Can't use super() because in older Python versions logging.Formatter does
     # not inherit from object.
     logging.Formatter.__init__(self, fmt=fmt)
@@ -24,8 +24,10 @@ class CustomFormatter(logging.Formatter):
     # Can't use super() because in older Python versions logging.Formatter does
     # not inherit from object.
     msg = logging.Formatter.format(self, record)
+    if 'MainThread' in msg[:19]:
+      msg = msg.replace('MainThread', 'Main', 1)
     timediff = str(int(time.time() - self._creation_time))
-    return '%s %ss  %s' % (record.levelname[0], timediff.rjust(4), msg)
+    return '%s %ss %s' % (record.levelname[0], timediff.rjust(4), msg)
 
 
 def GetExpectations(file_name):

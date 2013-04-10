@@ -205,7 +205,8 @@ def _RunAllTests(runners, tests, timeout=None):
   watcher = watchdog_timer.WatchdogTimer(timeout)
   workers = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(_RunTestsFromQueue,
-                                      [r, tests_collection, results, watcher])
+                                      [r, tests_collection, results, watcher],
+                                      name=r.device[-4:])
        for r in runners])
   workers.StartAll()
   workers.JoinAll(watcher)
@@ -234,8 +235,9 @@ def _CreateRunners(runner_factory, devices, timeout=None):
   runners = []
   counter = _ThreadSafeCounter()
   threads = reraiser_thread.ReraiserThreadGroup(
-      [reraiser_thread.ReraiserThread(_SetUp, [runner_factory, d, runners,
-                                               counter])
+      [reraiser_thread.ReraiserThread(_SetUp,
+                                      [runner_factory, d, runners, counter],
+                                      name=d[-4:])
        for d in devices])
   threads.StartAll()
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
@@ -249,8 +251,8 @@ def _TearDownRunners(runners, timeout=None):
     timeout: watchdog timeout in seconds, defaults to the default timeout.
   """
   threads = reraiser_thread.ReraiserThreadGroup(
-      [reraiser_thread.ReraiserThread(runner.TearDown)
-       for runner in runners])
+      [reraiser_thread.ReraiserThread(r.TearDown, name=r.device[-4:])
+       for r in runners])
   threads.StartAll()
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
 
