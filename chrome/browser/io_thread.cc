@@ -56,6 +56,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
@@ -668,6 +669,13 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     // Use SPDY/3 by default.
     net::HttpStreamFactory::EnableNpnSpdy3();
   }
+
+  // TODO(rch): Make the client socket factory a per-network session
+  // instance, constructed from a NetworkSession::Params, to allow us
+  // to move this option to IOThread::Globals &
+  // HttpNetworkSession::Params.
+  if (command_line.HasSwitch(switches::kEnableTcpFastOpen))
+    net::SetTCPFastOpenEnabled(true);
 }
 
 void IOThread::EnableSpdy(const std::string& mode) {

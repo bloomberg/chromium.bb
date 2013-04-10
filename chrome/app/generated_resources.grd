@@ -6508,6 +6508,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION" desc="Description of the flag to enable an interactive autocomplete UI.">
         Enable an interactive autocomplete UI that can be invoked by calling HTMLFormElement#requestAutocomplete.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
+        Enable TCP Fast Open
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_DESCRIPTION" desc="Description of the flag that enables TCP Fast Open.">
+        Enable the option to send extra authentication information in the initial SYN packet for a previously connected client, allowing faster data send start.
+      </message>
       <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME" desc="Name of the flag that enables touch initiated drag drop.">
         Enable touch initiated drag and drop
       </message>

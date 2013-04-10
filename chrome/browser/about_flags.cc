@@ -1339,6 +1339,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     MULTI_VALUE_TYPE(kSimpleCacheBackendChoices)
   },
+  {
+    "enable-tcp-fast-open",
+    IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME,
+    IDS_FLAGS_ENABLE_TCP_FAST_OPEN_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
+  },
 };
 
 const Experiment* experiments = kExperiments;

@@ -48,7 +48,6 @@
 #include "media/audio/audio_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/tcp_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -328,11 +327,6 @@ void BrowserMainLoop::EarlyInitialization() {
 
   if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
     net::SSLConfigService::EnableCachedInfo();
-
-  // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
-  // seem dependent on SSL initialization().
-  if (parsed_command_line_.HasSwitch(switches::kEnableTcpFastOpen))
-    net::SetTCPFastOpenEnabled(true);
 
 #if !defined(OS_IOS)
   if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {
