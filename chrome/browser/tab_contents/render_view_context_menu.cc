@@ -117,6 +117,95 @@ using extensions::MenuManager;
 
 namespace {
 
+// Maps UMA enumeration to IDC. IDC could be changed so we can't use
+// just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
+// Never change mapping or reuse |enum_id|. Always push back new items.
+// Items that is not used any more by |RenderViewContextMenu.ExecuteCommand|
+// could be deleted, but don't change the rest of |kUmaEnumToCommand|.
+const struct UmaEnumCommandIdPair {
+  int enum_id;
+  int command_id;
+} kUmaEnumToCommand[] = {
+  {  0, IDC_CONTENT_CONTEXT_CUSTOM_FIRST },
+  {  1, IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST },
+  {  2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST },
+  {  3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB },
+  {  4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW },
+  {  5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD },
+  {  6, IDC_CONTENT_CONTEXT_SAVELINKAS },
+  {  7, IDC_CONTENT_CONTEXT_SAVEAVAS },
+  {  8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS },
+  {  9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION },
+  { 10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION },
+  { 11, IDC_CONTENT_CONTEXT_COPYAVLOCATION },
+  { 12, IDC_CONTENT_CONTEXT_COPYIMAGE },
+  { 13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB },
+  { 14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB },
+  { 15, IDC_CONTENT_CONTEXT_PLAYPAUSE },
+  { 16, IDC_CONTENT_CONTEXT_MUTE },
+  { 17, IDC_CONTENT_CONTEXT_LOOP },
+  { 18, IDC_CONTENT_CONTEXT_CONTROLS },
+  { 19, IDC_CONTENT_CONTEXT_ROTATECW },
+  { 20, IDC_CONTENT_CONTEXT_ROTATECCW },
+  { 21, IDC_BACK },
+  { 22, IDC_FORWARD },
+  { 23, IDC_SAVE_PAGE },
+  { 24, IDC_RELOAD },
+  { 25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP },
+  { 26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP },
+  { 27, IDC_PRINT },
+  { 28, IDC_VIEW_SOURCE },
+  { 29, IDC_CONTENT_CONTEXT_INSPECTELEMENT },
+  { 30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE },
+  { 31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO },
+  { 32, IDC_CONTENT_CONTEXT_TRANSLATE },
+  { 33, IDC_CONTENT_CONTEXT_RELOADFRAME },
+  { 34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE },
+  { 35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO },
+  { 36, IDC_CONTENT_CONTEXT_UNDO },
+  { 37, IDC_CONTENT_CONTEXT_REDO },
+  { 38, IDC_CONTENT_CONTEXT_CUT },
+  { 39, IDC_CONTENT_CONTEXT_COPY },
+  { 40, IDC_CONTENT_CONTEXT_PASTE },
+  { 41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE },
+  { 42, IDC_CONTENT_CONTEXT_DELETE },
+  { 43, IDC_CONTENT_CONTEXT_SELECTALL },
+  { 44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR },
+  { 45, IDC_CONTENT_CONTEXT_GOTOURL },
+  { 46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS },
+  { 47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS },
+  { 48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE },
+  { 49, IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES },
+  { 50, IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT },
+  // Add new items here and use |enum_id| from the next line.
+  { 51, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+};
+
+// Increments histogram value for context menu command specified by |id|.
+void RecordExecutedContextItem(int id) {
+  // Collapse large ranges of ids.
+  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+    id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
+  } else if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+             id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  } else if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
+             id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
+    id = IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+  }
+  const size_t kMappingSize = arraysize(kUmaEnumToCommand);
+  for (size_t i = 0; i < kMappingSize; ++i) {
+    if (kUmaEnumToCommand[i].command_id == id) {
+      UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ExecuteCommand",
+                                kUmaEnumToCommand[i].enum_id,
+                                kUmaEnumToCommand[kMappingSize - 1].enum_id);
+      return;
+    }
+  }
+  NOTREACHED() << "Update kUmaEnumToCommand";
+}
+
 // Usually a new tab is expected where this function is used,
 // however users should be able to open a tab in background
 // or in a new window.
@@ -1336,6 +1425,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     if (observer->IsCommandIdSupported(id))
       return observer->ExecuteCommand(id);
   }
+
+  RecordExecutedContextItem(id);
 
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
 
