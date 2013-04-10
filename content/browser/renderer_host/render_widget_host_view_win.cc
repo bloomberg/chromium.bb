@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 
+#include <dwmapi.h>
 #include <InputScope.h>
 
 #include <algorithm>
@@ -311,6 +312,22 @@ void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
   *results = WebKit::WebScreenInfoFactory::screenInfo(
       gfx::NativeViewFromId(id));
   results->deviceScaleFactor = ui::win::GetDeviceScaleFactor();
+}
+
+void SetDwmPresentParameters(HWND window) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    BOOL is_composited;
+    HRESULT result = DwmIsCompositionEnabled(&is_composited);
+    if (SUCCEEDED(result) && is_composited) {
+      DWM_PRESENT_PARAMETERS present_parameters = {0};
+      present_parameters.cbSize = sizeof(present_parameters);
+      present_parameters.cBuffer = 2;
+
+      result = DwmSetPresentParameters(window, &present_parameters);
+      if (FAILED(result))
+        DLOG(ERROR) << "Unable to set present parameters: 0x%08X", result;
+    }
+  }
 }
 
 }  // namespace
@@ -1189,6 +1206,7 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
   WTSRegisterSessionNotification(m_hWnd, NOTIFY_FOR_THIS_SESSION);
+  SetDwmPresentParameters(m_hWnd);
 
   UpdateDesiredTouchMode();
   UpdateIMEState();
@@ -2482,6 +2500,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   ui::CheckWindowCreated(compositor_host_window_);
 
   ui::SetWindowUserData(compositor_host_window_, this);
+
+  SetDwmPresentParameters(compositor_host_window_);
 
   gfx::GLSurfaceHandle surface_handle(compositor_host_window_,
                                       gfx::NATIVE_TRANSPORT);

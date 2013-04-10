@@ -1114,6 +1114,7 @@
         'libraries': [
           '-lcomctl32.lib',
           '-ldinput8.lib',
+          '-ldwmapi.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
         ],
@@ -1122,6 +1123,7 @@
             'DelayLoadDLLs': [
               'dinput8.dll',
               'user32.dll',
+              'dwmapi.dll',
             ],
           },
         },
