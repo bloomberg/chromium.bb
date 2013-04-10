@@ -3065,11 +3065,17 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
     return;
   }
 
+  int options = drive::SEARCH_METADATA_ALL;
+  if (types_ == "EXCLUDE_DIRECTORIES")
+    options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
+  else if (types_ == "SHARED_WITH_ME")
+    options = drive::SEARCH_METADATA_SHARED_WITH_ME;
+  else
+    DCHECK_EQ("ALL", types_);
+
   system_service->file_system()->SearchMetadata(
       query_,
-      types_ == "EXCLUDE_DIRECTORIES" ?
-          drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES :
-          drive::SEARCH_METADATA_ALL,
+      options,
       max_results_,
       base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));
 }
