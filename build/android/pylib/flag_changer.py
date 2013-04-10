@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import constants
+import logging
 import traceback
 import warnings
 
@@ -86,7 +87,7 @@ class FlagChanger(object):
 
   def _UpdateCommandLineFile(self):
     """Writes out the command line to the file, or removes it if empty."""
-    print "Current flags: ", self._current_flags
+    logging.info('Current flags: %s', self._current_flags)
 
     if self._current_flags:
       self._android_cmd.SetProtectedFileContents(CHROME_COMMAND_FILE,

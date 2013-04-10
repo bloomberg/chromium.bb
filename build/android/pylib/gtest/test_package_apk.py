@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 
+import logging
 import os
 import shlex
 import sys
@@ -63,7 +64,7 @@ class TestPackageApk(TestPackage):
   def _WatchFifo(self, timeout, logfile=None):
     for i in range(10):
       if self.adb.FileExistsOnDevice(self._GetFifo()):
-        print 'Fifo created...'
+        logging.info('Fifo created.')
         break
       time.sleep(i)
     else:

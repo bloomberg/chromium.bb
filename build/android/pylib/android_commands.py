@@ -109,8 +109,10 @@ def GetAttachedDevices():
     devices.insert(0, preferred_device)
   return devices
 
+
 def IsDeviceAttached(device):
   return device in GetAttachedDevices()
+
 
 def _GetFilesFromRecursiveLsOutput(path, ls_output, re_file, utc_offset=None):
   """Gets a list of files from `ls` command output.
@@ -164,9 +166,11 @@ def _GetFilesFromRecursiveLsOutput(path, ls_output, re_file, utc_offset=None):
       files[filename] = (int(file_match.group('size')), lastmod)
   return files
 
+
 def _ComputeFileListHash(md5sum_output):
   """Returns a list of MD5 strings from the provided md5sum output."""
   return [line.split('  ')[0] for line in md5sum_output]
+
 
 def _HasAdbPushSucceeded(command_output):
   """Returns whether adb push has succeeded from the provided output."""
@@ -178,6 +182,7 @@ def _HasAdbPushSucceeded(command_output):
     logging.critical('PUSH FAILED: ' + command_output)
     return False
   return True
+
 
 def GetLogTimestamp(log_line, year):
   """Returns the timestamp of the given |log_line| in the given year."""
@@ -210,6 +215,14 @@ class AndroidCommands(object):
     self._md5sum_path = ''
     self._external_storage = ''
     self._util_wrapper = ''
+
+  def _LogShell(self, cmd):
+    """Logs the adb shell command."""
+    if self._device:
+      device_repr = self._device[-4:]
+    else:
+      device_repr = '????'
+    logging.info('[%s]> %s', device_repr, cmd)
 
   def Adb(self):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
@@ -317,7 +330,7 @@ class AndroidCommands(object):
     """
     uninstall_command = 'uninstall %s' % package
 
-    logging.info('>>> $' + uninstall_command)
+    self._LogShell(uninstall_command)
     return self._adb.SendCommand(uninstall_command, timeout_time=60)
 
   def Install(self, package_file_path, reinstall=False):
@@ -341,7 +354,7 @@ class AndroidCommands(object):
     install_cmd.append(package_file_path)
     install_cmd = ' '.join(install_cmd)
 
-    logging.info('>>> $' + install_cmd)
+    self._LogShell(install_cmd)
     return self._adb.SendCommand(install_cmd,
                                  timeout_time=2 * 60,
                                  retry_count=0)
@@ -472,14 +485,14 @@ class AndroidCommands(object):
     Returns:
       list containing the lines of output received from running the command
     """
-    logging.info('>>> $' + command)
+    self._LogShell(command)
     if "'" in command: logging.warning(command + " contains ' quotes")
     result = self._adb.SendShellCommand(
         "'%s'" % command, timeout_time).splitlines()
     if ['error: device not found'] == result:
       raise errors.DeviceUnresponsiveError('device not found')
     if log_result:
-      logging.info('\n>>> '.join(result))
+      self._LogShell('\n'.join(result))
     return result
 
   def GetShellCommandStatusAndOutput(self, command, timeout_time=20,
@@ -697,7 +710,7 @@ class AndroidCommands(object):
     # NOTE: We can't use adb_interface.Push() because it hardcodes a timeout of
     # 60 seconds which isn't sufficient for a lot of users of this method.
     push_command = 'push %s %s' % (local_path, device_path)
-    logging.info('>>> $' + push_command)
+    self._LogShell(push_command)
     output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
     assert _HasAdbPushSucceeded(output)
 
@@ -1253,7 +1266,7 @@ class AndroidCommands(object):
       An instance of am_instrument_parser.TestResult object.
     """
     cmd = 'uiautomator runtest %s -e class %s' % (test_package, test)
-    logging.info('>>> $' + cmd)
+    self._LogShell(cmd)
     output = self._adb.SendShellCommand(cmd, timeout_time=timeout)
     # uiautomator doesn't fully conform to the instrumenation test runner
     # convention and doesn't terminate with INSTRUMENTATION_CODE.

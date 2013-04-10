@@ -6,6 +6,7 @@
 
 import os
 import logging
+import pipes
 import signal
 import subprocess
 import tempfile
@@ -67,7 +68,20 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   Returns:
     The tuple (exit code, output).
   """
-  logging.info(str(args) + ' ' + (cwd or ''))
+  if isinstance(args, basestring):
+    args_repr = args
+    if not shell:
+      raise Exception('string args must be run with shell=True')
+  elif shell:
+    raise Exception('array args must be run with shell=False')
+  else:
+    args_repr = ' '.join(map(pipes.quote, args))
+
+  s = '[host]'
+  if cwd:
+    s += ':' + cwd
+  s += '> ' + args_repr
+  logging.info(s)
   tmpout = tempfile.TemporaryFile(bufsize=0)
   tmperr = tempfile.TemporaryFile(bufsize=0)
   exit_code = _Call(args, cwd=cwd, stdout=tmpout, stderr=tmperr, shell=shell)
@@ -79,7 +93,9 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   tmpout.seek(0)
   stdout = tmpout.read()
   tmpout.close()
-  logging.info(stdout[:4096])  # Truncate output longer than 4k.
+  if len(stdout) > 4096:
+    logging.debug('Truncated output:')
+  logging.debug(stdout[:4096])
   return (exit_code, stdout)
 
 

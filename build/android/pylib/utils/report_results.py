@@ -88,10 +88,14 @@ def LogFull(results, test_type, test_package, annotation=None,
   if not results.DidRunPass():
     logging.critical('*' * 80)
     logging.critical('Detailed Logs')
-    logging.critical('%s\n%s' % ('*' * 80, results.GetLogs()))
+    logging.critical('*' * 80)
+    for line in results.GetLogs().splitlines():
+      logging.critical(line)
   logging.critical('*' * 80)
   logging.critical('Summary')
-  logging.critical('%s\n%s' % ('*' * 80, results))
+  logging.critical('*' * 80)
+  for line in results.GetLongForm().splitlines():
+    logging.critical(line)
   logging.critical('*' * 80)
 
   if os.environ.get('BUILDBOT_BUILDERNAME'):

@@ -188,8 +188,8 @@ def RunInstrumentationSuite(options, test):
   buildbot_report.PrintNamedStep('%s_instrumentation_tests' % test.name.lower())
 
   InstallApk(options, test)
-  args = ['--test-apk', test.test_apk, '--test_data', test.test_data, '-vvv',
-          '-I']
+  args = ['--test-apk', test.test_apk, '--test_data', test.test_data,
+          '--verbose', '-I']
   if options.target == 'Release':
     args.append('--release')
   if options.asan:

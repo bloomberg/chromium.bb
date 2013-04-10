@@ -143,7 +143,7 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher):
         pass_results = base_test_result.TestRunResults()
         pass_results.AddResults(result.GetPass())
         out_results.append(pass_results)
-        logging.warning('****Will retry test, try #%s.' % test.tries)
+        logging.warning('Will retry test, try #%s.' % test.tries)
         test_collection.add(_Test(test=retry, tries=test.tries))
       else:
         # All tests passed or retry limit reached. Either way, record results.
@@ -179,12 +179,12 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
   """
   try:
     index = threadsafe_counter.GetAndIncrement()
-    logging.warning('*****Creating shard %s for device %s.', index, device)
+    logging.warning('Creating shard %s for device %s.', index, device)
     runner = runner_factory(device, index)
     runner.SetUp()
     out_runners.append(runner)
   except android_commands.errors.DeviceUnresponsiveError as e:
-    logging.warning('****Failed to create shard for %s: [%s]', device, e)
+    logging.warning('Failed to create shard for %s: [%s]', device, e)
 
 
 def _RunAllTests(runners, tests, timeout=None):
@@ -198,7 +198,7 @@ def _RunAllTests(runners, tests, timeout=None):
   Returns:
     A TestRunResults object.
   """
-  logging.warning('****Running %s tests with %s test runners.' %
+  logging.warning('Running %s tests with %s test runners.' %
                   (len(tests), len(runners)))
   tests_collection = _TestCollection([_Test(t) for t in tests])
   results = []
@@ -231,7 +231,7 @@ def _CreateRunners(runner_factory, devices, timeout=None):
   Returns:
     A list of TestRunner objects.
   """
-  logging.warning('****Creating %s test runners.' % len(devices))
+  logging.warning('Creating %s test runners.' % len(devices))
   runners = []
   counter = _ThreadSafeCounter()
   threads = reraiser_thread.ReraiserThreadGroup(
@@ -284,6 +284,6 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
     try:
       _TearDownRunners(runners, setup_timeout)
     except android_commands.errors.DeviceUnresponsiveError as e:
-      logging.warning('****Device unresponsive during TearDown: [%s]', e)
+      logging.warning('Device unresponsive during TearDown: [%s]', e)
     finally:
       forwarder.Forwarder.KillHost(build_type)
