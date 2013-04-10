@@ -43,11 +43,8 @@ void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
   }
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents_);
-  // We may not have a Tab if we're running in Android WebView mode.
-  // TODO: The long term plan is to factor out the context menu code into
-  // a shared class and have WebView use a separate delegate.
-  if (tab)
-    tab->ShowContextMenu(params);
+  DCHECK(tab);
+  tab->ShowContextMenu(params);
 }
 
 namespace chrome {
