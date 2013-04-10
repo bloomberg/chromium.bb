@@ -1147,9 +1147,8 @@ TEST_F(InputMethodIBusTest, SurroundingText_NoSelectionTest) {
   selection_range_ = ui::Range(3, 3);
 
   // Set the verifier for SetSurroundingText mock call.
-  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_),
-                                      selection_range_.start(),
-                                      selection_range_.end());
+  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_), 3, 3);
+
 
   mock_ibus_input_context_client_->set_set_surrounding_text_handler(
       base::Bind(&SetSurroundingTextVerifier::Verify,
@@ -1178,9 +1177,37 @@ TEST_F(InputMethodIBusTest, SurroundingText_SelectionTest) {
   selection_range_ = ui::Range(2, 5);
 
   // Set the verifier for SetSurroundingText mock call.
-  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_),
-                                      selection_range_.start(),
-                                      selection_range_.end());
+  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_), 2, 5);
+
+  mock_ibus_input_context_client_->set_set_surrounding_text_handler(
+      base::Bind(&SetSurroundingTextVerifier::Verify,
+                 base::Unretained(&verifier)));
+  ime_->OnCaretBoundsChanged(this);
+
+  // Check the call count.
+  EXPECT_EQ(1,
+            mock_ibus_input_context_client_->set_surrounding_text_call_count());
+}
+
+TEST_F(InputMethodIBusTest, SurroundingText_PartialText) {
+  SetCreateContextSuccessHandler();
+  ime_->Init(true);
+  // Click a text input form.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+  // Start the daemon.
+  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address",
+                                                  base::Bind(&base::DoNothing));
+  mock_ibus_daemon_controller_->EmulateConnect();
+
+  // Set the TextInputClient behaviors.
+  surrounding_text_ = UTF8ToUTF16("abcdefghij");
+  text_range_ = ui::Range(5, 10);
+  selection_range_ = ui::Range(7, 9);
+
+  // Set the verifier for SetSurroundingText mock call.
+  // Here (2, 4) is selection range in expected surrounding text coordinates.
+  SetSurroundingTextVerifier verifier("fghij", 2, 4);
 
   mock_ibus_input_context_client_->set_set_surrounding_text_handler(
       base::Bind(&SetSurroundingTextVerifier::Verify,

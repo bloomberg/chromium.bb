@@ -267,13 +267,13 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   previous_selection_range_ = selection_range;
   previous_surrounding_text_ = surrounding_text;
 
-  // In the original meaning of SetSurroundingText is not just selection text,
-  // but currently there are no way to retrieve surrounding text in
-  // TextInputClient.
+  // Here SetSurroundingText accepts relative position of |surrounding_text|, so
+  // we have to convert |selection_range| from node coordinates to
+  // |surrounding_text| coordinates.
   GetInputContextClient()->SetSurroundingText(
       UTF16ToUTF8(surrounding_text),
-      selection_range.start(), /* cursor position. */
-      selection_range.end()); /* selection anchor position. */
+      selection_range.start() - text_range.start(),
+      selection_range.end() - text_range.start());
 }
 
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {
