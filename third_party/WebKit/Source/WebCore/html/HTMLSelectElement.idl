@@ -41,13 +41,9 @@
     Node namedItem([Optional=DefaultIsUndefined] DOMString name);
      [RaisesException] void add([Optional=DefaultIsUndefined] HTMLElement element,
                             [Optional=DefaultIsUndefined] HTMLElement before);
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // In JavaScript, we support both option index and option object parameters.
     // As of this writing this cannot be auto-generated.
     [Custom] void remove(/* indexOrOption */);
-#else
-    void remove(long index);
-#endif
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;
     [TreatNullAs=NullString] attribute DOMString value;

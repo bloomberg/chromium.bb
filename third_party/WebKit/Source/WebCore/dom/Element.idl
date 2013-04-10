@@ -92,9 +92,7 @@
     [Reflect=class, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [PerWorldBindings] readonly attribute DOMStringMap dataset;
-#endif
 
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);
@@ -111,7 +109,7 @@
     [PerWorldBindings] readonly attribute unsigned long childElementCount;
 
     // ShadowAware API
-#if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM && defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
+#if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM
     [Reflect=pseudo, EnabledAtRuntime=shadowDOM, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
     [EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
     [EnabledAtRuntime=shadowDOM, ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
@@ -121,11 +119,9 @@
     // DOM 4
     [RaisesException] void remove();
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // CSSOM View Module API
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
-#endif
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;

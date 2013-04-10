@@ -57,9 +57,7 @@
     void removeAllRanges();
     void addRange([Optional=DefaultIsUndefined] Range range);
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable] DOMString toString();
-#endif
 
     // WebKit extensions
     readonly attribute Node baseNode;

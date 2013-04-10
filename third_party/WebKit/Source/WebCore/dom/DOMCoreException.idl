@@ -36,10 +36,8 @@
     readonly attribute DOMString        name;
     readonly attribute DOMString        message;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // Override in a Mozilla compatible format
     [NotEnumerable] DOMString toString();
-#endif
 
     // ExceptionCode
     const unsigned short      INDEX_SIZE_ERR                 = 1;

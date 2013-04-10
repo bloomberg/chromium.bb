@@ -33,9 +33,7 @@
 
     [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString innerHTML;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [RaisesException] Node cloneNode([Optional=DefaultIsUndefined] boolean deep);
-#endif
     DOMSelection getSelection();
     Element getElementById([Optional=DefaultIsUndefined] DOMString elementId);
     NodeList getElementsByClassName([Optional=DefaultIsUndefined] DOMString className);

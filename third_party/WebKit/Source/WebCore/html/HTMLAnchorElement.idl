@@ -44,8 +44,6 @@ interface HTMLAnchorElement : HTMLElement {
 
     readonly attribute DOMString text;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable] DOMString toString();
-#endif
 };
 

@@ -29,10 +29,6 @@
     attribute boolean selected;
     attribute DOMString value;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [SetterRaisesException] attribute DOMString text;
-#else
-    readonly attribute DOMString text;
-#endif
     readonly attribute long index;
 };

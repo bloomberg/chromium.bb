@@ -61,12 +61,10 @@
 
     [RaisesException] void detach();
 
-#if defined(LANGUAGE_JAVASCRIPT) || LANGUAGE_JAVASCRIPT
     // CSSOM View Module API extensions
 
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
-#endif
 
     // extensions
 
@@ -91,9 +89,5 @@
                            [Optional=DefaultIsUndefined] long offset);
 
     [RaisesException] void expand([Optional=DefaultIsUndefined] DOMString unit);
-
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    readonly attribute DOMString text;
-#endif
 };
 

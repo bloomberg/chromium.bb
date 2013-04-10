@@ -31,7 +31,6 @@
     [InitializedByEventConstructor] readonly attribute DOMString origin;
     [InitializedByEventConstructor] readonly attribute DOMString lastEventId;
     [InitializedByEventConstructor] readonly attribute DOMWindow source;
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [InitializedByEventConstructor, CachedAttribute, CustomGetter] readonly attribute any data;
     [InitializedByEventConstructor, CustomGetter] readonly attribute Array ports;
 
@@ -52,23 +51,5 @@
                                          [Optional=DefaultIsUndefined] DOMString lastEventIdArg,
                                          [Optional=DefaultIsUndefined] DOMWindow sourceArg,
                                          [Optional=DefaultIsUndefined] Array transferables);
-#else
-    // Code generator for ObjC bindings does not support custom bindings, thus there is no good way to
-    // return a variant value. As workaround, expose the data attribute as SerializedScriptValue.
-    readonly attribute SerializedScriptValue data;
-
-    // There's no good way to expose an array via the ObjC bindings, so for now just expose a single port.
-    readonly attribute MessagePort messagePort;
-
-    void initMessageEvent([Optional=DefaultIsUndefined] DOMString typeArg, 
-                          [Optional=DefaultIsUndefined] boolean canBubbleArg, 
-                          [Optional=DefaultIsUndefined] boolean cancelableArg, 
-                          [Optional=DefaultIsUndefined] SerializedScriptValue dataArg, 
-                          [Optional=DefaultIsUndefined] DOMString originArg, 
-                          [Optional=DefaultIsUndefined] DOMString lastEventIdArg, 
-                          [Optional=DefaultIsUndefined] DOMWindow sourceArg, 
-                          [Optional=DefaultIsUndefined] MessagePort messagePort);
-#endif
-
 };
 

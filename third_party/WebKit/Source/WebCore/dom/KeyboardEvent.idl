@@ -23,14 +23,6 @@
     ConstructorTemplate=Event
 ] interface KeyboardEvent : UIEvent {
 
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    // KeyLocationCode
-    const unsigned long       KEY_LOCATION_STANDARD      = 0x00;
-    const unsigned long       KEY_LOCATION_LEFT          = 0x01;
-    const unsigned long       KEY_LOCATION_RIGHT         = 0x02;
-    const unsigned long       KEY_LOCATION_NUMPAD        = 0x03;
-#endif
-
     [InitializedByEventConstructor] readonly attribute DOMString        keyIdentifier;
     [InitializedByEventConstructor] readonly attribute unsigned long    keyLocation;
     [InitializedByEventConstructor] readonly attribute boolean          ctrlKey;
@@ -38,10 +30,6 @@
     [InitializedByEventConstructor] readonly attribute boolean          altKey;
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
     readonly attribute boolean          altGraphKey;
-
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    boolean getModifierState([Optional=DefaultIsUndefined] DOMString keyIdentifierArg);
-#endif
 
     // FIXME: this does not match the version in the DOM spec.
     void initKeyboardEvent([Optional=DefaultIsUndefined] DOMString type, 
@@ -55,23 +43,5 @@
                            [Optional=DefaultIsUndefined] boolean shiftKey,
                            [Optional=DefaultIsUndefined] boolean metaKey,
                            [Optional=DefaultIsUndefined] boolean altGraphKey);
-
-    // WebKit Extensions
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    readonly attribute long             keyCode;
-    readonly attribute long             charCode;
-    
-    void initKeyboardEvent([Optional=DefaultIsUndefined] DOMString type, 
-                           [Optional=DefaultIsUndefined] boolean canBubble, 
-                           [Optional=DefaultIsUndefined] boolean cancelable, 
-                           [Optional=DefaultIsUndefined] DOMWindow view, 
-                           [Optional=DefaultIsUndefined] DOMString keyIdentifier,
-                           [Optional=DefaultIsUndefined] unsigned long keyLocation,
-                           [Optional=DefaultIsUndefined] boolean ctrlKey,
-                           [Optional=DefaultIsUndefined] boolean altKey,
-                           [Optional=DefaultIsUndefined] boolean shiftKey,
-                           [Optional=DefaultIsUndefined] boolean metaKey);
-#endif
-
 };
 

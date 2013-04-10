@@ -35,10 +35,8 @@
     readonly attribute DOMString        name;
     readonly attribute DOMString        message;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // Override in a Mozilla compatible format
     [NotEnumerable] DOMString toString();
-#endif
 
     // XMLHttpRequestExceptionCode
     const unsigned short NETWORK_ERR = 101;

@@ -73,8 +73,6 @@
              attribute boolean          returnValue;
              attribute boolean          cancelBubble;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [Custom] readonly attribute Clipboard        clipboardData;
-#endif
 };
 

@@ -113,10 +113,8 @@
 
     attribute DOMString status;
     attribute DOMString defaultStatus;
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // This attribute is an alias of defaultStatus and is necessary for legacy uses.
     attribute DOMString defaultstatus;
-#endif
 
     // Self referential attributes
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow self;
@@ -141,10 +139,8 @@
                                                               [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
 
     // WebKit extensions
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     CSSRuleList getMatchedCSSRules([Optional=DefaultIsUndefined] Element element,
                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Optional=DefaultIsUndefined] DOMString pseudoElement);
-#endif
 
     [Replaceable] readonly attribute double devicePixelRatio;
     
@@ -168,12 +164,7 @@
     [Replaceable] readonly attribute Console console;
 
     // cross-document messaging
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, DOMString targetOrigin, [Optional] Array messagePorts);
-#else
-    // There's no good way to expose an array via the ObjC bindings, so for now just allow passing in a single port.
-    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, [Optional] MessagePort messagePort, DOMString targetOrigin);
-#endif
 
     [Replaceable] readonly attribute Performance performance;
 
@@ -299,7 +290,6 @@
     [Custom] void captureEvents(/*in long eventFlags*/);
     [Custom] void releaseEvents(/*in long eventFlags*/);
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     // Global constructors
     attribute StyleSheetConstructor StyleSheet;
     attribute CSSStyleSheetConstructor CSSStyleSheet;
@@ -774,8 +764,6 @@
     [EnabledAtRuntime=mediaSource] attribute MediaSourceConstructor WebKitMediaSource;
     [EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
     [EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
-
-#endif // defined(LANGUAGE_JAVASCRIPT)
 
 #if defined(V8_BINDING) && V8_BINDING
     // window.toString() requires special handling in V8

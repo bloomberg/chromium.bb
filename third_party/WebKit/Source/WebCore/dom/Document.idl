@@ -120,11 +120,7 @@
 
              [TreatNullAs=NullString] attribute DOMString title;
     readonly attribute DOMString referrer;
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString domain;
-#else
-    readonly attribute DOMString domain;
-#endif
     readonly attribute DOMString URL;
 
              [TreatNullAs=NullString, GetterRaisesException, SetterRaisesException] attribute DOMString cookie;
@@ -145,9 +141,7 @@
     NodeList getItems([TreatNullAs=NullString, TreatUndefinedAs=NullString, Optional=DefaultIsUndefined] DOMString typeNames);
 #endif
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
-             [Custom] attribute Location location;
-#endif
+    [Custom] attribute Location location;
 
     // IE extensions
 
@@ -161,19 +155,13 @@
                                            [Optional=DefaultIsUndefined] long y);
 
     // Mozilla extensions
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     DOMSelection       getSelection();
-#endif
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString characterSet;
 
     // WebKit extensions
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString preferredStylesheetSet;
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
-
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    CSSStyleDeclaration createCSSStyleDeclaration();
-#endif
 
     CanvasRenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
@@ -202,9 +190,7 @@
 
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [Conditional=FONT_LOAD_EVENTS, EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
-#endif
 
     // Event handler DOM attributes
     [NotEnumerable] attribute EventListener onabort;

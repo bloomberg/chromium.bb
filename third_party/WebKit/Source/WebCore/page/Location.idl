@@ -53,9 +53,7 @@
 
     readonly attribute DOMStringList ancestorOrigins;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable, Custom, Unforgeable, ReadOnly, ImplementedAs=toStringFunction] DOMString toString();
-#endif
 #if defined(V8_BINDING) && V8_BINDING
     [NotEnumerable, Custom, Unforgeable, ReadOnly] any valueOf();
 #endif

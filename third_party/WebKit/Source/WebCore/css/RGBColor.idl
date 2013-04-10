@@ -24,10 +24,5 @@
     readonly attribute CSSPrimitiveValue  red;
     readonly attribute CSSPrimitiveValue  green;
     readonly attribute CSSPrimitiveValue  blue;
-
-    // WebKit extensions
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    readonly attribute CSSPrimitiveValue  alpha;
-#endif
 };
 

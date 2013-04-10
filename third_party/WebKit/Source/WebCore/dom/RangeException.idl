@@ -26,9 +26,7 @@
     readonly attribute DOMString        name;
     readonly attribute DOMString        message;
 
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable] DOMString toString();
-#endif
 
     // DOM Level 2
 

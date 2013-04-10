@@ -31,7 +31,6 @@
 ] interface MessagePort {
 // We need to have something as an ObjC binding, because MessagePort is used in MessageEvent, which already has one,
 // but we don't want to actually expose the API while it is in flux.
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [Custom, RaisesException] void postMessage(any message, [Optional] Array messagePorts);
 
     void start();
@@ -48,6 +47,5 @@
                              EventListener listener, 
                              [Optional] boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
-#endif
 };
 

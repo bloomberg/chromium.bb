@@ -55,11 +55,7 @@
     [TreatNullAs=NullString] attribute DOMString type; // readonly dropped as part of DOM level 2
     [TreatNullAs=NullString] attribute DOMString defaultValue;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
-#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [TreatNullAs=NullString, SetterRaisesException] attribute DOMString value;
-#else
-    [TreatNullAs=NullString] attribute DOMString value;
-#endif
     [SetterRaisesException] attribute Date valueAsDate;
     [SetterRaisesException] attribute double valueAsNumber;
 
@@ -98,10 +94,6 @@
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitSpeech;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitGrammar;
     [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventListener onwebkitspeechchange;
-
-#if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
-    void setValueForUser([TreatNullAs=NullString] DOMString value);
-#endif
 
     // See http://www.w3.org/TR/html-media-capture/
     [Conditional=MEDIA_CAPTURE] attribute DOMString capture;
