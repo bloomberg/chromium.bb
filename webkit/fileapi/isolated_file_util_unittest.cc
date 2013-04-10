@@ -370,8 +370,9 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
                      base::FileUtilProxy::Entry> EntryMap;
     EntryMap expected_entry_map;
 
+    base::FilePath dir_path = GetTestCasePlatformPath(test_case.path);
     FileEnumerator file_enum(
-        GetTestCasePlatformPath(test_case.path), false /* not recursive */,
+        dir_path, false /* not recursive */,
         FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
     base::FilePath current;
     while (!(current = file_enum.Next()).empty()) {
@@ -383,6 +384,16 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
       entry.size = FileEnumerator::GetFilesize(file_info);
       entry.last_modified_time = FileEnumerator::GetLastModifiedTime(file_info);
       expected_entry_map[entry.name] = entry;
+
+#if defined(OS_POSIX)
+      // Creates a symlink for each file/directory.
+      // They should be ignored by ReadDirectory, so we don't add them
+      // to expected_entry_map.
+      file_util::CreateSymbolicLink(
+          current,
+          dir_path.Append(current.BaseName().AddExtension(
+              FILE_PATH_LITERAL("link"))));
+#endif
     }
 
     // Perform ReadDirectory in the isolated filesystem.

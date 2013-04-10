@@ -53,57 +53,6 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   base::PlatformFileInfo file_info_;
 };
 
-// Recursively enumerate each path from a given paths set.
-class RecursiveSetFileEnumerator
-    : public FileSystemFileUtil::AbstractFileEnumerator {
- public:
-  explicit RecursiveSetFileEnumerator(const std::vector<FileInfo>& files)
-      : files_(files) {
-    file_iter_ = files_.begin();
-    current_enumerator_.reset(new SetFileEnumerator(files));
-  }
-  virtual ~RecursiveSetFileEnumerator() {}
-
-  // AbstractFileEnumerator overrides.
-  virtual base::FilePath Next() OVERRIDE;
-  virtual int64 Size() OVERRIDE {
-    DCHECK(current_enumerator_.get());
-    return current_enumerator_->Size();
-  }
-  virtual bool IsDirectory() OVERRIDE {
-    DCHECK(current_enumerator_.get());
-    return current_enumerator_->IsDirectory();
-  }
-  virtual base::Time LastModifiedTime() OVERRIDE {
-    DCHECK(current_enumerator_.get());
-    return current_enumerator_->LastModifiedTime();
-  }
-
- private:
-  std::vector<FileInfo> files_;
-  std::vector<FileInfo>::iterator file_iter_;
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
-};
-
-base::FilePath RecursiveSetFileEnumerator::Next() {
-  if (current_enumerator_.get()) {
-    base::FilePath path = current_enumerator_->Next();
-    if (!path.empty())
-      return path;
-  }
-
-  // We reached the end.
-  if (file_iter_ == files_.end())
-    return base::FilePath();
-
-  // Enumerates subdirectories of the next path.
-  FileInfo& next_file = *file_iter_++;
-  current_enumerator_ = NativeFileUtil::CreateFileEnumerator(
-      next_file.path, true /* recursive */);
-  DCHECK(current_enumerator_.get());
-  return current_enumerator_->Next();
-}
-
 }  // namespace
 
 //-------------------------------------------------------------------------
@@ -163,20 +112,20 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
         FileSystemOperationContext* context,
         const FileSystemURL& root,
         bool recursive) {
+  if (recursive) {
+    NOTREACHED() << "Recursive enumeration not supported.";
+    return scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>(
+        new EmptyFileEnumerator);
+  }
   DCHECK(root.is_valid());
   if (!root.path().empty())
-    return NativeFileUtil::CreateFileEnumerator(root.path(), recursive);
+    return LocalFileUtil::CreateFileEnumerator(context, root, recursive);
 
   // Root path case.
   std::vector<FileInfo> toplevels;
   IsolatedContext::GetInstance()->GetDraggedFileInfo(
       root.filesystem_id(), &toplevels);
-  if (!recursive) {
-    return make_scoped_ptr(new SetFileEnumerator(toplevels))
-        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
-  }
-  return make_scoped_ptr(new RecursiveSetFileEnumerator(toplevels))
-      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  return scoped_ptr<AbstractFileEnumerator>(new SetFileEnumerator(toplevels));
 }
 
 }  // namespace fileapi
