@@ -30,6 +30,7 @@
 #include "CachedImage.h"
 #include "CheckedInt.h"
 #include "DOMWindow.h"
+#include "DrawingBuffer.h"
 #include "EXTDrawBuffers.h"
 #include "EXTTextureFilterAnisotropic.h"
 #include "ExceptionCode.h"

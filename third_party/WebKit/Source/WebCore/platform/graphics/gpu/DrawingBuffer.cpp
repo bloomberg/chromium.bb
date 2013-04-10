@@ -43,7 +43,6 @@
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebExternalTextureLayer.h>
-#include <public/WebExternalTextureLayerClient.h>
 #include <public/WebGraphicsContext3D.h>
 
 using namespace std;
@@ -72,59 +71,6 @@ static unsigned generateColorTexture(GraphicsContext3D* context, const IntSize& 
 
     return offscreenColorTexture;
 }
-
-class DrawingBufferPrivate : public WebKit::WebExternalTextureLayerClient {
-    WTF_MAKE_NONCOPYABLE(DrawingBufferPrivate);
-public:
-    explicit DrawingBufferPrivate(DrawingBuffer* drawingBuffer)
-        : m_drawingBuffer(drawingBuffer)
-        , m_layer(adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this)))
-    {
-
-        GraphicsContext3D::Attributes attributes = m_drawingBuffer->graphicsContext3D()->getContextAttributes();
-        m_layer->setOpaque(!attributes.alpha);
-        m_layer->setPremultipliedAlpha(attributes.premultipliedAlpha);
-        GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
-    }
-
-    virtual ~DrawingBufferPrivate()
-    {
-        GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
-    }
-
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater& updater) OVERRIDE
-    {
-        m_drawingBuffer->prepareBackBuffer();
-
-        m_drawingBuffer->graphicsContext3D()->flush();
-        m_drawingBuffer->graphicsContext3D()->markLayerComposited();
-
-        unsigned textureId = m_drawingBuffer->frontColorBuffer();
-        if (m_drawingBuffer->requiresCopyFromBackToFrontBuffer())
-            updater.appendCopy(m_drawingBuffer->colorBuffer(), textureId, m_drawingBuffer->size());
-
-        return textureId;
-    }
-
-    virtual WebKit::WebGraphicsContext3D* context() OVERRIDE
-    {
-        return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_drawingBuffer->graphicsContext3D());
-    }
-
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE { return false; }
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE { }
-
-    void clearTextureId()
-    {
-        m_layer->setTextureId(0);
-    }
-
-    WebKit::WebLayer* layer() { return m_layer->layer(); }
-
-private:
-    DrawingBuffer* m_drawingBuffer;
-    OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
-};
 
 DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
                              const IntSize& size,
@@ -167,6 +113,28 @@ DrawingBuffer::~DrawingBuffer()
         return;
 
     clear();
+
+    if (m_layer)
+        GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
+}
+
+unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
+{
+    prepareBackBuffer();
+
+    graphicsContext3D()->flush();
+    graphicsContext3D()->markLayerComposited();
+
+    unsigned textureId = frontColorBuffer();
+    if (requiresCopyFromBackToFrontBuffer())
+        updater.appendCopy(colorBuffer(), textureId, size());
+
+    return textureId;
+}
+
+WebKit::WebGraphicsContext3D* DrawingBuffer::context()
+{
+    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(graphicsContext3D());
 }
 
 void DrawingBuffer::initialize(const IntSize& size)
@@ -231,10 +199,16 @@ Platform3DObject DrawingBuffer::framebuffer() const
 
 PlatformLayer* DrawingBuffer::platformLayer()
 {
-    if (!m_private)
-        m_private = adoptPtr(new DrawingBufferPrivate(this));
+    if (!m_layer){
+        m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
-    return m_private->layer();
+        GraphicsContext3D::Attributes attributes = graphicsContext3D()->getContextAttributes();
+        m_layer->setOpaque(!attributes.alpha);
+        m_layer->setPremultipliedAlpha(attributes.premultipliedAlpha);
+        GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
+    }
+
+    return m_layer->layer();
 }
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
@@ -261,8 +235,8 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 
 void DrawingBuffer::clearPlatformLayer()
 {
-    if (m_private)
-        m_private->clearTextureId();
+    if (m_layer)
+        m_layer->setTextureId(0);
 
     m_context->flush();
 }

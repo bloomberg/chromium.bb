@@ -36,23 +36,23 @@
 #include "IntSize.h"
 #include "PlatformLayer.h"
 
+#include <public/WebExternalTextureLayerClient.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#endif
+
+namespace WebKit {
+class WebExternalTextureLayer;
+class WebGraphicsContext3D;
+}
 
 namespace WebCore {
 class GraphicsContext3D;
 class ImageData;
-#if PLATFORM(CHROMIUM)
-class DrawingBufferPrivate;
-#endif
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a PlatformLayer for compositing.
-class DrawingBuffer : public RefCounted<DrawingBuffer> {
+class DrawingBuffer : public RefCounted<DrawingBuffer>, public WebKit::WebExternalTextureLayerClient  {
 public:
     enum PreserveDrawingBuffer {
         Preserve,
@@ -132,6 +132,12 @@ public:
 
     GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
 
+    // WebExternalTextureLayerClient implementation.
+    virtual unsigned prepareTexture(WebKit::WebTextureUpdater& updater) OVERRIDE;
+    virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE { return false; }
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE { }
+
 private:
     DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
                   bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, AlphaRequirement);
@@ -170,7 +176,7 @@ private:
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
 
-    OwnPtr<DrawingBufferPrivate> m_private;
+    OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
 };
 
 } // namespace WebCore

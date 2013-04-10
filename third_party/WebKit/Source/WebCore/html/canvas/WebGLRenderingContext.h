@@ -28,7 +28,6 @@
 
 #include "ActiveDOMObject.h"
 #include "CanvasRenderingContext.h"
-#include "DrawingBuffer.h"
 #include "GraphicsContext3D.h"
 #include "ImageBuffer.h"
 #include "Timer.h"
@@ -42,6 +41,7 @@
 
 namespace WebCore {
 
+class DrawingBuffer;
 class EXTDrawBuffers;
 class EXTTextureFilterAnisotropic;
 class HTMLImageElement;
