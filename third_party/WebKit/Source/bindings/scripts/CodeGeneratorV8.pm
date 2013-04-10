@@ -168,7 +168,7 @@ sub NeedsCustomOpaqueRootForGC
 sub GetGenerateIsReachable
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"V8GenerateIsReachable"} || ""
+    return $interface->extendedAttributes->{"GenerateIsReachable"} || ""
 }
 
 sub GetCustomIsReachable
@@ -990,7 +990,7 @@ END
 END
             }
         }
-    } elsif ($attrExt->{"V8OnProto"} || $attrExt->{"Unforgeable"}) {
+    } elsif ($attrExt->{"OnProto"} || $attrExt->{"Unforgeable"}) {
         if ($interfaceName eq "DOMWindow") {
             push(@implContentInternals, <<END);
     v8::Handle<v8::Object> holder = info.Holder();
@@ -1354,7 +1354,7 @@ END
             push(@implContentInternals, "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n");
             push(@implContentInternals, "    $svgWrappedNativeType* imp = &impInstance;\n");
         }
-    } elsif ($attrExt->{"V8OnProto"}) {
+    } elsif ($attrExt->{"OnProto"}) {
         push(@implContentInternals, <<END);
     ${interfaceName}* imp = ${v8InterfaceName}::toNative(info.Holder());
 END
@@ -2486,7 +2486,7 @@ sub GenerateSingleBatchedAttribute
     }
 
     # An accessor can be installed on the proto
-    if ($attrExt->{"V8OnProto"}) {
+    if ($attrExt->{"OnProto"}) {
         $on_proto = "1 /* on proto */";
     }
 
@@ -2884,7 +2884,7 @@ END
         }
 
         if ($attrType eq "EventListener" && $interfaceName eq "DOMWindow") {
-            $attrExt->{"V8OnProto"} = 1;
+            $attrExt->{"OnProto"} = 1;
         }
 
         if ($attrType eq "SerializedScriptValue") {
