@@ -13,7 +13,6 @@ install and enable KVM, if virtualization has been enabled in the BIOS.
 import logging
 import os
 import shutil
-import subprocess
 import sys
 
 from pylib import cmd_helper
@@ -62,6 +61,7 @@ def CheckKVM():
   try:
     return not cmd_helper.RunCmd(['kvm-ok'])
   except OSError:
+    logging.info('kvm-ok not installed')
     return False
 
 
@@ -132,6 +132,8 @@ def main(argv):
     logging.info('android_tools directory already exists (not downloading).')
   else:
     GetSDK()
+
+  logging.info('Emulator deps for ARM emulator complete.')
 
   if CheckX86Image():
     logging.info('system-images directory already exists.')
