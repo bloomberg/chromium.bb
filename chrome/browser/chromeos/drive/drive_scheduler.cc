@@ -153,6 +153,81 @@ void DriveScheduler::GetResourceList(
   StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_LIST));
 }
 
+void DriveScheduler::GetAllResourceList(
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_ALL_RESOURCE_LIST));
+  new_job->get_resource_list_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_GET_ALL_RESOURCE_LIST));
+}
+
+void DriveScheduler::GetResourceListInDirectory(
+    const std::string& directory_resource_id,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_GET_RESOURCE_LIST_IN_DIRECTORY));
+  new_job->directory_resource_id = directory_resource_id;
+  new_job->get_resource_list_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_LIST_IN_DIRECTORY));
+}
+
+void DriveScheduler::Search(
+    const std::string& search_query,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_SEARCH));
+  new_job->search_query = search_query;
+  new_job->get_resource_list_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_SEARCH));
+}
+
+void DriveScheduler::GetChangeList(
+    int64 start_changestamp,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_CHANGE_LIST));
+  new_job->start_changestamp = start_changestamp;
+  new_job->get_resource_list_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_GET_CHANGE_LIST));
+}
+
+void DriveScheduler::ContinueGetResourceList(
+    const GURL& feed_url,
+    const google_apis::GetResourceListCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_CONTINUE_GET_RESOURCE_LIST));
+  new_job->feed_url = feed_url;
+  new_job->get_resource_list_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_CONTINUE_GET_RESOURCE_LIST));
+}
+
 void DriveScheduler::GetResourceEntry(
     const std::string& resource_id,
     const DriveClientContext& context,
@@ -415,6 +490,50 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           entry->start_changestamp,
           entry->search_query,
           entry->directory_resource_id,
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
+    case TYPE_GET_ALL_RESOURCE_LIST: {
+      drive_service_->GetAllResourceList(
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
+    case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY: {
+      drive_service_->GetResourceListInDirectory(
+          entry->directory_resource_id,
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
+    case TYPE_SEARCH: {
+      drive_service_->Search(
+          entry->search_query,
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
+    case TYPE_GET_CHANGE_LIST: {
+      drive_service_->GetChangeList(
+          entry->start_changestamp,
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
+    case TYPE_CONTINUE_GET_RESOURCE_LIST: {
+      drive_service_->ContinueGetResourceList(
+          entry->feed_url,
           base::Bind(&DriveScheduler::OnGetResourceListJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)));
@@ -797,6 +916,11 @@ DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
     case TYPE_GET_ACCOUNT_METADATA:
     case TYPE_GET_APP_LIST:
     case TYPE_GET_RESOURCE_LIST:
+    case TYPE_GET_ALL_RESOURCE_LIST:
+    case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY:
+    case TYPE_SEARCH:
+    case TYPE_GET_CHANGE_LIST:
+    case TYPE_CONTINUE_GET_RESOURCE_LIST:
     case TYPE_GET_RESOURCE_ENTRY:
     case TYPE_DELETE_RESOURCE:
     case TYPE_COPY_HOSTED_DOCUMENT:

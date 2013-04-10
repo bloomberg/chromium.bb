@@ -162,7 +162,6 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   ASSERT_TRUE(account_metadata);
 }
 
-
 TEST_F(DriveSchedulerTest, GetResourceList) {
   ConnectToWifi();
 
@@ -174,6 +173,118 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
       0,
       std::string(),
       std::string(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+}
+
+TEST_F(DriveSchedulerTest, GetAllResourceList) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceList> resource_list;
+
+  scheduler_->GetAllResourceList(
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+}
+
+TEST_F(DriveSchedulerTest, GetResourceListInDirectory) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceList> resource_list;
+
+  scheduler_->GetResourceListInDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+}
+
+TEST_F(DriveSchedulerTest, Search) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceList> resource_list;
+
+  scheduler_->Search(
+      "File",  // search query
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+}
+
+TEST_F(DriveSchedulerTest, GetChangeList) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+
+  // Create a new directory.
+  // The loaded (initial) changestamp is 654321. Thus, by this operation,
+  // it should become 654322.
+  {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    fake_drive_service_->AddNewDirectory(
+        fake_drive_service_->GetRootResourceId(),
+        "new directory",
+        google_apis::test_util::CreateCopyResultCallback(
+            &error, &resource_entry));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  }
+
+  error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceList> resource_list;
+  scheduler_->GetChangeList(
+      654321 + 1,  // start_changestamp
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+}
+
+TEST_F(DriveSchedulerTest, ContinueGetResourceList) {
+  ConnectToWifi();
+  fake_drive_service_->set_default_max_results(2);
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceList> resource_list;
+
+  scheduler_->GetAllResourceList(
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &resource_list));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+
+  const google_apis::Link* next_link =
+      resource_list->GetLinkByType(google_apis::Link::LINK_NEXT);
+  ASSERT_TRUE(next_link);
+  // Keep the next url before releasing the |resource_list|.
+  GURL next_url(next_link->href());
+
+  error = google_apis::GDATA_OTHER_ERROR;
+  resource_list.reset();
+
+  scheduler_->ContinueGetResourceList(
+      next_url,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
   google_apis::test_util::RunBlockingPoolTask();

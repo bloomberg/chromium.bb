@@ -32,6 +32,11 @@ class DriveScheduler
     TYPE_GET_ACCOUNT_METADATA,
     TYPE_GET_APP_LIST,
     TYPE_GET_RESOURCE_LIST,
+    TYPE_GET_ALL_RESOURCE_LIST,
+    TYPE_GET_RESOURCE_LIST_IN_DIRECTORY,
+    TYPE_SEARCH,
+    TYPE_GET_CHANGE_LIST,
+    TYPE_CONTINUE_GET_RESOURCE_LIST,
     TYPE_GET_RESOURCE_ENTRY,
     TYPE_DELETE_RESOURCE,
     TYPE_COPY_HOSTED_DOCUMENT,
@@ -107,6 +112,32 @@ class DriveScheduler
                        const std::string& search_query,
                        const std::string& directory_resource_id,
                        const google_apis::GetResourceListCallback& callback);
+
+  // Adds a GetAllResourceList operation to the queue.
+  // |callback| must not be null.
+  void GetAllResourceList(const google_apis::GetResourceListCallback& callback);
+
+  // Adds a GetResourceListInDirectory operation to the queue.
+  // |callback| must not be null.
+  void GetResourceListInDirectory(
+      const std::string& directory_resource_id,
+      const google_apis::GetResourceListCallback& callback);
+
+  // Adds a Search operation to the queue.
+  // |callback| must not be null.
+  void Search(const std::string& search_query,
+              const google_apis::GetResourceListCallback& callback);
+
+  // Adds a GetChangeList operation to the queue.
+  // |callback| must not be null.
+  void GetChangeList(int64 start_changestamp,
+                     const google_apis::GetResourceListCallback& callback);
+
+  // Adds ContinueGetResourceList operation to the queue.
+  // |callback| must not be null.
+  void ContinueGetResourceList(
+      const GURL& feed_url,
+      const google_apis::GetResourceListCallback& callback);
 
   // Adds a GetResourceEntry operation to the queue.
   void GetResourceEntry(const std::string& resource_id,
@@ -217,13 +248,30 @@ class DriveScheduler
     base::FilePath virtual_path;
     base::FilePath local_cache_path;
 
-    // Parameters for GetResourceList().
+    // Parameter to get change list.
     // Used by:
     //   TYPE_GET_RESOURCE_LIST
-    GURL feed_url;
+    //   TYPE_GET_CHANGE_LIST
     int64 start_changestamp;
-    std::string search_query;
+
+    // Parameter to get a resource list in a particular directory.
+    // Used by:
+    //   TYPE_GET_RESOURCE_LIST
+    //   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY
     std::string directory_resource_id;
+
+    // Parameter to search the resource list
+    // Used by:
+    //   TYPE_GET_RESOURCE_LIST
+    //   TYPE_SEARCH
+    std::string search_query;
+
+    // Parameter to get remaining results of an operation via
+    // GetResourceListCallback.
+    // Used by:
+    //   TYPE_GET_RESOURCE_LIST
+    //   TYPE_CONTINUE_GET_RESOURCE_LIST
+    GURL feed_url;
 
     // Parameter for copy or rename.
     // Used by:
