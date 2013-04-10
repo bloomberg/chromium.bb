@@ -185,17 +185,15 @@
       <menuitem command="#newwindow"></menuitem>
       <menuitem command="#newfolder"></menuitem>
       <menuitem command="#change-default-app"></menuitem>
-      <hr>
+      <hr id="drive-separator">
       <menuitem id="drive-sync-settings"
                 i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id="drive-hosted-settings"
                 i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
-      <hr required_attr="ctrl-pressing" required_drive>
-      <menuitem required_attr="ctrl-pressing" required_drive
-                command="#drive-clear-local-cache"></menuitem>
-      <menuitem required_attr="ctrl-pressing" required_drive
-                command="#drive-reload"></menuitem>
-      <hr required_drive>
+      <hr command="#drive-clear-local-cache">
+      <menuitem command="#drive-clear-local-cache"></menuitem>
+      <menuitem command="#drive-reload"></menuitem>
+      <hr>
       <div id="volume-space-info" disabled>
         <span id="volume-space-info-label"></span>
         <div><div id="volume-space-info-bar"></div></div>

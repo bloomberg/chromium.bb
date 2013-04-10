@@ -1687,14 +1687,6 @@ body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   display: none;
 }
 
-body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
-  display: none;
-}
-
-body:not([drive]) [required_drive] {
-  display: none;
-}
-
 #gear-button::before {
   background-image: url('../images/files/ui/settings.svg');
   background-position: 20px center;

@@ -63,6 +63,7 @@ function FileManager(dialogDom) {
        DialogType.FULL_PAGE]);
 
   this.selectionHandler_ = null;
+  this.ctrlKeyPressed_ = false;
 
   this.metadataCache_ = MetadataCache.createFull();
   this.volumeManager_ = VolumeManager.getInstance();
@@ -552,6 +553,9 @@ DialogType.isModal = function(type) {
         this.refreshRemainingSpace_.bind(this,
                                          false /* Without loading caption. */));
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
+
+    this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
+      'menuitem, hr';
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -1632,6 +1636,13 @@ DialogType.isModal = function(type) {
   };
 
   /**
+   * @return {boolean} True if the ctrl key is pressed now.
+   */
+  FileManager.prototype.isCtrlKeyPressed = function() {
+    return this.ctrlKeyPressed_;
+  };
+
+  /**
    * @return {boolean} True if the "Available offline" column should be shown in
    *     the table layout.
    */
@@ -2050,6 +2061,8 @@ DialogType.isModal = function(type) {
   FileManager.prototype.updateGearMenu_ = function() {
     this.syncButton.hidden = !this.isOnDrive();
     this.hostedButton.hidden = !this.isOnDrive();
+    this.document_.getElementById('drive-separator').hidden =
+        !this.isOnDrive();
 
     // If volume has changed, then fetch remaining space data.
     if (this.previousRootUrl_ != this.directoryModel_.getCurrentRootUrl())
@@ -2530,7 +2543,7 @@ DialogType.isModal = function(type) {
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case 'Ctrl-17':  // Ctrl => Show hidden setting
-        this.dialogDom_.setAttribute('ctrl-pressing', 'true');
+        this.setCtrlKeyPressed_(true);
         return;
 
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
@@ -2575,7 +2588,7 @@ DialogType.isModal = function(type) {
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case '17':  // Ctrl => Hide hidden setting
-        this.dialogDom_.removeAttribute('ctrl-pressing');
+        this.setCtrlKeyPressed_(false);
         return;
     }
   };
@@ -3449,5 +3462,16 @@ DialogType.isModal = function(type) {
       this.preferences_ = prefs;
       callback(prefs);
     }.bind(this));
+  };
+
+  /**
+   * Set the flag expressing whether the ctrl key is pressed or not.
+   * @param {boolean} flag New value of the flag
+   * @private
+   */
+  FileManager.prototype.setCtrlKeyPressed_ = function(flag) {
+    this.ctrlKeyPressed_ = flag;
+    this.document_.querySelector('#drive-clear-local-cache').canExecuteChange();
+    this.document_.querySelector('#drive-reload').canExecuteChange();
   };
 })();

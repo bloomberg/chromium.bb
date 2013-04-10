@@ -53,6 +53,17 @@ CommandUtil.canExecuteVisibleOnDriveOnly = function(event, fileManager) {
 };
 
 /**
+ * Checks if command should be visible on drive with pressing ctrl key.
+ * @param {Event} event Command event to mark.
+ * @param {FileManager} fileManager FileManager to use.
+ */
+CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly =
+    function(event, fileManager) {
+  event.canExecute = fileManager.isOnDrive() && fileManager.isCtrlKeyPressed();
+  event.command.setHidden(!event.canExecute);
+};
+
+/**
  * Returns a single selected/passed entry or null.
  * @param {Event} event Command event.
  * @param {FileManager} fileManager FileManager to use.
@@ -330,7 +341,7 @@ Commands.driveClearCacheCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.clearDriveCache();
   },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly
 };
 
 /**
@@ -340,7 +351,7 @@ Commands.driveReloadCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.reloadDrive();
   },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly
 };
 
 /**
