@@ -31,6 +31,7 @@
 #include "config.h"
 #include "Blob.h"
 
+#include "BlobBuilder.h"
 #include "Dictionary.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
@@ -38,7 +39,6 @@
 #include "V8Blob.h"
 #include "V8File.h"
 #include "V8Utilities.h"
-#include "WebKitBlobBuilder.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

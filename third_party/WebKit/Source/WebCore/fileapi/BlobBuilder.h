@@ -28,16 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitBlobBuilder_h
-#define WebKitBlobBuilder_h
+#ifndef BlobBuilder_h
+#define BlobBuilder_h
 
 #include "BlobData.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
-
-// FIXME: Move this file to BlobBuilder.h
 
 class Blob;
 class TextEncoding;
@@ -66,4 +64,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebKitBlobBuilder_h
+#endif // BlobBuilder_h

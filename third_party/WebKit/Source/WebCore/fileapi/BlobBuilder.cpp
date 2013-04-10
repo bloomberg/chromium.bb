@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WebKitBlobBuilder.h"
+#include "BlobBuilder.h"
 
 #include "Blob.h"
 #include "Document.h"
@@ -48,8 +48,6 @@
 #include <wtf/text/CString.h>
 
 namespace WebCore {
-
-// FIXME: Move this file to BlobBuilder.cpp
 
 enum BlobConstructorArrayBufferOrView {
     BlobConstructorArrayBuffer,
