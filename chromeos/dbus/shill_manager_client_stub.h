@@ -113,6 +113,8 @@ class ShillManagerClientStub : public ShillManagerClient,
   base::ListValue* GetListProperty(const std::string& property);
   bool TechnologyEnabled(const std::string& type) const;
   base::ListValue* GetEnabledServiceList(const std::string& property) const;
+  void ScanCompleted(const std::string& device_path,
+                     const base::Closure& callback);
 
   // Dictionary of property name -> property value
   base::DictionaryValue stub_properties_;

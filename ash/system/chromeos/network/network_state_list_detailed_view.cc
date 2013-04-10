@@ -19,6 +19,8 @@
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
@@ -48,6 +50,9 @@ namespace {
 
 // Height of the list of networks in the popup.
 const int kNetworkListHeight = 203;
+
+// Delay between scan requests.
+const int kRequestScanDelaySeconds = 10;
 
 // Create a label with the font size and color used in the network info bubble.
 views::Label* CreateInfoBubbleLabel(const string16& text) {
@@ -194,15 +199,14 @@ void NetworkStateListDetailedView::Init() {
   CreateHeaderEntry();
   CreateHeaderButtons();
   CreateMobileAccount();
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
   NetworkStateList network_list;
-  handler->RequestScan();
-  handler->GetNetworkList(&network_list);
+  NetworkStateHandler::Get()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
   UpdateNetworkList();
   UpdateHeaderButtons();
   UpdateMobileAccount();
   UpdateNetworkExtra();
+  CallRequestScan();
 }
 
 NetworkDetailedView::DetailedViewType
@@ -803,6 +807,15 @@ void NetworkStateListDetailedView::ConnectToNetwork(
   }
 }
 
+void NetworkStateListDetailedView::CallRequestScan() {
+  VLOG(1) << "Requesting Network Scan.";
+  NetworkStateHandler::Get()->RequestScan();
+  // Periodically request a scan while this UI is open.
+  MessageLoopForUI::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
+}
 
 }  // namespace tray
 }  // namespace internal

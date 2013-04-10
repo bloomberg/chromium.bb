@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/bus.h"
@@ -94,12 +95,24 @@ void ShillManagerClientStub::SetProperty(const std::string& name,
 void ShillManagerClientStub::RequestScan(const std::string& type,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
-  const int kScanDelayMilliseconds = 3000;
-  CallNotifyObserversPropertyChanged(
-      flimflam::kServicesProperty, kScanDelayMilliseconds);
-  if (callback.is_null())
-    return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  // For Stub purposes, default to a Wifi scan.
+  std::string device_type = flimflam::kTypeWifi;
+  if (!type.empty())
+    device_type = type;
+  ShillDeviceClient::TestInterface* device_client =
+      DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+  std::string device_path = device_client->GetDevicePathForType(device_type);
+  if (!device_path.empty()) {
+    device_client->SetDeviceProperty(device_path,
+                                     flimflam::kScanningProperty,
+                                     base::FundamentalValue(true));
+  }
+  const int kScanDurationSeconds = 3;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ShillManagerClientStub::ScanCompleted,
+                 weak_ptr_factory_.GetWeakPtr(), device_path, callback),
+      base::TimeDelta::FromSeconds(kScanDurationSeconds));
 }
 
 void ShillManagerClientStub::EnableTechnology(
@@ -312,7 +325,6 @@ void ShillManagerClientStub::AddServiceAtIndex(const std::string& service_path,
   base::ListValue::iterator iter =
       std::find_if(service_list->begin(), service_list->end(),
                    ValueEquals(&path_value));
-  service_list->Find(path_value);
   if (iter != service_list->end())
     service_list->Erase(iter, NULL);
   service_list->Insert(index, path_value.DeepCopy());
@@ -505,6 +517,18 @@ base::ListValue* ShillManagerClientStub::GetEnabledServiceList(
     }
   }
   return new_service_list;
+}
+
+void ShillManagerClientStub::ScanCompleted(const std::string& device_path,
+                                           const base::Closure& callback) {
+  if (!device_path.empty()) {
+    DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
+        SetDeviceProperty(device_path,
+                          flimflam::kScanningProperty,
+                          base::FundamentalValue(false));
+  }
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace chromeos

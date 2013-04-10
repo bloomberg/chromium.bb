@@ -235,9 +235,28 @@ void ShillDeviceClientStub::ClearDevices(){
 void ShillDeviceClientStub::SetDeviceProperty(const std::string& device_path,
                                               const std::string& name,
                                               const base::Value& value){
+  VLOG(1) << "SetDeviceProperty: " << device_path
+          << ": " << name << " = " << value;
   SetProperty(dbus::ObjectPath(device_path), name, value,
               base::Bind(&base::DoNothing),
               base::Bind(&ErrorFunction));
+}
+
+std::string ShillDeviceClientStub::GetDevicePathForType(
+    const std::string& type) {
+  for (base::DictionaryValue::Iterator iter(stub_devices_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    const base::DictionaryValue* properties = NULL;
+    if (!iter.value().GetAsDictionary(&properties))
+      continue;
+    std::string prop_type;
+    if (!properties->GetStringWithoutPathExpansion(
+            flimflam::kTypeProperty, &prop_type) ||
+        prop_type != type)
+      continue;
+    return iter.key();
+  }
+  return std::string();
 }
 
 void ShillDeviceClientStub::SetDefaultProperties() {

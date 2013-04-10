@@ -87,6 +87,7 @@ class ShillDeviceClientStub : public ShillDeviceClient,
   virtual void SetDeviceProperty(const std::string& device_path,
                                  const std::string& name,
                                  const base::Value& value) OVERRIDE;
+  virtual std::string GetDevicePathForType(const std::string& type) OVERRIDE;
 
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
