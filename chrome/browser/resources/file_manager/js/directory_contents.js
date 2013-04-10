@@ -752,8 +752,8 @@ function DirectoryContentsDriveSearchMetadata(context,
  */
 DirectoryContentsDriveSearchMetadata.prototype.clone = function() {
   return new DirectoryContentsDriveSearchMetadata(
-      this.context_, this.directoryEntry_, this.fakeDirEntry_,
-      this.query_);
+      this.context_, this.driveDirEntry_, this.fakeDirEntry_, this.query_,
+      this.searchType_);
 };
 
 /**
