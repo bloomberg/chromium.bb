@@ -73,7 +73,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
-  virtual void UpdateSection(DialogSection section) OVERRIDE;
+  virtual void UpdateSection(DialogSection section,
+                             UserInputAction action) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;

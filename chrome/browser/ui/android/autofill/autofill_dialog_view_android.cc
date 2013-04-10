@@ -104,7 +104,10 @@ void AutofillDialogViewAndroid::UpdateButtonStrip() {
   NOTIMPLEMENTED();
 }
 
-void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
+void AutofillDialogViewAndroid::UpdateSection(DialogSection section,
+                                              UserInputAction action) {
+  // TODO(estade): respect |action|.
+
   JNIEnv* env = base::android::AttachCurrentThread();
   const DetailInputs& updated_inputs =
       controller_->RequestedFieldsForSection(section);
@@ -251,11 +254,11 @@ void AutofillDialogViewAndroid::ModelChanged() {
   Java_AutofillDialogGlue_modelChanged(
       env, java_object_.obj(),
       controller_->ShouldShowSpinner());
-  UpdateSection(SECTION_EMAIL);
-  UpdateSection(SECTION_CC);
-  UpdateSection(SECTION_BILLING);
-  UpdateSection(SECTION_CC_BILLING);
-  UpdateSection(SECTION_SHIPPING);
+  UpdateSection(SECTION_EMAIL, CLEAR_USER_INPUT);
+  UpdateSection(SECTION_CC, CLEAR_USER_INPUT);
+  UpdateSection(SECTION_BILLING, CLEAR_USER_INPUT);
+  UpdateSection(SECTION_CC_BILLING, CLEAR_USER_INPUT);
+  UpdateSection(SECTION_SHIPPING, CLEAR_USER_INPUT);
 }
 
 void AutofillDialogViewAndroid::SubmitForTesting() {

@@ -857,13 +857,13 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
   model->FillInputs(inputs);
   section_editing_state_[section] = true;
-  view_->UpdateSection(section);
+  view_->UpdateSection(section, CLEAR_USER_INPUT);
 }
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
   ResetManualInputForSection(section);
-  view_->UpdateSection(section);
+  view_->UpdateSection(section, CLEAR_USER_INPUT);
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1281,7 +1281,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
   for (size_t i = 0; i < arraysize(sections); ++i) {
     DialogSection section = sections[i];
     wrapper->FillInputs(MutableRequestedFieldsForSection(section));
-    view_->UpdateSection(section);
+    view_->UpdateSection(section, KEEP_USER_INPUT);
   }
 
   GetMetricLogger().LogDialogPopupEvent(

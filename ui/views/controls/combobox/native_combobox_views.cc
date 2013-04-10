@@ -219,6 +219,7 @@ void NativeComboboxViews::UpdateFromModel() {
 
 void NativeComboboxViews::UpdateSelectedIndex() {
   selected_index_ = combobox_->selected_index();
+  SchedulePaint();
 }
 
 void NativeComboboxViews::UpdateEnabled() {

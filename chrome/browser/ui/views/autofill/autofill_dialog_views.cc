@@ -652,7 +652,8 @@ void AutofillDialogViews::UpdateNotificationArea() {
   ContentsPreferredSizeChanged();
 }
 
-void AutofillDialogViews::UpdateSection(DialogSection section) {
+void AutofillDialogViews::UpdateSection(DialogSection section,
+                                        UserInputAction action) {
   const DetailInputs& updated_inputs =
       controller_->RequestedFieldsForSection(section);
   DetailsGroup* group = GroupForSection(section);
@@ -661,8 +662,12 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
        iter != updated_inputs.end(); ++iter) {
     const DetailInput& input = *iter;
     TextfieldMap::iterator text_mapping = group->textfields.find(&input);
-    if (text_mapping != group->textfields.end())
+
+    if (text_mapping != group->textfields.end() &&
+        (text_mapping->second->textfield()->text().empty() ||
+         action == CLEAR_USER_INPUT)) {
       text_mapping->second->textfield()->SetText(iter->initial_value);
+    }
 
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
     if (combo_mapping != group->comboboxes.end()) {
