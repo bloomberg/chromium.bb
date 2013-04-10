@@ -503,12 +503,7 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
       FLAGS_USE_FILE_HANDLER | FLAGS_LAZY_FILE_HANDLER)) << message_;
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_Search DISABLED_Search
-#else
-#define MAYBE_Search Search
-#endif
-IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, MAYBE_Search) {
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, Search) {
   // Configure the drive service to return only one search result at a time
   // to simulate paginated searches.
   fake_drive_service_->set_default_max_results(1);
