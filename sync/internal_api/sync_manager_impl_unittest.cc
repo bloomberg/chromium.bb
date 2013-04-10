@@ -1562,12 +1562,12 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // Next batch_size nodes are a different type and on their own.
   for (; i < 2*batch_size; ++i) {
     MakeNode(sync_manager_.GetUserShare(), SESSIONS,
-             base::StringPrintf("%"PRIuS"", i));
+             base::StringPrintf("%" PRIuS "", i));
   }
   // Last batch_size nodes are a third type that will not need encryption.
   for (; i < 3*batch_size; ++i) {
     MakeNode(sync_manager_.GetUserShare(), THEMES,
-             base::StringPrintf("%"PRIuS"", i));
+             base::StringPrintf("%" PRIuS "", i));
   }
 
   {

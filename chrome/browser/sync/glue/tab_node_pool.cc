@@ -32,7 +32,7 @@ TabNodePool::~TabNodePool() {}
 std::string TabNodePool::TabIdToTag(
     const std::string machine_tag,
     size_t tab_node_id) {
-  return base::StringPrintf("%s %"PRIuS"", machine_tag.c_str(), tab_node_id);
+  return base::StringPrintf("%s %" PRIuS "", machine_tag.c_str(), tab_node_id);
 }
 
 void TabNodePool::AddTabNode(int64 sync_id) {
