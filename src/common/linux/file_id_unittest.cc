@@ -34,6 +34,7 @@
 
 #include <string>
 
+#include "common/linux/elf_gnu_compat.h"
 #include "common/linux/elfutils.h"
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"

@@ -40,16 +40,13 @@
 
 #include <algorithm>
 
+#include "common/linux/elf_gnu_compat.h"
 #include "common/linux/elfutils.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/memory_mapped_file.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 namespace google_breakpad {
-
-#ifndef NT_GNU_BUILD_ID
-#define NT_GNU_BUILD_ID 3
-#endif
 
 FileID::FileID(const char* path) {
   strncpy(path_, path, sizeof(path_));
