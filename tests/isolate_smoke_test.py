@@ -535,7 +535,10 @@ class Isolate_hashtable(IsolateModeBase):
 
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('hashtable')
-    self.assertEquals('', out)
+    expected = (
+        '26cccbd32449bcba9f8f6a617a651386ae468e35  '
+        'isolate_smoke_test.isolated\n')
+    self.assertEquals(expected, out)
     self._expected_hash_tree(None)
 
   def test_no_run(self):

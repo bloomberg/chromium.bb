@@ -1842,13 +1842,17 @@ def CMDhashtable(args):
 
       infiles = complete_state.saved_state.files
       # Add all the .isolated files.
+      isolated_hash = []
       for item in complete_state.saved_state.isolated_files:
         item_path = os.path.join(
             os.path.dirname(complete_state.isolated_filepath), item)
+        # Do not use isolateserver_archive.sha1_file() here because the file is
+        # likely smallish (under 500kb) and its file size is needed.
         with open(item_path, 'rb') as f:
           content = f.read()
+        isolated_hash.append(hashlib.sha1(content).hexdigest())
         isolated_metadata = {
-          'h': hashlib.sha1(content).hexdigest(),
+          'h': isolated_hash[-1],
           's': len(content),
           'priority': '0'
         }
@@ -1871,11 +1875,15 @@ def CMDhashtable(args):
             action=run_isolated.HARDLINK,
             as_sha1=True)
       success = True
+      isolated_file = os.path.basename(
+          complete_state.saved_state.isolated_files[0])
+      print('%s  %s' % (isolated_hash[0], isolated_file))
     finally:
       # If the command failed, delete the .isolated file if it exists. This is
       # important so no stale swarm job is executed.
       if not success and os.path.isfile(options.isolated):
         os.remove(options.isolated)
+  return not success
 
 
 def CMDmerge(args):
