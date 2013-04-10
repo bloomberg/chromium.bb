@@ -22,7 +22,7 @@ class MessageLoop;
 
 namespace views {
 class GridLayout;
-class TextButton;
+class LabelButton;
 }
 
 // OneClickSigninBubbleView is a view intended to be used as the content of an
@@ -80,8 +80,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Creates OK and Undo buttons to be used at the bottom of the bubble.
   // Derived classes can reimplement to have buttons with different labels,
   // colours, or sizes.  The caller of this function owns the returned buttons.
-  virtual void GetButtons(views::TextButton** ok_button,
-                          views::TextButton** undo_button);
+  virtual void GetButtons(views::LabelButton** ok_button,
+                          views::LabelButton** undo_button);
 
   // Creates advanced link to be used at the bottom of the bubble.
   // Derived classes can reimplement.  The caller of this function owns the
@@ -101,8 +101,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   views::Link* advanced_link_;
 
   // Controls at bottom of bubble.
-  views::TextButton* ok_button_;
-  views::TextButton* undo_button_;
+  views::LabelButton* ok_button_;
+  views::LabelButton* undo_button_;
 
   // This callback is nulled once its called, so that it is called only once.
   // It will be called when the bubble is closed if it has not been called

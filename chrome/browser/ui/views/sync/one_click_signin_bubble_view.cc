@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -55,8 +55,8 @@ class OneClickSigninDialogView : public OneClickSigninBubbleView {
 
   // Overridden from OneClickSigninBubbleView:
   virtual void InitContent(views::GridLayout* layout) OVERRIDE;
-  virtual void GetButtons(views::TextButton** ok_button,
-                          views::TextButton** undo_button) OVERRIDE;
+  virtual void GetButtons(views::LabelButton** ok_button,
+                          views::LabelButton** undo_button) OVERRIDE;
   virtual views::Link* GetAdvancedLink() OVERRIDE;
 
   // Overridden from views::LinkListener:
@@ -143,16 +143,19 @@ void OneClickSigninDialogView::InitContent(views::GridLayout* layout) {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
-void OneClickSigninDialogView::GetButtons(views::TextButton** ok_button,
-                                          views::TextButton** undo_button) {
-  *ok_button = new views::NativeTextButton(this);
-  *undo_button = new views::NativeTextButton(this);
+void OneClickSigninDialogView::GetButtons(views::LabelButton** ok_button,
+                                          views::LabelButton** undo_button) {
+  *ok_button = new views::LabelButton(this, string16());
+  (*ok_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+
+  *undo_button = new views::LabelButton(this, string16());
+  (*undo_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // The default size of the buttons is too large.  To allow them to be smaller
   // ignore the minimum default size.  Furthermore, to make sure they are the
   // same size, SetText() is called with both strings on both buttons.
-  (*ok_button)->set_ignore_minimum_size(true);
-  (*undo_button)->set_ignore_minimum_size(true);
+  (*ok_button)->set_min_size(gfx::Size());
+  (*undo_button)->set_min_size(gfx::Size());
   string16 ok_label =
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
   string16 undo_label =
@@ -289,16 +292,19 @@ void OneClickSigninBubbleView::InitContent(views::GridLayout* layout) {
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 }
 
-void OneClickSigninBubbleView::GetButtons(views::TextButton** ok_button,
-                                          views::TextButton** undo_button) {
-  *ok_button = new views::NativeTextButton(this);
-  *undo_button = new views::NativeTextButton(this);
+void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
+                                          views::LabelButton** undo_button) {
+  *ok_button = new views::LabelButton(this, string16());
+  (*ok_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+
+  *undo_button = new views::LabelButton(this, string16());
+  (*undo_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // The default size of the buttons is too large.  To allow them to be smaller
   // ignore the minimum default size.  Furthermore, to make sure they are the
   // same size, SetText() is called with both strings on both buttons.
-  (*ok_button)->set_ignore_minimum_size(true);
-  (*undo_button)->set_ignore_minimum_size(true);
+  (*ok_button)->set_min_size(gfx::Size());
+  (*undo_button)->set_min_size(gfx::Size());
   string16 ok_label = l10n_util::GetStringUTF16(IDS_OK);
   string16 undo_label = l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);
   (*ok_button)->SetText(undo_label);
