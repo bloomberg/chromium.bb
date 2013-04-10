@@ -30,7 +30,6 @@
 
 [
     CustomConstructor,
-    ConstructorParameters=1,
     InterfaceName=FormData,
     ImplementationLacksVTable
 ] interface DOMFormData {

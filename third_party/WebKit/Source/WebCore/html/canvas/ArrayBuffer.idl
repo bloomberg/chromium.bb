@@ -25,7 +25,6 @@
 
 [
     CustomConstructor,
-    ConstructorParameters=1,
     ImplementationNamespace=WTF,
     ImplementationLacksVTable
 ] interface ArrayBuffer {

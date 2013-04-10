@@ -25,7 +25,6 @@
 
 [
     CustomConstructor,
-    ConstructorParameters=3,
     CustomToJSObject
 ] interface DataView : ArrayBufferView {
     // All these methods raise an exception if they would read or write beyond the end of the view.

@@ -25,7 +25,6 @@
 
 [
     CustomConstructor,
-    ConstructorParameters=2,
     InterfaceName=WebKitPoint,
     ImplementationLacksVTable
 ] interface DOMPoint {

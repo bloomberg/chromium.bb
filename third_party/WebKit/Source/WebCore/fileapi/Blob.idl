@@ -30,8 +30,7 @@
 
 [
     CustomToJSObject,
-    CustomConstructor,
-    ConstructorParameters=2
+    CustomConstructor
 ] interface Blob {
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
