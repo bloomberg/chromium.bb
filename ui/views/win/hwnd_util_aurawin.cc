@@ -17,6 +17,11 @@ HWND HWNDForWidget(Widget* widget) {
   return HWNDForNativeWindow(widget->GetNativeWindow());
 }
 
+HWND HWNDForNativeView(gfx::NativeView view) {
+  return view && view->GetRootWindow() ?
+      view->GetRootWindow()->GetAcceleratedWidget() : NULL;
+}
+
 HWND HWNDForNativeWindow(gfx::NativeWindow window) {
   return window && window->GetRootWindow() ?
       window->GetRootWindow()->GetAcceleratedWidget() : NULL;

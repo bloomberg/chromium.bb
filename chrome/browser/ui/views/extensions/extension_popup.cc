@@ -28,25 +28,24 @@
 #include "ui/views/corewm/window_animations.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
 
-// Returns true if |possible_parent| is a parent window of |child|.
-bool IsParent(gfx::NativeView child, gfx::NativeView possible_parent) {
+// Returns true if |possible_owner| is the owner of |child|.
+bool IsOwnerOf(gfx::NativeView child, gfx::NativeView possible_owner) {
   if (!child)
     return false;
-#if !defined(USE_AURA) && defined(OS_WIN)
-  if (::GetWindow(child, GW_OWNER) == possible_parent)
+#if defined(OS_WIN)
+  if (::GetWindow(views::HWNDForNativeView(child), GW_OWNER) ==
+      views::HWNDForNativeView(possible_owner))
     return true;
 #endif
-  gfx::NativeView parent = child;
-  while ((parent = platform_util::GetParent(parent))) {
-    if (possible_parent == parent)
-      return true;
-  }
-
   return false;
 }
 
@@ -67,8 +66,7 @@ ExtensionPopup::ExtensionPopup(
     views::BubbleBorder::ArrowLocation arrow_location,
     ShowAction show_action)
     : BubbleDelegateView(anchor_view, arrow_location),
-      extension_host_(host),
-      close_bubble_factory_(this) {
+      extension_host_(host) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   // Adjust the margin so that contents fit better.
   const int margin = views::BubbleBorder::GetCornerRadius() / 2;
@@ -101,7 +99,6 @@ ExtensionPopup::ExtensionPopup(
 }
 
 ExtensionPopup::~ExtensionPopup() {
-  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
 void ExtensionPopup::Observe(int type,
@@ -153,22 +150,19 @@ gfx::Size ExtensionPopup::GetPreferredSize() {
   return sz;
 }
 
-void ExtensionPopup::OnNativeFocusChange(gfx::NativeView focused_before,
-                                         gfx::NativeView focused_now) {
-  // Don't close if a child of this window is activated (only needed on Win).
-  // ExtensionPopups can create Javascipt dialogs; see crbug.com/106723.
-  gfx::NativeView this_window = GetWidget()->GetNativeView();
-  if (inspect_with_devtools_ || focused_now == this_window ||
-      IsParent(focused_now, this_window))
-    return;
-  // Delay closing the widget because on Aura, closing right away makes the
-  // activation controller trigger another focus change before the current focus
-  // change is complete.
-  if (!close_bubble_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&ExtensionPopup::CloseBubble,
-                   close_bubble_factory_.GetWeakPtr()));
-  }
+void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
+                                               bool active) {
+  BubbleDelegateView::OnWidgetActivationChanged(widget, active);
+  // Dismiss only if the window being activated is not owned by this popup's
+  // window. In particular, don't dismiss when we lose activation to a child
+  // dialog box. Possibly relevant: http://crbug.com/106723 and
+  // http://crbug.com/179786
+  views::Widget* this_widget = GetWidget();
+  gfx::NativeView activated_view = widget->GetNativeView();
+  gfx::NativeView this_view = this_widget->GetNativeView();
+  if (active && !inspect_with_devtools_ && activated_view != this_view &&
+      !IsOwnerOf(activated_view, this_view))
+    this_widget->Close();
 }
 
 // static
@@ -209,16 +203,9 @@ void ExtensionPopup::ShowBubble() {
   // Focus on the host contents when the bubble is first shown.
   host()->host_contents()->GetView()->Focus();
 
-  // Listen for widget focus changes after showing (used for non-aura win).
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-
   if (inspect_with_devtools_) {
     DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
         true,
         DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
   }
-}
-
-void ExtensionPopup::CloseBubble() {
-  GetWidget()->Close();
 }

@@ -14,11 +14,13 @@
 #include "ui/views/focus/widget_focus_manager.h"
 
 class Browser;
+namespace views {
+class Widget;
+}
 
 class ExtensionPopup : public views::BubbleDelegateView,
                        public ExtensionViewViews::Container,
-                       public content::NotificationObserver,
-                       public views::WidgetFocusChangeListener {
+                       public content::NotificationObserver {
  public:
   enum ShowAction {
     SHOW,
@@ -57,9 +59,9 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // views::WidgetFocusChangeListener overrides.
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) OVERRIDE;
+  // views::BubbleDelegateView overrides.
+  virtual void OnWidgetActivationChanged(views::Widget* widget, bool active)
+      OVERRIDE;
 
   // The min/max height of popups.
   static const int kMinWidth;
@@ -77,8 +79,6 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();
 
-  void CloseBubble();
-
   // The contained host for the view.
   scoped_ptr<extensions::ExtensionHost> extension_host_;
 
@@ -87,8 +87,6 @@ class ExtensionPopup : public views::BubbleDelegateView,
   bool inspect_with_devtools_;
 
   content::NotificationRegistrar registrar_;
-
-  base::WeakPtrFactory<ExtensionPopup> close_bubble_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };

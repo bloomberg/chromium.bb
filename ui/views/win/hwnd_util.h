@@ -19,6 +19,9 @@ VIEWS_EXPORT HWND HWNDForView(View* view);
 // Returns the HWND for the specified Widget.
 VIEWS_EXPORT HWND HWNDForWidget(Widget* widget);
 
+// Returns the HWND for the specified NativeView.
+VIEWS_EXPORT HWND HWNDForNativeView(gfx::NativeView view);
+
 // Returns the HWND for the specified NativeWindow.
 VIEWS_EXPORT HWND HWNDForNativeWindow(gfx::NativeWindow window);
 

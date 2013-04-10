@@ -17,6 +17,10 @@ HWND HWNDForWidget(Widget* widget) {
   return widget->GetNativeView();
 }
 
+HWND HWNDForNativeView(gfx::NativeView view) {
+  return view;
+}
+
 HWND HWNDForNativeWindow(gfx::NativeWindow window) {
   return window;
 }
