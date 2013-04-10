@@ -70,8 +70,8 @@ void AddWebContents(Browser* browser,
     }
 
     // Handle blocking of popups.
-    if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB) &&
-        !user_gesture &&
+    if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
+         disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePopupBlocking)) {
       // Unrequested popups from normal pages are constrained unless they're in

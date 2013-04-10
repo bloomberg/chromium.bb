@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Popup Blocked Fake Click on Anchor</title>
+<script>
+function test() {
+  document.querySelector("a").dispatchEvent(new MouseEvent("click", {ctrlKey: true, metaKey: true}));
+}
+</script>
+</head>
+<body onload="test()">
+If the fake click was not blocked then there will be an warning message displayed in a new tab. Otherwise, the test passes.
+<a href="data:text/html,<title>Popup Success!</title>you should not see this message if popup blocker is enabled" target="tab"></a>
+</body>
+</html>

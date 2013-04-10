@@ -77,8 +77,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(blocked_contents.empty());
   }
 
-  void BasicTest(Browser* browser) {
-    GURL url(GetTestURL());
+  void BasicTest(Browser* browser, const GURL& url) {
     ui_test_utils::NavigateToURL(browser, url);
 
     // If the popup blocker blocked the blank post, there should be only one
@@ -107,12 +106,19 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
-  BasicTest(browser());
+  BasicTest(browser(), GetTestURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        PopupBlockedPostBlankIncognito) {
-  BasicTest(CreateIncognitoBrowser());
+  BasicTest(CreateIncognitoBrowser(), GetTestURL());
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedFakeClickOnAnchor) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor.html"))));
+  BasicTest(browser(), url);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
