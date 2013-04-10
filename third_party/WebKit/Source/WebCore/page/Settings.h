@@ -191,9 +191,6 @@ namespace WebCore {
         void setCSSVariablesEnabled(bool enabled) { m_cssVariablesEnabled = enabled; }
         bool cssVariablesEnabled() const { return m_cssVariablesEnabled; }
 
-        void setShowTiledScrollingIndicator(bool);
-        bool showTiledScrollingIndicator() const { return m_showTiledScrollingIndicator; }
-
         void setTiledBackingStoreEnabled(bool);
         bool tiledBackingStoreEnabled() const { return m_tiledBackingStoreEnabled; }
 
@@ -261,7 +258,6 @@ namespace WebCore {
         bool m_isCSSCustomFilterEnabled : 1;
         bool m_cssStickyPositionEnabled : 1;
         bool m_cssVariablesEnabled : 1;
-        bool m_showTiledScrollingIndicator : 1;
         bool m_tiledBackingStoreEnabled : 1;
         bool m_dnsPrefetchingEnabled : 1;
 

@@ -162,7 +162,6 @@ Settings::Settings(Page* page)
     , m_isCSSCustomFilterEnabled(false)
     , m_cssStickyPositionEnabled(true)
     , m_cssVariablesEnabled(false)
-    , m_showTiledScrollingIndicator(false)
     , m_tiledBackingStoreEnabled(false)
     , m_dnsPrefetchingEnabled(false)
 #if ENABLE(TOUCH_EVENTS)
@@ -474,14 +473,6 @@ void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
 
     m_dnsPrefetchingEnabled = dnsPrefetchingEnabled;
     m_page->dnsPrefetchingStateChanged();
-}
-
-void Settings::setShowTiledScrollingIndicator(bool enabled)
-{
-    if (m_showTiledScrollingIndicator == enabled)
-        return;
-        
-    m_showTiledScrollingIndicator = enabled;
 }
 
 void Settings::setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy enabled)
