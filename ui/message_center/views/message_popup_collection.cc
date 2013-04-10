@@ -48,7 +48,7 @@ class ToastContentsView : public views::WidgetDelegateView {
 
   views::Widget* CreateWidget(gfx::NativeView parent) {
     views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+        views::Widget::InitParams::TYPE_POPUP);
     params.keep_on_top = true;
     if (parent)
       params.parent = parent;
