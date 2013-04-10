@@ -788,10 +788,11 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     }
   }
 
+  if (IsManuallyEditingSection(section))
+    return scoped_ptr<DataModelWrapper>();
+
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyForCheckedItem();
-  if (item_key.empty())
-    return scoped_ptr<DataModelWrapper>();
 
   if (IsPayingWithWallet()) {
     int index;
@@ -1759,9 +1760,6 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
 
-      // TODO(estade): we should probably edit the existing profile in the
-      // cases where the input data is based on an existing profile (user
-      // clicked "Edit" or autofill popup filled in the form).
       if (ShouldSaveDetailsLocally())
         GetManager()->SaveImportedProfile(profile);
 

@@ -50,11 +50,14 @@ class TestAutofillDialogView : public AutofillDialogView {
   virtual void UpdateSection(DialogSection section, UserInputAction action)
       OVERRIDE {}
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output)
-      OVERRIDE {}
+      OVERRIDE {
+    *output = outputs_[section];
+  }
+
   virtual string16 GetCvc() OVERRIDE { return string16(); }
   virtual bool UseBillingForShipping() OVERRIDE { return false; }
   virtual bool SaveDetailsInWallet() OVERRIDE { return false; }
-  virtual bool SaveDetailsLocally() OVERRIDE { return false; }
+  virtual bool SaveDetailsLocally() OVERRIDE { return true; }
   virtual const content::NavigationController* ShowSignIn() OVERRIDE {
     return NULL;
   }
@@ -65,7 +68,13 @@ class TestAutofillDialogView : public AutofillDialogView {
 
   MOCK_METHOD0(ModelChanged, void());
 
+  void SetUserInput(DialogSection section, const DetailOutputMap& map){
+    outputs_[section] = map;
+  }
+
  private:
+  std::map<DialogSection, DetailOutputMap> outputs_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
 
@@ -84,8 +93,16 @@ class TestPersonalDataManager : public PersonalDataManager {
     return profiles_;
   }
 
+  virtual void SaveImportedProfile(const AutofillProfile& imported_profile)
+      OVERRIDE {
+    imported_profile_ = imported_profile;
+  }
+
+  const AutofillProfile& imported_profile() { return imported_profile_; }
+
  private:
   std::vector<AutofillProfile*> profiles_;
+  AutofillProfile imported_profile_;
 };
 
 class TestWalletClient : public wallet::WalletClient {
@@ -478,6 +495,45 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
   EXPECT_EQ(kEmail,
             controller()->SuggestionStateForSection(SECTION_EMAIL).text);
   EXPECT_EQ(string16(), inputs2[0].initial_value);
+}
+
+// Tests that editing an autofill profile and then submitting works.
+TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->EditClickedForSection(SECTION_SHIPPING);
+
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    outputs[&input] = input.type == NAME_FULL ? ASCIIToUTF16("Edited Name") :
+                                                input.initial_value;
+  }
+  controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
+
+  // We also have to simulate CC inputs to keep the controller happy.
+  DetailOutputMap cc_outputs;
+  const DetailInputs& cc_inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC);
+  for (size_t i = 0; i < cc_inputs.size(); ++i) {
+    cc_outputs[&cc_inputs[i]] = ASCIIToUTF16("11");
+  }
+  controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
+
+  controller()->OnAccept();
+  const AutofillProfile& edited_profile =
+      controller()->GetTestingManager()->imported_profile();
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    EXPECT_EQ(input.type == NAME_FULL ? ASCIIToUTF16("Edited Name") :
+                                        input.initial_value,
+              edited_profile.GetInfo(input.type, "en-US"));
+  }
 }
 
 TEST_F(AutofillDialogControllerTest, VerifyCvv) {
