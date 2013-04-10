@@ -40,9 +40,9 @@ class BindingsTests:
 
     def generate_from_idl(self, idl_file, output_directory, supplemental_dependency_file):
         cmd = ['perl', '-w',
-               '-IWebCore/bindings/scripts',
+               '-Ibindings/scripts',
                '-IWebCore/scripts',
-               'WebCore/bindings/scripts/generate-bindings.pl',
+               'bindings/scripts/generate-bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
                '--defines', 'TESTING_V8',
@@ -71,8 +71,8 @@ class BindingsTests:
         os.close(idl_files_list[0])
 
         cmd = ['perl', '-w',
-               '-IWebCore/bindings/scripts',
-               'WebCore/bindings/scripts/preprocess-idls.pl',
+               '-Ibindings/scripts',
+               'bindings/scripts/preprocess-idls.pl',
                '--idlFilesList', idl_files_list[1],
                '--defines', '',
                '--supplementalDependencyFile', supplemental_dependency_file]
@@ -147,15 +147,15 @@ class BindingsTests:
 
         all_tests_passed = True
 
-        input_directory = os.path.join('WebCore', 'bindings', 'tests', 'idls')
+        input_directory = os.path.join('bindings', 'tests', 'idls')
         supplemental_dependency_file = tempfile.mkstemp()[1]
         if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file):
             print 'Failed to generate a supplemental dependency file.'
             os.remove(supplemental_dependency_file)
             return -1
 
-        input_directory = os.path.join('WebCore', 'bindings', 'tests', 'idls')
-        reference_directory = os.path.join('WebCore', 'bindings', 'tests', 'results')
+        input_directory = os.path.join('bindings', 'tests', 'idls')
+        reference_directory = os.path.join('bindings', 'tests', 'results')
         if not self.run_tests(input_directory, reference_directory, supplemental_dependency_file):
             all_tests_passed = False
 

@@ -16,7 +16,7 @@
                   '|LayoutTests/animation',
     },
     'bindings': {
-      'filepath': 'Source/WebCore/bindings',
+      'filepath': 'Source/bindings',
     },
     'test_runner': {
       'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
@@ -46,8 +46,8 @@
     },
     'indexed_db': {
       'filepath': 'Source/WebCore/Modules/indexeddb/' \
-                  '|Source/WebCore/bindings/.*IDB' \
-                  '|Source/WebCore/bindings/.*SerializedScriptValue' \
+                  '|Source/bindings/.*IDB' \
+                  '|Source/bindings/.*SerializedScriptValue' \
                   '|Source/WebKit/chromium/.*IDB' \
                   '|Source/WebCore/platform/leveldb' \
                   '|LayoutTests/storage/indexeddb'

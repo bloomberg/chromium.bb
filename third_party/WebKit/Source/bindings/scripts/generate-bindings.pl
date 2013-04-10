@@ -297,7 +297,7 @@ sub checkIfIDLAttributesExists
     }
     if ($error) {
         die "IDL ATTRIBUTE CHECKER ERROR: $error
-If you want to add a new IDL attribute, you need to add it to WebCore/bindings/scripts/IDLAttributes.txt and add explanations to the WebKit IDL document (https://trac.webkit.org/wiki/WebKitIDL).
+If you want to add a new IDL attribute, you need to add it to bindings/scripts/IDLAttributes.txt and add explanations to the Blink IDL document (http://chromium.org/blink/webidl).
 ";
     }
 }
