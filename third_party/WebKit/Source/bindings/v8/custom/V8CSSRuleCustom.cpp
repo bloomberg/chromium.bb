@@ -87,10 +87,8 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
 #endif
     case CSSRule::WEBKIT_REGION_RULE:
         return wrap(static_cast<WebKitCSSRegionRule*>(impl), creationContext, isolate);
-#if ENABLE(SHADOW_DOM)
     case CSSRule::HOST_RULE:
         return wrap(static_cast<CSSHostRule*>(impl), creationContext, isolate);
-#endif
     case CSSRule::WEBKIT_FILTER_RULE:
         return wrap(static_cast<WebKitCSSFilterRule*>(impl), creationContext, isolate);
     }

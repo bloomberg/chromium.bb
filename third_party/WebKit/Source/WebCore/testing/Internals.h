@@ -79,18 +79,13 @@ public:
     size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionCode&) const;
     PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionCode&) const;
 
-#if ENABLE(SHADOW_DOM)
-    typedef ShadowRoot ShadowRootIfShadowDOMEnabledOrNode;
-#else
-    typedef Node ShadowRootIfShadowDOMEnabledOrNode;
-#endif
-    ShadowRootIfShadowDOMEnabledOrNode* ensureShadowRoot(Element* host, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* createShadowRoot(Element* host, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* shadowRoot(Element* host, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* youngestShadowRoot(Element* host, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* oldestShadowRoot(Element* host, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* youngerShadowRoot(Node* shadow, ExceptionCode&);
-    ShadowRootIfShadowDOMEnabledOrNode* olderShadowRoot(Node* shadow, ExceptionCode&);
+    ShadowRoot* ensureShadowRoot(Element* host, ExceptionCode&);
+    ShadowRoot* createShadowRoot(Element* host, ExceptionCode&);
+    ShadowRoot* shadowRoot(Element* host, ExceptionCode&);
+    ShadowRoot* youngestShadowRoot(Element* host, ExceptionCode&);
+    ShadowRoot* oldestShadowRoot(Element* host, ExceptionCode&);
+    ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionCode&);
+    ShadowRoot* olderShadowRoot(Node* shadow, ExceptionCode&);
     String shadowRootType(const Node*, ExceptionCode&) const;
     bool hasShadowInsertionPoint(const Node*, ExceptionCode&) const;
     bool hasContentElement(const Node*, ExceptionCode&) const;

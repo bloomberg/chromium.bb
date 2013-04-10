@@ -23,8 +23,6 @@
 #include "config.h"
 #include "CSSHostRule.h"
 
-#if ENABLE(SHADOW_DOM)
-
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
@@ -45,4 +43,3 @@ String CSSHostRule::cssText() const
 
 } // namespace WebCore
 
-#endif // ENABLE(SHADOW_DOM)

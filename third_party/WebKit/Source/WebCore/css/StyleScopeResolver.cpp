@@ -27,8 +27,6 @@
 #include "config.h"
 #include "StyleScopeResolver.h"
 
-#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
-
 #include "CSSStyleRule.h"
 #include "CSSStyleSheet.h"
 #include "ContentDistributor.h"
@@ -155,10 +153,8 @@ void StyleScopeResolver::collectFeaturesTo(RuleFeatureSet& features)
 {
     for (ScopedRuleSetMap::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
         features.add(it->value->features());
-#if ENABLE(SHADOW_DOM)
     for (ScopedRuleSetMap::iterator it = m_atHostRules.begin(); it != m_atHostRules.end(); ++it)
         features.add(it->value->features());
-#endif
 }
 
 inline RuleSet* StyleScopeResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)
@@ -175,7 +171,6 @@ inline RuleSet* StyleScopeResolver::atHostRuleSetFor(const ShadowRoot* shadowRoo
     return it != m_atHostRules.end() ? it->value.get() : 0;
 }
 
-#if ENABLE(SHADOW_DOM)
 void StyleScopeResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSecurityOrigin, const ContainerNode* scope)
 {
     if (!scope || !scope->isInShadowTree())
@@ -196,7 +191,6 @@ void StyleScopeResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSe
             rule->addStyleRule(static_cast<StyleRule*>(hostStylingRule), addRuleFlags);
     }
 }
-#endif
 
 bool StyleScopeResolver::styleSharingCandidateMatchesHostRules(const Element* element)
 {
@@ -253,4 +247,3 @@ void StyleScopeResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) c
 
 }
 
-#endif // ENABLE(STYLE_SCOPED)

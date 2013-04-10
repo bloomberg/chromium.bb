@@ -77,11 +77,9 @@ void InspectorCSSOMWrappers::collect(ListType* listType)
             collect(static_cast<WebKitCSSRegionRule*>(cssRule));
             break;
 #endif
-#if ENABLE(SHADOW_DOM)
         case CSSRule::HOST_RULE:
             collect(static_cast<CSSHostRule*>(cssRule));
             break;
-#endif
         case CSSRule::STYLE_RULE:
             m_styleRuleToCSSOMWrapperMap.add(static_cast<CSSStyleRule*>(cssRule)->styleRule(), static_cast<CSSStyleRule*>(cssRule));
             break;

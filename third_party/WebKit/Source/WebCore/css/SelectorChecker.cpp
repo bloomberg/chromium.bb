@@ -215,7 +215,6 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
             nextContext.elementStyle = 0;
             return match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
         }
-#if ENABLE(SHADOW_DOM)
     case CSSSelector::ShadowDistributed:
         {
             Vector<InsertionPoint*, 8> insertionPoints;
@@ -232,7 +231,6 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
             }
             return SelectorFailsCompletely;
         }
-#endif
     }
 
     ASSERT_NOT_REACHED();

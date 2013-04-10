@@ -310,7 +310,6 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
 
         if (rule->isStyleRule()) {
             StyleRule* styleRule = static_cast<StyleRule*>(rule);
-#if ENABLE(SHADOW_DOM)
             if (!scope)
                 addStyleRule(styleRule, addRuleFlags);
             else {
@@ -322,10 +321,6 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
                         addRule(styleRule, selectorIndex, addRuleFlags);
                 }
             }
-#else
-            addStyleRule(styleRule, addRuleFlags);
-#endif
-
         } else if (rule->isPageRule())
             addPageRule(static_cast<StyleRulePage*>(rule));
         else if (rule->isMediaRule()) {
@@ -354,10 +349,8 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
         }
 #endif
-#if ENABLE(SHADOW_DOM)
         else if (rule->isHostRule())
             resolver->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
         else if (rule->isViewportRule() && resolver) {
             // @viewport should not be scoped.

@@ -225,7 +225,6 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
 void ElementRuleCollector::matchScopedAuthorRules(bool includeEmptyRules)
 {
-#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
     if (!m_scopeResolver)
         return;
 
@@ -257,14 +256,10 @@ void ElementRuleCollector::matchScopedAuthorRules(bool includeEmptyRules)
     }
 
     matchHostRules(includeEmptyRules);
-#else
-    UNUSED_PARAM(includeEmptyRules);
-#endif
 }
 
 void ElementRuleCollector::matchHostRules(bool includeEmptyRules)
 {
-#if ENABLE(SHADOW_DOM)
     ASSERT(m_scopeResolver);
 
     clearMatchedRules();
@@ -280,12 +275,8 @@ void ElementRuleCollector::matchHostRules(bool includeEmptyRules)
         collectMatchingRules(MatchRequest(matchedRules.at(i-1), includeEmptyRules, m_state.element()), ruleRange);
     }
     sortAndTransferMatchedRules();
-#else
-    UNUSED_PARAM(includeEmptyRules);
-#endif
 }
 
-#if ENABLE(SHADOW_DOM)
 inline void ElementRuleCollector::matchShadowDistributedRules(bool includeEmptyRules, StyleResolver::RuleRange& ruleRange)
 {
     if (m_ruleSets.shadowDistributedRules().isEmpty())
@@ -299,7 +290,6 @@ inline void ElementRuleCollector::matchShadowDistributedRules(bool includeEmptyR
     for (size_t i = 0; i < matchRequests.size(); ++i)
         collectMatchingRules(matchRequests[i], ruleRange);
 }
-#endif
 
 void ElementRuleCollector::matchAuthorRules(bool includeEmptyRules)
 {
@@ -314,9 +304,7 @@ void ElementRuleCollector::matchAuthorRules(bool includeEmptyRules)
     StyleResolver::RuleRange ruleRange = m_result.ranges.authorRuleRange();
     collectMatchingRules(matchRequest, ruleRange);
     collectMatchingRulesForRegion(matchRequest, ruleRange);
-#if ENABLE(SHADOW_DOM)
     matchShadowDistributedRules(includeEmptyRules, ruleRange);
-#endif
     sortAndTransferMatchedRules();
 
     matchScopedAuthorRules(includeEmptyRules);

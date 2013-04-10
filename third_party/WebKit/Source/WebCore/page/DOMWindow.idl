@@ -313,9 +313,7 @@
     attribute CSSRuleConstructor CSSRule;
     attribute CSSCharsetRuleConstructor CSSCharsetRule;
     attribute CSSFontFaceRuleConstructor CSSFontFaceRule;
-#if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM
     attribute CSSHostRuleConstructor CSSHostRule;
-#endif
     attribute CSSImportRuleConstructor CSSImportRule;
     attribute CSSMediaRuleConstructor CSSMediaRule;
     attribute CSSPageRuleConstructor CSSPageRule;
@@ -362,9 +360,9 @@
     attribute EntityReferenceConstructor EntityReference;
     [Conditional=CANVAS_PATH, EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
     attribute ProcessingInstructionConstructor ProcessingInstruction;
-    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
-    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;
-    [Conditional=SHADOW_DOM, EnabledAtRuntime=shadowDOM] attribute HTMLShadowElementConstructor HTMLShadowElement;
+    [EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
+    [EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;
+    [EnabledAtRuntime=shadowDOM] attribute HTMLShadowElementConstructor HTMLShadowElement;
 
     attribute DOMSelectionConstructor Selection;
     attribute DOMWindowConstructor Window;

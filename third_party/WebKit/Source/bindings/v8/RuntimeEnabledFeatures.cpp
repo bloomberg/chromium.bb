@@ -165,11 +165,9 @@ bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
 bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
 #endif
 
-#if ENABLE(SHADOW_DOM)
 bool RuntimeEnabledFeatures::isShadowDOMEnabled = false;
 
 bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
-#endif
 
 #if ENABLE(CUSTOM_ELEMENTS)
 bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;

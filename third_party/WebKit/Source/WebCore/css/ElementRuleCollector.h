@@ -76,9 +76,7 @@ private:
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
     void matchUARules(RuleSet*);
-#if ENABLE(SHADOW_DOM)
     void matchShadowDistributedRules(bool includeEmptyRules, StyleResolver::RuleRange&);
-#endif
     void matchScopedAuthorRules(bool includeEmptyRules);
     void matchHostRules(bool includeEmptyRules);
 

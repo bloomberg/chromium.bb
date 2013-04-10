@@ -27,8 +27,6 @@
 
 namespace WebCore {
 
-#if ENABLE(SHADOW_DOM)
-
 class CSSHostRule : public CSSGroupingRule {
 public:
     static PassRefPtr<CSSHostRule> create(StyleRuleHost* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSHostRule(rule, sheet)); }
@@ -40,7 +38,6 @@ private:
     CSSHostRule(StyleRuleHost*, CSSStyleSheet*);
 };
 
-#endif // ENABLE(SHADOW_DOM)
 
 } // namespace WebCore
 

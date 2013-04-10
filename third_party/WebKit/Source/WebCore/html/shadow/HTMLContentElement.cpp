@@ -42,16 +42,10 @@ using HTMLNames::selectAttr;
 
 const QualifiedName& HTMLContentElement::contentTagName(Document*)
 {
-#if ENABLE(SHADOW_DOM)
     if (!RuntimeEnabledFeatures::shadowDOMEnabled())
         return HTMLNames::webkitShadowContentTag;
     return HTMLNames::contentTag;
-#else
-    return HTMLNames::webkitShadowContentTag;
-#endif
 }
-
-#if ENABLE(SHADOW_DOM)
 
 PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
 {
@@ -204,19 +198,5 @@ bool HTMLContentElement::validateSelect() const
 
     return true;
 }
-
-#else
-
-PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
-{
-    return adoptRef(new HTMLContentElement(contentTagName(document), document));
-}
-
-HTMLContentElement::HTMLContentElement(const QualifiedName& tagName, Document* document)
-    : InsertionPoint(tagName, document)
-{ }
-
-#endif // if ENABLE(SHADOW_DOM)
-
 }
 

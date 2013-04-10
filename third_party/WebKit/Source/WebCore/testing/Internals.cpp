@@ -324,11 +324,7 @@ PassRefPtr<Element> Internals::createContentElement(ExceptionCode& ec)
         return 0;
     }
 
-#if ENABLE(SHADOW_DOM)
     return HTMLContentElement::create(document);
-#else
-    return 0;
-#endif
 }
 
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionCode& ec)
@@ -338,11 +334,7 @@ bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionCode& ec)
         return false;
     }
 
-#if ENABLE(SHADOW_DOM)
     return isHTMLContentElement(insertionPoint) && toHTMLContentElement(insertionPoint)->isSelectValid();
-#else
-    return false;
-#endif
 }
 
 Node* Internals::treeScopeRootNode(Node* node, ExceptionCode& ec)
@@ -653,7 +645,7 @@ PassRefPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisited
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::ensureShadowRoot(Element* host, ExceptionCode& ec)
+ShadowRoot* Internals::ensureShadowRoot(Element* host, ExceptionCode& ec)
 {
     if (!host) {
         ec = INVALID_ACCESS_ERR;
@@ -666,7 +658,7 @@ Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::ensureShadowRoot(Eleme
     return host->createShadowRoot(ec).get();
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::createShadowRoot(Element* host, ExceptionCode& ec)
+ShadowRoot* Internals::createShadowRoot(Element* host, ExceptionCode& ec)
 {
     if (!host) {
         ec = INVALID_ACCESS_ERR;
@@ -675,14 +667,14 @@ Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::createShadowRoot(Eleme
     return host->createShadowRoot(ec).get();
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::shadowRoot(Element* host, ExceptionCode& ec)
+ShadowRoot* Internals::shadowRoot(Element* host, ExceptionCode& ec)
 {
     // FIXME: Internals::shadowRoot() in tests should be converted to youngestShadowRoot() or oldestShadowRoot().
     // https://bugs.webkit.org/show_bug.cgi?id=78465
     return youngestShadowRoot(host, ec);
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::youngestShadowRoot(Element* host, ExceptionCode& ec)
+ShadowRoot* Internals::youngestShadowRoot(Element* host, ExceptionCode& ec)
 {
     if (!host) {
         ec = INVALID_ACCESS_ERR;
@@ -694,7 +686,7 @@ Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::youngestShadowRoot(Ele
     return 0;
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::oldestShadowRoot(Element* host, ExceptionCode& ec)
+ShadowRoot* Internals::oldestShadowRoot(Element* host, ExceptionCode& ec)
 {
     if (!host) {
         ec = INVALID_ACCESS_ERR;
@@ -706,7 +698,7 @@ Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::oldestShadowRoot(Eleme
     return 0;
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::youngerShadowRoot(Node* shadow, ExceptionCode& ec)
+ShadowRoot* Internals::youngerShadowRoot(Node* shadow, ExceptionCode& ec)
 {
     if (!shadow || !shadow->isShadowRoot()) {
         ec = INVALID_ACCESS_ERR;
@@ -716,7 +708,7 @@ Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::youngerShadowRoot(Node
     return toShadowRoot(shadow)->youngerShadowRoot();
 }
 
-Internals::ShadowRootIfShadowDOMEnabledOrNode* Internals::olderShadowRoot(Node* shadow, ExceptionCode& ec)
+ShadowRoot* Internals::olderShadowRoot(Node* shadow, ExceptionCode& ec)
 {
     if (!shadow || !shadow->isShadowRoot()) {
         ec = INVALID_ACCESS_ERR;

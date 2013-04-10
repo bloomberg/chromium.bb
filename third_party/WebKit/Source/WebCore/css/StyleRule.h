@@ -54,9 +54,7 @@ public:
 #endif
         Region = 16,
         Filter = 17,
-#if ENABLE(SHADOW_DOM)
         HostInternal = 18, // Spec says Host = 1001, but we can use only 5 bit for type().
-#endif
     };
 
     Type type() const { return static_cast<Type>(m_type); }
@@ -75,9 +73,7 @@ public:
     bool isViewportRule() const { return type() == Viewport; }
 #endif
     bool isImportRule() const { return type() == Import; }
-#if ENABLE(SHADOW_DOM)
     bool isHostRule() const { return type() == HostInternal; }
-#endif
     bool isFilterRule() const { return type() == Filter; }
 
     PassRefPtr<StyleRuleBase> copy() const;
@@ -265,7 +261,6 @@ private:
     CSSSelectorList m_selectorList;
 };
 
-#if ENABLE(SHADOW_DOM)
 class StyleRuleHost : public StyleRuleGroup {
 public:
     static PassRefPtr<StyleRuleHost> create(Vector<RefPtr<StyleRuleBase> >& adoptRules)
@@ -279,7 +274,6 @@ private:
     StyleRuleHost(Vector<RefPtr<StyleRuleBase> >& adoptRules) : StyleRuleGroup(HostInternal, adoptRules) { }
     StyleRuleHost(const StyleRuleHost& o) : StyleRuleGroup(o) { }
 };
-#endif
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 class StyleRuleViewport : public StyleRuleBase {

@@ -212,13 +212,11 @@ public:
     static void setWebkitVideoTrackEnabled(bool isEnabled) { isVideoTrackEnabled = isEnabled; }
 #endif
 
-#if ENABLE(SHADOW_DOM)
     static bool shadowDOMEnabled() { return isShadowDOMEnabled; }
     static void setShadowDOMEnabled(bool isEnabled) { isShadowDOMEnabled = isEnabled; }
 
     static bool authorShadowDOMForAnyElementEnabled() { return isAuthorShadowDOMForAnyElementEnabled; }
     static void setAuthorShadowDOMForAnyElementEnabled(bool isEnabled) { isAuthorShadowDOMForAnyElementEnabled = isEnabled; }
-#endif
 
 #if ENABLE(CUSTOM_ELEMENTS)
     static bool customDOMElementsEnabled() { return isCustomDOMElementsEnabled; }
@@ -313,11 +311,9 @@ private:
     static bool isVideoTrackEnabled;
 #endif
 
-#if ENABLE(SHADOW_DOM)
     static bool isShadowDOMEnabled;
 
     static bool isAuthorShadowDOMForAnyElementEnabled;
-#endif
 
 #if ENABLE(CUSTOM_ELEMENTS)
     static bool isCustomDOMElementsEnabled;

@@ -43,8 +43,6 @@ class ShadowRoot;
 class StyleRuleHost;
 struct RuleFeatureSet;
 
-#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
-
 class StyleScopeResolver {
 public:
     typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > ScopedRuleSetMap;
@@ -108,20 +106,6 @@ inline bool StyleScopeResolver::ensureStackConsistency(ContainerNode* parent)
         setupStack(parent);
     return !m_stack.isEmpty();
 }
-
-#else
-
-class StyleScopeResolver {
-public:
-    static const ContainerNode* scopeFor(const CSSStyleSheet*) { return 0; }
-    void push(const ContainerNode*, const ContainerNode*) { }
-    void pop(const ContainerNode*) { }
-    void collectFeaturesTo(RuleFeatureSet&) { }
-    RuleSet* ensureRuleSetFor(const ContainerNode*) { return 0; }
-};
-
-#endif // ENABLE(STYLE_SCOPED)
-
 } // namespace WebCore
 
 #endif // StyleScopeResolver_h

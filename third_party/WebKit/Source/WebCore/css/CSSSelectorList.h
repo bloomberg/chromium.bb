@@ -61,9 +61,7 @@ public:
     bool selectorsNeedNamespaceResolution();
     bool hasInvalidSelector() const;
 
-#if ENABLE(SHADOW_DOM)
     bool hasShadowDistributedAt(size_t index) const;
-#endif
 
     String selectorsText() const;
 

@@ -35,8 +35,6 @@
 #include "ShadowRoot.h"
 #include <wtf/text/AtomicString.h>
 
-#if ENABLE(SHADOW_DOM)
-
 namespace WebCore {
 
 class Document;
@@ -74,4 +72,3 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
 
 } // namespace WebCore
 
-#endif // if ENABLE(SHADOW_DOM)

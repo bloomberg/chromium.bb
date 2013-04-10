@@ -10133,10 +10133,8 @@ inline void CSSParser::detectDashToken(int length)
             m_token = VARFUNCTION;
     } else if (length == 12 && isEqualToCSSIdentifier(name + 1, "webkit-calc"))
         m_token = CALCFUNCTION;
-#if ENABLE(SHADOW_DOM)
     else if (length == 19 && isEqualToCSSIdentifier(name + 1, "webkit-distributed"))
         m_token = DISTRIBUTEDFUNCTION;
-#endif
 }
 
 template <typename CharacterType>
@@ -10190,12 +10188,10 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             m_token = FONT_FACE_SYM;
         return;
 
-#if ENABLE(SHADOW_DOM)
     case 'h':
         if (length == 5 && isEqualToCSSIdentifier(name + 2, "ost"))
             m_token = HOST_SYM;
         return;
-#endif
 
     case 'i':
         if (length == 7 && isEqualToCSSIdentifier(name + 2, "mport")) {
@@ -11163,7 +11159,6 @@ StyleRuleBase* CSSParser::createFontFaceRule()
     return result;
 }
 
-#if ENABLE(SHADOW_DOM)
 StyleRuleBase* CSSParser::createHostRule(RuleList* rules)
 {
     m_allowImportRules = m_allowNamespaceDeclarations = false;
@@ -11179,7 +11174,6 @@ StyleRuleBase* CSSParser::createHostRule(RuleList* rules)
     processAndAddNewRuleToSourceTreeIfNeeded();
     return result;
 }
-#endif
 
 void CSSParser::addNamespace(const AtomicString& prefix, const AtomicString& uri)
 {
@@ -11202,12 +11196,10 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSe
 {
     if (m_defaultNamespace != starAtom || specifiers->isCustomPseudoElement())
         return rewriteSpecifiersWithElementName(nullAtom, starAtom, specifiers, /*tagIsForNamespaceRule*/true);
-#if ENABLE(SHADOW_DOM)
     if (CSSParserSelector* distributedPseudoElementSelector = specifiers->findDistributedPseudoElementSelector()) {
         specifiers->prependTagSelector(QualifiedName(nullAtom, starAtom, m_defaultNamespace), /*tagIsForNamespaceRule*/true);
         return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
     }
-#endif
     return specifiers;
 }
 
@@ -11216,12 +11208,10 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
     AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : m_defaultNamespace;
     QualifiedName tag(namespacePrefix, elementName, determinedNamespace);
 
-#if ENABLE(SHADOW_DOM)
     if (CSSParserSelector* distributedPseudoElementSelector = specifiers->findDistributedPseudoElementSelector()) {
         specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
         return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
     }
-#endif
 
     if (!specifiers->isCustomPseudoElement()) {
         if (tag == anyQName())
@@ -11255,7 +11245,6 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
     return specifiers;
 }
 
-#if ENABLE(SHADOW_DOM)
 CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector)
 {
     CSSParserSelector* argumentSelector = distributedPseudoElementSelector->functionArgumentSelector();
@@ -11274,7 +11263,6 @@ CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSel
     end->setRelation(CSSSelector::ShadowDistributed);
     return argumentSelector;
 }
-#endif
 
 CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)
 {

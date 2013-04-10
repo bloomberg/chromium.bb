@@ -110,10 +110,8 @@ static void flattenSourceData(RuleSourceDataList* dataList, RuleSourceDataList* 
             target->append(data);
         else if (data->type == CSSRuleSourceData::MEDIA_RULE)
             flattenSourceData(&data->childRules, target);
-#if ENABLE(SHADOW_DOM)
         else if (data->type == CSSRuleSourceData::HOST_RULE)
             flattenSourceData(&data->childRules, target);
-#endif
 #if ENABLE(CSS3_CONDITIONAL_RULES)
         else if (data->type == CSSRuleSourceData::SUPPORTS_RULE)
             flattenSourceData(&data->childRules, target);
@@ -225,10 +223,8 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
     if (rule->type() == CSSRule::WEBKIT_KEYFRAMES_RULE)
         return static_cast<WebKitCSSKeyframesRule*>(rule)->cssRules();
 
-#if ENABLE(SHADOW_DOM)
     if (rule->type() == CSSRule::HOST_RULE)
         return static_cast<CSSHostRule*>(rule)->cssRules();
-#endif
 
 #if ENABLE(CSS3_CONDITIONAL_RULES)
     if (rule->type() == CSSRule::SUPPORTS_RULE)

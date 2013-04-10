@@ -315,9 +315,7 @@ public:
     void markSupportsRuleHeaderEnd();
     PassRefPtr<CSSRuleSourceData> popSupportsRuleData();
 #endif
-#if ENABLE(SHADOW_DOM)
     StyleRuleBase* createHostRule(RuleList* rules);
-#endif
     StyleRuleBase* createFilterRule(const CSSParserString&);
 
     void startDeclarationsForMarginBox();
@@ -340,9 +338,7 @@ public:
     CSSParserSelector* rewriteSpecifiersWithElementName(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*, bool isNamespacePlaceholder = false);
     CSSParserSelector* rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector*);
     CSSParserSelector* rewriteSpecifiers(CSSParserSelector*, CSSParserSelector*);
-#if ENABLE(SHADOW_DOM)
     CSSParserSelector* rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector);
-#endif
 
     void invalidBlockHit();
 

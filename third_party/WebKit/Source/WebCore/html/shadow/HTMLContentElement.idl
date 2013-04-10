@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=SHADOW_DOM,
     EnabledAtRuntime=shadowDOM,
     SkipVTableValidation
 ] interface HTMLContentElement : HTMLElement {

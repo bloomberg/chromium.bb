@@ -384,11 +384,7 @@ void StyleResolver::sweepMatchedPropertiesCache(Timer<StyleResolver>*)
 
 inline bool StyleResolver::styleSharingCandidateMatchesHostRules()
 {
-#if ENABLE(SHADOW_DOM)
     return m_scopeResolver && m_scopeResolver->styleSharingCandidateMatchesHostRules(m_state.element());
-#else
-    return false;
-#endif
 }
 
 bool StyleResolver::classNamesAffectedByRules(const SpaceSplitString& classNames) const
@@ -485,9 +481,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
             ++subcount;
             if (currentNode->renderStyle() == parentStyle && currentNode->lastChild()
                 && currentNode->isElementNode() && !parentElementPreventsSharing(toElement(currentNode))
-#if ENABLE(SHADOW_DOM)
                 && !toElement(currentNode)->shadow()
-#endif
                 ) {
                 // Adjust for unused reserved tries.
                 visitedNodeCount -= cStyleSearchThreshold - subcount;

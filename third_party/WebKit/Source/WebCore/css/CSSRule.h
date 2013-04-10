@@ -60,9 +60,7 @@ public:
         WEBKIT_REGION_RULE = 16,
 #endif
         WEBKIT_FILTER_RULE = 17,
-#if ENABLE(SHADOW_DOM)
         HOST_RULE = 1001,
-#endif
     };
 
     virtual Type type() const = 0;

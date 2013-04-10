@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-#if ENABLE(SHADOW_DOM)
 void ShadowDistributedRules::addRule(StyleRule* rule, size_t selectorIndex, ContainerNode* scope, AddRuleFlags addRuleFlags)
 {
     if (m_shadowDistributedRuleSetMap.contains(scope))
@@ -61,7 +60,6 @@ void ShadowDistributedRules::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_shadowDistributedRuleSetMap, "shadowDistributedRuleSetMap");
 }
-#endif
 
 DocumentRuleSets::DocumentRuleSets()
 {
@@ -106,9 +104,7 @@ void DocumentRuleSets::resetAuthorStyle()
 {
     m_authorStyle = RuleSet::create();
     m_authorStyle->disableAutoShrinkToFit();
-#if ENABLE(SHADOW_DOM)
     m_shadowDistributedRules.clear();
-#endif
 }
 
 void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets, MediaQueryEvaluator* medium, InspectorCSSOMWrappers& inspectorCSSOMWrappers, bool isViewSource, StyleResolver* resolver)
@@ -122,7 +118,6 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
         if (cssSheet->mediaQueries() && !medium->eval(cssSheet->mediaQueries(), resolver))
             continue;
         StyleSheetContents* sheet = cssSheet->contents();
-#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
         if (const ContainerNode* scope = StyleScopeResolver::scopeFor(cssSheet)) {
             // FIXME: Remove a dependency to calling a StyleResolver's member function.
             // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "StyleResolver.h".
@@ -130,7 +125,6 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
             resolver->ensureScopeResolver()->ensureRuleSetFor(scope)->addRulesFromSheet(sheet, *medium, resolver, scope);
             continue;
         }
-#endif
         m_authorStyle->addRulesFromSheet(sheet, *medium, resolver);
         inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
     }
@@ -168,9 +162,7 @@ void DocumentRuleSets::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_features, "features");
     info.addMember(m_siblingRuleSet, "siblingRuleSet");
     info.addMember(m_uncommonAttributeRuleSet, "uncommonAttributeRuleSet");
-#if ENABLE(SHADOW_DOM)
     info.addMember(m_shadowDistributedRules, "shadowDistributedRules");
-#endif
 }
 
 } // namespace WebCore

@@ -116,9 +116,7 @@ void TextFieldDecorationElement::decorate(HTMLInputElement* input, bool visible)
     box->setInlineStyleProperty(CSSPropertyWebkitAlignItems, CSSValueCenter);
     ASSERT(existingRoot->childNodeCount() == 1);
     toHTMLElement(existingRoot->firstChild())->setInlineStyleProperty(CSSPropertyWebkitFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-#if ENABLE(SHADOW_DOM)
     box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()));
-#endif
     setInlineStyleProperty(CSSPropertyDisplay, visible ? CSSValueBlock : CSSValueNone);
     box->appendChild(this);
 }

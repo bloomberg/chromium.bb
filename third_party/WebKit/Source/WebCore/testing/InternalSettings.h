@@ -52,10 +52,8 @@ public:
 
         bool m_originalCSSExclusionsEnabled;
         bool m_originalCSSVariablesEnabled;
-#if ENABLE(SHADOW_DOM)
         bool m_originalShadowDOMEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
-#endif
 #if ENABLE(STYLE_SCOPED)
         bool m_originalStyleScoped;
 #endif

@@ -24,9 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=SHADOW_DOM
-] interface ShadowRoot : DocumentFragment {
+interface ShadowRoot : DocumentFragment {
     readonly attribute Element activeElement;
     attribute boolean applyAuthorStyles;
     attribute boolean resetStyleInheritance;

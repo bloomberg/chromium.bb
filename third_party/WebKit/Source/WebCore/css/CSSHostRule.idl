@@ -20,7 +20,6 @@
 
 // Introduced in Shadow DOM spec:
 [
-    Conditional=SHADOW_DOM,
     EnabledAtRuntime=shadowDOM
 ] interface CSSHostRule : CSSRule {
     readonly attribute CSSRuleList cssRules;

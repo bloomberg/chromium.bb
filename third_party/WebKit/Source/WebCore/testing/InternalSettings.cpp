@@ -68,10 +68,8 @@ namespace WebCore {
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalCSSExclusionsEnabled(RuntimeEnabledFeatures::cssExclusionsEnabled())
     , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
-#if ENABLE(SHADOW_DOM)
     , m_originalShadowDOMEnabled(RuntimeEnabledFeatures::shadowDOMEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
-#endif
 #if ENABLE(STYLE_SCOPED)
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
 #endif
@@ -103,10 +101,8 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(m_originalCSSExclusionsEnabled);
     settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
-#if ENABLE(SHADOW_DOM)
     RuntimeEnabledFeatures::setShadowDOMEnabled(m_originalShadowDOMEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
-#endif
 #if ENABLE(STYLE_SCOPED)
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
 #endif
@@ -212,23 +208,12 @@ void InternalSettings::setShadowDOMEnabled(bool enabled, ExceptionCode& ec)
         return;
     }
 
-#if ENABLE(SHADOW_DOM)
     RuntimeEnabledFeatures::setShadowDOMEnabled(enabled);
-#else
-    // Even SHADOW_DOM is off, InternalSettings allows setShadowDOMEnabled(false) to
-    // have broader test coverage. But it cannot be setShadowDOMEnabled(true).
-    if (enabled)
-        ec = INVALID_ACCESS_ERR;
-#endif
 }
 
 void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 {
-#if ENABLE(SHADOW_DOM)
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(isEnabled);
-#else
-    UNUSED_PARAM(isEnabled);
-#endif
 }
 
 void InternalSettings::setStyleScopedEnabled(bool enabled)

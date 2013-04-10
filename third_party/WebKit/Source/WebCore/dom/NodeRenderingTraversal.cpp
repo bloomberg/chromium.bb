@@ -94,7 +94,6 @@ Node* previousSiblingSlow(const Node* node)
 
 Node* nextInScope(const Node* node)
 {
-    // FIXME: ComposedShadowTreeWalker shouldn't be used when !ENABLE(SHADOW_DOM) https://bugs.webkit.org/show_bug.cgi?id=103339
     ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
     walker.next();
     return walker.get();
@@ -102,7 +101,6 @@ Node* nextInScope(const Node* node)
 
 Node* previousInScope(const Node* node)
 {
-    // FIXME: ComposedShadowTreeWalker shouldn't be used when !ENABLE(SHADOW_DOM) https://bugs.webkit.org/show_bug.cgi?id=103339
     ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
     walker.previous();
     return walker.get();
@@ -110,7 +108,6 @@ Node* previousInScope(const Node* node)
 
 Node* parentInScope(const Node* node)
 {
-    // FIXME: ComposedShadowTreeWalker shouldn't be used when !ENABLE(SHADOW_DOM) https://bugs.webkit.org/show_bug.cgi?id=103339
     ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
     walker.parent();
     return walker.get();
@@ -118,7 +115,6 @@ Node* parentInScope(const Node* node)
 
 Node* lastChildInScope(const Node* node)
 {
-    // FIXME: ComposedShadowTreeWalker shouldn't be used when !ENABLE(SHADOW_DOM) https://bugs.webkit.org/show_bug.cgi?id=103339
     ComposedShadowTreeWalker walker = ComposedShadowTreeWalker(node, ComposedShadowTreeWalker::DoNotCrossUpperBoundary);
     walker.lastChild();
     return walker.get();

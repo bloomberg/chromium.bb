@@ -98,9 +98,7 @@ class StyleKeyframe;
 class StylePendingImage;
 class StylePropertySet;
 class StyleRule;
-#if ENABLE(SHADOW_DOM)
 class StyleRuleHost;
-#endif
 class StyleRuleKeyframes;
 class StyleRulePage;
 class StyleRuleRegion;
@@ -179,9 +177,7 @@ public:
     void popParentElement(Element*);
     void pushParentShadowRoot(const ShadowRoot*);
     void popParentShadowRoot(const ShadowRoot*);
-#if ENABLE(SHADOW_DOM)
     void addHostRule(StyleRuleHost* rule, bool hasDocumentSecurityOrigin, const ContainerNode* scope) { ensureScopeResolver()->addHostRule(rule, hasDocumentSecurityOrigin, scope); }
-#endif
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
@@ -212,15 +208,10 @@ public:
     const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
     StyleScopeResolver* ensureScopeResolver()
     {
 #if ENABLE(STYLE_SCOPED)
-#if ENABLE(SHADOW_DOM)
         ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled() || RuntimeEnabledFeatures::styleScopedEnabled());
-#else
-        ASSERT(RuntimeEnabledFeatures::styleScopedEnabled());
-#endif
 #else
         ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled());
 #endif
@@ -228,7 +219,6 @@ public:
             m_scopeResolver = adoptPtr(new StyleScopeResolver());
         return m_scopeResolver.get();
     }
-#endif
 
 private:
     void initElement(Element*);

@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=SHADOW_DOM,
     EnabledAtRuntime=shadowDOM
 ] interface HTMLShadowElement : HTMLElement {
     attribute boolean resetStyleInheritance;

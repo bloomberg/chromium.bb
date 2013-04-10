@@ -109,12 +109,10 @@
     [PerWorldBindings] readonly attribute unsigned long childElementCount;
 
     // ShadowAware API
-#if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM
     [Reflect=pseudo, EnabledAtRuntime=shadowDOM, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
     [EnabledAtRuntime=shadowDOM, ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
     [EnabledAtRuntime=shadowDOM, ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
     [EnabledAtRuntime=shadowDOM, ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
-#endif
 
     // DOM 4
     [RaisesException] void remove();

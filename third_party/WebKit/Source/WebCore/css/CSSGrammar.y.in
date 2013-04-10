@@ -87,11 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-#if ENABLE_SHADOW_DOM
 %expect 68
-#else
-%expect 67
-#endif
 
 %nonassoc LOWEST_PREC
 
@@ -126,9 +122,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token SUPPORTS_SYM
 #endif
 %token FONT_FACE_SYM
-#if ENABLE_SHADOW_DOM
 %token HOST_SYM
-#endif
 %token CHARSET_SYM
 %token NAMESPACE_SYM
 %token VARFUNCTION
@@ -232,9 +226,7 @@ static inline bool isCSSTokenAString(int yytype)
 %type <rule> page
 %type <rule> margin_box
 %type <rule> font_face
-#if ENABLE_SHADOW_DOM
 %type <rule> host
-#endif
 %type <rule> keyframes
 %type <rule> invalid_rule
 %type <rule> save_block
@@ -470,9 +462,7 @@ valid_rule:
 #if ENABLE_CSS3_CONDITIONAL_RULES
   | supports
 #endif
-#if ENABLE_SHADOW_DOM
   | host
-#endif
 #if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
 #endif
@@ -1010,7 +1000,6 @@ font_face:
     }
 ;
 
-#if ENABLE_SHADOW_DOM
 before_host_rule:
     /* empty */ {
         parser->markRuleHeaderStart(CSSRuleSourceData::HOST_RULE);
@@ -1027,7 +1016,6 @@ host:
         parser->popRuleData();
     }
     ;
-#endif
 
 #if ENABLE_CSS_DEVICE_ADAPTATION
 before_viewport_rule:
@@ -1440,7 +1428,6 @@ pseudo:
             $$ = 0;
     }
 #endif
-#if ENABLE_SHADOW_DOM
     | ':' ':' DISTRIBUTEDFUNCTION maybe_space selector maybe_space ')' {
         if (!$5)
             $$ = 0;
@@ -1452,7 +1439,6 @@ pseudo:
             $$->setValue($3);
         }
     }
-#endif
     // use by :-webkit-any.
     // FIXME: should we support generic selectors here or just simple_selectors?
     // Use simple_selector_list for now to match -moz-any.
