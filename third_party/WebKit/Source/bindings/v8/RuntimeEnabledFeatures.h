@@ -133,8 +133,6 @@ public:
     static bool sharedWorkerEnabled();
 #endif
 
-    static bool webSocketEnabled();
-
     static bool openDatabaseEnabled();
     static bool openDatabaseSyncEnabled();
 

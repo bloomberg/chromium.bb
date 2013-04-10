@@ -123,18 +123,6 @@ static unsigned long saturateAdd(unsigned long a, unsigned long b)
     return a + b;
 }
 
-static bool webSocketsAvailable = true;
-
-void WebSocket::setIsAvailable(bool available)
-{
-    webSocketsAvailable = available;
-}
-
-bool WebSocket::isAvailable()
-{
-    return webSocketsAvailable;
-}
-
 const char* WebSocket::subProtocolSeperator()
 {
     return ", ";

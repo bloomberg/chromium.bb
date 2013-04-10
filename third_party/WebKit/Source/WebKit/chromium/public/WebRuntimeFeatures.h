@@ -53,9 +53,6 @@ public:
     WEBKIT_EXPORT static void enableMediaPlayer(bool);
     WEBKIT_EXPORT static bool isMediaPlayerEnabled();
 
-    WEBKIT_EXPORT static void enableSockets(bool);
-    WEBKIT_EXPORT static bool isSocketsEnabled();
-
     WEBKIT_EXPORT static void enableNotifications(bool);
     WEBKIT_EXPORT static bool isNotificationsEnabled();
 

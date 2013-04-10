@@ -137,11 +137,6 @@ bool RuntimeEnabledFeatures::sharedWorkerEnabled()
 }
 #endif
 
-bool RuntimeEnabledFeatures::webSocketEnabled()
-{
-    return WebSocket::isAvailable();
-}
-
 bool RuntimeEnabledFeatures::openDatabaseEnabled()
 {
     return DatabaseManager::manager().isAvailable();

@@ -50,8 +50,6 @@ class ThreadableWebSocketChannel;
 
 class WebSocket : public RefCounted<WebSocket>, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
-    static void setIsAvailable(bool);
-    static bool isAvailable();
     static const char* subProtocolSeperator();
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*);
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionCode&);
