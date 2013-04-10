@@ -2965,11 +2965,6 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
     return true;
 }
 
-bool EventHandler::needsKeyboardEventDisambiguationQuirks() const
-{
-    return false;
-}
-
 bool EventHandler::isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent& keyEvent) const
 {
     Document* document = m_frame->document();

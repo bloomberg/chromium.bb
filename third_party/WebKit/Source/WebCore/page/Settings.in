@@ -49,11 +49,6 @@ acceleratedCompositingEnabled initial=true, setNeedsStyleRecalcInAllFrames=1
 showDebugBorders initial=false, setNeedsStyleRecalcInAllFrames=1
 showRepaintCounter initial=false, setNeedsStyleRecalcInAllFrames=1
 
-# This is a quirk we are pro-actively applying to old applications. It changes keyboard event dispatching,
-# making keyIdentifier available on keypress events, making charCode available on keydown/keyup events,
-# and getting keypress dispatched in more cases.
-needsKeyboardEventDisambiguationQuirks initial=false
-
 shrinksStandaloneImagesToFit initial=true
 pageCacheSupportsPlugins initial=false
 showsToolTipOverTruncatedText initial=false
