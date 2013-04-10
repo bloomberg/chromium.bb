@@ -33,6 +33,41 @@ bool CompareByTimestamp(const MetadataSearchResult& a,
   return a_file_info.last_modified() > b_file_info.last_modified();
 }
 
+// Returns true if |entry| is eligible for the search |options| and should be
+// tested for the match with the query.
+// If SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS is requested, the hosted
+// documents are skipped. If SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested,
+// the directories are skipped. If SEARCH_METADATA_SHARED_WITH_ME is requested,
+// only the entries with shared-with-me label will be tested.
+bool IsEligibleEntry(const DriveEntryProto& entry, int options) {
+  if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
+      entry.file_specific_info().is_hosted_document())
+    return false;
+
+  if ((options & SEARCH_METADATA_EXCLUDE_DIRECTORIES) &&
+      entry.file_info().is_directory())
+    return false;
+
+  if (options & SEARCH_METADATA_SHARED_WITH_ME)
+    return entry.shared_with_me();
+
+  return true;
+}
+
+// Returns true if this search needs to traverse the tree under |entry|.
+bool ShouldReadDirectory(const DriveEntryProto& entry, int options) {
+  // Cannot read non-directory.
+  if (!entry.file_info().is_directory())
+    return false;
+
+  // This is a directory.
+  // Shared-with-me search do not go into a share-with-me directory.
+  if (options & SEARCH_METADATA_SHARED_WITH_ME)
+    return !entry.shared_with_me();
+
+  return true;
+}
+
 }  // namespace
 
 // Helper class for searching the local resource metadata.
@@ -87,7 +122,7 @@ class SearchMetadataHelper {
           base::FilePath::FromUTF8Unsafe(entry.base_name()));
 
       // Recursively reading the sub directory.
-      if (entry.file_info().is_directory()) {
+      if (ShouldReadDirectory(entry, options_)) {
         ++num_pending_reads_;
         resource_metadata_->ReadDirectoryByPath(
             current_path,
@@ -96,22 +131,12 @@ class SearchMetadataHelper {
                        current_path));
       }
 
-      // Skip the hosted document if |options| has
-      // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS, which is set by
-      // DriveFileSystem::SearchMetadata() based on the preference.
-      if ((options_ & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
-          entry.file_specific_info().is_hosted_document())
-        continue;
-
-      // Skip the directory if SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested.
-      if ((options_ & SEARCH_METADATA_EXCLUDE_DIRECTORIES) &&
-          entry.file_info().is_directory())
-        continue;
-
-      // Add it to the search result if the base name of the file contains
-      // the query.
+      // Add it to the search result if the entry is eligible for the given
+      // |options| and matches the query. The base name of the entry must
+      // contains |query| to match the query.
       std::string highlighted;
-      if (FindAndHighlight(entry.base_name(), query_, &highlighted)) {
+      if (IsEligibleEntry(entry, options_) &&
+          FindAndHighlight(entry.base_name(), query_, &highlighted)) {
         results_->push_back(
             MetadataSearchResult(current_path, entry, highlighted));
       }

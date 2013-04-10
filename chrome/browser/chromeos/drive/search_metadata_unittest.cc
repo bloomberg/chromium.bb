@@ -253,6 +253,23 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
   ASSERT_EQ(0U, result->size());
 }
 
+TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<MetadataSearchResultVector> result;
+
+  SearchMetadata(resource_metadata_.get(),
+                 "",
+                 SEARCH_METADATA_SHARED_WITH_ME,
+                 kDefaultAtMostNumMatches,
+                 google_apis::test_util::CreateCopyResultCallback(
+                     &error, &result));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(1U, result->size());
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
+                "drive/root/Directory 1/Shared To The Account Owner.txt"),
+            result->at(0).path);
+}
 
 TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;

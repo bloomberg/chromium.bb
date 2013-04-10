@@ -295,6 +295,14 @@
             "label": "audio/mpeg",
             "scheme": "http://schemas.google.com/g/2005#kind",
             "term": "http://schemas.google.com/docs/2007#file"
+         }, {
+            "label": "shared",
+            "scheme": "http://schemas.google.com/g/2005/labels",
+            "term": "http://schemas.google.com/g/2005/labels#shared"
+         }, {
+            "label": "shared-with-me",
+            "scheme": "http://schemas.google.com/g/2005/labels",
+            "term": "http://schemas.google.com/g/2005/labels#shared-with-me"
          } ],
          "content": {
             "src": "https://file_content_url/",

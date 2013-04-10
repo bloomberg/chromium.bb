@@ -126,11 +126,13 @@ struct DriveClientContext {
 // SEARCH_METADATA_ALL is the default to investigate all the entries.
 // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS excludes the hosted documents.
 // SEARCH_METADATA_EXCLUDE_DIRECTORIES excludes the directories from the result.
-// TODO(haruki): Add option for shared_with_me and offline.
+// SEARCH_METADATA_SHARED_WITH_ME targets only "shared-with-me" entries.
+// TODO(haruki): Add option for offline.
 enum SearchMetadataOptions {
   SEARCH_METADATA_ALL = 0,
   SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS = 1,
   SEARCH_METADATA_EXCLUDE_DIRECTORIES = 1 << 1,
+  SEARCH_METADATA_SHARED_WITH_ME = 1 << 2,
 };
 
 // Drive file system abstraction layer.
