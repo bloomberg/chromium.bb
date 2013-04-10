@@ -48,9 +48,7 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY),
                         IntPoint(pageX, pageY),
-#if ENABLE(POINTER_LOCK)
                         IntPoint(0, 0),
-#endif
                         ctrlKey, altKey, shiftKey, metaKey)
     , m_touches(touches)
     , m_targetTouches(targetTouches)

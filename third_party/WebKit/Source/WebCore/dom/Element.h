@@ -591,9 +591,7 @@ public:
     void setIsInTopLayer(bool);
 #endif
 
-#if ENABLE(POINTER_LOCK)
     void webkitRequestPointerLock();
-#endif
 
     virtual bool isSpellCheckingEnabled() const;
 

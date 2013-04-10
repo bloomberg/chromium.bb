@@ -1221,10 +1221,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 #endif
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-#if ENABLE(POINTER_LOCK)
+
     if (document()->page())
         document()->page()->pointerLockController()->elementRemoved(this);
-#endif
 
     setSavedLayerScrollOffset(IntSize());
 
@@ -2483,13 +2482,11 @@ void Element::setIsInTopLayer(bool inTopLayer)
 }
 #endif
 
-#if ENABLE(POINTER_LOCK)
 void Element::webkitRequestPointerLock()
 {
     if (document()->page())
         document()->page()->pointerLockController()->requestPointerLock(this);
 }
-#endif
 
 SpellcheckAttributeState Element::spellcheckAttributeState() const
 {

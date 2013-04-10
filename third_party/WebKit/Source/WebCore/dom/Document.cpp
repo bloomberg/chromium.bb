@@ -1982,10 +1982,8 @@ void Document::detach()
     ASSERT(attached());
     ASSERT(!m_inPageCache);
 
-#if ENABLE(POINTER_LOCK)
     if (page())
         page()->pointerLockController()->documentDetached(this);
-#endif
 
     if (this == topDocument())
         clearAXObjectCache();
@@ -5412,7 +5410,6 @@ void Document::removeFromTopLayer(Element* element)
 }
 #endif
 
-#if ENABLE(POINTER_LOCK)
 void Document::webkitExitPointerLock()
 {
     if (!page())
@@ -5434,7 +5431,6 @@ Element* Document::webkitPointerLockElement() const
     }
     return 0;
 }
-#endif
 
 void Document::decrementLoadEventDelayCount()
 {

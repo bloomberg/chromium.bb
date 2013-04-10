@@ -39,10 +39,8 @@ namespace WebCore {
         const IntPoint& screenLocation() const { return m_screenLocation; }
         int clientX() const { return m_clientLocation.x(); }
         int clientY() const { return m_clientLocation.y(); }
-#if ENABLE(POINTER_LOCK)
         int webkitMovementX() const { return m_movementDelta.x(); }
         int webkitMovementY() const { return m_movementDelta.y(); }
-#endif
         const LayoutPoint& clientLocation() const { return m_clientLocation; }
         int layerX();
         int layerY();
@@ -64,9 +62,7 @@ namespace WebCore {
         MouseRelatedEvent();
         MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
                           int detail, const IntPoint& screenLocation, const IntPoint& windowLocation,
-#if ENABLE(POINTER_LOCK)
                           const IntPoint& movementDelta,
-#endif
                           bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated = false);
 
         void initCoordinates();
@@ -79,9 +75,7 @@ namespace WebCore {
         // Expose these so MouseEvent::initMouseEvent can set them.
         IntPoint m_screenLocation;
         LayoutPoint m_clientLocation;
-#if ENABLE(POINTER_LOCK)
         LayoutPoint m_movementDelta;
-#endif
 
     private:
         LayoutPoint m_pageLocation;

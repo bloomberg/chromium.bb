@@ -185,8 +185,8 @@
     [EnabledAtRuntime] readonly attribute Element webkitFullscreenElement;
     [EnabledAtRuntime] void webkitExitFullscreen();
 
-    [Conditional=POINTER_LOCK] void webkitExitPointerLock();
-    [Conditional=POINTER_LOCK] readonly attribute Element webkitPointerLockElement;
+    void webkitExitPointerLock();
+    readonly attribute Element webkitPointerLockElement;
 
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
 
@@ -264,8 +264,8 @@
     [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
     [NotEnumerable] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable] attribute EventListener onwebkitfullscreenerror;
-    [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockchange;
-    [NotEnumerable, Conditional=POINTER_LOCK] attribute EventListener onwebkitpointerlockerror;
+    [NotEnumerable] attribute EventListener onwebkitpointerlockchange;
+    [NotEnumerable] attribute EventListener onwebkitpointerlockerror;
     [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
 
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS

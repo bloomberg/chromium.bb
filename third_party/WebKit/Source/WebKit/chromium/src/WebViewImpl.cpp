@@ -1996,12 +1996,10 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 
     TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
 
-#if ENABLE(POINTER_LOCK)
     if (isPointerLocked() && WebInputEvent::isMouseEventType(inputEvent.type)) {
       pointerLockMouseEvent(inputEvent);
       return true;
     }
-#endif
 
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
@@ -2536,26 +2534,20 @@ void WebViewImpl::willCloseLayerTreeView()
 
 void WebViewImpl::didAcquirePointerLock()
 {
-#if ENABLE(POINTER_LOCK)
     if (page())
         page()->pointerLockController()->didAcquirePointerLock();
-#endif
 }
 
 void WebViewImpl::didNotAcquirePointerLock()
 {
-#if ENABLE(POINTER_LOCK)
     if (page())
         page()->pointerLockController()->didNotAcquirePointerLock();
-#endif
 }
 
 void WebViewImpl::didLosePointerLock()
 {
-#if ENABLE(POINTER_LOCK)
     if (page())
         page()->pointerLockController()->didLosePointerLock();
-#endif
 }
 
 void WebViewImpl::didChangeWindowResizerRect()
@@ -4195,7 +4187,6 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
     }
 }
 
-#if ENABLE(POINTER_LOCK)
 bool WebViewImpl::requestPointerLock()
 {
     return m_client && m_client->requestPointerLock();
@@ -4236,7 +4227,6 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
             PlatformMouseEventBuilder(mainFrameImpl()->frameView(), mouseEvent),
             eventType);
 }
-#endif
 
 bool WebViewImpl::shouldDisableDesktopWorkarounds()
 {

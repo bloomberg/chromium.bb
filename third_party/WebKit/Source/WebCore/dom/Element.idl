@@ -128,7 +128,7 @@
     // W3C version
     [EnabledAtRuntime] void webkitRequestFullscreen();
 
-    [Conditional=POINTER_LOCK] void webkitRequestPointerLock();
+    void webkitRequestPointerLock();
 
     // CSS Regions API
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;

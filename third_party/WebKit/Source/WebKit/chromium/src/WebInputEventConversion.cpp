@@ -75,9 +75,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     // to get rid of this once we abstract popups into a WebKit API.
     m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
-#if ENABLE(POINTER_LOCK)
     m_movementDelta = IntPoint(e.movementX / scale, e.movementY / scale);
-#endif
     m_button = static_cast<MouseButton>(e.button);
 
     m_modifiers = 0;
@@ -493,10 +491,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
             break;
         }
     }
-#if ENABLE(POINTER_LOCK)
     movementX = event.webkitMovementX();
     movementY = event.webkitMovementY();
-#endif
     clickCount = event.detail();
 }
 

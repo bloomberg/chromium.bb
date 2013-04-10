@@ -33,8 +33,6 @@
 #include "PlatformMouseEvent.h"
 #include "VoidCallback.h"
 
-#if ENABLE(POINTER_LOCK)
-
 namespace WebCore {
 
 PointerLockController::PointerLockController(Page* page)
@@ -160,5 +158,3 @@ void PointerLockController::enqueueEvent(const AtomicString& type, Document* doc
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(POINTER_LOCK)

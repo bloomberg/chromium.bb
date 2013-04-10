@@ -61,43 +61,33 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
 
     return MouseEvent::create(eventType, true, isCancelable, view,
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
-#if ENABLE(POINTER_LOCK)
         event.movementDelta().x(), event.movementDelta().y(),
-#endif
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.button(),
         relatedTarget, 0, false);
 }
 
 PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
-#if ENABLE(POINTER_LOCK)
     int movementX, int movementY,
-#endif
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
     PassRefPtr<EventTarget> relatedTarget)
 
 {
     return MouseEvent::create(type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
-#if ENABLE(POINTER_LOCK)
         movementX, movementY,
-#endif
         ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, 0, false);
 }
 
 PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
-#if ENABLE(POINTER_LOCK)
     int movementX, int movementY,
-#endif
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
     PassRefPtr<EventTarget> relatedTarget, PassRefPtr<Clipboard> clipboard, bool isSimulated)
 {
     return adoptRef(new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
-#if ENABLE(POINTER_LOCK)
         movementX, movementY,
-#endif
         ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, clipboard, isSimulated));
 }
 
@@ -110,17 +100,13 @@ MouseEvent::MouseEvent()
 
 MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
                        int detail, int screenX, int screenY, int pageX, int pageY,
-#if ENABLE(POINTER_LOCK)
                        int movementX, int movementY,
-#endif
                        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
                        unsigned short button, PassRefPtr<EventTarget> relatedTarget,
                        PassRefPtr<Clipboard> clipboard, bool isSimulated)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
                         IntPoint(pageX, pageY),
-#if ENABLE(POINTER_LOCK)
                         IntPoint(movementX, movementY),
-#endif
                         ctrlKey, altKey, shiftKey, metaKey, isSimulated)
     , m_button(button == (unsigned short)-1 ? 0 : button)
     , m_buttonDown(button != (unsigned short)-1)
@@ -133,9 +119,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
 MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& initializer)
     : MouseRelatedEvent(eventType, initializer.bubbles, initializer.cancelable, initializer.view, initializer.detail, IntPoint(initializer.screenX, initializer.screenY),
         IntPoint(0 /* pageX */, 0 /* pageY */),
-#if ENABLE(POINTER_LOCK)
         IntPoint(0 /* movementX */, 0 /* movementY */),
-#endif
         initializer.ctrlKey, initializer.altKey, initializer.shiftKey, initializer.metaKey, false /* isSimulated */)
     , m_button(initializer.button == (unsigned short)-1 ? 0 : initializer.button)
     , m_buttonDown(initializer.button != (unsigned short)-1)
@@ -261,9 +245,7 @@ SimulatedMouseEvent::~SimulatedMouseEvent()
 
 SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
     : MouseEvent(eventType, true, true, view, 0, 0, 0, 0, 0,
-#if ENABLE(POINTER_LOCK)
                  0, 0,
-#endif
                  false, false, false, false, 0, 0, 0, true)
 {
     if (UIEventWithKeyState* keyStateEvent = findEventWithKeyState(underlyingEvent.get())) {

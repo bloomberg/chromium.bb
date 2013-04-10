@@ -97,11 +97,7 @@ GestureEvent::GestureEvent()
 }
 
 GestureEvent::GestureEvent(const AtomicString& type, PassRefPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY)
-    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY),
-#if ENABLE(POINTER_LOCK)
-                        IntPoint(0, 0),
-#endif
-                        ctrlKey, altKey, shiftKey, metaKey)
+    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), ctrlKey, altKey, shiftKey, metaKey)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
 {
