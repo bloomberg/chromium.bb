@@ -1213,6 +1213,11 @@ function initializeBookmarkManager() {
   // when // the user goes back and forward in the history.
   window.addEventListener('hashchange', processHash);
 
+  document.querySelector('.header form').onsubmit = function(e) {
+    setSearch($('term').value);
+    e.preventDefault();
+  };
+
   $('term').addEventListener('search', handleSearch);
 
   document.querySelector('.summary > button').addEventListener(
