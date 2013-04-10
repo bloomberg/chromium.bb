@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/debug/debugger.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
@@ -35,7 +36,6 @@ namespace {
 const int kTestWidth = 320;
 const int kTestHeight = 240;
 const int kTestFramesPerSecond = 20;
-const base::TimeDelta kWaitTimeout = base::TimeDelta::FromMilliseconds(10000);
 const SkColor kNothingYet = 0xdeadbeef;
 const SkColor kNotInterested = ~kNothingYet;
 
@@ -51,7 +51,7 @@ void DeadlineExceeded(base::Closure quit_closure) {
 
 void RunCurrentLoopWithDeadline() {
   base::Timer deadline(false, false);
-  deadline.Start(FROM_HERE, kWaitTimeout, base::Bind(
+  deadline.Start(FROM_HERE, TestTimeouts::action_max_timeout(), base::Bind(
       &DeadlineExceeded, MessageLoop::current()->QuitClosure()));
   MessageLoop::current()->Run();
   deadline.Stop();
