@@ -396,9 +396,6 @@ void Chrome::setToolTip(const HitTestResult& result)
     if (toolTip.isEmpty())
         toolTip = result.title(toolTipDirection);
 
-    if (toolTip.isEmpty() && m_page->settings()->showsToolTipOverTruncatedText())
-        toolTip = result.innerTextIfTruncated(toolTipDirection);
-
     // Lastly, for <input type="file"> that allow multiple files, we'll consider a tooltip for the selected filenames
     if (toolTip.isEmpty()) {
         if (Node* node = result.innerNonSharedNode()) {
