@@ -127,7 +127,7 @@ void SocketStreamHandleInternal::didSendData(WebKit::WebSocketStreamHandle* sock
 
 void SocketStreamHandleInternal::didReceiveData(WebKit::WebSocketStreamHandle* socketHandle, const WebKit::WebData& data)
 {
-    LOG(Network, "SocketStreamHandleInternal %p didReceiveData() Received %lu bytes", this, data.size());
+    LOG(Network, "SocketStreamHandleInternal %p didReceiveData() Received %lu bytes", this, static_cast<unsigned long>(data.size()));
     if (m_handle && m_socket) {
         ASSERT(socketHandle == m_socket.get());
         if (m_handle->m_client)
