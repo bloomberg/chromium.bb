@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/thread_test_helper.h"
-#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"

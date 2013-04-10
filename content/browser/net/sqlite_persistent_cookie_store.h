@@ -4,8 +4,8 @@
 
 // A sqlite implementation of a cookie monster persistent store.
 
-#ifndef CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
-#define CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
+#ifndef CONTENT_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
+#define CONTENT_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
 
 #include <string>
 #include <vector>
@@ -13,9 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "net/cookies/cookie_monster.h"
 
-class ClearOnExitPolicy;
 class Task;
 
 namespace base {
@@ -27,16 +27,20 @@ namespace net {
 class CanonicalCookie;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
+namespace content {
+
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
 // of the parent class |net::CookieMonster::PersistentCookieStore|.
-// If provided, a |ClearOnExitPolicy| is consulted when the SQLite database is
-// closed to decide which cookies to keep.
-class SQLitePersistentCookieStore
+// If provided, a |SpecialStoragePolicy| is consulted when the SQLite database
+// is closed to decide which cookies to keep.
+class CONTENT_EXPORT SQLitePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
  public:
-  // If non-NULL, SQLitePersistentCookieStore will keep a scoped_refptr to the
-  // |clear_on_exit_policy| throughout its lifetime.
   // All blocking database accesses will be performed on
   // |background_task_runner|, while |client_task_runner| is used to invoke
   // callbacks.
@@ -45,7 +49,7 @@ class SQLitePersistentCookieStore
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
-      ClearOnExitPolicy* clear_on_exit_policy);
+      quota::SpecialStoragePolicy* special_storage_policy);
 
   // net::CookieMonster::PersistentCookieStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;
@@ -68,4 +72,6 @@ class SQLitePersistentCookieStore
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };
 
-#endif  // CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_

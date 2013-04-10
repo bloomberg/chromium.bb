@@ -5,6 +5,7 @@ include_rules = [
   "+content/public/browser",
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration and kDisableEncryptedMedia.
+  "+sql",
   "+ui/webui",
   "+win8/util",
 

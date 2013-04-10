@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/net/sqlite_persistent_cookie_store.h"
+
 #include <map>
 #include <set>
 
@@ -17,15 +19,19 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "chrome/browser/net/clear_on_exit_policy.h"
-#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
-#include "chrome/common/chrome_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+
+namespace content {
+
+namespace {
+
+const base::FilePath::CharType kCookieFilename[] = FILE_PATH_LITERAL("Cookies");
+
+}  // namespace
 
 typedef std::vector<net::CanonicalCookie*> CanonicalCookieVector;
 
@@ -86,7 +92,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   void CreateAndLoad(bool restore_old_session_cookies,
                      CanonicalCookieVector* cookies) {
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(chrome::kCookieFilename),
+        temp_dir_.path().Append(kCookieFilename),
         client_task_runner(),
         background_task_runner(),
         restore_old_session_cookies,
@@ -155,7 +161,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   // Now corrupt the meta table.
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(temp_dir_.path().Append(chrome::kCookieFilename)));
+    ASSERT_TRUE(db.Open(temp_dir_.path().Append(kCookieFilename)));
     sql::MetaTable meta_table_;
     meta_table_.Init(&db, 1, 1);
     ASSERT_TRUE(db.Execute("DELETE FROM meta"));
@@ -218,7 +224,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   DestroyStore();
 
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(chrome::kCookieFilename),
+      temp_dir_.path().Append(kCookieFilename),
       client_task_runner(),
       background_task_runner(),
       false, NULL);
@@ -279,7 +285,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   InitializeStore(false);
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
-  base::FilePath path = temp_dir_.path().Append(chrome::kCookieFilename);
+  base::FilePath path = temp_dir_.path().Append(kCookieFilename);
   base::PlatformFileInfo info;
   ASSERT_TRUE(file_util::GetFileInfo(path, &info));
   int64 base_size = info.size;
@@ -396,3 +402,5 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
 
   STLDeleteElements(&cookies);
 }
+
+}  // namespace content

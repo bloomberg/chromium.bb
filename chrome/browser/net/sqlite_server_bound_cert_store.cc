@@ -18,13 +18,15 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "content/public/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cookies/cookie_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserThread;
 
@@ -33,12 +35,13 @@ using content::BrowserThread;
 class SQLiteServerBoundCertStore::Backend
     : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
-  Backend(const base::FilePath& path, ClearOnExitPolicy* clear_on_exit_policy)
+  Backend(const base::FilePath& path,
+          quota::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
         force_keep_session_state_(false),
-        clear_on_exit_policy_(clear_on_exit_policy) {
+        special_storage_policy_(special_storage_policy) {
   }
 
   // Creates or loads the SQLite database.
@@ -123,7 +126,7 @@ class SQLiteServerBoundCertStore::Backend
   // Cache of origins we have certificates stored for.
   std::set<std::string> cert_origins_;
 
-  scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -499,8 +502,9 @@ void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
-  if (!force_keep_session_state_ && clear_on_exit_policy_.get() &&
-      clear_on_exit_policy_->HasClearOnExitOrigins()) {
+  if (!force_keep_session_state_ &&
+      special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins()) {
     DeleteCertificatesOnShutdown();
   }
 
@@ -514,6 +518,9 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
     return;
 
   if (cert_origins_.empty())
+    return;
+
+  if (!special_storage_policy_.get())
     return;
 
   sql::Statement del_smt(db_->GetCachedStatement(
@@ -531,7 +538,8 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
 
   for (std::set<std::string>::iterator it = cert_origins_.begin();
        it != cert_origins_.end(); ++it) {
-    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(*it, true))
+    const GURL url(net::cookie_util::CookieOriginToURL(*it, true));
+    if (!url.is_valid() || !special_storage_policy_->IsStorageSessionOnly(url))
       continue;
     del_smt.Reset(true);
     del_smt.BindString(0, *it);
@@ -550,8 +558,8 @@ void SQLiteServerBoundCertStore::Backend::SetForceKeepSessionState() {
 
 SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
     const base::FilePath& path,
-    ClearOnExitPolicy* clear_on_exit_policy)
-    : backend_(new Backend(path, clear_on_exit_policy)) {
+    quota::SpecialStoragePolicy* special_storage_policy)
+    : backend_(new Backend(path, special_storage_policy)) {
 }
 
 void SQLiteServerBoundCertStore::Load(

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/net/sqlite_persistent_cookie_store.h"
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,11 +13,17 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
-#include "chrome/common/chrome_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
+
+namespace {
+
+const base::FilePath::CharType cookie_filename[] = FILE_PATH_LITERAL("Cookies");
+
+}  // namespace
 
 class SQLitePersistentCookieStorePerfTest : public testing::Test {
  public:
@@ -54,7 +62,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(chrome::kCookieFilename),
+        temp_dir_.path().Append(cookie_filename),
         client_task_runner(),
         background_task_runner(),
         false, NULL);
@@ -84,10 +92,10 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     pool_owner_.reset(new base::SequencedWorkerPoolOwner(1, "pool"));
 
     store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(chrome::kCookieFilename),
-      client_task_runner(),
-      background_task_runner(),
-      false, NULL);
+        temp_dir_.path().Append(cookie_filename),
+        client_task_runner(),
+        background_task_runner(),
+        false, NULL);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -128,3 +136,5 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadPerformance) {
 
   ASSERT_EQ(15000U, cookies_.size());
 }
+
+}  // namespace content

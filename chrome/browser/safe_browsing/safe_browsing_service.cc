@@ -19,7 +19,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -304,14 +304,12 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!url_request_context_.get());
 
-  scoped_refptr<net::CookieStore> cookie_store = new net::CookieMonster(
-      new SQLitePersistentCookieStore(
+  scoped_refptr<net::CookieStore> cookie_store(
+      content::CreatePersistentCookieStore(
           CookieFilePath(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
           false,
-          NULL),
-      NULL);
+          NULL,
+          NULL));
 
   url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.

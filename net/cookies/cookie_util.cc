@@ -198,6 +198,15 @@ base::Time ParseCookieTime(const std::string& time_string) {
   return base::Time();
 }
 
+GURL CookieOriginToURL(const std::string& domain, bool is_https) {
+  if (domain.empty())
+    return GURL();
+
+  const std::string scheme = is_https ? "https" : "http";
+  const std::string host = domain[0] == '.' ? domain.substr(1) : domain;
+  return GURL(scheme + "://" + host);
+}
+
 }  // namespace cookie_utils
 }  // namespace net
 

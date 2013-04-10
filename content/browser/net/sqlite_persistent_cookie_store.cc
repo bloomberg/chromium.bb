@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
+#include "content/browser/net/sqlite_persistent_cookie_store.h"
 
 #include <list>
 #include <map>
@@ -22,19 +22,24 @@
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/net/clear_on_exit_policy.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using base::Time;
+
+namespace content {
 
 // This class is designed to be shared between any client thread and the
 // background task runner. It batches operations and commits them on a timer.
@@ -66,7 +71,7 @@ class SQLitePersistentCookieStore::Backend
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
-      ClearOnExitPolicy* clear_on_exit_policy)
+      quota::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
@@ -74,7 +79,7 @@ class SQLitePersistentCookieStore::Backend
         initialized_(false),
         corruption_detected_(false),
         restore_old_session_cookies_(restore_old_session_cookies),
-        clear_on_exit_policy_(clear_on_exit_policy),
+        special_storage_policy_(special_storage_policy),
         num_cookies_read_(0),
         client_task_runner_(client_task_runner),
         background_task_runner_(background_task_runner),
@@ -261,7 +266,7 @@ class SQLitePersistentCookieStore::Backend
   bool restore_old_session_cookies_;
 
   // Policy defining what data is deleted on shutdown.
-  scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   // The cumulative time spent loading the cookies on the background runner.
   // Incremented and reported from the background runner.
@@ -977,8 +982,8 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
-  if (!force_keep_session_state_ && clear_on_exit_policy_.get() &&
-      clear_on_exit_policy_->HasClearOnExitOrigins()) {
+  if (!force_keep_session_state_ && special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins()) {
     DeleteSessionCookiesOnShutdown();
   }
 
@@ -990,6 +995,9 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (!db_.get())
+    return;
+
+  if (!special_storage_policy_.get())
     return;
 
   sql::Statement del_smt(db_->GetCachedStatement(
@@ -1011,10 +1019,10 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
       DCHECK_EQ(0, it->second);
       continue;
     }
-    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(it->first.first,
-                                                        it->first.second)) {
+    const GURL url(net::cookie_util::CookieOriginToURL(it->first.first,
+                                                       it->first.second));
+    if (!url.is_valid() || !special_storage_policy_->IsStorageSessionOnly(url))
       continue;
-    }
 
     del_smt.Reset(true);
     del_smt.BindString(0, it->first.first);
@@ -1082,12 +1090,12 @@ SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     bool restore_old_session_cookies,
-    ClearOnExitPolicy* clear_on_exit_policy)
+    quota::SpecialStoragePolicy* special_storage_policy)
     : backend_(new Backend(path,
                            client_task_runner,
                            background_task_runner,
                            restore_old_session_cookies,
-                           clear_on_exit_policy)) {
+                           special_storage_policy)) {
 }
 
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
@@ -1126,3 +1134,21 @@ SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   // We release our reference to the Backend, though it will probably still have
   // a reference if the background runner has not run Close() yet.
 }
+
+net::CookieStore* CreatePersistentCookieStore(
+    const base::FilePath& path,
+    bool restore_old_session_cookies,
+    quota::SpecialStoragePolicy* storage_policy,
+    net::CookieMonster::Delegate* cookie_monster_delegate) {
+  SQLitePersistentCookieStore* persistent_store =
+      new SQLitePersistentCookieStore(
+          path,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+              BrowserThread::GetBlockingPool()->GetSequenceToken()),
+          restore_old_session_cookies,
+          storage_policy);
+  return new net::CookieMonster(persistent_store, cookie_monster_delegate);
+}
+
+}  // namespace content
