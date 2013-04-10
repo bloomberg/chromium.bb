@@ -391,7 +391,8 @@
       'filepath': 'chrome/browser/sessions/',
     },
     'shell_window': {
-      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)extensions/(shell|app|native)' \
+      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)'\
+                  'extensions/(shell|app|native)'
     },
     'site_instance': {
       'filepath': 'content/browser/site_instance|'\
