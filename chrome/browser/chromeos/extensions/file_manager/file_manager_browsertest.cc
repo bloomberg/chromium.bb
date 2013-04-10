@@ -20,6 +20,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -112,6 +113,12 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
 
   // Runs the file display test, shared by sub classes.
   void DoTestFileDisplay();
+
+  // Runs the keyboard copy test, shared by sub classes.
+  void DoTestKeyboardCopy();
+
+  // Runs the keyboard delete test, shared by sub classes.
+  void DoTestKeyboardDelete();
 };
 
 void FileManagerBrowserTestBase::StartFileManager(
@@ -162,6 +169,36 @@ void FileManagerBrowserTestBase::DoTestFileDisplay() {
   listener.Reply("file added");
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+void FileManagerBrowserTestBase::DoTestKeyboardCopy() {
+  base::FilePath copy_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileCopyName);
+  ASSERT_FALSE(PathExists(copy_path));
+
+  ResultCatcher catcher;
+  StartTest("keyboard copy");
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ASSERT_TRUE(WaitUntilFilePresentWithSize(copy_path, kKeyboardTestFileSize));
+
+  // Check that it was a copy, not a move.
+  base::FilePath source_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileName);
+  ASSERT_TRUE(PathExists(source_path));
+}
+
+void FileManagerBrowserTestBase::DoTestKeyboardDelete() {
+  base::FilePath delete_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileName);
+  ASSERT_TRUE(PathExists(delete_path));
+
+  ResultCatcher catcher;
+  StartTest("keyboard delete");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ASSERT_TRUE(WaitUntilFileNotPresent(delete_path));
 }
 
 // Monitors changes to a single file until the supplied condition callback
@@ -394,11 +431,13 @@ void FileManagerBrowserLocalTest::AddMountPointToFakeDownloads() {
       "Downloads", fileapi::kFileSystemTypeNativeLocal, downloads_path_));
 }
 
-class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
+class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase,
+                                    public drive::DriveFileSystemObserver {
  public:
   FileManagerBrowserDriveTest()
       : fake_drive_service_(NULL),
-        system_service_(NULL) {
+        system_service_(NULL),
+        waiting_for_directory_change_(false) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -411,6 +450,11 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
                    base::Unretained(this)));
 
     ExtensionApiTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // The system service should be deleted by the time this function is
+    // called hence no need to call RemoveObserver().
   }
 
  protected:
@@ -428,6 +472,16 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
   virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
       OVERRIDE;
 
+  // Waits until a notification for a directory change is received.
+  void WaitUntilDirectoryChanged();
+
+  // Returns true if a file is not present at |file_path|.
+  bool FileIsNotPresent(const base::FilePath& file_path);
+
+  // Returns true if a file of the size |file_size| is present at |file_path|.
+  bool FileIsPresentWithSize(const base::FilePath& file_path,
+                             int64 file_size);
+
   // Notifies DriveFileSystem that the contents in FakeDriveService are
   // changed, hence the new contents should be fetched.
   void CheckForUpdates();
@@ -435,9 +489,16 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
   // DriveSystemService factory function for this test.
   drive::DriveSystemService* CreateDriveSystemService(Profile* profile);
 
+  // DriveFileSystemObserver override.
+  //
+  // The event is used to unblock WaitUntilDirectoryChanged().
+  virtual void OnDirectoryChanged(
+      const base::FilePath& directory_path) OVERRIDE;
+
   base::ScopedTempDir test_cache_root_;
   google_apis::FakeDriveService* fake_drive_service_;
   drive::DriveSystemService* system_service_;
+  bool waiting_for_directory_change_;
 };
 
 void FileManagerBrowserDriveTest::CreateTestFile(
@@ -504,21 +565,78 @@ base::FilePath FileManagerBrowserDriveTest::GetRootPath() {
 }
 
 bool FileManagerBrowserDriveTest::PathExists(const base::FilePath& file_path) {
-  // TODO(satorux): Implement this. crbug.com/224534
-  return true;
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return error == drive::DRIVE_FILE_OK;
 }
 
 bool FileManagerBrowserDriveTest::WaitUntilFilePresentWithSize(
     const base::FilePath& file_path,
     int64 file_size) {
-  // TODO(satorux): Implement this. crbug.com/224534
-  return true;
+  while (true) {
+    if (FileIsPresentWithSize(file_path, file_size))
+      return true;
+    WaitUntilDirectoryChanged();
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool FileManagerBrowserDriveTest::WaitUntilFileNotPresent(
     const base::FilePath& file_path) {
-  // TODO(satorux): Implement this. crbug.com/224534
-  return true;
+  while (true) {
+    if (FileIsNotPresent(file_path))
+      return true;
+    WaitUntilDirectoryChanged();
+  }
+  NOTREACHED();
+  return false;
+}
+
+void FileManagerBrowserDriveTest::WaitUntilDirectoryChanged() {
+  waiting_for_directory_change_ = true;
+  MessageLoop::current()->Run();
+  waiting_for_directory_change_ = false;
+}
+
+bool FileManagerBrowserDriveTest::FileIsPresentWithSize(
+    const base::FilePath& file_path,
+    int64 file_size) {
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return (error == drive::DRIVE_FILE_OK &&
+          entry_proto->file_info().size() == file_size);
+}
+
+bool FileManagerBrowserDriveTest::FileIsNotPresent(
+    const base::FilePath& file_path) {
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return error == drive::DRIVE_FILE_ERROR_NOT_FOUND;
 }
 
 void FileManagerBrowserDriveTest::CheckForUpdates() {
@@ -543,8 +661,15 @@ FileManagerBrowserDriveTest::CreateDriveSystemService(Profile* profile) {
                                                   fake_drive_service_,
                                                   test_cache_root_.path(),
                                                   NULL);
+  system_service_->file_system()->AddObserver(this);
 
   return system_service_;
+}
+
+void FileManagerBrowserDriveTest::OnDirectoryChanged(
+    const base::FilePath& directory_path) {
+  if (waiting_for_directory_change_)
+    MessageLoop::current()->Quit();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
@@ -558,42 +683,32 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
   AddMountPointToFakeDownloads();
   StartFileManager("/Downloads");
 
-  base::FilePath copy_path =
-      GetRootPath().AppendASCII(kKeyboardTestFileCopyName);
-  ASSERT_FALSE(PathExists(copy_path));
-
-  ResultCatcher catcher;
-  StartTest("keyboard copy");
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  ASSERT_TRUE(WaitUntilFilePresentWithSize(copy_path, kKeyboardTestFileSize));
-
-  // Check that it was a copy, not a move.
-  base::FilePath source_path =
-      GetRootPath().AppendASCII(kKeyboardTestFileName);
-  ASSERT_TRUE(PathExists(source_path));
+  DoTestKeyboardCopy();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
   AddMountPointToFakeDownloads();
   StartFileManager("/Downloads");
 
-  base::FilePath delete_path =
-      GetRootPath().AppendASCII(kKeyboardTestFileName);
-  ASSERT_TRUE(PathExists(delete_path));
-
-  ResultCatcher catcher;
-  StartTest("keyboard delete");
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  ASSERT_TRUE(WaitUntilFileNotPresent(delete_path));
+  DoTestKeyboardDelete();
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestFileDisplay) {
   StartFileManager("/drive/root");
 
   DoTestFileDisplay();
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestKeyboardCopy) {
+  StartFileManager("/drive/root");
+
+  DoTestKeyboardCopy();
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestKeyboardDelete) {
+  StartFileManager("/drive/root");
+
+  DoTestKeyboardDelete();
 }
 
 }  // namespace
