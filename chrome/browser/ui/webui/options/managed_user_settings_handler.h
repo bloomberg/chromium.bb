@@ -58,6 +58,10 @@ class ManagedUserSettingsHandler : public OptionsPageUIHandler {
   // service and updating the WebUI model.
   void UpdateViewFromModel();
 
+  // Stores if the user has already seen the managed user settings dialog. Is
+  // set to true when the page is opened, and the page had been opened before.
+  bool has_seen_settings_dialog_;
+
   // For tracking how long the user spends on this page.
   base::TimeTicks start_time_;
 

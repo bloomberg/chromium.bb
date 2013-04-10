@@ -35,6 +35,10 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -903,6 +907,7 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
   }
 };
 
+#if defined(ENABLE_MANAGED_USERS)
 IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
                        StartupManagedModeProfile) {
   // Make this a managed profile.
@@ -913,6 +918,9 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
   CommandLine dummy(CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
                                    chrome::startup::IS_FIRST_RUN);
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.
@@ -928,6 +936,14 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
   GURL expected(GURL(std::string(chrome::kChromeUISettingsURL) +
                      chrome::kManagedUserSettingsSubPage));
   EXPECT_EQ(GURL(expected), web_contents->GetURL());
+  observer.Wait();
+
+  // Managed user should be in elevated state.
+  bool is_elevated = ManagedModeNavigationObserver::FromWebContents(
+      web_contents)->is_elevated();
+  EXPECT_TRUE(is_elevated);
 }
+
+#endif  // ENABLE_MANAGED_USERS
 
 #endif  // !OS_CHROMEOS

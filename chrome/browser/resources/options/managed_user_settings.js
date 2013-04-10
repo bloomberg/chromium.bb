@@ -108,7 +108,6 @@ cr.define('options', function() {
       }
       if (!$('use-passphrase-checkbox').checked)
         chrome.send('resetPassphrase');
-      chrome.send('confirmManagedUserSettings');
       SettingsDialog.prototype.handleConfirm.call(this);
     },
 
@@ -161,6 +160,7 @@ cr.define('options', function() {
       // Reset the authentication of the custodian.
       this.authenticationState = ManagedUserAuthentication.UNAUTHENTICATED;
       chrome.send('setElevated', [false]);
+      chrome.send('confirmManagedUserSettings');
     },
   };
 

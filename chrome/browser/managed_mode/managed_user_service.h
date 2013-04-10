@@ -106,6 +106,14 @@ class ManagedUserService : public ProfileKeyedService,
   // managed.
   void Init();
 
+  void set_startup_elevation(bool elevation) {
+    startup_elevation_ = elevation;
+  }
+
+  bool startup_elevation() const {
+    return startup_elevation_;
+  }
+
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
@@ -178,6 +186,9 @@ class ManagedUserService : public ProfileKeyedService,
 
   // Owns us via the ProfileKeyedService mechanism.
   Profile* profile_;
+
+  // Is true if the managed user should start in elevated mode.
+  bool startup_elevation_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

@@ -13,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -92,7 +91,8 @@ void AddCurrentURLEntries(content::WebUI* web_ui, ListValue* entries) {
 
 namespace options {
 
-ManagedUserSettingsHandler::ManagedUserSettingsHandler() {
+ManagedUserSettingsHandler::ManagedUserSettingsHandler()
+    : has_seen_settings_dialog_(false) {
 }
 
 ManagedUserSettingsHandler::~ManagedUserSettingsHandler() {
@@ -111,19 +111,14 @@ void ManagedUserSettingsHandler::InitializePage() {
       switches::kEnableManagedUsers)) {
     return;
   }
+
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  base::FundamentalValue is_passphrase_set(!pref_service->GetString(
-      prefs::kManagedModeLocalPassphrase).empty());
+  bool passphrase_empty =
+      pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
+  base::FundamentalValue is_passphrase_set(!passphrase_empty);
   web_ui()->CallJavascriptFunction(
       "ManagedUserSettings.passphraseChanged",
       is_passphrase_set);
-  if ((first_run::IsChromeFirstRun() &&
-       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoFirstRun)) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kResetLocalPassphrase)) {
-    ManagedModeNavigationObserver::FromWebContents(
-        web_ui()->GetWebContents())->set_elevated(true);
-  }
 
   // Populate the list.
   UpdateViewFromModel();
@@ -132,8 +127,21 @@ void ManagedUserSettingsHandler::InitializePage() {
 void ManagedUserSettingsHandler::HandlePageOpened(const base::ListValue* args) {
   start_time_ = base::TimeTicks::Now();
   content::RecordAction(UserMetricsAction("ManagedMode_OpenSettings"));
-  if (ManagedModeNavigationObserver::FromWebContents(
-      web_ui()->GetWebContents())->is_elevated()) {
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(
+          web_ui()->GetWebContents());
+
+  // Check if we need to give initial elevation for startup of a new profile.
+  if (service->startup_elevation()) {
+    service->set_startup_elevation(false);
+    observer->set_elevated(true);
+  } else {
+    has_seen_settings_dialog_ = true;
+  }
+
+  if (observer->is_elevated()) {
     web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
                                      base::FundamentalValue(true));
   }
@@ -207,7 +215,8 @@ void ManagedUserSettingsHandler::RegisterMessages() {
 }
 
 void ManagedUserSettingsHandler::SaveMetrics(const ListValue* args) {
-  if (first_run::IsChromeFirstRun()) {
+  if (!has_seen_settings_dialog_) {
+    has_seen_settings_dialog_ = true;
     UMA_HISTOGRAM_LONG_TIMES("ManagedMode.UserSettingsFirstRunTime",
                              base::TimeTicks::Now() - start_time_);
   } else {

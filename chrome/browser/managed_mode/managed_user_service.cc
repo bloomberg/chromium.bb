@@ -104,7 +104,8 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
                  io_url_filter_, base::Owned(url_map.release())));
 }
 
-ManagedUserService::ManagedUserService(Profile* profile) : profile_(profile) {
+ManagedUserService::ManagedUserService(Profile* profile)
+    : profile_(profile), startup_elevation_(false) {
 }
 
 ManagedUserService::~ManagedUserService() {
