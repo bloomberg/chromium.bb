@@ -345,7 +345,13 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
                                                      image_data_desc,
                                                      image_handle);
 #else
-#error Not implemented.
+  // Not supported on the other platforms.
+  // This is a stub reply_msg not to break the build.
+  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
+                                                     image_data_desc,
+                                                     0);
+  NOTIMPLEMENTED();
+  return PP_ERROR_NOTSUPPORTED;
 #endif
 
   SendReply(reply_context, reply_msg);
