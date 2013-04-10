@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_HANDLER_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_HANDLER_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -154,4 +154,4 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
 }  // namespace file_handler_util
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_HANDLER_UTIL_H_

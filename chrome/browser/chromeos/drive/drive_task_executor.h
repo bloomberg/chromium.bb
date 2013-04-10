@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
-#include "chrome/browser/chromeos/extensions/file_handler_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace drive {
