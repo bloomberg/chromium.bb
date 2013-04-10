@@ -580,6 +580,74 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   ASSERT_EQ(0U, results.size());
 }
 
+// Tests that a 'confirm email' field does not block profile import.
+TEST_F(PersonalDataManagerTest, ImportFormDataTwoEmails) {
+  FormData form;
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Name:", "name", "George Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "21 Laussat St", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "example@example.com", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Confirm email:", "confirm_email", "example@example.com", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                             &imported_credit_card));
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+}
+
+// Tests two email fields containing different values blocks provile import.
+TEST_F(PersonalDataManagerTest, ImportFormDataTwoDifferentEmails) {
+  FormData form;
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Name:", "name", "George Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "21 Laussat St", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "example@example.com", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email2", "example2@example.com", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
+                                              &imported_credit_card));
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(0U, results.size());
+}
+
 TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormData form;
   FormFieldData field;

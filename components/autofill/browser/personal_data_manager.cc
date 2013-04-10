@@ -114,8 +114,10 @@ bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
   // Abandon the import if two fields of the same type are encountered.
   // This indicates ambiguous data or miscategorization of types.
   // Make an exception for PHONE_HOME_NUMBER however as both prefix and
-  // suffix are stored against this type.
-  if (types_seen.count(field_type) && field_type != PHONE_HOME_NUMBER)
+  // suffix are stored against this type, and for EMAIL_ADDRESS because it is
+  // common to see second 'confirm email address' fields on forms.
+  if (types_seen.count(field_type) && field_type != PHONE_HOME_NUMBER &&
+      field_type != EMAIL_ADDRESS)
     return false;
 
   // Abandon the import if an email address value shows up in a field that is
@@ -248,6 +250,17 @@ bool PersonalDataManager::ImportFormData(
 
     AutofillFieldType field_type = field->type();
     FieldTypeGroup group(AutofillType(field_type).group());
+
+    // There can be multiple email fields (e.g. in the case of 'confirm email'
+    // fields) but they must all contain the same value, else the profile is
+    // invalid.
+    if (field_type == EMAIL_ADDRESS) {
+      if (types_seen.count(field_type) &&
+          imported_profile->GetRawInfo(field_type) != value) {
+        imported_profile.reset();
+        break;
+      }
+    }
 
     // If the |field_type| and |value| don't pass basic validity checks then
     // abandon the import.
