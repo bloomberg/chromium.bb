@@ -539,7 +539,9 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
     gfx::Rect starting_rect,
     int64 target_area,
     gfx::Rect bounding_rect) {
-  DCHECK(!starting_rect.IsEmpty());
+  if (starting_rect.IsEmpty())
+    return starting_rect;
+
   DCHECK(!bounding_rect.IsEmpty());
   DCHECK_GT(target_area, 0);
 

@@ -68,6 +68,20 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     VerifyTilesExactlyCoverRect(rect_scale, rect, rect);
   }
 
+  void VerifyTiles(float rect_scale,
+                   gfx::Rect rect,
+                   base::Callback<void(Tile*)> callback) {
+    Region remaining = rect;
+    for (PictureLayerTiling::CoverageIterator iter(
+             tiling_.get(), rect_scale, rect);
+         iter;
+         ++iter) {
+      remaining.Subtract(iter.geometry_rect());
+      callback.Run(*iter);
+    }
+    EXPECT_TRUE(remaining.IsEmpty());
+  }
+
   void VerifyTilesCoverNonContainedRect(float rect_scale, gfx::Rect dest_rect) {
     float dest_to_contents_scale = tiling_->contents_scale() / rect_scale;
     gfx::Rect clamped_rect(gfx::ToEnclosingRect(gfx::ScaleRect(
@@ -356,6 +370,62 @@ TEST(PictureLayerTilingTest, ExpandRectOutOfBounds) {
   gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
       in, target_area, bounds);
   EXPECT_TRUE(out.IsEmpty());
+}
+
+TEST(PictureLayerTilingTest, EmptyStartingRect) {
+  // If a layer has a non-invertible transform, then the starting rect
+  // for the layer would be empty.
+  gfx::Rect in(40, 40, 0, 0);
+  gfx::Rect bounds(0, 0, 10, 10);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_TRUE(out.IsEmpty());
+}
+
+static void TileExists(bool live, Tile* tile) {
+  ASSERT_TRUE(tile != NULL);
+  EXPECT_EQ(live, tile->priority(ACTIVE_TREE).is_live);
+}
+
+TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
+  gfx::Size layer_bounds(1099, 801);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds, // device viewport
+      gfx::Rect(layer_bounds), // viewport in layer space
+      layer_bounds, // last layer bounds
+      layer_bounds, // current layer bounds
+      1.f, // last contents scale
+      1.f, // current contents scale
+      gfx::Transform(), // last screen transform
+      gfx::Transform(), // current screen transform
+      1, // current frame number
+      1.0, // current frame time
+      false, // store screen space quads on tiles
+      10000); // max tiles in tile manager
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+
+  // Make the viewport rect empty. All tiles are killed and become zombies.
+  tiling_->UpdateTilePriorities(
+      ACTIVE_TREE,
+      layer_bounds, // device viewport
+      gfx::Rect(), // viewport in layer space
+      layer_bounds, // last layer bounds
+      layer_bounds, // current layer bounds
+      1.f, // last contents scale
+      1.f, // current contents scale
+      gfx::Transform(), // last screen transform
+      gfx::Transform(), // current screen transform
+      2, // current frame number
+      2.0, // current frame time
+      false, // store screen space quads on tiles
+      10000); // max tiles in tile manager
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
 }
 
 }  // namespace

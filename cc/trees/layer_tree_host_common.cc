@@ -62,9 +62,13 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
 
   gfx::Transform surface_to_layer(gfx::Transform::kSkipInitialization);
   if (!transform.GetInverse(&surface_to_layer)) {
-    // TODO(shawnsingh): Either we need to handle uninvertible transforms
-    // here, or DCHECK that the transform is invertible.
+    // TODO(shawnsingh): Some uninvertible transforms may be visible, but
+    // their behaviour is undefined thoughout the compositor. Make their
+    // behaviour well-defined and allow the visible content rect to be non-
+    // empty when needed.
+    return gfx::Rect();
   }
+
   gfx::Rect layer_rect = gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
       surface_to_layer, gfx::RectF(minimal_surface_rect)));
   layer_rect.Intersect(layer_bound_rect);

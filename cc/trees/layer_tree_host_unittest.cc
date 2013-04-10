@@ -2177,5 +2177,38 @@ class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotification);
 
+class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
+    : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+
+    scoped_refptr<Layer> layer = PictureLayer::Create(&client_);
+    layer->SetTransform(gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    layer->SetBounds(gfx::Size(10, 10));
+    layer_tree_host()->root_layer()->AddChild(layer);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) {
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {
+  }
+
+  FakeContentLayerClient client_;
+};
+
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation);
+
 }  // namespace
 }  // namespace cc
