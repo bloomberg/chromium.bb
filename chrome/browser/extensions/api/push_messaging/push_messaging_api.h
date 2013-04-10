@@ -53,7 +53,7 @@ class PushMessagingEventRouter
 class PushMessagingGetChannelIdFunction
     : public AsyncExtensionFunction,
       public ObfuscatedGaiaIdFetcher::Delegate,
-      public LoginUIService::Observer {
+    public content::NotificationObserver {
  public:
   PushMessagingGetChannelIdFunction();
 
@@ -75,9 +75,10 @@ class PushMessagingGetChannelIdFunction
   // Begin the async fetch of the Gaia ID.
   bool StartGaiaIdFetch();
 
-  // LoginUIService::Observer implementation.
-  virtual void OnLoginUIShown(LoginUIService::LoginUI* ui) OVERRIDE;
-  virtual void OnLoginUIClosed(LoginUIService::LoginUI* ui) OVERRIDE;
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Check if the user is signed into chrome.
   bool IsUserLoggedIn() const;
@@ -89,6 +90,9 @@ class PushMessagingGetChannelIdFunction
       const GoogleServiceAuthError& error) OVERRIDE;
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
   bool interactive_;
+
+  // We use this to register for notifications if the logon attept succeeds.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };

@@ -106,8 +106,13 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
     if (interactive_) {
       LoginUIService* login_ui_service =
           LoginUIServiceFactory::GetForProfile(profile());
-      login_ui_service->AddObserver(this);
-      // OnLoginUICLosed will be called when UI is closed.
+      TokenService* token_service = TokenServiceFactory::GetForProfile(
+          profile());
+      // Register for token available so we can tell when the logon is done.
+      // Observe() will be called if token is issued.
+      registrar_.Add(this,
+                     chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                     content::Source<TokenService>(token_service));
       login_ui_service->ShowLoginPopup();
       return true;
     } else {
@@ -120,8 +125,29 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
   return StartGaiaIdFetch();
 }
 
+// If we are in an interactive login and it succeeds, start token fetch.
+void PushMessagingGetChannelIdFunction::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_TOKEN_AVAILABLE, type);
+
+  TokenService::TokenAvailableDetails* token_details =
+      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                      content::Source<TokenService>(token_service));
+    // If we got a token, the logon succeeded, continue fetching Obfuscated
+    // Gaia Id.
+    if (!StartGaiaIdFetch())
+      SendResponse(false);
+  }
+}
+
 bool PushMessagingGetChannelIdFunction::StartGaiaIdFetch() {
-  // Start the async fetch of the GAIA ID.
+  // Start the async fetch of the Gaia Id.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::URLRequestContextGetter* context = profile()->GetRequestContext();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
@@ -137,7 +163,7 @@ bool PushMessagingGetChannelIdFunction::StartGaiaIdFetch() {
   TokenCacheService* token_cache =
       TokenCacheServiceFactory::GetForProfile(profile());
 
-  // Check the cache, if we already have a gaia ID, use it instead of
+  // Check the cache, if we already have a Gaia ID, use it instead of
   // fetching the ID over the network.
   const std::string& gaia_id =
       token_cache->RetrieveToken(GaiaConstants::kObfuscatedGaiaId);
@@ -158,22 +184,6 @@ bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() const {
   if (!token_service)
     return false;
   return token_service->HasOAuthLoginToken();
-}
-
-void PushMessagingGetChannelIdFunction::OnLoginUIShown(
-    LoginUIService::LoginUI* ui) {
-  // Do nothing when login ui is shown.
-}
-
-// If the login succeeds, continue with our logic to fetch the ChannelId.
-void PushMessagingGetChannelIdFunction::OnLoginUIClosed(
-    LoginUIService::LoginUI* ui) {
-  LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(profile());
-  login_ui_service->RemoveObserver(this);
-  if (!StartGaiaIdFetch()) {
-    SendResponse(false);
-  }
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(
@@ -207,7 +217,7 @@ void PushMessagingGetChannelIdFunction::BuildAndSendResult(
   }
 
   // TODO(petewil): It may be a good idea to further
-  // obfuscate the channel ID to prevent the user's obfuscated GAIA ID
+  // obfuscate the channel ID to prevent the user's obfuscated Gaia Id
   // from being readily obtained.  Security review will tell us if we need to.
 
   // Create a ChannelId results object and set the fields.
@@ -234,8 +244,28 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
     error_text = base::IntToString(error.state());
   }
 
-  ReportResult(std::string(), error_text);
   DVLOG(1) << "GetChannelId status: '" << error_text << "'";
+
+  // If we had bad credentials, try the logon again.
+  switch (error.state()) {
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED: {
+      if (interactive_) {
+        LoginUIService* login_ui_service =
+            LoginUIServiceFactory::GetForProfile(profile());
+        // content::NotificationObserver will be called if token is issued.
+        login_ui_service->ShowLoginPopup();
+      } else {
+        ReportResult(std::string(), error_text);
+      }
+      return;
+    }
+    default:
+      // Return error to caller.
+      ReportResult(std::string(), error_text);
+      return;
+  }
 }
 
 PushMessagingAPI::PushMessagingAPI(Profile* profile) : profile_(profile) {
