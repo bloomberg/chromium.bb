@@ -117,7 +117,6 @@ scrollingCoordinatorEnabled initial=false
 scrollAnimatorEnabled initial=true, conditional=SMOOTH_SCROLLING
 
 shouldRespectImageOrientation initial=false
-requestAnimationFrameEnabled initial=true
 deviceSupportsTouch initial=false
 deviceSupportsMouse initial=true
 
