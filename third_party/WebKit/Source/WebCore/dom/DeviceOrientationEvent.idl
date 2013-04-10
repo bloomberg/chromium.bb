@@ -24,10 +24,10 @@
  */
 
 interface DeviceOrientationEvent : Event {
-    [Custom] readonly attribute double alpha;
-    [Custom] readonly attribute double beta;
-    [Custom] readonly attribute double gamma;
-    [Custom] readonly attribute boolean absolute;
+    readonly attribute double? alpha;
+    readonly attribute double? beta;
+    readonly attribute double? gamma;
+    readonly attribute boolean? absolute;
     [Custom] void initDeviceOrientationEvent([Optional=DefaultIsUndefined] DOMString type, 
                                              [Optional=DefaultIsUndefined] boolean bubbles, 
                                              [Optional=DefaultIsUndefined] boolean cancelable, 
@@ -36,4 +36,3 @@ interface DeviceOrientationEvent : Event {
                                              [Optional=DefaultIsUndefined] double gamma,
                                              [Optional=DefaultIsUndefined] boolean absolute);
 };
-

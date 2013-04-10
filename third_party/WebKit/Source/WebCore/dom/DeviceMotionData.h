@@ -86,11 +86,12 @@ public:
     static PassRefPtr<DeviceMotionData> create(PassRefPtr<Acceleration> acceleration, PassRefPtr<Acceleration> accelerationIncludingGravity,
                                                PassRefPtr<RotationRate> rotationRate, bool canProvideInterval, double interval);
 
-    const Acceleration* acceleration() const { return m_acceleration.get(); }
-    const Acceleration* accelerationIncludingGravity() const { return m_accelerationIncludingGravity.get(); }
-    const RotationRate* rotationRate() const { return m_rotationRate.get(); }
-    double interval() const { return m_interval; }
+    PassRefPtr<Acceleration> acceleration() const { return m_acceleration; }
+    PassRefPtr<Acceleration> accelerationIncludingGravity() const { return m_accelerationIncludingGravity; }
+    PassRefPtr<RotationRate> rotationRate() const { return m_rotationRate; }
+
     bool canProvideInterval() const { return m_canProvideInterval; }
+    double interval() const { return m_interval; }
 
 private:
     DeviceMotionData();

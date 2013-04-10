@@ -57,6 +57,42 @@ void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type
     m_orientation = orientation;
 }
 
+double DeviceOrientationEvent::alpha(bool& isNull) const
+{
+    if (m_orientation->canProvideAlpha())
+        return m_orientation->alpha();
+
+    isNull = true;
+    return 0;
+}
+
+double DeviceOrientationEvent::beta(bool& isNull) const
+{
+    if (m_orientation->canProvideBeta())
+        return m_orientation->beta();
+
+    isNull = true;
+    return 0;
+}
+
+double DeviceOrientationEvent::gamma(bool& isNull) const
+{
+    if (m_orientation->canProvideGamma())
+        return m_orientation->gamma();
+
+    isNull = true;
+    return 0;
+}
+
+bool DeviceOrientationEvent::absolute(bool& isNull) const
+{
+    if (m_orientation->canProvideAbsolute())
+        return m_orientation->absolute();
+
+    isNull = true;
+    return 0;
+}
+
 const AtomicString& DeviceOrientationEvent::interfaceName() const
 {
     return eventNames().interfaceForDeviceOrientationEvent;

@@ -48,6 +48,11 @@ public:
 
     DeviceOrientationData* orientation() const { return m_orientation.get(); }
 
+    double alpha(bool& isNull) const;
+    double beta(bool& isNull) const;
+    double gamma(bool& isNull) const;
+    bool absolute(bool& isNull) const;
+
     virtual const AtomicString& interfaceName() const;
 
 private:

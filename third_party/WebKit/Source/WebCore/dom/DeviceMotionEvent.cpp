@@ -26,7 +26,9 @@
 #include "config.h"
 #include "DeviceMotionEvent.h"
 
+#include "DeviceAcceleration.h"
 #include "DeviceMotionData.h"
+#include "DeviceRotationRate.h"
 #include "EventNames.h"
 
 namespace WebCore {
@@ -55,6 +57,52 @@ void DeviceMotionEvent::initDeviceMotionEvent(const AtomicString& type, bool bub
 
     initEvent(type, bubbles, cancelable);
     m_deviceMotionData = deviceMotionData;
+
+    m_acceleration.clear();
+    m_accelerationIncludingGravity.clear();
+    m_rotationRate.clear();
+}
+
+DeviceAcceleration* DeviceMotionEvent::acceleration()
+{
+    if (!m_deviceMotionData->acceleration())
+        return 0;
+
+    if (!m_acceleration)
+        m_acceleration = DeviceAcceleration::create(m_deviceMotionData->acceleration());
+
+    return m_acceleration.get();
+}
+
+DeviceAcceleration* DeviceMotionEvent::accelerationIncludingGravity()
+{
+    if (!m_deviceMotionData->accelerationIncludingGravity())
+        return 0;
+
+    if (!m_accelerationIncludingGravity)
+        m_accelerationIncludingGravity = DeviceAcceleration::create(m_deviceMotionData->accelerationIncludingGravity());
+
+    return m_accelerationIncludingGravity.get();
+}
+
+DeviceRotationRate* DeviceMotionEvent::rotationRate()
+{
+    if (!m_deviceMotionData->rotationRate())
+        return 0;
+
+    if (!m_rotationRate)
+        m_rotationRate = DeviceRotationRate::create(m_deviceMotionData->rotationRate());
+
+    return m_rotationRate.get();
+}
+
+double DeviceMotionEvent::interval(bool& isNull) const
+{
+    if (m_deviceMotionData->canProvideInterval())
+        return m_deviceMotionData->interval();
+
+    isNull = true;
+    return 0;
 }
 
 const AtomicString& DeviceMotionEvent::interfaceName() const

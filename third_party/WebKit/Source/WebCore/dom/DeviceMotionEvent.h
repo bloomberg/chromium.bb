@@ -30,7 +30,9 @@
 
 namespace WebCore {
 
+class DeviceAcceleration;
 class DeviceMotionData;
+class DeviceRotationRate;
 
 class DeviceMotionEvent : public Event {
 public:
@@ -48,6 +50,11 @@ public:
 
     DeviceMotionData* deviceMotionData() const { return m_deviceMotionData.get(); }
 
+    DeviceAcceleration* acceleration();
+    DeviceAcceleration* accelerationIncludingGravity();
+    DeviceRotationRate* rotationRate();
+    double interval(bool& isNull) const;
+
     virtual const AtomicString& interfaceName() const;
 
 private:
@@ -55,6 +62,10 @@ private:
     DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
     RefPtr<DeviceMotionData> m_deviceMotionData;
+
+    RefPtr<DeviceAcceleration> m_acceleration;
+    RefPtr<DeviceAcceleration> m_accelerationIncludingGravity;
+    RefPtr<DeviceRotationRate> m_rotationRate;
 };
 
 } // namespace WebCore
