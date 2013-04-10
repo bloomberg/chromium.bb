@@ -2182,6 +2182,10 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   }
 }
 
+void DriveFileSyncService::CheckForUpdates() {
+  MaybeStartFetchChanges();
+}
+
 void DriveFileSyncService::FetchChangesForIncrementalSync() {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE, TASK_TYPE_DRIVE,
                                        "Fetching remote change list"));

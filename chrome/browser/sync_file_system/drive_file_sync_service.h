@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
+#include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
@@ -47,7 +48,8 @@ class DriveFileSyncService
       public LocalChangeProcessor,
       public DriveFileSyncClientObserver,
       public base::NonThreadSafe,
-      public syncer::InvalidationHandler {
+      public syncer::InvalidationHandler,
+      public google_apis::DriveNotificationObserver {
  public:
   static const char kServiceName[];
   static ConflictResolutionPolicy kDefaultPolicy;
@@ -119,6 +121,9 @@ class DriveFileSyncService
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+
+  // google_apis::DriveNotificationObserver implementation.
+  virtual void CheckForUpdates() OVERRIDE;
 
  private:
   friend class DriveFileSyncServiceMockTest;
