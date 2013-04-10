@@ -854,7 +854,7 @@
     }],  # 'OS!="win" and enable_remoting_host==1'
 
 
-    ['OS=="linux" and chromeos==0', {
+    ['OS=="linux" and chromeos==0 and enable_remoting_host==1', {
       'targets': [
         # Linux breakpad processing
         {
