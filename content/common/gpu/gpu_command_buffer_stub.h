@@ -69,6 +69,7 @@ class GpuCommandBufferStub
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
+      bool use_virtualized_gl_context,
       int32 route_id,
       int32 surface_id,
       GpuWatchdog* watchdog,
@@ -204,6 +205,7 @@ class GpuCommandBufferStub
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
+  bool use_virtualized_gl_context_;
   int32 route_id_;
   int32 surface_id_;
   bool software_;

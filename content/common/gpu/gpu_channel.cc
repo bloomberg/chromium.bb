@@ -628,6 +628,14 @@ void GpuChannel::CreateViewCommandBuffer(
 
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
+  // Virtualize compositor contexts on OS X to prevent performance regressions
+  // when enabling FCM.
+  // http://crbug.com/180463
+  bool use_virtualized_gl_context = false;
+#if defined(OS_MACOSX)
+  use_virtualized_gl_context = true;
+#endif
+
   *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
@@ -640,6 +648,7 @@ void GpuChannel::CreateViewCommandBuffer(
       init_params.allowed_extensions,
       init_params.attribs,
       init_params.gpu_preference,
+      use_virtualized_gl_context,
       *route_id,
       surface_id,
       watchdog_,
@@ -857,8 +866,10 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.allowed_extensions,
       init_params.attribs,
       init_params.gpu_preference,
+      false,
       *route_id,
-      0, watchdog_,
+      0,
+      watchdog_,
       software_,
       init_params.active_url));
   if (preempted_flag_.get())

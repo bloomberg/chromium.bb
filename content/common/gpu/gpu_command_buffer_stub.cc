@@ -107,6 +107,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
+    bool use_virtualized_gl_context,
     int32 route_id,
     int32 surface_id,
     GpuWatchdog* watchdog,
@@ -119,6 +120,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       gpu_preference_(gpu_preference),
+      use_virtualized_gl_context_(use_virtualized_gl_context),
       route_id_(route_id),
       surface_id_(surface_id),
       software_(software),
@@ -433,8 +435,9 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   scoped_refptr<gfx::GLContext> context;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVirtualGLContexts) && channel_->share_group()) {
+  if ((CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVirtualGLContexts) || use_virtualized_gl_context_) &&
+      channel_->share_group()) {
     context = channel_->share_group()->GetSharedContext();
     if (!context) {
       context = gfx::GLContext::CreateGLContext(
