@@ -544,7 +544,10 @@ class HttpService(object):
         if e.code in (401, 403):
           # Try to authenticate only once. If it doesn't help, then server does
           # not support app engine authentication.
-          logging.debug('Got %s', e.code)
+          logging.warning(
+              'Authentication is required for %s on attempt %d.\n%s',
+              request.get_full_url(), attempt,
+              self._format_exception(e, verbose=True))
           if not authenticated and self.authenticate():
             authenticated = True
             continue
