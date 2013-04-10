@@ -1,5 +1,6 @@
-// Copyright 2007 Google Inc. All Rights Reserved.
-// Author: brettw@google.com (Brett Wilson)
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
