@@ -2,6 +2,7 @@
  * Copyright (C) 2003, 2006, 2009 Apple Inc. All rights reserved.
  *               2006 Rob Buis <buis@kde.org>
  * Copyright (C) 2007-2008 Torch Mobile, Inc.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,9 +35,6 @@
 #include <wtf/Forward.h>
 
 class SkPath;
-typedef SkPath PlatformPath;
-
-typedef PlatformPath* PlatformPathPtr;
 
 namespace WebCore {
 
@@ -73,6 +71,7 @@ namespace WebCore {
 
         Path(const Path&);
         Path& operator=(const Path&);
+        bool operator==(const Path&) const;
 
         bool contains(const FloatPoint&, WindRule rule = RULE_NONZERO) const;
         bool strokeContains(StrokeStyleApplier*, const FloatPoint&) const;
@@ -116,11 +115,11 @@ namespace WebCore {
 
         void translate(const FloatSize&);
 
-        // To keep Path() cheap, it does not allocate a PlatformPath immediately
-        // meaning Path::platformPath() can return null.
-        PlatformPathPtr platformPath() const { return m_path; }
-        // ensurePlatformPath() will allocate a PlatformPath if it has not yet been and will never return null.
-        PlatformPathPtr ensurePlatformPath();
+        // To keep Path() cheap, it does not allocate an SkPath immediately
+        // meaning Path::skPath() can return null.
+        SkPath* skPath() const { return m_path; }
+        // ensureSkPath() will allocate a SkPath if necessary, and will never return null.
+        SkPath* ensureSkPath();
 
         void apply(void* info, PathApplierFunction) const;
         void transform(const AffineTransform&);
@@ -129,7 +128,7 @@ namespace WebCore {
         void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
 
     private:
-        PlatformPathPtr m_path;
+        SkPath* m_path;
     };
 
 }

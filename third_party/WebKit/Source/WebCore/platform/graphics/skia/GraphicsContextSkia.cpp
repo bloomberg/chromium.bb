@@ -342,7 +342,7 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
     if (paintingDisabled())
         return;
 
-    const SkPath* path = pathToClip.platformPath();
+    const SkPath* path = pathToClip.skPath();
     SkPath::FillType ftype = (clipRule == RULE_EVENODD) ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
     SkPath storage;
 
@@ -369,7 +369,7 @@ void GraphicsContext::clipOut(const Path& p)
         return;
 
     // We must make a copy of the path, to mark it as inverse-filled.
-    SkPath path(p.isNull() ? SkPath() : *p.platformPath());
+    SkPath path(p.isNull() ? SkPath() : *p.skPath());
     path.toggleInverseFillType();
     platformContext()->clipPath(path, PlatformContextSkia::AntiAliased);
 }
@@ -379,7 +379,7 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     if (paintingDisabled())
         return;
 
-    const SkPath* path = pathToClip.platformPath();
+    const SkPath* path = pathToClip.skPath();
     SkPath::FillType ftype = (clipRule == RULE_EVENODD) ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
     SkPath storage;
     if (!path)
@@ -784,7 +784,7 @@ void GraphicsContext::fillPath(const Path& pathToFill)
     SkPath::FillType ftype = state.fillRule == RULE_EVENODD ?
         SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
 
-    const SkPath* path = pathToFill.platformPath();
+    const SkPath* path = pathToFill.skPath();
     SkPath storage;
     if (path->getFillType() != ftype) {
         storage = *path;
@@ -1146,7 +1146,7 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
     if (paintingDisabled() || pathToStroke.isEmpty())
         return;
 
-    const SkPath& path = *pathToStroke.platformPath();
+    const SkPath& path = *pathToStroke.skPath();
     SkPaint paint;
     platformContext()->setupPaintForStroking(&paint, 0, 0);
     platformContext()->drawPath(path, paint);
