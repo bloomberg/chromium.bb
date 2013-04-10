@@ -87,9 +87,8 @@ void Picture::Record(ContentLayerClient* painter,
   // Record() should only be called once.
   DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
-  // TODO(enne): Turn back on tile grid after
-  // https://code.google.com/p/skia/issues/detail?id=1209 is fixed.
-  picture_ = skia::AdoptRef(new SkPicture());
+  picture_ = skia::AdoptRef(new SkTileGridPicture(
+      layer_rect_.width(), layer_rect_.height(), tile_grid_info));
 
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect_.width(),
