@@ -588,11 +588,7 @@ void FrameData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
     memoryObjectInfo->setClassName("FrameData");
-#if USE(SKIA)
     info.addMember(m_frame, "frame", WTF::RetainingPointer);
-#else
-    info.addRawBuffer(m_frame, m_frameBytes, "NativeImage", "frame");
-#endif
 }
 
 }

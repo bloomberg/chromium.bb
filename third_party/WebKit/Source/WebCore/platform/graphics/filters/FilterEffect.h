@@ -38,9 +38,7 @@
 
 static const float kMaxFilterSize = 5000.0f;
 
-#if USE(SKIA)
 class SkImageFilter;
-#endif
 
 namespace WebCore {
 
@@ -49,9 +47,7 @@ class FilterEffect;
 class ImageBuffer;
 class TextStream;
 
-#if USE(SKIA)
 class SkiaImageFilterBuilder;
-#endif
 
 typedef Vector<RefPtr<FilterEffect> > FilterEffectVector;
 
@@ -125,10 +121,8 @@ public:
 #if ENABLE(OPENCL)
     virtual bool platformApplyOpenCL();
 #endif
-#if USE(SKIA)
     virtual bool platformApplySkia() { return false; }
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*) { return 0; }
-#endif
     virtual void dump() = 0;
 
     virtual void determineAbsolutePaintRect();

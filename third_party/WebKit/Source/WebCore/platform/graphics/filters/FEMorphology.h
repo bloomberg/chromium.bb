@@ -46,11 +46,8 @@ public:
     bool setRadiusY(float);
 
     virtual void platformApplySoftware();
-#if USE(SKIA)
     virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-
-#endif
     virtual void dump();
 
     virtual void determineAbsolutePaintRect();

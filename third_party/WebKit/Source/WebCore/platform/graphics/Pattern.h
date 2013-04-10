@@ -55,11 +55,8 @@ public:
     void platformDestroy();
 
     // Pattern space is an abstract space that maps to the default user space by the transformation 'userSpaceTransformation' 
-#if USE(SKIA)
     PlatformPatternPtr platformPattern(const AffineTransform& userSpaceTransformation);
-#else
-    PlatformPatternPtr createPlatformPattern(const AffineTransform& userSpaceTransformation) const;
-#endif
+
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
     const AffineTransform& getPatternSpaceTransform() { return m_patternSpaceTransformation; };
     void setPlatformPatternSpaceTransform();
@@ -75,9 +72,7 @@ private:
     bool m_repeatY;
     AffineTransform m_patternSpaceTransformation;
     PlatformPatternPtr m_pattern;
-#if USE(SKIA)
     int m_externalMemoryAllocated;
-#endif
 };
 
 } //namespace

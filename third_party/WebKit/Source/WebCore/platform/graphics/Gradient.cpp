@@ -240,12 +240,6 @@ void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTra
     invalidateHash();
 }
 
-#if !USE(SKIA)
-void Gradient::setPlatformGradientSpaceTransform(const AffineTransform&)
-{
-}
-#endif
-
 unsigned Gradient::hash() const
 {
     if (m_cachedHash)

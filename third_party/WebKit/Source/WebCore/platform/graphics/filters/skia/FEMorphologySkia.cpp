@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if USE(SKIA)
 #include "FEMorphology.h"
 
 #include "SkMorphologyImageFilter.h"
@@ -74,4 +73,3 @@ SkImageFilter* FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
 }
 
 };
-#endif

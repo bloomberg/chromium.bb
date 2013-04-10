@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if USE(SKIA)
 #include "FELighting.h"
 
 #include "DistantLightSource.h"
@@ -110,4 +109,3 @@ bool FELighting::platformApplySkia()
 }
 
 };
-#endif

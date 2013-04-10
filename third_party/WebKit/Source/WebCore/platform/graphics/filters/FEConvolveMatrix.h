@@ -70,9 +70,7 @@ public:
     bool setPreserveAlpha(bool);
 
     virtual void platformApplySoftware();
-#if USE(SKIA)
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-#endif
     virtual void dump();
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }

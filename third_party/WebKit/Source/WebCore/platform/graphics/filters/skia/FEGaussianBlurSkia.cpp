@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if USE(SKIA)
 #include "FEGaussianBlur.h"
 
 #include "SkBlurImageFilter.h"
@@ -68,4 +67,3 @@ SkImageFilter* FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder* builder
 }
 
 };
-#endif

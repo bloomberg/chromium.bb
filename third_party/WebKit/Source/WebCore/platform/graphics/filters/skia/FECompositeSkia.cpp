@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if USE(SKIA)
 #include "FEComposite.h"
 
 #include "SkFlattenableBuffers.h"
@@ -114,4 +113,3 @@ SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
 }
 
 };
-#endif

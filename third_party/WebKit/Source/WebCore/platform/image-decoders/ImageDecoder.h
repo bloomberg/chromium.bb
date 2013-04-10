@@ -31,17 +31,14 @@
 
 #include "IntRect.h"
 #include "ImageSource.h"
+#include "NativeImageSkia.h"
 #include "PlatformScreen.h"
 #include "SharedBuffer.h"
+#include "SkColorPriv.h"
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
-
-#if USE(SKIA)
-#include "NativeImageSkia.h"
-#include "SkColorPriv.h"
-#endif
 
 #if USE(QCMSLIB)
 #include "qcms.h"
@@ -69,11 +66,7 @@ namespace WebCore {
             DisposeOverwritePrevious  // Clear frame to previous framebuffer
                                       // contents
         };
-#if USE(SKIA)
         typedef uint32_t PixelData;
-#else
-        typedef unsigned PixelData;
-#endif
 
         ImageFrame();
 
@@ -140,11 +133,7 @@ namespace WebCore {
 
         inline PixelData* getAddr(int x, int y)
         {
-#if USE(SKIA)
             return m_bitmap->bitmap().getAddr32(x, y);
-#else
-            return m_bytes + (y * width()) + x;
-#endif
         }
 
 #if PLATFORM(CHROMIUM)
@@ -189,44 +178,24 @@ namespace WebCore {
                 g = fixPointUnsignedMultiply(g, alphaMult);
                 b = fixPointUnsignedMultiply(b, alphaMult);
             }
-#if USE(SKIA)
             // Call the "NoCheck" version since we may deliberately pass non-premultiplied
             // values, and we don't want an assert.
             *dest = SkPackARGB32NoCheck(a, r, g, b);
-#else
-            *dest = (a << 24 | r << 16 | g << 8 | b);
-#endif
         }
 
     private:
         int width() const
         {
-#if USE(SKIA)
             return m_bitmap->bitmap().width();
-#else
-            return m_size.width();
-#endif
         }
 
         int height() const
         {
-#if USE(SKIA)
             return m_bitmap->bitmap().height();
-#else
-            return m_size.height();
-#endif
         }
 
-#if USE(SKIA)
         RefPtr<NativeImageSkia> m_bitmap;
         SkBitmap::Allocator* m_allocator;
-#else
-        Vector<PixelData> m_backingStore;
-        PixelData* m_bytes; // The memory is backed by m_backingStore.
-        IntSize m_size;
-        // FIXME: Do we need m_colorProfile anymore?
-        ColorProfile m_colorProfile;
-#endif
         bool m_hasAlpha;
         IntRect m_originalFrameRect; // This will always just be the entire
                                      // buffer except for GIF frames whose
@@ -414,7 +383,6 @@ namespace WebCore {
 
         virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
-#if USE(SKIA)
         virtual void setMemoryAllocator(SkBitmap::Allocator* allocator)
         {
             // FIXME: this doesn't work for images with multiple frames.
@@ -422,7 +390,7 @@ namespace WebCore {
                 m_frameBufferCache.resize(1);
             m_frameBufferCache[0].setMemoryAllocator(allocator);
         }
-#endif
+
     protected:
         void prepareScaleDataIfNecessary();
         int upperBoundScaledX(int origX, int searchStart = 0);

@@ -25,13 +25,10 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
+#include "PlatformContextSkia.h"
 #include "RenderSVGShape.h"
 #include "RenderStyle.h"
 #include "SVGRenderSupport.h"
-
-#if USE(SKIA)
-#include "PlatformContextSkia.h"
-#endif
 
 namespace WebCore {
 
