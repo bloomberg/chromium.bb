@@ -1207,24 +1207,27 @@ bool SpdySession::GetLoadTimingInfo(SpdyStreamId stream_id,
 }
 
 int SpdySession::GetPeerAddress(IPEndPoint* address) const {
-  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionGetPeerAddressNotConnected",
-                        !connection_->socket());
-
-  if (!connection_->socket()) {
-    return ERR_SOCKET_NOT_CONNECTED;
+  int rv = ERR_SOCKET_NOT_CONNECTED;
+  if (connection_->socket()) {
+    rv = connection_->socket()->GetPeerAddress(address);
   }
 
-  return connection_->socket()->GetPeerAddress(address);
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionSocketNotConnectedGetPeerAddress",
+                        rv == ERR_SOCKET_NOT_CONNECTED);
+
+  return rv;
 }
 
 int SpdySession::GetLocalAddress(IPEndPoint* address) const {
-  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionGetPeerAddressNotConnected",
-                        !connection_->socket());
-  if (!connection_->socket()) {
-    return ERR_SOCKET_NOT_CONNECTED;
+  int rv = ERR_SOCKET_NOT_CONNECTED;
+  if (connection_->socket()) {
+    rv = connection_->socket()->GetLocalAddress(address);
   }
 
-  return connection_->socket()->GetLocalAddress(address);
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionSocketNotConnectedGetLocalAddress",
+                        rv == ERR_SOCKET_NOT_CONNECTED);
+
+  return rv;
 }
 
 void SpdySession::EnqueueSessionWrite(RequestPriority priority,
