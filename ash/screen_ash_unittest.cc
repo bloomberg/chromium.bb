@@ -71,6 +71,22 @@ TEST_F(ScreenAshTest, Bounds) {
   }
 }
 
+// Test verifies a stable handling of secondary screen widget changes
+// (crbug.com/226132).
+TEST_F(ScreenAshTest, StabilityTest) {
+  UpdateDisplay("600x600,500x500");
+  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+  EXPECT_EQ(Shell::GetAllRootWindows()[1],
+      secondary->GetNativeView()->GetRootWindow());
+  secondary->Show();
+  secondary->Maximize();
+  secondary->Show();
+  secondary->SetFullscreen(true);
+  secondary->Hide();
+  secondary->Close();
+}
+
 TEST_F(ScreenAshTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
 
