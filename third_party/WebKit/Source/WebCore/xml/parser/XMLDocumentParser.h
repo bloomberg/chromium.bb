@@ -31,17 +31,11 @@
 #include "ScriptableDocumentParser.h"
 #include "SegmentedString.h"
 #include "XMLErrors.h"
+#include <libxml/tree.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringHash.h>
-
-#if USE(QXMLSTREAM)
-#include <qxmlstream.h>
-#else
-#include <libxml/tree.h>
-#include <libxml/xmlstring.h>
-#endif
 
 namespace WebCore {
 
@@ -55,7 +49,6 @@ class FrameView;
 class PendingCallbacks;
 class Text;
 
-#if !USE(QXMLSTREAM)
     class XMLParserContext : public RefCounted<XMLParserContext> {
     public:
         static PassRefPtr<XMLParserContext> createMemoryParser(xmlSAXHandlerPtr, void* userData, const CString& chunk);
@@ -70,7 +63,6 @@ class Text;
         }
         xmlParserCtxtPtr m_context;
     };
-#endif
 
     class XMLDocumentParser : public ScriptableDocumentParser, public CachedResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
@@ -125,21 +117,7 @@ class Text;
 
         bool appendFragmentSource(const String&);
 
-#if USE(QXMLSTREAM)
-private:
-        void parse();
-        void startDocument();
-        void parseStartElement();
-        void parseEndElement();
-        void parseCharacters();
-        void parseProcessingInstruction();
-        void parseCdata();
-        void parseComment();
-        void endDocument();
-        void parseDtd();
-        bool hasError() const;
-#else
-public:
+    public:
         // callbacks from parser SAX
         void error(XMLErrors::ErrorType, const char* message, va_list args) WTF_ATTRIBUTE_PRINTF(3, 0);
         void startElementNs(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
@@ -158,7 +136,6 @@ public:
 
         int depthTriggeringEntityExpansion() const { return m_depthTriggeringEntityExpansion; }
         void setDepthTriggeringEntityExpansion(int depth) { m_depthTriggeringEntityExpansion = depth; }
-#endif
     private:
         void initializeParserContext(const CString& chunk = CString());
 
@@ -178,17 +155,13 @@ public:
 
         SegmentedString m_originalSourceForTransform;
 
-#if USE(QXMLSTREAM)
-        QXmlStreamReader m_stream;
-        bool m_wroteText;
-#else
         xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; };
         RefPtr<XMLParserContext> m_context;
         OwnPtr<PendingCallbacks> m_pendingCallbacks;
         Vector<xmlChar> m_bufferedText;
         int m_depthTriggeringEntityExpansion;
         bool m_isParsingEntityDeclaration;
-#endif
+
         ContainerNode* m_currentNode;
         Vector<ContainerNode*> m_currentNodeStack;
 

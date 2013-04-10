@@ -32,10 +32,6 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>
 
-#if !USE(QXMLSTREAM)
-#include <libxml/parser.h>
-#endif
-
 namespace WebCore {
 
 class Document;

@@ -27,13 +27,10 @@
 
 #include "Node.h"
 #include "XSLStyleSheet.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
-
-#if !USE(QXMLQUERY)
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
-#endif
+#include <wtf/HashMap.h>
+#include <wtf/text/StringHash.h>
 
 namespace WebCore {
 
@@ -66,13 +63,11 @@ public:
 
     void reset();
 
-#if !USE(QXMLQUERY)
     static void parseErrorFunc(void* userData, xmlError*);
     static void genericErrorFunc(void* userData, const char* msg, ...);
     
     // Only for libXSLT callbacks
     XSLStyleSheet* xslStylesheet() const { return m_stylesheet.get(); }
-#endif
 
     typedef HashMap<String, String> ParameterMap;
 
