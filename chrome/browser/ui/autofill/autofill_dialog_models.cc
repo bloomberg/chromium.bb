@@ -108,14 +108,9 @@ AccountChooserModel::AccountChooserModel(
     PrefService* prefs)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       account_delegate_(delegate),
-      prefs_(prefs),
-      checked_item_(kWalletItemId),
+      checked_item_(prefs->GetBoolean(prefs::kAutofillDialogPayWithoutWallet) ?
+          kAutofillItemId : kWalletItemId),
       had_wallet_error_(false) {
-  pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(
-      prefs::kAutofillDialogPayWithoutWallet,
-      base::Bind(&AccountChooserModel::PrefChanged, base::Unretained(this)));
-
   AddCheckItem(kWalletItemId,
                l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_GOOGLE_WALLET));
   SetIcon(
@@ -123,7 +118,6 @@ AccountChooserModel::AccountChooserModel(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_WALLET_ICON));
   AddCheckItemWithStringId(kAutofillItemId,
                            IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
-  UpdateCheckmarkFromPref();
 }
 
 AccountChooserModel::~AccountChooserModel() {
@@ -156,30 +150,15 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
 
 void AccountChooserModel::SetHadWalletError() {
   had_wallet_error_ = true;
-  checked_item_ = kAutofillItemId;
-  account_delegate_->AccountChoiceChanged();
+  ExecuteCommand(kAutofillItemId, 0);
 }
 
 void AccountChooserModel::SetHadWalletSigninError() {
-  checked_item_ = kAutofillItemId;
-  account_delegate_->AccountChoiceChanged();
+  ExecuteCommand(kAutofillItemId, 0);
 }
 
 bool AccountChooserModel::WalletIsSelected() const {
   return checked_item_ == kWalletItemId;
-}
-
-void AccountChooserModel::PrefChanged(const std::string& pref) {
-  DCHECK(pref == prefs::kAutofillDialogPayWithoutWallet);
-  UpdateCheckmarkFromPref();
-  account_delegate_->AccountChoiceChanged();
-}
-
-void AccountChooserModel::UpdateCheckmarkFromPref() {
-  if (prefs_->GetBoolean(prefs::kAutofillDialogPayWithoutWallet))
-    checked_item_ = kAutofillItemId;
-  else
-    checked_item_ = kWalletItemId;
 }
 
 // MonthComboboxModel ----------------------------------------------------------

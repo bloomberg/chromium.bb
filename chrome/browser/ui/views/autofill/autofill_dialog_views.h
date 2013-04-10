@@ -79,7 +79,6 @@ class AutofillDialogViews : public AutofillDialogView,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
-  virtual bool SaveDetailsInWallet() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
@@ -208,32 +207,36 @@ class AutofillDialogViews : public AutofillDialogView,
   };
 
   // An area for notifications. Some notifications point at the account chooser.
-  class NotificationArea : public views::View {
+  class NotificationArea : public views::View,
+                           public views::ButtonListener {
    public:
-    NotificationArea();
+    explicit NotificationArea(AutofillDialogController* controller);
     virtual ~NotificationArea();
+
+    // Displays the given notifications.
+    void SetNotifications(const std::vector<DialogNotification>& notifications);
+
+    // views::View implementation.
+    virtual std::string GetClassName() const OVERRIDE;
+    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+    // views::ButtonListener implementation:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
 
     void set_arrow_centering_anchor(
         const base::WeakPtr<views::View>& arrow_centering_anchor) {
       arrow_centering_anchor_ = arrow_centering_anchor;
     }
 
-    // Displays the given notifications.
-    void SetNotifications(const std::vector<DialogNotification>& notifications);
-
-    // Returns true if the checkbox exists and is checked. Currently, the
-    // notification area only supports showing a checkbox on the topmost
-    // notification.
-    bool CheckboxIsChecked() const;
-
-    // views::View implementation.
-    virtual std::string GetClassName() const OVERRIDE;
-    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
    private:
     // Utility function for determining whether an arrow should be drawn
     // pointing at |arrow_centering_anchor_|.
     bool HasArrow();
+
+    // A reference to the controller than owns this view. Used to report when
+    // checkboxes change their values.
+    AutofillDialogController* controller_;  // weak
 
     // The currently showing checkbox, or NULL if none exists.
     views::Checkbox* checkbox_;  // weak

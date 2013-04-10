@@ -214,12 +214,6 @@ bool AutofillDialogViewAndroid::UseBillingForShipping() {
       env, java_object_.obj());
 }
 
-bool AutofillDialogViewAndroid::SaveDetailsInWallet() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_AutofillDialogGlue_shouldSaveDetailsInWallet(env,
-                                                           java_object_.obj());
-}
-
 bool AutofillDialogViewAndroid::SaveDetailsLocally() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_AutofillDialogGlue_shouldSaveDetailsLocally(env,

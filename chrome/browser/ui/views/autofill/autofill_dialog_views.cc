@@ -237,8 +237,10 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
 
 // AutofillDialogViews::NotificationArea ---------------------------------------
 
-AutofillDialogViews::NotificationArea::NotificationArea()
-    : checkbox_(NULL) {
+AutofillDialogViews::NotificationArea::NotificationArea(
+    AutofillDialogController* controller)
+    : controller_(controller),
+      checkbox_(NULL) {
   // Reserve vertical space for the arrow (regardless of whether one exists).
   set_border(views::Border::CreateEmptyBorder(kArrowHeight, 0, 0, 0));
 
@@ -253,8 +255,6 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
     const std::vector<DialogNotification>& notifications) {
   notifications_ = notifications;
 
-  // Default checkbox to checked. Preserve checkbox state if it already exists.
-  bool checkbox_state = checkbox_ ? checkbox_->checked() : true;
   RemoveAllChildViews(true);
   checkbox_ = NULL;
 
@@ -275,7 +275,6 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
                                       kNotificationPadding,
                                       kNotificationPadding,
                                       kNotificationPadding));
-      checkbox->SetChecked(checkbox_state);
       if (!notification.interactive())
         checkbox->SetState(views::Button::STATE_DISABLED);
       checkbox->SetText(notification.display_text());
@@ -283,6 +282,8 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
       checkbox->set_alignment(views::TextButtonBase::ALIGN_LEFT);
       checkbox->SetEnabledColor(notification.GetTextColor());
       checkbox->SetHoverColor(notification.GetTextColor());
+      checkbox->SetChecked(notification.checked());
+      checkbox->set_listener(this);
       view.reset(checkbox.release());
     } else {
       scoped_ptr<views::Label> label(new views::Label());
@@ -302,10 +303,6 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
   }
 
   PreferredSizeChanged();
-}
-
-bool AutofillDialogViews::NotificationArea::CheckboxIsChecked() const {
-  return checkbox_ && checkbox_->checked();
 }
 
 std::string AutofillDialogViews::NotificationArea::GetClassName() const {
@@ -330,6 +327,13 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
     canvas->ClipPath(arrow);
     canvas->DrawColor(notifications_[0].GetBackgroundColor());
   }
+}
+
+void AutofillDialogViews::NotificationArea::ButtonPressed(
+    views::Button* sender, const ui::Event& event) {
+  DCHECK_EQ(sender, checkbox_);
+  controller_->NotificationCheckboxStateChanged(notifications_.front().type(),
+                                                checkbox_->checked());
 }
 
 bool AutofillDialogViews::NotificationArea::HasArrow() {
@@ -709,10 +713,6 @@ bool AutofillDialogViews::UseBillingForShipping() {
   return use_billing_for_shipping_->checked();
 }
 
-bool AutofillDialogViews::SaveDetailsInWallet() {
-  return notification_area_->CheckboxIsChecked();
-}
-
 bool AutofillDialogViews::SaveDetailsLocally() {
   return save_in_chrome_checkbox_->checked();
 }
@@ -1009,7 +1009,7 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   if (!views::DialogDelegate::UseNewStyle())
     main_container_->AddChildView(account_chooser_);
 
-  notification_area_ = new NotificationArea();
+  notification_area_ = new NotificationArea(controller_);
   notification_area_->set_arrow_centering_anchor(account_chooser_->AsWeakPtr());
   main_container_->AddChildView(notification_area_);
 

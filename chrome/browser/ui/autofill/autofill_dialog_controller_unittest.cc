@@ -56,7 +56,6 @@ class TestAutofillDialogView : public AutofillDialogView {
 
   virtual string16 GetCvc() OVERRIDE { return string16(); }
   virtual bool UseBillingForShipping() OVERRIDE { return false; }
-  virtual bool SaveDetailsInWallet() OVERRIDE { return false; }
   virtual bool SaveDetailsLocally() OVERRIDE { return true; }
   virtual const content::NavigationController* ShowSignIn() OVERRIDE {
     return NULL;
@@ -161,7 +160,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         metric_logger_(metric_logger),
         ALLOW_THIS_IN_INITIALIZER_LIST(test_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this)) {}
+                GetRequestContext(), this)),
+        is_first_run_(true) {}
   virtual ~TestAutofillDialogController() {}
 
   virtual AutofillDialogView* CreateView() OVERRIDE {
@@ -184,6 +184,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_wallet_client_;
   }
 
+  void set_is_first_run(bool is_first_run) { is_first_run_ = is_first_run; }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -191,6 +193,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
     return &test_wallet_client_;
+  }
+
+  virtual bool IsFirstRun() const OVERRIDE {
+    return is_first_run_;
   }
 
  private:
@@ -202,6 +208,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   testing::NiceMock<TestWalletClient> test_wallet_client_;
+  bool is_first_run_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -273,7 +280,8 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
   void SetUpWallet() {
-    controller()->MenuModelForAccountChooser()->ActivatedAt(0);
+    controller()->MenuModelForAccountChooser()->ActivatedAt(
+        AccountChooserModel::kWalletItemId);
     controller()->OnUserNameFetchSuccess("user@example.com");
   }
 
@@ -565,10 +573,6 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
 
   EXPECT_FALSE(
       NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
-  const std::vector<DialogNotification>& notifications =
-      NotificationsOfType(DialogNotification::WALLET_USAGE_CONFIRMATION);
-  EXPECT_FALSE(notifications.front().interactive());
-
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
@@ -625,8 +629,8 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
   ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
   ASSERT_TRUE(account_menu);
   ASSERT_GE(2, account_menu->GetItemCount());
-  account_menu->ActivatedAt(0);
-  account_menu->ActivatedAt(1);
+  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
+  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -674,11 +678,122 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
   ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
   ASSERT_TRUE(account_menu);
   ASSERT_GE(2, account_menu->GetItemCount());
-  account_menu->ActivatedAt(0);
-  account_menu->ActivatedAt(1);
+  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
+  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+}
+
+// Test that when a wallet error happens only an error is shown (and no other
+// Wallet-related notifications).
+TEST_F(AutofillDialogControllerTest, WalletErrorNotification) {
+  SetUpWallet();
+
+  controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
+
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::WALLET_ERROR).size());
+
+  // No other wallet notifications should show on Wallet error.
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_SIGNIN_PROMO).empty());
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).empty());
+}
+
+// Test that only on first run an explanation of where Chrome got the user's
+// data is shown (i.e. "Got these details from Wallet").
+TEST_F(AutofillDialogControllerTest, WalletDetailsExplanation) {
+  SetUpWallet();
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).size());
+
+  // Wallet notifications are mutually exclusive.
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_SIGNIN_PROMO).empty());
+
+  // Switch to using Autofill, no explanatory message should show.
+  ui::MenuModel* account_menu = controller()->MenuModelForAccountChooser();
+  account_menu->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).empty());
+
+  // Switch to Wallet, pretend this isn't first run. No message should show.
+  account_menu->ActivatedAt(AccountChooserModel::kWalletItemId);
+  controller()->set_is_first_run(false);
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).empty());
+}
+
+// Verifies that the "[X] Save details in wallet" notification shows on first
+// run with an incomplete profile, stays showing when switching to Autofill in
+// the account chooser, and continues to show on second+ run when a user's
+// wallet is incomplete. This also tests that submitting disables interactivity.
+TEST_F(AutofillDialogControllerTest, SaveDetailsInWallet) {
+  SetUpWallet();
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  std::vector<DialogNotification> notifications =
+      NotificationsOfType(DialogNotification::WALLET_USAGE_CONFIRMATION);
+  EXPECT_EQ(1U, notifications.size());
+  EXPECT_TRUE(notifications.front().checked());
+  EXPECT_TRUE(notifications.front().interactive());
+
+  // Wallet notifications are mutually exclusive.
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_SIGNIN_PROMO).empty());
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).empty());
+
+  // Using Autofill on second run, show an interactive, unchecked checkbox.
+  ui::MenuModel* account_model = controller()->MenuModelForAccountChooser();
+  account_model->ActivatedAt(AccountChooserModel::kAutofillItemId);
+  controller()->set_is_first_run(false);
+
+  notifications =
+      NotificationsOfType(DialogNotification::WALLET_USAGE_CONFIRMATION);
+  EXPECT_EQ(1U, notifications.size());
+  EXPECT_FALSE(notifications.front().checked());
+  EXPECT_TRUE(notifications.front().interactive());
+
+  // Notifications shouldn't be interactive while submitting.
+  account_model->ActivatedAt(AccountChooserModel::kWalletItemId);
+  controller()->OnAccept();
+  EXPECT_FALSE(NotificationsOfType(
+      DialogNotification::WALLET_USAGE_CONFIRMATION).front().interactive());
+}
+
+// Verifies that no Wallet notifications are shown after first run (i.e. no
+// "[X] Save details to wallet" or "These details are from your Wallet") when
+// the user has a complete wallet.
+TEST_F(AutofillDialogControllerTest, NoWalletNotifications) {
+  SetUpWallet();
+  controller()->set_is_first_run(false);
+
+  // Simulate a complete wallet.
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).empty());
+  EXPECT_TRUE(NotificationsOfType(
+      DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
 }
 
 }  // namespace autofill

@@ -140,6 +140,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
   virtual void StartSignInFlow() OVERRIDE;
   virtual void EndSignInFlow() OVERRIDE;
+  virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
+                                                bool checked) OVERRIDE;
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
   virtual void OnCancel() OVERRIDE;
   virtual void OnAccept() OVERRIDE;
@@ -246,6 +248,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Returns whether Wallet is the current data source. Exposed for testing.
   virtual bool IsPayingWithWallet() const;
 
+  // Exposed and virtual for testing.
+  virtual bool IsFirstRun() const;
+
  private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
@@ -253,9 +258,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the information input in this dialog will be securely transmitted
   // to the requesting site.
   bool TransmissionWillBeSecure() const;
-
-  // Whether the user has ever seen this dialog before. Cancels don't count.
-  bool IsFirstRun() const;
 
   // Initializes |suggested_email_| et al.
   void SuggestionsUpdated();
@@ -268,8 +270,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the user's wallet items have at least one address and instrument.
   bool HasCompleteWallet() const;
 
-  // Starts fetching the wallet items.
-  void StartFetchingWalletItems();
+  // Starts fetching the wallet items from Online Wallet.
+  void GetWalletItems();
 
   // Refreshes the model on Wallet or sign-in state update.
   void OnWalletOrSigninUpdate();
@@ -484,6 +486,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether this is an Autocheckout or a requestAutocomplete dialog.
   const DialogType dialog_type_;
+
+  // Whether this is the first time this profile has seen the Autofill dialog.
+  bool is_first_run_;
 
   // True after the user first accepts the dialog and presses "Submit". May
   // continue to be true while processing required actions.

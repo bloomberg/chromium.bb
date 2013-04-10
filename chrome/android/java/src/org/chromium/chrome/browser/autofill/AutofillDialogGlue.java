@@ -107,14 +107,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     /**
-     * @see AutofillDialog#shouldSaveDetailsInWallet()
-     */
-    @CalledByNative
-    private boolean shouldSaveDetailsInWallet() {
-        return mAutofillDialog.shouldSaveDetailsInWallet();
-    }
-
-    /**
      * @see AutofillDialog#shouldSaveDetailsLocally()
      */
     @CalledByNative

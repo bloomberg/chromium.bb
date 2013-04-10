@@ -39,52 +39,64 @@ class AccountChooserModelTest : public testing::Test {
 }  // namespace
 
 TEST_F(AccountChooserModelTest, ObeysPref) {
-  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(2);
+  // When "Pay without wallet" is false, use Wallet by default.
+  {
+    profile()->GetPrefs()->SetBoolean(
+        prefs::kAutofillDialogPayWithoutWallet, false);
+    AccountChooserModel model(delegate(), profile()->GetPrefs());
+    EXPECT_TRUE(model.WalletIsSelected());
+  }
+  // When the user chose to "Pay without wallet", use Autofill.
+  {
+    profile()->GetPrefs()->SetBoolean(
+        prefs::kAutofillDialogPayWithoutWallet, true);
+    AccountChooserModel model(delegate(), profile()->GetPrefs());
+    EXPECT_FALSE(model.WalletIsSelected());
+  }
+}
 
-  profile()->GetPrefs()->SetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet, false);
+TEST_F(AccountChooserModelTest, IgnoresPrefChanges) {
+  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kAutofillDialogPayWithoutWallet));
   EXPECT_TRUE(model()->WalletIsSelected());
 
+  // Check that nothing changes while this dialog is running if a pref changes
+  // (this could cause subtle bugs or annoyances if a user closes another
+  // running dialog).
   profile()->GetPrefs()->SetBoolean(
       prefs::kAutofillDialogPayWithoutWallet, true);
-  EXPECT_FALSE(model()->WalletIsSelected());
+  EXPECT_TRUE(model()->WalletIsSelected());
 }
 
 TEST_F(AccountChooserModelTest, HandlesError) {
-  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(2);
+  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(1);
 
-  profile()->GetPrefs()->SetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet, false);
-  EXPECT_TRUE(model()->WalletIsSelected());
+  ASSERT_TRUE(model()->WalletIsSelected());
+  ASSERT_TRUE(model()->IsCommandIdEnabled(AccountChooserModel::kWalletItemId));
 
   model()->SetHadWalletError();
   EXPECT_FALSE(model()->WalletIsSelected());
-  EXPECT_FALSE(model()->IsCommandIdEnabled(0));
+  EXPECT_FALSE(model()->IsCommandIdEnabled(AccountChooserModel::kWalletItemId));
 }
 
 TEST_F(AccountChooserModelTest, HandlesSigninError) {
-  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(2);
+  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(1);
 
-  profile()->GetPrefs()->SetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet, false);
-  EXPECT_TRUE(model()->WalletIsSelected());
+  ASSERT_TRUE(model()->WalletIsSelected());
+  ASSERT_TRUE(model()->IsCommandIdEnabled(AccountChooserModel::kWalletItemId));
 
   model()->SetHadWalletSigninError();
   EXPECT_FALSE(model()->WalletIsSelected());
-  EXPECT_TRUE(model()->IsCommandIdEnabled(0));
+  EXPECT_TRUE(model()->IsCommandIdEnabled(AccountChooserModel::kWalletItemId));
 }
 
 TEST_F(AccountChooserModelTest, RespectsUserChoice) {
-  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(3);
+  EXPECT_CALL(*delegate(), AccountChoiceChanged()).Times(2);
 
-  profile()->GetPrefs()->SetBoolean(
-      prefs::kAutofillDialogPayWithoutWallet, false);
-  EXPECT_TRUE(model()->WalletIsSelected());
-
-  model()->ExecuteCommand(1, 0);
+  model()->ExecuteCommand(AccountChooserModel::kAutofillItemId, 0);
   EXPECT_FALSE(model()->WalletIsSelected());
 
-  model()->ExecuteCommand(0, 0);
+  model()->ExecuteCommand(AccountChooserModel::kWalletItemId, 0);
   EXPECT_TRUE(model()->WalletIsSelected());
 }
 

@@ -164,6 +164,10 @@ class AutofillDialogController {
   // Marks the signin flow into Wallet complete.
   virtual void EndSignInFlow() = 0;
 
+  // Called when a checkbox in the notification area has changed its state.
+  virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
+                                                bool checked) = 0;
+
   // A legal document link has been clicked.
   virtual void LegalDocumentLinkClicked(const ui::Range& range) = 0;
 

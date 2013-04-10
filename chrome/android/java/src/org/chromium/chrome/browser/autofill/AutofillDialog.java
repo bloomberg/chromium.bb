@@ -541,14 +541,6 @@ public class AutofillDialog extends AlertDialog
     }
 
     /**
-     * @return Whether the details entered should be saved to the currently active
-     *         Wallet account.
-     */
-    public boolean shouldSaveDetailsInWallet() {
-        return false;
-    }
-
-    /**
      * @return Whether the details entered should be saved locally on the device.
      */
     public boolean shouldSaveDetailsLocally() {

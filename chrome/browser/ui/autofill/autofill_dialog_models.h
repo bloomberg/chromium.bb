@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -134,20 +133,13 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   int checked_item() const { return checked_item_; }
 
- private:
-  void PrefChanged(const std::string& pref);
-
-  // Sets |checked_item_| from the relevant pref.
-  void UpdateCheckmarkFromPref();
-
   // Command IDs of the items in this menu. For now, we only support a single
   // account, so there's only one wallet item.
   static const int kWalletItemId;
   static const int kAutofillItemId;
 
+ private:
   AccountChooserModelDelegate* account_delegate_;
-
-  PrefService* prefs_;
 
   // The command id of the currently active item.
   int checked_item_;
@@ -155,8 +147,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Whether there has been a Wallet error while the owning dialog has been
   // open.
   bool had_wallet_error_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserModel);
 };
