@@ -643,7 +643,7 @@ String AccessibilityRenderObject::stringValue() const
         return String();
 
     if (isPasswordField())
-        return passwordFieldValue();
+        return String();
 
     RenderBoxModelObject* cssBox = renderBoxModelObject();
 
@@ -1264,7 +1264,7 @@ int AccessibilityRenderObject::layoutCount() const
 String AccessibilityRenderObject::text() const
 {
     if (isPasswordField())
-        return passwordFieldValue();
+        return String();
 
     return AccessibilityNodeObject::text();
 }
@@ -2027,7 +2027,7 @@ String AccessibilityRenderObject::doAXStringForRange(const PlainTextRange& range
     if (!isTextControl())
         return String();
     
-    String elementText = isPasswordField() ? passwordFieldValue() : text();
+    String elementText = isPasswordField() ? String() : text();
     if (range.start + range.length > elementText.length())
         return String();
     
@@ -3215,13 +3215,6 @@ AccessibilityRole AccessibilityRenderObject::roleValueForMSAA() const
         m_roleForMSAA = roleValue();
 
     return m_roleForMSAA;
-}
-
-String AccessibilityRenderObject::passwordFieldValue() const
-{
-
-    // It seems only GTK is interested in this at the moment.
-    return String();
 }
 
 ScrollableArea* AccessibilityRenderObject::getScrollableAreaIfScrollable() const

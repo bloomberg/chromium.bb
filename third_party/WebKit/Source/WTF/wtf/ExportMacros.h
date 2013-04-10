@@ -68,7 +68,7 @@
 
 #endif
 
-#if defined(BUILDING_WTF) || defined(STATICALLY_LINKED_WITH_WTF) || (PLATFORM(WX) && defined(BUILDING_JavaScriptCore))
+#if defined(BUILDING_WTF) || defined(STATICALLY_LINKED_WITH_WTF)
 #define WTF_IS_LINKED_IN_SAME_BINARY 1
 #endif
 
@@ -131,15 +131,8 @@
 #define WTF_EXPORT_PRIVATE WTF_IMPORT
 #endif
 
-// wxWebKit uses RTTI because wx itself does, so use a special macro for
-// extra exports it needs.
-#if PLATFORM(WX)
-#define WTF_EXPORT_PRIVATE_RTTI WTF_EXPORT_PRIVATE
-#define WTF_EXPORT_PRIVATE_NO_RTTI
-#else
 #define WTF_EXPORT_PRIVATE_RTTI
 #define WTF_EXPORT_PRIVATE_NO_RTTI WTF_EXPORT_PRIVATE
-#endif
 
 #if PLATFORM(WIN)
 #define WTF_EXPORT_STRING_API

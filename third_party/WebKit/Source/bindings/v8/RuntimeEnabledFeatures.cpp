@@ -154,7 +154,7 @@ bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
 bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
 
 #if ENABLE(VIDEO_TRACK)
-#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(CHROMIUM) || PLATFORM(WIN)
+#if PLATFORM(MAC) || PLATFORM(CHROMIUM) || PLATFORM(WIN)
     bool RuntimeEnabledFeatures::isVideoTrackEnabled = true;
 #else
     bool RuntimeEnabledFeatures::isVideoTrackEnabled = false;

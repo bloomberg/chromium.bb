@@ -72,11 +72,8 @@
 #include <regex.h>
 #endif
 
-// On Linux this causes conflicts with libpng because there are two impls. of
-// longjmp - see here: https://bugs.launchpad.net/ubuntu/+source/libpng/+bug/218409
-#if !PLATFORM(WX)
+
 #include <setjmp.h>
-#endif
 
 #include <signal.h>
 #include <stdarg.h>
@@ -132,7 +129,6 @@ _LIBCPP_END_NAMESPACE_STD
 #include <sys/resource.h>
 #endif
 
-#if !PLATFORM(WX)
 #include <CoreFoundation/CoreFoundation.h>
 
 #if OS(WINDOWS)
@@ -145,8 +141,6 @@ _LIBCPP_END_NAMESPACE_STD
 #else
 #include <CoreServices/CoreServices.h>
 #endif // OS(WINDOWS)
-
-#endif // !PLATFORM(WX)
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
