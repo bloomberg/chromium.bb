@@ -13,7 +13,6 @@ MockClock::~MockClock() {
 }
 
 void MockClock::AdvanceTime(QuicTime::Delta delta) {
-  CHECK_LE(0, delta.ToMicroseconds());
   now_ = now_.Add(delta);
 }
 

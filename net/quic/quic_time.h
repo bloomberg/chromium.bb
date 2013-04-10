@@ -17,6 +17,8 @@
 
 namespace net {
 
+static const uint64 kNumMicrosPerSecond = base::Time::kMicrosecondsPerSecond;
+
 class NET_EXPORT_PRIVATE QuicTime {
  public:
   // A QuicTime::Delta represents the signed difference between two points in
