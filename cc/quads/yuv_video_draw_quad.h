@@ -23,9 +23,9 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               gfx::Rect rect,
               gfx::Rect opaque_rect,
               gfx::SizeF tex_scale,
-              const VideoLayerImpl::FramePlane& y_plane,
-              const VideoLayerImpl::FramePlane& u_plane,
-              const VideoLayerImpl::FramePlane& v_plane);
+              unsigned y_plane_resource_id,
+              unsigned u_plane_resource_id,
+              unsigned v_plane_resource_id);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -33,14 +33,14 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               gfx::Rect visible_rect,
               bool needs_blending,
               gfx::SizeF tex_scale,
-              const VideoLayerImpl::FramePlane& y_plane,
-              const VideoLayerImpl::FramePlane& u_plane,
-              const VideoLayerImpl::FramePlane& v_plane);
+              unsigned y_plane_resource_id,
+              unsigned u_plane_resource_id,
+              unsigned v_plane_resource_id);
 
   gfx::SizeF tex_scale;
-  VideoLayerImpl::FramePlane y_plane;
-  VideoLayerImpl::FramePlane u_plane;
-  VideoLayerImpl::FramePlane v_plane;
+  unsigned y_plane_resource_id;
+  unsigned u_plane_resource_id;
+  unsigned v_plane_resource_id;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

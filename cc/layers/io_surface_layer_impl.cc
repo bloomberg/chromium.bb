@@ -27,11 +27,25 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl() {
   if (!io_surface_texture_id_)
     return;
 
-  OutputSurface* output_surface = layer_tree_impl()->output_surface();
-  // FIXME: Implement this path for software compositing.
-  WebKit::WebGraphicsContext3D* context3d = output_surface->context3d();
-  if (context3d)
-    context3d->deleteTexture(io_surface_texture_id_);
+  DestroyTexture();
+}
+
+void IOSurfaceLayerImpl::DestroyTexture() {
+  if (io_surface_resource_id_) {
+    ResourceProvider* resource_provider =
+        layer_tree_impl()->resource_provider();
+    resource_provider->DeleteResource(io_surface_resource_id_);
+    io_surface_resource_id_ = 0;
+  }
+
+  if (io_surface_texture_id_) {
+    OutputSurface* output_surface = layer_tree_impl()->output_surface();
+    // FIXME: Implement this path for software compositing.
+    WebKit::WebGraphicsContext3D* context3d = output_surface->context3d();
+    if (context3d)
+      context3d->deleteTexture(io_surface_texture_id_);
+    io_surface_texture_id_ = 0;
+  }
 }
 
 scoped_ptr<LayerImpl> IOSurfaceLayerImpl::CreateLayerImpl(
@@ -59,8 +73,12 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
     }
 
     // FIXME: Do this in a way that we can track memory usage.
-    if (!io_surface_texture_id_)
+    if (!io_surface_texture_id_) {
       io_surface_texture_id_ = context3d->createTexture();
+      io_surface_resource_id_ =
+          resource_provider->CreateResourceFromExternalTexture(
+              io_surface_texture_id_);
+    }
 
     GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
     GLC(context3d,
@@ -107,7 +125,7 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                quad_rect,
                opaque_rect,
                io_surface_size_,
-               io_surface_texture_id_,
+               io_surface_resource_id_,
                IOSurfaceDrawQuad::FLIPPED);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
@@ -125,7 +143,7 @@ void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str,
 void IOSurfaceLayerImpl::DidLoseOutputSurface() {
   // We don't have a valid texture ID in the new context; however,
   // the IOSurface is still valid.
-  io_surface_texture_id_ = 0;
+  DestroyTexture();
   io_surface_changed_ = true;
 }
 

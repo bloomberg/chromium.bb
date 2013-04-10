@@ -295,6 +295,19 @@ void TestWebGraphicsContext3D::getQueryObjectuivEXT(
     *params = 1;
 }
 
+
+void TestWebGraphicsContext3D::genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox) {
+  static char mailbox_name1 = '1';
+  static char mailbox_name2 = '1';
+  mailbox[0] = mailbox_name1;
+  mailbox[1] = mailbox_name2;
+  mailbox[2] = '\0';
+  if (++mailbox_name1 == 0) {
+    mailbox_name1 = '1';
+    ++mailbox_name2;
+  }
+}
+
 void TestWebGraphicsContext3D::setContextLostCallback(
     WebGraphicsContextLostCallback* callback) {
   context_lost_callback_ = callback;

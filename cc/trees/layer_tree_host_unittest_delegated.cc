@@ -1108,6 +1108,9 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         TransferableResourceArray transferable_resources;
         host_impl->resource_provider()->PrepareSendToParent(
             resources_for_parent, &transferable_resources);
+
+        resource_in_grandparent = transferable_resources[0];
+        EXPECT_EQ(map.find(999)->second, resource_in_grandparent.id);
         break;
       }
       case 2: {
@@ -1120,10 +1123,10 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(555)->second));
 
         // Receive 999 back from the grandparent.
-        TransferableResource resource;
-        resource.id = map.find(999)->second;
+        EXPECT_EQ(map.find(999)->second, resource_in_grandparent.id);
         TransferableResourceArray transferable_resources;
-        transferable_resources.push_back(resource);
+        transferable_resources.push_back(resource_in_grandparent);
+
         host_impl->resource_provider()->ReceiveFromParent(
             transferable_resources);
         break;
@@ -1139,6 +1142,8 @@ class LayerTreeHostDelegatedTestResourceSentToParent
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  TransferableResource resource_in_grandparent;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestResourceSentToParent);

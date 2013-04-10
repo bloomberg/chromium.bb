@@ -89,6 +89,12 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       WebKit::WGC3Denum pname,
       WebKit::WGC3Duint* params);
 
+  virtual void genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(WebKit::WGC3Denum target,
+                                      const WebKit::WGC3Dbyte* mailbox) { }
+  virtual void consumeTextureCHROMIUM(WebKit::WGC3Denum target,
+                                      const WebKit::WGC3Dbyte* mailbox) { }
+
   virtual void setContextLostCallback(
       WebGraphicsContextLostCallback* callback);
 

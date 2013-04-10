@@ -1342,19 +1342,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   const VideoYUVProgram* program = GetVideoYUVProgram(texCoordPrecision);
   DCHECK(program && (program->initialized() || IsContextLost()));
 
-  const VideoLayerImpl::FramePlane& y_plane = quad->y_plane;
-  const VideoLayerImpl::FramePlane& u_plane = quad->u_plane;
-  const VideoLayerImpl::FramePlane& v_plane = quad->v_plane;
-
   GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
   ResourceProvider::ScopedSamplerGL y_plane_lock(
-      resource_provider_, y_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, quad->y_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
   GLC(Context(), Context()->activeTexture(GL_TEXTURE2));
   ResourceProvider::ScopedSamplerGL u_plane_lock(
-      resource_provider_, u_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, quad->u_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
   GLC(Context(), Context()->activeTexture(GL_TEXTURE3));
   ResourceProvider::ScopedSamplerGL v_plane_lock(
-      resource_provider_, v_plane.resource_id, GL_TEXTURE_2D, GL_LINEAR);
+      resource_provider_, quad->v_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
   SetUseProgram(program->program());
 
@@ -1424,8 +1420,10 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
       Context()->uniformMatrix4fv(
           program->vertex_shader().tex_matrix_location(), 1, false, gl_matrix));
 
+  ResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                          quad->resource_id);
   GLC(Context(),
-      Context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->texture_id));
+      Context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id()));
 
   GLC(Context(),
       Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -1722,9 +1720,11 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
       Context()->uniform1fv(
           binding.vertex_opacity_location, 4, vertex_opacity));
 
+  ResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                          quad->io_surface_resource_id);
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB,
-                             quad->io_surface_texture_id));
+                             lock.texture_id()));
 
   DrawQuadGeometry(
       frame, quad->quadTransform(), quad->rect, binding.matrix_location);

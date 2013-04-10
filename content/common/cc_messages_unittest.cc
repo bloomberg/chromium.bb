@@ -122,7 +122,7 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const IOSurfaceDrawQuad* a, const IOSurfaceDrawQuad* b) {
     EXPECT_EQ(a->io_surface_size.ToString(), b->io_surface_size.ToString());
-    EXPECT_EQ(a->io_surface_texture_id, b->io_surface_texture_id);
+    EXPECT_EQ(a->io_surface_resource_id, b->io_surface_resource_id);
     EXPECT_EQ(a->orientation, b->orientation);
   }
 
@@ -142,7 +142,7 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const StreamVideoDrawQuad* a, const StreamVideoDrawQuad* b) {
-    EXPECT_EQ(a->texture_id, b->texture_id);
+    EXPECT_EQ(a->resource_id, b->resource_id);
     EXPECT_EQ(a->matrix, b->matrix);
   }
 
@@ -167,15 +167,9 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const YUVVideoDrawQuad* a, const YUVVideoDrawQuad* b) {
     EXPECT_EQ(a->tex_scale, b->tex_scale);
-    EXPECT_EQ(a->y_plane.resource_id, b->y_plane.resource_id);
-    EXPECT_EQ(a->y_plane.size.ToString(), b->y_plane.size.ToString());
-    EXPECT_EQ(a->y_plane.format, b->y_plane.format);
-    EXPECT_EQ(a->u_plane.resource_id, b->u_plane.resource_id);
-    EXPECT_EQ(a->u_plane.size.ToString(), b->u_plane.size.ToString());
-    EXPECT_EQ(a->u_plane.format, b->u_plane.format);
-    EXPECT_EQ(a->v_plane.resource_id, b->v_plane.resource_id);
-    EXPECT_EQ(a->v_plane.size.ToString(), b->v_plane.size.ToString());
-    EXPECT_EQ(a->v_plane.format, b->v_plane.format);
+    EXPECT_EQ(a->y_plane_resource_id, b->y_plane_resource_id);
+    EXPECT_EQ(a->u_plane_resource_id, b->u_plane_resource_id);
+    EXPECT_EQ(a->v_plane_resource_id, b->v_plane_resource_id);
   }
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
@@ -218,22 +212,9 @@ TEST_F(CCMessagesTest, AllQuads) {
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
       IOSurfaceDrawQuad::UNFLIPPED;
   RenderPass::Id arbitrary_id(10, 14);
-  ResourceProvider::ResourceId arbitrary_resourceid = 55;
-
-  VideoLayerImpl::FramePlane arbitrary_plane1;
-  arbitrary_plane1.resource_id = arbitrary_resourceid;
-  arbitrary_plane1.size = arbitrary_size1;
-  arbitrary_plane1.format = arbitrary_int;
-
-  VideoLayerImpl::FramePlane arbitrary_plane2;
-  arbitrary_plane2.resource_id = arbitrary_resourceid;
-  arbitrary_plane2.size = arbitrary_size2;
-  arbitrary_plane2.format = arbitrary_int;
-
-  VideoLayerImpl::FramePlane arbitrary_plane3;
-  arbitrary_plane3.resource_id = arbitrary_resourceid;
-  arbitrary_plane3.size = arbitrary_size3;
-  arbitrary_plane3.format = arbitrary_int;
+  ResourceProvider::ResourceId arbitrary_resourceid1 = 55;
+  ResourceProvider::ResourceId arbitrary_resourceid2 = 47;
+  ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
 
   WebFilterOperations arbitrary_filters1;
   arbitrary_filters1.append(WebFilterOperation::createGrayscaleFilter(
@@ -286,7 +267,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                        arbitrary_rect1,
                        arbitrary_bool1,
                        arbitrary_size1,
-                       arbitrary_int,
+                       arbitrary_resourceid3,
                        arbitrary_orientation);
   scoped_ptr<DrawQuad> iosurface_cmp = iosurface_in->Copy(
       iosurface_in->shared_quad_state);
@@ -300,7 +281,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_bool1,
                         arbitrary_id,
                         arbitrary_bool2,
-                        arbitrary_resourceid,
+                        arbitrary_resourceid2,
                         arbitrary_rect1,
                         arbitrary_rectf1,
                         arbitrary_filters1,
@@ -345,7 +326,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                          arbitrary_rect3,
                          arbitrary_rect1,
                          arbitrary_bool1,
-                         arbitrary_int,
+                         arbitrary_resourceid2,
                          arbitrary_matrix);
   scoped_ptr<DrawQuad> streamvideo_cmp = streamvideo_in->Copy(
       streamvideo_in->shared_quad_state);
@@ -356,7 +337,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                      arbitrary_rect3,
                      arbitrary_rect1,
                      arbitrary_bool1,
-                     arbitrary_resourceid,
+                     arbitrary_resourceid1,
                      arbitrary_bool2,
                      arbitrary_pointf1,
                      arbitrary_pointf2,
@@ -371,7 +352,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_rect3,
                   arbitrary_rect1,
                   arbitrary_bool1,
-                  arbitrary_resourceid,
+                  arbitrary_resourceid3,
                   arbitrary_rectf1,
                   arbitrary_size1,
                   arbitrary_bool2);
@@ -386,9 +367,9 @@ TEST_F(CCMessagesTest, AllQuads) {
                       arbitrary_rect3,
                       arbitrary_bool1,
                       arbitrary_sizef1,
-                      arbitrary_plane1,
-                      arbitrary_plane2,
-                      arbitrary_plane3);
+                      arbitrary_resourceid1,
+                      arbitrary_resourceid2,
+                      arbitrary_resourceid3);
   scoped_ptr<DrawQuad> yuvvideo_cmp = yuvvideo_in->Copy(
       yuvvideo_in->shared_quad_state);
 

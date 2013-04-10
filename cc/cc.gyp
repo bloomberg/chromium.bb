@@ -336,6 +336,8 @@
       'layers/video_layer.h',
       'layers/video_layer_impl.cc',
       'layers/video_layer_impl.h',
+      'resources/video_resource_updater.cc',
+      'resources/video_resource_updater.h',
       'scheduler/vsync_time_source.cc',
       'scheduler/vsync_time_source.h',
       'base/worker_pool.cc',

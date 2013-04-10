@@ -6,6 +6,7 @@
 
 #include "cc/base/math_util.h"
 #include "cc/layers/video_layer_impl.h"
+#include "media/base/video_frame.h"
 
 namespace cc {
 

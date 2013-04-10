@@ -4,7 +4,6 @@
 //
 // IPC Messages sent between compositor instances.
 
-#include "cc/layers/video_layer_impl.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -115,12 +114,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
   IPC_STRUCT_TRAITS_MEMBER(index)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::VideoLayerImpl::FramePlane)
-  IPC_STRUCT_TRAITS_MEMBER(resource_id)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(format)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(material)
   IPC_STRUCT_TRAITS_MEMBER(rect)
@@ -143,7 +136,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(cc::IOSurfaceDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(io_surface_size)
-  IPC_STRUCT_TRAITS_MEMBER(io_surface_texture_id)
+  IPC_STRUCT_TRAITS_MEMBER(io_surface_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(orientation)
 IPC_STRUCT_TRAITS_END()
 
@@ -166,7 +159,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(texture_id)
+  IPC_STRUCT_TRAITS_MEMBER(resource_id)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
 IPC_STRUCT_TRAITS_END()
 
@@ -194,9 +187,9 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(tex_scale)
-  IPC_STRUCT_TRAITS_MEMBER(y_plane)
-  IPC_STRUCT_TRAITS_MEMBER(u_plane)
-  IPC_STRUCT_TRAITS_MEMBER(v_plane)
+  IPC_STRUCT_TRAITS_MEMBER(y_plane_resource_id)
+  IPC_STRUCT_TRAITS_MEMBER(u_plane_resource_id)
+  IPC_STRUCT_TRAITS_MEMBER(v_plane_resource_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)

@@ -19,7 +19,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
               gfx::Rect opaque_rect,
-              unsigned texture_id,
+              unsigned resource_id,
               const gfx::Transform& matrix);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -27,10 +27,10 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               gfx::Rect opaque_rect,
               gfx::Rect visible_rect,
               bool needs_blending,
-              unsigned texture_id,
+              unsigned resource_id,
               const gfx::Transform& matrix);
 
-  unsigned texture_id;
+  unsigned resource_id;
   gfx::Transform matrix;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
