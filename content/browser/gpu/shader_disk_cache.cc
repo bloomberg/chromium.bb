@@ -573,15 +573,8 @@ void ShaderDiskCache::CacheCreatedCallback(int rv) {
     LOG(ERROR) << "Shader Cache Creation failed: " << rv;
     return;
   }
-  cache_available_ = true;
-
   helper_ = new ShaderDiskReadHelper(AsWeakPtr(), host_id_);
   helper_->LoadCache();
-
-  if (!available_callback_.is_null()) {
-    available_callback_.Run(net::OK);
-    available_callback_.Reset();
-  }
 }
 
 void ShaderDiskCache::EntryComplete(void* entry) {
@@ -593,6 +586,15 @@ void ShaderDiskCache::EntryComplete(void* entry) {
 
 void ShaderDiskCache::ReadComplete() {
   helper_ = NULL;
+
+  // The cache is considered available after we have finished reading any
+  // of the old cache values off disk. This prevents a potential race where we
+  // are reading from disk and execute a cache clear at the same time.
+  cache_available_ = true;
+  if (!available_callback_.is_null()) {
+    available_callback_.Run(net::OK);
+    available_callback_.Reset();
+  }
 }
 
 int ShaderDiskCache::SetCacheCompleteCallback(
