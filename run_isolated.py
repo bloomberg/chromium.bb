@@ -544,7 +544,7 @@ class HttpService(object):
         if e.code in (401, 403):
           # Try to authenticate only once. If it doesn't help, then server does
           # not support app engine authentication.
-          logging.warning(
+          logging.error(
               'Authentication is required for %s on attempt %d.\n%s',
               request.get_full_url(), attempt,
               self._format_exception(e, verbose=True))
@@ -637,8 +637,8 @@ class AppEngineService(HttpService):
     Returns True on success.
     """
     if not upload:
-      logging.warning('\'upload\' module is missing, '
-                      'app engine authentication is disabled.')
+      logging.error('\'upload\' module is missing, '
+                    'app engine authentication is disabled.')
       return False
     cookie_jar = self.cookie_jar
     save_cookie_jar = self.save_cookie_jar
