@@ -621,6 +621,9 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
 
 static float calculateTargetDensityDPIFactor(const ViewportArguments& arguments, float deviceScaleFactor)
 {
+    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueDeviceDPI)
+        return 1.0f / deviceScaleFactor;
+
     float targetDPI = -1.0f;
     if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueLowDPI)
         targetDPI = 120.0f;
@@ -628,8 +631,6 @@ static float calculateTargetDensityDPIFactor(const ViewportArguments& arguments,
         targetDPI = 160.0f;
     else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueHighDPI)
         targetDPI = 240.0f;
-    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueDeviceDPI)
-        targetDPI = deviceScaleFactor * 160.0f;
     else if (arguments.deprecatedTargetDensityDPI != ViewportArguments::ValueAuto)
         targetDPI = arguments.deprecatedTargetDensityDPI;
     return targetDPI > 0 ? (deviceScaleFactor * 120.0f) / targetDPI : 1.0f;

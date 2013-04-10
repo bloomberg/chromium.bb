@@ -70,6 +70,7 @@
 #include <public/WebThread.h>
 #include <public/WebURLResponse.h>
 #include <public/WebUnitTestSupport.h>
+#include <wtf/dtoa/utils.h>
 #include <wtf/Forward.h>
 
 using namespace WebKit;
@@ -598,20 +599,28 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
 {
     registerMockedHttpURLLoad("viewport-target-densitydpi-device.html");
 
+    float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
+
     FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = 4.0f / 3.0f;
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
-    m_webView->enableFixedLayoutMode(true);
-    m_webView->settings()->setViewportEnabled(true);
-    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
-    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+        client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
-    EXPECT_NEAR(viewportWidth * client.m_screenInfo.deviceScaleFactor, m_webView->fixedLayoutSize().width, 1.0f);
-    EXPECT_NEAR(viewportHeight * client.m_screenInfo.deviceScaleFactor, m_webView->fixedLayoutSize().height, 1.0f);
-    EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, m_webView->pageScaleFactor(), 0.01f);
+        m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
+        m_webView->enableFixedLayoutMode(true);
+        m_webView->settings()->setViewportEnabled(true);
+        m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+        m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+        EXPECT_NEAR(viewportWidth * client.m_screenInfo.deviceScaleFactor, m_webView->fixedLayoutSize().width, 1.0f);
+        EXPECT_NEAR(viewportHeight * client.m_screenInfo.deviceScaleFactor, m_webView->fixedLayoutSize().height, 1.0f);
+        EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, m_webView->pageScaleFactor(), 0.01f);
+
+        m_webView->close();
+        m_webView = 0;
+    }
 }
 #endif
 
