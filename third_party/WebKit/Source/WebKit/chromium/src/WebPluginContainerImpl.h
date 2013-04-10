@@ -149,9 +149,7 @@ public:
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual WebLayer* platformLayer() const;
-#endif
 
     ScrollbarGroup* scrollbarGroup();
 

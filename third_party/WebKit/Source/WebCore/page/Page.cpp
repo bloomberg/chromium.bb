@@ -707,9 +707,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
     m_pageScaleFactor = scale;
 
-#if USE(ACCELERATED_COMPOSITING)
     mainFrame()->deviceOrPageScaleFactorChanged();
-#endif
 
     if (view && view->fixedElementsLayoutRelativeToFrame())
         view->setViewportConstrainedObjectsNeedLayout();
@@ -727,10 +725,8 @@ void Page::setDeviceScaleFactor(float scaleFactor)
     m_deviceScaleFactor = scaleFactor;
     setNeedsRecalcStyleInAllFrames();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (mainFrame())
         mainFrame()->deviceOrPageScaleFactorChanged();
-#endif
 
     pageCache()->markPagesForFullStyleRecalc(this);
 }

@@ -158,7 +158,6 @@ public:
     virtual void needTouchEvents(bool needTouchEvents) OVERRIDE;
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() const OVERRIDE;
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
@@ -169,7 +168,6 @@ public:
     virtual void scheduleCompositingLayerFlush();
 
     virtual CompositingTriggerFlags allowedCompositingTriggers() const;
-#endif
 
     virtual bool supportsFullscreenForNode(const WebCore::Node*);
     virtual void enterFullscreenForNode(WebCore::Node*);

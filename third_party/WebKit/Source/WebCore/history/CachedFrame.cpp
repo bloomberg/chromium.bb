@@ -40,6 +40,7 @@
 #include "HistoryItem.h"
 #include "Logging.h"
 #include "Page.h"
+#include "PageCache.h"
 #include "PageTransitionEvent.h"
 #include "SerializedScriptValue.h"
 #include <wtf/text/CString.h>
@@ -54,9 +55,6 @@
 #include "ChromeClient.h"
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "PageCache.h"
-#endif
 
 namespace WebCore {
 
@@ -75,9 +73,7 @@ CachedFrameBase::CachedFrameBase(Frame* frame)
     , m_mousePressNode(frame->eventHandler()->mousePressNode())
     , m_url(frame->document()->url())
     , m_isMainFrame(!frame->tree()->parent())
-#if USE(ACCELERATED_COMPOSITING)
     , m_isComposited(frame->view()->hasCompositedContent())
-#endif
 {
 }
 

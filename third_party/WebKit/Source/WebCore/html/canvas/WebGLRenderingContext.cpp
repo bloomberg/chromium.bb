@@ -4677,7 +4677,6 @@ void WebGLRenderingContext::forceRestoreContext()
         m_restoreTimer.startOneShot(0);
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 PlatformLayer* WebGLRenderingContext::platformLayer() const
 {
 #if PLATFORM(CHROMIUM)
@@ -4687,7 +4686,6 @@ PlatformLayer* WebGLRenderingContext::platformLayer() const
 
     return m_context->platformLayer();
 }
-#endif
 
 void WebGLRenderingContext::removeSharedObject(WebGLSharedObject* object)
 {

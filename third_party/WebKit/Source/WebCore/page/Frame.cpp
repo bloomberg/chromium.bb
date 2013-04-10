@@ -69,6 +69,7 @@
 #include "PageCache.h"
 #include "PageGroup.h"
 #include "RegularExpression.h"
+#include "RenderLayerCompositor.h"
 #include "RenderPart.h"
 #include "RenderTableCell.h"
 #include "RenderTextControl.h"
@@ -95,10 +96,6 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #include "MathMLNames.h"
 #include "SVGNames.h"
@@ -802,17 +799,12 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
 
 String Frame::layerTreeAsText(LayerTreeFlags flags) const
 {
-#if USE(ACCELERATED_COMPOSITING)
     document()->updateLayout();
 
     if (!contentRenderer())
         return String();
 
     return contentRenderer()->compositor()->layerTreeAsText(flags);
-#else
-    UNUSED_PARAM(flags);
-    return String();
-#endif
 }
 
 String Frame::trackedRepaintRectsAsText() const
@@ -914,7 +906,6 @@ void Frame::resumeActiveDOMObjectsAndAnimations()
     }
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 void Frame::deviceOrPageScaleFactorChanged()
 {
     for (Frame* child = tree()->firstChild(); child; child = child->tree()->nextSibling())
@@ -926,7 +917,7 @@ void Frame::deviceOrPageScaleFactorChanged()
 
     m_page->chrome()->client()->deviceOrPageScaleFactorChanged();
 }
-#endif
+
 void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
 {
     // Ensure that this method is being called on the main frame of the page.

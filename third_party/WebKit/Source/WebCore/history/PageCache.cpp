@@ -321,9 +321,7 @@ PageCache::PageCache()
     , m_size(0)
     , m_head(0)
     , m_tail(0)
-#if USE(ACCELERATED_COMPOSITING)
     , m_shouldClearBackingStores(false)
-#endif
 {
 }
     

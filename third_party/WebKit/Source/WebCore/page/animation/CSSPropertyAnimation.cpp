@@ -308,9 +308,7 @@ public:
 
     CSSPropertyID property() const { return m_prop; }
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool animationIsAccelerated() const { return false; }
-#endif
 
 private:
     CSSPropertyID m_prop;
@@ -460,7 +458,6 @@ protected:
     void (RenderStyle::*m_setter)(const Color&);
 };
 
-#if USE(ACCELERATED_COMPOSITING)
 class PropertyWrapperAcceleratedOpacity : public PropertyWrapper<float> {
 public:
     PropertyWrapperAcceleratedOpacity()
@@ -510,7 +507,6 @@ public:
     }
 };
 #endif
-#endif // USE(ACCELERATED_COMPOSITING)
 
 static inline size_t shadowListLength(const ShadowData* shadow)
 {
@@ -1152,18 +1148,10 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyClip, &RenderStyle::clip, &RenderStyle::setClip));
 
-#if USE(ACCELERATED_COMPOSITING)
     gPropertyWrappers->append(new PropertyWrapperAcceleratedOpacity());
     gPropertyWrappers->append(new PropertyWrapperAcceleratedTransform());
 #if ENABLE(CSS_FILTERS)
     gPropertyWrappers->append(new PropertyWrapperAcceleratedFilter());
-#endif
-#else
-    gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyOpacity, &RenderStyle::opacity, &RenderStyle::setOpacity));
-    gPropertyWrappers->append(new PropertyWrapper<const TransformOperations&>(CSSPropertyWebkitTransform, &RenderStyle::transform, &RenderStyle::setTransform));
-#if ENABLE(CSS_FILTERS)
-    gPropertyWrappers->append(new PropertyWrapper<const FilterOperations&>(CSSPropertyWebkitFilter, &RenderStyle::filter, &RenderStyle::setFilter));
-#endif
 #endif
 
     gPropertyWrappers->append(new PropertyWrapperClipPath(CSSPropertyWebkitClipPath, &RenderStyle::clipPath, &RenderStyle::setClipPath));
@@ -1263,24 +1251,18 @@ bool CSSPropertyAnimation::blendProperties(const AnimationBase* anim, CSSPropert
     AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
     if (wrapper) {
         wrapper->blend(anim, dst, a, b, progress);
-#if USE(ACCELERATED_COMPOSITING)
         return !wrapper->animationIsAccelerated() || !anim->isAccelerated();
-#else
-        return true;
-#endif
     }
 
     return false;
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool CSSPropertyAnimation::animationOfPropertyIsAccelerated(CSSPropertyID prop)
 {
     ensurePropertyMap();
     AnimationPropertyWrapperBase* wrapper = wrapperForProperty(prop);
     return wrapper ? wrapper->animationIsAccelerated() : false;
 }
-#endif
 
 // Note: this is inefficient. It's only called from pauseTransitionAtTime().
 HashSet<CSSPropertyID> CSSPropertyAnimation::animatableShorthandsAffectingProperty(CSSPropertyID property)

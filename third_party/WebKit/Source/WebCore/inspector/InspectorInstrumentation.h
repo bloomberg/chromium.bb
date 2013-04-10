@@ -287,11 +287,9 @@ public:
 
     static DeviceOrientationData* overrideDeviceOrientation(Page*, DeviceOrientationData*);
 
-#if USE(ACCELERATED_COMPOSITING)
     static void layerTreeDidChange(Page*);
     static void renderLayerDestroyed(Page*, const RenderLayer*);
     static void pseudoElementDestroyed(Page*, PseudoElement*);
-#endif
 
 private:
     static void didClearWindowObjectInWorldImpl(InstrumentingAgents*, Frame*, DOMWrapperWorld*);
@@ -464,11 +462,9 @@ private:
 
     static DeviceOrientationData* overrideDeviceOrientationImpl(InstrumentingAgents*, DeviceOrientationData*);
 
-#if USE(ACCELERATED_COMPOSITING)
     static void layerTreeDidChangeImpl(InstrumentingAgents*);
     static void renderLayerDestroyedImpl(InstrumentingAgents*, const RenderLayer*);
     static void pseudoElementDestroyedImpl(InstrumentingAgents*, PseudoElement*);
-#endif
 
     static int s_frontendCounter;
 };
@@ -1324,7 +1320,6 @@ inline DeviceOrientationData* InspectorInstrumentation::overrideDeviceOrientatio
     return deviceOrientation;
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 inline void InspectorInstrumentation::layerTreeDidChange(Page* page)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
@@ -1342,7 +1337,6 @@ inline void InspectorInstrumentation::pseudoElementDestroyed(Page* page, PseudoE
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         pseudoElementDestroyedImpl(instrumentingAgents, pseudoElement);
 }
-#endif
 
 inline bool InspectorInstrumentation::collectingHTMLParseErrors(Page* page)
 {

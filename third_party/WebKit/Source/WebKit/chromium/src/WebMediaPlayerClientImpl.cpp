@@ -20,6 +20,7 @@
 #include "MediaPlayer.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
+#include "RenderLayerCompositor.h"
 #include "RenderView.h"
 #include "TimeRanges.h"
 #include "WebAudioSourceProvider.h"
@@ -48,9 +49,6 @@
 #include "SharedGraphicsContext3D.h"
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #include <wtf/Assertions.h>
 #include <wtf/text/CString.h>
@@ -170,11 +168,9 @@ void WebMediaPlayerClientImpl::sizeChanged()
 
 void WebMediaPlayerClientImpl::setOpaque(bool opaque)
 {
-#if USE(ACCELERATED_COMPOSITING)
     m_opaque = opaque;
     if (m_videoLayer)
         m_videoLayer->setOpaque(m_opaque);
-#endif
 }
 
 void WebMediaPlayerClientImpl::sawUnsupportedTracks()

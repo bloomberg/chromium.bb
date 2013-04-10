@@ -414,7 +414,6 @@ private:
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
     virtual bool scrollAnimatorEnabled() const OVERRIDE;
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool usesCompositedScrolling() const OVERRIDE;
     virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
     virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
@@ -422,7 +421,6 @@ private:
     virtual GraphicsLayer* layerForScrollCorner() const OVERRIDE;
 #if ENABLE(RUBBER_BANDING)
     virtual GraphicsLayer* layerForOverhangAreas() const OVERRIDE;
-#endif
 #endif
 
     void updateScrollableAreaSet();

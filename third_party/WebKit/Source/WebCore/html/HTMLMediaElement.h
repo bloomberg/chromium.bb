@@ -99,9 +99,7 @@ public:
     virtual bool supportsScanning() const;
     
     PlatformMedia platformMedia() const;
-#if USE(ACCELERATED_COMPOSITING)
     PlatformLayer* platformLayer() const;
-#endif
 
     enum DelayedActionType {
         LoadMediaResource = 1 << 0,
@@ -420,10 +418,8 @@ private:
     virtual void mediaPlayerResourceNotSupported(MediaPlayer*);
     virtual void mediaPlayerRepaint(MediaPlayer*);
     virtual void mediaPlayerSizeChanged(MediaPlayer*);
-#if USE(ACCELERATED_COMPOSITING)
     virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*);
     virtual void mediaPlayerRenderingModeChanged(MediaPlayer*);
-#endif
     virtual void mediaPlayerEngineUpdated(MediaPlayer*);
     
     virtual void mediaPlayerFirstVideoFrameAvailable(MediaPlayer*);

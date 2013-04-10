@@ -65,7 +65,6 @@ PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
 {
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 class OverlayGraphicsLayerClientImpl : public WebCore::GraphicsLayerClient {
 public:
     static PassOwnPtr<OverlayGraphicsLayerClientImpl*> create(WebViewImpl* webViewImpl, WebPageOverlay* overlay)
@@ -104,26 +103,22 @@ private:
     WebPageOverlay* m_overlay;
     WebViewImpl* m_webViewImpl;
 };
-#endif
 
 void PageOverlay::clear()
 {
     invalidateWebFrame();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (m_layer) {
         m_layer->removeFromParent();
         m_layer = nullptr;
         m_layerClient = nullptr;
     }
-#endif
 }
 
 void PageOverlay::update()
 {
     invalidateWebFrame();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (!m_layer) {
         m_layerClient = OverlayGraphicsLayerClientImpl::create(m_viewImpl, m_overlay);
         m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
@@ -144,7 +139,6 @@ void PageOverlay::update()
 
     WebLayer* platformLayer = static_cast<GraphicsLayerChromium*>(m_layer.get())->platformLayer();
     platformLayer->setShouldScrollOnMainThread(true);
-#endif
 }
 
 void PageOverlay::paintWebFrame(GraphicsContext& gc)

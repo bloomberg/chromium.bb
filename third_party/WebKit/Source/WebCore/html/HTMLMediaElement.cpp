@@ -71,6 +71,7 @@
 #include "NodeRenderingContext.h"
 #include "Page.h"
 #include "PageGroup.h"
+#include "RenderLayerCompositor.h"
 #include "RenderVideo.h"
 #include "RenderView.h"
 #include "ScriptController.h"
@@ -88,10 +89,6 @@
 #include <wtf/NonCopyingSort.h>
 #include <wtf/Uint8Array.h>
 #include <wtf/text/CString.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #if ENABLE(VIDEO_TRACK)
 #include "CaptionUserPreferences.h"
@@ -3453,7 +3450,6 @@ void HTMLMediaElement::mediaPlayerSizeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool HTMLMediaElement::mediaPlayerRenderingCanBeAccelerated(MediaPlayer*)
 {
     if (renderer() && renderer()->isVideo()) {
@@ -3470,7 +3466,6 @@ void HTMLMediaElement::mediaPlayerRenderingModeChanged(MediaPlayer*)
     // Kick off a fake recalcStyle that will update the compositing tree.
     setNeedsStyleRecalc(SyntheticStyleChange);
 }
-#endif
 
 void HTMLMediaElement::mediaPlayerEngineUpdated(MediaPlayer*)
 {
@@ -3487,9 +3482,7 @@ void HTMLMediaElement::mediaPlayerFirstVideoFrameAvailable(MediaPlayer*)
     beginProcessingMediaPlayerCallback();
     if (displayMode() == PosterWaitingForVideo) {
         setDisplayMode(Video);
-#if USE(ACCELERATED_COMPOSITING)
         mediaPlayerRenderingModeChanged(m_player.get());
-#endif
     }
     endProcessingMediaPlayerCallback();
 }
@@ -3932,12 +3925,10 @@ PlatformMedia HTMLMediaElement::platformMedia() const
     return m_player ? m_player->platformMedia() : NoPlatformMedia;
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 PlatformLayer* HTMLMediaElement::platformLayer() const
 {
     return m_player ? m_player->platformLayer() : 0;
 }
-#endif
 
 bool HTMLMediaElement::hasClosedCaptions() const
 {

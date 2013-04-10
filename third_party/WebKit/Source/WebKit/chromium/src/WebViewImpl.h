@@ -525,7 +525,6 @@ public:
     }
 
     WebCore::GraphicsLayer* rootGraphicsLayer();
-#if USE(ACCELERATED_COMPOSITING)
     bool allowsAcceleratedCompositing();
     void setRootGraphicsLayer(WebCore::GraphicsLayer*);
     void scheduleCompositingLayerSync();
@@ -535,7 +534,6 @@ public:
     void setBackgroundColor(const WebCore::Color&);
     WebCore::GraphicsLayerFactory* graphicsLayerFactory() const;
     void registerForAnimations(WebLayer*);
-#endif
     void scheduleAnimation();
 
     virtual void setVisibilityState(WebPageVisibilityState, bool);
@@ -653,13 +651,11 @@ private:
 
     void configureAutoResizeMode();
 
-#if USE(ACCELERATED_COMPOSITING)
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
     void reallocateRenderer();
     void updateLayerTreeViewport();
-#endif
 
 #if ENABLE(GESTURE_EVENTS)
     // Returns the bounding box of the block type node touched by the WebRect.
@@ -842,7 +838,6 @@ private:
 
     WebViewBenchmarkSupportImpl m_benchmarkSupport;
 
-#if USE(ACCELERATED_COMPOSITING)
     WebCore::IntRect m_rootLayerScrollDamage;
     OwnPtr<NonCompositedContentHost> m_nonCompositedContentHost;
     WebLayerTreeView* m_layerTreeView;
@@ -855,7 +850,6 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     int m_inputHandlerIdentifier;
-#endif
     static const WebInputEvent* m_currentInputEvent;
 
 #if ENABLE(INPUT_SPEECH)

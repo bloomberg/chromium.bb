@@ -243,7 +243,6 @@ public:
     virtual void elementDidFocus(const Node*) { };
     virtual void elementDidBlur(const Node*) { };
 
-#if USE(ACCELERATED_COMPOSITING)
     // Allows ports to customize the type of graphics layers created by this page.
     virtual GraphicsLayerFactory* graphicsLayerFactory() const { return 0; }
 
@@ -270,7 +269,6 @@ public:
 
     // Returns a bitfield indicating conditions that can trigger the compositor.
     virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllTriggers); }
-#endif
 
     virtual bool supportsFullscreenForNode(const Node*) { return false; }
     virtual void enterFullscreenForNode(Node*) { }

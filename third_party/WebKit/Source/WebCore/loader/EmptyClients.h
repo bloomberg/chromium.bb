@@ -179,10 +179,8 @@ public:
 
     virtual void scrollRectIntoView(const IntRect&) const { }
 
-#if USE(ACCELERATED_COMPOSITING)
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) { }
     virtual void scheduleCompositingLayerFlush() { }
-#endif
 
 #if PLATFORM(WIN)
     virtual void setLastSetCursorToCurrentCursor() { }

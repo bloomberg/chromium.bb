@@ -137,6 +137,7 @@
 #include "RegisteredEventListener.h"
 #include "RenderArena.h"
 #include "RenderFullScreen.h"
+#include "RenderLayerCompositor.h"
 #include "RenderNamedFlowThread.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
@@ -193,10 +194,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuffer.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #if ENABLE(SHARED_WORKERS)
 #include "SharedWorkerRepository.h"
@@ -1773,10 +1770,8 @@ void Document::recalcStyle(StyleChange change)
                 element->recalcStyle(change);
         }
 
-#if USE(ACCELERATED_COMPOSITING)
         if (view())
             view()->updateCompositingLayersAfterStyleChange();
-#endif
 
     bailOut:
         clearNeedsStyleRecalc();
@@ -1970,9 +1965,7 @@ void Document::attach()
     
     // Create the rendering tree
     setRenderer(new (m_renderArena.get()) RenderView(this));
-#if USE(ACCELERATED_COMPOSITING)
     renderView()->setIsInWindow(true);
-#endif
 
     recalcStyle(Force);
 
@@ -3996,10 +3989,8 @@ void Document::setInPageCache(bool flag)
 
 void Document::documentWillBecomeInactive()
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (renderer())
         renderView()->setIsInWindow(false);
-#endif
 }
 
 void Document::documentWillSuspendForPageCache()
@@ -4025,10 +4016,8 @@ void Document::documentDidResumeFromPageCache()
     for (Vector<Element*>::iterator i = elements.begin(); i != end; ++i)
         (*i)->documentDidResumeFromPageCache();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (renderer())
         renderView()->setIsInWindow(true);
-#endif
 
     if (FrameView* frameView = view())
         frameView->setAnimatorsAreActive();

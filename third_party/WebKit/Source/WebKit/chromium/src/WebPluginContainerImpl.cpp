@@ -566,12 +566,10 @@ void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver
     m_pluginLoadObservers.remove(pos);
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 WebLayer* WebPluginContainerImpl::platformLayer() const
 {
     return m_webLayer;
 }
-#endif
 
 ScrollbarGroup* WebPluginContainerImpl::scrollbarGroup()
 {
@@ -622,10 +620,8 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
     m_webPlugin->destroy();
-#if USE(ACCELERATED_COMPOSITING)
     if (m_webLayer)
         GraphicsLayerChromium::unregisterContentsLayer(m_webLayer);
-#endif
 }
 
 void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)

@@ -421,7 +421,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_tabsToLinks(false)
     , m_isCancelingFullScreen(false)
     , m_benchmarkSupport(this)
-#if USE(ACCELERATED_COMPOSITING)
     , m_layerTreeView(0)
     , m_rootLayer(0)
     , m_rootGraphicsLayer(0)
@@ -431,7 +430,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_compositorCreationFailed(false)
     , m_recreatingGraphicsContext(false)
     , m_inputHandlerIdentifier(-1)
-#endif
 #if ENABLE(INPUT_SPEECH)
     , m_speechInputClient(SpeechInputClientImpl::create(client))
 #endif
@@ -1842,7 +1840,6 @@ void WebViewImpl::enterForceCompositingMode(bool enter)
     }
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 void WebViewImpl::doPixelReadbackToCanvas(WebCanvas* canvas, const IntRect& rect)
 {
     ASSERT(m_layerTreeView);
@@ -1861,7 +1858,6 @@ void WebViewImpl::doPixelReadbackToCanvas(WebCanvas* canvas, const IntRect& rect
 #endif
     canvas->writePixels(target, rect.x(), rect.y());
 }
-#endif
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions option)
 {
@@ -1872,7 +1868,6 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
 #endif
 
     if (option == ReadbackFromCompositorIfAvailable && isAcceleratedCompositingActive()) {
-#if USE(ACCELERATED_COMPOSITING)
         // If a canvas was passed in, we use it to grab a copy of the
         // freshly-rendered pixels.
         if (canvas) {
@@ -1881,7 +1876,6 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
             resizeRect.intersect(IntRect(IntPoint(0, 0), m_layerTreeView->deviceViewportSize()));
             doPixelReadbackToCanvas(canvas, resizeRect);
         }
-#endif
     } else {
         FrameView* view = page()->mainFrame()->view();
         PaintBehavior oldPaintBehavior = view->paintBehavior();
@@ -1924,10 +1918,8 @@ void WebViewImpl::themeChanged()
 
 void WebViewImpl::setNeedsRedraw()
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (m_layerTreeView && isAcceleratedCompositingActive())
         m_layerTreeView->setNeedsRedraw();
-#endif
 }
 
 void WebViewImpl::enterFullScreenForElement(WebCore::Element* element)
@@ -2533,11 +2525,7 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     return m_isAcceleratedCompositingActive;
-#else
-    return false;
-#endif
 }
 
 void WebViewImpl::willCloseLayerTreeView()
@@ -2998,11 +2986,9 @@ void WebViewImpl::enableFixedLayoutMode(bool enable)
 
     frame->view()->setUseFixedLayout(enable);
 
-#if USE(ACCELERATED_COMPOSITING)
     // Also notify the base layer, which RenderLayerCompositor does not see.
     if (m_nonCompositedContentHost)
         updateLayerTreeViewport();
-#endif
 }
 
 
@@ -3099,10 +3085,8 @@ void WebViewImpl::computePageScaleFactorLimits()
         m_pageScaleFactorIsSet = true;
     }
     newPageScaleFactor = clampPageScaleFactorToLimits(newPageScaleFactor);
-#if USE(ACCELERATED_COMPOSITING)
     if (m_layerTreeView)
         m_layerTreeView->setPageScaleFactorAndLimits(newPageScaleFactor, m_minimumPageScaleFactor, m_maximumPageScaleFactor);
-#endif
     if (newPageScaleFactor != pageScaleFactor())
         setPageScaleFactorPreservingScrollOffset(newPageScaleFactor);
 }
@@ -3410,9 +3394,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
 
     if (m_client) {
         if (isAcceleratedCompositingActive()) {
-#if USE(ACCELERATED_COMPOSITING)
             updateLayerTreeViewport();
-#endif
         } else {
             WebRect damagedRect(0, 0, m_size.width, m_size.height);
             m_client->didInvalidateRect(damagedRect);
@@ -3749,9 +3731,7 @@ void WebViewImpl::deviceOrPageScaleFactorChanged()
 {
     if (pageScaleFactor() && pageScaleFactor() != 1)
         enterForceCompositingMode(true);
-#if USE(ACCELERATED_COMPOSITING)
     updateLayerTreeViewport();
-#endif
 }
 
 bool WebViewImpl::useExternalPopupMenus()
@@ -3905,7 +3885,6 @@ void WebViewImpl::suppressInvalidations(bool enable)
         m_client->suppressCompositorScheduling(enable);
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 bool WebViewImpl::allowsAcceleratedCompositing()
 {
     return !m_compositorCreationFailed;
@@ -4098,8 +4077,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         page()->mainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
-#endif
-
 WebInputHandler* WebViewImpl::createInputHandler()
 {
     WebCompositorInputHandlerImpl* handler = new WebCompositorInputHandlerImpl();
@@ -4212,12 +4189,10 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
            || visibilityState == WebPageVisibilityStatePreview);
     m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
 
-#if USE(ACCELERATED_COMPOSITING)
     if (m_layerTreeView) {
         bool visible = visibilityState == WebPageVisibilityStateVisible;
         m_layerTreeView->setVisible(visible);
     }
-#endif
 }
 
 #if ENABLE(POINTER_LOCK)

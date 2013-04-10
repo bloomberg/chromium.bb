@@ -523,18 +523,14 @@ void ChromeClientImpl::scroll(
     const IntSize& scrollDelta, const IntRect& scrollRect,
     const IntRect& clipRect)
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (!m_webView->isAcceleratedCompositingActive()) {
-#endif
         if (m_webView->client()) {
             int dx = scrollDelta.width();
             int dy = scrollDelta.height();
             m_webView->client()->didScrollRect(dx, dy, intersection(scrollRect, clipRect));
         }
-#if USE(ACCELERATED_COMPOSITING)
     } else
         m_webView->scrollRootLayerRect(scrollDelta, clipRect);
-#endif
 }
 
 IntPoint ChromeClientImpl::screenToRootView(const IntPoint& point) const
@@ -937,7 +933,6 @@ bool ChromeClientImpl::paintCustomOverhangArea(GraphicsContext* context, const I
     return false;
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 GraphicsLayerFactory* ChromeClientImpl::graphicsLayerFactory() const
 {
     return m_webView->graphicsLayerFactory();
@@ -975,7 +970,6 @@ ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTrigge
 
     return flags;
 }
-#endif
 
 bool ChromeClientImpl::supportsFullscreenForNode(const Node* node)
 {

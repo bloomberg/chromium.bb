@@ -40,9 +40,7 @@ class Scrollbar;
 // It's intended as a stopgap measure until we can merge all plug-in views into a single plug-in view.
 class PluginViewBase : public Widget {
 public:
-#if USE(ACCELERATED_COMPOSITING)
     virtual PlatformLayer* platformLayer() const { return 0; }
-#endif
 
     virtual NPObject* scriptableObject() { return 0; }
     virtual void storageBlockingStateChanged() { }

@@ -58,6 +58,7 @@
 #include "KURL.h"
 #include "Page.h"
 #include "RenderHTMLCanvas.h"
+#include "RenderLayer.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StrokeStyleApplier.h"
@@ -65,10 +66,6 @@
 #include "StyleResolver.h"
 #include "TextMetrics.h"
 #include "TextRun.h"
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayer.h"
-#endif
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>
@@ -1723,7 +1720,7 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& r, unsigned options)
     if (!state().m_invertibleCTM)
         return;
 
-#if ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING)
+#if ENABLE(ACCELERATED_2D_CANVAS)
     // If we are drawing to hardware and we have a composited layer, just call contentChanged().
     if (isAccelerated()) {
         RenderBox* renderBox = canvas()->renderBox();
@@ -2234,7 +2231,7 @@ const Font& CanvasRenderingContext2D::accessFont()
     return state().m_font;
 }
 
-#if ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING)
+#if ENABLE(ACCELERATED_2D_CANVAS)
 PlatformLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;

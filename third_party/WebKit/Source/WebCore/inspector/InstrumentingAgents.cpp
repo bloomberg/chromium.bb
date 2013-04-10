@@ -43,9 +43,7 @@ InstrumentingAgents::InstrumentingAgents()
     : m_inspectorAgent(0)
     , m_inspectorPageAgent(0)
     , m_inspectorCSSAgent(0)
-#if USE(ACCELERATED_COMPOSITING)
     , m_inspectorLayerTreeAgent(0)
-#endif
     , m_inspectorConsoleAgent(0)
     , m_inspectorDOMAgent(0)
     , m_inspectorResourceAgent(0)
@@ -70,9 +68,7 @@ void InstrumentingAgents::reset()
     m_inspectorAgent = 0;
     m_inspectorPageAgent = 0;
     m_inspectorCSSAgent = 0;
-#if USE(ACCELERATED_COMPOSITING)
     m_inspectorLayerTreeAgent = 0;
-#endif
     m_inspectorConsoleAgent = 0;
     m_inspectorDOMAgent = 0;
     m_inspectorResourceAgent = 0;

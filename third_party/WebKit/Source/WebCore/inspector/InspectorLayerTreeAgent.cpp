@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "InspectorLayerTreeAgent.h"
 
 #include "IdentifiersFactory.h"
@@ -351,5 +349,3 @@ void InspectorLayerTreeAgent::unbindPseudoElement(PseudoElement* pseudoElement)
 }
 
 } // namespace WebCore
-
-#endif // USE(ACCELERATED_COMPOSITING)

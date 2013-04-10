@@ -891,10 +891,8 @@ void InspectorInstrumentation::didCommitLoadImpl(InstrumentingAgents* instrument
             databaseAgent->clearResources();
         if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
             domAgent->setDocument(mainFrame->document());
-#if USE(ACCELERATED_COMPOSITING)
         if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
             layerTreeAgent->reset();
-#endif
         inspectorAgent->didCommitLoad();
     }
     if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
@@ -1314,7 +1312,6 @@ DeviceOrientationData* InspectorInstrumentation::overrideDeviceOrientationImpl(I
     return deviceOrientation;
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 void InspectorInstrumentation::layerTreeDidChangeImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
@@ -1332,7 +1329,6 @@ void InspectorInstrumentation::pseudoElementDestroyedImpl(InstrumentingAgents* i
     if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
         layerTreeAgent->pseudoElementDestroyed(pseudoElement);
 }
-#endif
 
 namespace InstrumentationEvents {
 const char PaintLayer[] = "PaintLayer";

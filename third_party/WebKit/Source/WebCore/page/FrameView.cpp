@@ -59,6 +59,7 @@
 #include "RenderIFrame.h"
 #include "RenderLayer.h"
 #include "RenderLayerBacking.h"
+#include "RenderLayerCompositor.h"
 #include "RenderPart.h"
 #include "RenderScrollbar.h"
 #include "RenderScrollbarPart.h"
@@ -75,10 +76,6 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>
 #include <wtf/UnusedParam.h>
-
-#if USE(ACCELERATED_COMPOSITING)
-#include "RenderLayerCompositor.h"
-#endif
 
 #if ENABLE(SVG)
 #include "RenderSVGRoot.h"
@@ -456,12 +453,10 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     updateScrollableAreaSet();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidChangeSize();
     }
-#endif
 }
 
 bool FrameView::scheduleAnimation()
@@ -711,7 +706,6 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
     }    
 }
 
-#if USE(ACCELERATED_COMPOSITING)
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
     RenderView* renderView = this->renderView();
@@ -795,11 +789,7 @@ GraphicsLayer* FrameView::setWantsLayerForTopOverHangArea(bool wantsLayer) const
     if (!renderView)
         return 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForTopOverhangArea(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) const
@@ -808,11 +798,7 @@ GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) co
     if (!renderView)
         return 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForBottomOverhangArea(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
@@ -823,11 +809,7 @@ GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
 
     ASSERT(m_frame == m_frame->page()->mainFrame());
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForHeader(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
@@ -838,14 +820,10 @@ GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
 
     ASSERT(m_frame == m_frame->page()->mainFrame());
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForFooter(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
-#endif
+#endif // ENABLE(RUBBER_BANDING)
 
 void FrameView::setHeaderHeight(int headerHeight)
 {
@@ -861,63 +839,51 @@ void FrameView::setFooterHeight(int footerHeight)
     m_footerHeight = footerHeight;
 }
 
-#endif // USE(ACCELERATED_COMPOSITING)
-
 bool FrameView::hasCompositedContent() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView())
         return renderView->compositor()->inCompositingMode();
-#endif
     return false;
 }
 
 bool FrameView::hasCompositingAncestor() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     for (Frame* frame = m_frame->tree()->parent(); frame; frame = frame->tree()->parent()) {
         if (FrameView* view = frame->view()) {
             if (view->hasCompositedContent())
                 return true;
         }
     }
-#endif
+
     return false;
 }
 
 // Sometimes (for plug-ins) we need to eagerly go into compositing mode.
 void FrameView::enterCompositingMode()
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView()) {
         renderView->compositor()->enableCompositingMode();
         if (!needsLayout())
             renderView->compositor()->scheduleCompositingLayerUpdate();
     }
-#endif
 }
 
 bool FrameView::isEnclosedInCompositingLayer() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();
     if (frameOwnerRenderer && frameOwnerRenderer->containerForRepaint())
         return true;
 
     if (FrameView* parentView = parentFrameView())
         return parentView->isEnclosedInCompositingLayer();
-#endif
+
     return false;
 }
     
 bool FrameView::isSoftwareRenderable() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     RenderView* renderView = this->renderView();
     return !renderView || !renderView->compositor()->has3DContent();
-#else
-    return true;
-#endif
 }
 
 void FrameView::didMoveOnscreen()
@@ -1208,10 +1174,8 @@ void FrameView::layout(bool allowSubtree)
 
     endDeferredRepaints();
 
-#if USE(ACCELERATED_COMPOSITING)
     updateCompositingLayersAfterLayout();
-#endif
-    
+
     m_layoutCount++;
 
 #if PLATFORM(MAC) || PLATFORM(CHROMIUM)
@@ -1379,14 +1343,13 @@ void FrameView::updateCanBlitOnScrollRecursively()
 
 bool FrameView::contentsInCompositedLayer() const
 {
-#if USE(ACCELERATED_COMPOSITING)
     RenderView* renderView = this->renderView();
     if (renderView && renderView->isComposited()) {
         GraphicsLayer* layer = renderView->layer()->backing()->graphicsLayer();
         if (layer && layer->drawsContent())
             return true;
     }
-#endif
+
     return false;
 }
 
@@ -1510,22 +1473,19 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         RenderObject* renderer = *it;
         if (!renderer->style()->hasViewportConstrainedPosition())
             continue;
-#if USE(ACCELERATED_COMPOSITING)
+
         if (renderer->isComposited())
             continue;
-#endif
     
         // Fixed items should always have layers.
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
 
-#if USE(ACCELERATED_COMPOSITING)
         if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
             || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent) {
             // Don't invalidate for invisible fixed layers.
             continue;
         }
-#endif
 
 #if ENABLE(CSS_FILTERS)
         if (layer->hasAncestorWithFilterOutsets()) {
@@ -1553,14 +1513,12 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         IntRect scrolledRect = updateRect;
         scrolledRect.move(scrollDelta);
         updateRect.unite(scrolledRect);
-#if USE(ACCELERATED_COMPOSITING)
         if (isCompositedContentLayer) {
             updateRect = rootViewToContents(updateRect);
             ASSERT(renderView());
             renderView()->layer()->setBackingNeedsRepaintInRect(updateRect);
             continue;
         }
-#endif
         if (clipsRepaints())
             updateRect.intersect(rectToScroll);
         hostWindow()->invalidateContentsAndRootView(updateRect);
@@ -1571,7 +1529,6 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
 void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
@@ -1586,7 +1543,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
             return;
         }
     }
-#endif
 
     ScrollView::scrollContentsSlowPath(updateRect);
 }
@@ -1769,12 +1725,10 @@ void FrameView::scrollPositionChanged()
     frame()->eventHandler()->sendScrollEvent();
     frame()->eventHandler()->dispatchFakeMouseMoveEventSoon();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidScroll();
     }
-#endif
 }
 
 void FrameView::repaintFixedElementsAfterScrolling()
@@ -1820,7 +1774,6 @@ bool FrameView::shouldUpdateFixedElementsAfterScrolling()
 
 void FrameView::updateFixedElementsAfterScrolling()
 {
-#if USE(ACCELERATED_COMPOSITING)
     if (!shouldUpdateFixedElementsAfterScrolling())
         return;
 
@@ -1828,7 +1781,6 @@ void FrameView::updateFixedElementsAfterScrolling()
         if (RenderView* renderView = this->renderView())
             renderView->compositor()->updateCompositingLayers(CompositingUpdateOnScroll);
     }
-#endif
 }
 
 bool FrameView::shouldRubberBandInDirection(ScrollDirection direction) const
@@ -1927,12 +1879,10 @@ void FrameView::visibleContentsResized()
     if (!useFixedLayout() && needsLayout())
         layout();
 
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidChangeSize();
     }
-#endif
 }
 
 void FrameView::beginDeferredRepaints()
@@ -3561,12 +3511,10 @@ void FrameView::setTracksRepaints(bool trackRepaints)
     if (trackRepaints == m_isTrackingRepaints)
         return;
 
-#if USE(ACCELERATED_COMPOSITING)
     for (Frame* frame = m_frame->tree()->top(); frame; frame = frame->tree()->traverseNext()) {
         if (RenderView* renderView = frame->contentRenderer())
             renderView->compositor()->setTracksRepaints(trackRepaints);
     }
-#endif
 
     resetTrackedRepaints();
     m_isTrackingRepaints = trackRepaints;
@@ -3575,10 +3523,8 @@ void FrameView::setTracksRepaints(bool trackRepaints)
 void FrameView::resetTrackedRepaints()
 {
     m_trackedRepaintRects.clear();
-#if USE(ACCELERATED_COMPOSITING)
     if (RenderView* renderView = this->renderView())
         renderView->compositor()->resetTrackedRepaintRects();
-#endif
 }
 
 String FrameView::trackedRepaintRectsAsText() const

@@ -64,10 +64,8 @@ namespace WebCore {
         void markPagesForCaptionPreferencesChanged();
 #endif
 
-#if USE(ACCELERATED_COMPOSITING)
         bool shouldClearBackingStores() const { return m_shouldClearBackingStores; }
         void setShouldClearBackingStores(bool flag) { m_shouldClearBackingStores = flag; }
-#endif
 
     private:
         PageCache(); // Use pageCache() instead.
@@ -87,9 +85,7 @@ namespace WebCore {
         HistoryItem* m_head;
         HistoryItem* m_tail;
         
-#if USE(ACCELERATED_COMPOSITING)
         bool m_shouldClearBackingStores;
-#endif
      };
 
     // Function to obtain the global page cache.

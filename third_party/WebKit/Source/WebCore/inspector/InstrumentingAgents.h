@@ -133,10 +133,8 @@ public:
     InspectorCanvasAgent* inspectorCanvasAgent() const { return m_inspectorCanvasAgent; }
     void setInspectorCanvasAgent(InspectorCanvasAgent* agent) { m_inspectorCanvasAgent = agent; }
 
-#if USE(ACCELERATED_COMPOSITING)
     InspectorLayerTreeAgent* inspectorLayerTreeAgent() const { return m_inspectorLayerTreeAgent; }
     void setInspectorLayerTreeAgent(InspectorLayerTreeAgent* agent) { m_inspectorLayerTreeAgent = agent; }
-#endif
 
 private:
     InstrumentingAgents();
@@ -144,9 +142,7 @@ private:
     InspectorAgent* m_inspectorAgent;
     InspectorPageAgent* m_inspectorPageAgent;
     InspectorCSSAgent* m_inspectorCSSAgent;
-#if USE(ACCELERATED_COMPOSITING)
     InspectorLayerTreeAgent* m_inspectorLayerTreeAgent;
-#endif
     InspectorConsoleAgent* m_inspectorConsoleAgent;
     InspectorDOMAgent* m_inspectorDOMAgent;
     InspectorResourceAgent* m_inspectorResourceAgent;

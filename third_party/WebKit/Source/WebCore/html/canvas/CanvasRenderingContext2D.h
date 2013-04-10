@@ -37,12 +37,10 @@
 #include "GraphicsTypes.h"
 #include "ImageBuffer.h"
 #include "Path.h"
+#include "PlatformLayer.h"
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
-#if USE(ACCELERATED_COMPOSITING)
-#include "PlatformLayer.h"
-#endif
 
 namespace WebCore {
 
@@ -327,7 +325,7 @@ private:
 
     virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
 
-#if ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING)
+#if ENABLE(ACCELERATED_2D_CANVAS)
     virtual PlatformLayer* platformLayer() const OVERRIDE;
 #endif
 

@@ -95,9 +95,7 @@ public:
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::MediaSource>);
 
     virtual void cancelLoad();
-#if USE(ACCELERATED_COMPOSITING)
     virtual WebKit::WebLayer* platformLayer() const;
-#endif
     virtual WebCore::PlatformMedia platformMedia() const;
     virtual void play();
     virtual void pause();
@@ -171,9 +169,7 @@ private:
     static WebCore::MediaPlayer::SupportsType supportsType(
         const WTF::String& type, const WTF::String& codecs, const WebCore::KURL&);
 #endif
-#if USE(ACCELERATED_COMPOSITING)
     bool acceleratedRenderingInUse();
-#endif
 
 #if defined(OS_ANDROID)
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
