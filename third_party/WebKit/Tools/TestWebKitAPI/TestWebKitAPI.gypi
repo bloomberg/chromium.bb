@@ -42,7 +42,6 @@
             'Tests/WTF/MathExtras.cpp',
             'Tests/WTF/MediaTime.cpp',
             'Tests/WTF/MemoryInstrumentationTest.cpp',
-            'Tests/WTF/RedBlackTree.cpp',
             'Tests/WTF/SaturatedArithmeticOperations.cpp',
             'Tests/WTF/StringBuilder.cpp',
             'Tests/WTF/StringHasher.cpp',
