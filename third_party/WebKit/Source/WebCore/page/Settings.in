@@ -60,7 +60,6 @@ showRepaintCounter initial=false, setNeedsStyleRecalcInAllFrames=1
 # and getting keypress dispatched in more cases.
 needsKeyboardEventDisambiguationQuirks initial=false
 
-treatsAnyTextCSSLinkAsStylesheet initial=false
 shrinksStandaloneImagesToFit initial=true
 pageCacheSupportsPlugins initial=false
 showsToolTipOverTruncatedText initial=false

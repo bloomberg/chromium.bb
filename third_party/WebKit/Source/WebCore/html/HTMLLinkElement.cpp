@@ -196,9 +196,7 @@ void HTMLLinkElement::process()
     if (!m_linkLoader.loadLink(m_relAttribute, type, m_sizes->toString(), url, document()))
         return;
 
-    bool acceptIfTypeContainsTextCSS = document()->page() && document()->page()->settings() && document()->page()->settings()->treatsAnyTextCSSLinkAsStylesheet();
-
-    if (m_disabledState != Disabled && (m_relAttribute.m_isStyleSheet || (acceptIfTypeContainsTextCSS && type.contains("text/css")))
+    if ((m_disabledState != Disabled) && m_relAttribute.m_isStyleSheet
         && document()->frame() && url.isValid()) {
         
         String charset = getAttribute(charsetAttr);
