@@ -370,9 +370,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // URL will not be sent as the referrer for a HTTP request).  The referrer
   // may only be changed before Start() is called.
   const std::string& referrer() const { return referrer_; }
-  void set_referrer(const std::string& referrer);
-  // Returns the referrer header with potential username and password removed.
-  GURL GetSanitizedReferrer() const;
+  // Referrer is sanitized to remove URL fragment, user name and password.
+  void SetReferrer(const std::string& referrer);
 
   // The referrer policy to apply when updating the referrer during redirects.
   // The referrer policy may only be changed before Start() is called.

@@ -529,7 +529,7 @@ void ResourceLoader::CompleteResponseStarted() {
       response->head.mime_type == "text/html" &&
       !request_->url().SchemeIs(chrome::kChromeUIScheme) &&
       !SiteInstance::IsSameWebSite(NULL, request_->url(),
-          request_->GetSanitizedReferrer())) {
+                                   GURL(request_->referrer()))) {
     response->head.mime_type = "application/browser-plugin";
   }
 

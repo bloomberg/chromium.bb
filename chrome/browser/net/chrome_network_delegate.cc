@@ -467,7 +467,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   ForwardRequestStatus(REQUEST_STARTED, request, profile_);
 
   if (!enable_referrers_->GetValue())
-    request->set_referrer(std::string());
+    request->SetReferrer(std::string());
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
 

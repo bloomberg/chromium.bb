@@ -465,7 +465,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, context));
 
-  request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
+  request->SetReferrer(MaybeStripReferrer(GURL(request->referrer())).spec());
   int extra_load_flags = net::LOAD_IS_DOWNLOAD;
   if (prefer_cache) {
     // If there is upload data attached, only retrieve from cache because there
@@ -953,7 +953,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
     request->set_method(request_data.method);
     request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-    request->set_referrer(referrer.url.spec());
+    request->SetReferrer(referrer.url.spec());
     webkit_glue::ConfigureURLRequestForReferrerPolicy(request,
                                                       referrer.policy);
     net::HttpRequestHeaders headers;
@@ -1269,7 +1269,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   scoped_ptr<net::URLRequest> request(
       request_context->CreateRequest(url, NULL));
   request->set_method("GET");
-  request->set_referrer(MaybeStripReferrer(referrer.url).spec());
+  request->SetReferrer(MaybeStripReferrer(referrer.url).spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(request.get(),
                                                     referrer.policy);
   // So far, for saving page, we need fetch content from cache, in the

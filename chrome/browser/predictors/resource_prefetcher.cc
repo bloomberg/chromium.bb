@@ -130,7 +130,7 @@ void ResourcePrefetcher::SendRequest(Request* request) {
 
   url_request->set_method("GET");
   url_request->set_first_party_for_cookies(navigation_id_.main_frame_url);
-  url_request->set_referrer(navigation_id_.main_frame_url.spec());
+  url_request->SetReferrer(navigation_id_.main_frame_url.spec());
   url_request->SetPriority(net::LOW);
   StartURLRequest(url_request);
 }

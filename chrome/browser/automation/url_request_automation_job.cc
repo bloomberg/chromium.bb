@@ -472,8 +472,9 @@ void URLRequestAutomationJob::StartAsync() {
     }
   }
 
-  // Ensure that we do not send username and password fields in the referrer.
-  GURL referrer(request_->GetSanitizedReferrer());
+  // URLRequest::SetReferrer() ensures that we do not send username and
+  // password fields in the referrer.
+  GURL referrer(request_->referrer());
 
   // The referrer header must be suppressed if the preceding URL was
   // a secure one and the new one is not.

@@ -166,4 +166,107 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkFromIncognito) {
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 }
 
+// Verify that "Open Link in New Tab" doesn't send URL fragment as referrer.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
+  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
+      content::NotificationService::AllSources());
+
+  ASSERT_TRUE(test_server()->Start());
+  GURL echoheader(test_server()->GetURL("echoheader?Referer"));
+
+  // Go to a |page| with a link to echoheader URL.
+  GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
+  ui_test_utils::NavigateToURL(browser(), page);
+
+  // Set up referrer URL with fragment.
+  const GURL kReferrerWithFragment("http://foo.com/test#fragment");
+  const std::string kCorrectReferrer("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kReferrerWithFragment;
+  context_menu_params.link_url = echoheader;
+
+  // Select "Open Link in New Tab" and wait for the new tab to be added.
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+
+  tab_observer.Wait();
+  content::WebContents* tab = tab_observer.GetTab();
+  content::WaitForLoadStop(tab);
+
+  // Verify that it's the correct tab.
+  ASSERT_EQ(echoheader, tab->GetURL());
+  // Verify that the text on the page matches |kCorrectReferrer|.
+  std::string actual_referrer;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      tab,
+      "window.domAutomationController.send(window.document.body.textContent);",
+      &actual_referrer));
+  ASSERT_EQ(kCorrectReferrer, actual_referrer);
+
+  // Verify that the referrer on the page matches |kCorrectReferrer|.
+  std::string page_referrer;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      tab,
+      "window.domAutomationController.send(window.document.referrer);",
+      &page_referrer));
+  ASSERT_EQ(kCorrectReferrer, page_referrer);
+}
+
+// Verify that "Open Link in Incognito Window " doesn't send referrer URL.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
+  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
+      content::NotificationService::AllSources());
+
+  ASSERT_TRUE(test_server()->Start());
+  GURL echoheader(test_server()->GetURL("echoheader?Referer"));
+
+  // Go to a |page| with a link to echoheader URL.
+  GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
+  ui_test_utils::NavigateToURL(browser(), page);
+
+  // Set up referrer URL with fragment.
+  const GURL kReferrerWithFragment("http://foo.com/test#fragment");
+  const std::string kNoneReferrer("None");
+  const std::string kEmptyReferrer("");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kReferrerWithFragment;
+  context_menu_params.link_url = echoheader;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  tab_observer.Wait();
+  content::WebContents* tab = tab_observer.GetTab();
+  content::WaitForLoadStop(tab);
+
+  // Verify that it's the correct tab.
+  ASSERT_EQ(echoheader, tab->GetURL());
+  // Verify that the text on the page matches |kNoneReferrer|.
+  std::string actual_referrer;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      tab,
+      "window.domAutomationController.send(window.document.body.textContent);",
+      &actual_referrer));
+  ASSERT_EQ(kNoneReferrer, actual_referrer);
+
+  // Verify that the referrer on the page matches |kEmptyReferrer|.
+  std::string page_referrer;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      tab,
+      "window.domAutomationController.send(window.document.referrer);",
+      &page_referrer));
+  ASSERT_EQ(kEmptyReferrer, page_referrer);
+}
+
 }  // namespace

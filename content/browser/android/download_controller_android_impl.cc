@@ -325,7 +325,7 @@ DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
 
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
-  GURL referer_url(request->GetSanitizedReferrer());
+  GURL referer_url(request->referrer());
   if (referer_url.is_valid())
     referer = referer_url.spec();
   if (!request->url_chain().empty()) {

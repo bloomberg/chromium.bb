@@ -454,7 +454,7 @@ class RequestProxy
     request_.reset(g_request_context->CreateRequest(params->url, this));
     request_->set_method(params->method);
     request_->set_first_party_for_cookies(params->first_party_for_cookies);
-    request_->set_referrer(params->referrer.spec());
+    request_->SetReferrer(params->referrer.spec());
     webkit_glue::ConfigureURLRequestForReferrerPolicy(
         request_.get(), params->referrer_policy);
     net::HttpRequestHeaders headers;

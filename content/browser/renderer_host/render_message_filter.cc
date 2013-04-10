@@ -815,7 +815,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   save_info->suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(url, NULL));
-  request->set_referrer(referrer.url.spec());
+  request->SetReferrer(referrer.url.spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(
       request.get(), referrer.policy);
   RecordDownloadSource(INITIATED_BY_RENDERER);

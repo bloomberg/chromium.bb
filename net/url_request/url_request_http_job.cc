@@ -309,8 +309,9 @@ void URLRequestHttpJob::SetPriority(RequestPriority priority) {
 void URLRequestHttpJob::Start() {
   DCHECK(!transaction_.get());
 
-  // Ensure that we do not send username and password fields in the referrer.
-  GURL referrer(request_->GetSanitizedReferrer());
+  // URLRequest::SetReferrer ensures that we do not send username and password
+  // fields in the referrer.
+  GURL referrer(request_->referrer());
 
   request_info_.url = request_->url();
   request_info_.method = request_->method();

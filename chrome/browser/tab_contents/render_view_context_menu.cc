@@ -1940,9 +1940,21 @@ void RenderViewContextMenu::OpenURL(
     const GURL& url, const GURL& referrer, int64 frame_id,
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
+  // Ensure that URL fragment, username and password fields are not sent
+  // in the referrer.
+  GURL sanitized_referrer(referrer);
+  if (sanitized_referrer.is_valid() && (sanitized_referrer.has_ref() ||
+      sanitized_referrer.has_username() || sanitized_referrer.has_password())) {
+    GURL::Replacements referrer_mods;
+    referrer_mods.ClearRef();
+    referrer_mods.ClearUsername();
+    referrer_mods.ClearPassword();
+    sanitized_referrer = sanitized_referrer.ReplaceComponents(referrer_mods);
+  }
+
   WebContents* new_contents = source_web_contents_->OpenURL(OpenURLParams(
-      url, content::Referrer(referrer, params_.referrer_policy), disposition,
-      transition, false));
+      url, content::Referrer(sanitized_referrer, params_.referrer_policy),
+      disposition, transition, false));
   if (!new_contents)
     return;
 

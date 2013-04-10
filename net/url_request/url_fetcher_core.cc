@@ -533,7 +533,7 @@ void URLFetcherCore::StartURLRequest() {
   if (is_chunked_upload_)
     request_->EnableChunkedUpload();
   request_->set_load_flags(flags);
-  request_->set_referrer(referrer_);
+  request_->SetReferrer(referrer_);
   request_->set_first_party_for_cookies(first_party_for_cookies_.is_empty() ?
       original_url_ : first_party_for_cookies_);
   if (url_request_data_key_ && !url_request_create_data_callback_.is_null()) {

@@ -2291,7 +2291,7 @@ TEST_F(URLRequestTest, DoNotOverrideReferrer) {
     TestDelegate d;
     URLRequest req(
         test_server.GetURL("echoheader?Referer"), &d, &default_context_);
-    req.set_referrer("http://foo.com/");
+    req.SetReferrer("http://foo.com/");
 
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kReferer, "http://bar.com/");
@@ -3323,7 +3323,7 @@ TEST_F(URLRequestTestHTTP, HTTPSToHTTPRedirectNoRefererTest) {
   TestDelegate d;
   URLRequest req(https_test_server.GetURL(
       "server-redirect?" + http_destination.spec()), &d, &default_context_);
-  req.set_referrer("https://www.referrer.com/");
+  req.SetReferrer("https://www.referrer.com/");
   req.Start();
   MessageLoop::current()->Run();
 
@@ -3897,11 +3897,38 @@ TEST_F(URLRequestTestHTTP, NoUserPassInReferrer) {
   TestDelegate d;
   URLRequest req(
       test_server_.GetURL("echoheader?Referer"), &d, &default_context_);
-  req.set_referrer("http://user:pass@foo.com/");
+  req.SetReferrer("http://user:pass@foo.com/");
   req.Start();
   MessageLoop::current()->Run();
 
   EXPECT_EQ(std::string("http://foo.com/"), d.data_received());
+}
+
+TEST_F(URLRequestTestHTTP, NoFragmentInReferrer) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  URLRequest req(
+      test_server_.GetURL("echoheader?Referer"), &d, &default_context_);
+  req.SetReferrer("http://foo.com/test#fragment");
+  req.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(std::string("http://foo.com/test"), d.data_received());
+}
+
+TEST_F(URLRequestTestHTTP, EmptyReferrerAfterValidReferrer) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  URLRequest req(
+      test_server_.GetURL("echoheader?Referer"), &d, &default_context_);
+  req.SetReferrer("http://foo.com/test#fragment");
+  req.SetReferrer("");
+  req.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(std::string("None"), d.data_received());
 }
 
 TEST_F(URLRequestTestHTTP, CancelRedirect) {

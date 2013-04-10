@@ -1288,7 +1288,7 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
             ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 
   // Add 9 bytes of referrer.
-  req.set_referrer("123456789");
+  req.SetReferrer("123456789");
   EXPECT_EQ(4436,
             ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 
