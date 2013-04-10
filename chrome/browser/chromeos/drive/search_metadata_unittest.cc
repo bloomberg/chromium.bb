@@ -56,7 +56,6 @@ class SearchMetadataTest : public testing::Test {
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     resource_metadata_.reset(new DriveResourceMetadata(
-        fake_drive_service_->GetRootResourceId(),
         drive_cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 

@@ -142,7 +142,6 @@ class DriveFileSystemTest : public testing::Test {
 
   void SetUpResourceMetadataAndFileSystem() {
     resource_metadata_.reset(new DriveResourceMetadata(
-        fake_drive_service_->GetRootResourceId(),
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
@@ -319,7 +318,6 @@ class DriveFileSystemTest : public testing::Test {
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new DriveResourceMetadata(
-            root_resource_id,
             cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
             blocking_task_runner_));
 
@@ -338,9 +336,15 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root is already prepared by DriveResourceMetadata.
-    // TODO(haruki): Create drive/root here when we start creating it in
-    // ChangeListLoader.
     base::FilePath file_path;
+
+    // drive/root
+    resource_metadata->AddEntry(
+        util::CreateMyDriveRootEntry(root_resource_id),
+        google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    if (error != DRIVE_FILE_OK)
+      return false;
 
     // drive/root/File1
     DriveEntryProto file1;
@@ -466,15 +470,15 @@ class DriveFileSystemTest : public testing::Test {
 };
 
 void AsyncInitializationCallback(
-    int* counter,
-    int expected_counter,
-    MessageLoop* message_loop,
-    DriveFileError error,
-    bool hide_hosted_documents,
-    scoped_ptr<DriveEntryProtoVector> entries) {
-  ASSERT_EQ(DRIVE_FILE_OK, error);
-  ASSERT_TRUE(entries.get());
-  ASSERT_FALSE(entries->empty());
+    int* counter, int expected_counter, MessageLoop* message_loop,
+    DriveFileError error, scoped_ptr<DriveEntryProto> entry) {
+  if (error != DRIVE_FILE_OK || !entry) {
+    // If we hit an error case, quit the message loop immediately.
+    // Then the expectation in the test case can find it because the actual
+    // value of |counter| is different from the expected one.
+    message_loop->Quit();
+    return;
+  }
 
   (*counter)++;
   if (*counter >= expected_counter)
@@ -482,38 +486,22 @@ void AsyncInitializationCallback(
 }
 
 TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
-  // The root directory will be loaded that triggers the event.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
-
   int counter = 0;
-  ReadDirectoryWithSettingCallback callback = base::Bind(
-      &AsyncInitializationCallback,
-      &counter,
-      2,
-      &message_loop_);
+  const GetEntryInfoCallback& callback = base::Bind(
+      &AsyncInitializationCallback, &counter, 2, &message_loop_);
 
-  file_system_->ReadDirectoryByPath(
+  file_system_->GetEntryInfoByPath(
       base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
-  file_system_->ReadDirectoryByPath(
+  file_system_->GetEntryInfoByPath(
       base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  // ReadDirectoryByPath() was called twice, but the account metadata should
-  // only be loaded once. In the past, there was a bug that caused it to be
-  // loaded twice.
+  // Although GetEntryInfoByPath() was called twice, the account metadata
+  // should only be loaded once. In the past, there was a bug that caused
+  // it to be loaded twice.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
-  // On the other hand, the resource list could be loaded twice. One for
-  // just the directory contents, and one for the entire resource list.
-  //
-  // The |callback| function gets called back soon after the directory content
-  // is loaded, and the full resource load is done in background asynchronously.
-  // So it depends on timing whether we receive the full resource load request
-  // at this point.
-  EXPECT_TRUE(fake_drive_service_->resource_list_load_count() == 1 ||
-              fake_drive_service_->resource_list_load_count() == 2)
-      << ": " << fake_drive_service_->resource_list_load_count();
+  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
@@ -524,19 +512,6 @@ TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
   EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry->resource_id());
 
   // Getting the grand root entry should not cause the resource load to happen.
-  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
-}
-
-TEST_F(DriveFileSystemTest, GetMyDriveRootEntry) {
-  const base::FilePath kFilePath =
-      base::FilePath(FILE_PATH_LITERAL("drive/root"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
-
-  // Getting the "My Drive" root entry should not cause the resource load to
-  // happen.
   EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
@@ -725,14 +700,30 @@ TEST_F(DriveFileSystemTest, SearchOrphanFile) {
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<DriveEntryProtoVector> entries(
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root")));
+      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries.get());
-  EXPECT_EQ(8U, entries->size());
+  ASSERT_EQ(2U, entries->size());
+
+  // The found two directories shouold be /drive/root and /drive/other.
+  bool found_other = false;
+  bool found_my_drive = false;
+  for (size_t i = 0; i < entries->size(); ++i) {
+    const base::FilePath title =
+        base::FilePath::FromUTF8Unsafe((*entries)[i].title());
+    if (title == base::FilePath(util::kDriveOtherDirName)) {
+      found_other = true;
+    } else if (title == base::FilePath(util::kDriveMyDriveRootDirName)) {
+      found_my_drive = true;
+    }
+  }
+
+  EXPECT_TRUE(found_other);
+  EXPECT_TRUE(found_my_drive);
 }
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {

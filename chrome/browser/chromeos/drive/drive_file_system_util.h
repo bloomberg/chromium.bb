@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
@@ -84,6 +85,12 @@ const base::FilePath& GetDriveMountPointPath();
 // Checks if the resource ID is a special one, which is effective only in our
 // implementation and is not supposed to be sent to the server.
 bool IsSpecialResourceId(const std::string& resource_id);
+
+// Returns a DriveEntryProto for "/drive/root" directory.
+DriveEntryProto CreateMyDriveRootEntry(const std::string& root_resource_id);
+
+// Returns a DriveEntryProto for "/drive/other" directory.
+DriveEntryProto CreateOtherDirEntry();
 
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();

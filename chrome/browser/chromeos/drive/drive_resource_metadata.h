@@ -134,7 +134,6 @@ class DriveResourceMetadata {
  public:
   // |root_resource_id| is the resource id for the root directory.
   DriveResourceMetadata(
-      const std::string& root_resource_id,
       const base::FilePath& data_directory_path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
@@ -392,8 +391,6 @@ class DriveResourceMetadata {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   scoped_ptr<DriveResourceMetadataStorage> storage_;
-
-  std::string root_resource_id_;
 
   base::Time last_serialized_;
   size_t serialized_size_;

@@ -94,8 +94,7 @@ class DriveResourceMetadataTest : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId,
-                                                       temp_dir_.path(),
+    resource_metadata_.reset(new DriveResourceMetadata(temp_dir_.path(),
                                                        blocking_task_runner_));
     Init(resource_metadata_.get());
   }
@@ -177,6 +176,17 @@ void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(DRIVE_FILE_OK, error);
+
+  // Create mydrive root directory.
+  {
+    error = DRIVE_FILE_ERROR_FAILED;
+    base::FilePath drive_path;
+    resource_metadata->AddEntry(
+        util::CreateMyDriveRootEntry(kTestRootResourceId),
+        google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(DRIVE_FILE_OK, error);
+  }
 
   int sequence_id = 1;
   ASSERT_TRUE(AddDriveEntryProto(
@@ -267,8 +277,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   mutable_entry->set_title("drive");
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
-                                                  temp_dir_.path(),
+      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
                                                   blocking_task_runner_));
   ForceUsingMemoryStorage(resource_metadata.get());
 
@@ -308,8 +317,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
-                                                  temp_dir_.path(),
+      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
                                                   blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->Initialize(
@@ -333,8 +341,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(kTestRootResourceId,
-                                                  temp_dir_.path(),
+      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
                                                   blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata->Initialize(
@@ -1258,15 +1265,10 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   ASSERT_TRUE(entry_proto->file_info().is_directory());
   EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry_proto->resource_id());
 
-  // There is "root" and "other", which are both empty.
+  // There is "other", which are both empty.
   entries = ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
   ASSERT_TRUE(entries.get());
-  EXPECT_EQ(2U, entries->size());
-
-  scoped_ptr<DriveEntryProtoVector> entries_in_mydrive =
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root"));
-  ASSERT_TRUE(entries_in_mydrive.get());
-  EXPECT_TRUE(entries_in_mydrive->empty());
+  EXPECT_EQ(1U, entries->size());
 
   scoped_ptr<DriveEntryProtoVector> entries_in_other =
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/other"));
@@ -1293,7 +1295,7 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_original(new DriveResourceMetadata(
-          kTestRootResourceId, temp_dir_.path(), blocking_task_runner_));
+          temp_dir_.path(), blocking_task_runner_));
   ForceUsingMemoryStorage(resource_metadata_original.get());
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -1308,26 +1310,34 @@ TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
+  // Add "/drive/root" directory.
+  base::FilePath file_path;
+  resource_metadata_original->AddEntry(
+      util::CreateMyDriveRootEntry(kTestRootResourceId),
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   // Add a sub directory.
   DriveEntryProto directory_entry;
   directory_entry.mutable_file_info()->set_is_directory(true);
   directory_entry.set_resource_id(kSubDirectoryResourceId);
   directory_entry.set_parent_resource_id(kTestRootResourceId);
   directory_entry.set_title("directory");
-  base::FilePath file_path;
   resource_metadata_original->AddEntry(
       directory_entry,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
   // At this point, both the root and the sub directory do not contain the
   // per-directory changestamp.
   resource_metadata_original->MaybeSave();
   google_apis::test_util::RunBlockingPoolTask();
 
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(
-          util::kDriveGrandRootSpecialResourceId,
-          temp_dir_.path(),
-          blocking_task_runner_));
+      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
+                                                  blocking_task_runner_));
   ForceUsingMemoryStorage(resource_metadata.get());
 
   resource_metadata->Initialize(
@@ -1365,10 +1375,8 @@ TEST_F(DriveResourceMetadataTest, SaveAndLoad) {
   // Save metadata and reset.
   resource_metadata_->MaybeSave();
 
-  resource_metadata_.reset(new DriveResourceMetadata(
-      util::kDriveGrandRootSpecialResourceId,
-      temp_dir_.path(),
-      blocking_task_runner_));
+  resource_metadata_.reset(new DriveResourceMetadata(temp_dir_.path(),
+                                                     blocking_task_runner_));
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   resource_metadata_->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));

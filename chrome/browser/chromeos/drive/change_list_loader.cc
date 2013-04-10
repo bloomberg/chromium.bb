@@ -186,8 +186,7 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
     LoadChangeListFromServer(about_resource.Pass(),
                              start_changestamp,
                              callback);
-  } else if (directory_fetch_info.changestamp() < remote_changestamp &&
-             !util::IsSpecialResourceId(directory_fetch_info.resource_id())) {
+  } else if (directory_fetch_info.changestamp() < remote_changestamp) {
     // If the caller is interested in a particular directory, and the
     // directory changestamp is older than server's, start loading the
     // directory first. Skip special entries as they are not meaningful in the
@@ -341,10 +340,29 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
-  if (util::IsSpecialResourceId(directory_fetch_info.resource_id())) {
-    // Load for a special directory is meaningless in the server.
+  if (directory_fetch_info.resource_id() ==
+          util::kDriveOtherDirSpecialResourceId) {
+    // Load for a <other> directory is meaningless in the server.
     // Let it succeed and use what we have locally.
     callback.Run(DRIVE_FILE_OK);
+    return;
+  }
+
+  if (directory_fetch_info.resource_id() ==
+          util::kDriveGrandRootSpecialResourceId) {
+    // Load for a grand root directory means slightly different from other
+    // directories. It should have two directories; <other> and mydrive root.
+    // <other> directory should always exist, but mydrive root should be
+    // created by root resource id retrieved from the server.
+    // Here, we check if mydrive root exists, and if not, create it.
+    resource_metadata_->GetEntryInfoByPath(
+        base::FilePath(util::kDriveMyDriveRootPath),
+        base::Bind(
+            &ChangeListLoader
+                ::DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath,
+            weak_ptr_factory_.GetWeakPtr(),
+            directory_fetch_info,
+            callback));
     return;
   }
 
@@ -353,6 +371,66 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   LoadFromServer(
       params.Pass(),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
+                 callback));
+}
+
+void
+ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(directory_fetch_info.resource_id(),
+            util::kDriveGrandRootSpecialResourceId);
+
+  if (error == DRIVE_FILE_OK) {
+    // MyDrive root already exists. Just return success.
+    callback.Run(DRIVE_FILE_OK);
+    return;
+  }
+
+  // Fetch root resource id from the server.
+  scheduler_->GetAboutResource(
+      base::Bind(
+          &ChangeListLoader
+              ::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource,
+          weak_ptr_factory_.GetWeakPtr(),
+          directory_fetch_info,
+          callback));
+}
+
+void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(directory_fetch_info.resource_id(),
+            util::kDriveGrandRootSpecialResourceId);
+
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  // Build entry proto map for grand root directory, which has two entries;
+  // "/drive/root" and "/drive/other".
+  DriveEntryProtoMap grand_root_entry_proto_map;
+  const std::string& root_resource_id = about_resource->root_folder_id();
+  grand_root_entry_proto_map[root_resource_id] =
+      util::CreateMyDriveRootEntry(root_resource_id);
+  grand_root_entry_proto_map[util::kDriveOtherDirSpecialResourceId] =
+      util::CreateOtherDirEntry();
+  resource_metadata_->RefreshDirectory(
+      directory_fetch_info,
+      grand_root_entry_proto_map,
+      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback));

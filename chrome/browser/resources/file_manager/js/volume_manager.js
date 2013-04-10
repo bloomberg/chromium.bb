@@ -313,12 +313,16 @@ VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
   chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
     filesystem.root.getDirectory(mountPath, {},
         function(entry) {
-            // After introducion of the 'fast-fetch' feature, getting the root
-            // entry does not start fetching data. Rather, it starts when the
-            // entry is read.
-            entry.createReader().readEntries(
-                callback.bind(null, true),
-                callback.bind(null, false));
+          // After file system is mounted, we need to "read" drive grand root
+          // entry at first. It loads mydrive root entry as a part of
+          // 'fast-fetch' quickly, and starts full feed fetch in parallel.
+          // Without this read, accessing mydrive root will be 'full-fetch'
+          // rather than 'fast-fetch' on the current architecture.
+          // Just "getting" the grand root entry doesn't trigger it. Rather,
+          // it starts when the entry is "read".
+          entry.createReader().readEntries(
+              callback.bind(null, true),
+              callback.bind(null, false));
         },
         callback.bind(null, false));
   });

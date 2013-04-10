@@ -155,6 +155,24 @@ class ChangeListLoader {
   void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
                                  const FileOperationCallback& callback);
 
+  // Part of DoLoadDirectoryFromServer for the grand root ("/drive" directory).
+  // Called when GetEntryInfoByPath is completed.
+  // |callback| must not be null.
+  void DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of DoLoadDirectoryFromServer for the grand root ("/drive" directory).
+  // Called when GetAboutResource is completed.
+  // |callback| must not be null.
+  void DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
+      const DirectoryFetchInfo& directory_fetch_info,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
   // Part of DoLoadDirectoryFromServer(). Called after
   // LoadFromServer() is complete.
   void DoLoadDirectoryFromServerAfterLoad(

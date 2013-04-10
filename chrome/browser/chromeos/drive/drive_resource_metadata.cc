@@ -231,13 +231,11 @@ struct DriveResourceMetadata::ReadDirectoryResult {
 // DriveResourceMetadata class implementation.
 
 DriveResourceMetadata::DriveResourceMetadata(
-    const std::string& root_resource_id,
     const base::FilePath& data_directory_path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : data_directory_path_(data_directory_path),
       blocking_task_runner_(blocking_task_runner),
       storage_(new DriveResourceMetadataStorageDB(data_directory_path)),
-      root_resource_id_(root_resource_id),
       serialized_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -303,8 +301,6 @@ void DriveResourceMetadata::SetUpDefaultEntries() {
 
   // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
   // As an intermediate change, "/drive/root" is also added here.
-  // TODO(haruki): Move this initialization to change_list_loader where we
-  // can retrieve the root folder ID from the server.
   if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId)) {
     DriveEntryProto root;
     root.mutable_file_info()->set_is_directory(true);
@@ -313,20 +309,7 @@ void DriveResourceMetadata::SetUpDefaultEntries() {
     storage_->PutEntry(CreateEntryWithProperBaseName(root));
   }
   if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId)) {
-    DriveEntryProto other_dir;
-    other_dir.mutable_file_info()->set_is_directory(true);
-    other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
-    other_dir.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
-    other_dir.set_title(util::kDriveOtherDirName);
-    AddEntryToDirectory(other_dir);
-  }
-  if (!storage_->GetEntry(root_resource_id_)) {
-    DriveEntryProto mydrive_root;
-    mydrive_root.mutable_file_info()->set_is_directory(true);
-    mydrive_root.set_resource_id(root_resource_id_);
-    mydrive_root.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
-    mydrive_root.set_title(util::kDriveMyDriveRootDirName);
-    AddEntryToDirectory(mydrive_root);
+    AddEntryToDirectory(util::CreateOtherDirEntry());
   }
 }
 

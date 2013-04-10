@@ -91,7 +91,11 @@ class ChangeListProcessor {
 
  private:
   // Applies the pre-processed feed from entry_proto_map_ onto the filesystem.
-  void ApplyEntryProtoMap(bool is_delta_feed);
+  // If this is not delta feed update (i.e. |is_delta_feed| is false),
+  // |about_resource| must not be null.
+  void ApplyEntryProtoMap(
+      bool is_delta_feed,
+      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Apply the next item from entry_proto_map_ to the file system. The async
   // version posts to the message loop to avoid recursive stack-overflow.
