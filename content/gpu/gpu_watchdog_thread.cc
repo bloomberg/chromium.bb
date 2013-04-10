@@ -28,28 +28,9 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       watched_message_loop_(MessageLoop::current()),
       timeout_(base::TimeDelta::FromMilliseconds(timeout)),
       armed_(false),
-#if defined(OS_WIN)
-      watched_thread_handle_(0),
-      arm_cpu_time_(),
-#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(timeout >= 0);
-
-#if defined(OS_WIN)
-  // GetCurrentThread returns a pseudo-handle that cannot be used by one thread
-  // to identify another. DuplicateHandle creates a "real" handle that can be
-  // used for this purpose.
-  BOOL result = DuplicateHandle(GetCurrentProcess(),
-                                GetCurrentThread(),
-                                GetCurrentProcess(),
-                                &watched_thread_handle_,
-                                THREAD_QUERY_INFORMATION,
-                                FALSE,
-                                0);
-  DCHECK(result);
-#endif
-
   watched_message_loop_->AddTaskObserver(&task_observer_);
 }
 
@@ -101,10 +82,6 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   // implicitly by the destructor, CleanUp() will not be called.
   DCHECK(!weak_factory_.HasWeakPtrs());
 
-#if defined(OS_WIN)
-  CloseHandle(watched_thread_handle_);
-#endif
-
   watched_message_loop_->RemoveTaskObserver(&task_observer_);
 }
 
@@ -141,10 +118,6 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   // miss the false -> true transition.
   armed_ = true;
 
-#if defined(OS_WIN)
-  arm_cpu_time_ = GetWatchedThreadTime();
-#endif
-
   // Immediately after the computer is woken up from being suspended it might
   // be pretty sluggish, so allow some extra time before the next timeout.
   base::TimeDelta timeout = timeout_ * (after_suspend ? 3 : 1);
@@ -169,21 +142,6 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
 void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
-#if defined(OS_WIN)
-  // Defer termination until a certain amount of CPU time has elapsed on the
-  // watched thread.
-  base::TimeDelta time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
-  if (time_since_arm < timeout_) {
-    message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(
-            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-            weak_factory_.GetWeakPtr()),
-        timeout_ - time_since_arm);
-    return;
-  }
-#endif
-
   // If the watchdog woke up significantly behind schedule, disarm and reset
   // the watchdog check. This is to prevent the watchdog thread from terminating
   // when a machine wakes up from sleep or hibernation, which would otherwise
@@ -214,38 +172,5 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 
   terminated = true;
 }
-
-#if defined(OS_WIN)
-base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
-  FILETIME creation_time;
-  FILETIME exit_time;
-  FILETIME user_time;
-  FILETIME kernel_time;
-  BOOL result = GetThreadTimes(watched_thread_handle_,
-                               &creation_time,
-                               &exit_time,
-                               &kernel_time,
-                               &user_time);
-  DCHECK(result);
-
-  ULARGE_INTEGER user_time64;
-  user_time64.HighPart = user_time.dwHighDateTime;
-  user_time64.LowPart = user_time.dwLowDateTime;
-
-  ULARGE_INTEGER kernel_time64;
-  kernel_time64.HighPart = kernel_time.dwHighDateTime;
-  kernel_time64.LowPart = kernel_time.dwLowDateTime;
-
-  // Time is reported in units of 100 nanoseconds. Kernel and user time are
-  // summed to deal with to kinds of hangs. One is where the GPU process is
-  // stuck in user level, never calling into the kernel and kernel time is
-  // not increasing. The other is where either the kernel hangs and never
-  // returns to user level or where user level code
-  // calls into kernel level repeatedly, giving up its quanta before it is
-  // tracked, for example a loop that repeatedly Sleeps.
-  return base::TimeDelta::FromMilliseconds(static_cast<int64>(
-      (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
-}
-#endif
 
 }  // namespace content
