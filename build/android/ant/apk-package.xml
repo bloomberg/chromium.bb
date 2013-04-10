@@ -18,18 +18,9 @@
 <project default="-package">
   <property name="verbose" value="false" />
   <property name="out.dir" location="${OUT_DIR}" />
-  <!-- Output directories -->
-  <property name="out.dir" value="bin" />
   <property name="out.absolute.dir" location="${out.dir}" />
-  <property name="out.res.absolute.dir" location="${out.dir}/res" />
-  <property name="out.manifest.abs.file" location="${out.dir}/AndroidManifest.xml" />
 
-  <!-- tools location -->
   <property name="sdk.dir" location="${ANDROID_SDK_ROOT}"/>
-  <property name="target" value="android-${ANDROID_SDK_VERSION}"/>
-  <property name="project.target.android.jar" location="${ANDROID_SDK_JAR}" />
-  <property name="android.tools.dir" location="${sdk.dir}/tools" />
-  <property name="android.platform.tools.dir" location="${sdk.dir}/platform-tools" />
 
   <!-- jar file from where the tasks are loaded -->
   <path id="android.antlibs">
@@ -52,103 +43,19 @@
   <!-- SDK tools assume that out.packaged.file is signed and name it "...-unaligned" -->
   <property name="out.packaged.file" value="${UNSIGNED_APK_PATH}" />
 
-  <property name="resource.dir" value="${RESOURCE_DIR}"/>
-  <property name="resource.absolute.dir" location="${resource.dir}"/>
-
-  <property name="asset.dir" value="${ASSET_DIR}" />
-  <property name="asset.absolute.dir" location="${asset.dir}" />
-
   <property name="native.libs.absolute.dir" location="${NATIVE_LIBS_DIR}" />
-
-  <property name="aapt" location="${android.platform.tools.dir}/aapt" />
-
-  <target name="-crunch">
-    <!-- Updates the pre-processed PNG cache -->
-    <exec executable="${aapt}" taskName="crunch">
-      <arg value="crunch" />
-      <arg value="-v" />
-      <arg value="-S" />
-      <arg path="${resource.absolute.dir}" />
-      <arg value="-C" />
-      <arg path="${out.res.absolute.dir}" />
-    </exec>
-  </target>
-
-  <property name="version.code" value="${APP_MANIFEST_VERSION_CODE}"/>
-  <property name="version.name" value="${APP_MANIFEST_VERSION_NAME}"/>
-
-  <property name="aapt.resource.filter" value="" />
-  <!-- 'aapt.ignore.assets' is the list of file patterns to ignore under /res and /assets.
-         Default is "!.svn:!.git:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~"
-
-         Overall patterns syntax is:
-           [!][<dir>|<file>][*suffix-match|prefix-match*|full-match]:more:patterns...
-
-         - The first character flag ! avoids printing a warning.
-         - Pattern can have the flag "<dir>" to match only directories
-           or "<file>" to match only files. Default is to match both.
-         - Match is not case-sensitive.
-  -->
-  <property name="aapt.ignore.assets" value="" />
-
-  <!--
-      Include additional resource folders in the apk, e.g. content/.../res.  We
-      list the res folders in project.library.res.folder.path and the
-      corresponding java packages in project.library.packages, which must be
-      semicolon-delimited while ADDITIONAL_RES_PACKAGES is space-delimited, hence
-      the javascript task.
-  -->
-  <path id="project.library.res.folder.path">
-    <filelist files="${ADDITIONAL_RES_DIRS}"/>
-  </path>
-  <path id="project.library.bin.r.file.path">
-    <filelist files="${ADDITIONAL_R_TEXT_FILES}"/>
-  </path>
-  <script language="javascript">
-    var before = project.getProperty("ADDITIONAL_RES_PACKAGES");
-    project.setProperty("project.library.packages", before.replaceAll(" ", ";"));
-  </script>
-
-  <property name="build.packaging.nocrunch" value="true" />
 
   <!-- Intermediate files -->
   <property name="resource.package.file.name" value="${APK_NAME}.ap_" />
 
-  <target name="-package-resources" depends="-crunch">
-    <aapt
-        executable="${aapt}"
-        command="package"
-        versioncode="${version.code}"
-        versionname="${version.name}"
-        debug="${build.is.packaging.debug}"
-        manifest="${out.manifest.abs.file}"
-        assets="${asset.absolute.dir}"
-        androidjar="${project.target.android.jar}"
-        apkfolder="${out.absolute.dir}"
-        nocrunch="${build.packaging.nocrunch}"
-        resourcefilename="${resource.package.file.name}"
-        resourcefilter="${aapt.resource.filter}"
-        libraryResFolderPathRefid="project.library.res.folder.path"
-        libraryPackagesRefid="project.library.packages"
-        libraryRFileRefid="project.library.bin.r.file.path"
-        previousBuildType=""
-        buildType="${build.target}"
-        ignoreAssets="${aapt.ignore.assets}">
-      <res path="${out.res.absolute.dir}" />
-      <res path="${resource.absolute.dir}" />
-      <!-- <nocompress /> forces no compression on any files in assets or res/raw -->
-      <!-- <nocompress extension="xml" /> forces no compression on specific file extensions in assets and res/raw -->
-    </aapt>
-  </target>
-
   <property name="dex.file.name" value="classes.dex" />
   <property name="intermediate.dex.file" location="${out.absolute.dir}/${dex.file.name}" />
+
   <property name="source.dir" value="${SOURCE_DIR}" />
   <property name="source.absolute.dir" location="${source.dir}" />
 
-
   <!-- Packages the application. -->
-  <target name="-package" depends="-package-resources">
+  <target name="-package">
     <apkbuilder
         outfolder="${out.absolute.dir}"
         resourcefile="${resource.package.file.name}"

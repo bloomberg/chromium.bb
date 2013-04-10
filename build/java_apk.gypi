@@ -100,6 +100,7 @@
     'android_manifest_path%': '<(java_in_dir)/AndroidManifest.xml',
     'push_stamp': '<(intermediate_dir)/push.stamp',
     'link_stamp': '<(intermediate_dir)/link.stamp',
+    'package_resources_stamp': '<(intermediate_dir)/package_resources.stamp',
     'codegen_input_paths': [],
     'keystore_path': '<(DEPTH)/build/android/ant/chromium-debug.keystore',
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
@@ -345,9 +346,10 @@
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/ant.py',
         '<(android_manifest_path)',
-        '>@(library_manifest_paths)'
-        '>@(codegen_input_paths)',
         '>@(additional_input_paths)',
+        '>@(codegen_input_paths)',
+        '>@(library_manifest_paths)',
+        '>@(resource_input_paths)',
       ],
       'outputs': [
         '<(codegen_stamp)',
@@ -523,16 +525,17 @@
       ]
     },
     {
-      'action_name': 'ant_package_<(_target_name)',
-      'message': 'Packaging <(_target_name).',
+      'action_name': 'ant package resources',
+      'message': 'Packaging resources for <(_target_name) APK.',
       'inputs': [
-        '<(DEPTH)/build/android/ant/apk-package.xml',
+        '<(DEPTH)/build/android/ant/apk-package-resources.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/ant.py',
-        '<(dex_path)',
+        '<(android_manifest_path)',
         '<(codegen_stamp)',
-        '<(obfuscate_stamp)',
-        '>@(package_input_paths)',
+
+        '>@(library_manifest_paths)',
+        '>@(additional_input_paths)',
       ],
       'conditions': [
         ['is_test_apk == 1', {
@@ -543,7 +546,7 @@
         }],
       ],
       'outputs': [
-        '<(unsigned_apk_path)',
+        '<(package_resources_stamp)',
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/ant.py',
@@ -553,15 +556,50 @@
         '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
         '-DANDROID_SDK_JAR=<(android_sdk_jar)',
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
         '-DAPK_NAME=<(apk_name)',
         '-DAPP_MANIFEST_VERSION_CODE=<(app_manifest_version_code)',
         '-DAPP_MANIFEST_VERSION_NAME=<(app_manifest_version_name)',
         '-DASSET_DIR=<(asset_location)',
         '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DNATIVE_LIBS_DIR=<(apk_package_native_libs_dir)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DRESOURCE_DIR=<(resource_dir)',
+
+        '-DSTAMP=<(package_resources_stamp)',
+
+        '-Dbasedir=.',
+        '-buildfile',
+        '<(DEPTH)/build/android/ant/apk-package-resources.xml',
+
+        # Add list of inputs to the command line, so if inputs change
+        # (e.g. if a Java file is removed), the command will be re-run.
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
+      ]
+    },
+    {
+      'action_name': 'ant_package_<(_target_name)',
+      'message': 'Packaging <(_target_name).',
+      'inputs': [
+        '<(DEPTH)/build/android/ant/apk-package.xml',
+        '<(DEPTH)/build/android/gyp/util/build_utils.py',
+        '<(DEPTH)/build/android/gyp/ant.py',
+        '<(dex_path)',
+        '<(codegen_stamp)',
+        '<(obfuscate_stamp)',
+        '<(package_resources_stamp)',
+        '>@(package_input_paths)',
+      ],
+      'outputs': [
+        '<(unsigned_apk_path)',
+      ],
+      'action': [
+        'python', '<(DEPTH)/build/android/gyp/ant.py',
+        '-quiet',
+        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+        '-DAPK_NAME=<(apk_name)',
+        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
+        '-DNATIVE_LIBS_DIR=<(apk_package_native_libs_dir)',
+        '-DOUT_DIR=<(intermediate_dir)',
         '-DSOURCE_DIR=<(source_dir)',
         '-DUNSIGNED_APK_PATH=<(unsigned_apk_path)',
 
