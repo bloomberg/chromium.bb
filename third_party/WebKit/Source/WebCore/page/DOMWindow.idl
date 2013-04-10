@@ -716,7 +716,6 @@
     attribute SVGVKernElementConstructor SVGVKernElement;
 #endif
 
-#if defined(ENABLE_FILTERS) && ENABLE_FILTERS
     attribute SVGComponentTransferFunctionElementConstructor SVGComponentTransferFunctionElement;
     attribute SVGFEBlendElementConstructor SVGFEBlendElement;
     attribute SVGFEColorMatrixElementConstructor SVGFEColorMatrixElement;
@@ -744,7 +743,6 @@
     attribute SVGFETileElementConstructor SVGFETileElement;
     attribute SVGFETurbulenceElementConstructor SVGFETurbulenceElement;
     attribute SVGFilterElementConstructor SVGFilterElement;
-#endif
 #endif
 
     attribute DOMFormDataConstructor FormData;

@@ -22,7 +22,6 @@
 #ifndef FilterEffect_h
 #define FilterEffect_h
 
-#if ENABLE(FILTERS)
 #include "ColorSpace.h"
 #include "FloatRect.h"
 #include "IntRect.h"
@@ -227,7 +226,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // FilterEffect_h

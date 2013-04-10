@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEBlend.h"
 
 #include "NativeImageSkia.h"
@@ -99,5 +98,3 @@ SkImageFilter* FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

@@ -147,10 +147,8 @@ static inline String targetReferenceFromResource(SVGElement* element)
         target = static_cast<SVGPatternElement*>(element)->href();
     else if (element->hasTagName(SVGNames::linearGradientTag) || element->hasTagName(SVGNames::radialGradientTag))
         target = static_cast<SVGGradientElement*>(element)->href();
-#if ENABLE(FILTERS)
     else if (element->hasTagName(SVGNames::filterTag))
         target = static_cast<SVGFilterElement*>(element)->href();
-#endif
     else
         ASSERT_NOT_REACHED();
 
@@ -216,7 +214,6 @@ bool SVGResources::buildCachedResources(const RenderObject* object, const SVGRen
                 registerPendingResource(extensions, id, element);
         }
 
-#if ENABLE(FILTERS)
         if (style->hasFilter()) {
             AtomicString id(style->filterResource());
             if (setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(document, id)))
@@ -224,7 +221,6 @@ bool SVGResources::buildCachedResources(const RenderObject* object, const SVGRen
             else
                 registerPendingResource(extensions, id, element);
         }
-#endif
 
         if (style->hasMasker()) {
             AtomicString id(style->maskerResource());
@@ -302,10 +298,8 @@ void SVGResources::removeClientFromCache(RenderObject* object, bool markForInval
     if (m_clipperFilterMaskerData) {
         if (m_clipperFilterMaskerData->clipper)
             m_clipperFilterMaskerData->clipper->removeClientFromCache(object, markForInvalidation);
-#if ENABLE(FILTERS)
         if (m_clipperFilterMaskerData->filter)
             m_clipperFilterMaskerData->filter->removeClientFromCache(object, markForInvalidation);
-#endif
         if (m_clipperFilterMaskerData->masker)
             m_clipperFilterMaskerData->masker->removeClientFromCache(object, markForInvalidation);
     }
@@ -382,16 +376,12 @@ void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
         }
         break;
     case FilterResourceType:
-#if ENABLE(FILTERS)
         if (!m_clipperFilterMaskerData)
             break;
         if (m_clipperFilterMaskerData->filter == resource) {
             m_clipperFilterMaskerData->filter->removeAllClientsFromCache();
             m_clipperFilterMaskerData->filter = 0;
         }
-#else
-        ASSERT_NOT_REACHED();
-#endif
         break;
     case ClipperResourceType:
         if (!m_clipperFilterMaskerData)
@@ -422,10 +412,8 @@ void SVGResources::buildSetOfResources(HashSet<RenderSVGResourceContainer*>& set
     if (m_clipperFilterMaskerData) {
         if (m_clipperFilterMaskerData->clipper)
             set.add(m_clipperFilterMaskerData->clipper);
-#if ENABLE(FILTERS)
         if (m_clipperFilterMaskerData->filter)
             set.add(m_clipperFilterMaskerData->filter);
-#endif
         if (m_clipperFilterMaskerData->masker)
             set.add(m_clipperFilterMaskerData->masker);
     }
@@ -468,7 +456,6 @@ void SVGResources::resetClipper()
     m_clipperFilterMaskerData->clipper = 0;
 }
 
-#if ENABLE(FILTERS)
 bool SVGResources::setFilter(RenderSVGResourceFilter* filter)
 {
     if (!filter)
@@ -489,7 +476,6 @@ void SVGResources::resetFilter()
     ASSERT(m_clipperFilterMaskerData->filter);
     m_clipperFilterMaskerData->filter = 0;
 }
-#endif
 
 bool SVGResources::setMarkerStart(RenderSVGResourceMarker* markerStart)
 {
@@ -650,10 +636,8 @@ void SVGResources::dump(const RenderObject* object)
     if (m_clipperFilterMaskerData) {
         if (RenderSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
             fprintf(stderr, " |-> Clipper    : %p (node=%p)\n", clipper, clipper->node());
-#if ENABLE(FILTERS)
         if (RenderSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
             fprintf(stderr, " |-> Filter     : %p (node=%p)\n", filter, filter->node());
-#endif
         if (RenderSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
             fprintf(stderr, " |-> Masker     : %p (node=%p)\n", masker, masker->node());
     }

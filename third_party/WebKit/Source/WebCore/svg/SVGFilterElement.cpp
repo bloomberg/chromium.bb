@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "SVGFilterElement.h"
 
 #include "Attr.h"

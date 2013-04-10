@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG&FILTERS
+    Conditional=SVG
 ] interface SVGFEGaussianBlurElement : SVGStyledElement,
                            SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedString in1;

@@ -18,7 +18,7 @@
  */
 
 [
-    Conditional=SVG&FILTERS
+    Conditional=SVG
 ] interface SVGFEDropShadowElement : SVGStyledElement,
                            SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedString in1;

@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "SVGFEDisplacementMapElement.h"
 
 #include "Attribute.h"

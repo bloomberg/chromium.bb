@@ -21,7 +21,7 @@
 #ifndef SVGFEFuncGElement_h
 #define SVGFEFuncGElement_h
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "SVGComponentTransferFunctionElement.h"
 
 namespace WebCore {

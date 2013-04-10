@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEMorphology.h"
 
 #include "Filter.h"
@@ -260,5 +259,3 @@ TextStream& FEMorphology::externalRepresentation(TextStream& ts, int indent) con
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

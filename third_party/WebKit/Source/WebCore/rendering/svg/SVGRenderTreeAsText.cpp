@@ -505,7 +505,6 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
         writeNameValuePair(ts, "maskUnits", masker->maskUnits());
         writeNameValuePair(ts, "maskContentUnits", masker->maskContentUnits());
         ts << "\n";
-#if ENABLE(FILTERS)
     } else if (resource->resourceType() == FilterResourceType) {
         RenderSVGResourceFilter* filter = static_cast<RenderSVGResourceFilter*>(resource);
         writeNameValuePair(ts, "filterUnits", filter->filterUnits());
@@ -518,7 +517,6 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
             if (FilterEffect* lastEffect = builder->lastEffect())
                 lastEffect->externalRepresentation(ts, indent + 1);
         }
-#endif
     } else if (resource->resourceType() == ClipperResourceType) {
         RenderSVGResourceClipper* clipper = static_cast<RenderSVGResourceClipper*>(resource);
         writeNameValuePair(ts, "clipPathUnits", clipper->clipPathUnits());
@@ -674,7 +672,6 @@ void writeResources(TextStream& ts, const RenderObject& object, int indent)
             ts << " " << clipper->resourceBoundingBox(&renderer) << "\n";
         }
     }
-#if ENABLE(FILTERS)
     if (!svgStyle->filterResource().isEmpty()) {
         if (RenderSVGResourceFilter* filter = getRenderSVGResourceById<RenderSVGResourceFilter>(object.document(), svgStyle->filterResource())) {
             writeIndent(ts, indent);
@@ -685,7 +682,6 @@ void writeResources(TextStream& ts, const RenderObject& object, int indent)
             ts << " " << filter->resourceBoundingBox(&renderer) << "\n";
         }
     }
-#endif
 }
 
 } // namespace WebCore

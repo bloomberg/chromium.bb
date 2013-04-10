@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEBlend.h"
 #include "FEBlendNEON.h"
 
@@ -224,5 +223,3 @@ TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

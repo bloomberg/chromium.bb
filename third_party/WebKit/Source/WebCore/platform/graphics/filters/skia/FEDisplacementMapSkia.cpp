@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(FILTERS)
 #include "FEDisplacementMap.h"
 
 #include "NativeImageSkia.h"
@@ -102,5 +101,3 @@ SkImageFilter* FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* buil
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)

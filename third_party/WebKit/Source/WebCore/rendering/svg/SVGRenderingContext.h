@@ -50,9 +50,7 @@ public:
         , m_object(0)
         , m_paintInfo(0)
         , m_savedContext(0)
-#if ENABLE(FILTERS)
         , m_filter(0)
-#endif
     {
     }
 
@@ -61,9 +59,7 @@ public:
         , m_object(0)
         , m_paintInfo(0)
         , m_savedContext(0)
-#if ENABLE(FILTERS)
         , m_filter(0)
-#endif
     {
         prepareToRenderSVGContent(object, paintinfo, needsGraphicsContextSave);
     }
@@ -115,9 +111,7 @@ private:
     PaintInfo* m_paintInfo;
     GraphicsContext* m_savedContext;
     IntRect m_savedPaintRect;
-#if ENABLE(FILTERS)
     RenderSVGResourceFilter* m_filter;
-#endif
 };
 
 } // namespace WebCore

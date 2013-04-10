@@ -64,7 +64,6 @@ static inline unsigned enumerationValueForTargetAttribute(SVGElement* targetElem
     if (attrName == SVGNames::spreadMethodAttr)
         return SVGPropertyTraits<SVGSpreadMethodType>::fromString(value);
 
-#if ENABLE(FILTERS)
     if (attrName == SVGNames::edgeModeAttr)
         return SVGPropertyTraits<EdgeModeType>::fromString(value);
 
@@ -96,7 +95,6 @@ static inline unsigned enumerationValueForTargetAttribute(SVGElement* targetElem
         return SVGPropertyTraits<ChannelSelectorType>::fromString(value);
     if (attrName == SVGNames::yChannelSelectorAttr)
         return SVGPropertyTraits<ChannelSelectorType>::fromString(value);
-#endif
 
     ASSERT_NOT_REACHED();
     return 0;

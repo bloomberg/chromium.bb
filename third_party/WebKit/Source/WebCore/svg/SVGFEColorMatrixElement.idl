@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG&FILTERS,
+    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGFEColorMatrixElement : SVGStyledElement,
                            SVGFilterPrimitiveStandardAttributes {

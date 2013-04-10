@@ -22,7 +22,6 @@
 #ifndef FEMerge_h
 #define FEMerge_h
 
-#if ENABLE(FILTERS)
 #include "FilterEffect.h"
 #include "Filter.h"
 #include <wtf/Vector.h>
@@ -48,7 +47,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(FILTERS)
 
 #endif // FEMerge_h

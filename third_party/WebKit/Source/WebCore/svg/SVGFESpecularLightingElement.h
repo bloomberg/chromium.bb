@@ -22,7 +22,7 @@
 #ifndef SVGFESpecularLightingElement_h
 #define SVGFESpecularLightingElement_h
 
-#if ENABLE(SVG) && ENABLE(FILTERS)
+#if ENABLE(SVG)
 #include "FESpecularLighting.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFELightElement.h"

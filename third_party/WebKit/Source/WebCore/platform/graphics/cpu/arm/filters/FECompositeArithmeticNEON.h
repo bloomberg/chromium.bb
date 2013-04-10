@@ -27,7 +27,7 @@
 #ifndef FECompositeArithmeticNEON_h
 #define FECompositeArithmeticNEON_h
 
-#if ENABLE(FILTERS) && HAVE(ARM_NEON_INTRINSICS)
+#if HAVE(ARM_NEON_INTRINSICS)
 
 #include "FEComposite.h"
 #include <arm_neon.h>
@@ -94,6 +94,6 @@ inline void FEComposite::platformArithmeticNeon(unsigned char* source, unsigned 
 
 } // namespace WebCore
 
-#endif // ENABLE(FILTERS) && HAVE(ARM_NEON_INTRINSICS)
+#endif // HAVE(ARM_NEON_INTRINSICS)
 
 #endif // FECompositeArithmeticNEON_h
