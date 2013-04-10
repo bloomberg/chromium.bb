@@ -105,7 +105,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_isLoadingMultipartContent(false)
     , m_wasOnloadHandled(false)
     , m_substituteResourceDeliveryTimer(this, &DocumentLoader::substituteResourceDeliveryTimerFired)
-    , m_didCreateGlobalHistoryEntry(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
     , m_identifierForLoadWithoutResourceLoader(0)
@@ -992,7 +991,6 @@ void DocumentLoader::setTitle(const StringWithDirection& title)
     if (m_pageTitle == title)
         return;
 
-    frameLoader()->willChangeTitle(this);
     m_pageTitle = title;
     frameLoader()->didChangeTitle(this);
 }
@@ -1094,7 +1092,7 @@ bool DocumentLoader::isMultipartReplacingLoad() const
 bool DocumentLoader::maybeLoadEmpty()
 {
     bool shouldLoadEmpty = !m_substituteData.isValid() && (m_request.url().isEmpty() || SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(m_request.url().protocol()));
-    if (!shouldLoadEmpty && !frameLoader()->client()->representationExistsForURLScheme(m_request.url().protocol()))
+    if (!shouldLoadEmpty)
         return false;
 
     if (m_request.url().isEmpty() && !frameLoader()->stateMachine()->creatingInitialEmptyDocument())

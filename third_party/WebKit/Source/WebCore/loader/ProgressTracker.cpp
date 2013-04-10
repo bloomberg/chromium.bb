@@ -154,8 +154,6 @@ void ProgressTracker::finalProgressComplete()
     }
 
     reset();
-
-    frame->loader()->client()->setMainFrameDocumentReady(true);
     frame->loader()->client()->postProgressFinishedNotification();
     InspectorInstrumentation::frameStoppedLoading(frame.get());
 }

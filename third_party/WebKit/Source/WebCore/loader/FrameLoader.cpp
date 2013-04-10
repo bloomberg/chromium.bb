@@ -227,7 +227,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_opener(0)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
-    , m_didPerformFirstNavigation(false)
     , m_loadingFromCachedPage(false)
     , m_suppressOpenerInNewFrame(false)
     , m_forcedSandboxFlags(SandboxNone)
@@ -939,7 +938,6 @@ void FrameLoader::provisionalLoadStarted()
     if (m_stateMachine.firstLayoutDone())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
     m_frame->navigationScheduler()->cancel(true);
-    m_client->provisionalLoadStarted();
 }
 
 void FrameLoader::resetMultipleFormSubmissionProtection()
@@ -1017,7 +1015,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_client->dispatchDidNavigateWithinPage();
 
     m_frame->document()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
-    m_client->dispatchDidPopStateWithinPage();
     
     if (hashChange) {
         m_frame->document()->enqueueHashchangeEvent(oldURL, url);
@@ -1727,7 +1724,6 @@ void FrameLoader::transitionToCommitted(PassRefPtr<CachedPage> cachedPage)
             scrollAnimator->cancelAnimations();
     }
 
-    m_client->setCopiesOnScroll();
     history()->updateForCommit();
 
     // The call to closeURL() invokes the unload event handler, which can execute arbitrary
@@ -1876,8 +1872,6 @@ void FrameLoader::closeOldDataSources()
     
     if (m_documentLoader)
         m_client->dispatchWillClose();
-
-    m_client->setMainFrameDocumentReady(false); // stop giving out the actual DOMDocument to observers
 }
 
 void FrameLoader::prepareForCachedPageRestore()
@@ -1985,11 +1979,6 @@ bool FrameLoader::subframeIsLoading() const
     return false;
 }
 
-void FrameLoader::willChangeTitle(DocumentLoader* loader)
-{
-    m_client->willChangeTitle(loader);
-}
-
 FrameLoadType FrameLoader::loadType() const
 {
     return m_loadType;
@@ -2069,10 +2058,8 @@ void FrameLoader::checkLoadCompleteForThisFrame()
                 }
             }
             if (shouldReset && item)
-                if (Page* page = m_frame->page()) {
+                if (Page* page = m_frame->page())
                     page->backForward()->setCurrentItem(item.get());
-                    m_frame->loader()->client()->updateGlobalHistoryItemForPage();
-                }
             return;
         }
         
@@ -2086,8 +2073,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
             // FIXME: Is this subsequent work important if we already navigated away?
             // Maybe there are bugs because of that, or extra work we can skip because
             // the new page is ready.
-
-            m_client->forceLayoutForNonHTML();
              
             // If the user had a scroll point, scroll to it, overriding the anchor point if any.
             if (m_frame->page()) {
@@ -2222,9 +2207,6 @@ void FrameLoader::didFirstLayout()
 void FrameLoader::frameLoadCompleted()
 {
     // Note: Can be called multiple times.
-
-    m_client->frameLoadCompleted();
-
     history()->updateForFrameLoadCompleted();
 
     // After a canceled provisional load, firstLayoutDone is false.
@@ -2343,9 +2325,8 @@ void FrameLoader::detachFromParent()
 
 void FrameLoader::detachViewsAndDocumentLoader()
 {
-    m_client->detachedFromParent2();
     setDocumentLoader(0);
-    m_client->detachedFromParent3();
+    m_client->detachedFromParent();
 }
     
 void FrameLoader::addExtraFieldsToSubresourceRequest(ResourceRequest& request)
@@ -2723,10 +2704,8 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&, Pass
         if ((isTargetItem || isLoadingMainFrame()) && isBackForwardLoadType(policyChecker()->loadType())) {
             if (Page* page = m_frame->page()) {
                 Frame* mainFrame = page->mainFrame();
-                if (HistoryItem* resetItem = mainFrame->loader()->history()->currentItem()) {
+                if (HistoryItem* resetItem = mainFrame->loader()->history()->currentItem())
                     page->backForward()->setCurrentItem(resetItem);
-                    m_frame->loader()->client()->updateGlobalHistoryItemForPage();
-                }
             }
         }
         return;
@@ -2835,11 +2814,7 @@ void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
     }
 
     ResourceRequest request(resource->url());
-    if (m_client->dispatchDidLoadResourceFromMemoryCache(m_documentLoader.get(), request, resource->response(), resource->encodedSize())) {
-        InspectorInstrumentation::didLoadResourceFromMemoryCache(page, m_documentLoader.get(), resource);
-        m_documentLoader->didTellClientAboutLoad(resource->url());
-        return;
-    }
+    m_client->dispatchDidLoadResourceFromMemoryCache(m_documentLoader.get(), request, resource->response(), resource->encodedSize());
 
     unsigned long identifier;
     ResourceError error;
@@ -2930,18 +2905,6 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
     if (!ownerElement->hasTagName(iframeTag))
         return false;
     return ownerElement->fastHasAttribute(srcdocAttr);
-}
-
-void FrameLoader::checkDidPerformFirstNavigation()
-{
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-
-    if (!m_didPerformFirstNavigation && page->backForward()->currentItem() && !page->backForward()->backItem() && !page->backForward()->forwardItem()) {
-        m_didPerformFirstNavigation = true;
-        m_client->didPerformFirstNavigation();
-    }
 }
 
 Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
@@ -3166,14 +3129,11 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
 
 void FrameLoader::didChangeTitle(DocumentLoader* loader)
 {
-    m_client->didChangeTitle(loader);
-
     if (loader == m_documentLoader) {
         // Must update the entries in the back-forward list too.
         history()->setCurrentItemTitle(loader->title());
         // This must go through the WebFrame because it has the right notion of the current b/f item.
         m_client->setTitle(loader->title(), loader->urlForHistory());
-        m_client->setMainFrameDocumentReady(true); // update observers with new DOMDocument
         m_client->dispatchDidReceiveTitle(loader->title());
     }
 }

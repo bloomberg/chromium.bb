@@ -146,9 +146,6 @@ namespace WebCore {
         const StringWithDirection& title() const { return m_pageTitle; }
 
         KURL urlForHistory() const;
-
-        bool didCreateGlobalHistoryEntry() const { return m_didCreateGlobalHistoryEntry; }
-        void setDidCreateGlobalHistoryEntry(bool didCreateGlobalHistoryEntry) { m_didCreateGlobalHistoryEntry = didCreateGlobalHistoryEntry; }
         
         void setDefersLoading(bool);
         void setMainResourceDataBufferingPolicy(DataBufferingPolicy);
@@ -309,7 +306,6 @@ namespace WebCore {
 
         HashSet<String> m_resourcesClientKnowsAbout;
         Vector<String> m_resourcesLoadedFromMemoryCacheForClientNotification;
-        bool m_didCreateGlobalHistoryEntry;
 
         bool m_loadingMainResource;
         DocumentLoadTiming m_documentLoadTiming;

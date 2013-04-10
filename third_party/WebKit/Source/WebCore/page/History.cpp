@@ -155,10 +155,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
     if (!urlString.isEmpty())
         m_frame->document()->updateURLForPushOrReplaceState(fullURL);
 
-    if (stateObjectType == StateObjectPush)
-        m_frame->loader()->client()->dispatchDidPushStateWithinPage();
-    else if (stateObjectType == StateObjectReplace)
-        m_frame->loader()->client()->dispatchDidReplaceStateWithinPage();
+    m_frame->loader()->client()->dispatchDidNavigateWithinPage();
 }
 
 } // namespace WebCore

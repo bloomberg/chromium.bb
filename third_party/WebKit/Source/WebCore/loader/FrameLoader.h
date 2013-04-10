@@ -168,7 +168,6 @@ public:
     bool isReplacing() const;
     void setReplacing();
     bool subframeIsLoading() const;
-    void willChangeTitle(DocumentLoader*);
     void didChangeTitle(DocumentLoader*);
     void didChangeIcons(IconType);
 
@@ -232,8 +231,6 @@ public:
     void loadDone();
     void finishedParsing();
     void checkCompleted();
-
-    void checkDidPerformFirstNavigation();
 
     bool isComplete() const;
 
@@ -434,7 +431,6 @@ private:
 
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
-    bool m_didPerformFirstNavigation;
     bool m_loadingFromCachedPage;
     bool m_suppressOpenerInNewFrame;
 

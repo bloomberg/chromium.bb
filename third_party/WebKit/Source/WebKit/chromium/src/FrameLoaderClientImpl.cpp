@@ -175,14 +175,6 @@ bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
     return true;
 }
 
-void FrameLoaderClientImpl::didPerformFirstNavigation() const
-{
-}
-
-void FrameLoaderClientImpl::registerForIconNotification(bool)
-{
-}
-
 void FrameLoaderClientImpl::didChangeScrollOffset()
 {
     if (m_webFrame->client())
@@ -276,27 +268,7 @@ void FrameLoaderClientImpl::makeDocumentView()
     m_webFrame->createFrameView();
 }
 
-void FrameLoaderClientImpl::forceLayout()
-{
-    // FIXME
-}
-
-void FrameLoaderClientImpl::forceLayoutForNonHTML()
-{
-    // FIXME
-}
-
-void FrameLoaderClientImpl::setCopiesOnScroll()
-{
-    // FIXME
-}
-
-void FrameLoaderClientImpl::detachedFromParent2()
-{
-    // Nothing to do here.
-}
-
-void FrameLoaderClientImpl::detachedFromParent3()
+void FrameLoaderClientImpl::detachedFromParent()
 {
     // If we were reading data into a plugin, drop our reference to it. If we
     // don't do this then it may end up out-living the rest of the page, which
@@ -414,14 +386,6 @@ void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
         m_webFrame->client()->didReceiveResponse(m_webFrame, identifier, webresp);
     }
 }
-
-void FrameLoaderClientImpl::dispatchDidReceiveContentLength(
-    DocumentLoader* loader,
-    unsigned long identifier,
-    int dataLength)
-{
-}
-
 void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long identifier,
                                                               ResourceLoadPriority priority)
 {
@@ -451,7 +415,7 @@ void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()
         m_webFrame->client()->didFinishDocumentLoad(m_webFrame);
 }
 
-bool FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(
+void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(
     DocumentLoader* loader,
     const ResourceRequest& request,
     const ResourceResponse& response,
@@ -463,7 +427,6 @@ bool FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(
         m_webFrame->client()->didLoadResourceFromMemoryCache(
             m_webFrame, webreq, webresp);
     }
-    return false;  // Do not suppress remaining notifications
 }
 
 void FrameLoaderClientImpl::dispatchDidHandleOnloadEvents()
@@ -711,31 +674,10 @@ void FrameLoaderClientImpl::dispatchDidChangeLocationWithinPage()
         m_webFrame->client()->didChangeLocationWithinPage(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidPushStateWithinPage()
-{
-    dispatchDidNavigateWithinPage();
-}
-
-void FrameLoaderClientImpl::dispatchDidReplaceStateWithinPage()
-{
-    dispatchDidNavigateWithinPage();
-}
-
-void FrameLoaderClientImpl::dispatchDidPopStateWithinPage()
-{
-    // Ignored since dispatchDidNavigateWithinPage was already called.
-}
-
 void FrameLoaderClientImpl::dispatchWillClose()
 {
     if (m_webFrame->client())
         m_webFrame->client()->willClose(m_webFrame);
-}
-
-void FrameLoaderClientImpl::dispatchDidReceiveIcon()
-{
-    // The icon database is disabled, so this should never be called.
-    ASSERT_NOT_REACHED();
 }
 
 void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad()
@@ -1026,11 +968,6 @@ void FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction(
     (m_webFrame->frame()->loader()->policyChecker()->*function)(policyAction);
 }
 
-void FrameLoaderClientImpl::cancelPolicyCheck()
-{
-    // FIXME
-}
-
 void FrameLoaderClientImpl::dispatchUnableToImplementPolicy(const ResourceError& error)
 {
     m_webFrame->client()->unableToImplementPolicyWithError(m_webFrame, error);
@@ -1095,11 +1032,6 @@ void FrameLoaderClientImpl::postProgressFinishedNotification()
         webview->client()->didStopLoading();
 }
 
-void FrameLoaderClientImpl::setMainFrameDocumentReady(bool ready)
-{
-    // FIXME
-}
-
 // Creates a new connection and begins downloading from that (contrast this
 // with |download|).
 void FrameLoaderClientImpl::startDownload(const ResourceRequest& request, const String& suggestedName)
@@ -1109,16 +1041,6 @@ void FrameLoaderClientImpl::startDownload(const ResourceRequest& request, const 
         m_webFrame->client()->loadURLExternally(
             m_webFrame, webreq, WebNavigationPolicyDownload, suggestedName);
     }
-}
-
-void FrameLoaderClientImpl::willChangeTitle(DocumentLoader*)
-{
-    // FIXME
-}
-
-void FrameLoaderClientImpl::didChangeTitle(DocumentLoader*)
-{
-    // FIXME
 }
 
 // Called whenever data is received.
@@ -1161,14 +1083,6 @@ void FrameLoaderClientImpl::finishedLoading(DocumentLoader*)
         m_pluginWidget = 0;
         m_sentInitialResponseToPlugin = false;
     }
-}
-
-void FrameLoaderClientImpl::updateGlobalHistory()
-{
-}
-
-void FrameLoaderClientImpl::updateGlobalHistoryRedirectLinks()
-{
 }
 
 bool FrameLoaderClientImpl::shouldGoToHistoryItem(HistoryItem* item) const
@@ -1294,12 +1208,6 @@ bool FrameLoaderClientImpl::canHandleRequest(const ResourceRequest& request) con
         m_webFrame, WrappedResourceRequest(request));
 }
 
-bool FrameLoaderClientImpl::canShowMIMETypeAsHTML(const String& MIMEType) const
-{
-    notImplemented();
-    return false;
-}
-
 bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const
 {
     // This method is called to determine if the media type can be shown
@@ -1321,12 +1229,6 @@ bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const
     return !mimeType.isEmpty() && pluginData && pluginData->supportsMimeType(mimeType);
 }
 
-bool FrameLoaderClientImpl::representationExistsForURLScheme(const String&) const
-{
-    // FIXME
-    return false;
-}
-
 String FrameLoaderClientImpl::generatedMIMETypeForURLScheme(const String& scheme) const
 {
     // This appears to generate MIME types for protocol handlers that are handled
@@ -1337,35 +1239,6 @@ String FrameLoaderClientImpl::generatedMIMETypeForURLScheme(const String& scheme
     String mimeType("x-apple-web-kit/");
     mimeType.append(scheme.lower());
     return mimeType;
-}
-
-void FrameLoaderClientImpl::frameLoadCompleted()
-{
-    // FIXME: the mac port also conditionally calls setDrawsBackground:YES on
-    // it's ScrollView here.
-
-    // This comment from the Mac port:
-    // Note: Can be called multiple times.
-    // Even if already complete, we might have set a previous item on a frame that
-    // didn't do any data loading on the past transaction. Make sure to clear these out.
-
-    // FIXME: setPreviousHistoryItem() no longer exists. http://crbug.com/8566
-    // m_webFrame->frame()->loader()->setPreviousHistoryItem(0);
-}
-
-void FrameLoaderClientImpl::saveViewStateToItem(HistoryItem*)
-{
-    // FIXME
-}
-
-void FrameLoaderClientImpl::restoreViewState()
-{
-    // FIXME: probably scrolls to last position when you go back or forward
-}
-
-void FrameLoaderClientImpl::provisionalLoadStarted()
-{
-    // FIXME: On mac, this does various caching stuff
 }
 
 void FrameLoaderClientImpl::didFinishLoad()

@@ -123,13 +123,11 @@ void PolicyChecker::checkContentPolicy(const ResourceResponse& response, Content
 
 void PolicyChecker::cancelCheck()
 {
-    m_frame->loader()->client()->cancelPolicyCheck();
     m_callback.clear();
 }
 
 void PolicyChecker::stopCheck()
 {
-    m_frame->loader()->client()->cancelPolicyCheck();
     PolicyCallback callback = m_callback;
     m_callback.clear();
     callback.cancel();

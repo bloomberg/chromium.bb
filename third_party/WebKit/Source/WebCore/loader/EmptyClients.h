@@ -182,9 +182,6 @@ public:
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) { }
     virtual void scheduleCompositingLayerFlush() { }
 
-#if PLATFORM(WIN)
-    virtual void setLastSetCursorToCurrentCursor() { }
-#endif
 #if ENABLE(TOUCH_EVENTS)
     virtual void needTouchEvents(bool) { }
 #endif
@@ -209,13 +206,7 @@ public:
     virtual bool hasWebView() const { return true; } // mainly for assertions
 
     virtual void makeRepresentation(DocumentLoader*) { }
-    virtual void forceLayout() { }
-    virtual void forceLayoutForNonHTML() { }
-
-    virtual void setCopiesOnScroll() { }
-
-    virtual void detachedFromParent2() { }
-    virtual void detachedFromParent3() { }
+    virtual void detachedFromParent() { }
 
     virtual void convertMainResourceLoadToDownload(DocumentLoader*, const ResourceRequest&, const ResourceResponse&) OVERRIDE { }
 
@@ -223,21 +214,16 @@ public:
     virtual bool shouldUseCredentialStorage(DocumentLoader*, unsigned long) { return false; }
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) { }
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) { }
-    virtual void dispatchDidReceiveContentLength(DocumentLoader*, unsigned long, int) { }
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long) { }
     virtual void dispatchDidFailLoading(DocumentLoader*, unsigned long, const ResourceError&) { }
-    virtual bool dispatchDidLoadResourceFromMemoryCache(DocumentLoader*, const ResourceRequest&, const ResourceResponse&, int) { return false; }
+    virtual void dispatchDidLoadResourceFromMemoryCache(DocumentLoader*, const ResourceRequest&, const ResourceResponse&, int) { }
 
     virtual void dispatchDidHandleOnloadEvents() { }
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() { }
     virtual void dispatchDidCancelClientRedirect() { }
     virtual void dispatchWillPerformClientRedirect(const KURL&, double, double) { }
     virtual void dispatchDidChangeLocationWithinPage() { }
-    virtual void dispatchDidPushStateWithinPage() { }
-    virtual void dispatchDidReplaceStateWithinPage() { }
-    virtual void dispatchDidPopStateWithinPage() { }
     virtual void dispatchWillClose() { }
-    virtual void dispatchDidReceiveIcon() { }
     virtual void dispatchDidStartProvisionalLoad() { }
     virtual void dispatchDidReceiveTitle(const StringWithDirection&) { }
     virtual void dispatchDidChangeIcons(IconType) { }
@@ -254,7 +240,6 @@ public:
     virtual void dispatchDecidePolicyForResponse(FramePolicyFunction, const ResourceResponse&, const ResourceRequest&) { }
     virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>, const String&) OVERRIDE;
     virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) OVERRIDE;
-    virtual void cancelPolicyCheck() { }
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }
 
@@ -270,12 +255,7 @@ public:
     virtual void postProgressEstimateChangedNotification() { }
     virtual void postProgressFinishedNotification() { }
 
-    virtual void setMainFrameDocumentReady(bool) { }
-
     virtual void startDownload(const ResourceRequest&, const String& suggestedName = String()) { UNUSED_PARAM(suggestedName); }
-
-    virtual void willChangeTitle(DocumentLoader*) { }
-    virtual void didChangeTitle(DocumentLoader*) { }
 
     virtual void committedLoad(DocumentLoader*, const char*, int) { }
     virtual void finishedLoading(DocumentLoader*) { }
@@ -292,13 +272,8 @@ public:
 
     virtual bool canHandleRequest(const ResourceRequest&) const { return false; }
     virtual bool canShowMIMEType(const String&) const { return false; }
-    virtual bool canShowMIMETypeAsHTML(const String&) const { return false; }
-    virtual bool representationExistsForURLScheme(const String&) const { return false; }
     virtual String generatedMIMETypeForURLScheme(const String&) const { return ""; }
 
-    virtual void frameLoadCompleted() { }
-    virtual void restoreViewState() { }
-    virtual void provisionalLoadStarted() { }
     virtual bool shouldTreatURLAsSameAsCurrent(const KURL&) const { return false; }
     virtual void didFinishLoad() { }
     virtual void prepareForDataSourceReplacement() { }
@@ -317,12 +292,8 @@ public:
 
     virtual void dispatchDidBecomeFrameset(bool) { }
 
-    virtual void updateGlobalHistory() { }
-    virtual void updateGlobalHistoryRedirectLinks() { }
     virtual bool shouldGoToHistoryItem(HistoryItem*) const { return false; }
     virtual bool shouldStopLoadingForHistoryItem(HistoryItem*) const { return false; }
-    virtual void updateGlobalHistoryItemForPage() { }
-    virtual void saveViewStateToItem(HistoryItem*) { }
     virtual bool canCachePage() const { return false; }
     virtual void didDisplayInsecureContent() { }
     virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) { }
@@ -338,22 +309,10 @@ public:
     virtual void redirectDataToPlugin(Widget*) { }
     virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) { }
     virtual void documentElementAvailable() { }
-    virtual void didPerformFirstNavigation() const { }
-
-    virtual void registerForIconNotification(bool) { }
 
     virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) { }
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) { return false; }
-
-#if PLATFORM(MAC)
-    virtual RemoteAXObjectRef accessibilityRemoteObject() { return 0; }
-    virtual NSCachedURLResponse* willCacheResponse(DocumentLoader*, unsigned long, NSCachedURLResponse* response) const { return response; }
-#endif
-#if PLATFORM(WIN) && USE(CFNETWORK)
-    // FIXME: Windows should use willCacheResponse - <https://bugs.webkit.org/show_bug.cgi?id=57257>.
-    virtual bool shouldCacheResponse(DocumentLoader*, unsigned long, const ResourceResponse&, const unsigned char*, unsigned long long) { return true; }
-#endif
 
     virtual PassRefPtr<FrameNetworkingContext> createNetworkingContext() OVERRIDE;
 
@@ -439,16 +398,6 @@ public:
     virtual void textWillBeDeletedInTextField(Element*) { }
     virtual void textDidChangeInTextArea(Element*) { }
 
-#if PLATFORM(MAC)
-    virtual void markedTextAbandoned(Frame*) { }
-
-    virtual NSString* userVisibleString(NSURL*) { return 0; }
-    virtual DocumentFragment* documentFragmentFromAttributedString(NSAttributedString*, Vector<RefPtr<ArchiveResource> >&) { return 0; };
-    virtual void setInsertionPasteboard(const String&) { };
-    virtual NSURL* canonicalizeURL(NSURL*) { return 0; }
-    virtual NSURL* canonicalizeURLString(NSString*) { return 0; }
-#endif
-
 #if USE(APPKIT)
     virtual void uppercaseWord() { }
     virtual void lowercaseWord() { }
@@ -471,9 +420,6 @@ public:
     virtual void toggleAutomaticSpellingCorrection() { }
 #endif
 
-#if PLATFORM(GTK)
-    virtual bool shouldShowUnicodeMenu() { return false; }
-#endif
     TextCheckerClient* textChecker() { return &m_textCheckerClient; }
 
     virtual void updateSpellingUIWithGrammarString(const String&, const GrammarDetail&) { }
@@ -510,10 +456,6 @@ public:
     virtual bool isSpeaking() { return false; }
     virtual void speak(const String&) { }
     virtual void stopSpeaking() { }
-
-#if PLATFORM(MAC)
-    virtual void searchWithSpotlight() { }
-#endif
 
 #if USE(ACCESSIBILITY_CONTEXT_MENUS)
     virtual void showContextMenu() { }

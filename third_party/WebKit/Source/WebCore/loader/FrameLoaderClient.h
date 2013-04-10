@@ -37,21 +37,7 @@
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-#ifdef __OBJC__ 
-#import <Foundation/Foundation.h>
-typedef id RemoteAXObjectRef;
-#else
-typedef void* RemoteAXObjectRef;
-#endif
-#endif
-
 typedef class _jobject* jobject;
-
-#if PLATFORM(MAC) && !defined(__OBJC__)
-class NSCachedURLResponse;
-class NSView;
-#endif
 
 namespace v8 {
 class Context;
@@ -116,23 +102,17 @@ namespace WebCore {
         virtual bool hasWebView() const = 0; // mainly for assertions
 
         virtual void makeRepresentation(DocumentLoader*) = 0;
-        virtual void forceLayout() = 0;
-        virtual void forceLayoutForNonHTML() = 0;
 
-        virtual void setCopiesOnScroll() = 0;
-
-        virtual void detachedFromParent2() = 0;
-        virtual void detachedFromParent3() = 0;
+        virtual void detachedFromParent() = 0;
 
         virtual void assignIdentifierToInitialRequest(unsigned long identifier, DocumentLoader*, const ResourceRequest&) = 0;
 
         virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) = 0;
         virtual bool shouldUseCredentialStorage(DocumentLoader*, unsigned long identifier) = 0;
         virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) = 0;
-        virtual void dispatchDidReceiveContentLength(DocumentLoader*, unsigned long identifier, int dataLength) = 0;
         virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier) = 0;
         virtual void dispatchDidFailLoading(DocumentLoader*, unsigned long identifier, const ResourceError&) = 0;
-        virtual bool dispatchDidLoadResourceFromMemoryCache(DocumentLoader*, const ResourceRequest&, const ResourceResponse&, int length) = 0;
+        virtual void dispatchDidLoadResourceFromMemoryCache(DocumentLoader*, const ResourceRequest&, const ResourceResponse&, int length) = 0;
 
         virtual void dispatchDidHandleOnloadEvents() = 0;
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
@@ -140,11 +120,7 @@ namespace WebCore {
         virtual void dispatchWillPerformClientRedirect(const KURL&, double interval, double fireDate) = 0;
         virtual void dispatchDidNavigateWithinPage() { }
         virtual void dispatchDidChangeLocationWithinPage() = 0;
-        virtual void dispatchDidPushStateWithinPage() = 0;
-        virtual void dispatchDidReplaceStateWithinPage() = 0;
-        virtual void dispatchDidPopStateWithinPage() = 0;
         virtual void dispatchWillClose() = 0;
-        virtual void dispatchDidReceiveIcon() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const StringWithDirection&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
@@ -163,7 +139,6 @@ namespace WebCore {
         virtual void dispatchDecidePolicyForResponse(FramePolicyFunction, const ResourceResponse&, const ResourceRequest&) = 0;
         virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>, const String& frameName) = 0;
         virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) = 0;
-        virtual void cancelPolicyCheck() = 0;
 
         virtual void dispatchUnableToImplementPolicy(const ResourceError&) = 0;
 
@@ -181,30 +156,19 @@ namespace WebCore {
         virtual void postProgressStartedNotification() = 0;
         virtual void postProgressEstimateChangedNotification() = 0;
         virtual void postProgressFinishedNotification() = 0;
-        
-        virtual void setMainFrameDocumentReady(bool) = 0;
 
         virtual void startDownload(const ResourceRequest&, const String& suggestedName = String()) = 0;
 
-        virtual void willChangeTitle(DocumentLoader*) = 0;
-        virtual void didChangeTitle(DocumentLoader*) = 0;
-
         virtual void committedLoad(DocumentLoader*, const char*, int) = 0;
         virtual void finishedLoading(DocumentLoader*) = 0;
-        
-        virtual void updateGlobalHistory() = 0;
-        virtual void updateGlobalHistoryRedirectLinks() = 0;
 
         virtual bool shouldGoToHistoryItem(HistoryItem*) const = 0;
         virtual bool shouldStopLoadingForHistoryItem(HistoryItem*) const = 0;
-        virtual void updateGlobalHistoryItemForPage() { }
 
-#if PLATFORM(CHROMIUM)
         // Another page has accessed the initial empty document of this frame.
         // It is no longer safe to display a provisional URL, since a URL spoof
         // is now possible.
         virtual void didAccessInitialDocument() { }
-#endif
 
         // This frame has set its opener to null, disowning it for the lifetime of the frame.
         // See http://html.spec.whatwg.org/#dom-opener.
@@ -233,14 +197,8 @@ namespace WebCore {
 
         virtual bool canHandleRequest(const ResourceRequest&) const = 0;
         virtual bool canShowMIMEType(const String& MIMEType) const = 0;
-        virtual bool canShowMIMETypeAsHTML(const String& MIMEType) const = 0;
-        virtual bool representationExistsForURLScheme(const String& URLScheme) const = 0;
         virtual String generatedMIMETypeForURLScheme(const String& URLScheme) const = 0;
 
-        virtual void frameLoadCompleted() = 0;
-        virtual void saveViewStateToItem(HistoryItem*) = 0;
-        virtual void restoreViewState() = 0;
-        virtual void provisionalLoadStarted() = 0;
         virtual void didFinishLoad() = 0;
         virtual void prepareForDataSourceReplacement() = 0;
 
@@ -275,20 +233,12 @@ namespace WebCore {
 
         virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) = 0;
         virtual void documentElementAvailable() = 0;
-        virtual void didPerformFirstNavigation() const = 0; // "Navigation" here means a transition from one page to another that ends up in the back/forward list.
 
         virtual void didExhaustMemoryAvailableForScript() { };
 
         virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) = 0;
         virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) = 0;
         virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) = 0;
-
-        virtual void registerForIconNotification(bool listen = true) = 0;
-        
-#if PLATFORM(WIN) && USE(CFNETWORK)
-        // FIXME: Windows should use willCacheResponse - <https://bugs.webkit.org/show_bug.cgi?id=57257>.
-        virtual bool shouldCacheResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const unsigned char* data, unsigned long long length) = 0;
-#endif
 
         virtual bool shouldUsePluginDocument(const String& /*mimeType*/) const { return false; }
         virtual bool shouldLoadMediaElementURL(const KURL&) const { return true; }
