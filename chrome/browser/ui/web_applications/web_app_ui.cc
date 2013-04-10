@@ -29,6 +29,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
@@ -332,7 +333,11 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
     SkBitmap bmp = skia::ImageOperations::Resize(
           *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
           size, size);
-    shortcut_info.favicon = gfx::Image::CreateFrom1xBitmap(bmp);
+    gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bmp);
+    // We are on the UI thread, and this image is needed from the FILE thread,
+    // for creating shortcut icon files.
+    image_skia.MakeThreadSafe();
+    shortcut_info.favicon = gfx::Image(image_skia);
   } else {
     shortcut_info.favicon = image;
   }
