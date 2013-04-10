@@ -1,8 +1,16 @@
 diff --git a/third_party/android_testrunner/run_command.py b/third_party/android_testrunner/run_command.py
-index d398daa..812037d 100644
+index d398daa..6b84156 100644
 --- a/third_party/android_testrunner/run_command.py
 +++ b/third_party/android_testrunner/run_command.py
-@@ -80,29 +80,28 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
+@@ -19,6 +19,7 @@
+ import os
+ import signal
+ import subprocess
++import tempfile
+ import threading
+ import time
+ 
+@@ -80,31 +81,36 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
    """
    start_time = time.time()
    so = []
@@ -11,7 +19,7 @@ index d398daa..812037d 100644
    error_occurred = False
  
 +  if return_output:
-+    output_dest = subprocess.PIPE
++    output_dest = tempfile.TemporaryFile(bufsize=0)
 +  else:
 +    # None means direct to stdout
 +    output_dest = None
@@ -25,7 +33,8 @@ index d398daa..812037d 100644
 +      stdin=stdin_dest,
 +      stdout=output_dest,
 +      stderr=subprocess.STDOUT,
-+      shell=True)
++      shell=True, close_fds=True,
++      preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 +
    def Run():
      global error_occurred
@@ -47,9 +56,17 @@ index d398daa..812037d 100644
 -        shell=True)
 -    pid.append(pipe.pid)
      try:
-       output = pipe.communicate(input=stdin_input)[0]
+-      output = pipe.communicate(input=stdin_input)[0]
++      pipe.communicate(input=stdin_input)
++      output = None
++      if return_output:
++        output_dest.seek(0)
++        output = output_dest.read()
++        output_dest.close()
        if output is not None and len(output) > 0:
-@@ -119,27 +118,17 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
+         so.append(output)
+     except OSError, e:
+@@ -119,27 +125,17 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
  
    t = threading.Thread(target=Run)
    t.start()

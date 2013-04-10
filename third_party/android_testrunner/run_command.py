@@ -19,6 +19,7 @@
 import os
 import signal
 import subprocess
+import tempfile
 import threading
 import time
 
@@ -84,7 +85,7 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
   error_occurred = False
 
   if return_output:
-    output_dest = subprocess.PIPE
+    output_dest = tempfile.TemporaryFile(bufsize=0)
   else:
     # None means direct to stdout
     output_dest = None
@@ -98,12 +99,18 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
       stdin=stdin_dest,
       stdout=output_dest,
       stderr=subprocess.STDOUT,
-      shell=True)
+      shell=True, close_fds=True,
+      preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 
   def Run():
     global error_occurred
     try:
-      output = pipe.communicate(input=stdin_input)[0]
+      pipe.communicate(input=stdin_input)
+      output = None
+      if return_output:
+        output_dest.seek(0)
+        output = output_dest.read()
+        output_dest.close()
       if output is not None and len(output) > 0:
         so.append(output)
     except OSError, e:
