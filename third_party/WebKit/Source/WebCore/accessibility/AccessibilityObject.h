@@ -773,17 +773,8 @@ public:
     virtual String mathFencedCloseString() const { return String(); }
     virtual int mathLineThickness() const { return 0; }
     
-    void overrideAttachmentParent(AccessibilityObject*) { }
-    
-#if HAVE(ACCESSIBILITY)
-    // a platform-specific method for determining if an attachment is ignored
-    bool accessibilityIgnoreAttachment() const;
     // gives platforms the opportunity to indicate if and how an object should be included
     AccessibilityObjectInclusion accessibilityPlatformIncludesObject() const;
-#else
-    bool accessibilityIgnoreAttachment() const { return true; }
-    AccessibilityObjectInclusion accessibilityPlatformIncludesObject() const { return DefaultBehavior; }
-#endif
 
     // allows for an AccessibilityObject to update its render tree or perform
     // other operations update type operations

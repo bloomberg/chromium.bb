@@ -72,22 +72,12 @@ void AccessibilityObject::detach()
     // no children are left with dangling pointers to their parent.
     clearChildren();
 
-#if HAVE(ACCESSIBILITY) && PLATFORM(CHROMIUM)
     m_detached = true;
-#elif HAVE(ACCESSIBILITY)
-    setWrapper(0);
-#endif
 }
 
 bool AccessibilityObject::isDetached() const
 {
-#if HAVE(ACCESSIBILITY) && PLATFORM(CHROMIUM)
     return m_detached;
-#elif HAVE(ACCESSIBILITY)
-    return !wrapper();
-#else
-    return true;
-#endif
 }
 
 bool AccessibilityObject::isAccessibilityObjectSearchMatchAtIndex(AccessibilityObject* axObject, AccessibilitySearchCriteria* criteria, size_t index)
@@ -1823,8 +1813,7 @@ bool AccessibilityObject::ariaPressedIsPresent() const
 
 TextIteratorBehavior AccessibilityObject::textIteratorBehaviorForTextRange() const
 {
-    TextIteratorBehavior behavior = TextIteratorIgnoresStyleVisibility;
-    return behavior;
+    return TextIteratorIgnoresStyleVisibility;
 }
     
 AccessibilityRole AccessibilityObject::buttonRoleType() const
@@ -1898,6 +1887,14 @@ bool AccessibilityObject::accessibilityIsIgnored() const
         attributeCache->setIgnored(axObjectID(), result ? IgnoreObject : IncludeObject);
 
     return result;
+}
+
+AccessibilityObjectInclusion AccessibilityObject::accessibilityPlatformIncludesObject() const
+{
+    if (isMenuListPopup() || isMenuListOption())
+        return IncludeObject;
+
+    return DefaultBehavior;
 }
 
 } // namespace WebCore

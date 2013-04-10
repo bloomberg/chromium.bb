@@ -302,8 +302,6 @@ bool AccessibilityTable::isTableExposableThroughAccessibility() const
     if (hasARIARole())
         return false;
 
-    // Gtk+ ATs expect all tables to be exposed as tables.
-
     return isDataTable();
 }
 
