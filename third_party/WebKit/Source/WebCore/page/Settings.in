@@ -162,8 +162,6 @@ touchDragDropEnabled initial=false
 
 unifiedTextCheckerEnabled initial=defaultUnifiedTextCheckerEnabled
 
-backForwardCacheExpirationInterval type=double, initial=1800
-
 # Some apps could have a default video poster if it is not set.
 defaultVideoPosterURL type=String
 

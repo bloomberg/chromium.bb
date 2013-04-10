@@ -43,6 +43,8 @@ using namespace JSC;
 
 namespace WebCore {
 
+static const double backForwardCacheExpirationInterval=1800;
+
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, cachedPageCounter, ("CachedPage"));
 
 PassRefPtr<CachedPage> CachedPage::create(Page* page)
@@ -52,7 +54,7 @@ PassRefPtr<CachedPage> CachedPage::create(Page* page)
 
 CachedPage::CachedPage(Page* page)
     : m_timeStamp(currentTime())
-    , m_expirationTime(m_timeStamp + page->settings()->backForwardCacheExpirationInterval())
+    , m_expirationTime(m_timeStamp + backForwardCacheExpirationInterval)
     , m_cachedMainFrame(CachedFrame::create(page->mainFrame()))
     , m_needStyleRecalcForVisitedLinks(false)
     , m_needsFullStyleRecalc(false)
