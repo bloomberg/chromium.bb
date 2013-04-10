@@ -24,7 +24,7 @@ class HeapcheckWrapper(object):
 
   def __init__(self, supp_files):
     self._mode = 'strict'
-    self._timeout = 1800
+    self._timeout = 3600
     self._nocleanup_on_exit = False
     self._suppressions = []
     for fname in supp_files:
