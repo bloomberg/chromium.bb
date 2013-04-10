@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
+#include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
@@ -31,14 +33,22 @@ Status SendKeysToElement(
     const std::string& element_id,
     const ListValue* key_list) {
   bool is_displayed = false;
-  Status status = IsElementDisplayed(
-      session, web_view, element_id, true, &is_displayed);
-  if (status.IsError())
-    return status;
-  if (!is_displayed)
-    return Status(kElementNotVisible);
+  base::Time start_time = base::Time::Now();
+  while (true) {
+    Status status = IsElementDisplayed(
+        session, web_view, element_id, true, &is_displayed);
+    if (status.IsError())
+      return status;
+    if (is_displayed)
+      break;
+    if ((base::Time::Now() - start_time).InMilliseconds() >=
+        session->implicit_wait) {
+      return Status(kElementNotVisible);
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  }
   bool is_enabled = false;
-  status = IsElementEnabled(session, web_view, element_id, &is_enabled);
+  Status status = IsElementEnabled(session, web_view, element_id, &is_enabled);
   if (status.IsError())
     return status;
   if (!is_enabled)

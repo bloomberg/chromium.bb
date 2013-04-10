@@ -55,7 +55,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'GetLogsTest.logBufferShouldBeResetAfterEachGetLogCall',
     'GetLogsTest.turningOffLogShouldMeanNoLogMessages',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
-    'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
     # Broken because AddWebStorage.java is broken.
     'LocalStorageTest.*',
     'LocationContextTest.*',
