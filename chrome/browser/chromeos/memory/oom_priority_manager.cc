@@ -57,18 +57,9 @@ namespace {
 // Name of the experiment to run.
 const char kExperiment[] = "LowMemoryMargin";
 
-#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)        \
-    {                                                                    \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);      \
-      if (base::FieldTrialList::TrialExists(kExperiment))                \
-        UMA_HISTOGRAM_CUSTOM_COUNTS(                                     \
-            base::FieldTrial::MakeName(name, kExperiment),               \
-            sample, min, max, buckets);                                  \
-    }
-
 // Record a size in megabytes, over a potential interval up to 32 GB.
-#define EXPERIMENT_HISTOGRAM_MEGABYTES(name, sample)                     \
-    EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
+#define HISTOGRAM_MEGABYTES(name, sample)                     \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
 
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
@@ -311,7 +302,7 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
       int64 web_contents_id = IdFromWebContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
         LOG(WARNING) << "Discarding tab " << idx
-            << " id " << target_web_contents_id;
+                     << " id " << target_web_contents_id;
         // Record statistics before discarding because we want to capture the
         // memory state that lead to the discard.
         RecordDiscardStatistics();
@@ -327,11 +318,12 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
 void OomPriorityManager::RecordDiscardStatistics() {
   // Record a raw count so we can compare to discard reloads.
   discard_count_++;
-  EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.DiscardCount",
-                           discard_count_, 1, 1000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.Discard.DiscardCount", discard_count_, 1, 1000, 50);
 
   // TODO(jamescook): Maybe incorporate extension count?
-  EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.Discard.TabCount", GetTabCount(), 1, 100, 50);
 
   // TODO(jamescook): If the time stats prove too noisy, then divide up users
   // based on how heavily they use Chrome using tab count as a proxy.
@@ -341,7 +333,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
     TimeDelta interval = TimeTicks::Now() - start_time_;
     int interval_seconds = static_cast<int>(interval.InSeconds());
     // Record time in seconds over an interval of approximately 1 day.
-    EXPERIMENT_CUSTOM_COUNTS(
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Tabs.Discard.InitialTime2", interval_seconds, 1, 100000, 50);
   } else {
     // Not the first discard, so compute time since last discard.
@@ -349,7 +341,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
     int interval_ms = static_cast<int>(interval.InMilliseconds());
     // Record time in milliseconds over an interval of approximately 1 day.
     // Start at 100 ms to get extra resolution in the target 750 ms range.
-    EXPERIMENT_CUSTOM_COUNTS(
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Tabs.Discard.IntervalTime2", interval_ms, 100, 100000 * 1000, 50);
   }
   // Record Chrome's concept of system memory usage at the time of the discard.
@@ -359,8 +351,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
     // not have sufficient resolution in the 2-4 GB range and does not properly
     // account for graphics memory on ARM. Replace with MemAllocatedMB below.
     int mem_anonymous_mb = (memory.active_anon + memory.inactive_anon) / 1024;
-    EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB",
-                                   mem_anonymous_mb);
+    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB", mem_anonymous_mb);
 
     // Record graphics GEM object size in a histogram with 50 MB buckets.
     int mem_graphics_gem_mb = 0;
@@ -379,13 +370,12 @@ void OomPriorityManager::RecordDiscardStatistics() {
 #if defined(ARCH_CPU_ARM_FAMILY)
     mem_allocated_mb += mem_graphics_gem_mb;
 #endif
-    EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.MemAllocatedMB", mem_allocated_mb,
-                             256, 32768, 50)
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Tabs.Discard.MemAllocatedMB", mem_allocated_mb, 256, 32768, 50);
 
     int mem_available_mb =
         (memory.active_file + memory.inactive_file + memory.free) / 1024;
-    EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB",
-                                   mem_available_mb);
+    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB", mem_available_mb);
   }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();

@@ -70,8 +70,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void SetupPlatformFieldTrials() OVERRIDE;
 
  private:
-  // Set up field trial for low memory headroom settings.
-  void SetupLowMemoryHeadroomFieldTrial();
   void SetupZramFieldTrial();
 
   scoped_ptr<contacts::ContactManager> contact_manager_;
