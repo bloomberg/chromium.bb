@@ -15,13 +15,15 @@
 extern "C" {
 #endif
 
-// These error codes are reported via UMA so, if you edit them:
-// 1) make sure you understand UMA, first.
-// 2) update src/tools/histograms/histograms.xml in
-//  svn://svn.chromium.org/chrome-internal/trunk/src-internal
-// 3) never reuse old numbers for a different meaning; add new ones on the end
-// Values are explicitly specified to make sure they don't shift around when
-// edited, and also to make reading about:histograms easier.
+/*
+ * These error codes are reported via UMA so, if you edit them:
+ * 1) make sure you understand UMA, first.
+ * 2) update src/tools/histograms/histograms.xml in
+ *  svn://svn.chromium.org/chrome-internal/trunk/src-internal
+ * 3) never reuse old numbers for a different meaning; add new ones on the end
+ * Values are explicitly specified to make sure they don't shift around when
+ * edited, and also to make reading about:histograms easier.
+ */
 typedef enum NaClErrorCode {
   LOAD_OK = 0,
   LOAD_STATUS_UNKNOWN = 1,  /* load status not available yet */
@@ -91,10 +93,9 @@ typedef enum NaClErrorCode {
   LOAD_EHDR_OVERFLOW = 61,
   LOAD_PHDR_OVERFLOW = 62,
   /* CPU blacklist or whitelist error */
-  LOAD_UNSUPPORTED_CPU = 63
+  LOAD_UNSUPPORTED_CPU = 63,
+  NACL_ERROR_CODE_MAX
 } NaClErrorCode;
-
-#define NACL_ERROR_CODE_MAX (LOAD_PHDR_OVERFLOW + 1)
 
 char const  *NaClErrorString(NaClErrorCode  errcode);
 
