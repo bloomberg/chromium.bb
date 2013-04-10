@@ -3181,7 +3181,6 @@
             'platform/Length.cpp',
             'platform/LengthBox.cpp',
             'platform/Logging.cpp',
-            'platform/MemoryPressureHandler.cpp',
             'platform/NotImplemented.cpp',
             'platform/Pasteboard.h',
             'platform/PlatformEvent.cpp',
