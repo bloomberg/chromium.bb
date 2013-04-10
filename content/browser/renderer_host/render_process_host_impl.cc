@@ -232,6 +232,9 @@ class RendererURLRequestContextSelector
 base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
     g_all_hosts = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<scoped_refptr<BrowserPluginGeolocationPermissionContext> >
+    g_browser_plugin_geolocation_context = LAZY_INSTANCE_INITIALIZER;
+
 // Map of site to process, to ensure we only have one RenderProcessHost per
 // site in process-per-site mode.  Each map is specific to a BrowserContext.
 class SiteProcessMap : public base::SupportsUserData::Data {
@@ -594,8 +597,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetID(),
           storage_partition_impl_->GetIndexedDBContext()));
   if (IsGuest()) {
+    if (!g_browser_plugin_geolocation_context.Get()) {
+      g_browser_plugin_geolocation_context.Get() =
+          new BrowserPluginGeolocationPermissionContext();
+    }
     channel_->AddFilter(GeolocationDispatcherHost::New(
-        GetID(), new BrowserPluginGeolocationPermissionContext()));
+        GetID(), g_browser_plugin_geolocation_context.Get()));
   } else {
     channel_->AddFilter(GeolocationDispatcherHost::New(
         GetID(), browser_context->GetGeolocationPermissionContext()));
