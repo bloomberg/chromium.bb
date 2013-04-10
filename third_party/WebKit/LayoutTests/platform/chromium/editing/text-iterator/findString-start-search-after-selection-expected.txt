@@ -8,4 +8,7 @@ Selecting some text. This should make it not possible to find the _before_select
 PASS testRunner.findString("_before_selection_", []) is false
 PASS testRunner.findString("_in_selection_", []) is true
 PASS testRunner.findString("_after_selection_", []) is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

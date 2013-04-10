@@ -5,4 +5,7 @@ PASS testRunner.findString("first_", []) is true
 PASS testRunner.findString("first_step", []) is true
 PASS testRunner.findString("last_step", []) is true
 PASS testRunner.findString("last_step", []) is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
