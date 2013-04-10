@@ -75,7 +75,6 @@ private:
     virtual bool itemIsSeparator(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE;
-    virtual bool shouldPopOver() const OVERRIDE { return false; }
     virtual bool valueShouldChangeOnHotTrack() const OVERRIDE { return false; }
     virtual void setTextFromItem(unsigned listIndex) OVERRIDE;
     virtual FontSelector* fontSelector() const OVERRIDE;

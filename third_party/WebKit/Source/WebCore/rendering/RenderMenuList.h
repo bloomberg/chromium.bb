@@ -100,7 +100,6 @@ private:
     virtual bool itemIsSeparator(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE;
-    virtual bool shouldPopOver() const OVERRIDE { return !POPUP_MENU_PULLS_DOWN; }
     virtual bool valueShouldChangeOnHotTrack() const OVERRIDE { return true; }
     virtual void setTextFromItem(unsigned listIndex) OVERRIDE;
     virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) OVERRIDE;
