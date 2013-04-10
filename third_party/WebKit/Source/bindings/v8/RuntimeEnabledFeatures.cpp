@@ -188,10 +188,6 @@ bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
 #endif
 
-#if ENABLE(INPUT_TYPE_TIME)
-bool RuntimeEnabledFeatures::isInputTypeTimeEnabled = true;
-#endif
-
 #if ENABLE(INPUT_TYPE_WEEK)
 bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
 #endif

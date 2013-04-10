@@ -34,6 +34,7 @@
     # FIXME: Sense whether upstream or downstream build, and
     # include the right features.gypi
     '../../WebKit/chromium/features.gypi',
+    '../../bindings/bindings.gypi',
     '../WebCore.gypi',
   ],
 
@@ -71,9 +72,9 @@
       '../Modules/websockets',
       '../accessibility',
       '../accessibility/chromium',
-      '../bindings',
-      '../bindings/v8',
-      '../bindings/v8/custom',
+      '<(bindings_dir)',
+      '<(bindings_dir)/v8',
+      '<(bindings_dir)/v8/custom',
       '../css',
       '../dom',
       '../dom/default',
@@ -456,7 +457,7 @@
       'target_name': 'debugger_script_source',
       'type': 'none',
       'variables': {
-        'input_file_path': '../bindings/v8/DebuggerScript.js',
+        'input_file_path': '<(bindings_dir)/v8/DebuggerScript.js',
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/DebuggerScriptSource.h',
         'character_array_name': 'DebuggerScriptSource_js',
       },
@@ -501,7 +502,7 @@
             'idl_files_list': '<|(idl_files_list.tmp <@(bindings_idl_files))',
           },
           'inputs': [
-            '../bindings/scripts/preprocess-idls.pl',
+            '<(bindings_dir)/scripts/preprocess-idls.pl',
             '<(idl_files_list)',
             '<!@(cat <(idl_files_list))',
           ],
@@ -512,9 +513,9 @@
           'action': [
             '<(perl_exe)',
             '-w',
-            '-I../bindings/scripts',
+            '-I<(bindings_dir)/scripts',
             '-I../scripts',
-            '../bindings/scripts/preprocess-idls.pl',
+            '<(bindings_dir)/scripts/preprocess-idls.pl',
             '--defines',
             '<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING',
             '--idlFilesList',
@@ -551,7 +552,7 @@
         {
           'action_name': 'generateV8ArrayBufferViewCustomScript',
           'inputs': [
-            '../bindings/v8/custom/V8ArrayBufferViewCustomScript.js',
+            '<(bindings_dir)/v8/custom/V8ArrayBufferViewCustomScript.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/V8ArrayBufferViewCustomScript.h',
@@ -1112,11 +1113,11 @@
           'extension': 'idl',
           'msvs_external_rule': 1,
           'inputs': [
-            '../bindings/scripts/generate-bindings.pl',
-            '../bindings/scripts/CodeGenerator.pm',
-            '../bindings/scripts/CodeGeneratorV8.pm',
-            '../bindings/scripts/IDLParser.pm',
-            '../bindings/scripts/IDLAttributes.txt',
+            '<(bindings_dir)/scripts/generate-bindings.pl',
+            '<(bindings_dir)/scripts/CodeGenerator.pm',
+            '<(bindings_dir)/scripts/CodeGeneratorV8.pm',
+            '<(bindings_dir)/scripts/IDLParser.pm',
+            '<(bindings_dir)/scripts/IDLAttributes.txt',
             '../scripts/preprocessor.pm',
             '<!@pymod_do_main(supplemental_idl_files <@(bindings_idl_files))',
           ],
@@ -1159,15 +1160,15 @@
           'action': [
             '<(perl_exe)',
             '-w',
-            '-I../bindings/scripts',
+            '-I<(bindings_dir)/scripts',
             '-I../scripts',
-            '../bindings/scripts/generate-bindings.pl',
+            '<(bindings_dir)/scripts/generate-bindings.pl',
             '--outputHeadersDir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
             '--outputDir',
             '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings',
             '--idlAttributesFile',
-            '../bindings/scripts/IDLAttributes.txt',
+            '<(bindings_dir)/scripts/IDLAttributes.txt',
             '--defines',
             '<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING',
             '--generator',
@@ -1189,6 +1190,7 @@
       'type': 'static_library',
       'hard_dependency': 1,
       'dependencies': [
+        'webcore_prerequisites',
         'webcore_bindings_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
@@ -1207,6 +1209,7 @@
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
@@ -1230,6 +1233,7 @@
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
         '<@(derived_sources_aggregate_files)',
+        '<@(bindings_files)',
 
         # Additional .cpp files for HashTools.h
         '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorData.cpp',
