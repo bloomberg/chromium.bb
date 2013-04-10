@@ -24,6 +24,7 @@ namespace gpu {
 
 namespace {
 const int64 kRescheduleTimeOutDelay = 1000;
+const int64 kUnscheduleFenceTimeOutDelay = 10000;
 }
 
 GpuScheduler::GpuScheduler(
@@ -233,8 +234,14 @@ bool GpuScheduler::PollUnscheduleFences() {
     return true;
 
   if (unschedule_fences_.front()->fence.get()) {
+    base::Time now = base::Time::Now();
+    base::TimeDelta timeout =
+        base::TimeDelta::FromMilliseconds(kUnscheduleFenceTimeOutDelay);
+
     while (!unschedule_fences_.empty()) {
-      if (unschedule_fences_.front()->fence->HasCompleted()) {
+      const UnscheduleFence& fence = *unschedule_fences_.front();
+      if (fence.fence->HasCompleted() ||
+          now - fence.issue_time > timeout) {
         unschedule_fences_.front()->task.Run();
         unschedule_fences_.pop();
         SetScheduled(true);
@@ -291,8 +298,11 @@ void GpuScheduler::RescheduleTimeOut() {
   rescheduled_count_ = new_count;
 }
 
-GpuScheduler::UnscheduleFence::UnscheduleFence(
-    gfx::GLFence* fence_, base::Closure task_): fence(fence_), task(task_) {
+GpuScheduler::UnscheduleFence::UnscheduleFence(gfx::GLFence* fence_,
+                                               base::Closure task_)
+  : fence(fence_),
+    issue_time(base::Time::Now()),
+    task(task_) {
 }
 
 GpuScheduler::UnscheduleFence::~UnscheduleFence() {

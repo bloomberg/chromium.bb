@@ -147,6 +147,7 @@ class GPU_EXPORT GpuScheduler
     ~UnscheduleFence();
 
     scoped_ptr<gfx::GLFence> fence;
+    base::Time issue_time;
     base::Closure task;
   };
   std::queue<linked_ptr<UnscheduleFence> > unschedule_fences_;
