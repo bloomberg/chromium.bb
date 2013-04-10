@@ -5,6 +5,7 @@
 {
   'variables': {
     'lastchange_path': '../build/util/LASTCHANGE',
+    'libpeer_target_type%': 'static_library',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
   },
   'conditions': [
@@ -585,6 +586,11 @@
           ['internal_pdf', {
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/libpdf.so',
+            ],
+          }],
+          ['libpeer_target_type=="shared_library"', {
+            'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/lib.target/libpeerconnection.so',
             ],
           }],
         ],
