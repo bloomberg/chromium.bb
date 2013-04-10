@@ -87,12 +87,12 @@ TEST(GeolocationOverrideManager, SendsCommandOnConnect) {
   RecorderDevToolsClient client;
   GeolocationOverrideManager manager(&client);
   ASSERT_EQ(0u, client.commands_.size());
-  ASSERT_EQ(kOk, manager.OnConnected().code());
+  ASSERT_EQ(kOk, manager.OnConnected(&client).code());
 
   Geoposition geoposition = {1, 2, 3};
   manager.OverrideGeolocation(geoposition);
   ASSERT_EQ(1u, client.commands_.size());
-  ASSERT_EQ(kOk, manager.OnConnected().code());
+  ASSERT_EQ(kOk, manager.OnConnected(&client).code());
   ASSERT_EQ(2u, client.commands_.size());
   ASSERT_NO_FATAL_FAILURE(
       AssertGeolocationCommand(client.commands_[1], geoposition));
@@ -102,19 +102,19 @@ TEST(GeolocationOverrideManager, SendsCommandOnNavigation) {
   RecorderDevToolsClient client;
   GeolocationOverrideManager manager(&client);
   base::DictionaryValue main_frame_params;
-  manager.OnEvent("Page.frameNavigated", main_frame_params);
+  manager.OnEvent(&client, "Page.frameNavigated", main_frame_params);
   ASSERT_EQ(0u, client.commands_.size());
 
   Geoposition geoposition = {1, 2, 3};
   manager.OverrideGeolocation(geoposition);
   ASSERT_EQ(1u, client.commands_.size());
-  manager.OnEvent("Page.frameNavigated", main_frame_params);
+  manager.OnEvent(&client, "Page.frameNavigated", main_frame_params);
   ASSERT_EQ(2u, client.commands_.size());
   ASSERT_NO_FATAL_FAILURE(
       AssertGeolocationCommand(client.commands_[1], geoposition));
 
   base::DictionaryValue sub_frame_params;
   sub_frame_params.SetString("frame.parentId", "id");
-  manager.OnEvent("Page.frameNavigated", sub_frame_params);
+  manager.OnEvent(&client, "Page.frameNavigated", sub_frame_params);
   ASSERT_EQ(2u, client.commands_.size());
 }

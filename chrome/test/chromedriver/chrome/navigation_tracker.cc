@@ -66,7 +66,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
   return Status(kOk);
 }
 
-Status NavigationTracker::OnConnected() {
+Status NavigationTracker::OnConnected(DevToolsClient* client) {
   loading_state_ = kUnknown;
   scheduled_frame_set_.clear();
 
@@ -75,7 +75,8 @@ Status NavigationTracker::OnConnected() {
   return client_->SendCommand("Page.enable", empty_params);
 }
 
-void NavigationTracker::OnEvent(const std::string& method,
+void NavigationTracker::OnEvent(DevToolsClient* client,
+                                const std::string& method,
                                 const base::DictionaryValue& params) {
   // Chrome does not send Page.frameStoppedLoading until all frames have
   // run their onLoad handlers (including frames created during the handlers).

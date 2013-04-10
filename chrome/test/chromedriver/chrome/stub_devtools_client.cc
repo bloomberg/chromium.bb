@@ -7,9 +7,15 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-StubDevToolsClient::StubDevToolsClient() {}
+StubDevToolsClient::StubDevToolsClient() : id_("stub-id") {}
+
+StubDevToolsClient::StubDevToolsClient(const std::string id) : id_(id) {}
 
 StubDevToolsClient::~StubDevToolsClient() {}
+
+const std::string& StubDevToolsClient::GetId() {
+  return id_;
+}
 
 Status StubDevToolsClient::ConnectIfNecessary() {
   return Status(kOk);

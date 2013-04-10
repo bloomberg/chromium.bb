@@ -62,9 +62,11 @@ InspectorCommandResponse::~InspectorCommandResponse() {}
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
+    const std::string& id,
     const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
       unnotified_event_(NULL),
@@ -74,10 +76,12 @@ DevToolsClientImpl::DevToolsClientImpl(
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
+    const std::string& id,
     const FrontendCloserFunc& frontend_closer_func,
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
       unnotified_event_(NULL),
@@ -95,6 +99,10 @@ DevToolsClientImpl::~DevToolsClientImpl() {
 void DevToolsClientImpl::SetParserFuncForTesting(
     const ParserFunc& parser_func) {
   parser_func_ = parser_func;
+}
+
+const std::string& DevToolsClientImpl::GetId() {
+  return id_;
 }
 
 Status DevToolsClientImpl::ConnectIfNecessary() {
@@ -251,7 +259,7 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfConnect() {
   while (unnotified_connect_listeners_.size()) {
     DevToolsEventListener* listener = unnotified_connect_listeners_.front();
     unnotified_connect_listeners_.pop_front();
-    Status status = listener->OnConnected();
+    Status status = listener->OnConnected(this);
     if (status.IsError())
       return status;
   }
@@ -262,7 +270,8 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
   while (unnotified_event_listeners_.size()) {
     DevToolsEventListener* listener = unnotified_event_listeners_.front();
     unnotified_event_listeners_.pop_front();
-    listener->OnEvent(unnotified_event_->method, *unnotified_event_->params);
+    listener->OnEvent(this,
+                      unnotified_event_->method, *unnotified_event_->params);
   }
   return Status(kOk);
 }

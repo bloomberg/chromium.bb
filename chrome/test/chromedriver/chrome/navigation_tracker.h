@@ -36,8 +36,9 @@ class NavigationTracker : public DevToolsEventListener {
   Status IsPendingNavigation(const std::string& frame_id, bool* is_pending);
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected() OVERRIDE;
-  virtual void OnEvent(const std::string& method,
+  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 
  private:

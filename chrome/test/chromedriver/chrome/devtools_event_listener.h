@@ -11,6 +11,7 @@ namespace base {
 class DictionaryValue;
 }
 
+class DevToolsClient;
 class Status;
 
 // Listens to WebKit Inspector events and DevTools debugger connection.
@@ -18,9 +19,10 @@ class DevToolsEventListener {
  public:
   virtual ~DevToolsEventListener() {}
 
-  virtual Status OnConnected() = 0;
+  virtual Status OnConnected(DevToolsClient* client) = 0;
 
-  virtual void OnEvent(const std::string& method,
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
                        const base::DictionaryValue& params) = 0;
 };
 

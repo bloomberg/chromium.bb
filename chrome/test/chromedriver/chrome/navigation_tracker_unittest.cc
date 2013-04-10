@@ -29,9 +29,9 @@ TEST(NavigationTracker, FrameLoadStartStop) {
   NavigationTracker tracker(&client);
 
   base::DictionaryValue params;
-  tracker.OnEvent("Page.frameStartedLoading", params);
+  tracker.OnEvent(&client, "Page.frameStartedLoading", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent("Page.frameStoppedLoading", params);
+  tracker.OnEvent(&client, "Page.frameStoppedLoading", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -44,13 +44,13 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "f");
 
-  tracker.OnEvent("Page.frameScheduledNavigation", params_scheduled);
+  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent("Page.frameStartedLoading", params);
+  tracker.OnEvent(&client, "Page.frameStartedLoading", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent("Page.frameClearedScheduledNavigation", params);
+  tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent("Page.frameStoppedLoading", params);
+  tracker.OnEvent(&client, "Page.frameStoppedLoading", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -61,7 +61,7 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "other");
 
-  tracker.OnEvent("Page.frameScheduledNavigation", params_scheduled);
+  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -74,9 +74,9 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "f");
 
-  tracker.OnEvent("Page.frameScheduledNavigation", params_scheduled);
+  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent("Page.frameClearedScheduledNavigation", params);
+  tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -87,7 +87,7 @@ TEST(NavigationTracker, NavigationScheduledTooFarAway) {
   base::DictionaryValue params_scheduled;
   params_scheduled.SetInteger("delay", 10);
   params_scheduled.SetString("frameId", "f");
-  tracker.OnEvent("Page.frameScheduledNavigation", params_scheduled);
+  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -98,15 +98,15 @@ TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
   base::DictionaryValue params_scheduled;
   params_scheduled.SetString("frameId", "subframe");
   params_scheduled.SetInteger("delay", 0);
-  tracker.OnEvent("Page.frameScheduledNavigation", params_scheduled);
+  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
 
   base::DictionaryValue params_navigated;
   params_navigated.SetString("frame.parentId", "something");
-  tracker.OnEvent("Page.frameNavigated", params_navigated);
+  tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
   params_navigated.Clear();
-  tracker.OnEvent("Page.frameNavigated", params_navigated);
+  tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", false));
 }
 
@@ -154,7 +154,8 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
     if (send_event_first_.length()) {
-      listeners_.front()->OnEvent(send_event_first_, *send_event_first_params_);
+      listeners_.front()->OnEvent(this,
+                                  send_event_first_, *send_event_first_params_);
     }
 
     base::DictionaryValue result_dict;

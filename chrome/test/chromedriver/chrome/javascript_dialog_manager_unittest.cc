@@ -51,7 +51,7 @@ TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
   ASSERT_EQ(kOk, manager.HandleDialog(false, "text").code());
   std::string text;
   client.params_.GetString("promptText", &text);
@@ -64,12 +64,12 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "hi");
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
   ASSERT_TRUE(manager.IsDialogOpen());
   std::string message;
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
 
-  ASSERT_TRUE(manager.OnConnected().IsOk());
+  ASSERT_TRUE(manager.OnConnected(&client).IsOk());
   ASSERT_EQ("Page.enable", client.method_);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
@@ -94,7 +94,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
     while (closing_count_ > 0) {
       base::DictionaryValue empty;
-      listener_->OnEvent("Page.javascriptDialogClosing", empty);
+      listener_->OnEvent(this, "Page.javascriptDialogClosing", empty);
       closing_count_--;
     }
     return Status(kOk);
@@ -119,7 +119,7 @@ TEST(JavaScriptDialogManager, OneDialog) {
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
 
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("hi", message);
@@ -136,9 +136,9 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
   JavaScriptDialogManager manager(&client);
   base::DictionaryValue params;
   params.SetString("message", "1");
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
   params.SetString("message", "2");
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
 
   std::string message;
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
@@ -166,12 +166,12 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
 
-  manager.OnEvent("Page.javascriptDialogOpening", params);
+  manager.OnEvent(&client, "Page.javascriptDialogOpening", params);
   ASSERT_TRUE(manager.IsDialogOpen());
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
   ASSERT_EQ("hi", message);
 
-  manager.OnEvent("Page.javascriptDialogClosing", params);
+  manager.OnEvent(&client, "Page.javascriptDialogClosing", params);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, std::string()).code());

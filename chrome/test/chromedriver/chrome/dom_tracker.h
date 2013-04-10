@@ -29,12 +29,12 @@ class DomTracker : public DevToolsEventListener {
   Status GetFrameIdForNode(int node_id, std::string* frame_id);
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected() OVERRIDE;
-  virtual void OnEvent(const std::string& method,
+  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 
  private:
-  DevToolsClient* client_;
   bool ProcessNodeList(const base::Value* nodes);
   bool ProcessNode(const base::Value* node);
 

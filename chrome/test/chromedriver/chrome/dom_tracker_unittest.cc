@@ -61,13 +61,13 @@ TEST(DomTracker, GetFrameIdForNode) {
       "}]";
   base::DictionaryValue params;
   params.Set("nodes", base::JSONReader::Read(nodes));
-  tracker.OnEvent("DOM.setChildNodes", params);
+  tracker.OnEvent(&client, "DOM.setChildNodes", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(101, &frame_id).IsError());
   ASSERT_TRUE(frame_id.empty());
   ASSERT_TRUE(tracker.GetFrameIdForNode(102, &frame_id).IsOk());
   ASSERT_STREQ("f", frame_id.c_str());
 
-  tracker.OnEvent("DOM.documentUpdated", params);
+  tracker.OnEvent(&client, "DOM.documentUpdated", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(102, &frame_id).IsError());
   ASSERT_STREQ("DOM.getDocument", client.PopSentCommand().c_str());
 }
@@ -79,14 +79,14 @@ TEST(DomTracker, ChildNodeInserted) {
 
   base::DictionaryValue params;
   params.Set("node", base::JSONReader::Read("{\"nodeId\":1}"));
-  tracker.OnEvent("DOM.childNodeInserted", params);
+  tracker.OnEvent(&client, "DOM.childNodeInserted", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(1, &frame_id).IsError());
   ASSERT_TRUE(frame_id.empty());
 
   params.Clear();
   params.Set("node", base::JSONReader::Read(
       "{\"nodeId\":2,\"frameId\":\"f\"}"));
-  tracker.OnEvent("DOM.childNodeInserted", params);
+  tracker.OnEvent(&client, "DOM.childNodeInserted", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(2, &frame_id).IsOk());
   ASSERT_STREQ("f", frame_id.c_str());
 }

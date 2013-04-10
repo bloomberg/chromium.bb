@@ -50,13 +50,14 @@ Status JavaScriptDialogManager::HandleDialog(bool accept,
   return Status(kOk);
 }
 
-Status JavaScriptDialogManager::OnConnected() {
+Status JavaScriptDialogManager::OnConnected(DevToolsClient* client) {
   unhandled_dialog_queue_.clear();
   base::DictionaryValue params;
   return client_->SendCommand("Page.enable", params);
 }
 
-void JavaScriptDialogManager::OnEvent(const std::string& method,
+void JavaScriptDialogManager::OnEvent(DevToolsClient* client,
+                                      const std::string& method,
                                       const base::DictionaryValue& params) {
   if (method == "Page.javascriptDialogOpening") {
     std::string message;

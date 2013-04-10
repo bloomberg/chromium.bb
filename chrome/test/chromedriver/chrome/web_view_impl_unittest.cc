@@ -17,7 +17,7 @@ namespace {
 
 class FakeDevToolsClient : public DevToolsClient {
  public:
-  FakeDevToolsClient() : status_(kOk) {}
+  FakeDevToolsClient() : id_("fake-id"), status_(kOk) {}
   virtual ~FakeDevToolsClient() {}
 
   void set_status(const Status& status) {
@@ -29,6 +29,9 @@ class FakeDevToolsClient : public DevToolsClient {
   }
 
   // Overridden from DevToolsClient:
+  virtual const std::string& GetId() OVERRIDE {
+    return id_;
+  }
   virtual Status ConnectIfNecessary() OVERRIDE {
     return Status(kOk);
   }
@@ -52,6 +55,7 @@ class FakeDevToolsClient : public DevToolsClient {
   }
 
  private:
+  const std::string id_;
   Status status_;
   base::DictionaryValue result_;
 };

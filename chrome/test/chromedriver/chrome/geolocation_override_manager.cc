@@ -24,11 +24,12 @@ Status GeolocationOverrideManager::OverrideGeolocation(
   return ApplyOverrideIfNeeded();
 }
 
-Status GeolocationOverrideManager::OnConnected() {
+Status GeolocationOverrideManager::OnConnected(DevToolsClient* client) {
   return ApplyOverrideIfNeeded();
 }
 
-void GeolocationOverrideManager::OnEvent(const std::string& method,
+void GeolocationOverrideManager::OnEvent(DevToolsClient* client,
+                                         const std::string& method,
                                          const base::DictionaryValue& params) {
   if (method == "Page.frameNavigated") {
     const base::Value* unused_value;

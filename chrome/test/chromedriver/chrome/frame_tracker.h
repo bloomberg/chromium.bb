@@ -30,12 +30,12 @@ class FrameTracker : public DevToolsEventListener {
   Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
 
   // Overridden from DevToolsEventListener:
-  virtual Status OnConnected() OVERRIDE;
-  virtual void OnEvent(const std::string& method,
+  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 
  private:
-  DevToolsClient* client_;
   std::map<std::string, int> frame_to_context_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTracker);

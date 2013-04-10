@@ -12,9 +12,9 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-DomTracker::DomTracker(DevToolsClient* client) : client_(client) {
-  DCHECK(client_);
-  client_->AddListener(this);
+DomTracker::DomTracker(DevToolsClient* client) {
+  DCHECK(client);
+  client->AddListener(this);
 }
 
 DomTracker::~DomTracker() {}
@@ -27,15 +27,16 @@ Status DomTracker::GetFrameIdForNode(
   return Status(kOk);
 }
 
-Status DomTracker::OnConnected() {
+Status DomTracker::OnConnected(DevToolsClient* client) {
   node_to_frame_map_.clear();
   // Fetch the root document node so that Inspector will push DOM node
   // information to the client.
   base::DictionaryValue params;
-  return client_->SendCommand("DOM.getDocument", params);
+  return client->SendCommand("DOM.getDocument", params);
 }
 
-void DomTracker::OnEvent(const std::string& method,
+void DomTracker::OnEvent(DevToolsClient* client,
+                         const std::string& method,
                          const base::DictionaryValue& params) {
   if (method == "DOM.setChildNodes") {
     const base::Value* nodes;
@@ -62,7 +63,7 @@ void DomTracker::OnEvent(const std::string& method,
   } else if (method == "DOM.documentUpdated") {
     node_to_frame_map_.clear();
     base::DictionaryValue params;
-    client_->SendCommand("DOM.getDocument", params);
+    client->SendCommand("DOM.getDocument", params);
   }
 }
 

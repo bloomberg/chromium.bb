@@ -94,6 +94,7 @@ scoped_ptr<DevToolsClient> DevToolsHttpClient::CreateClient(
   return scoped_ptr<DevToolsClient>(new DevToolsClientImpl(
       socket_factory_,
       web_socket_url_prefix_ + id,
+      id,
       base::Bind(
           &DevToolsHttpClient::CloseFrontends, base::Unretained(this), id)));
 }
@@ -158,6 +159,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
     scoped_ptr<DevToolsClient> client(new DevToolsClientImpl(
         socket_factory_,
         web_socket_url_prefix_ + *it,
+        *it,
         base::Bind(&FakeCloseFrontends)));
     scoped_ptr<WebViewImpl> web_view(new WebViewImpl(*it, client.Pass()));
 
