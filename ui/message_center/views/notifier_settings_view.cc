@@ -145,6 +145,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
         views::BoxLayout::kHorizontal, 0, 0, kSpaceInButtonComponents));
     checkbox_->SetChecked(notifier_->enabled);
     checkbox_->set_listener(this);
+    checkbox_->set_focusable(false);
     AddChildView(checkbox_);
     UpdateIconImage(notifier_->icon);
     AddChildView(new views::Label(notifier_->name));
