@@ -16,9 +16,6 @@ package org.chromium.content;
  * com.android.internal.R.
  */
 public final class R {
-    public static final class array {
-        public static int official_command_line;
-    }
     public static final class dimen {
         public static int link_preview_overlay_radius;
     }
