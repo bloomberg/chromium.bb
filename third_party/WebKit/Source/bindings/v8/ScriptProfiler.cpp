@@ -57,8 +57,12 @@ void ScriptProfiler::start(ScriptState* state, const String& title)
         return;
     profileNameIdleTimeMap->add(title, 0);
 
-    v8::HandleScope hs;
-    v8::CpuProfiler::StartProfiling(v8String(title, state ? state->isolate() : v8::Isolate::GetCurrent()), true);
+    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
+    v8::CpuProfiler* profiler = isolate->GetCpuProfiler();
+    if (!profiler)
+        return;
+    v8::HandleScope handleScope(isolate);
+    profiler->StartCpuProfiling(v8String(title, isolate), true);
 }
 
 void ScriptProfiler::startForPage(Page*, const String& title)
@@ -73,10 +77,15 @@ void ScriptProfiler::startForWorkerContext(WorkerContext*, const String& title)
 
 PassRefPtr<ScriptProfile> ScriptProfiler::stop(ScriptState* state, const String& title)
 {
-    v8::HandleScope hs;
-    const v8::CpuProfile* profile = state ?
-        v8::CpuProfiler::StopProfiling(v8String(title, state->isolate()), state->context()->GetSecurityToken()) :
-        v8::CpuProfiler::StopProfiling(v8String(title, v8::Isolate::GetCurrent()));
+    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
+    v8::CpuProfiler* profiler = isolate->GetCpuProfiler();
+    if (!profiler)
+        return 0;
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Value> securityToken;
+    if (state)
+        securityToken = state->context()->GetSecurityToken();
+    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(title, isolate), securityToken);
     if (!profile)
         return 0;
 
@@ -111,11 +120,15 @@ void ScriptProfiler::collectGarbage()
 
 ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
 {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    if (!profiler)
+        return ScriptObject();
     // As ids are unique, it doesn't matter which HeapSnapshot owns HeapGraphNode.
     // We need to find first HeapSnapshot containing a node with the specified id.
     const v8::HeapGraphNode* node = 0;
-    for (int i = 0, l = v8::HeapProfiler::GetSnapshotsCount(); i < l; ++i) {
-        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::GetSnapshot(i);
+    for (int i = 0, l = profiler->GetSnapshotCount(); i < l; ++i) {
+        const v8::HeapSnapshot* snapshot = profiler->GetHeapSnapshot(i);
         node = snapshot->GetNodeById(id);
         if (node)
             break;
@@ -123,7 +136,7 @@ ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
     if (!node)
         return ScriptObject();
 
-    v8::HandleScope scope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value = node->GetHeapValue();
     if (!value->IsObject())
         return ScriptObject();
@@ -136,7 +149,9 @@ ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
 
 unsigned ScriptProfiler::getHeapObjectId(const ScriptValue& value)
 {
-    v8::SnapshotObjectId id = v8::HeapProfiler::GetSnapshotObjectId(value.v8Value());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    v8::SnapshotObjectId id = profiler->GetObjectId(value.v8Value());
     return id;
 }
 
@@ -187,11 +202,15 @@ private:
 // FIXME: This method should receive a ScriptState, from which we should retrieve an Isolate.
 PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& title, HeapSnapshotProgress* control)
 {
-    v8::HandleScope hs;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    if (!profiler)
+        return 0;
+    v8::HandleScope handleScope(isolate);
     ASSERT(control);
     ActivityControlAdapter adapter(control);
     GlobalObjectNameResolver resolver;
-    const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(v8String(title, v8::Isolate::GetCurrent()), v8::HeapSnapshot::kFull, &adapter, &resolver);
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8String(title, isolate), &adapter, &resolver);
     return snapshot ? ScriptHeapSnapshot::create(snapshot) : 0;
 }
 
@@ -206,16 +225,18 @@ static v8::RetainedObjectInfo* retainedDOMInfo(uint16_t classId, v8::Handle<v8::
 
 void ScriptProfiler::initialize()
 {
-    v8::HeapProfiler::DefineWrapperClass(v8DOMNodeClassId, &retainedDOMInfo);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    if (profiler)
+        profiler->SetWrapperClassInfoProvider(v8DOMNodeClassId, &retainedDOMInfo);
 }
 
 void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
 {
-    v8::HandleScope scope;
-
     // visitNodeWrappers() should receive a ScriptState and retrieve an Isolate
     // from the ScriptState.
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
 
     class DOMNodeWrapperVisitor : public v8::PersistentHandleVisitor {
     public:
@@ -284,7 +305,11 @@ void ScriptProfiler::collectBindingMemoryInfo(MemoryInstrumentation* instrumenta
 
 size_t ScriptProfiler::profilerSnapshotsSize()
 {
-    return v8::HeapProfiler::GetMemorySizeUsedByProfiler();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    if (!profiler)
+        return 0;
+    return profiler->GetProfilerMemorySize();
 }
 
 ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()
