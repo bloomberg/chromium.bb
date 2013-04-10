@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/common/autocheckout_status.h"
-#include "ui/gfx/native_widget_types.h"
 
 class AutofillField;
 class AutofillManager;
@@ -62,7 +61,6 @@ class AutocheckoutManager {
   // input field in focus.
   virtual void MaybeShowAutocheckoutBubble(const GURL& frame_url,
                                            const content::SSLStatus& ssl_status,
-                                           const gfx::NativeView& native_view,
                                            const gfx::RectF& bounding_box);
 
   bool is_autocheckout_bubble_showing() const {

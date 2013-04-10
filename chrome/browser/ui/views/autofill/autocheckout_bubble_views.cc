@@ -24,7 +24,7 @@ AutocheckoutBubbleViews::AutocheckoutBubbleViews(
     controller_(controller.Pass()),
     ok_button_(NULL),
     cancel_button_(NULL) {
-  set_parent_window(controller_->native_view());
+  set_parent_window(controller_->native_window());
   controller_->BubbleCreated();
 }
 
@@ -129,7 +129,7 @@ void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,
 base::WeakPtr<AutocheckoutBubble> AutocheckoutBubble::Create(
     scoped_ptr<AutocheckoutBubbleController> controller) {
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
-      controller->native_view());
+      controller->native_window());
   // The bubble owns itself.
   AutocheckoutBubbleViews* delegate =
       new AutocheckoutBubbleViews(controller.Pass(),

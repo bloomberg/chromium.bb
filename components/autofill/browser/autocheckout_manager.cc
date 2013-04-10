@@ -214,7 +214,6 @@ void AutocheckoutManager::OnFormsSeen() {
 void AutocheckoutManager::MaybeShowAutocheckoutBubble(
     const GURL& frame_url,
     const content::SSLStatus& ssl_status,
-    const gfx::NativeView& native_view,
     const gfx::RectF& bounding_box) {
   if (autocheckout_offered_ ||
       is_autocheckout_bubble_showing_ ||
@@ -228,7 +227,6 @@ void AutocheckoutManager::MaybeShowAutocheckoutBubble(
       ssl_status);
   autofill_manager_->delegate()->ShowAutocheckoutBubble(
       bounding_box,
-      native_view,
       callback);
   is_autocheckout_bubble_showing_ = true;
   autocheckout_offered_ = true;

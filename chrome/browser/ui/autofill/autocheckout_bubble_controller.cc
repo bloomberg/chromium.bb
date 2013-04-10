@@ -12,10 +12,10 @@ namespace autofill {
 
 AutocheckoutBubbleController::AutocheckoutBubbleController(
     const gfx::RectF& anchor_rect,
-    const gfx::NativeView& native_view,
+    const gfx::NativeWindow& native_window,
     const base::Callback<void(bool)>& callback)
     : anchor_rect_(gfx::ToEnclosingRect(anchor_rect)),
-      native_view_(native_view),
+      native_window_(native_window),
       callback_(callback),
       metric_logger_(new AutofillMetrics),
       had_user_interaction_(false) {}

@@ -899,7 +899,6 @@ void AutofillManager::OnMaybeShowAutocheckoutBubble(
   autocheckout_manager_.MaybeShowAutocheckoutBubble(
       source_url,
       ssl_status,
-      web_contents()->GetView()->GetContentNativeView(),
       bounding_box);
 }
 

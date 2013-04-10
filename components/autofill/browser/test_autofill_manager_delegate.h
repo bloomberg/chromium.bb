@@ -39,7 +39,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       autofill::PasswordGenerator* generator) OVERRIDE;
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
-      const gfx::NativeView& native_view,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(

@@ -20,11 +20,11 @@ namespace autofill {
 class AutocheckoutBubbleController {
  public:
   // |anchor_rect| is the anchor for the bubble UI. It is the bounds of an
-  // input element in viewport space. |native_view| is the parent view of the
+  // input element in viewport space. |native_window| is the parent view of the
   // bubble. |callback| is invoked if the bubble is accepted. It brings up the
   // requestAutocomplete dialog to collect user input for Autocheckout.
   AutocheckoutBubbleController(const gfx::RectF& anchor_rect,
-                               const gfx::NativeView& native_view,
+                               const gfx::NativeWindow& native_window,
                                const base::Callback<void(bool)>& callback);
   ~AutocheckoutBubbleController();
 
@@ -39,8 +39,8 @@ class AutocheckoutBubbleController {
 
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  const gfx::NativeView& native_view() {
-    return native_view_;
+  const gfx::NativeWindow& native_window() {
+    return native_window_;
   }
 
  protected:
@@ -55,8 +55,8 @@ class AutocheckoutBubbleController {
   // input element in viewport space.
   gfx::Rect anchor_rect_;
 
-  // |native_view| is the parent view of the bubble.
-  gfx::NativeView native_view_;
+  // |native_window| is the parent window of the bubble.
+  gfx::NativeWindow native_window_;
 
   // |callback_| is invoked if the bubble is accepted.
   base::Callback<void(bool)> callback_;

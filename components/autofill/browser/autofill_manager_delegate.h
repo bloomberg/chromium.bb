@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/string16.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace autofill {
 class PasswordGenerator;
@@ -116,7 +115,6 @@ class AutofillManagerDelegate {
   // |callback| is run if the bubble is accepted.
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
-      const gfx::NativeView& native_view,
       const base::Callback<void(bool)>& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.

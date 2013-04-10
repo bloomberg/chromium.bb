@@ -135,14 +135,20 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
 
 void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
-    const gfx::NativeView& native_view,
     const base::Callback<void(bool)>& callback) {
   HideAutocheckoutBubble();
+
+  // Convert |bounding_box| to be in screen space.
+  gfx::Rect container_rect;
+  web_contents_->GetView()->GetContainerBounds(&container_rect);
+  gfx::RectF anchor = bounding_box + container_rect.OffsetFromOrigin();
+
   autocheckout_bubble_ =
       AutocheckoutBubble::Create(scoped_ptr<AutocheckoutBubbleController>(
-          new AutocheckoutBubbleController(bounding_box,
-                                           native_view,
-                                           callback)));
+          new AutocheckoutBubbleController(
+              anchor,
+              web_contents_->GetView()->GetTopLevelNativeWindow(),
+              callback)));
   autocheckout_bubble_->ShowBubble();
 }
 
