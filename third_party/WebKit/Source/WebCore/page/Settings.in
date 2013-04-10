@@ -119,7 +119,6 @@ fixedElementsLayoutRelativeToFrame initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
-mediaPlaybackAllowsInline initial=true
 passwordEchoEnabled initial=false
 visualWordMovementEnabled initial=false
 shouldDisplaySubtitles initial=false, conditional=VIDEO_TRACK
