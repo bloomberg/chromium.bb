@@ -470,7 +470,7 @@
 #else /* !OS(DARWIN) */
 /* On non-OS(DARWIN), the "system malloc" is actually TCMalloc anyway, so there's
  * no need to use WebKit's copy of TCMalloc. */
-#define WTF_USE_SYSTEM_MALLOC 1
+#define USE_SYSTEM_MALLOC 1
 #endif /* OS(DARWIN) */
 
 #if OS(DARWIN)

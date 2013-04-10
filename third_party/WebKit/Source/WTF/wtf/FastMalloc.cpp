@@ -95,7 +95,7 @@
 #endif
 #endif
 
-#if !USE(SYSTEM_MALLOC) && defined(NDEBUG)
+#if !(defined(USE_SYSTEM_MALLOC) && USE_SYSTEM_MALLOC) && defined(NDEBUG)
 #define FORCE_SYSTEM_MALLOC 0
 #else
 #define FORCE_SYSTEM_MALLOC 1
@@ -280,7 +280,8 @@ void* fastMalloc(size_t n)
     void* result = malloc(n);
 #endif
 
-    ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
+    if (!result)
+        CRASH();
 
     return result;
 }
@@ -319,7 +320,8 @@ void* fastCalloc(size_t n_elements, size_t element_size)
     void* result = calloc(n_elements, element_size);
 #endif
 
-    ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
+    if (!result)
+        CRASH();
 
     return result;
 }
@@ -379,8 +381,8 @@ void* fastRealloc(void* p, size_t n)
     void* result = realloc(p, n);
 #endif
 
-    ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
-
+    if (!result)
+        CRASH();
     return result;
 }
 
