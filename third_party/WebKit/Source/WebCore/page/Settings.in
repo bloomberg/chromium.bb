@@ -63,7 +63,6 @@ needsKeyboardEventDisambiguationQuirks initial=false
 shrinksStandaloneImagesToFit initial=true
 pageCacheSupportsPlugins initial=false
 showsToolTipOverTruncatedText initial=false
-forceFTPDirectoryListings initial=false
 javaScriptExperimentsEnabled initial=false
 scriptMarkupEnabled initial=true
 needsSiteSpecificQuirks initial=false
