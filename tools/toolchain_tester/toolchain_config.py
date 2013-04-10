@@ -240,6 +240,8 @@ else:
 
 PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL, 'newlib')
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
+PNACL_FINALIZE = PNACL_ROOT + '/bin/pnacl-finalize'
+
 
 # NOTE: Our driver supports going from .c to .nexe in one go
 #       but it maybe useful to inspect the bitcode file so we
@@ -248,10 +250,13 @@ PNACL_LD = PNACL_ROOT + '/bin/pnacl-translate'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-pexe',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.pexe -lm -lstdc++',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
      ),
+    ('finalize-pexe',
+     '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe'
+    ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.pexe -o %(tmp)s.nexe',
+     '%(LD)s %(tmp)s.final.pexe -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
@@ -263,10 +268,12 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     desc='pnacl llvm [arm]',
     attributes=['arm', 'O0'],
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  EMU_SCRIPT, BOOTSTRAP_ARM,
                   SEL_LDR_ARM],
     is_flaky = True,
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = RUN_SEL_LDR_ARM,
@@ -278,10 +285,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
     attributes=['arm', 'O3'],
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
-                  SEL_LDR_ARM],
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  EMU_SCRIPT, BOOTSTRAP_ARM, SEL_LDR_ARM],
     is_flaky = True,
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD  + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = RUN_SEL_LDR_ARM,
@@ -294,12 +302,15 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
 ######################################################################
 
 # NOTE: this is used for both x86 flavors
-COMMANDS_llvm_pnacl_x86_O0 = [
+COMMANDS_llvm_pnacl_x86 = [
     ('compile-pexe',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.pexe -lm -lstdc++',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
+     ),
+    ('finalize-pexe',
+     '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe',
      ),
     ('translate-x86',
-     '%(LD)s %(tmp)s.pexe -o %(tmp)s.nexe ',
+     '%(LD)s %(tmp)s.final.pexe -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',
@@ -310,9 +321,11 @@ COMMANDS_llvm_pnacl_x86_O0 = [
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     attributes=['x86-32', 'O0'],
-    commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
+    commands=COMMANDS_llvm_pnacl_x86,
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
@@ -321,9 +334,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     attributes=['x86-32', 'O3'],
-    commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
+    commands=COMMANDS_llvm_pnacl_x86,
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
@@ -337,9 +352,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     attributes=['x86-64', 'O0'],
-    commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
+    commands=COMMANDS_llvm_pnacl_x86,
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
@@ -348,9 +365,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     attributes=['x86-64', 'O3'],
-    commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
+    commands=COMMANDS_llvm_pnacl_x86,
+    tools_needed=[PNACL_FRONTEND, PNACL_FINALIZE, PNACL_LD,
+                  BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,
+    FINALIZE = PNACL_FINALIZE,
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
