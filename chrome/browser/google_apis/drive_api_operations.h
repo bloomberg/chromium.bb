@@ -495,6 +495,9 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
   virtual void OnRangeOperationComplete(
       const UploadRangeResponse& response,
       scoped_ptr<base::Value> value) OVERRIDE;
+  // content::UrlFetcherDelegate overrides.
+  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                        int64 current, int64 total) OVERRIDE;
 
  private:
   const UploadRangeCallback callback_;
