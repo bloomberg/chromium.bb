@@ -1609,24 +1609,16 @@
         '<@(webcore_platform_files)',
       ],
       'sources/': [
-        ['exclude', '.*'],
-        ['include', 'platform/'],
-
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(cf|cg|harfbuzz|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
 
-        ['exclude', 'platform/LinkHash\\.cpp$'],
-        ['exclude', 'platform/MIMETypeRegistry\\.cpp$'],
+        # Used only by mac.
         ['exclude', 'platform/Theme\\.cpp$'],
+
         # *NEON.cpp files need special compile options.
         # They are moved to the webcore_arm_neon target.
         ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
-        ['exclude', 'platform/image-encoders/JPEGImageEncoder\\.(cpp|h)$'],
-        ['exclude', 'platform/image-encoders/PNGImageEncoder\\.(cpp|h)$'],
-        ['exclude', 'platform/sql/SQLiteFileSystem\\.cpp$'],
-        ['exclude', 'platform/text/LocaleToScriptMappingICU\\.cpp$'],
-        ['exclude', 'platform/text/TextEncodingDetectorNone\\.cpp$'],
       ],
       'conditions': [
         ['component=="shared_library"', {
@@ -2011,26 +2003,11 @@
         '<@(webcore_files)',
       ],
       'sources/': [
-        ['exclude', 'platform/'],
         ['exclude', 'rendering/'],
-
-        # Exclude most of bindings, except of the V8-related parts.
-        ['exclude', 'bindings/[^/]+/'],
-        ['include', 'bindings/v8/'],
 
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
         ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
-        ['exclude', 'Modules/filesystem/LocalFileSystem\\.cpp$'],
-        ['exclude', 'Modules/indexeddb/IDBFactoryBackendInterface\\.cpp$'],
-        ['exclude', 'Modules/webdatabase/DatabaseManagerClient\\.h$'],
-        ['exclude', 'Modules/webdatabase/DatabaseTracker\\.cpp$'],
-        ['exclude', 'Modules/webdatabase/OriginLock\\.cpp$'],
-        ['exclude', 'Modules/webdatabase/SQLTransactionClient\\.cpp$'],
-        ['exclude', 'inspector/InspectorFrontendClientLocal\\.cpp$'],
-        ['exclude', 'inspector/JavaScript[^/]*\\.cpp$'],
-        ['exclude', 'loader/UserStyleSheetLoader\\.cpp$'],
-        ['exclude', 'loader/icon/IconDatabase\\.cpp$'],
         ['exclude', 'storage/StorageAreaImpl\\.(cpp|h)$'],
         ['exclude', 'storage/StorageAreaSync\\.(cpp|h)$'],
         ['exclude', 'storage/StorageEventDispatcher\\.(cpp|h)$'],
@@ -2042,8 +2019,6 @@
         ['exclude', 'storage/StorageThread\\.(cpp|h)$'],
         ['exclude', 'storage/StorageTracker\\.(cpp|h)$'],
         ['exclude', 'storage/StorageTrackerClient\\.h$'],
-        ['exclude', 'workers/SharedWorkerRepository\\.cpp$'],
-        ['exclude', 'workers/DefaultSharedWorkerRepository\\.(cpp|h)$'],
       ],
       'conditions': [
         # Shard this taret into parts to work around linker limitations.
