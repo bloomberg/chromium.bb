@@ -214,9 +214,6 @@ namespace WebCore {
         void setStorageBlockingPolicy(SecurityOrigin::StorageBlockingPolicy);
         SecurityOrigin::StorageBlockingPolicy storageBlockingPolicy() const { return m_storageBlockingPolicy; }
 
-        void setScrollingPerformanceLoggingEnabled(bool);
-        bool scrollingPerformanceLoggingEnabled() { return m_scrollingPerformanceLoggingEnabled; }
-        
         void setTimeWithoutMouseMovementBeforeHidingControls(double time) { m_timeWithoutMouseMovementBeforeHidingControls = time; }
         double timeWithoutMouseMovementBeforeHidingControls() const { return m_timeWithoutMouseMovementBeforeHidingControls; }
 

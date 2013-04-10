@@ -167,7 +167,6 @@ Settings::Settings(Page* page)
 #if ENABLE(TOUCH_EVENTS)
     , m_touchEventEmulationEnabled(false)
 #endif
-    , m_scrollingPerformanceLoggingEnabled(false)
     , m_timeWithoutMouseMovementBeforeHidingControls(3)
     , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
@@ -486,14 +485,6 @@ void Settings::setTiledBackingStoreEnabled(bool enabled)
     m_tiledBackingStoreEnabled = enabled;
 }
 
-void Settings::setScrollingPerformanceLoggingEnabled(bool enabled)
-{
-    m_scrollingPerformanceLoggingEnabled = enabled;
-
-    if (m_page->mainFrame() && m_page->mainFrame()->view())
-        m_page->mainFrame()->view()->setScrollingPerformanceLoggingEnabled(enabled);
-}
-    
 void Settings::setMockScrollbarsEnabled(bool flag)
 {
     gMockScrollbarsEnabled = flag;

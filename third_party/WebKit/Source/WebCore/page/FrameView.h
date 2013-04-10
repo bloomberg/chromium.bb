@@ -324,8 +324,6 @@ public:
     // we need this function in order to do the scroll ourselves.
     bool wheelEvent(const PlatformWheelEvent&);
 
-    void setScrollingPerformanceLoggingEnabled(bool);
-
     // Page and FrameView both store a Pagination value. Page::pagination() is set only by API,
     // and FrameView::pagination() is set only by CSS. Page::pagination() will affect all
     // FrameViews in the page cache, but FrameView::pagination() only affects the current

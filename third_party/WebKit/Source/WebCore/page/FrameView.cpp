@@ -3633,8 +3633,4 @@ AXObjectCache* FrameView::axObjectCache() const
     return 0;
 }
     
-void FrameView::setScrollingPerformanceLoggingEnabled(bool)
-{
-}
-
 } // namespace WebCore
