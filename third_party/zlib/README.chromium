@@ -14,7 +14,7 @@ A few minor changes, all marked with "Google":
 - Removed use of strerror for WinCE in gzio.c.
 - Added 'int z_errno' global for WinCE, to which 'errno' is defined in zutil.h.
 - Added 'mozzconf.h' to mangle the function names.
-- Added an #ifdef to prevent zlib.h from mangling its functions.
+- Added logic in zlib.h to undef our earlier mangles when defaulting to 64 bit offset versions of API.
 The 'google.patch' file represents our changes from the original zlib-1.2.5.
 
 A more significant change to support mixed-source data compression. See
