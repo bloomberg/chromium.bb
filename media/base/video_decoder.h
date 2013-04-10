@@ -29,7 +29,9 @@ class MEDIA_EXPORT VideoDecoder
   // Initializes a VideoDecoder with the given DemuxerStream, executing the
   // |status_cb| upon completion.
   // |statistics_cb| is used to update the global pipeline statistics.
-  // Note: No VideoDecoder calls should be made before |status_cb| is executed.
+  // Note:
+  // 1) No VideoDecoder calls should be made before |status_cb| is executed.
+  // 2) DemuxerStream should not be accessed after the VideoDecoder is stopped.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;

@@ -107,6 +107,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();
+  demuxer_stream_ = NULL;
   BindToCurrentLoop(closure).Run();
 }
 
@@ -303,8 +304,11 @@ void GpuVideoDecoder::RequestBufferDecode(
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Decode, weak_vda_, bitstream_buffer));
 
-  if (CanMoreDecodeWorkBeDone())
-    EnsureDemuxOrDecode();
+  if (CanMoreDecodeWorkBeDone()) {
+    // Force post here to prevent reentrancy into DemuxerStream.
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &GpuVideoDecoder::EnsureDemuxOrDecode, this));
+  }
 }
 
 void GpuVideoDecoder::RecordBufferData(
@@ -551,12 +555,17 @@ GpuVideoDecoder::~GpuVideoDecoder() {
 
 void GpuVideoDecoder::EnsureDemuxOrDecode() {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  if (demuxer_read_in_progress_)
+
+  // The second condition can happen during the tear-down process.
+  // GpuVideoDecoder::Stop() returns the |pending_read_cb_| immediately without
+  // waiting for the demuxer read to be returned. Therefore, this function could
+  // be called even after the decoder has been stopped.
+  if (demuxer_read_in_progress_ || !demuxer_stream_)
     return;
+
   demuxer_read_in_progress_ = true;
-  gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &DemuxerStream::Read, demuxer_stream_.get(),
-      base::Bind(&GpuVideoDecoder::RequestBufferDecode, this)));
+  demuxer_stream_->Read(base::Bind(
+      &GpuVideoDecoder::RequestBufferDecode, this));
 }
 
 void GpuVideoDecoder::NotifyFlushDone() {
