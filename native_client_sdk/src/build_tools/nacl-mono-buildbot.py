@@ -29,6 +29,9 @@ def build_and_upload_mono(sdk_revision, pepper_revision, sdk_url,
   buildbot_common.Run([sys.executable, 'nacl-mono-builder.py',
                       '--arch', 'x86-64', '--install-dir', install_dir] +
                       revision_opt + url_opt + args)
+  buildbot_common.Run([sys.executable, 'nacl-mono-builder.py',
+                      '--arch', 'arm', '--install-dir', install_dir] +
+                      revision_opt + url_opt + args)
   buildbot_common.Run([sys.executable, 'nacl-mono-archive.py',
                       '--upload-path', upload_path,
                       '--pepper-revision', pepper_revision,

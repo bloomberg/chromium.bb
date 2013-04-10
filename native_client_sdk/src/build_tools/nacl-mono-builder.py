@@ -79,10 +79,19 @@ def main(args):
   buildbot_common.BuildStep(build_prefix + 'Checkout Mono')
   # TODO(elijahtaylor): Get git URL from master/trigger to make this
   # more flexible for building from upstream and release branches.
-  git_url = 'git://github.com/elijahtaylor/mono.git'
-  git_rev = 'HEAD'
+  if options.arch == 'arm':
+    git_url = 'git://github.com/igotti-google/mono.git'
+    git_rev = 'arm_nacl'
+  else:
+    git_url = 'git://github.com/elijahtaylor/mono.git'
+    git_rev = 'HEAD'
   if buildbot_revision:
-    git_rev = buildbot_revision.split(':')[1]
+    # Unfortunately, we use different git revisions for ARM and x86 now,
+    # so ignore buildbot_revision variable for ARM.
+    # Need to rethink this approach, if we'll plan to support
+    # more flexible repo selection mechanism.
+    if options.arch != 'arm':
+      git_rev = buildbot_revision.split(':')[1]
   if not os.path.exists(MONO_DIR):
     buildbot_common.MakeDir(MONO_DIR)
     buildbot_common.Run(['git', 'clone', git_url, MONO_DIR])
@@ -93,7 +102,7 @@ def main(args):
 
   arch_to_bitsize = {'x86-32': '32',
                      'x86-64': '64',
-                     'arm':    'pnacl'}
+                     'arm':    'arm'}
   arch_to_output_folder = {'x86-32': 'runtime-x86-32-build',
                            'x86-64': 'runtime-x86-64-build',
                            'arm':    'runtime-arm-build'}

@@ -43,7 +43,7 @@ def main(args):
   options.tar_path = options.tar_path.replace('%pepperrev%',
                                               options.pepper_revision)
 
-  install_folders = ['bin', 'etc', 'include', 'lib', 'lib32', 'share']
+  install_folders = ['bin', 'etc', 'include', 'lib', 'lib32', 'libarm', 'share']
 
   buildbot_common.BuildStep('Archive Build')
   tar_file = None

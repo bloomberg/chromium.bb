@@ -116,7 +116,8 @@ LOCAL_GSUTIL = 'gsutil'
 
 
 def GetGsutil():
-  if os.environ.get('BUILDBOT_BUILDERNAME'):
+  if os.environ.get('BUILDBOT_BUILDERNAME') \
+     and not os.environ.get('BUILDBOT_FAKE'):
     return BOT_GSUTIL
   else:
     return LOCAL_GSUTIL
