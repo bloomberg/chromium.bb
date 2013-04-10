@@ -63,6 +63,8 @@ var InspectorFrontendAPI = {
 
     enterInspectElementMode: function()
     {
+        WebInspector.showPanel("elements");
+
         if (WebInspector.inspectElementModeController)
             WebInspector.inspectElementModeController.toggleSearch();
     },
