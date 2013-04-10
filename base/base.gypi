@@ -138,7 +138,6 @@
           'debug/trace_event_android.cc',
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
-          'debug/trace_event_internal.h',
           'debug/trace_event_win.cc',
           'environment.cc',
           'environment.h',
