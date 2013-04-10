@@ -9,8 +9,8 @@
 
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 
 namespace base {

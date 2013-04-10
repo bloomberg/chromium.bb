@@ -2,20 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_UI_DATA_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_UI_DATA_H_
+#ifndef CHROMEOS_NETWORK_NETWORK_UI_DATA_H_
+#define CHROMEOS_NETWORK_NETWORK_UI_DATA_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/values.h"
-#include "chrome/browser/chromeos/cros/certificate_pattern.h"
-#include "chrome/browser/chromeos/cros/enum_mapper.h"
-#include "chrome/browser/chromeos/cros/network_constants.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/onc/onc_constants.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
+
+enum ClientCertType {
+  CLIENT_CERT_TYPE_NONE    = 0,
+  CLIENT_CERT_TYPE_REF     = 1,
+  CLIENT_CERT_TYPE_PATTERN = 2
+};
 
 class NetworkPropertyUIData;
 
@@ -28,7 +36,7 @@ class NetworkPropertyUIData;
 //      NetworkUIData ui_data;
 //      ui_data.set_onc_source(onc::ONC_SOURCE_USER_IMPORT);
 //      ui_data.FillDictionary(network->ui_data());
-class NetworkUIData {
+class CHROMEOS_EXPORT NetworkUIData {
  public:
   NetworkUIData();
   explicit NetworkUIData(const base::DictionaryValue& dict);
@@ -70,67 +78,20 @@ class NetworkUIData {
   static const char kKeyCertificateType[];
 
  private:
-  static EnumMapper<onc::ONCSource>& GetONCSourceMapper();
-  static EnumMapper<ClientCertType>& GetClientCertMapper();
-
   CertificatePattern certificate_pattern_;
   onc::ONCSource onc_source_;
   ClientCertType certificate_type_;
-
-  static const EnumMapper<onc::ONCSource>::Pair kONCSourceTable[];
-  static const EnumMapper<ClientCertType>::Pair kClientCertTable[];
 };
 
-// Holds meta information for a network property: Whether the property is under
-// policy control, if it is user-editable, and whether the policy-provided
-// default value, if applicable.
-class NetworkPropertyUIData {
- public:
-  // Enum values indicating the entity controlling the property.
-  enum Controller {
-    // Property is managed by policy.
-    CONTROLLER_POLICY,
-    // The user controls the policy.
-    CONTROLLER_USER,
-  };
-
-  // Initializes the object with CONTROLLER_USER and no default value.
-  NetworkPropertyUIData();
-  ~NetworkPropertyUIData();
-
-  // Initializes the object by calling Reset() with the provided ui_data.
-  explicit NetworkPropertyUIData(const NetworkUIData& ui_data);
-
-  // Resets the property to the controller specified by the given |ui_data| and
-  // clears the default value.
-  void Reset(const NetworkUIData& ui_data);
-
-  // Update the property object from dictionary, reading the key given by
-  // |property_key|.
-  void ParseOncProperty(const NetworkUIData& ui_data,
-                        const base::DictionaryValue* onc,
-                        const std::string& property_key);
-
-  const base::Value* default_value() const { return default_value_.get(); }
-  bool managed() const { return controller_ == CONTROLLER_POLICY; }
-  bool recommended() const {
-    return controller_ == CONTROLLER_USER && default_value_.get();
-  }
-  bool editable() const { return controller_ == CONTROLLER_USER; }
-
- private:
-  Controller controller_;
-  scoped_ptr<base::Value> default_value_;
-
-  static const char kKeyController[];
-  static const char kKeyDefaultValue[];
-
-  // So it can access the kKeyXYZ constants.
-  friend class NetworkUIDataTest;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkPropertyUIData);
-};
+// Creates a NetworkUIData object from |onc_network|, which has to be a valid
+// ONC NetworkConfiguration dictionary.
+//
+// This function is used to create the "UIData" field of the Shill
+// configuration.
+CHROMEOS_EXPORT scoped_ptr<NetworkUIData> CreateUIDataFromONC(
+    onc::ONCSource onc_source,
+    const base::DictionaryValue& onc_network);
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_NETWORK_UI_DATA_H_
+#endif  // CHROMEOS_NETWORK_NETWORK_UI_DATA_H_

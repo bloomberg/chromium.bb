@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/managed_network_configuration_handler.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 
 #include <string>
 #include <vector>

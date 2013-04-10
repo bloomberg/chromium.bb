@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_normalizer.h"
@@ -1237,7 +1238,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(
 
       // Set the UIData.
       scoped_ptr<NetworkUIData> ui_data =
-          onc::CreateUIData(source, *normalized_network);
+          chromeos::CreateUIDataFromONC(source, *normalized_network);
       base::DictionaryValue ui_data_dict;
       ui_data->FillDictionary(&ui_data_dict);
       std::string ui_data_json;

@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/net/managed_network_configuration_handler.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -368,4 +368,3 @@ void NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback(
   error_ = error_name;
   SendResponse(false);
 }
-

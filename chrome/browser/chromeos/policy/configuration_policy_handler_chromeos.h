@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 
 namespace base {

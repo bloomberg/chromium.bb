@@ -5,10 +5,8 @@
 #include "chrome/browser/chromeos/net/onc_utils.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/proxy/proxy_server.h"
@@ -123,101 +121,6 @@ scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     NOTREACHED();
   }
   return proxy_dict.Pass();
-}
-
-namespace {
-
-void TranslateClientCertType(const std::string& client_cert_type,
-                             NetworkUIData* ui_data) {
-  ClientCertType type;
-  if (client_cert_type == certificate::kNone) {
-    type = CLIENT_CERT_TYPE_NONE;
-  } else if (client_cert_type == certificate::kRef) {
-    type = CLIENT_CERT_TYPE_REF;
-  } else if (client_cert_type == certificate::kPattern) {
-    type = CLIENT_CERT_TYPE_PATTERN;
-  } else {
-    type = CLIENT_CERT_TYPE_NONE;
-    NOTREACHED();
-  }
-
-  ui_data->set_certificate_type(type);
-}
-
-void TranslateCertificatePattern(const base::DictionaryValue& onc_object,
-                                 NetworkUIData* ui_data) {
-  CertificatePattern pattern;
-  bool success = pattern.CopyFromDictionary(onc_object);
-  DCHECK(success);
-  ui_data->set_certificate_pattern(pattern);
-}
-
-void TranslateEAP(const base::DictionaryValue& eap,
-                  NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (eap.GetStringWithoutPathExpansion(eap::kClientCertType,
-                                        &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
-void TranslateIPsec(const base::DictionaryValue& ipsec,
-                    NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (ipsec.GetStringWithoutPathExpansion(vpn::kClientCertType,
-                                          &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
-void TranslateOpenVPN(const base::DictionaryValue& openvpn,
-                      NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (openvpn.GetStringWithoutPathExpansion(vpn::kClientCertType,
-                                            &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
-void TranslateONCHierarchy(const OncValueSignature& signature,
-                           const base::DictionaryValue& onc_object,
-                           NetworkUIData* ui_data) {
-  if (&signature == &kCertificatePatternSignature)
-    TranslateCertificatePattern(onc_object, ui_data);
-  else if (&signature == &kEAPSignature)
-    TranslateEAP(onc_object, ui_data);
-  else if (&signature == &kIPsecSignature)
-    TranslateIPsec(onc_object, ui_data);
-  else if (&signature == &kOpenVPNSignature)
-    TranslateOpenVPN(onc_object, ui_data);
-
-  // Recurse into nested objects.
-  for (base::DictionaryValue::Iterator it(onc_object); !it.IsAtEnd();
-       it.Advance()) {
-    const base::DictionaryValue* inner_object;
-    if (!it.value().GetAsDictionary(&inner_object))
-      continue;
-
-    const OncFieldSignature* field_signature =
-        GetFieldSignature(signature, it.key());
-
-    TranslateONCHierarchy(*field_signature->value_signature, *inner_object,
-                          ui_data);
-  }
-}
-
-}  // namespace
-
-scoped_ptr<NetworkUIData> CreateUIData(
-    ONCSource onc_source,
-    const base::DictionaryValue& onc_network) {
-  scoped_ptr<NetworkUIData> ui_data(new NetworkUIData());
-  TranslateONCHierarchy(kNetworkConfigurationSignature, onc_network,
-                        ui_data.get());
-
-  ui_data->set_onc_source(onc_source);
-
-  return ui_data.Pass();
 }
 
 }  // namespace onc

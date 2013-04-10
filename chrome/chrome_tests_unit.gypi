@@ -543,7 +543,7 @@
         'browser/chromeos/cros/network_library_impl_stub.cc',
         'browser/chromeos/cros/network_library_impl_stub.h',
         'browser/chromeos/cros/network_library_unittest.cc',
-        'browser/chromeos/cros/network_ui_data_unittest.cc',
+        'browser/chromeos/cros/network_property_ui_data_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
         'browser/chromeos/dbus/printer_service_provider_unittest.cc',

@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"

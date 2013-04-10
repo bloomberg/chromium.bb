@@ -2,29 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_CERTIFICATE_PATTERN_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_CERTIFICATE_PATTERN_H_
+#ifndef CHROMEOS_NETWORK_CERTIFICATE_PATTERN_H_
+#define CHROMEOS_NETWORK_CERTIFICATE_PATTERN_H_
 
-#include <list>
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
-}
-
-namespace net {
-struct CertPrincipal;
-class X509Certificate;
 }
 
 namespace chromeos {
 
 // Class to represent the DER fields of an issuer or a subject in a
 // certificate and compare them.
-class IssuerSubjectPattern {
+class CHROMEOS_EXPORT IssuerSubjectPattern {
  public:
   IssuerSubjectPattern();
   IssuerSubjectPattern(const std::string& common_name,
@@ -32,12 +26,6 @@ class IssuerSubjectPattern {
                        const std::string& organization,
                        const std::string& organizational_unit);
   ~IssuerSubjectPattern();
-
-  // Returns true only if any fields set in this pattern match exactly with
-  // similar fields in the principal.  If organization_ or organizational_unit_
-  // are set, then at least one of the organizations or units in the principal
-  // must match.
-  bool Matches(const net::CertPrincipal& principal) const;
 
   // Returns true if all fields in the pattern are empty.
   bool Empty() const;
@@ -82,7 +70,7 @@ class IssuerSubjectPattern {
 
 // A class to contain a certificate pattern and find existing matches to the
 // pattern in the certificate database.
-class CertificatePattern {
+class CHROMEOS_EXPORT CertificatePattern {
  public:
   CertificatePattern();
   ~CertificatePattern();
@@ -93,10 +81,6 @@ class CertificatePattern {
 
   // Clears out all the values in this pattern (so Empty returns true).
   void Clear();
-
-  // Fetches the matching certificate that has the latest valid start date.
-  // Returns a NULL refptr if there is no such match.
-  scoped_refptr<net::X509Certificate> GetMatch() const;
 
   void set_issuer_ca_ref_list(const std::vector<std::string>& ref_list) {
     issuer_ca_ref_list_ = ref_list;
@@ -137,4 +121,4 @@ class CertificatePattern {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_CERTIFICATE_PATTERN_H_
+#endif  // CHROMEOS_NETWORK_CERTIFICATE_PATTERN_H_

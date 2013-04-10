@@ -10,13 +10,14 @@
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "chrome/browser/chromeos/cros/certificate_pattern.h"
+#include "chrome/browser/chromeos/cros/certificate_pattern_matcher.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/cros_network_functions.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -778,7 +779,7 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern().GetMatch();
+      GetCertificateMatch(client_cert_pattern());
   if (matching_cert.get()) {
     std::string client_cert_id =
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle());
@@ -1300,7 +1301,7 @@ void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern().GetMatch();
+      GetCertificateMatch(client_cert_pattern());
   if (matching_cert.get()) {
     SetEAPClientCertPkcs11Id(
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));

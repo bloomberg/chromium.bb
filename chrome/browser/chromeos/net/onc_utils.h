@@ -27,15 +27,6 @@ namespace onc {
 scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     const base::DictionaryValue& onc_proxy_settings);
 
-// Creates a NetworkUIData object from |onc_network|, which has to be a valid
-// ONC NetworkConfiguration dictionary.
-//
-// This function is used to create the "UIData" field of the Shill
-// configuration.
-scoped_ptr<NetworkUIData> CreateUIData(
-    ONCSource onc_source,
-    const base::DictionaryValue& onc_network);
-
 }  // namespace onc
 }  // namespace chromeos
 

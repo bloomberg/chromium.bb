@@ -362,12 +362,6 @@ enum EAPPhase2Auth {
   EAP_PHASE_2_AUTH_CHAP     = 5
 };
 
-enum ClientCertType {
-  CLIENT_CERT_TYPE_NONE    = 0,
-  CLIENT_CERT_TYPE_REF     = 1,
-  CLIENT_CERT_TYPE_PATTERN = 2
-};
-
 // Misc enums
 enum NetworkProfileType {
   PROFILE_NONE,    // Not in any profile (not remembered).

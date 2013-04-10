@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chromeos/network/network_ui_data.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_NET_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
+#ifndef CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
+#define CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -47,7 +47,7 @@ namespace chromeos {
 //
 // TODO(pneubeck): Enforce network policies.
 
-class ManagedNetworkConfigurationHandler {
+class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
  public:
   // Initializes the singleton.
   static void Initialize();
@@ -118,4 +118,4 @@ class ManagedNetworkConfigurationHandler {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
+#endif  // CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_

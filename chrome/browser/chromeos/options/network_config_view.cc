@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"

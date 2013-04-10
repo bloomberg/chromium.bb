@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/views/controls/button/button.h"  // views::ButtonListener
 #include "ui/views/window/dialog_delegate.h"
@@ -27,6 +26,7 @@ class LabelButton;
 namespace chromeos {
 
 class ChildNetworkConfigView;
+class NetworkPropertyUIData;
 
 // A dialog box for showing a password textfield.
 class NetworkConfigView : public views::DialogDelegateView,
