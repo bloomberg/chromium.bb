@@ -157,7 +157,7 @@ bool NativeAppWindowGtk::IsMinimized() const {
 }
 
 bool NativeAppWindowGtk::IsFullscreen() const {
-  return false;
+  return (state_ & GDK_WINDOW_STATE_FULLSCREEN);
 }
 
 gfx::NativeWindow NativeAppWindowGtk::GetNativeWindow() {
