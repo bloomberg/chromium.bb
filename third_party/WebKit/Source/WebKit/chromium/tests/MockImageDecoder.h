@@ -33,8 +33,6 @@ class MockImageDecoderClient {
 public:
     virtual void decoderBeingDestroyed() = 0;
     virtual void frameBufferRequested() = 0;
-    virtual void frameBuffersLocked() { }
-    virtual void frameBuffersUnlocked() { }
     virtual ImageFrame::FrameStatus frameStatus() = 0;
 };
 
@@ -76,13 +74,6 @@ public:
         m_frameBufferCache[0].setStatus(m_client->frameStatus());
         return &m_frameBufferCache[0];
     }
-
-    virtual bool lockFrameBuffers()
-    {
-        m_client->frameBuffersLocked();
-        return true;
-    }
-    virtual void unlockFrameBuffers() { m_client->frameBuffersUnlocked(); }
 
     int frameBufferRequestCount() const { return m_frameBufferRequestCount; }
 
