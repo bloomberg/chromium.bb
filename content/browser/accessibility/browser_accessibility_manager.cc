@@ -15,13 +15,6 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
   return BrowserAccessibility::Create();
 }
 
-// Start child IDs at -1 and decrement each time, because clients use
-// child IDs of 1, 2, 3, ... to access the children of an object by
-// index, so we use negative IDs to clearly distinguish between indices
-// and unique IDs.
-// static
-int32 BrowserAccessibilityManager::next_child_id_ = -1;
-
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
     !defined(TOOLKIT_GTK)
@@ -53,19 +46,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     SetFocus(root_, false);
 }
 
-// static
-int32 BrowserAccessibilityManager::GetNextChildID() {
-  // Get the next child ID, and wrap around when we get near the end
-  // of a 32-bit integer range. It's okay to wrap around; we just want
-  // to avoid it as long as possible because clients may cache the ID of
-  // an object for a while to determine if they've seen it before.
-  next_child_id_--;
-  if (next_child_id_ == -2000000000)
-    next_child_id_ = -1;
-
-  return next_child_id_;
-}
-
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   if (root_)
     root_->Destroy();
@@ -75,26 +55,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
   return root_;
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
-    int32 child_id) {
-  base::hash_map<int32, BrowserAccessibility*>::iterator iter =
-      child_id_map_.find(child_id);
-  if (iter != child_id_map_.end()) {
-    return iter->second;
-  } else {
-    return NULL;
-  }
-}
-
 BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
     int32 renderer_id) {
-  base::hash_map<int32, int32>::iterator iter =
-      renderer_id_to_child_id_map_.find(renderer_id);
-  if (iter == renderer_id_to_child_id_map_.end())
-    return NULL;
-
-  int32 child_id = iter->second;
-  return GetFromChildID(child_id);
+  base::hash_map<int32, BrowserAccessibility*>::iterator iter =
+      renderer_id_map_.find(renderer_id);
+  if (iter != renderer_id_map_.end())
+    return iter->second;
+  return NULL;
 }
 
 void BrowserAccessibilityManager::GotFocus(bool touch_event_context) {
@@ -124,17 +91,11 @@ bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
   return bounds.Contains(touch_point);
 }
 
-void BrowserAccessibilityManager::Remove(BrowserAccessibility* node) {
+void BrowserAccessibilityManager::RemoveNode(BrowserAccessibility* node) {
   if (node == focus_)
     SetFocus(root_, false);
-  int child_id = node->child_id();
   int renderer_id = node->renderer_id();
-  child_id_map_.erase(child_id);
-  DCHECK(renderer_id_to_child_id_map_[renderer_id] == child_id);
-  // Make sure we don't overwrite a newer entry (see UpdateNode for a possible
-  // corner case).
-  if (renderer_id_to_child_id_map_[renderer_id] == child_id)
-    renderer_id_to_child_id_map_.erase(renderer_id);
+  renderer_id_map_.erase(renderer_id);
 }
 
 void BrowserAccessibilityManager::OnAccessibilityNotifications(
@@ -294,13 +255,15 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateNode(
     BrowserAccessibility* parent,
     int32 renderer_id,
     int32 index_in_parent) {
-  BrowserAccessibility* instance = factory_->Create();
-  int32 child_id = GetNextChildID();
-  instance->InitializeTreeStructure(
-      this, parent, child_id, renderer_id, index_in_parent);
-  child_id_map_[child_id] = instance;
-  renderer_id_to_child_id_map_[renderer_id] = child_id;
-  return instance;
+  BrowserAccessibility* node = factory_->Create();
+  node->InitializeTreeStructure(
+      this, parent, renderer_id, index_in_parent);
+  AddNodeToMap(node);
+  return node;
+}
+
+void BrowserAccessibilityManager::AddNodeToMap(BrowserAccessibility* node) {
+  renderer_id_map_[node->renderer_id()] = node;
 }
 
 bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {

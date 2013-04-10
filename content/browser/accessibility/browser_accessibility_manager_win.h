@@ -38,12 +38,19 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   }
 
   // BrowserAccessibilityManager methods
-  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node);
+  virtual void AddNodeToMap(BrowserAccessibility* node);
+  virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;
+  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node)
+      OVERRIDE;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   void TrackScrollingObject(BrowserAccessibilityWin* node);
+
+  // Return a pointer to the object corresponding to the given windows-specific
+  // unique id, does not make a new reference.
+  BrowserAccessibilityWin* GetFromUniqueIdWin(LONG unique_id_win);
 
  private:
   // The closest ancestor HWND.
@@ -59,6 +66,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // post a notification directly on it when it reaches its destination.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   BrowserAccessibilityWin* tracked_scroll_object_;
+
+  // A mapping from the Windows-specific unique IDs (unique within the
+  // browser process) to renderer ids within this page.
+  base::hash_map<long, int32> unique_id_to_renderer_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

@@ -31,7 +31,6 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 BrowserAccessibility::BrowserAccessibility()
     : manager_(NULL),
       parent_(NULL),
-      child_id_(0),
       index_in_parent_(0),
       renderer_id_(0),
       role_(0),
@@ -54,12 +53,10 @@ void BrowserAccessibility::DetachTree(
 void BrowserAccessibility::InitializeTreeStructure(
     BrowserAccessibilityManager* manager,
     BrowserAccessibility* parent,
-    int32 child_id,
     int32 renderer_id,
     int32 index_in_parent) {
   manager_ = manager;
   parent_ = parent;
-  child_id_ = child_id;
   renderer_id_ = renderer_id;
   index_in_parent_ = index_in_parent;
 }
@@ -205,7 +202,7 @@ void BrowserAccessibility::Destroy() {
       AccessibilityNotificationObjectHide, this);
 
   instance_active_ = false;
-  manager_->Remove(this);
+  manager_->RemoveNode(this);
   NativeReleaseReference();
 }
 

@@ -91,6 +91,10 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT virtual ~BrowserAccessibilityWin();
 
+  // The Windows-specific unique ID, used as the child ID for MSAA methods
+  // like NotifyWinEvent, and as the unique ID for IAccessible2 and ISimpleDOM.
+  LONG unique_id_win() const { return unique_id_win_; }
+
   //
   // BrowserAccessibility methods.
   //
@@ -820,6 +824,11 @@ BrowserAccessibilityWin
   // does not make a new reference.
   BrowserAccessibilityWin* GetFromRendererID(int32 renderer_id);
 
+  // Windows-specific unique ID (unique within the browser process),
+  // used for get_accChild, NotifyWinEvent, and as the unique ID for
+  // IAccessible2 and ISimpleDOM.
+  LONG unique_id_win_;
+
   // IAccessible role and state.
   int32 ia_role_;
   int32 ia_state_;
@@ -859,6 +868,9 @@ BrowserAccessibilityWin
   // Collection of non-static text child indicies, each of which corresponds to
   // a hyperlink.
   std::vector<int32> hyperlinks_;
+
+  // The next unique id to use.
+  static LONG next_unique_id_win_;
 
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;

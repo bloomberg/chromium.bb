@@ -68,18 +68,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       int type,
       BrowserAccessibility* node) { }
 
-  // Returns the next unique child id.
-  static int32 GetNextChildID();
-
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
 
   // Removes a node from the manager.
-  void Remove(BrowserAccessibility* node);
-
-  // Return a pointer to the object corresponding to the given child_id,
-  // does not make a new reference.
-  BrowserAccessibility* GetFromChildID(int32 child_id);
+  virtual void RemoveNode(BrowserAccessibility* node);
 
   // Return a pointer to the object corresponding to the given renderer_id,
   // does not make a new reference.
@@ -163,6 +156,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
+  virtual void AddNodeToMap(BrowserAccessibility* node);
+
  private:
   // The following states keep track of whether or not the
   // on-screen keyboard is allowed to be shown.
@@ -200,9 +195,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       int32 index_in_parent);
 
  protected:
-  // The next unique id for a BrowserAccessibility instance.
-  static int32 next_child_id_;
-
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
 
@@ -217,12 +209,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // The on-screen keyboard state.
   OnScreenKeyboardState osk_state_;
 
-  // A mapping from the IDs of objects in the renderer, to the child IDs
-  // we use internally here.
-  base::hash_map<int32, int32> renderer_id_to_child_id_map_;
-
-  // A mapping from child IDs to BrowserAccessibility objects.
-  base::hash_map<int32, BrowserAccessibility*> child_id_map_;
+  // A mapping from renderer IDs to BrowserAccessibility objects.
+  base::hash_map<int32, BrowserAccessibility*> renderer_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };

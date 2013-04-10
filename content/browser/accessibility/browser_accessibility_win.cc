@@ -32,6 +32,9 @@ const GUID GUID_IAccessibleContentDocument = {
 
 const char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
 
+// static
+LONG BrowserAccessibilityWin::next_unique_id_win_ = -1;
+
 //
 // BrowserAccessibilityRelation
 //
@@ -188,6 +191,13 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
       ia2_state_(0),
       first_time_(true),
       old_ia_state_(0) {
+  // Start unique IDs at -1 and decrement each time, because get_accChild
+  // uses positive IDs to enumerate children, so we use negative IDs to
+  // clearly distinguish between indices and unique IDs.
+  unique_id_win_ = next_unique_id_win_;
+  next_unique_id_win_--;
+  if (next_unique_id_win_ > 0)
+    next_unique_id_win_ = -1;
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {
@@ -668,7 +678,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_uniqueID(LONG* unique_id) {
   if (!unique_id)
     return E_INVALIDARG;
 
-  *unique_id = child_id_;
+  *unique_id = unique_id_win_;
   return S_OK;
 }
 
@@ -2250,7 +2260,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
   *name_space_id = 0;
   *node_value = SysAllocString(value_.c_str());
   *num_children = children_.size();
-  *unique_id = child_id_;
+  *unique_id = unique_id_win_;
 
   if (ia_role_ == ROLE_SYSTEM_DOCUMENT) {
     *node_type = NODETYPE_DOCUMENT;
@@ -2879,17 +2889,17 @@ void BrowserAccessibilityWin::PostInitialize() {
         (ia_state_ & STATE_SYSTEM_FOCUSED) &&
         !(old_ia_state_ & STATE_SYSTEM_FOCUSED)) {
       ::NotifyWinEvent(EVENT_OBJECT_FOCUS, hwnd,
-                       OBJID_CLIENT, child_id());
+                       OBJID_CLIENT, unique_id_win());
     }
 
     if ((ia_state_ & STATE_SYSTEM_SELECTED) &&
         !(old_ia_state_ & STATE_SYSTEM_SELECTED)) {
       ::NotifyWinEvent(EVENT_OBJECT_SELECTIONADD, hwnd,
-                       OBJID_CLIENT, child_id());
+                       OBJID_CLIENT, unique_id_win());
     } else if (!(ia_state_ & STATE_SYSTEM_SELECTED) &&
                (old_ia_state_ & STATE_SYSTEM_SELECTED)) {
       ::NotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE, hwnd,
-                       OBJID_CLIENT, child_id());
+                       OBJID_CLIENT, unique_id_win());
     }
 
     old_ia_state_ = ia_state_;
@@ -2927,7 +2937,8 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
   if (child_id >= 1 && child_id <= static_cast<LONG>(children_.size()))
     return children_[child_id - 1]->ToBrowserAccessibilityWin();
 
-  return manager_->GetFromChildID(child_id)->ToBrowserAccessibilityWin();
+  return manager_->ToBrowserAccessibilityManagerWin()->
+      GetFromUniqueIdWin(child_id);
 }
 
 HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
