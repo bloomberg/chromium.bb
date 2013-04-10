@@ -3097,8 +3097,6 @@ webkit.org/b/101670 media/track/track-user-preferences.html [ Skip ]
 
 webkit.org/b/92835 [ Mac Win Debug ] svg/as-background-image/svg-as-background-5.html [ Slow ]
 
-webkit.org/b/92850 [ Linux Debug ] http/tests/websocket/tests/hybi/workers/close-code-and-reason.html [ Crash Pass ]
-
 webkit.org/b/92938 compositing/layer-creation/animation-overlap-with-children.html [ Failure Pass ]
 webkit.org/b/92938 virtual/softwarecompositing/layer-creation/animation-overlap-with-children.html [ Failure Pass ]
 
