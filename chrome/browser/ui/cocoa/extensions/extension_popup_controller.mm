@@ -81,7 +81,8 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
 class DevtoolsNotificationBridge : public content::NotificationObserver {
  public:
   explicit DevtoolsNotificationBridge(ExtensionPopupController* controller)
-    : controller_(controller) {}
+    : controller_(controller),
+      render_view_host_([controller_ extensionHost]->render_view_host()) {}
 
   virtual void Observe(
       int type,
@@ -96,16 +97,14 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         break;
       }
       case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED: {
-        RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
-        if (content::Details<RenderViewHost>(rvh) == details)
+        if (content::Details<RenderViewHost>(render_view_host_) == details)
           // Set the flag on the controller so the popup is not hidden when
           // the dev tools get focus.
           [controller_ setBeingInspected:YES];
         break;
       }
       case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED: {
-        RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
-        if (content::Details<RenderViewHost>(rvh) == details)
+        if (content::Details<RenderViewHost>(render_view_host_) == details)
           // Allow the devtools to finish detaching before we close the popup
           [controller_ performSelector:@selector(close)
                             withObject:nil
@@ -121,6 +120,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
  private:
   ExtensionPopupController* controller_;
+  // RenderViewHost for controller. Hold onto this separately because we need to
+  // know what it is for notifications, but our ExtensionHost may not be valid.
+  RenderViewHost* render_view_host_;
 };
 
 @implementation ExtensionPopupController
@@ -199,10 +201,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 - (void)windowWillClose:(NSNotification *)notification {
   [super windowWillClose:notification];
   gPopup = nil;
-  if (host_->view()) {
+  if (host_->view())
     host_->view()->set_container(NULL);
-    host_.reset();
-  }
+  host_.reset();
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
