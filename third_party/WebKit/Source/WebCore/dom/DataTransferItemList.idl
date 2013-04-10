@@ -30,9 +30,7 @@
 
 [
     IndexedGetter,
-#if defined(V8_BINDING) && V8_BINDING
     CustomDeleteProperty,
-#endif
     ImplementationLacksVTable
 ] interface DataTransferItemList {
     readonly attribute long length;

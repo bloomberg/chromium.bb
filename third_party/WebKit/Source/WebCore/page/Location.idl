@@ -27,9 +27,7 @@
  */
 
 [
-#if defined(V8_BINDING) && V8_BINDING
     CheckSecurity,
-#endif
     CustomNamedSetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
@@ -54,8 +52,6 @@
     readonly attribute DOMStringList ancestorOrigins;
 
     [NotEnumerable, Custom, Unforgeable, ReadOnly, ImplementedAs=toStringFunction] DOMString toString();
-#if defined(V8_BINDING) && V8_BINDING
     [NotEnumerable, Custom, Unforgeable, ReadOnly] any valueOf();
-#endif
 };
 

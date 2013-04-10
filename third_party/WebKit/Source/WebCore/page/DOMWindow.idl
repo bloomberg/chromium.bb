@@ -763,9 +763,7 @@
     [EnabledAtRuntime=mediaSource] attribute SourceBufferConstructor WebKitSourceBuffer;
     [EnabledAtRuntime=mediaSource] attribute SourceBufferListConstructor WebKitSourceBufferList;
 
-#if defined(V8_BINDING) && V8_BINDING
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
-#endif // defined(V8_BINDING)
 };
 

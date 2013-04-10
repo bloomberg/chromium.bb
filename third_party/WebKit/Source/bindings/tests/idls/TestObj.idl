@@ -134,7 +134,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void    methodWithOptionalStringIsUndefined([Optional=DefaultIsUndefined] DOMString str);
     void    methodWithOptionalStringIsNullString([Optional=DefaultIsNullString] DOMString str);
 
-#if defined(TESTING_V8) || defined(TESTING_JS)
     // 'Callback' extended attribute
     void    methodWithCallbackArg([Callback] TestCallback callback);
     void    methodWithNonCallbackArgAndCallbackArg(long nonCallback, [Callback] TestCallback callback);
@@ -142,9 +141,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     // static methods with 'Callback' extended attribute
     static void    staticMethodWithCallbackAndOptionalArg([Callback, Optional] TestCallback callback);
     static void    staticMethodWithCallbackArg([Callback] TestCallback callback);
-#endif
 
-#if defined(TESTING_V8)
     // 'EnforceRange' extended attribute
     void    methodWithEnforceRangeInt32([EnforceRange] long value);
     void    methodWithEnforceRangeUInt32([EnforceRange] unsigned long value);
@@ -155,7 +152,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [EnforceRange] attribute unsigned long enforcedRangeUnsignedLongAttr;
     [EnforceRange] attribute long long enforcedRangeLongLongAttr;
     [EnforceRange] attribute unsigned long long enforcedRangeUnsignedLongLongAttr;
-#endif
 
     // 'Conditional' extended attribute
     [Conditional=Condition1] attribute long conditionalAttr1;
@@ -173,14 +169,11 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     [Conditional=Condition1] const unsigned short CONDITIONAL_CONST = 0;
 
-#if defined(TESTING_V8) || defined(TESTING_JS)
     [CachedAttribute] readonly attribute any cachedAttribute1;
     [CachedAttribute] readonly attribute any cachedAttribute2;
-#endif
     
     attribute any anyAttribute;
 
-#if defined(TESTING_V8) || defined(TESTING_JS)
     // Overloads
     void    overloadedMethod(TestObj? objArg, [StrictTypeChecking] DOMString strArg);
     void    overloadedMethod(TestObj? objArg, [Optional] long longArg);
@@ -193,7 +186,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void    overloadedMethod(DOMString[] arrayArg);
     void    overloadedMethod(sequence<unsigned long> arrayArg);
     void    overloadedMethod(DOMString strArg);
-#endif
 
     // Class methods within JavaScript (like what's used for IDBKeyRange).
     static void classMethod();
@@ -206,7 +198,6 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     void classMethodWithClamp([Clamp] unsigned short objArgsShort, [Clamp] unsigned long objArgsLong);
 
-#if defined(TESTING_V8)
     // 'EnabledAtRuntime' methods and attributes.
     [EnabledAtRuntime] void enabledAtRuntimeMethod1(long longArg);
     [EnabledAtRuntime=FeatureName] void enabledAtRuntimeMethod2(long longArg);
@@ -217,21 +208,13 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [EnabledPerContext=FeatureName] void enabledPerContextMethod2(long longArg);
     [EnabledPerContext] attribute long enabledPerContextAttr1;
     [EnabledPerContext=FeatureName] attribute long enabledPerContextAttr2;
-#endif
 
-
-#if defined(TESTING_V8)
     attribute float[]                   floatArray;
     attribute double[]                  doubleArray;
-#endif
 
-#if defined(TESTING_JS)
     void methodWithUnsignedLongSequence(sequence<unsigned long> unsignedLongSequence);
-#endif
-#if defined(TESTING_V8) || defined(TESTING_JS)
     [RaisesException] DOMString[] stringArrayFunction(DOMString[] values);
     [RaisesException] DOMStringList domStringListFunction(DOMStringList values);
-#endif
 
     [CheckSecurityForNode] readonly attribute Document contentDocument;
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
@@ -287,11 +270,9 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     [GetterRaisesException] attribute long? nullableStringValue;
 
-#if defined(TESTING_V8)
     [PerWorldBindings] readonly attribute TestObj perWorldReadOnlyAttribute;
     [PerWorldBindings] attribute TestObj perWorldAttribute;
     [PerWorldBindings] void perWorldMethod();
     [PerWorldBindings] void overloadedPerWorldMethod(long longArg);
     [PerWorldBindings] void overloadedPerWorldMethod(DOMString strArg, long longArg);
-#endif
 };

@@ -45,7 +45,6 @@ class BindingsTests:
                'bindings/scripts/generate-bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
-               '--defines', 'TESTING_V8',
                '--generator', 'V8',
                '--outputDir', output_directory,
                '--supplementalDependencyFile', supplemental_dependency_file,
