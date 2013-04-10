@@ -2525,7 +2525,7 @@ struct kernel_statfs {
           #else
                              "daddu $29,16\n"
           #endif
-                             : "=&r" (__v0), "+r" (__r7)
+                             : "+r" (__v0), "+r" (__r7)
                              : "i"(-EINVAL), "i"(__NR_clone), "i"(__NR_exit),
                                "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
                                "r"(__ptid), "r"(__r7), "r"(__ctid)
