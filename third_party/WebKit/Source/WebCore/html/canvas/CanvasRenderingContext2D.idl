@@ -150,12 +150,10 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     void setAlpha([Optional=DefaultIsUndefined] float alpha);
     void setCompositeOperation([Optional=DefaultIsUndefined] DOMString compositeOperation);
 
-#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
     void setLineWidth([Optional=DefaultIsUndefined] float width);
     void setLineCap([Optional=DefaultIsUndefined] DOMString cap);
     void setLineJoin([Optional=DefaultIsUndefined] DOMString join);
     void setMiterLimit([Optional=DefaultIsUndefined] float limit);
-#endif
 
     void clearShadow();
 

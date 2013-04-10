@@ -23,8 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
-// Introduced in DOM Level 3:
 [
     ConstructorTemplate=Event
 ] interface CustomEvent : Event {
@@ -35,5 +33,3 @@
                          [Optional=DefaultIsUndefined] boolean cancelableArg, 
                          [Optional=DefaultIsUndefined] any detailArg);
 };
-#endif
-
