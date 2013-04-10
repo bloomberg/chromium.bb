@@ -70,7 +70,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 
   void VerifyTiles(float rect_scale,
                    gfx::Rect rect,
-                   base::Callback<void(Tile*)> callback) {
+                   base::Callback<void(Tile* tile)> callback) {
     Region remaining = rect;
     for (PictureLayerTiling::CoverageIterator iter(
              tiling_.get(), rect_scale, rect);
@@ -363,13 +363,36 @@ TEST(PictureLayerTilingTest, ExpandRectSquishedVertically) {
   EXPECT_TRUE(bounds.Contains(out));
 }
 
-TEST(PictureLayerTilingTest, ExpandRectOutOfBounds) {
-  gfx::Rect in(40, 50, 100, 200);
+TEST(PictureLayerTilingTest, ExpandRectOutOfBoundsFarAway) {
+  gfx::Rect in(400, 500, 100, 200);
   gfx::Rect bounds(0, 0, 10, 10);
   int64 target_area = 400 * 400;
   gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
       in, target_area, bounds);
   EXPECT_TRUE(out.IsEmpty());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectOutOfBoundsExpandedFullyCover) {
+  gfx::Rect in(40, 50, 100, 100);
+  gfx::Rect bounds(0, 0, 10, 10);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectOutOfBoundsExpandedPartlyCover) {
+  gfx::Rect in(600, 600, 100, 100);
+  gfx::Rect bounds(0, 0, 500, 500);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.right(), out.right());
+  EXPECT_EQ(bounds.bottom(), out.bottom());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() - out.height());
+  EXPECT_TRUE(bounds.Contains(out));
 }
 
 TEST(PictureLayerTilingTest, EmptyStartingRect) {
@@ -396,35 +419,35 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
 
   tiling_->UpdateTilePriorities(
       ACTIVE_TREE,
-      layer_bounds, // device viewport
-      gfx::Rect(layer_bounds), // viewport in layer space
-      layer_bounds, // last layer bounds
-      layer_bounds, // current layer bounds
-      1.f, // last contents scale
-      1.f, // current contents scale
-      gfx::Transform(), // last screen transform
-      gfx::Transform(), // current screen transform
-      1, // current frame number
-      1.0, // current frame time
-      false, // store screen space quads on tiles
-      10000); // max tiles in tile manager
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1,  // current frame number
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 
   // Make the viewport rect empty. All tiles are killed and become zombies.
   tiling_->UpdateTilePriorities(
       ACTIVE_TREE,
-      layer_bounds, // device viewport
-      gfx::Rect(), // viewport in layer space
-      layer_bounds, // last layer bounds
-      layer_bounds, // current layer bounds
-      1.f, // last contents scale
-      1.f, // current contents scale
-      gfx::Transform(), // last screen transform
-      gfx::Transform(), // current screen transform
-      2, // current frame number
-      2.0, // current frame time
-      false, // store screen space quads on tiles
-      10000); // max tiles in tile manager
+      layer_bounds,  // device viewport
+      gfx::Rect(),  // viewport in layer space
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      2,  // current frame number
+      2.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
 }
 

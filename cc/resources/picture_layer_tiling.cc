@@ -527,6 +527,8 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
+namespace {
+
 // This struct represents an event at which the expending rect intersects
 // one of its boundaries.  4 intersection events will occur during expansion.
 struct EdgeEvent {
@@ -534,6 +536,24 @@ struct EdgeEvent {
   int* num_edges;
   int distance;
 };
+
+// Compute the delta to expand from edges to cover target_area.
+int ComputeExpansionDelta(int num_x_edges, int num_y_edges,
+                          int width, int height,
+                          int64 target_area) {
+  // Compute coefficients for the quadratic equation:
+  //   a*x^2 + b*x + c = 0
+  int a = num_y_edges * num_x_edges;
+  int b = num_y_edges * width + num_x_edges * height;
+  int64 c = static_cast<int64>(width) * height - target_area;
+
+  // Compute the delta for our edges using the quadratic equation.
+  return a == 0 ? -c / b :
+     (-b + static_cast<int>(
+         std::sqrt(static_cast<int64>(b) * b - 4.0 * a * c))) / (2 * a);
+}
+
+}  // namespace
 
 gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
     gfx::Rect starting_rect,
@@ -545,9 +565,23 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   DCHECK(!bounding_rect.IsEmpty());
   DCHECK_GT(target_area, 0);
 
-  gfx::Rect rect = IntersectRects(starting_rect, bounding_rect);
-  if (rect.IsEmpty())
+  // Expand the starting rect to cover target_area.
+  int delta = ComputeExpansionDelta(
+      2, 2, starting_rect.width(), starting_rect.height(), target_area);
+  gfx::Rect expanded_starting_rect = starting_rect;
+  expanded_starting_rect.Inset(-delta, -delta);
+
+  gfx::Rect rect = IntersectRects(expanded_starting_rect, bounding_rect);
+  if (rect.IsEmpty()) {
+    // The starting_rect and bounding_rect are far away.
     return rect;
+  }
+  if (rect == expanded_starting_rect) {
+    // The expanded starting rect already covers target_area on bounding_rect.
+    return rect;
+  }
+
+  // Continue to expand rect to let it cover target_area.
 
   // These values will be updated by the loop and uses as the output.
   int origin_x = rect.x();
@@ -584,14 +618,8 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
       continue;
     }
 
-    // Compute coefficients for the quadraic equation.
-    int a = num_y_edges * num_x_edges;
-    int b = num_y_edges * width + num_x_edges * height;
-    int c = width * height - target_area;
-
-    // Compute the delta for our edges using the quadratic equation.
-    int delta = a == 0 ? -c / b :
-       (-b + static_cast<int>(std::sqrt(b * b - 4.0 * a * c))) / (2 * a);
+    int delta = ComputeExpansionDelta(
+        num_x_edges, num_y_edges, width, height, target_area);
 
     // Clamp delta to our event distance.
     if (delta > event.distance)
