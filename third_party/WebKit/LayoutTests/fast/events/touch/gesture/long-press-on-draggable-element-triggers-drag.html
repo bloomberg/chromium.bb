@@ -6,7 +6,8 @@
 <body onload="test()">
 <p>This test checks that a long press gesture on a draggable element starts a drag/drop session.</p>
 <div id="text">Testing</div>
-<div id="result">FAIL</div>
+<div id="dragResult">FAIL</div>
+<div id="mouseDownResult">PASS</div>
 <div id="draggableDiv" draggable='true'>Drag me</div>
 <script>
 function test()
@@ -17,7 +18,8 @@ function test()
     if (window.internals)
         internals.settings.setTouchDragDropEnabled(true);
 
-    document.ondragstart = function() { document.getElementById("result").innerHTML = "PASS"; }
+    document.ondragstart = function() { document.getElementById("dragResult").innerHTML = "PASS"; }
+    document.onmousedown = function() { document.getElementById("mouseDownResult").innerHTML = "FAIL"; }
 
     var dragableDiv = document.getElementById("draggableDiv");
 
@@ -28,7 +30,6 @@ function test()
         return;
     if (eventSender.gestureLongPress) {
         eventSender.gestureLongPress(x, y);
-        eventSender.mouseUp();
     } else {
         debug("gestureLongPress not implemented by this platform");
         return;

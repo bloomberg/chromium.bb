@@ -1286,6 +1286,13 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
     event.globalY = event.y;
     event.timeStampSeconds = getCurrentEventTimeSec(m_delegate);
     webview()->handleInputEvent(event);
+
+    // Long press might start a drag drop session. Complete it if so.
+    if (type == WebInputEvent::GestureLongPress && !currentDragData.isNull()) {
+        WebMouseEvent mouseEvent;
+        initMouseEvent(WebInputEvent::MouseDown, pressedButton, point, &mouseEvent, getCurrentEventTimeSec(m_delegate));
+        finishDragAndDrop(mouseEvent, WebKit::WebDragOperationNone);
+    }
 }
 
 void EventSender::gestureFlingCancel(const CppArgumentList& arguments, CppVariant* result)

@@ -1,10 +1,13 @@
 <html>
 <body onload="top.runTest()">
-<div id='mydiv' draggable='true' ondragstart='drag(event)' style='width:100px;height:100px;position:absolute;top:0px; left:0px; background-color:blue;'>
+<div id='mydiv' draggable='true' ondragstart='drag(event)' onmousedown='mousedown(event)' style='width:100px;height:100px;position:absolute;top:0px; left:0px; background-color:blue;'>
 Drag me</div>
 <script type='text/javascript'>
     function drag(event) {
         top.onDragStart();
+    }
+    function mousedown(event) {
+        top.onMouseDown();
     }
 </script>
 </body>

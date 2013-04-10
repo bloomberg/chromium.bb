@@ -7,13 +7,14 @@
 <iframe src="resources/drag-inside-iframe2.html"></iframe>
 <p>This test checks that a long press gesture on a draggable element in an iframe starts a drag/drop session.</p>
 <div id="text">Testing</div>
-<div id="result">FAIL</div>
+<div id="dragResult">FAIL</div>
+<div id="mouseDownResult">PASS</div>
 <script>
 function onDragStart() {
-    document.getElementById("result").innerHTML = "PASS";
-    if (window.testRunner) {
-        testRunner.notifyDone();
-    }
+    document.getElementById("dragResult").innerHTML = "PASS";
+}
+function onMouseDown() {
+    document.getElementById("mouseDownResult").innerHTML = "FAIL";
 }
 function runTest()
 {
@@ -27,14 +28,10 @@ function runTest()
         return;
     if (eventSender.gestureLongPress) {
         eventSender.gestureLongPress(50, 50);
-        eventSender.mouseUp();
     } else {
         debug("gestureLongPress not implemented by this platform");
         return;
     }
-}
-if (window.testRunner) {
-    testRunner.waitUntilDone();
 }
 </script>
 </body>

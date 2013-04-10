@@ -2476,22 +2476,22 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
 
 bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent)
 {
-    if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled()) {
+    if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         IntPoint adjustedPoint = gestureEvent.position();
 #if ENABLE(TOUCH_ADJUSTMENT)
         adjustGesturePosition(gestureEvent, adjustedPoint);
 #endif
-        PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 0, false, false, false, false, WTF::currentTime());
-        handleMousePressEvent(mouseDownEvent);
-        PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 0, false, false, false, false, WTF::currentTime());
+        PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
+            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
         m_didStartDrag = false;
         RefPtr<Frame> subframe = subframeForHitTestResult(mev);
-        if (subframe && !m_mouseDownMayStartDrag) {
-            if (subframe->eventHandler()->handleGestureLongPress(gestureEvent))
-                return true;
-        }
+        if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
+            return true;
+        m_mouseDownMayStartDrag = true;
+        dragState().m_dragSrc = 0;
+        m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
         handleDrag(mev, DontCheckDragHysteresis);
         if (m_didStartDrag)
             return true;
