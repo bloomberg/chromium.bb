@@ -29,11 +29,22 @@ enum DeviceType {
   FIXED,
 };
 
+// We are trying to figure out whether the drive is a fixed volume,
+// a removable storage, or a floppy. A "floppy" here means "a volume we
+// want to basically ignore because it won't fit media and will spin
+// if we touch it to get volume metadata." GetDriveType returns DRIVE_REMOVABLE
+// on either floppy or removable volumes. The DRIVE_CDROM type is handled
+// as a floppy, as are DRIVE_UNKNOWN and DRIVE_NO_ROOT_DIR, as there are
+// reports that some floppy drives don't report as DRIVE_REMOVABLE.
 DeviceType GetDeviceType(const string16& mount_point) {
-  if (GetDriveType(mount_point.c_str()) != DRIVE_REMOVABLE)
+  UINT drive_type = GetDriveType(mount_point.c_str());
+  if (drive_type == DRIVE_FIXED || drive_type == DRIVE_REMOTE ||
+      drive_type == DRIVE_RAMDISK) {
     return FIXED;
+  }
+  if (drive_type != DRIVE_REMOVABLE)
+    return FLOPPY;
 
-  // We don't consider floppy disks as removable, so check for that.
   string16 device = mount_point;
   if (EndsWith(mount_point, L"\\", false))
     device = mount_point.substr(0, device.length() - 1);
@@ -95,14 +106,8 @@ bool GetDeviceDetails(const base::FilePath& device_path,
   if (device_location)
     *device_location = mount_point;
 
-  // If we're adding a floppy drive, return without querying any more
-  // drive metadata -- it will cause the floppy drive to seek.
-  if (device_type == FLOPPY)
-    return true;
-
-  if (total_size_in_bytes)
-    *total_size_in_bytes = GetVolumeSize(mount_point);
-
+  // Note: experimentally this code does not spin a floppy drive. It
+  // returns a GUID associated with the device, not the volume.
   if (unique_id) {
     string16 guid;
     if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
@@ -119,6 +124,18 @@ bool GetDeviceDetails(const base::FilePath& device_path,
     *unique_id = UTF16ToUTF8(guid);
   }
 
+  // If we're adding a floppy drive, return without querying any more
+  // drive metadata -- it will cause the floppy drive to seek.
+  if (device_type == FLOPPY) {
+    DCHECK(!unique_id || !unique_id->empty());
+    return true;
+  }
+
+
+  if (total_size_in_bytes)
+    *total_size_in_bytes = GetVolumeSize(mount_point);
+
+
   if (name) {
     // NOTE: experimentally, this function returns false if there is no volume
     // name set.
@@ -134,6 +151,7 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                                   : device_path.LossyDisplayName();
   }
 
+  DCHECK(!unique_id || !unique_id->empty());
   return true;
 }
 
@@ -207,15 +225,10 @@ void VolumeMountWatcherWin::Init() {
   // When VolumeMountWatcherWin is created, the message pumps are not running
   // so a posted task from the constructor would never run. Therefore, do all
   // the initializations here.
-  // Disabled pending resolution of http://crbug.com/173953
-  // base::PostTaskAndReplyWithResult(task_runner_, FROM_HERE,
-  //     GetAttachedDevicesCallback(),
-  //     base::Bind(&VolumeMountWatcherWin::AddDevicesOnUIThread,
-  //                weak_factory_.GetWeakPtr()));
-
-  // This task is a mystery. Without it, the ToastCrasher test fails, but
-  // it isn't clear why. Need to move pool creation later?
-  task_runner_->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
+  base::PostTaskAndReplyWithResult(task_runner_, FROM_HERE,
+      GetAttachedDevicesCallback(),
+      base::Bind(&VolumeMountWatcherWin::AddDevicesOnUIThread,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void VolumeMountWatcherWin::AddDevicesOnUIThread(
@@ -251,6 +264,7 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
         volume_watcher, device_path));
     return;
   }
+  DCHECK(!unique_id.empty());
 
   chrome::MediaStorageUtil::Type type =
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;

@@ -322,7 +322,7 @@ TEST_F(StorageMonitorWinTest, DevicesAttachedAdjacentBits) {
   DoMassStorageDeviceAttachedTest(device_indices);
 }
 
-TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetached) {
+TEST_F(StorageMonitorWinTest, DevicesDetached) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -334,7 +334,7 @@ TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetached) {
   DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetachedHighBoundary) {
+TEST_F(StorageMonitorWinTest, DevicesDetachedHighBoundary) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -343,7 +343,7 @@ TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetachedHighBoundary) {
   DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetachedLowBoundary) {
+TEST_F(StorageMonitorWinTest, DevicesDetachedLowBoundary) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -352,7 +352,7 @@ TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetachedLowBoundary) {
   DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-TEST_F(StorageMonitorWinTest, DISABLED_DevicesDetachedAdjacentBits) {
+TEST_F(StorageMonitorWinTest, DevicesDetachedAdjacentBits) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -413,7 +413,7 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
   EXPECT_EQ(kAttachedDevicePath, checked_devices[1]);
 }
 
-TEST_F(StorageMonitorWinTest, DISABLED_DeviceInfoForPath) {
+TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
   PreAttachDevices();
 
   // An invalid path.

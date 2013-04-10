@@ -304,8 +304,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
 
   if (found_device && IsRemovableDevice(info.device_id)) {
     base::FilePath sub_folder_path;
-    if (path.value() != info.location) {
-      base::FilePath device_path(info.location);
+    base::FilePath device_path(info.location);
+    if (path != device_path) {
       bool success = device_path.AppendRelativePath(path, &sub_folder_path);
       DCHECK(success);
     }
