@@ -188,7 +188,8 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 using message_center::NotificationList;
 
 
-TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
+// Flakily fails. http://crbug.com/229791
+TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(get_message_center()));
 
@@ -209,7 +210,8 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
             tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
-TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
+// Flakily times out. http://crbug.com/229792
+TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(get_message_center()));
 
