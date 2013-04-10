@@ -19,5 +19,6 @@ const char kImageUrlKey[] = "image_url";
 const char kItemsKey[] = "items";
 const char kItemTitleKey[] = "title";
 const char kItemMessageKey[] = "message";
+const char kPrivateNeverTimeoutKey[] = "private_never_timeout";
 
 }  // namespace message_center

@@ -102,6 +102,10 @@ class Notification {
     return optional_fields_.get();
   }
 
+  // Marks this explicitly to prevent the timeout dismiss of notification.
+  // This is used by webkit notifications to keep the existing behavior.
+  void DisableTimeout();
+
   void Display() const { delegate()->Display(); }
   void Error() const { delegate()->Error(); }
   void Click() const { delegate()->Click(); }

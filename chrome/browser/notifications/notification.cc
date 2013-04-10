@@ -125,3 +125,11 @@ Notification& Notification::operator=(const Notification& notification) {
   delegate_ = notification.delegate();
   return *this;
 }
+
+void Notification::DisableTimeout() {
+#if defined(ENABLE_MESSAGE_CENTER)
+  if (!optional_fields_.get())
+    optional_fields_.reset(new base::DictionaryValue());
+  optional_fields_->SetBoolean(message_center::kPrivateNeverTimeoutKey, true);
+#endif
+}

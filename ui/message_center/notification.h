@@ -84,6 +84,8 @@ class MESSAGE_CENTER_EXPORT Notification {
   // The notification with lesser serial_number is considered 'older'.
   unsigned serial_number() { return serial_number_; }
 
+  bool never_timeout() const { return never_timeout_; }
+
  private:
   // Unpacks the provided |optional_fields| and applies the values to override
   // the notification's data members.
@@ -106,6 +108,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   bool shown_as_popup_;  // True if this has been shown as a popup.
   bool is_read_;  // True if this has been seen in the message center.
   bool is_expanded_;  // True if this has been expanded in the message center.
+  bool never_timeout_; // True if it doesn't timeout when it appears as a toast.
 
   DISALLOW_COPY_AND_ASSIGN(Notification);
 };

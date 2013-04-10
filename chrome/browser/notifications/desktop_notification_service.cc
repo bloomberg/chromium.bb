@@ -486,9 +486,12 @@ bool DesktopNotificationService::ShowDesktopNotification(
     ShowNotification(Notification(origin, params.contents_url, display_source,
         params.replace_id, proxy));
   } else {
-    ShowNotification(Notification(origin, params.icon_url, params.title,
+    Notification notification(origin, params.icon_url, params.title,
         params.body, params.direction, display_source, params.replace_id,
-        proxy));
+        proxy);
+    // The webkit notification doesn't timeout.
+    notification.DisableTimeout();
+    ShowNotification(notification);
   }
   return true;
 }

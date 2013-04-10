@@ -25,6 +25,9 @@ MESSAGE_CENTER_EXPORT extern const char kImageUrlKey[];
 MESSAGE_CENTER_EXPORT extern const char kItemsKey[];
 MESSAGE_CENTER_EXPORT extern const char kItemTitleKey[];
 MESSAGE_CENTER_EXPORT extern const char kItemMessageKey[];
+// This key should not be used by the extension API handler. It's not allowed
+// to use it there, it's used to cancel timeout for webkit notifications.
+MESSAGE_CENTER_EXPORT extern const char kPrivateNeverTimeoutKey[];
 
 enum NotificationType {
   NOTIFICATION_TYPE_SIMPLE,

@@ -40,6 +40,10 @@ class ToastContentsView : public views::WidgetDelegateView {
     if (notification->priority() > DEFAULT_PRIORITY)
       seconds = kAutocloseHighPriorityDelaySeconds;
     delay_ = base::TimeDelta::FromSeconds(seconds);
+
+    // Creates the timer only when it does the timeout (i.e. not never-timeout).
+    if (!notification->never_timeout())
+      timer_.reset(new base::OneShotTimer<views::Widget>);
   }
 
   views::Widget* CreateWidget(gfx::NativeView parent) {
@@ -72,10 +76,14 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   void SuspendTimer() {
-    timer_.Stop();
+    if (timer_.get())
+      timer_->Stop();
   }
 
   void RestartTimer() {
+    if (!timer_.get())
+      return;
+
     delay_ -= base::Time::Now() - start_time_;
     if (delay_ < base::TimeDelta())
       GetWidget()->Close();
@@ -84,11 +92,14 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   void StartTimer() {
+    if (!timer_.get())
+      return;
+
     start_time_ = base::Time::Now();
-    timer_.Start(FROM_HERE,
-                 delay_,
-                 base::Bind(&views::Widget::Close,
-                            base::Unretained(GetWidget())));
+    timer_->Start(FROM_HERE,
+                  delay_,
+                  base::Bind(&views::Widget::Close,
+                             base::Unretained(GetWidget())));
   }
 
   // Overridden from views::WidgetDelegate:
@@ -97,7 +108,7 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   virtual void WindowClosing() OVERRIDE {
-    if (timer_.IsRunning())
+    if (timer_.get() && timer_->IsRunning())
       SuspendTimer();
   }
 
@@ -136,7 +147,7 @@ class ToastContentsView : public views::WidgetDelegateView {
  private:
   base::TimeDelta delay_;
   base::Time start_time_;
-  base::OneShotTimer<views::Widget> timer_;
+  scoped_ptr<base::OneShotTimer<views::Widget> > timer_;
   base::WeakPtr<MessagePopupCollection> collection_;
 
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
