@@ -5,6 +5,8 @@
 #ifndef UI_GL_VSYNC_PROVIDER_H_
 #define UI_GL_VSYNC_PROVIDER_H_
 
+#include <queue>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/time.h"
@@ -53,6 +55,12 @@ class SyncControlVSyncProvider : public VSyncProvider {
   base::TimeTicks last_timebase_;
   uint64 last_media_stream_counter_;
   base::TimeDelta last_good_interval_;
+
+  // A short history of the last few computed intervals.
+  // We use this to filter out the noise in the computation resulting
+  // from configuration change (monitor reconfiguration, moving windows
+  // between monitors, suspend and resume, etc.).
+  std::queue<base::TimeDelta> last_computed_intervals_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncControlVSyncProvider);
 };
