@@ -9,20 +9,23 @@ function watchForTag(tagName, cb) {
   if (!document.body)
     return;
 
-  // Query tags already in the document.
-  var nodes = document.body.querySelectorAll(tagName);
-  for (var i = 0, node; node = nodes[i]; i++) {
-    cb(node);
+  function findChildTags(queryNode) {
+    forEach(queryNode.querySelectorAll(tagName), function(i, node) {
+      cb(node);
+    });
   }
+  // Query tags already in the document.
+  findChildTags(document.body);
 
   // Observe the tags added later.
   var documentObserver = new WebKitMutationObserver(function(mutations) {
     forEach(mutations, function(i, mutation) {
-      for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
+      forEach(mutation.addedNodes, function(i, addedNode) {
         if (addedNode.tagName == tagName) {
           cb(addedNode);
         }
-      }
+        findChildTags(addedNode);
+      });
     });
   });
   documentObserver.observe(document, {subtree: true, childList: true});
