@@ -154,7 +154,8 @@ public class AutofillDialog extends AlertDialog
         public String getPlaceholderForField(int section, int fieldType);
     }
 
-    protected AutofillDialog(Context context, AutofillDialogDelegate delegate) {
+    protected AutofillDialog(Context context, AutofillDialogDelegate delegate,
+            String useBillingForShippingText) {
         super(context);
         mDelegate = delegate;
 
@@ -166,6 +167,9 @@ public class AutofillDialog extends AlertDialog
         mContentView = (AutofillDialogContentView) getLayoutInflater().
                 inflate(R.layout.autofill_dialog_content, null);
         mContentView.setAutofillDialog(this);
+        CheckBox useBillingCheck = getUseBillingForShippingCheckBox();
+        useBillingCheck.setText(useBillingForShippingText);
+        useBillingCheck.setChecked(true);
         String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             labels[i] = mDelegate.getLabelForSection(i);
@@ -293,15 +297,24 @@ public class AutofillDialog extends AlertDialog
         }
 
         mDelegate.editingStart(section);
+        if (section == AutofillDialogConstants.SECTION_SHIPPING) {
+            getUseBillingForShippingCheckBox().setChecked(false);
+        }
         AutofillDialogMenuItem currentItem =
                 (AutofillDialogMenuItem) spinner.getItemAtPosition(position);
-        if (currentItem.mIndex == ADD_MENU_ITEM_INDEX) clearAutofillSectionFieldValues(section);
+        if (currentItem.mIndex == ADD_MENU_ITEM_INDEX) {
+            clearAutofillSectionFieldValues(section);
+        }
         mContentView.changeLayoutTo(AutofillDialogContentView.getLayoutModeForSection(section));
         getButton(BUTTON_POSITIVE).setText(R.string.autofill_positive_button_editing);
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> spinner) {
+    }
+
+    private CheckBox getUseBillingForShippingCheckBox() {
+        return (CheckBox) mContentView.findViewById(R.id.use_billing_checkbox);
     }
 
     /**
@@ -524,7 +537,7 @@ public class AutofillDialog extends AlertDialog
      * @return Whether the billing address should be used as shipping address.
      */
     public boolean shouldUseBillingForShipping() {
-        return false;
+        return getUseBillingForShippingCheckBox().isChecked();
     }
 
     /**

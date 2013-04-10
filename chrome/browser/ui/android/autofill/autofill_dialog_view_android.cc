@@ -37,11 +37,15 @@ AutofillDialogViewAndroid::~AutofillDialogViewAndroid() {}
 
 void AutofillDialogViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> use_billing_for_shipping_text =
+      base::android::ConvertUTF16ToJavaString(
+          env, controller_->UseBillingForShippingText());
   java_object_.Reset(Java_AutofillDialogGlue_create(
       env,
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
-          GetWindowAndroid()->GetJavaObject().obj()));
+          GetWindowAndroid()->GetJavaObject().obj(),
+      use_billing_for_shipping_text.obj()));
 }
 
 void AutofillDialogViewAndroid::Hide() {
