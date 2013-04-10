@@ -74,6 +74,9 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("extension_ime_description",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION));
+  localized_strings->SetString("noInputMethods",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS));
 
   input_method::InputMethodManager* manager =
       input_method::GetInputMethodManager();
@@ -141,6 +144,8 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 
 ListValue* CrosLanguageOptionsHandler::GetLanguageList(
     const input_method::InputMethodDescriptors& descriptors) {
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+
   std::set<std::string> language_codes;
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
@@ -181,9 +186,28 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   }
   DCHECK_EQ(display_names.size(), language_map.size());
 
+  // Collect the language codes from the supported accept-languages.
+  std::vector<std::string> accept_language_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
+
+  // Build the list of display names, and build the language map.
+  for (size_t i = 0; i < accept_language_codes.size(); ++i) {
+    // Skip this language if it was already added.
+    if (language_codes.find(accept_language_codes[i]) != language_codes.end())
+      continue;
+    string16 display_name =
+        l10n_util::GetDisplayNameForLocale(
+            accept_language_codes[i], app_locale, false);
+    string16 native_display_name =
+        l10n_util::GetDisplayNameForLocale(
+            accept_language_codes[i], accept_language_codes[i], false);
+    display_names.push_back(display_name);
+    language_map[display_name] =
+        std::make_pair(accept_language_codes[i], native_display_name);
+  }
+
   // Sort display names using locale specific sorter.
-  l10n_util::SortStrings16(g_browser_process->GetApplicationLocale(),
-                           &display_names);
+  l10n_util::SortStrings16(app_locale, &display_names);
 
   // Build the language list from the language map.
   ListValue* language_list = new ListValue();

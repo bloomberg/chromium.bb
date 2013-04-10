@@ -385,6 +385,9 @@ cr.define('options', function() {
         var languageCode = languageCodes[i];
         var inputMethodIds = this.languageCodeToInputMethodIdsMap_[
             languageCode];
+        if (!inputMethodIds)
+          continue;
+
         // Check if we have active input methods associated with the language.
         for (var j = 0; j < inputMethodIds.length; j++) {
           var inputMethodId = inputMethodIds[j];
@@ -578,6 +581,9 @@ cr.define('options', function() {
           method.hidden = true;
         }
       }
+
+      $('language-options-input-method-none').hidden =
+          (languageCode in this.languageCodeToInputMethodIdsMap_);
 
       if (focusInputMethodId == 'add') {
         $('language-options-add-button').focus();
@@ -798,6 +804,11 @@ cr.define('options', function() {
       // associated with the language code.
       var enginesToBeRemovedSet = {};
       var inputMethodIds = this.languageCodeToInputMethodIdsMap_[languageCode];
+
+      // If this language doesn't have any input methods, it can be deleted.
+      if (!inputMethodIds)
+        return true;
+
       for (var i = 0; i < inputMethodIds.length; i++) {
         enginesToBeRemovedSet[inputMethodIds[i]] = true;
       }
@@ -815,6 +826,9 @@ cr.define('options', function() {
         // we don't remove this time.
         var inputMethodIdsForAnotherLanguage =
             this.languageCodeToInputMethodIdsMap_[languageCodes[i]];
+        if (!inputMethodIdsForAnotherLanguage)
+          continue;
+
         for (var j = 0; j < inputMethodIdsForAnotherLanguage.length; j++) {
           var inputMethodId = inputMethodIdsForAnotherLanguage[j];
           if (inputMethodId in enginesToBeRemovedSet) {

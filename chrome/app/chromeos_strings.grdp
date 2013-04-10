@@ -1992,6 +1992,10 @@ Press any key to continue exploring.
            desc="The label for the section header for input methods">
     Input Method
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS"
+           desc="The label for languages with no Input Methods">
+    This language doesn't have any input methods
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON"
            desc="The label for the sign out button for changing UI language">
     Sign out
