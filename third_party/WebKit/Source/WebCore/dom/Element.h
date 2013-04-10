@@ -646,8 +646,8 @@ protected:
     void classAttributeChanged(const AtomicString& newClassString);
 
 private:
-    void updatePseudoElement(PseudoId, StyleChange = NoChange);
-    PassRefPtr<PseudoElement> createPseudoElementIfNeeded(PseudoId);
+    void updatePseudoElement(PseudoId, StyleChange);
+    void createPseudoElementIfNeeded(PseudoId);
     void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
 
     virtual bool areAuthorShadowsAllowed() const { return true; }
