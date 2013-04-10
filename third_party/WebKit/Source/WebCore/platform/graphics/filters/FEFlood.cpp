@@ -28,7 +28,49 @@
 #include "Filter.h"
 #include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
+#include "SkFlattenableBuffers.h"
+#include "SkImageFilter.h"
 #include "TextStream.h"
+
+namespace {
+
+class FloodImageFilter : public SkImageFilter {
+public:
+    FloodImageFilter(const SkColor& color)
+        : SkImageFilter(0, 0)
+        , m_color(color)
+    {
+    }
+    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(FloodImageFilter)
+
+    FloodImageFilter(SkFlattenableReadBuffer& buffer) : SkImageFilter(buffer)
+    {
+        m_color = buffer.readColor();
+    }
+
+    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
+    {
+        buffer.writeColor(m_color);
+    }
+
+    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix&, SkBitmap* result, SkIPoint*)
+    {
+        if (!src.width() || !src.height())
+            return false;
+
+        SkAutoTUnref<SkDevice> device(proxy->createDevice(src.width(), src.height()));
+        SkCanvas canvas(device.get());
+        SkPaint paint;
+        paint.setColor(m_color);
+        canvas.drawRect(SkRect::MakeWH(src.width(), src.height()), paint);
+        *result = device->accessBitmap(false);
+        return true;
+    }
+private:
+    SkColor m_color;
+};
+
+}; // unnamed namespace
 
 namespace WebCore {
 
@@ -78,6 +120,12 @@ void FEFlood::platformApplySoftware()
 
     Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
     resultImage->context()->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), color, ColorSpaceDeviceRGB);
+}
+
+SkImageFilter* FEFlood::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
+    return new FloodImageFilter(color.rgb());
 }
 
 void FEFlood::dump()

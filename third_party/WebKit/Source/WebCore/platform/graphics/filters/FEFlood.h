@@ -48,6 +48,7 @@ public:
 #if ENABLE(OPENCL)
     virtual bool platformApplyOpenCL();
 #endif
+    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
     virtual void dump();
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
