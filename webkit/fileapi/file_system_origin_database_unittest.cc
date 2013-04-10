@@ -258,4 +258,49 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   EXPECT_FALSE(file_util::PathExists(kGarbageDir));
 }
 
+TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
+  const leveldb::FileType kLevelDBFileTypes[] = {
+    leveldb::kLogFile,
+    leveldb::kDBLockFile,
+    leveldb::kTableFile,
+    leveldb::kDescriptorFile,
+    leveldb::kCurrentFile,
+    leveldb::kTempFile,
+    leveldb::kInfoLogFile,
+  };
+
+  for (size_t i = 0; i < arraysize(kLevelDBFileTypes); ++i) {
+    base::ScopedTempDir dir;
+    ASSERT_TRUE(dir.CreateUniqueTempDir());
+    const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
+    const base::FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);
+    EXPECT_FALSE(file_util::PathExists(kFSDir));
+    EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
+
+    const std::string kOrigin = "foo.example.com";
+    base::FilePath path;
+
+    scoped_ptr<FileSystemOriginDatabase> database(
+        new FileSystemOriginDatabase(kFSDir));
+    EXPECT_FALSE(database->HasOriginPath(kOrigin));
+    EXPECT_TRUE(database->GetPathForOrigin(kOrigin, &path));
+    EXPECT_FALSE(path.empty());
+    EXPECT_TRUE(database->GetPathForOrigin(kOrigin, &path));
+    EXPECT_TRUE(file_util::CreateDirectory(kFSDir.Append(path)));
+    database.reset();
+
+    DeleteDatabaseFile(kDBDir, kLevelDBFileTypes[i]);
+
+    database.reset(new FileSystemOriginDatabase(kFSDir));
+    std::vector<FileSystemOriginDatabase::OriginRecord> origins_in_db;
+    EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));
+
+    const std::string kOrigin2("piyo.example.org");
+    EXPECT_FALSE(database->HasOriginPath(kOrigin2));
+    EXPECT_TRUE(database->GetPathForOrigin(kOrigin2, &path));
+    EXPECT_FALSE(path.empty());
+    EXPECT_TRUE(database->HasOriginPath(kOrigin2));
+  }
+}
+
 }  // namespace fileapi

@@ -650,4 +650,27 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Failure) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
+TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_MissingManifest) {
+  base::FilePath::StringType kFileName = FPL("bar");
+
+  FileId file_id_prev;
+  CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
+  CreateFile(0, kFileName, FPL("fuga"), &file_id_prev);
+
+  const base::FilePath kDatabaseDirectory =
+      path().Append(kDirectoryDatabaseName);
+  CloseDatabase();
+
+  DeleteDatabaseFile(kDatabaseDirectory, leveldb::kDescriptorFile);
+
+  InitDatabase();
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+
+  FileId file_id;
+  EXPECT_TRUE(db()->GetChildWithName(0, kFileName, &file_id));
+  EXPECT_EQ(file_id_prev, file_id);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
 }  // namespace fileapi

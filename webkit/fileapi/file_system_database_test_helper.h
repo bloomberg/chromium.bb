@@ -20,6 +20,9 @@ void CorruptDatabase(const base::FilePath& db_path,
                      ptrdiff_t offset,
                      size_t size);
 
+void DeleteDatabaseFile(const base::FilePath& db_path,
+                        leveldb::FileType type);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_DATABASE_TEST_HELPER_H_

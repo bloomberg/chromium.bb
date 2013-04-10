@@ -84,7 +84,10 @@ bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
   }
   HandleError(FROM_HERE, status);
 
-  if (!status.IsCorruption())
+  // Corruption due to missing necessary MANIFEST-* file causes IOError instead
+  // of Corruption error.
+  // Try to repair database even when IOError case.
+  if (!status.IsCorruption() && !status.IsIOError())
     return false;
 
   switch (recovery_option) {

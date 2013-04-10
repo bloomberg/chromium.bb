@@ -79,4 +79,23 @@ void CorruptDatabase(const base::FilePath& db_path,
   base::ClosePlatformFile(file);
 }
 
+void DeleteDatabaseFile(const base::FilePath& db_path,
+                        leveldb::FileType type) {
+  file_util::FileEnumerator file_enum(db_path, false /* not recursive */,
+      file_util::FileEnumerator::DIRECTORIES |
+      file_util::FileEnumerator::FILES);
+  base::FilePath file_path;
+  while (!(file_path = file_enum.Next()).empty()) {
+    uint64 number = kuint64max;
+    leveldb::FileType file_type;
+    EXPECT_TRUE(leveldb::ParseFileName(FilePathToString(file_path.BaseName()),
+                                       &number, &file_type));
+    if (file_type == type) {
+      file_util::Delete(file_path, false);
+      // We may have multiple files for the same type, so don't break here.
+    }
+  }
+
+}
+
 }  // namespace fileapi
