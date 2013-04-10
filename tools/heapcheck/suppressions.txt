@@ -1826,26 +1826,3 @@
   fun:chromeos::input_method::Initialize
   fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
 }
-{
-   bug_227301a
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:disk_cache::InFlightBackendIO::GetWeakPtr
-   fun:disk_cache::BackendImpl::GetBackgroundQueue
-   fun:disk_cache::EntryImpl::OnEntryCreated
-   fun:disk_cache::BackendIO::OnDone
-   fun:disk_cache::InFlightBackendIO::OnOperationComplete
-   fun:disk_cache::InFlightIO::InvokeCallback
-   fun:disk_cache::BackgroundIO::OnIOSignalled
-}
-{
-   bug_227301b
-   Heapcheck:Leak
-   ...
-   fun:disk_cache::EntryImpl::PrepareTarget
-   fun:disk_cache::EntryImpl::InternalWriteData
-   fun:disk_cache::EntryImpl::WriteDataImpl
-   fun:disk_cache::BackendIO::ExecuteEntryOperation
-   fun:disk_cache::BackendIO::ExecuteOperation
-}
