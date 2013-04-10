@@ -368,6 +368,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
                                    prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
+  select_file_last_directory_.Init(prefs::kSelectFileLastDirectory,
+                                   prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
@@ -581,6 +583,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
     const base::FilePath pref_path = download_default_directory_.GetValue();
+    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
     if (drive::util::NeedsNamespaceMigration(pref_path)) {
       prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
                           drive::util::ConvertToMyDriveNamespace(pref_path));
@@ -596,6 +599,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN(
           "FileBrowser.DownloadDestination.IsGoogleDrive.Started",
           default_download_to_drive);
+  }
+  if (!pref_name || *pref_name == prefs::kSelectFileLastDirectory) {
+    const base::FilePath pref_path = select_file_last_directory_.GetValue();
+    // This pref can contain a Drive path, which needs to be updated due to
+    // namespaces introduced by crbug.com/174233.
+    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
+    if (drive::util::NeedsNamespaceMigration(pref_path)) {
+      prefs_->SetFilePath(prefs::kSelectFileLastDirectory,
+                          drive::util::ConvertToMyDriveNamespace(pref_path));
+    }
   }
 
   if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {

@@ -124,6 +124,7 @@ class Preferences : public PrefServiceSyncableObserver {
   BooleanPrefMember disable_drive_over_cellular_;
   BooleanPrefMember disable_drive_hosted_files_;
   FilePathPrefMember download_default_directory_;
+  FilePathPrefMember select_file_last_directory_;
 
   // Input method preferences.
   StringPrefMember preferred_languages_;

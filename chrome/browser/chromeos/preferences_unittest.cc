@@ -9,6 +9,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -57,6 +58,11 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   TestingPrefServiceSyncable prefs;
   Preferences::RegisterUserPrefs(prefs.registry());
   DownloadPrefs::RegisterUserPrefs(prefs.registry());
+  // kSelectFileLastDirectory is registered for Profile. Here we register it for
+  // testing.
+  prefs.registry()->RegisterStringPref(prefs::kSelectFileLastDirectory,
+                                       std::string(),
+                                       PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   StringPrefMember previous;
   previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);
