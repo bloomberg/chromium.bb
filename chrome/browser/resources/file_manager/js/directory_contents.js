@@ -827,22 +827,23 @@ DirectoryContentsDriveSearchMetadata.prototype.readNextChunk = function() {
     this.lastChunkReceived();
   }).bind(this);
 
-  var types = 'ALL';
+  var types;
   switch (this.searchType_) {
     case DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_ALL:
       types = 'ALL';
       break;
     case DirectoryContentsDriveSearchMetadata.SearchType.SEARCH_SHARED_WITH_ME:
       types = 'SHARED_WITH_ME';
+      break;
+    default:
+      throw Error('Unknown search type: ' + this.searchType_);
   }
-  // TODO(haruki): Pass the search type when searchDriveMetadata support is
-  // implemented.
-  // var searchParams = {
-  //   'query': this.query_,
-  //   'types': types,
-  //   'maxResults': 500,
-  // };
-  chrome.fileBrowserPrivate.searchDriveMetadata(this.query_, searchCallback);
+  var searchParams = {
+    'query': this.query_,
+    'types': types,
+    'maxResults': 500
+  };
+  chrome.fileBrowserPrivate.searchDriveMetadata(searchParams, searchCallback);
 };
 
 /**
