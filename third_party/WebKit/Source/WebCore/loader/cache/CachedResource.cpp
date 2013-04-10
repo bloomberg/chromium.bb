@@ -147,7 +147,6 @@ static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type 
     return ResourceLoadPriorityLow;
 }
 
-#if PLATFORM(CHROMIUM)
 static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource::Type type)
 {
     switch (type) {
@@ -185,7 +184,6 @@ static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource
     ASSERT_NOT_REACHED();
     return ResourceRequest::TargetIsSubresource;
 }
-#endif
 
 DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, cachedResourceLeakCounter, ("CachedResource"));
 
@@ -304,10 +302,8 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
     m_options = options;
     m_loading = true;
 
-#if PLATFORM(CHROMIUM)
     if (m_resourceRequest.targetType() == ResourceRequest::TargetIsUnspecified)
         m_resourceRequest.setTargetType(cachedResourceTypeToTargetType(type()));
-#endif
 
     if (!accept().isEmpty())
         m_resourceRequest.setHTTPAccept(accept());

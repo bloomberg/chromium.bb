@@ -41,9 +41,7 @@
 #include "ScrollbarTheme.h"
 #include <wtf/PassOwnPtr.h>
 
-#if PLATFORM(CHROMIUM)
 #include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -145,9 +143,7 @@ void ScrollableArea::notifyScrollPositionChanged(const IntPoint& position)
 
 void ScrollableArea::scrollPositionChanged(const IntPoint& position)
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("webkit", "ScrollableArea::scrollPositionChanged");
-#endif
 
     IntPoint oldPosition = scrollPosition();
     // Tell the derived class to scroll its contents.

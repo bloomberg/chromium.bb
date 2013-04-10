@@ -41,9 +41,7 @@
 #include "LevelDBTransaction.h"
 #include "SecurityOrigin.h"
 #include "SharedBuffer.h"
-#if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
-#endif
 #include <wtf/Assertions.h>
 
 namespace WebCore {
@@ -348,9 +346,7 @@ IDBBackingStore::IDBBackingStore()
     : m_weakFactory(this)
 {
     // This constructor should only be used in unit tests.
-#if PLATFORM(CHROMIUM)
     ASSERT(WebKit::Platform::current()->unitTestSupport());
-#endif
 }
 
 IDBBackingStore::~IDBBackingStore()

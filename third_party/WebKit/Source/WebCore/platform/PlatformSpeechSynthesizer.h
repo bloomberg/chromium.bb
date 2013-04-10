@@ -32,12 +32,10 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(CHROMIUM)
 namespace WebKit {
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 }
-#endif
 
 namespace WebCore {
 
@@ -85,10 +83,8 @@ protected:
 private:
     PlatformSpeechSynthesizerClient* m_speechSynthesizerClient;
 
-#if PLATFORM(CHROMIUM)
     OwnPtr<WebKit::WebSpeechSynthesizer> m_webSpeechSynthesizer;
     OwnPtr<WebKit::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;
-#endif
 };
     
 } // namespace WebCore

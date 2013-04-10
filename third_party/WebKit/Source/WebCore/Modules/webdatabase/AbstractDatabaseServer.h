@@ -59,24 +59,7 @@ public:
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage, OpenAttempt = FirstTryToOpenDatabase) = 0;
 
-#if !PLATFORM(CHROMIUM)
-    virtual bool hasEntryForOrigin(SecurityOrigin*) = 0;
-    virtual void origins(Vector<RefPtr<SecurityOrigin> >& result) = 0;
-    virtual bool databaseNamesForOrigin(SecurityOrigin*, Vector<String>& result) = 0;
-    virtual DatabaseDetails detailsForNameAndOrigin(const String&, SecurityOrigin*) = 0;
-
-    virtual unsigned long long usageForOrigin(SecurityOrigin*) = 0;
-    virtual unsigned long long quotaForOrigin(SecurityOrigin*) = 0;
-
-    virtual void setQuota(SecurityOrigin*, unsigned long long) = 0;
-
-    virtual void deleteAllDatabases() = 0;
-    virtual bool deleteOrigin(SecurityOrigin*) = 0;
-    virtual bool deleteDatabase(SecurityOrigin*, const String& name) = 0;
-
-#else // PLATFORM(CHROMIUM)
     virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name) = 0;
-#endif // PLATFORM(CHROMIUM)
 
     virtual void interruptAllDatabasesForContext(const DatabaseBackendContext*) = 0;
 

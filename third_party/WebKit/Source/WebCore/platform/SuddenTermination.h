@@ -33,12 +33,6 @@ namespace WebCore {
     // On Mac, these are thin wrappers around Mac OS X functions of the same name.
     void disableSuddenTermination();
     void enableSuddenTermination();
-
-#if !PLATFORM(CHROMIUM)
-    inline void disableSuddenTermination() { }
-    inline void enableSuddenTermination() { }
-#endif
-
 } // namespace WebCore
 
 #endif // SuddenTermination_h

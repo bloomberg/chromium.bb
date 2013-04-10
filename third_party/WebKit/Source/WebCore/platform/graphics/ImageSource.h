@@ -42,13 +42,9 @@ class IntPoint;
 class IntSize;
 class SharedBuffer;
 
-#if PLATFORM(CHROMIUM)
 class DeferredImageDecoder;
 typedef DeferredImageDecoder NativeImageDecoder;
 typedef DeferredImageDecoder* NativeImageDecoderPtr;
-#else
-typedef ImageDecoder NativeImageDecoder;
-#endif
 
 // Right now GIFs are the only recognized image format that supports animation.
 // The animation system and the constants below are designed with this in mind.

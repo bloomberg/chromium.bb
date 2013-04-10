@@ -87,24 +87,7 @@ public:
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
-#if !PLATFORM(CHROMIUM)
-    bool hasEntryForOrigin(SecurityOrigin*);
-    void origins(Vector<RefPtr<SecurityOrigin> >& result);
-    bool databaseNamesForOrigin(SecurityOrigin*, Vector<String>& result);
-    DatabaseDetails detailsForNameAndOrigin(const String&, SecurityOrigin*);
-
-    unsigned long long usageForOrigin(SecurityOrigin*);
-    unsigned long long quotaForOrigin(SecurityOrigin*);
-
-    void setQuota(SecurityOrigin*, unsigned long long);
-
-    void deleteAllDatabases();
-    bool deleteOrigin(SecurityOrigin*);
-    bool deleteDatabase(SecurityOrigin*, const String& name);
-
-#else // PLATFORM(CHROMIUM)
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
-#endif // PLATFORM(CHROMIUM)
 
     void interruptAllDatabasesForContext(ScriptExecutionContext*);
 

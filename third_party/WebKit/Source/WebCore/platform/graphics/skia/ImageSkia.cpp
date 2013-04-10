@@ -52,9 +52,7 @@
 #include <limits>
 #include <math.h>
 
-#if PLATFORM(CHROMIUM)
 #include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -295,9 +293,7 @@ static SkBitmap extractScaledImageFragment(const NativeImageSkia& bitmap, const 
 // scaling or translation.
 static void drawResampledBitmap(PlatformContextSkia* context, SkPaint& paint, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect)
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("skia", "drawResampledBitmap");
-#endif
     // We want to scale |destRect| with transformation in the canvas to obtain
     // the final scale. The final scale is a combination of scale transform
     // in canvas and explicit scaling (srcRect and destRect).
@@ -358,9 +354,7 @@ static bool hasNon90rotation(PlatformContextSkia* context)
 
 static void paintSkBitmap(PlatformContextSkia* platformContext, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("skia", "paintSkBitmap");
-#endif
     SkPaint paint;
     paint.setXfermodeMode(compOp);
     paint.setAlpha(platformContext->getNormalizedAlpha());
@@ -464,9 +458,7 @@ void Image::drawPattern(GraphicsContext* context,
                         const FloatRect& destRect,
                         BlendMode)
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("skia", "Image::drawPattern");
-#endif
     RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame();
     if (!bitmap)
         return;

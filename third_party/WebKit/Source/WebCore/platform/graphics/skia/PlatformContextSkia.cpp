@@ -50,9 +50,7 @@
 #include <wtf/MathExtras.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(CHROMIUM)
 #include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -568,9 +566,7 @@ void PlatformContextSkia::setDashPathEffect(SkDashPathEffect* dash)
 
 const SkBitmap* PlatformContextSkia::bitmap() const
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("skia", "PlatformContextSkia::bitmap");
-#endif
     return &m_canvas->getDevice()->accessBitmap(false);
 }
 

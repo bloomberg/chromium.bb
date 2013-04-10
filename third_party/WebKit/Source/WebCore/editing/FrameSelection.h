@@ -328,13 +328,6 @@ inline void FrameSelection::setTypingStyle(PassRefPtr<EditingStyle> style)
 {
     m_typingStyle = style;
 }
-
-#if !(PLATFORM(CHROMIUM))
-inline void FrameSelection::notifyAccessibilityForSelectionChange()
-{
-}
-#endif
-
 } // namespace WebCore
 
 #ifndef NDEBUG

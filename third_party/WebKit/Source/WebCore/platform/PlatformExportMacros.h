@@ -32,8 +32,7 @@
 #include <wtf/Platform.h>
 #include <wtf/ExportMacros.h>
 
-#if defined(BUILDING_WebCore) || defined(BUILDING_WebKit) || \
-    defined(STATICALLY_LINKED_WITH_WebCore) || defined(STATICALLY_LINKED_WITH_WebKit)
+#if defined(BUILDING_WebCore) || defined(BUILDING_WebKit) ||     defined(STATICALLY_LINKED_WITH_WebCore) || defined(STATICALLY_LINKED_WITH_WebKit)
 #define WEBCORE_IS_LINKED_IN_SAME_BINARY 1
 #endif
 

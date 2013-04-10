@@ -49,9 +49,7 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/StringHash.h>
 
-#if PLATFORM(CHROMIUM)
 #include "DatabaseObserver.h" // For error reporting.
-#endif
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -292,12 +290,8 @@ public:
     }
     ~DoneCreatingDatabaseOnExitCaller()
     {
-#if !PLATFORM(CHROMIUM)
-        DatabaseTracker::tracker().doneCreatingDatabase(m_database);
-#else
         if (!m_openSucceeded)
             DatabaseTracker::tracker().failedToOpenDatabase(m_database);
-#endif            
     }
 
     void setOpenSucceeded() { m_openSucceeded = true; }
@@ -336,7 +330,6 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
             currentVersion = entry->value.isNull() ? emptyString() : entry->value.isolatedCopy();
             LOG(StorageAPI, "Current cached version for guid %i is %s", m_guid, currentVersion.ascii().data());
 
-#if PLATFORM(CHROMIUM)
             // Note: In multi-process browsers the cached value may be inaccurate, but
             // we cannot read the actual version from the database without potentially
             // inducing a form of deadlock, a busytimeout error when trying to
@@ -351,7 +344,6 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
                 updateGuidVersionMap(m_guid, currentVersion);
             }
             m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
-#endif
         } else {
             LOG(StorageAPI, "No cached version for guid %i", m_guid);
 
@@ -525,14 +517,9 @@ void DatabaseBackendBase::setCachedVersion(const String& actualVersion)
 bool DatabaseBackendBase::getActualVersionForTransaction(String &actualVersion)
 {
     ASSERT(m_sqliteDatabase.transactionInProgress());
-#if PLATFORM(CHROMIUM)
     // Note: In multi-process browsers the cached value may be inaccurate.
     // So we retrieve the value from the database and update the cached value here.
     return getVersionFromDatabase(actualVersion, true);
-#else
-    actualVersion = getCachedVersion();
-    return true;
-#endif
 }
 
 void DatabaseBackendBase::disableAuthorizer()
@@ -617,7 +604,6 @@ bool DatabaseBackendBase::isInterrupted()
     return m_sqliteDatabase.isInterrupted();
 }
 
-#if PLATFORM(CHROMIUM)
 // These are used to generate histograms of errors seen with websql.
 // See about:histograms in chromium.
 void DatabaseBackendBase::reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
@@ -650,6 +636,5 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
     DatabaseObserver::reportVacuumDatabaseResult(this, sqliteErrorCode);
 }
 
-#endif // PLATFORM(CHROMIUM)
 
 } // namespace WebCore

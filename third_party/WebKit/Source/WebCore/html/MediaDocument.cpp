@@ -166,22 +166,6 @@ void MediaDocument::defaultEventHandler(Event* event)
     if (!targetNode)
         return;
 
-#if !PLATFORM(CHROMIUM)
-    if (HTMLVideoElement* video = ancestorVideoElement(targetNode)) {
-        if (event->type() == eventNames().clickEvent) {
-            if (!video->canPlay()) {
-                video->pause();
-                event->setDefaultHandled();
-            }
-        } else if (event->type() == eventNames().dblclickEvent) {
-            if (video->canPlay()) {
-                video->play();
-                event->setDefaultHandled();
-            }
-        }
-    }
-#endif
-
     if (event->type() == eventNames().keydownEvent && event->isKeyboardEvent()) {
         HTMLVideoElement* video = descendentVideoElement(targetNode);
         if (!video)

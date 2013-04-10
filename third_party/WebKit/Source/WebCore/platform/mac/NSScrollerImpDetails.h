@@ -110,18 +110,7 @@ typedef NSInteger NSScrollerKnobStyle;
 
 namespace WebCore {
 
-#if PLATFORM(CHROMIUM)
 bool isScrollbarOverlayAPIAvailable();
-#else
-static inline bool isScrollbarOverlayAPIAvailable()
-{
-#if USE(SCROLLBAR_PAINTER)
-    return true;
-#else
-    return false;
-#endif
-}
-#endif
 
 NSScrollerStyle recommendedScrollerStyle();
 

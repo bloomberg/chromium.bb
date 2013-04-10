@@ -240,9 +240,7 @@ void WorkerContext::importScripts(const Vector<String>& urls, ExceptionCode& ec)
 
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
-#if PLATFORM(CHROMIUM)
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
-#endif
         scriptLoader->loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NETWORK_ERR exception and abort all these steps.

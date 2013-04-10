@@ -83,9 +83,7 @@
 #include "SVGSVGElement.h"
 #endif
 
-#if PLATFORM(CHROMIUM)
 #include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -958,9 +956,7 @@ void FrameView::layout(bool allowSubtree)
     if (m_inLayout)
         return;
 
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT0("webkit", "FrameView::layout");
-#endif
 
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtr<FrameView> protector(this);
@@ -1178,10 +1174,8 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-#if PLATFORM(CHROMIUM)
     if (AXObjectCache* cache = root->document()->existingAXObjectCache())
         cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
-#endif
     updateAnnotatedRegions();
 
     ASSERT(!root->needsLayout());
@@ -1310,12 +1304,10 @@ bool FrameView::useSlowRepaints(bool considerOverlap) const
     if (contentsInCompositedLayer())
         return mustBeSlow;
 
-#if PLATFORM(CHROMIUM)
     // The chromium compositor does not support scrolling a non-composited frame within a composited page through
     // the fast scrolling path, so force slow scrolling in that case.
     if (m_frame->ownerElement() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->view()->hasCompositedContent())
         return true;
-#endif
 
     bool isOverlapped = m_isOverlapped && considerOverlap;
 

@@ -113,14 +113,6 @@ static ScrollbarPainterMap* scrollbarMap()
 
 namespace WebCore {
 
-#if !PLATFORM(CHROMIUM)
-ScrollbarTheme* ScrollbarTheme::nativeTheme()
-{
-    DEFINE_STATIC_LOCAL(ScrollbarThemeMac, theme, ());
-    return &theme;
-}
-#endif
-
 // FIXME: Get these numbers from CoreUI.
 static int cRealButtonLength[] = { 28, 21 };
 static int cButtonHitInset[] = { 3, 2 };

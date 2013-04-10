@@ -136,7 +136,6 @@ namespace WebCore {
             return m_bitmap->bitmap().getAddr32(x, y);
         }
 
-#if PLATFORM(CHROMIUM)
         void setSkBitmap(const SkBitmap& bitmap)
         {
             m_bitmap = NativeImageSkia::create(bitmap);
@@ -153,7 +152,6 @@ namespace WebCore {
         }
 
         SkBitmap::Allocator* allocator() const { return m_allocator; }
-#endif
 
         // Use fix point multiplier instead of integer division or floating point math.
         // This multipler produces exactly the same result for all values in range 0 - 255.

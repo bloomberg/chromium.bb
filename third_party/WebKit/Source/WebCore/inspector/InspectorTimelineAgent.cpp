@@ -212,9 +212,7 @@ void InspectorTimelineAgent::stop(ErrorString*)
 
 void InspectorTimelineAgent::didBeginFrame()
 {
-#if PLATFORM(CHROMIUM)
     TRACE_EVENT_INSTANT0("webkit", InstrumentationEvents::BeginFrame);
-#endif
     m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0);
 }
 

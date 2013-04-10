@@ -56,8 +56,6 @@ using namespace std;
 
 namespace WebCore {
 
-#if PLATFORM(CHROMIUM) || !defined(NDEBUG)
-
 #define PCLOG(...) LOG(PageCache, "%*s%s", indentLevel*4, "", makeString(__VA_ARGS__).utf8().data())
     
 // Used in histograms, please only add at the end, and do not remove elements (renaming e.g. to "FooEnumUnused1" is fine).
@@ -82,7 +80,6 @@ enum ReasonFrameCannotBeInPageCache {
 };
 COMPILE_ASSERT(NumberOfReasonsFramesCannotBeInPageCache <= sizeof(unsigned)*8, ReasonFrameCannotBeInPageCacheDoesNotFitInBitmap);
 
-#if PLATFORM(CHROMIUM)
 static int indexOfSingleBit(int32_t v)
 {
     int index = 0;
@@ -98,7 +95,6 @@ static int indexOfSingleBit(int32_t v)
         index += 1;
     return index;
 }
-#endif // PLATFORM(CHROMIUM)
 
 static unsigned logCanCacheFrameDecision(Frame* frame, int indentLevel)
 {
@@ -291,7 +287,6 @@ static void logCanCachePageDecision(Page* page)
             HistogramSupport::histogramEnumeration("PageCache.FrameRejectReasonByPage", i, NumberOfReasonsFramesCannotBeInPageCache);
         }
     }
-#if PLATFORM(CHROMIUM)
     // This strangely specific histogram is particular to chromium: as of 2012-03-16, the FrameClientImpl always denies caching, so
     // of particular interest are solitary reasons other than the frameRejectReasons. If we didn't get to the ClientDeniesCaching, we
     // took the early exit for the boring reason NoDocumentLoader, so we should have only one reason, and not two.
@@ -303,12 +298,10 @@ static void logCanCachePageDecision(Page* page)
         const int index = indexOfSingleBit(static_cast<int32_t>(singleReasonForRejectingFrameOtherThanClientDeniesCaching));
         HistogramSupport::histogramEnumeration("PageCache.FrameRejectReasonByPageWhenSingleExcludingFrameClient", index, NumberOfReasonsPagesCannotBeInPageCache);
     }
-#endif
 
     HistogramSupport::histogramEnumeration("PageCache.FrameRejectReasonCountByPage", frameReasonCount, 1 + NumberOfReasonsFramesCannotBeInPageCache);
 }
 
-#endif 
 
 PageCache* pageCache()
 {
@@ -362,10 +355,8 @@ bool PageCache::canCache(Page* page) const
 {
     if (!page)
         return false;
-    
-#if PLATFORM(CHROMIUM) || !defined(NDEBUG)
+
     logCanCachePageDecision(page);
-#endif
     
     // Cache the page, if possible.
     // Don't write to the cache if in the middle of a redirect, since we will want to

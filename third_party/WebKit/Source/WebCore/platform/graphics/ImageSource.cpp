@@ -35,9 +35,7 @@
 #include "NotImplemented.h"
 #include "PlatformMemoryInstrumentation.h"
 
-#if PLATFORM(CHROMIUM)
 #include "DeferredImageDecoder.h"
-#endif
 
 namespace WebCore {
 

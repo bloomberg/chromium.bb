@@ -29,11 +29,9 @@
 #include "SharedGraphicsContext3D.h"
 
 #include "Extensions3D.h"
-#if PLATFORM(CHROMIUM)
 #include "GraphicsContext3DPrivate.h"
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
-#endif
 #include <wtf/MainThread.h>
 
 namespace WebCore {
@@ -45,7 +43,6 @@ public:
     {
         bool wasCreated = false;
 
-#if PLATFORM(CHROMIUM)
         WebKit::WebGraphicsContext3D* webContext = WebKit::Platform::current()->sharedOffscreenGraphicsContext3D();
         GrContext* grContext = WebKit::Platform::current()->sharedOffscreenGrContext();
 
@@ -62,7 +59,6 @@ public:
 
             // FIXME: Don't fallback to the legacy path when chromium supports the new offscreen methods.
         } else
-#endif
         {
             // If we lost the context, or can't make it current, create a new one.
             if (m_context && (!m_context->makeContextCurrent() || (m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)))

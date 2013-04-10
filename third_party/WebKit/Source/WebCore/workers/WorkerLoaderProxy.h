@@ -35,11 +35,9 @@
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 
-#if PLATFORM(CHROMIUM)
 namespace WebKit {
 class WebWorkerBase;
 }
-#endif // PLATFORM(CHROMIUM)
 
 namespace WebCore {
 
@@ -60,10 +58,8 @@ namespace WebCore {
         // Returns true if the task was posted successfully.
         virtual bool postTaskForModeToWorkerContext(PassOwnPtr<ScriptExecutionContext::Task>, const String& mode) = 0;
 
-#if PLATFORM(CHROMIUM)
         // Spans divergent class hierarchies for dedicated and shared workers.
         virtual WebKit::WebWorkerBase* toWebWorkerBase() = 0;
-#endif
     };
 
 } // namespace WebCore

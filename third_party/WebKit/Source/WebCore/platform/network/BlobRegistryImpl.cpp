@@ -47,34 +47,9 @@ BlobRegistryImpl::~BlobRegistryImpl()
 {
 }
 
-#if !PLATFORM(CHROMIUM)
-static PassRefPtr<ResourceHandle> createResourceHandle(const ResourceRequest& request, ResourceHandleClient* client)
-{
-    return static_cast<BlobRegistryImpl&>(blobRegistry()).createResourceHandle(request, client);
-}
-
-static void loadResourceSynchronously(NetworkingContext*, const ResourceRequest& request, StoredCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
-{
-    BlobStorageData* blobData = static_cast<BlobRegistryImpl&>(blobRegistry()).getBlobDataFromURL(request.url());
-    BlobResourceHandle::loadResourceSynchronously(blobData, request, error, response, data);
-}
-
-static void registerBlobResourceHandleConstructor()
-{
-    static bool didRegister = false;
-    if (!didRegister) {
-        ResourceHandle::registerBuiltinConstructor("blob", createResourceHandle);
-        ResourceHandle::registerBuiltinSynchronousLoader("blob", loadResourceSynchronously);
-        didRegister = true;
-    }
-}
-
-#else
-
 static void registerBlobResourceHandleConstructor()
 {
 }
-#endif
 
 PassRefPtr<ResourceHandle> BlobRegistryImpl::createResourceHandle(const ResourceRequest& request, ResourceHandleClient* client)
 {

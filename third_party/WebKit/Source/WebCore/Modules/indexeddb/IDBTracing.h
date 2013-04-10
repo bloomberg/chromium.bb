@@ -29,16 +29,7 @@
 #ifndef IDBTracing_h
 #define IDBTracing_h
 
-#if PLATFORM(CHROMIUM)
-
 #include "TraceEvent.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
-
-#else
-
-#include "Logging.h"
-#define IDB_TRACE(a) LOG(StorageAPI, a)
-
-#endif //  PLATFORM(CHROMIUM)
 
 #endif // IDBTracing_h

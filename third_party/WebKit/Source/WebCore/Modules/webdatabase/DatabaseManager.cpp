@@ -351,63 +351,10 @@ String DatabaseManager::fullPathForDatabase(SecurityOrigin* origin, const String
     return m_server->fullPathForDatabase(origin, name, createIfDoesNotExist);
 }
 
-#if !PLATFORM(CHROMIUM)
-bool DatabaseManager::hasEntryForOrigin(SecurityOrigin* origin)
-{
-    return m_server->hasEntryForOrigin(origin);
-}
-
-void DatabaseManager::origins(Vector<RefPtr<SecurityOrigin> >& result)
-{
-    m_server->origins(result);
-}
-
-bool DatabaseManager::databaseNamesForOrigin(SecurityOrigin* origin, Vector<String>& result)
-{
-    return m_server->databaseNamesForOrigin(origin, result);
-}
-
-DatabaseDetails DatabaseManager::detailsForNameAndOrigin(const String& name, SecurityOrigin* origin)
-{
-    return m_server->detailsForNameAndOrigin(name, origin);
-}
-
-unsigned long long DatabaseManager::usageForOrigin(SecurityOrigin* origin)
-{
-    return m_server->usageForOrigin(origin);
-}
-
-unsigned long long DatabaseManager::quotaForOrigin(SecurityOrigin* origin)
-{
-    return m_server->quotaForOrigin(origin);
-}
-
-void DatabaseManager::setQuota(SecurityOrigin* origin, unsigned long long quotaSize)
-{
-    m_server->setQuota(origin, quotaSize);
-}
-
-void DatabaseManager::deleteAllDatabases()
-{
-    m_server->deleteAllDatabases();
-}
-
-bool DatabaseManager::deleteOrigin(SecurityOrigin* origin)
-{
-    return m_server->deleteOrigin(origin);
-}
-
-bool DatabaseManager::deleteDatabase(SecurityOrigin* origin, const String& name)
-{
-    return m_server->deleteDatabase(origin, name);
-}
-
-#else // PLATFORM(CHROMIUM)
 void DatabaseManager::closeDatabasesImmediately(const String& originIdentifier, const String& name)
 {
     m_server->closeDatabasesImmediately(originIdentifier, name);
 }
-#endif // PLATFORM(CHROMIUM)
 
 void DatabaseManager::interruptAllDatabasesForContext(ScriptExecutionContext* context)
 {

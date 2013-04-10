@@ -47,14 +47,7 @@ namespace WebCore {
     class ResourceRequest;
     class ResourceResponse;
     class SubstituteData;
-#if PLATFORM(CHROMIUM)
     class ApplicationCacheHostInternal;
-#else
-    class ApplicationCache;
-    class ApplicationCacheGroup;
-    class ApplicationCacheResource;
-    class ApplicationCacheStorage;
-#endif
 
     class ApplicationCacheHost {
         WTF_MAKE_NONCOPYABLE(ApplicationCacheHost); WTF_MAKE_FAST_ALLOCATED;
@@ -151,11 +144,6 @@ namespace WebCore {
         void fillResourceList(ResourceInfoList*);
         CacheInfo applicationCacheInfo();
 
-#if !PLATFORM(CHROMIUM)
-        bool shouldLoadResourceFromApplicationCache(const ResourceRequest&, ApplicationCacheResource*&);
-        bool getApplicationCacheFallbackResource(const ResourceRequest&, ApplicationCacheResource*&, ApplicationCache* = 0);
-#endif
-
     private:
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() const { return m_documentLoader; }
@@ -174,31 +162,8 @@ namespace WebCore {
 
         void dispatchDOMEvent(EventID, int progressTotal, int progressDone);
 
-#if PLATFORM(CHROMIUM)
         friend class ApplicationCacheHostInternal;
         OwnPtr<ApplicationCacheHostInternal> m_internal;
-#else
-        friend class ApplicationCacheGroup;
-        friend class ApplicationCacheStorage;
-
-        bool scheduleLoadFallbackResourceFromApplicationCache(ResourceLoader*, ApplicationCache* = 0);
-        void setCandidateApplicationCacheGroup(ApplicationCacheGroup* group);
-        ApplicationCacheGroup* candidateApplicationCacheGroup() const { return m_candidateApplicationCacheGroup; }
-        void setApplicationCache(PassRefPtr<ApplicationCache> applicationCache);
-        ApplicationCache* applicationCache() const { return m_applicationCache.get(); }
-        ApplicationCache* mainResourceApplicationCache() const { return m_mainResourceApplicationCache.get(); }
-
-
-        // The application cache that the document loader is associated with (if any).
-        RefPtr<ApplicationCache> m_applicationCache;
-
-        // Before an application cache has finished loading, this will be the candidate application
-        // group that the document loader is associated with.
-        ApplicationCacheGroup* m_candidateApplicationCacheGroup;
-
-        // This is the application cache the main resource was loaded from (if any).
-        RefPtr<ApplicationCache> m_mainResourceApplicationCache;
-#endif
     };
 
 }  // namespace WebCore

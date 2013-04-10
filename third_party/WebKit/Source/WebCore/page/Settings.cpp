@@ -123,7 +123,6 @@ static const bool defaultUnifiedTextCheckerEnabled = true;
 #else
 static const bool defaultUnifiedTextCheckerEnabled = false;
 #endif
-#if PLATFORM(CHROMIUM)
 #if OS(MAC_OS_X)
 static const bool defaultSmartInsertDeleteEnabled = true;
 #else
@@ -132,10 +131,6 @@ static const bool defaultSmartInsertDeleteEnabled = false;
 #if OS(WINDOWS)
 static const bool defaultSelectTrailingWhitespaceEnabled = true;
 #else
-static const bool defaultSelectTrailingWhitespaceEnabled = false;
-#endif
-#else
-static const bool defaultSmartInsertDeleteEnabled = true;
 static const bool defaultSelectTrailingWhitespaceEnabled = false;
 #endif
 

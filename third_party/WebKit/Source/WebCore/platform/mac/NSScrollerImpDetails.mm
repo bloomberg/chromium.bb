@@ -31,7 +31,6 @@
 
 namespace WebCore {
 
-#if PLATFORM(CHROMIUM)
 bool isScrollbarOverlayAPIAvailable()
 {
     static bool apiAvailable;
@@ -45,7 +44,6 @@ bool isScrollbarOverlayAPIAvailable()
     }
     return apiAvailable;
 }
-#endif
 
 NSScrollerStyle recommendedScrollerStyle() {
     if (Settings::usesOverlayScrollbars())

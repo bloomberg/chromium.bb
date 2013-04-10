@@ -71,7 +71,6 @@ static const float scrollVelocityZeroingTimeout = 0.10f;
 static const float rubberbandDirectionLockStretchRatio = 1;
 static const float rubberbandMinimumRequiredDeltaBeforeStretch = 10;
 
-#if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070 || PLATFORM(CHROMIUM)
 static const float rubberbandStiffness = 20;
 static const float rubberbandAmplitude = 0.31f;
 static const float rubberbandPeriod = 1.6f;
@@ -95,22 +94,6 @@ static float reboundDeltaForElasticDelta(float delta)
 {
     return delta * rubberbandStiffness;
 }
-#else
-static float elasticDeltaForTimeDelta(float initialPosition, float initialVelocity, float elapsedTime)
-{
-    return wkNSElasticDeltaForTimeDelta(initialPosition, initialVelocity, elapsedTime);
-}
-
-static float elasticDeltaForReboundDelta(float delta)
-{
-    return wkNSElasticDeltaForReboundDelta(delta);
-}
-
-static float reboundDeltaForElasticDelta(float delta)
-{
-    return wkNSReboundDeltaForElasticDelta(delta);
-}
-#endif
 
 static float scrollWheelMultiplier()
 {

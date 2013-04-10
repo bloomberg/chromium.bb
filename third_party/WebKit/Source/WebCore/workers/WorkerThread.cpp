@@ -41,11 +41,8 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
-
-#if PLATFORM(CHROMIUM)
 #include <public/Platform.h>
 #include <public/WebWorkerRunLoop.h>
-#endif
 
 namespace WebCore {
 
@@ -155,11 +152,9 @@ void WorkerThread::workerThread()
            m_workerContext->script()->forbidExecution();
         }
     }
-#if PLATFORM(CHROMIUM)
     // The corresponding call to didStopWorkerRunLoop is in
     // ~WorkerScriptController.
     WebKit::Platform::current()->didStartWorkerRunLoop(WebKit::WebWorkerRunLoop(&m_runLoop));
-#endif
 
     WorkerScriptController* script = m_workerContext->script();
     InspectorInstrumentation::willEvaluateWorkerScript(workerContext(), m_startupData->m_startMode);

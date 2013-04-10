@@ -41,10 +41,8 @@ enum FileSystemType {
     // Transient isolated non-sandboxed filesystem.
     FileSystemTypeIsolated,
 
-#if PLATFORM(CHROMIUM)
     // Non-sandbox filesystem.
     FileSystemTypeExternal,
-#endif
 };
 
 enum FileSystemSynchronousType {

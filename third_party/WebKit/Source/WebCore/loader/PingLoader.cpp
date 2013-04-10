@@ -59,9 +59,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     }
 
     ResourceRequest request(url);
-#if PLATFORM(CHROMIUM)
     request.setTargetType(ResourceRequest::TargetIsImage);
-#endif
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), request.url(), frame->loader()->outgoingReferrer());
     if (!referrer.isEmpty())
@@ -78,9 +76,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
 void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
-#if PLATFORM(CHROMIUM)
     request.setTargetType(ResourceRequest::TargetIsSubresource);
-#endif
     request.setHTTPMethod("POST");
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
@@ -109,9 +105,7 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
 void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report)
 {
     ResourceRequest request(reportURL);
-#if PLATFORM(CHROMIUM)
     request.setTargetType(ResourceRequest::TargetIsSubresource);
-#endif
     request.setHTTPMethod("POST");
     request.setHTTPContentType("application/json");
     request.setHTTPBody(report);

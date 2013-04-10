@@ -847,21 +847,10 @@ SQLTransactionState SQLTransactionBackend::sendToFrontendState()
 
 void SQLTransactionBackend::acquireOriginLock()
 {
-#if !PLATFORM(CHROMIUM)
-    ASSERT(!m_originLock);
-    m_originLock = DatabaseTracker::tracker().originLockFor(m_database->securityOrigin());
-    m_originLock->lock();
-#endif
 }
 
 void SQLTransactionBackend::releaseOriginLockIfNeeded()
 {
-#if !PLATFORM(CHROMIUM)
-    if (m_originLock) {
-        m_originLock->unlock();
-        m_originLock.clear();
-    }
-#endif
 }
 
 } // namespace WebCore

@@ -76,11 +76,6 @@ protected:
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
     virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
     int scrollbarPartToHIPressedState(ScrollbarPart);
-
-#if !PLATFORM(CHROMIUM) && ENABLE(RUBBER_BANDING)
-    virtual void setUpOverhangAreasLayerContents(GraphicsLayer*, const Color&) OVERRIDE;
-    virtual void setUpContentShadowLayer(GraphicsLayer*) OVERRIDE;
-#endif
 };
 
 }

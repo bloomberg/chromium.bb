@@ -40,10 +40,8 @@
 #include "SkPixelRef.h"
 #include "SkiaUtils.h"
 
-#if PLATFORM(CHROMIUM)
 #include "DeferredImageDecoder.h"
 #include "TraceEvent.h"
-#endif
 
 namespace WebCore {
 
@@ -87,10 +85,8 @@ bool NativeImageSkia::hasResizedBitmap(const SkISize& scaledImageSize, const SkI
 
 SkBitmap NativeImageSkia::resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const
 {
-#if PLATFORM(CHROMIUM)
     if (DeferredImageDecoder::isLazyDecoded(m_image))
         return DeferredImageDecoder::createResizedLazyDecodingBitmap(m_image, scaledImageSize, scaledImageSubset);
-#endif
 
     if (!hasResizedBitmap(scaledImageSize, scaledImageSubset)) {
         bool shouldCache = isDataComplete()

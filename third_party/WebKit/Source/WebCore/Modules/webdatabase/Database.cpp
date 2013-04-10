@@ -280,7 +280,6 @@ SecurityOrigin* Database::securityOrigin() const
     return 0;
 }
 
-#if PLATFORM(CHROMIUM)
 void Database::reportStartTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode)
 {
     backend()->reportStartTransactionResult(errorSite, webSqlErrorCode, sqliteErrorCode);
@@ -291,6 +290,5 @@ void Database::reportCommitTransactionResult(int errorSite, int webSqlErrorCode,
     backend()->reportCommitTransactionResult(errorSite, webSqlErrorCode, sqliteErrorCode);
 }
 
-#endif
 
 } // namespace WebCore

@@ -38,36 +38,21 @@ namespace WebCore {
 
 void DatabaseServer::initialize(const String& databasePath)
 {
-#if !PLATFORM(CHROMIUM)
-    DatabaseTracker::initializeTracker(databasePath);
-#else
     UNUSED_PARAM(databasePath);
-#endif
 }
 
 void DatabaseServer::setClient(DatabaseManagerClient* client)
 {
-#if !PLATFORM(CHROMIUM)
-    DatabaseTracker::tracker().setClient(client);
-#else
     UNUSED_PARAM(client);
-#endif
 }
 
 String DatabaseServer::databaseDirectoryPath() const
 {
-#if !PLATFORM(CHROMIUM)
-    return DatabaseTracker::tracker().databaseDirectoryPath();
-#else
     return "";
-#endif
 }
 
 void DatabaseServer::setDatabaseDirectoryPath(const String& path)
 {
-#if !PLATFORM(CHROMIUM)
-    DatabaseTracker::tracker().setDatabaseDirectoryPath(path);
-#endif
 }
 
 String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)
@@ -75,63 +60,10 @@ String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String&
     return DatabaseTracker::tracker().fullPathForDatabase(origin, name, createIfDoesNotExist);
 }
 
-#if !PLATFORM(CHROMIUM)
-bool DatabaseServer::hasEntryForOrigin(SecurityOrigin* origin)
-{
-    return DatabaseTracker::tracker().hasEntryForOrigin(origin);
-}
-
-void DatabaseServer::origins(Vector<RefPtr<SecurityOrigin> >& result)
-{
-    DatabaseTracker::tracker().origins(result);
-}
-
-bool DatabaseServer::databaseNamesForOrigin(SecurityOrigin* origin, Vector<String>& result)
-{
-    return DatabaseTracker::tracker().databaseNamesForOrigin(origin, result);
-}
-
-DatabaseDetails DatabaseServer::detailsForNameAndOrigin(const String& name, SecurityOrigin* origin)
-{
-    return DatabaseTracker::tracker().detailsForNameAndOrigin(name, origin);
-}
-
-unsigned long long DatabaseServer::usageForOrigin(SecurityOrigin* origin)
-{
-    return DatabaseTracker::tracker().usageForOrigin(origin);
-}
-
-unsigned long long DatabaseServer::quotaForOrigin(SecurityOrigin* origin)
-{
-    return DatabaseTracker::tracker().quotaForOrigin(origin);
-}
-
-void DatabaseServer::setQuota(SecurityOrigin* origin, unsigned long long quotaSize)
-{
-    DatabaseTracker::tracker().setQuota(origin, quotaSize);
-}
-
-void DatabaseServer::deleteAllDatabases()
-{
-    DatabaseTracker::tracker().deleteAllDatabases();
-}
-
-bool DatabaseServer::deleteOrigin(SecurityOrigin* origin)
-{
-    return DatabaseTracker::tracker().deleteOrigin(origin);
-}
-
-bool DatabaseServer::deleteDatabase(SecurityOrigin* origin, const String& name)
-{
-    return DatabaseTracker::tracker().deleteDatabase(origin, name);
-}
-
-#else // PLATFORM(CHROMIUM)
 void DatabaseServer::closeDatabasesImmediately(const String& originIdentifier, const String& name)
 {
     DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, name);
 }
-#endif // PLATFORM(CHROMIUM)
 
 void DatabaseServer::interruptAllDatabasesForContext(const DatabaseBackendContext* context)
 {
