@@ -21,11 +21,13 @@
 @class IOBluetoothDevice;
 @class IOBluetoothDeviceInquiry;
 @class NSArray;
+@class NSDate;
 #else
 class BluetoothAdapterMacDelegate;
 class IOBluetoothDevice;
 class IOBluetoothDeviceInquiry;
 class NSArray;
+class NSDate;
 #endif
 
 namespace base {
@@ -90,15 +92,8 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   void PollAdapter();
 
-  // Adds |devices| into |devices_| and notifies observers of the changes.
-  // |devices| is an array of pointers to discovered or paired
-  // |IOBluetoothDevice| objects.
-  void AddDevices(NSArray* devices);
-
-  // Removes devices that used to be paired but are unpaired by the system from
-  // |devices_|.
-  // |devices| is an array of pointers to paired |IOBluetoothDevice| objects.
-  void RemoveUnpairedDevices(NSArray* paired_devices);
+  // Updates |devices_| to be consistent with |devices|.
+  void UpdateDevices(NSArray* devices);
 
   void MaybeStartDeviceInquiry();
   void MaybeStopDeviceInquiry();
@@ -124,6 +119,10 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   // This list is used to check if the same device is discovered twice during
   // the discovery between consecutive inquiries.
   base::hash_set<std::string> discovered_devices_;
+
+  // Timestamp for the recently accessed device.
+  // Used to determine if |devices_| needs an update.
+  NSDate* recently_accessed_device_timestamp_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
