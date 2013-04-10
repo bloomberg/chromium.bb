@@ -530,9 +530,7 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 }
 
 void AutofillDialogControllerImpl::GetWalletItems() {
-  // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
-  GetWalletClient()->GetWalletItems(
-      source_url_, std::vector<wallet::WalletClient::RiskCapability>());
+  GetWalletClient()->GetWalletItems(source_url_);
 }
 
 void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {

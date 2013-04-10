@@ -167,10 +167,8 @@ class WalletClient
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
-  // to the user to be accepted. |risk_capabilities| are the Risk challenges
-  // supported by the users of WalletClient.
-  void GetWalletItems(const GURL& source_url,
-                      const std::vector<RiskCapability>& risk_capabilities);
+  // to the user to be accepted.
+  void GetWalletItems(const GURL& source_url);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.

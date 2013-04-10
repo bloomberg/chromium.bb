@@ -335,21 +335,7 @@ const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
 
 const char kGetWalletItemsValidRequest[] =
     "{"
-        "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"risky business\","
-        "\"supported_risk_challenge\":"
-        "["
-        "]"
-    "}";
-
-const char kGetWalletItemsWithRiskCapabilitiesValidRequest[] =
-    "{"
-        "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"risky business\","
-        "\"supported_risk_challenge\":"
-        "["
-            "\"RELOGIN\""
-        "]"
+        "\"merchant_domain\":\"https://example.com/\""
     "}";
 
 const char kSaveAddressValidRequest[] =
@@ -825,8 +811,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
-                                 std::vector<WalletClient::RiskCapability>());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -1125,28 +1110,10 @@ TEST_F(WalletClientTest, GetWalletItems) {
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
-                                 std::vector<WalletClient::RiskCapability>());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
 
   VerifyAndFinishRequest(net::HTTP_OK,
                          kGetWalletItemsValidRequest,
-                         kGetWalletItemsValidResponse);
-  EXPECT_EQ(1U, delegate_.wallet_items_received());
-}
-
-TEST_F(WalletClientTest, GetWalletItemsWithRiskCapabilites) {
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
-
-  std::vector<WalletClient::RiskCapability> risk_capabilities;
-  risk_capabilities.push_back(WalletClient::RELOGIN);
-
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
-                                 risk_capabilities);
-
-  VerifyAndFinishRequest(net::HTTP_OK,
-                         kGetWalletItemsWithRiskCapabilitiesValidRequest,
                          kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, delegate_.wallet_items_received());
 }
@@ -1834,8 +1801,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl),
-                                 std::vector<WalletClient::RiskCapability>());
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
   EXPECT_TRUE(wallet_client_->HasRequestInProgress());
 
   VerifyAndFinishRequest(net::HTTP_OK,
@@ -1847,15 +1813,13 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
 TEST_F(WalletClientTest, PendingRequest) {
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
 
-  std::vector<WalletClient::RiskCapability> risk_capabilities;
-
   // Shouldn't queue the first request.
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
   EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
   testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
   EXPECT_EQ(1U, wallet_client_->pending_requests_.size());
 
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
@@ -1886,11 +1850,9 @@ TEST_F(WalletClientTest, CancelRequests) {
                                            0);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
-  std::vector<WalletClient::RiskCapability> risk_capabilities;
-
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
-  wallet_client_->GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
+  wallet_client_->GetWalletItems(GURL(kMerchantUrl));
   EXPECT_EQ(2U, wallet_client_->pending_requests_.size());
 
   wallet_client_->CancelRequests();

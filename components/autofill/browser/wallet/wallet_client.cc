@@ -326,14 +326,11 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   encryption_escrow_client_.EncryptOneTimePad(one_time_pad_);
 }
 
-void WalletClient::GetWalletItems(
-    const GURL& source_url,
-    const std::vector<RiskCapability>& risk_capabilities) {
+void WalletClient::GetWalletItems(const GURL& source_url) {
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::GetWalletItems,
                                       base::Unretained(this),
-                                      source_url,
-                                      risk_capabilities));
+                                      source_url));
     return;
   }
 
@@ -342,18 +339,8 @@ void WalletClient::GetWalletItems(
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  request_dict.SetString(kRiskParamsKey, delegate_->GetRiskData());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
-
-  scoped_ptr<base::ListValue> risk_capabilities_list(new base::ListValue());
-  for (std::vector<RiskCapability>::const_iterator it =
-           risk_capabilities.begin();
-       it != risk_capabilities.end();
-       ++it) {
-    risk_capabilities_list->AppendString(RiskCapabilityToString(*it));
-  }
-  request_dict.Set(kRiskCapabilitiesKey, risk_capabilities_list.release());
 
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);
