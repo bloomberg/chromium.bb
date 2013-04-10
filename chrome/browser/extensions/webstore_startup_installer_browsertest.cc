@@ -148,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
 }
 
 // Crashes at random intervals on MacOS: http://crbug.com/95713.
-#if defined(OS_MACOSX)
+// Flakes on Windows: http://crbug.com/229947
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define Maybe_ArgumentValidation DISABLED_ArgumentValidation
 #else
 #define Maybe_ArgumentValidation ArgumentValidation
