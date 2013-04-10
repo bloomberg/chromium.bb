@@ -21,7 +21,8 @@ const char* const kSwitchesToRemoveOnAutorestart[] = {
   switches::kImportFromFile,
   switches::kMakeDefaultBrowser,
   switches::kNoStartupWindow,
-  switches::kRestoreLastSession
+  switches::kRestoreLastSession,
+  switches::kShowAppList,
 };
 
 void RemoveSwitchesForAutostart(
