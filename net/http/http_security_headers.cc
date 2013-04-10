@@ -164,9 +164,10 @@ bool ParseAndAppendPin(const std::string& value,
 //     the UA, the UA MUST ignore the unrecognized directives and if the
 //     STS header field otherwise satisfies the above requirements (1
 //     through 4), the UA MUST process the recognized directives.
-bool ParseHSTSHeader(const base::Time& now, const std::string& value,
-                     base::Time* expiry,         // OUT
-                     bool* include_subdomains) {  // OUT
+bool ParseHSTSHeader(const base::Time& now,
+                     const std::string& value,
+                     base::Time* expiry,
+                     bool* include_subdomains) {
   uint32 max_age_candidate = 0;
   bool include_subdomains_candidate = false;
 

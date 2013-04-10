@@ -637,7 +637,6 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
   if (ParseHPKPHeader(now, value, ssl_info.public_key_hashes,
                       &domain_state.dynamic_spki_hashes_expiry,
                       &domain_state.dynamic_spki_hashes)) {
-    domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
     domain_state.created = now;
     EnableHost(host, domain_state);
     return true;

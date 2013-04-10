@@ -149,18 +149,12 @@ TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
 }
 
 TEST_F(TransportSecurityStateTest, IsPreloaded) {
-  const std::string paypal =
-      CanonicalizeHost("paypal.com");
-  const std::string www_paypal =
-      CanonicalizeHost("www.paypal.com");
-  const std::string a_www_paypal =
-      CanonicalizeHost("a.www.paypal.com");
-  const std::string abc_paypal =
-      CanonicalizeHost("a.b.c.paypal.com");
-  const std::string example =
-      CanonicalizeHost("example.com");
-  const std::string aypal =
-      CanonicalizeHost("aypal.com");
+  const std::string paypal = CanonicalizeHost("paypal.com");
+  const std::string www_paypal = CanonicalizeHost("www.paypal.com");
+  const std::string a_www_paypal = CanonicalizeHost("a.www.paypal.com");
+  const std::string abc_paypal = CanonicalizeHost("a.b.c.paypal.com");
+  const std::string example = CanonicalizeHost("example.com");
+  const std::string aypal = CanonicalizeHost("aypal.com");
 
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;

@@ -422,5 +422,5 @@ TEST_F(HttpSecurityHeadersTest, ValidPinsHeadersSHA1) {
 TEST_F(HttpSecurityHeadersTest, ValidPinsHeadersSHA256) {
   TestValidPinsHeaders(HASH_VALUE_SHA256);
 }
-};
 
+};    // namespace net

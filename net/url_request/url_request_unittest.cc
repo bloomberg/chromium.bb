@@ -3807,6 +3807,45 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   EXPECT_FALSE(domain_state.include_subdomains);
 }
 
+TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
+  TestServer::SSLOptions ssl_options;
+  TestServer https_test_server(
+      TestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  URLRequest request(
+      https_test_server.GetURL("files/hsts-and-hpkp-headers.html"),
+      &d,
+      &default_context_);
+  request.Start();
+  MessageLoop::current()->Run();
+
+  // We should have set parameters from the first header, not the second.
+  TransportSecurityState* security_state =
+      default_context_.transport_security_state();
+  bool sni_available = true;
+  TransportSecurityState::DomainState domain_state;
+  EXPECT_TRUE(security_state->GetDomainState(
+      TestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
+            domain_state.upgrade_mode);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
+#endif
+  EXPECT_NE(domain_state.upgrade_expiry,
+            domain_state.dynamic_spki_hashes_expiry);
+
+  // TODO(palmer): In the (near) future, TransportSecurityState will have a
+  // storage model allowing us to have independent values for
+  // include_subdomains. At that time, extend this test.
+  //EXPECT_FALSE(domain_state.include_subdomains);
+}
+
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   ASSERT_TRUE(test_server_.Start());
 

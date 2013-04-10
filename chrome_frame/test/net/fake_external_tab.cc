@@ -254,10 +254,11 @@ void FilterDisabledTests() {
 
     // These tests use HTTPS, and IE's trust store does not have the test
     // certs. So these tests time out waiting for user input. The
-    // functionality they test (HTTP Strict Transport Security) does not
-    // work in Chrome Frame anyway.
+    // functionality they test (HTTP Strict Transport Security and
+    // HTTP-based Public Key Pinning) does not work in Chrome Frame anyway.
     "URLRequestTestHTTP.ProcessSTS",
     "URLRequestTestHTTP.ProcessSTSOnce",
+    "URLRequestTestHTTP.ProcessSTSAndPKP",
 
     // These tests have been disabled as the Chrome cookie policies don't make
     // sense or have not been implemented for the host network stack.
