@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_TIME)
 #include "TimeInputType.h"
 
 #include "DateComponents.h"
@@ -178,5 +177,3 @@ bool TimeInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 #endif
 
 } // namespace WebCore
-
-#endif

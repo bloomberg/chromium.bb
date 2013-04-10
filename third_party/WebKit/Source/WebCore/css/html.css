@@ -535,7 +535,6 @@ input[type="month"] {
     -webkit-padding-start: 1px;
 }
 
-#if defined(ENABLE_INPUT_TYPE_TIME) && ENABLE_INPUT_TYPE_TIME
 input[type="time"] {
     -webkit-align-items: center;
     display: -webkit-inline-flex;
@@ -544,7 +543,7 @@ input[type="time"] {
     padding: 0;
     -webkit-padding-start: 1px;
 }
-#endif
+
 #if defined(ENABLE_INPUT_TYPE_WEEK) && ENABLE_INPUT_TYPE_WEEK
 input[type="week"] {
     -webkit-align-items: center;
@@ -669,7 +668,6 @@ input[type="month"] {
     width: 10em;
 }
 
-#if defined(ENABLE_INPUT_TYPE_TIME) && ENABLE_INPUT_TYPE_TIME
 input[type="time"] {
     -webkit-align-items: center;
     -webkit-appearance: menulist-button;
@@ -677,7 +675,7 @@ input[type="time"] {
     overflow: hidden;
     width: 10em;
 }
-#endif
+
 #if defined(ENABLE_INPUT_TYPE_WEEK) && ENABLE_INPUT_TYPE_WEEK
 input[type="week"] {
     -webkit-align-items: center;

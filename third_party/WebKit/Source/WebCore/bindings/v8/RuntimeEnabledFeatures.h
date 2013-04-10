@@ -237,11 +237,6 @@ public:
     static void setInputTypeDateTimeEnabled(bool isEnabled) { isInputTypeDateTimeEnabled = isEnabled; }
 #endif
 
-#if ENABLE(INPUT_TYPE_TIME)
-    static bool inputTypeTimeEnabled() { return isInputTypeTimeEnabled; }
-    static void setInputTypeTimeEnabled(bool isEnabled) { isInputTypeTimeEnabled = isEnabled; }
-#endif
-
 #if ENABLE(INPUT_TYPE_WEEK)
     static bool inputTypeWeekEnabled() { return isInputTypeWeekEnabled; }
     static void setInputTypeWeekEnabled(bool isEnabled) { isInputTypeWeekEnabled = isEnabled; }
@@ -336,10 +331,6 @@ private:
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     static bool isInputTypeDateTimeEnabled;
-#endif
-
-#if ENABLE(INPUT_TYPE_TIME)
-    static bool isInputTypeTimeEnabled;
 #endif
 
 #if ENABLE(INPUT_TYPE_WEEK)

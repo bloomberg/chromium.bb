@@ -134,9 +134,6 @@ public:
     WEBKIT_EXPORT static void enableInputTypeDateTime(bool);
     WEBKIT_EXPORT static bool isInputTypeDateTimeEnabled();
 
-    WEBKIT_EXPORT static void enableInputTypeTime(bool);
-    WEBKIT_EXPORT static bool isInputTypeTimeEnabled();
-
     WEBKIT_EXPORT static void enableInputTypeWeek(bool);
     WEBKIT_EXPORT static bool isInputTypeWeekEnabled();
 

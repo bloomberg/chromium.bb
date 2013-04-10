@@ -232,10 +232,6 @@
 #define ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE 0
 #endif
 
-#if !defined(ENABLE_INPUT_TYPE_TIME)
-#define ENABLE_INPUT_TYPE_TIME 0
-#endif
-
 #if !defined(ENABLE_INPUT_TYPE_WEEK)
 #define ENABLE_INPUT_TYPE_WEEK 0
 #endif

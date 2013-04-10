@@ -116,10 +116,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::search(), SearchInputType::create);
     map->add(InputTypeNames::submit(), SubmitInputType::create);
     map->add(InputTypeNames::telephone(), TelephoneInputType::create);
-#if ENABLE(INPUT_TYPE_TIME)
-    if (RuntimeEnabledFeatures::inputTypeTimeEnabled())
-        map->add(InputTypeNames::time(), TimeInputType::create);
-#endif
+    map->add(InputTypeNames::time(), TimeInputType::create);
     map->add(InputTypeNames::url(), URLInputType::create);
 #if ENABLE(INPUT_TYPE_WEEK)
     if (RuntimeEnabledFeatures::inputTypeWeekEnabled())

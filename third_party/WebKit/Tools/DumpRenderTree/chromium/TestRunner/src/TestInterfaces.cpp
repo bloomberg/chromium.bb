@@ -63,7 +63,6 @@ TestInterfaces::TestInterfaces()
     WebRuntimeFeatures::enableGeolocation(true);
     WebRuntimeFeatures::enableIndexedDatabase(true);
     WebRuntimeFeatures::enableInputTypeDateTime(true);
-    WebRuntimeFeatures::enableInputTypeTime(true);
     WebRuntimeFeatures::enableInputTypeWeek(true);
     WebRuntimeFeatures::enableFileSystem(true);
     WebRuntimeFeatures::enableFontLoadEvents(true);

@@ -482,24 +482,6 @@ bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
 #endif
 }
 
-void WebRuntimeFeatures::enableInputTypeTime(bool enable)
-{
-#if ENABLE(INPUT_TYPE_TIME)
-    RuntimeEnabledFeatures::setInputTypeTimeEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
-}
-
-bool WebRuntimeFeatures::isInputTypeTimeEnabled()
-{
-#if ENABLE(INPUT_TYPE_TIME)
-    return RuntimeEnabledFeatures::inputTypeTimeEnabled();
-#else
-    return false;
-#endif
-}
-
 void WebRuntimeFeatures::enableInputTypeWeek(bool enable)
 {
 #if ENABLE(INPUT_TYPE_WEEK)
