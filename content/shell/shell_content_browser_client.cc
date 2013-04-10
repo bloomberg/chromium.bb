@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,12 +119,9 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
       BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetQuotaManager()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
-
-  if (hyphen_dictionary_file_ != base::kInvalidPlatformFileValue) {
-    IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(
-        hyphen_dictionary_file_, host->GetHandle(), false);
-    host->Send(new ShellViewMsg_LoadHyphenDictionary(file));
-  }
+  registrar_.Add(this,
+                 NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 Source<RenderProcessHost>(host));
 }
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
@@ -214,6 +213,28 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                   base::FileDescriptor(f, true)));
 }
 #endif
+
+void ShellContentBrowserClient::Observe(int type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
+  switch (type) {
+    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      registrar_.Remove(this,
+                        NOTIFICATION_RENDERER_PROCESS_CREATED,
+                        source);
+      if (hyphen_dictionary_file_ != base::kInvalidPlatformFileValue) {
+        RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+        IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(
+            hyphen_dictionary_file_, host->GetHandle(), false);
+        host->Send(new ShellViewMsg_LoadHyphenDictionary(file));
+      }
+      break;
+    }
+
+    default:
+      NOTREACHED();
+  }
+}
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
