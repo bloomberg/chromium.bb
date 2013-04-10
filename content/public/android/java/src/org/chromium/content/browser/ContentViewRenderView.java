@@ -47,7 +47,7 @@ public class ContentViewRenderView extends FrameLayout {
         mNativeContentViewRenderView = nativeInit();
         assert mNativeContentViewRenderView != 0;
 
-        mSurfaceView = new SurfaceView(getContext());
+        mSurfaceView = createSurfaceView(getContext());
         mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -116,6 +116,16 @@ public class ContentViewRenderView extends FrameLayout {
      * render.
      */
     protected void onReadyToRender() {
+    }
+
+    /**
+     * This method could be subclassed optionally to provide a custom SurfaceView object to
+     * this ContentViewRenderView.
+     * @param context The context used to create the SurfaceView object.
+     * @return The created SurfaceView object.
+     */
+    protected SurfaceView createSurfaceView(Context context) {
+        return new SurfaceView(context);
     }
 
     /**
