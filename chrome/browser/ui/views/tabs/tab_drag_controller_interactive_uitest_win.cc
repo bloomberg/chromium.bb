@@ -351,9 +351,10 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   // TODO(msw): Fix this on "XP Tests (1)"; see http://crbug.com/227444
   if (base::win::GetVersion() == base::win::VERSION_XP &&
       views::Textfield::IsViewsTextfieldEnabled()) {
-    LOG(INFO) << "Try SendKeyPressSync [esc]; this seems to fail...";
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser2, ui::VKEY_ESCAPE, false, false, false, false));
+    LOG(INFO) << "Try SendKeyPressToWindowSync [esc]; maybe this works???";
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        browser2->window()->GetNativeWindow(), ui::VKEY_ESCAPE,
+        false, false, false, false));
     LOG(INFO) << "Tab strip 1 drag active (expect 0): "
               << tab_strip->IsDragSessionActive();
     LOG(INFO) << "Tab strip 2 drag active (expect 0): "
@@ -367,13 +368,12 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
     LOG(INFO) << "Tab strip 2 model string (expect '100'): "
               << IDString(browser2->tab_strip_model());
 
-    LOG(INFO) << "Try SendKeyPressToWindowSync [esc]; maybe this works???";
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        browser2->window()->GetNativeWindow(), ui::VKEY_ESCAPE,
-        false, false, false, false));
-    LOG(INFO) << "Tab strip 1 Drag active (expect 0): "
+    LOG(INFO) << "Try SendKeyPressSync [esc]; is this needed???";
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser2, ui::VKEY_ESCAPE, false, false, false, false));
+    LOG(INFO) << "Tab strip 1 drag active (expect 0): "
               << tab_strip->IsDragSessionActive();
-    LOG(INFO) << "Tab strip 2 Drag active (expect 0): "
+    LOG(INFO) << "Tab strip 2 drag active (expect 0): "
               << tab_strip2->IsDragSessionActive();
     LOG(INFO) << "Tab drag controller active (expect 0): "
               << TabDragController::IsActive();
