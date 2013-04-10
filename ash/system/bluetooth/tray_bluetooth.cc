@@ -311,6 +311,8 @@ class BluetoothDetailedView : public TrayDetailsView,
     } else if (sender == enable_bluetooth_) {
       delegate->ToggleBluetooth();
     } else {
+      if (!delegate->GetBluetoothEnabled())
+        return;
       std::map<views::View*, std::string>::iterator find;
       find = device_map_.find(sender);
       if (find != device_map_.end()) {
