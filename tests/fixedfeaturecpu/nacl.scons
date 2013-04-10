@@ -24,8 +24,11 @@ if env.Bit('target_arm'):
 
 # For speed, SConstruct disables the validator (using '-cc') for
 # Valgrind+nacl-glibc tests, which breaks one test below.
+# Also valgrind misdetects CPU capabilities on some systems which gives
+# different results for newlib on trybots and on buildbots.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3380
 # TODO(bradchen): Consolidate into env.ValidationIsDisabled()
-is_validation_disabled = env.IsRunningUnderValgrind() and env.Bit('nacl_glibc')
+is_validation_broken = env.IsRunningUnderValgrind()
 
 # The next sequence of conditionals captures the status test on various
 # NaCl configurations. At this point many of the '-Z' configurations fail
@@ -86,7 +89,7 @@ node = env.CommandSelLdrTestNacl(
     exit_status=expect_null_Z_status,
     sel_ldr_flags=['-Z'])
 env.AddNodeToTestSuite(node, test_suites, 'run_ff_null_Z_test',
-                       is_broken=is_validation_disabled)
+                       is_broken=is_validation_broken)
 
 # The bitcode compiler doesn't support -mfpmath=387 or -mfpmath=sse
 if not env.Bit('bitcode'):
@@ -111,7 +114,7 @@ if not env.Bit('bitcode'):
       exit_status=expect_sse_Z_status,
       sel_ldr_flags=['-Z'])
   env.AddNodeToTestSuite(node, test_suites, 'run_ff_sse_Z_test',
-                         is_broken=is_validation_disabled)
+                         is_broken=is_validation_broken)
 
 # NOTE: -mfpmath=387 does not work for x86-64. See:
 # http://code.google.com/p/nativeclient/issues/detail?id=2692
@@ -136,4 +139,4 @@ if not env.Bit('target_x86_64') and not env.Bit('bitcode'):
       exit_status=expect_x87_Z_status,
       sel_ldr_flags=['-Z'])
   env.AddNodeToTestSuite(node, test_suites, 'run_ff_x87_Z_test',
-                         is_broken=is_validation_disabled)
+                         is_broken=is_validation_broken)
