@@ -44,6 +44,8 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/udp/datagram_client_socket.h"
 
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"
@@ -165,6 +167,17 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
   return hostname.size() > kSuffixLenTrimmed &&
       !hostname.compare(hostname.size() - kSuffixLenTrimmed, kSuffixLenTrimmed,
                         kSuffix, kSuffixLenTrimmed);
+}
+
+// Attempts to connect a UDP socket to |dest|:80.
+int AttemptRoute(const IPAddressNumber& dest) {
+  scoped_ptr<DatagramClientSocket> socket(
+      ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
+          DatagramSocket::DEFAULT_BIND,
+          RandIntCallback(),
+          NULL,
+          NetLog::Source()));
+  return socket->Connect(IPEndPoint(dest, 80));
 }
 
 // Provide a common macro to simplify code and readability. We must use a
@@ -888,6 +901,7 @@ class HostResolverImpl::ProcTask
 
 // Wraps a call to TestIPv6Support to be executed on the WorkerPool as it takes
 // 40-100ms.
+// TODO(szym): Remove altogether, if IPv6ActiveProbe works.
 class HostResolverImpl::IPv6ProbeJob {
  public:
   IPv6ProbeJob(const base::WeakPtr<HostResolverImpl>& resolver, NetLog* net_log)
@@ -1858,6 +1872,7 @@ AddressFamily HostResolverImpl::GetDefaultAddressFamily() const {
   return default_address_family_;
 }
 
+// TODO(szym): Remove this API altogether if IPv6ActiveProbe works.
 void HostResolverImpl::ProbeIPv6Support() {
   DCHECK(CalledOnValidThread());
   DCHECK(!ipv6_probe_monitoring_);
@@ -2023,12 +2038,34 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   HostResolverFlags effective_flags =
       info.host_resolver_flags() | additional_resolver_flags_;
   AddressFamily effective_address_family = info.address_family();
+
+  if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    // Google DNS address.
+    const uint8 kIPv6Address[] =
+        { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
+    int rv6 = AttemptRoute(
+        IPAddressNumber(kIPv6Address, kIPv6Address + arraysize(kIPv6Address)));
+
+    UMA_HISTOGRAM_TIMES("Net.IPv6ConnectDuration",
+                        base::TimeTicks::Now() - start_time);
+    if (rv6 == OK) {
+      UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectSuccessMatch",
+          default_address_family_ == ADDRESS_FAMILY_UNSPECIFIED);
+    } else {
+      UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectFailureMatch",
+          default_address_family_ != ADDRESS_FAMILY_UNSPECIFIED);
+    }
+  }
+
   if (effective_address_family == ADDRESS_FAMILY_UNSPECIFIED &&
       default_address_family_ != ADDRESS_FAMILY_UNSPECIFIED) {
     effective_address_family = default_address_family_;
     if (ipv6_probe_monitoring_)
       effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
   }
+
   return Key(info.hostname(), effective_address_family, effective_flags);
 }
 
