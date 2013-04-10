@@ -138,10 +138,6 @@ PassRefPtr<Widget> EmptyFrameLoaderClient::createPlugin(const IntSize&, HTMLPlug
     return 0;
 }
 
-void EmptyFrameLoaderClient::recreatePlugin(Widget*)
-{
-}
-
 PassRefPtr<Widget> EmptyFrameLoaderClient::createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&)
 {
     return 0;

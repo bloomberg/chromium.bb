@@ -73,7 +73,6 @@ public:
 
     virtual bool hasWebView() const;
     virtual bool hasFrameView() const;
-    virtual void makeRepresentation(WebCore::DocumentLoader*) { }
     virtual void detachedFromParent();
     virtual void assignIdentifierToInitialRequest(unsigned long identifier, WebCore::DocumentLoader*, const WebCore::ResourceRequest&);
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse);
@@ -108,10 +107,7 @@ public:
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
     virtual void dispatchWillSubmitForm(WebCore::FramePolicyFunction, PassRefPtr<WebCore::FormState>);
-    virtual void revertToProvisionalState(WebCore::DocumentLoader*) { }
     virtual void setMainDocumentError(WebCore::DocumentLoader*, const WebCore::ResourceError&);
-    virtual void willChangeEstimatedProgress() { }
-    virtual void didChangeEstimatedProgress() { }
     virtual void postProgressStartedNotification();
     virtual void postProgressEstimateChangedNotification();
     virtual void postProgressFinishedNotification();
@@ -136,21 +132,10 @@ public:
     virtual bool canShowMIMEType(const WTF::String& MIMEType) const;
     virtual WTF::String generatedMIMETypeForURLScheme(const WTF::String& URLScheme) const;
     virtual void didFinishLoad();
-    virtual void prepareForDataSourceReplacement();
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-    virtual void setTitle(const WebCore::StringWithDirection&, const WebCore::KURL&);
     virtual WTF::String userAgent(const WebCore::KURL&);
-    virtual void savePlatformDataToCachedFrame(WebCore::CachedFrame*);
-    virtual void transitionToCommittedFromCachedFrame(WebCore::CachedFrame*);
     virtual void transitionToCommittedForNewPage();
-    virtual void didSaveToPageCache();
-    virtual void didRestoreFromPageCache();
-    virtual void dispatchDidBecomeFrameset(bool);
-    virtual bool canCachePage() const;
-    virtual void convertMainResourceLoadToDownload(
-        WebCore::DocumentLoader*, const WebCore::ResourceRequest&,
-        const WebCore::ResourceResponse&);
     virtual PassRefPtr<WebCore::Frame> createFrame(
         const WebCore::KURL& url, const WTF::String& name,
         WebCore::HTMLFrameOwnerElement* ownerElement,
@@ -160,7 +145,6 @@ public:
         const WebCore::IntSize&, WebCore::HTMLPlugInElement*, const WebCore::KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually);
-    virtual void recreatePlugin(WebCore::Widget*) { }
     virtual void redirectDataToPlugin(WebCore::Widget* pluginWidget);
     virtual PassRefPtr<WebCore::Widget> createJavaAppletWidget(
         const WebCore::IntSize&,
@@ -170,7 +154,6 @@ public:
         const Vector<WTF::String>& paramValues);
     virtual WebCore::ObjectContentType objectContentType(
         const WebCore::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages);
-    virtual WTF::String overrideMediaType() const;
     virtual void didChangeScrollOffset();
     virtual bool allowScript(bool enabledPerSettings);
     virtual bool allowScriptFromSource(bool enabledPerSettings, const WebCore::KURL& scriptURL);
@@ -201,8 +184,6 @@ public:
     virtual void dispatchWillInsertBody() OVERRIDE;
 
 private:
-    void makeDocumentView();
-
     // Given a NavigationAction, determine the associated WebNavigationPolicy.
     // For example, a middle click means "open in background tab".
     static bool actionSpecifiesNavigationPolicy(

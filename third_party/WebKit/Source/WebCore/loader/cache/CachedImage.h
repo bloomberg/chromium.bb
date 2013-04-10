@@ -104,7 +104,6 @@ private:
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = 0);
     virtual PurgePriority purgePriority() const { return PurgeFirst; }
-    void checkShouldPaintBrokenImage();
 
     virtual void switchClientsToRevalidatedResource() OVERRIDE;
 
@@ -116,7 +115,6 @@ private:
 #if ENABLE(SVG)
     OwnPtr<SVGImageCache> m_svgImageCache;
 #endif
-    bool m_shouldPaintBrokenImage;
 };
 
 }

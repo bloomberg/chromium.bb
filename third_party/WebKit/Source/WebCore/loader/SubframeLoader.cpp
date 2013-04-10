@@ -305,11 +305,6 @@ bool SubframeLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 
 bool SubframeLoader::shouldUsePlugin(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages, bool hasFallback, bool& useFallback)
 {
-    if (m_frame->loader()->client()->shouldUsePluginDocument(mimeType)) {
-        useFallback = false;
-        return true;
-    }
-
     // Allow other plug-ins to win over QuickTime because if the user has installed a plug-in that
     // can handle TIFF (which QuickTime can also handle) they probably intended to override QT.
     if (m_frame->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {

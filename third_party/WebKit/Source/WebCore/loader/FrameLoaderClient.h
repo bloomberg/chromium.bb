@@ -47,7 +47,6 @@ template<class T> class Handle;
 namespace WebCore {
 
     class AuthenticationChallenge;
-    class CachedFrame;
     class CachedResourceRequest;
     class Color;
     class DOMWindowExtension;
@@ -101,8 +100,6 @@ namespace WebCore {
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
-        virtual void makeRepresentation(DocumentLoader*) = 0;
-
         virtual void detachedFromParent() = 0;
 
         virtual void assignIdentifierToInitialRequest(unsigned long identifier, DocumentLoader*, const ResourceRequest&) = 0;
@@ -130,7 +127,6 @@ namespace WebCore {
         virtual void dispatchDidFinishDocumentLoad() = 0;
         virtual void dispatchDidFinishLoad() = 0;
 
-        virtual void dispatchDidLayout() { }
         virtual void dispatchDidLayout(LayoutMilestones) { }
 
         virtual Frame* dispatchCreatePage(const NavigationAction&) = 0;
@@ -147,12 +143,9 @@ namespace WebCore {
         virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) = 0;
         virtual void dispatchWillSubmitForm(FramePolicyFunction, PassRefPtr<FormState>) = 0;
 
-        virtual void revertToProvisionalState(DocumentLoader*) = 0;
         virtual void setMainDocumentError(DocumentLoader*, const ResourceError&) = 0;
 
         // Maybe these should go into a ProgressTrackerClient some day
-        virtual void willChangeEstimatedProgress() { }
-        virtual void didChangeEstimatedProgress() { }
         virtual void postProgressStartedNotification() = 0;
         virtual void postProgressEstimateChangedNotification() = 0;
         virtual void postProgressFinishedNotification() = 0;
@@ -200,36 +193,20 @@ namespace WebCore {
         virtual String generatedMIMETypeForURLScheme(const String& URLScheme) const = 0;
 
         virtual void didFinishLoad() = 0;
-        virtual void prepareForDataSourceReplacement() = 0;
 
         virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) = 0;
-        virtual void setTitle(const StringWithDirection&, const KURL&) = 0;
 
         virtual String userAgent(const KURL&) = 0;
-        
-        virtual void savePlatformDataToCachedFrame(CachedFrame*) = 0;
-        virtual void transitionToCommittedFromCachedFrame(CachedFrame*) = 0;
+
         virtual void transitionToCommittedForNewPage() = 0;
-
-        virtual void didSaveToPageCache() = 0;
-        virtual void didRestoreFromPageCache() = 0;
-
-        virtual void dispatchDidBecomeFrameset(bool) = 0; // Can change due to navigation or DOM modification.
-
-        virtual bool canCachePage() const = 0;
-        virtual void convertMainResourceLoadToDownload(DocumentLoader*, const ResourceRequest&, const ResourceResponse&) = 0;
 
         virtual PassRefPtr<Frame> createFrame(const KURL& url, const String& name, HTMLFrameOwnerElement* ownerElement, const String& referrer, bool allowsScrolling, int marginWidth, int marginHeight) = 0;
         virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;
-        virtual void recreatePlugin(Widget*) = 0;
         virtual void redirectDataToPlugin(Widget* pluginWidget) = 0;
 
         virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;
 
-        virtual void dispatchDidFailToStartPlugin(const PluginView*) const { }
-
         virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
-        virtual String overrideMediaType() const = 0;
 
         virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) = 0;
         virtual void documentElementAvailable() = 0;
@@ -239,9 +216,6 @@ namespace WebCore {
         virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) = 0;
         virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) = 0;
         virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) = 0;
-
-        virtual bool shouldUsePluginDocument(const String& /*mimeType*/) const { return false; }
-        virtual bool shouldLoadMediaElementURL(const KURL&) const { return true; }
 
         virtual void didChangeScrollOffset() { }
 
@@ -261,12 +235,7 @@ namespace WebCore {
         // This callback is similar, but for plugins.
         virtual void didNotAllowPlugins() { }
 
-        // Clients that generally disallow universal access can make exceptions for particular URLs.
-        virtual bool shouldForceUniversalAccessFromLocalURL(const KURL&) { return false; }
-
         virtual PassRefPtr<FrameNetworkingContext> createNetworkingContext() = 0;
-
-        virtual bool shouldPaintBrokenImage(const KURL&) const { return true; }
 
         // Returns true if the embedder intercepted the postMessage call
         virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*) const { return false; }
@@ -274,11 +243,6 @@ namespace WebCore {
         virtual void didChangeName(const String&) { }
 
         virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) { }
-
-        virtual void dispatchGlobalObjectAvailable(DOMWrapperWorld*) { }
-        virtual void dispatchWillDisconnectDOMWindowExtensionFromGlobalObject(DOMWindowExtension*) { }
-        virtual void dispatchDidReconnectDOMWindowExtensionToGlobalObject(DOMWindowExtension*) { }
-        virtual void dispatchWillDestroyGlobalObjectForDOMWindowExtension(DOMWindowExtension*) { }
 
 #if ENABLE(MEDIA_STREAM)
         virtual void dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler*) { }

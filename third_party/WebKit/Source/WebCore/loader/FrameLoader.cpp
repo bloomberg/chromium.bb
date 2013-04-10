@@ -587,7 +587,6 @@ void FrameLoader::receivedFirstData()
 {
     dispatchDidCommitLoad();
     dispatchDidClearWindowObjectsInAllWorlds();
-    dispatchGlobalObjectAvailableInAllWorlds();
 
     if (m_documentLoader) {
         StringWithDirection ptitle = m_documentLoader->title();
@@ -1083,7 +1082,6 @@ void FrameLoader::prepareForLoadStart()
 
 void FrameLoader::setupForReplace()
 {
-    m_client->revertToProvisionalState(m_documentLoader.get());
     setState(FrameStateProvisional);
     m_provisionalDocumentLoader = m_documentLoader;
     m_documentLoader = 0;
@@ -1573,7 +1571,6 @@ void FrameLoader::setDocumentLoader(DocumentLoader* loader)
     ASSERT(loader != m_documentLoader);
     ASSERT(!loader || loader->frameLoader() == this);
 
-    m_client->prepareForDataSourceReplacement();
     detachChildren();
 
     // detachChildren() can trigger this frame's unload event, and therefore
@@ -1654,9 +1651,6 @@ void FrameLoader::commitProvisionalLoad()
 
     if (m_loadType != FrameLoadTypeReplace)
         closeOldDataSources();
-
-    if (!cachedPage && !m_stateMachine.creatingInitialEmptyDocument())
-        m_client->makeRepresentation(pdl.get());
 
     transitionToCommitted(cachedPage);
 
@@ -1779,8 +1773,6 @@ void FrameLoader::transitionToCommitted(PassRefPtr<CachedPage> cachedPage)
                     DocumentLoader* cachedDocumentLoader = cachedPage->documentLoader();
                     ASSERT(cachedDocumentLoader);
                     cachedDocumentLoader->setFrame(m_frame);
-                    m_client->transitionToCommittedFromCachedFrame(cachedPage->cachedMainFrame());
-
                 } else
                     m_client->transitionToCommittedForNewPage();
             }
@@ -3109,14 +3101,6 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
     InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, world);
 }
 
-void FrameLoader::dispatchGlobalObjectAvailableInAllWorlds()
-{
-    Vector<RefPtr<DOMWrapperWorld> > worlds;
-    ScriptController::getAllWorlds(worlds);
-    for (size_t i = 0; i < worlds.size(); ++i)
-        m_client->dispatchGlobalObjectAvailable(worlds[i].get());
-}
-
 SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
@@ -3132,8 +3116,6 @@ void FrameLoader::didChangeTitle(DocumentLoader* loader)
     if (loader == m_documentLoader) {
         // Must update the entries in the back-forward list too.
         history()->setCurrentItemTitle(loader->title());
-        // This must go through the WebFrame because it has the right notion of the current b/f item.
-        m_client->setTitle(loader->title(), loader->urlForHistory());
         m_client->dispatchDidReceiveTitle(loader->title());
     }
 }

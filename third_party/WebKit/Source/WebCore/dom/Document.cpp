@@ -4019,9 +4019,6 @@ void Document::documentDidResumeFromPageCache()
 
     if (FrameView* frameView = view())
         frameView->setAnimatorsAreActive();
-
-    ASSERT(m_frame);
-    m_frame->loader()->client()->dispatchDidBecomeFrameset(isFrameSet());
 }
 
 void Document::registerForPageCacheSuspensionCallbacks(Element* e)
@@ -4538,7 +4535,7 @@ void Document::initSecurityContext()
             // harnesses for web sites.
             securityOrigin()->grantUniversalAccess();
         } else if (securityOrigin()->isLocal()) {
-            if (settings->allowUniversalAccessFromFileURLs() || m_frame->loader()->client()->shouldForceUniversalAccessFromLocalURL(m_url)) {
+            if (settings->allowUniversalAccessFromFileURLs()) {
                 // Some clients want local URLs to have universal access, but that setting is dangerous for other clients.
                 securityOrigin()->grantUniversalAccess();
             } else if (!settings->allowFileAccessFromFileURLs()) {

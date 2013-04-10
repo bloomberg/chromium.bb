@@ -171,10 +171,8 @@ static unsigned logCanCacheFrameDecision(Frame* frame, int indentLevel)
         PCLOG("   -The DocumentLoader uses an application cache");
         rejectReasons |= 1 << DocumentLoaderUsesApplicationCache;
     }
-    if (!frame->loader()->client()->canCachePage()) {
-        PCLOG("   -The client says this frame cannot be cached");
-        rejectReasons |= 1 << ClientDeniesCaching;
-    }
+    PCLOG("   -The client says this frame cannot be cached");
+    rejectReasons |= 1 << ClientDeniesCaching;
 
     HistogramSupport::histogramEnumeration("PageCache.FrameCacheable", !rejectReasons, 2);
     int reasonCount = 0;
@@ -320,35 +318,7 @@ PageCache::PageCache()
     
 bool PageCache::canCachePageContainingThisFrame(Frame* frame)
 {
-    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->nextSibling()) {
-        if (!canCachePageContainingThisFrame(child))
-            return false;
-    }
-    
-    FrameLoader* frameLoader = frame->loader();
-    DocumentLoader* documentLoader = frameLoader->documentLoader();
-    Document* document = frame->document();
-    
-    return documentLoader
-        && documentLoader->mainDocumentError().isNull()
-        // Do not cache error pages (these can be recognized as pages with substitute data or unreachable URLs).
-        && !(documentLoader->substituteData().isValid() && !documentLoader->substituteData().failingURL().isEmpty())
-        && (!frameLoader->subframeLoader()->containsPlugins() || frame->page()->settings()->pageCacheSupportsPlugins())
-        && (!document->url().protocolIs("https") || (!documentLoader->response().cacheControlContainsNoCache() && !documentLoader->response().cacheControlContainsNoStore()))
-        && (!document->domWindow() || !document->domWindow()->hasEventListeners(eventNames().unloadEvent))
-        && !DatabaseManager::manager().hasOpenDatabases(document)
-#if ENABLE(SHARED_WORKERS)
-        && !SharedWorkerRepository::hasSharedWorkers(document)
-#endif
-        && frameLoader->history()->currentItem()
-        && !frameLoader->quickRedirectComing()
-        && !documentLoader->isLoadingInAPISense()
-        && !documentLoader->isStopping()
-        && document->canSuspendActiveDOMObjects()
-        // FIXME: We should investigating caching frames that have an associated
-        // application cache. <rdar://problem/5917899> tracks that work.
-        && documentLoader->applicationCacheHost()->canCacheInPageCache()
-        && frameLoader->client()->canCachePage();
+    return false;
 }
     
 bool PageCache::canCache(Page* page) const

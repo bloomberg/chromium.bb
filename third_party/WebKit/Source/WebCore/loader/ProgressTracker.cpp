@@ -108,8 +108,6 @@ void ProgressTracker::reset()
 void ProgressTracker::progressStarted(Frame* frame)
 {
     LOG(Progress, "Progress started (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree()->uniqueName().string().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
-
-    frame->loader()->client()->willChangeEstimatedProgress();
     
     if (m_numProgressTrackedFrames == 0 || m_originatingProgressFrame == frame) {
         reset();
@@ -119,8 +117,6 @@ void ProgressTracker::progressStarted(Frame* frame)
         m_originatingProgressFrame->loader()->client()->postProgressStartedNotification();
     }
     m_numProgressTrackedFrames++;
-
-    frame->loader()->client()->didChangeEstimatedProgress();
     InspectorInstrumentation::frameStartedLoading(frame);
 }
 
@@ -130,14 +126,9 @@ void ProgressTracker::progressCompleted(Frame* frame)
     
     if (m_numProgressTrackedFrames <= 0)
         return;
-    
-    frame->loader()->client()->willChangeEstimatedProgress();
-        
     m_numProgressTrackedFrames--;
     if (!m_numProgressTrackedFrames || m_originatingProgressFrame == frame)
         finalProgressComplete();
-    
-    frame->loader()->client()->didChangeEstimatedProgress();
 }
 
 void ProgressTracker::finalProgressComplete()
@@ -188,8 +179,6 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
 
     RefPtr<Frame> frame = m_originatingProgressFrame;
     
-    frame->loader()->client()->willChangeEstimatedProgress();
-    
     unsigned bytesReceived = length;
     double increment, percentOfRemainingBytes;
     long long remainingBytes, estimatedBytesForPendingRequests;
@@ -238,8 +227,6 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
             m_lastNotifiedProgressTime = now;
         }
     }
-    
-    frame->loader()->client()->didChangeEstimatedProgress();
 }
 
 void ProgressTracker::completeProgress(unsigned long identifier)

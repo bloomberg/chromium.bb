@@ -1277,7 +1277,7 @@ void FrameView::setMediaType(const String& mediaType)
 String FrameView::mediaType() const
 {
     // See if we have an override type.
-    String overrideType = m_frame->loader()->client()->overrideMediaType();
+    String overrideType;
     InspectorInstrumentation::applyEmulatedMedia(m_frame.get(), &overrideType);
     if (!overrideType.isNull())
         return overrideType;
@@ -2396,10 +2396,6 @@ void FrameView::performPostLayoutTasks()
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
         m_frame->document()->fontloader()->didLayout();
 #endif
-    
-    // FIXME: We should consider adding DidLayout as a LayoutMilestone. That would let us merge this
-    // with didLayout(LayoutMilestones).
-    m_frame->loader()->client()->dispatchDidLayout();
 
     RenderView* renderView = this->renderView();
     if (renderView)

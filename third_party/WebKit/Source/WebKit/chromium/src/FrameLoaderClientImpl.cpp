@@ -263,11 +263,6 @@ bool FrameLoaderClientImpl::hasFrameView() const
     return m_webFrame->viewImpl();
 }
 
-void FrameLoaderClientImpl::makeDocumentView()
-{
-    m_webFrame->createFrameView();
-}
-
 void FrameLoaderClientImpl::detachedFromParent()
 {
     // If we were reading data into a plugin, drop our reference to it. If we
@@ -1248,11 +1243,6 @@ void FrameLoaderClientImpl::didFinishLoad()
         observer->didFinishLoading();
 }
 
-void FrameLoaderClientImpl::prepareForDataSourceReplacement()
-{
-    // FIXME
-}
-
 PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data)
@@ -1261,11 +1251,6 @@ PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDataSource(m_webFrame, ds.get());
     return ds.release();
-}
-
-void FrameLoaderClientImpl::setTitle(const StringWithDirection& title, const KURL& url)
-{
-    // FIXME: inform consumer of changes to the title.
 }
 
 String FrameLoaderClientImpl::userAgent(const KURL& url)
@@ -1277,50 +1262,11 @@ String FrameLoaderClientImpl::userAgent(const KURL& url)
     return WebKit::Platform::current()->userAgent(url);
 }
 
-void FrameLoaderClientImpl::savePlatformDataToCachedFrame(CachedFrame*)
-{
-    // The page cache should be disabled.
-    ASSERT_NOT_REACHED();
-}
-
-void FrameLoaderClientImpl::transitionToCommittedFromCachedFrame(CachedFrame*)
-{
-    ASSERT_NOT_REACHED();
-}
-
 // Called when the FrameLoader goes into a state in which a new page load
 // will occur.
 void FrameLoaderClientImpl::transitionToCommittedForNewPage()
 {
-    makeDocumentView();
-}
-
-void FrameLoaderClientImpl::didSaveToPageCache()
-{
-}
-
-void FrameLoaderClientImpl::didRestoreFromPageCache()
-{
-}
-
-void FrameLoaderClientImpl::dispatchDidBecomeFrameset(bool)
-{
-}
-
-bool FrameLoaderClientImpl::canCachePage() const
-{
-    // Since we manage the cache, always report this page as non-cacheable to
-    // FrameLoader.
-    return false;
-}
-
-// Downloading is handled in the browser process, not WebKit. If we get to this
-// point, our download detection code in the ResourceDispatcherHost is broken!
-void FrameLoaderClientImpl::convertMainResourceLoadToDownload(DocumentLoader* documentLoader,
-                                     const ResourceRequest& request,
-                                     const ResourceResponse& response)
-{
-    ASSERT_NOT_REACHED();
+    m_webFrame->createFrameView();
 }
 
 PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
@@ -1434,12 +1380,6 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
         return ObjectContentFrame;
 
     return ObjectContentNone;
-}
-
-String FrameLoaderClientImpl::overrideMediaType() const
-{
-    // FIXME
-    return String();
 }
 
 bool FrameLoaderClientImpl::actionSpecifiesNavigationPolicy(

@@ -29,7 +29,6 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
 #include "CachedResourceLoader.h"
-#include "FrameLoaderClient.h"
 #include "FrameLoaderTypes.h"
 #include "FrameView.h"
 #include "MemoryCache.h"
@@ -55,7 +54,6 @@ namespace WebCore {
 CachedImage::CachedImage(const ResourceRequest& resourceRequest)
     : CachedResource(resourceRequest, ImageResource)
     , m_image(0)
-    , m_shouldPaintBrokenImage(true)
 {
     setStatus(Unknown);
 }
@@ -63,7 +61,6 @@ CachedImage::CachedImage(const ResourceRequest& resourceRequest)
 CachedImage::CachedImage(Image* image)
     : CachedResource(ResourceRequest(), ImageResource)
     , m_image(image)
-    , m_shouldPaintBrokenImage(true)
 {
     setStatus(Cached);
     setLoading(false);
@@ -150,14 +147,14 @@ pair<Image*, float> CachedImage::brokenImage(float deviceScaleFactor) const
 
 bool CachedImage::willPaintBrokenImage() const
 {
-    return errorOccurred() && m_shouldPaintBrokenImage;
+    return errorOccurred();
 }
 
 Image* CachedImage::image()
 {
     ASSERT(!isPurgeable());
 
-    if (errorOccurred() && m_shouldPaintBrokenImage) {
+    if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
         // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage() 
         // when they need the real, deviceScaleFactor-appropriate broken image icon. 
@@ -174,7 +171,7 @@ Image* CachedImage::imageForRenderer(const RenderObject* renderer)
 {
     ASSERT(!isPurgeable());
 
-    if (errorOccurred() && m_shouldPaintBrokenImage) {
+    if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
         // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage() 
         // when they need the real, deviceScaleFactor-appropriate broken image icon. 
@@ -288,14 +285,6 @@ void CachedImage::notifyObservers(const IntRect* changeRect)
         c->imageChanged(this, changeRect);
 }
 
-void CachedImage::checkShouldPaintBrokenImage()
-{
-    if (!m_loader || m_loader->reachedTerminalState())
-        return;
-
-    m_shouldPaintBrokenImage = m_loader->frameLoader()->client()->shouldPaintBrokenImage(m_resourceRequest.url());
-}
-
 void CachedImage::clear()
 {
     destroyDecodedData();
@@ -381,7 +370,6 @@ void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
 
 void CachedImage::error(CachedResource::Status status)
 {
-    checkShouldPaintBrokenImage();
     clear();
     CachedResource::error(status);
     notifyObservers();

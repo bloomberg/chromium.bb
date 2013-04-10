@@ -371,8 +371,6 @@ private:
 
     bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
 
-    void dispatchGlobalObjectAvailableInAllWorlds();
-
     Frame* m_frame;
     FrameLoaderClient* m_client;
 

@@ -110,8 +110,6 @@ void CachedFrameBase::restore()
     // cached page.
     frame->script()->updatePlatformScriptObjects();
 
-    frame->loader()->client()->didRestoreFromPageCache();
-
     // Reconstruct the FrameTree
     for (unsigned i = 0; i < m_childFrames.size(); ++i)
         frame->tree()->appendChild(m_childFrames[i]->view()->frame());
@@ -167,8 +165,6 @@ CachedFrame::CachedFrame(Frame* frame)
 
     m_document->domWindow()->suspendForPageCache();
 
-    frame->loader()->client()->savePlatformDataToCachedFrame(this);
-
     // documentWillSuspendForPageCache() can set up a layout timer on the FrameView, so clear timers after that.
     frame->clearTimers();
 
@@ -181,8 +177,6 @@ CachedFrame::CachedFrame(Frame* frame)
 
     if (!m_isMainFrame)
         frame->page()->decrementSubframeCount();
-
-    frame->loader()->client()->didSaveToPageCache();
 
 #ifndef NDEBUG
     if (m_isMainFrame)
