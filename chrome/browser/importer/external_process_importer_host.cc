@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
+#include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
@@ -34,6 +35,8 @@ void ExternalProcessImporterHost::StartImportSettings(
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
   DCHECK(target_profile);
+
+  importer::LogImporterUseToMetrics(source_profile.importer_type);
 
   profile_ = target_profile;
   writer_ = writer;

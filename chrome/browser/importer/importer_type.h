@@ -30,7 +30,11 @@ enum ImporterType {
   TYPE_BOOKMARKS_FILE  = 5
 };
 
+// Creates an Importer of the specified |type|.
 Importer* CreateImporterByType(ImporterType type);
+
+// Logs to UMA that an Importer of the specified |type| was used.
+void LogImporterUseToMetrics(ImporterType type);
 
 }  // namespace importer
 

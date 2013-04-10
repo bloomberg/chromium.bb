@@ -5,6 +5,7 @@
 #include "chrome/browser/importer/importer_type.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
@@ -20,6 +21,30 @@
 #endif
 
 namespace importer {
+
+namespace {
+
+// The enum used to register importer use.
+enum ImporterTypeMetrics {
+  IMPORTER_METRICS_UNKNOWN         = 0,
+#if defined(OS_WIN)
+  IMPORTER_METRICS_IE              = 1,
+#endif
+  IMPORTER_METRICS_FIREFOX2        = 2,
+  IMPORTER_METRICS_FIREFOX3        = 3,
+#if defined(OS_MACOSX)
+  IMPORTER_METRICS_SAFARI          = 4,
+#endif
+  IMPORTER_METRICS_GOOGLE_TOOLBAR5 = 5,
+  IMPORTER_METRICS_BOOKMARKS_FILE  = 6,
+
+  // Insert new values here. Never remove any existing values, as this enum is
+  // used to bucket a UMA histogram, and removing values breaks that.
+  IMPORTER_METRICS_SIZE
+};
+
+
+}  // namespace
 
 Importer* CreateImporterByType(ImporterType type) {
   switch (type) {
@@ -44,6 +69,34 @@ Importer* CreateImporterByType(ImporterType type) {
   }
   NOTREACHED();
   return NULL;
+}
+
+void LogImporterUseToMetrics(ImporterType type) {
+  ImporterTypeMetrics metrics_type;
+  switch (type) {
+    case TYPE_UNKNOWN:
+      metrics_type = IMPORTER_METRICS_UNKNOWN;
+#if defined(OS_WIN)
+    case TYPE_IE:
+      metrics_type = IMPORTER_METRICS_IE;
+#endif
+    case TYPE_FIREFOX2:
+      metrics_type = IMPORTER_METRICS_FIREFOX2;
+    case TYPE_FIREFOX3:
+      metrics_type = IMPORTER_METRICS_FIREFOX3;
+#if defined(OS_MACOSX)
+    case TYPE_SAFARI:
+      metrics_type = IMPORTER_METRICS_SAFARI;
+#endif
+    case TYPE_GOOGLE_TOOLBAR5:
+      metrics_type = IMPORTER_METRICS_GOOGLE_TOOLBAR5;
+    case TYPE_BOOKMARKS_FILE:
+      metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Import.ImporterType",
+                            metrics_type,
+                            IMPORTER_METRICS_SIZE);
 }
 
 }  // namespace importer

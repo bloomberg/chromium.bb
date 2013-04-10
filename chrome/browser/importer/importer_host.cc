@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -111,6 +112,8 @@ void ImporterHost::StartImportSettings(
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
   DCHECK(target_profile);
+
+  importer::LogImporterUseToMetrics(source_profile.importer_type);
 
   profile_ = target_profile;
   PrefService* user_prefs = profile_->GetPrefs();

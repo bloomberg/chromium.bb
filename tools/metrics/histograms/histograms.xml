@@ -348,6 +348,10 @@ other types of suffix sets.
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
+<histogram name="Import.ImporterType" enum="ImporterType">
+  <summary>The importer used for an import session.</summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <summary>
     The count of unacknowledged ResourceMsg_DataReceived messages.  This message
@@ -3499,6 +3503,18 @@ other types of suffix sets.
     connected unused socket (idle prior to use)
   </int>
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
+</enum>
+
+<enum name="ImporterType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="IMPORTER_METRICS_IE">IE (Windows-only)</int>
+  <int value="2" label="IMPORTER_METRICS_FIREFOX2">Firefox 2</int>
+  <int value="3" label="IMPORTER_METRICS_FIREFOX3">Firefox 3 (and later)</int>
+  <int value="4" label="IMPORTER_METRICS_SAFARI">Safari (Mac-only)</int>
+  <int value="5" label="IMPORTER_METRICS_GOOGLE_TOOLBAR5">Google Toolbar</int>
+  <int value="6" label="IMPORTER_METRICS_BOOKMARKS_FILE">
+    A bookmarks.html file
+  </int>
 </enum>
 
 <enum name="IPV6ProbeResult" type="int">
