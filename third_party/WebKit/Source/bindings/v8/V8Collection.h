@@ -87,6 +87,8 @@ template<class Collection, class ItemType> static v8::Handle<v8::Value> getIndex
     ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
     ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
     Collection* collection = toNativeCollection<Collection>(object);
+    if (index >= collection->length())
+        return v8Undefined();
     return getV8Object<ItemType>(collection->item(index), creationContext, isolate);
 }
 
@@ -133,6 +135,8 @@ template<class Collection> static v8::Handle<v8::Value> collectionStringOrUndefi
     // FIXME: assert that object must be a collection type
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     Collection* collection = toNativeCollection<Collection>(info.Holder());
+    if (index >= collection->length())
+        return v8Undefined();
     String result = collection->item(index);
     return v8StringOrUndefined(result, info.GetIsolate());
 }
@@ -144,6 +148,8 @@ template<class Collection> static v8::Handle<v8::Value> collectionStringIndexedP
     // FIXME: assert that object must be a collection type
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     Collection* collection = toNativeCollection<Collection>(info.Holder());
+    if (index >= collection->length())
+        return v8Undefined();
     String result = collection->item(index);
     return v8String(result, info.GetIsolate());
 }
