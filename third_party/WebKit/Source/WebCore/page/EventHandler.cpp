@@ -1800,13 +1800,8 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
     // down then the text is pasted just before the onclick handler runs and
     // clears the text box. So it's important this happens after the event
     // handlers have been fired.
-#if PLATFORM(GTK)
-    if (mouseEvent.type() != PlatformEvent::MousePressed)
-        return false;
-#else
     if (mouseEvent.type() != PlatformEvent::MouseReleased)
         return false;
-#endif
 
     if (!m_frame->page())
         return false;

@@ -59,7 +59,6 @@ void AudioSession::endedAudioInterruption()
         (*i)->endedAudioInterruption();
 }
 
-#if !PLATFORM(IOS)
 class AudioSessionPrivate {
 };
 
@@ -122,6 +121,5 @@ void AudioSession::setPreferredBufferDuration(float)
 {
     notImplemented();
 }
-#endif // !PLATFORM(IOS)
 
 }

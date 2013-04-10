@@ -329,7 +329,7 @@ inline void FrameSelection::setTypingStyle(PassRefPtr<EditingStyle> style)
     m_typingStyle = style;
 }
 
-#if !(PLATFORM(GTK) || PLATFORM(CHROMIUM))
+#if !(PLATFORM(CHROMIUM))
 inline void FrameSelection::notifyAccessibilityForSelectionChange()
 {
 }

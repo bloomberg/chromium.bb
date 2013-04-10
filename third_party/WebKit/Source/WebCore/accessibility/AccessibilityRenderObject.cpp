@@ -607,22 +607,6 @@ String AccessibilityRenderObject::textUnderElement() const
     }
 #endif
 
-#if PLATFORM(GTK)
-    // On GTK, always use a text iterator in order to get embedded object characters.
-    // TODO: Add support for embedded object characters to the other codepaths that try
-    // to build the accessible text recursively, so this special case isn't needed.
-    // https://bugs.webkit.org/show_bug.cgi?id=105214
-    if (Node* node = this->node()) {
-        if (Frame* frame = node->document()->frame()) {
-            // catch stale WebCoreAXObject (see <rdar://problem/3960196>)
-            if (frame->document() != node->document())
-                return String();
-
-            return plainText(rangeOfContents(node).get(), textIteratorBehaviorForTextRange());
-        }
-    }
-#endif
-
     if (m_renderer->isText()) {
         // If possible, use a text iterator to get the text, so that whitespace
         // is handled consistently.
@@ -1290,11 +1274,7 @@ int AccessibilityRenderObject::textLength() const
     ASSERT(isTextControl());
     
     if (isPasswordField())
-#if PLATFORM(GTK)
-        return passwordFieldValue().length();
-#else
         return -1; // need to return something distinct from 0
-#endif
 
     return text().length();
 }
@@ -1805,13 +1785,7 @@ int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& po
     range->setStart(node, 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
-#if PLATFORM(GTK)
-    // We need to consider replaced elements for GTK, as they will be
-    // presented with the 'object replacement character' (0xFFFC).
-    return TextIterator::rangeLength(range.get(), true);
-#else
     return TextIterator::rangeLength(range.get());
-#endif
 }
 
 Element* AccessibilityRenderObject::rootEditableElementForPosition(const Position& position) const
@@ -2438,18 +2412,6 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
 
     if (node && (node->hasTagName(rpTag) || node->hasTagName(rtTag)))
         return AnnotationRole;
-
-#if PLATFORM(GTK)
-    // Gtk ATs expect all tables, data and layout, to be exposed as tables.
-    if (node && (node->hasTagName(tdTag) || node->hasTagName(thTag)))
-        return CellRole;
-
-    if (node && node->hasTagName(trTag))
-        return RowRole;
-
-    if (node && node->hasTagName(tableTag))
-        return TableRole;
-#endif
 
     // Table sections should be ignored.
     if (m_renderer->isTableSection())
@@ -3257,23 +3219,9 @@ AccessibilityRole AccessibilityRenderObject::roleValueForMSAA() const
 
 String AccessibilityRenderObject::passwordFieldValue() const
 {
-#if PLATFORM(GTK)
-    ASSERT(isPasswordField());
 
-    // Look for the RenderText object in the RenderObject tree for this input field.
-    RenderObject* renderer = node()->renderer();
-    while (renderer && !renderer->isText())
-        renderer = renderer->firstChild();
-
-    if (!renderer || !renderer->isText())
-        return String();
-
-    // Return the text that is actually being rendered in the input field.
-    return static_cast<RenderText*>(renderer)->textWithoutTranscoding();
-#else
     // It seems only GTK is interested in this at the moment.
     return String();
-#endif
 }
 
 ScrollableArea* AccessibilityRenderObject::getScrollableAreaIfScrollable() const

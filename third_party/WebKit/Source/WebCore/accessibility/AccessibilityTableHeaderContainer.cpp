@@ -57,10 +57,6 @@ bool AccessibilityTableHeaderContainer::computeAccessibilityIsIgnored() const
 {
     if (!m_parent)
         return true;
-    
-#if PLATFORM(GTK)
-    return true;
-#endif
 
     return m_parent->accessibilityIsIgnored();
 }

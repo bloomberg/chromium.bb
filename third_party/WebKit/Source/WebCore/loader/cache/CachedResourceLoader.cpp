@@ -813,7 +813,7 @@ void CachedResourceLoader::decrementRequestCount(const CachedResource* res)
 void CachedResourceLoader::preload(CachedResource::Type type, CachedResourceRequest& request, const String& charset)
 {
     bool delaySubresourceLoad = true;
-#if PLATFORM(IOS) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
     delaySubresourceLoad = false;
 #endif
 #if PLATFORM(CHROMIUM)

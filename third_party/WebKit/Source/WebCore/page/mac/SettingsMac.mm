@@ -30,45 +30,23 @@ namespace WebCore {
 
 void Settings::initializeDefaultFontFamilies()
 {
-#if !PLATFORM(IOS)
     setStandardFontFamily("Apple LiSung", USCRIPT_TRADITIONAL_HAN);
     setSerifFontFamily("Apple LiSung", USCRIPT_TRADITIONAL_HAN);
-#else
-    // There is no serif Chinese font in default iOS installation.
-    setStandardFontFamily("Heiti TC", USCRIPT_TRADITIONAL_HAN);
-    setSerifFontFamily("Heiti TC", USCRIPT_TRADITIONAL_HAN);
-#endif
     setFixedFontFamily("Heiti TC", USCRIPT_TRADITIONAL_HAN);
     setSansSerifFontFamily("Heiti TC", USCRIPT_TRADITIONAL_HAN);
 
-#if !PLATFORM(IOS)
     setStandardFontFamily("STSong", USCRIPT_SIMPLIFIED_HAN);
     setSerifFontFamily("STSong", USCRIPT_SIMPLIFIED_HAN);
-#else
-    // There is no serif Chinese font in default iOS installation.
-    setStandardFontFamily("Heiti SC", USCRIPT_SIMPLIFIED_HAN);
-    setSerifFontFamily("Heiti SC", USCRIPT_SIMPLIFIED_HAN);
-#endif
     setFixedFontFamily("Heiti SC", USCRIPT_SIMPLIFIED_HAN);
     setSansSerifFontFamily("Heiti SC", USCRIPT_SIMPLIFIED_HAN);
 
     setStandardFontFamily("Hiragino Mincho ProN", USCRIPT_KATAKANA_OR_HIRAGANA);
-#if !PLATFORM(IOS)
     setFixedFontFamily("Osaka-Mono", USCRIPT_KATAKANA_OR_HIRAGANA);
-#else
-    setFixedFontFamily("Hiragino Kaku Gothic ProN", USCRIPT_KATAKANA_OR_HIRAGANA);
-#endif
     setSerifFontFamily("Hiragino Mincho ProN", USCRIPT_KATAKANA_OR_HIRAGANA);
     setSansSerifFontFamily("Hiragino Kaku Gothic ProN", USCRIPT_KATAKANA_OR_HIRAGANA);
 
-#if !PLATFORM(IOS)
     setStandardFontFamily("AppleMyungjo", USCRIPT_HANGUL);
     setSerifFontFamily("AppleMyungjo", USCRIPT_HANGUL);
-#else
-    // There is no serif Korean font in default iOS installation.
-    setStandardFontFamily("Apple SD Gothic Neo", USCRIPT_HANGUL);
-    setSerifFontFamily("Apple SD Gothic Neo", USCRIPT_HANGUL);
-#endif
 #if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
     setFixedFontFamily("Apple SD Gothic Neo", USCRIPT_HANGUL);
     setSansSerifFontFamily("Apple SD Gothic Neo", USCRIPT_HANGUL);

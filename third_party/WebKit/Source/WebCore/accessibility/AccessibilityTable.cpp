@@ -303,10 +303,6 @@ bool AccessibilityTable::isTableExposableThroughAccessibility() const
         return false;
 
     // Gtk+ ATs expect all tables to be exposed as tables.
-#if PLATFORM(GTK)
-    Node* tableNode = toRenderTable(m_renderer)->node();
-    return tableNode && tableNode->hasTagName(tableTag);
-#endif
 
     return isDataTable();
 }
@@ -370,10 +366,6 @@ void AccessibilityTable::addChildren()
             m_rows.append(row);
             if (!row->accessibilityIsIgnored())
                 m_children.append(row);
-#if PLATFORM(GTK)
-            else
-                m_children.append(row->children());
-#endif
             appendedRows.add(row);
         }
     

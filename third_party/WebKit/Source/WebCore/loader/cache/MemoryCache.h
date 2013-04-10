@@ -225,11 +225,7 @@ private:
 
 inline bool MemoryCache::shouldMakeResourcePurgeableOnEviction()
 {
-#if PLATFORM(IOS)
-    return true;
-#else
     return false;
-#endif
 }
 
 // Function to obtain the global cache.

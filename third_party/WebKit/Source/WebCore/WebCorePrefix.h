@@ -143,19 +143,13 @@ _LIBCPP_END_NAMESPACE_STD
 #endif
 #include <windows.h>
 #else
-#if !PLATFORM(IOS)
 #include <CoreServices/CoreServices.h>
-#endif // !PLATFORM(IOS)
 #endif // OS(WINDOWS)
 
 #endif // !PLATFORM(WX)
 
 #ifdef __OBJC__
-#if PLATFORM(IOS)
-#import <Foundation/Foundation.h>
-#else
 #import <Cocoa/Cocoa.h>
-#endif // PLATFORM(IOS)
 #endif
 
 #ifdef __cplusplus

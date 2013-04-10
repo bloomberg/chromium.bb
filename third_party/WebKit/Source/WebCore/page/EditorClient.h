@@ -131,10 +131,6 @@ public:
     virtual bool isAutomaticSpellingCorrectionEnabled() = 0;
     virtual void toggleAutomaticSpellingCorrection() = 0;
 #endif
-    
-#if PLATFORM(GTK)
-    virtual bool shouldShowUnicodeMenu() = 0;
-#endif
 
     virtual TextCheckerClient* textChecker() = 0;
 

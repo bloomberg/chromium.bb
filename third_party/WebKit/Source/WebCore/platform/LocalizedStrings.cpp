@@ -529,20 +529,6 @@ String allFilesText()
 }
 #endif
 
-#if PLATFORM(IOS)
-String htmlSelectMultipleItems(size_t count)
-{
-    switch (count) {
-    case 0:
-        return WEB_UI_STRING("0 Items", "Present the element <select multiple> when no <option> items are selected (iOS only)");
-    case 1:
-        return WEB_UI_STRING("1 Item", "Present the element <select multiple> when a single <option> is selected (iOS only)");
-    default:
-        return formatLocalizedString(WEB_UI_STRING("%zu Items", "Present the number of selected <option> items in a <select multiple> element (iOS only)"), count);
-    }
-}
-#endif
-
 String imageTitle(const String& filename, const IntSize& size)
 {
 #if USE(CF)

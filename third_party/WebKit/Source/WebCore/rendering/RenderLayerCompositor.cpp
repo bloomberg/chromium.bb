@@ -75,9 +75,7 @@
 bool WebCoreHas3DRendering = true;
 #endif
 
-#if !PLATFORM(IOS)
 #define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1
-#endif
 
 static const int canvasAreaThresholdRequiringCompositing = 50 * 100;
 
