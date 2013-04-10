@@ -1,0 +1,9 @@
+# API OWNERS
+per-file (*.idl|*.in)=set noparent
+per-file (*.idl|*.in)=abarth@chromium.org
+per-file (*.idl|*.in)=darin@chromium.org
+per-file (*.idl|*.in)=dglazkov@chromium.org
+per-file (*.idl|*.in)=eseidel@chromium.org
+per-file (*.idl|*.in)=jochen@chromium.org
+per-file (*.idl|*.in)=ojan@chromium.org
+per-file (*.idl|*.in)=tkent@chromium.org
