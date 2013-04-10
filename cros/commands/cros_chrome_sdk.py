@@ -501,6 +501,10 @@ class ChromeSDKCommand(cros.CrosCommand):
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
     self._SetupTCEnvironment(sdk_ctx, options, env, goma_dir=goma_dir)
 
+    # Add managed components to the PATH.
+    env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, env['PATH'])
+
+    # Export internally referenced variables.
     os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
     os.environ[self.sdk.SDK_BOARD_ENV] = board
     # Export the board/version info in a more accessible way, so developers can
@@ -546,7 +550,7 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   @staticmethod
   def _VerifyGoma(user_rc):
-    """Verify that the user has no goma installations set up in rcfile.
+    """Verify that the user has no goma installations set up in user_rc.
 
     If the user does have a goma installation set up, verify that it's for
     ChromeOS.
@@ -567,6 +571,20 @@ class ChromeSDKCommand(cros.CrosCommand):
         cros_build_lib.Warning('Found %s version of Goma in PATH.', platform)
         cros_build_lib.Warning('Goma will not work')
 
+  @staticmethod
+  def _VerifyChromiteBin(user_rc):
+    """Verify that the user has not set a chromite bin/ dir in user_rc.
+
+    Arguments:
+      user_rc: User-supplied rc file.
+    """
+    user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
+    chromite_bin = osutils.Which('parallel_emerge', user_env.get('PATH'))
+    if chromite_bin is not None:
+      cros_build_lib.Warning(
+          '%s is adding chromite/bin to the PATH.  Remove it from the PATH to '
+          'use the the default Chromite.', user_rc)
+
   @contextlib.contextmanager
   def _GetRCFile(self, env, user_rc):
     """Returns path to dynamically created bashrc file.
@@ -584,6 +602,7 @@ class ChromeSDKCommand(cros.CrosCommand):
       osutils.Touch(user_rc, makedirs=True)
 
     self._VerifyGoma(user_rc)
+    self._VerifyChromiteBin(user_rc)
 
     # We need a temporary rc file to 'wrap' the user configuration file,
     # because running with '--rcfile' causes bash to ignore bash special
