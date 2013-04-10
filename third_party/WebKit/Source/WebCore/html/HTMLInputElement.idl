@@ -64,7 +64,9 @@
 #else
     [TreatNullAs=NullString] attribute DOMString value;
 #endif
+#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
     [SetterRaisesException] attribute Date valueAsDate;
+#endif
     [SetterRaisesException] attribute double valueAsNumber;
 
     [RaisesException] void stepUp([Optional] long n);

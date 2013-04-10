@@ -190,8 +190,10 @@
     CSSStyleDeclaration createCSSStyleDeclaration();
 #endif
 
+#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     CanvasRenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
+#endif
 #endif
 
     // HTML 5
@@ -321,6 +323,11 @@
     [ReturnNewObject, DeliverCustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
     [ReturnNewObject, DeliverCustomElementCallbacks, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
+#endif
+
+#if defined(LANGUAGE_CPP) && LANGUAGE_CPP
+    // Extra WebCore methods exposed to allow compile-time casting in C++
+    boolean isHTMLDocument();
 #endif
 
     // Page visibility API.

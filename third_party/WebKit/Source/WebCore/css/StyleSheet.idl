@@ -30,5 +30,11 @@
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        href;
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        title;
     readonly attribute MediaList        media;
+
+#if defined(LANGUAGE_CPP) && LANGUAGE_CPP
+    // Extra WebCore methods exposed to allowe compile-time casting in C++
+    boolean isCSSStyleSheet();
+#endif
+
 };
 

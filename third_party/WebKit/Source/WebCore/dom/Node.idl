@@ -116,6 +116,7 @@
     void inspect();
 #endif /* defined(LANGUAGE_OBJECTIVE_C) */
 
+#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
 #if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     void addEventListener(DOMString type, 
                           EventListener listener, 
@@ -125,4 +126,17 @@
                              [Optional] boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event event);
 #endif
+#endif
+
+#if defined(LANGUAGE_CPP) && LANGUAGE_CPP
+    [Custom] void addEventListener(DOMString type, 
+                                      EventListener listener, 
+                                      boolean useCapture);
+    [Custom] void removeEventListener(DOMString type, 
+                                         EventListener listener, 
+                                         boolean useCapture);
+    [RaisesException] boolean dispatchEvent(Event event);
+#endif
+
 };
+

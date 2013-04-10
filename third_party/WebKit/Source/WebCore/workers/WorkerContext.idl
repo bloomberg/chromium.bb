@@ -60,6 +60,7 @@
                              [Optional] boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 
+#if !defined(LANGUAGE_CPP) || !LANGUAGE_CPP
     // Constructors
     attribute MessageEventConstructor MessageEvent;
     attribute WorkerLocationConstructor WorkerLocation;
@@ -69,6 +70,7 @@
 #endif
     attribute EventSourceConstructor EventSource;
     attribute XMLHttpRequestConstructor XMLHttpRequest;
+#endif
 
     attribute BlobConstructor Blob;
     attribute FileReaderConstructor FileReader;
