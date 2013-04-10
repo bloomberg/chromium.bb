@@ -135,13 +135,9 @@ const jobject GetApplicationContext() {
 }
 
 ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
-  return ScopedJavaLocalRef<jclass>(env, GetUnscopedClass(env, class_name));
-}
-
-jclass GetUnscopedClass(JNIEnv* env, const char* class_name) {
   jclass clazz = env->FindClass(class_name);
   CHECK(!ClearException(env) && clazz) << "Failed to find class " << class_name;
-  return clazz;
+  return ScopedJavaLocalRef<jclass>(env, clazz);
 }
 
 bool HasClass(JNIEnv* env, const char* class_name) {

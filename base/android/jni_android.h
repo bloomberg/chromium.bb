@@ -53,11 +53,6 @@ const BASE_EXPORT jobject GetApplicationContext();
 BASE_EXPORT ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env,
                                                 const char* class_name);
 
-// Similar to the above, but the caller is responsible to manage the jclass
-// lifetime.
-BASE_EXPORT jclass GetUnscopedClass(JNIEnv* env,
-                                    const char* class_name) WARN_UNUSED_RESULT;
-
 // Returns true iff the class |class_name| could be found.
 BASE_EXPORT bool HasClass(JNIEnv* env, const char* class_name);
 

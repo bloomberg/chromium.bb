@@ -32,7 +32,7 @@ static const char kMediaCodecBufferInfoClassPath[] =
 
 static bool MediaCodecBufferInfo_RegisterNativesImpl(JNIEnv* env) {
   g_MediaCodecBufferInfo_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kMediaCodecBufferInfoClassPath)));
+      base::android::GetClass(env, kMediaCodecBufferInfoClassPath).obj()));
   base::android::CheckException(env);
   return true;
 }
