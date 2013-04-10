@@ -74,7 +74,6 @@
    #                   ^^^^       ^^^^
    # and $~0x1f, %eXX     jmp %eXX
     @{
-      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
       instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     } |

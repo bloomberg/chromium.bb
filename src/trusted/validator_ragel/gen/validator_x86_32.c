@@ -930,7 +930,6 @@ current_state = 195; current_position++; goto _again;
  SET_CPU_FEATURE(CPUFeature_LZCNT);       break;
   case 186:
 
-      UnmarkValidJumpTarget((current_position - codeblock) - 1, valid_targets);
       instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
       break;
