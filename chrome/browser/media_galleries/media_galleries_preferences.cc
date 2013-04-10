@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -204,9 +205,17 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
   AddDefaultGalleriesIfFreshProfile();
   InitFromPrefs(false /*no notification*/);
+
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->AddObserver(this);
 }
 
-MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
+MediaGalleriesPreferences::~MediaGalleriesPreferences() {
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->RemoveObserver(this);
+}
 
 void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
   // Only add defaults the first time.
@@ -284,7 +293,7 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
     return;
 
   if (info.name.empty()) {
-    AddGallery(info.device_id, base::FilePath(info.location),
+    AddGallery(info.device_id, base::FilePath(),
                false /*not user added*/,
                info.storage_label,
                info.vendor_name,
@@ -292,8 +301,7 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
                info.total_size_in_bytes,
                base::Time::Now());
   } else {
-    AddGalleryWithName(info.device_id, info.name,
-                       base::FilePath(info.location), false);
+    AddGalleryWithName(info.device_id, info.name, base::FilePath(), false);
   }
 }
 

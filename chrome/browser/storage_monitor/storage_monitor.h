@@ -20,6 +20,7 @@ class ChromeBrowserMainPartsLinux;
 class ChromeBrowserMainPartsMac;
 class MediaGalleriesPrivateApiTest;
 class MediaGalleriesPrivateEjectApiTest;
+class PlatformAppMediaGalleriesBrowserTest;
 class SystemInfoStorageApiTest;
 
 namespace chrome {
@@ -93,21 +94,18 @@ class StorageMonitor {
       base::Callback<void(EjectStatus)> callback);
 
  protected:
+  friend class ::MediaGalleriesPrivateApiTest;
+  friend class ::MediaGalleriesPrivateEjectApiTest;
+  friend class MediaFileSystemRegistryTest;
+  friend class ::PlatformAppMediaGalleriesBrowserTest;
+  friend class ::SystemInfoStorageApiTest;
+
   StorageMonitor();
   virtual ~StorageMonitor();
 
   // Removes the existing singleton for testing.
   // (So that a new one can be created.)
   static void RemoveSingletonForTesting();
-
-  // TODO(gbillock): Clean up ownerships and get rid of these friends.
-  friend class ::ChromeBrowserMainPartsLinux;
-  friend class ::ChromeBrowserMainPartsMac;
-  friend class ::MediaGalleriesPrivateApiTest;
-  friend class ::MediaGalleriesPrivateEjectApiTest;
-  friend class MediaFileSystemRegistryTest;
-  friend class TestRemovableStorageNotifications;
-  friend class ::SystemInfoStorageApiTest;
 
   virtual Receiver* receiver() const;
 

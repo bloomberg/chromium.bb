@@ -621,7 +621,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   // Add some galleries on the same device.
   relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device1"));
   info.name = ASCIIToUTF16("Device1Path1");
-  std::string device_id = "device1";
+  std::string device_id = "path:device1";
   MediaGalleryPrefId dev1_path1_id = gallery_prefs()->AddGalleryWithName(
       device_id, info.name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 2UL, dev1_path1_id);
@@ -640,7 +640,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
 
   relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device2"));
   info.name = ASCIIToUTF16("Device2Path1");
-  device_id = "device2";
+  device_id = "path:device2";
   MediaGalleryPrefId dev2_path1_id = gallery_prefs()->AddGalleryWithName(
       device_id, info.name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 4UL, dev2_path1_id);

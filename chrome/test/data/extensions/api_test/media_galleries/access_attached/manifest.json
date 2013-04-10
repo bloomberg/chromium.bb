@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.access_attached",
+  "version": "0.1",
+  "description": "test access of attached storage for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}]
+}

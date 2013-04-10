@@ -336,7 +336,6 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   std::vector<MediaFileSystemInfo> GetAutoAddedGalleries(
       ProfileState* profile_state);
 
-  // TODO(gbillock): Rework these once windows-specific code is gone.
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
@@ -615,11 +614,6 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
   string16 name = location.LossyDisplayName();
   ProcessAttach(device_id, name, location.value());
-  bool user_added = (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
-  for (size_t i = 0; i < profile_states_.size(); ++i) {
-    profile_states_[i]->GetMediaGalleriesPrefs()->AddGalleryWithName(
-        device_id, name, base::FilePath(), user_added);
-  }
   MessageLoop::current()->RunUntilIdle();
   return device_id;
 }
@@ -860,6 +854,7 @@ TEST_F(MediaFileSystemRegistryTest,
       break;
     }
   }
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(forget_gallery);
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 
