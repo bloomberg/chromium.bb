@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"
 
@@ -51,6 +52,7 @@ void Address::GetSupportedTypes(FieldTypeSet* supported_types) const {
 }
 
 string16 Address::GetRawInfo(AutofillFieldType type) const {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
 
@@ -94,6 +96,7 @@ void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
 
 string16 Address::GetInfo(AutofillFieldType type,
                           const std::string& app_locale) const {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
     return AutofillCountry(UTF16ToASCII(country_code_), app_locale).name();
 
@@ -103,6 +106,7 @@ string16 Address::GetInfo(AutofillFieldType type,
 bool Address::SetInfo(AutofillFieldType type,
                       const string16& value,
                       const std::string& app_locale) {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_COUNTRY && !value.empty()) {
     country_code_ =
         ASCIIToUTF16(AutofillCountry::GetCountryCode(value, app_locale));

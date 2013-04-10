@@ -812,6 +812,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(AutofillFieldType type) {
       form_group = &home_number_[0];
       break;
     case AutofillType::ADDRESS_HOME:
+    case AutofillType::ADDRESS_BILLING:
       form_group = &address_;
       break;
     default:

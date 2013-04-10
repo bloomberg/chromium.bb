@@ -78,6 +78,11 @@ scoped_ptr<FormStructure> CreateTestAddressFormStructure() {
   autofill_types.push_back(NAME_FULL);
   autofill_types.push_back(PHONE_HOME_WHOLE_NUMBER);
   autofill_types.push_back(EMAIL_ADDRESS);
+  autofill_types.push_back(ADDRESS_HOME_LINE1);
+  autofill_types.push_back(ADDRESS_HOME_CITY);
+  autofill_types.push_back(ADDRESS_HOME_STATE);
+  autofill_types.push_back(ADDRESS_HOME_COUNTRY);
+  autofill_types.push_back(ADDRESS_HOME_ZIP);
   autofill_types.push_back(NO_SERVER_DATA);
   return CreateTestFormStructure(autofill_types);
 }
@@ -89,11 +94,11 @@ scoped_ptr<FormStructure> CreateTestCreditCardFormStructure() {
   autofill_types.push_back(CREDIT_CARD_EXP_MONTH);
   autofill_types.push_back(CREDIT_CARD_EXP_4_DIGIT_YEAR);
   autofill_types.push_back(CREDIT_CARD_VERIFICATION_CODE);
-  autofill_types.push_back(ADDRESS_HOME_LINE1);
-  autofill_types.push_back(ADDRESS_HOME_CITY);
-  autofill_types.push_back(ADDRESS_HOME_STATE);
-  autofill_types.push_back(ADDRESS_HOME_COUNTRY);
-  autofill_types.push_back(ADDRESS_HOME_ZIP);
+  autofill_types.push_back(ADDRESS_BILLING_LINE1);
+  autofill_types.push_back(ADDRESS_BILLING_CITY);
+  autofill_types.push_back(ADDRESS_BILLING_STATE);
+  autofill_types.push_back(ADDRESS_BILLING_COUNTRY);
+  autofill_types.push_back(ADDRESS_BILLING_ZIP);
   return CreateTestFormStructure(autofill_types);
 }
 
@@ -201,7 +206,12 @@ const TestField kTestFields[] = {
   {"locality", "Mocked City", ADDRESS_HOME_CITY},
   {"region", "California", ADDRESS_HOME_STATE},
   {"country", "USA", ADDRESS_HOME_COUNTRY},
-  {"postal-code", "49012", ADDRESS_HOME_ZIP}
+  {"postal-code", "49012", ADDRESS_HOME_ZIP},
+  {"billing-street-address", "Billing Street", ADDRESS_BILLING_LINE1},
+  {"billing-locality", "Billing City", ADDRESS_BILLING_CITY},
+  {"billing-region", "BillingState", ADDRESS_BILLING_STATE},
+  {"billing-country", "Canada", ADDRESS_BILLING_COUNTRY},
+  {"billing-postal-code", "11111", ADDRESS_BILLING_ZIP}
 };
 
 // Build Autocheckout specific form data to be consumed by
@@ -431,13 +441,18 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
 
   std::vector<FormData> filled_forms = ReadFilledForms();
   ASSERT_EQ(1U, filled_forms.size());
-  ASSERT_EQ(4U, filled_forms[0].fields.size());
+  ASSERT_EQ(9U, filled_forms[0].fields.size());
   EXPECT_EQ(ASCIIToUTF16("Test User"), filled_forms[0].fields[0].value);
   EXPECT_EQ(ASCIIToUTF16("650-123-9909"), filled_forms[0].fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("blah@blah.com"), filled_forms[0].fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("Fake Street"), filled_forms[0].fields[3].value);
+  EXPECT_EQ(ASCIIToUTF16("Mocked City"), filled_forms[0].fields[4].value);
+  EXPECT_EQ(ASCIIToUTF16("California"), filled_forms[0].fields[5].value);
+  EXPECT_EQ(ASCIIToUTF16("United States"), filled_forms[0].fields[6].value);
+  EXPECT_EQ(ASCIIToUTF16("49012"), filled_forms[0].fields[7].value);
   // Last field should not be filled, because there is no server mapping
   // available for it.
-  EXPECT_EQ(ASCIIToUTF16("SomeField"), filled_forms[0].fields[3].value);
+  EXPECT_EQ(ASCIIToUTF16("SomeField"), filled_forms[0].fields[8].value);
 
   filled_forms.clear();
   ClearIpcSink();
@@ -455,11 +470,11 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
   EXPECT_EQ(ASCIIToUTF16("10"), filled_forms[0].fields[2].value);
   EXPECT_EQ(ASCIIToUTF16("2020"), filled_forms[0].fields[3].value);
   EXPECT_EQ(ASCIIToUTF16("123"), filled_forms[0].fields[4].value);
-  EXPECT_EQ(ASCIIToUTF16("Fake Street"), filled_forms[0].fields[5].value);
-  EXPECT_EQ(ASCIIToUTF16("Mocked City"), filled_forms[0].fields[6].value);
-  EXPECT_EQ(ASCIIToUTF16("California"), filled_forms[0].fields[7].value);
-  EXPECT_EQ(ASCIIToUTF16("United States"), filled_forms[0].fields[8].value);
-  EXPECT_EQ(ASCIIToUTF16("49012"), filled_forms[0].fields[9].value);
+  EXPECT_EQ(ASCIIToUTF16("Billing Street"), filled_forms[0].fields[5].value);
+  EXPECT_EQ(ASCIIToUTF16("Billing City"), filled_forms[0].fields[6].value);
+  EXPECT_EQ(ASCIIToUTF16("BillingState"), filled_forms[0].fields[7].value);
+  EXPECT_EQ(ASCIIToUTF16("Canada"), filled_forms[0].fields[8].value);
+  EXPECT_EQ(ASCIIToUTF16("11111"), filled_forms[0].fields[9].value);
 
   filled_forms.clear();
   ClearIpcSink();

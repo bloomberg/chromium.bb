@@ -275,24 +275,26 @@ void AutocheckoutManager::ReturnAutocheckoutData(
 
   profile_.reset(new AutofillProfile());
   credit_card_.reset(new CreditCard());
+  billing_address_.reset(new AutofillProfile());
 
   for (size_t i = 0; i < result->field_count(); ++i) {
     AutofillFieldType type = result->field(i)->type();
+    const string16& value = result->field(i)->value;
     if (type == CREDIT_CARD_VERIFICATION_CODE) {
       cvv_ = result->field(i)->value;
       continue;
     }
-    if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
-      credit_card_->SetRawInfo(result->field(i)->type(),
-                               result->field(i)->value);
-    } else if (result->field(i)->type() == ADDRESS_HOME_COUNTRY ||
-               result->field(i)->type() == ADDRESS_BILLING_COUNTRY) {
-      profile_->SetInfo(result->field(i)->type(),
-                        result->field(i)->value,
-                        autofill_manager_->app_locale());
-    } else {
-      profile_->SetRawInfo(result->field(i)->type(), result->field(i)->value);
-    }
+    FieldTypeGroup group = AutofillType(type).group();
+    if (group == AutofillType::CREDIT_CARD)
+      credit_card_->SetRawInfo(type, value);
+    else if (type == ADDRESS_HOME_COUNTRY)
+      profile_->SetInfo(type, value, autofill_manager_->app_locale());
+    else if (type == ADDRESS_BILLING_COUNTRY)
+      billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
+    else if (group == AutofillType::ADDRESS_BILLING)
+      billing_address_->SetRawInfo(type, value);
+    else
+      profile_->SetRawInfo(type, value);
   }
 
   // Add 1.0 since page numbers are 0-indexed.
@@ -343,10 +345,11 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
     return;
   }
 
-  // TODO(ramankk): Handle variants in a better fashion, need to distinguish
-  // between shipping and billing address.
   if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
     credit_card_->FillFormField(
+        field, 0, autofill_manager_->app_locale(), field_to_fill);
+  } else if (AutofillType(type).group() == AutofillType::ADDRESS_BILLING) {
+    billing_address_->FillFormField(
         field, 0, autofill_manager_->app_locale(), field_to_fill);
   } else {
     profile_->FillFormField(

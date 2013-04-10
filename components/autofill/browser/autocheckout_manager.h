@@ -112,6 +112,9 @@ class AutocheckoutManager {
   // Credit card built using the data supplied by requestAutocomplete dialog.
   scoped_ptr<CreditCard> credit_card_;
 
+  // Billing address built using data supplied by requestAutocomplete dialog.
+  scoped_ptr<AutofillProfile> billing_address_;
+
   // Autocheckout specific page meta data.
   scoped_ptr<AutocheckoutPageMetaData> page_meta_data_;
 
