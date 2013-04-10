@@ -16,6 +16,15 @@ namespace gles2 {
 Framebuffer::FramebufferComboCompleteMap*
     Framebuffer::framebuffer_combo_complete_map_;
 
+// Framebuffer completeness is not cacheable on OS X because of dynamic
+// graphics switching.
+// http://crbug.com/180876
+#if defined(OS_MACOSX)
+bool Framebuffer::allow_framebuffer_combo_complete_map_ = false;
+#else
+bool Framebuffer::allow_framebuffer_combo_complete_map_ = true;
+#endif
+
 void Framebuffer::ClearFramebufferCompleteComboMap() {
   if (framebuffer_combo_complete_map_) {
     framebuffer_combo_complete_map_->clear();
@@ -378,28 +387,36 @@ GLenum Framebuffer::IsPossiblyComplete() const {
 GLenum Framebuffer::GetStatus(
     TextureManager* texture_manager, GLenum target) const {
   // Check if we have this combo already.
-  std::string signature(base::StringPrintf("|FBO|target=%04x", target));
-  for (AttachmentMap::const_iterator it = attachments_.begin();
-       it != attachments_.end(); ++it) {
-    Attachment* attachment = it->second;
-    signature += base::StringPrintf(
-        "|Attachment|attachmentpoint=%04x", it->first);
-    attachment->AddToSignature(texture_manager, &signature);
+  std::string signature;
+  if (allow_framebuffer_combo_complete_map_) {
+    signature = base::StringPrintf("|FBO|target=%04x", target);
+    for (AttachmentMap::const_iterator it = attachments_.begin();
+         it != attachments_.end(); ++it) {
+      Attachment* attachment = it->second;
+      signature += base::StringPrintf(
+          "|Attachment|attachmentpoint=%04x", it->first);
+      attachment->AddToSignature(texture_manager, &signature);
+    }
+
+    if (!framebuffer_combo_complete_map_) {
+      framebuffer_combo_complete_map_ = new FramebufferComboCompleteMap();
+    }
+
+    FramebufferComboCompleteMap::const_iterator it =
+        framebuffer_combo_complete_map_->find(signature);
+    if (it != framebuffer_combo_complete_map_->end()) {
+      return GL_FRAMEBUFFER_COMPLETE;
+    }
   }
 
-  if (!framebuffer_combo_complete_map_) {
-    framebuffer_combo_complete_map_ = new FramebufferComboCompleteMap();
-  }
-
-  FramebufferComboCompleteMap::const_iterator it =
-      framebuffer_combo_complete_map_->find(signature);
-  if (it != framebuffer_combo_complete_map_->end()) {
-    return GL_FRAMEBUFFER_COMPLETE;
-  }
   GLenum result = glCheckFramebufferStatusEXT(target);
-  if (result == GL_FRAMEBUFFER_COMPLETE) {
+
+  // Insert the new result into the combo map.
+  if (allow_framebuffer_combo_complete_map_ &&
+      result == GL_FRAMEBUFFER_COMPLETE) {
     framebuffer_combo_complete_map_->insert(std::make_pair(signature, true));
   }
+
   return result;
 }
 

@@ -678,6 +678,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
 
   // Check a second call for the same type does not call anything
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
 
   // Check changing the attachments calls CheckFramebufferStatus.
@@ -689,6 +694,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
 
   // Check a second call for the same type does not call anything.
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
 
   // Check a second call with a different target calls CheckFramebufferStatus.
@@ -698,6 +708,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check a second call for the same type does not call anything.
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check adding another attachment calls CheckFramebufferStatus.
@@ -708,6 +723,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check a second call for the same type does not call anything.
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check changing the format calls CheckFramebuffferStatus.
@@ -726,6 +746,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check putting it back does not call CheckFramebufferStatus.
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   TestHelper::SetTexParameterWithExpectations(
       gl_.get(), decoder_.get(), &texture_manager_,
       texture2, GL_TEXTURE_WRAP_S, GL_REPEAT, GL_NO_ERROR);
@@ -733,6 +758,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 
   // Check Unbinding does not call CheckFramebufferStatus
   framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer1);
+  if (!framebuffer_->AllowFramebufferComboCompleteMapForTesting()) {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+  }
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 }
 

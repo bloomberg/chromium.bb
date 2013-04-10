@@ -2573,6 +2573,13 @@ bool GLES2DecoderImpl::Initialize(
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
 
+  // Only compositor contexts are known to use only the subset of GL
+  // that can be safely migrated between the iGPU and the dGPU. Mark
+  // those contexts as safe to forcibly transition between the GPUs.
+  // http://crbug.com/180876, http://crbug.com/227228
+  if (!offscreen)
+    context_->SetSafeToForceGpuSwitch();
+
   // Create a delegate to perform async pixel transfers.
   async_pixel_transfer_delegate_ =
       gfx::AsyncPixelTransferDelegate::Create(context.get());

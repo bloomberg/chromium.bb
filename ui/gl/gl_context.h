@@ -61,6 +61,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // to get the exact amount of GPU memory.
   virtual bool GetTotalGpuMemory(size_t* bytes);
 
+  // Indicate that it is safe to force this context to switch GPUs, since
+  // transitioning can cause corruption and hangs (OS X only).
+  virtual void SetSafeToForceGpuSwitch();
+
   // Returns whether the current context supports the named extension. The
   // context must be current.
   bool HasExtension(const char* name);

@@ -121,6 +121,10 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   static void ClearFramebufferCompleteComboMap();
 
+  static bool AllowFramebufferComboCompleteMapForTesting() {
+    return allow_framebuffer_combo_complete_map_;
+  }
+
  private:
   friend class FramebufferManager;
   friend class base::RefCounted<Framebuffer>;
@@ -164,6 +168,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // it should be FRAMEBUFFER_COMPLETE.
   typedef base::hash_map<std::string, bool> FramebufferComboCompleteMap;
   static FramebufferComboCompleteMap* framebuffer_combo_complete_map_;
+  static bool allow_framebuffer_combo_complete_map_;
 
   scoped_ptr<GLenum[]> draw_buffers_;
 

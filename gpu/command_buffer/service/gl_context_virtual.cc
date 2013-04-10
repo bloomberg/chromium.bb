@@ -92,6 +92,13 @@ bool GLContextVirtual::GetTotalGpuMemory(size_t* bytes) {
   return shared_context_->GetTotalGpuMemory(bytes);
 }
 
+void GLContextVirtual::SetSafeToForceGpuSwitch() {
+  // TODO(ccameron): This will not work if two contexts that disagree
+  // about whether or not forced gpu switching may be done both share
+  // the same underlying shared_context_.
+  return shared_context_->SetSafeToForceGpuSwitch();
+}
+
 bool GLContextVirtual::WasAllocatedUsingRobustnessExtension() {
   return shared_context_->WasAllocatedUsingRobustnessExtension();
 }

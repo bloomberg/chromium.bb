@@ -46,6 +46,7 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
+  virtual void SetSafeToForceGpuSwitch() OVERRIDE;
   virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
 
  protected:
