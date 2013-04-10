@@ -57,6 +57,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+static const unsigned maximumHTMLParserDOMTreeDepth = 512;
+
 static inline void setAttributes(Element* element, AtomicHTMLToken* token, ParserContentPolicy parserContentPolicy)
 {
     if (!scriptingContentIsAllowed(parserContentPolicy))
@@ -119,7 +121,7 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> p
     }
 
     // Add as a sibling of the parent if we have reached the maximum depth allowed.
-    if (m_openElements.stackDepth() > m_maximumDOMTreeDepth && task.parent->parentNode())
+    if (m_openElements.stackDepth() > maximumHTMLParserDOMTreeDepth && task.parent->parentNode())
         task.parent = task.parent->parentNode();
 
     ASSERT(task.parent);
@@ -143,25 +145,23 @@ void HTMLConstructionSite::executeQueuedTasks()
     // We might be detached now.
 }
 
-HTMLConstructionSite::HTMLConstructionSite(Document* document, ParserContentPolicy parserContentPolicy, unsigned maximumDOMTreeDepth)
+HTMLConstructionSite::HTMLConstructionSite(Document* document, ParserContentPolicy parserContentPolicy)
     : m_document(document)
     , m_attachmentRoot(document)
     , m_parserContentPolicy(parserContentPolicy)
     , m_isParsingFragment(false)
     , m_redirectAttachToFosterParent(false)
-    , m_maximumDOMTreeDepth(maximumDOMTreeDepth)
     , m_inQuirksMode(document->inQuirksMode())
 {
     ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
-HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserContentPolicy parserContentPolicy, unsigned maximumDOMTreeDepth)
+HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserContentPolicy parserContentPolicy)
     : m_document(fragment->document())
     , m_attachmentRoot(fragment)
     , m_parserContentPolicy(parserContentPolicy)
     , m_isParsingFragment(true)
     , m_redirectAttachToFosterParent(false)
-    , m_maximumDOMTreeDepth(maximumDOMTreeDepth)
     , m_inQuirksMode(fragment->document()->inQuirksMode())
 {
     ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());

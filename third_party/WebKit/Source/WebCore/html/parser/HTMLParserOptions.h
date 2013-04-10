@@ -35,7 +35,6 @@ public:
     bool scriptEnabled;
     bool pluginsEnabled;
     bool useThreading;
-    unsigned maximumDOMTreeDepth;
 
     explicit HTMLParserOptions(Document* = 0);
 };

@@ -38,7 +38,6 @@ defaultFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
 defaultFixedFontSize type=int, initial=0, setNeedsStyleRecalcInAllFrames=1
 
 editingBehaviorType type=EditingBehaviorType, initial=editingBehaviorTypeForPlatform()
-maximumHTMLParserDOMTreeDepth type=unsigned, initial=defaultMaximumHTMLParserDOMTreeDepth
 
 caretBrowsingEnabled initial=false
 localStorageEnabled initial=false

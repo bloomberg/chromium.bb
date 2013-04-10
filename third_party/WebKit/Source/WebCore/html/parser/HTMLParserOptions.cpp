@@ -48,7 +48,6 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
 #else
     useThreading = false;
 #endif
-    maximumDOMTreeDepth = settings ? settings->maximumHTMLParserDOMTreeDepth() : Settings::defaultMaximumHTMLParserDOMTreeDepth;
 }
 
 }

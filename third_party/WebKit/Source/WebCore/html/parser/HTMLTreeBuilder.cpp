@@ -268,7 +268,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* docum
 #ifndef NDEBUG
     , m_isAttached(true)
 #endif
-    , m_tree(document, parserContentPolicy, options.maximumDOMTreeDepth)
+    , m_tree(document, parserContentPolicy)
     , m_insertionMode(InitialMode)
     , m_originalInsertionMode(InitialMode)
     , m_shouldSkipLeadingNewline(false)
@@ -286,7 +286,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
     , m_isAttached(true)
 #endif
     , m_fragmentContext(fragment, contextElement)
-    , m_tree(fragment, parserContentPolicy, options.maximumDOMTreeDepth)
+    , m_tree(fragment, parserContentPolicy)
     , m_insertionMode(InitialMode)
     , m_originalInsertionMode(InitialMode)
     , m_shouldSkipLeadingNewline(false)

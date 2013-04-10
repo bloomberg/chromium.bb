@@ -197,8 +197,6 @@ namespace WebCore {
         void setTiledBackingStoreEnabled(bool);
         bool tiledBackingStoreEnabled() const { return m_tiledBackingStoreEnabled; }
 
-        static const unsigned defaultMaximumHTMLParserDOMTreeDepth = 512;
-
 #if USE(SAFARI_THEME)
         // Windows debugging pref (global) for switching between the Aqua look and a native windows look.
         static void setShouldPaintNativeControls(bool);

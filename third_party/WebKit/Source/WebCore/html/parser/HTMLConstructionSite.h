@@ -72,8 +72,8 @@ class HTMLFormElement;
 class HTMLConstructionSite {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
 public:
-    HTMLConstructionSite(Document*, ParserContentPolicy, unsigned maximumDOMTreeDepth);
-    HTMLConstructionSite(DocumentFragment*, ParserContentPolicy, unsigned maximumDOMTreeDepth);
+    HTMLConstructionSite(Document*, ParserContentPolicy);
+    HTMLConstructionSite(DocumentFragment*, ParserContentPolicy);
     ~HTMLConstructionSite();
 
     void detach();
@@ -193,8 +193,6 @@ private:
     // "whenever a node would be inserted into the current node, it must instead
     // be foster parented."  This flag tracks whether we're in that state.
     bool m_redirectAttachToFosterParent;
-
-    unsigned m_maximumDOMTreeDepth;
 
     bool m_inQuirksMode;
 };
