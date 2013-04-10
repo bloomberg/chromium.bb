@@ -68,7 +68,6 @@ scriptMarkupEnabled initial=true
 needsSiteSpecificQuirks initial=false
 localFileContentSniffingEnabled initial=false
 offlineWebApplicationCacheEnabled initial=false
-enforceCSSMIMETypeInNoQuirksMode initial=true
 usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
 acceleratedFiltersEnabled initial=false

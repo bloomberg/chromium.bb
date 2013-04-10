@@ -254,7 +254,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isCSSGridLayoutEnabled(false)
     , isCSSVariablesEnabled(false)
     , needsSiteSpecificQuirks(false)
-    , enforcesCSSMIMETypeInNoQuirksMode(true)
     , useLegacyBackgroundSizeShorthandBehavior(false)
 {
 }
@@ -271,7 +270,6 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
     , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
-    , enforcesCSSMIMETypeInNoQuirksMode(!document->settings() || document->settings()->enforceCSSMIMETypeInNoQuirksMode())
     , useLegacyBackgroundSizeShorthandBehavior(document->settings() ? document->settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
 }
@@ -289,7 +287,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
         && a.isCSSVariablesEnabled == b.isCSSVariablesEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks
-        && a.enforcesCSSMIMETypeInNoQuirksMode == b.enforcesCSSMIMETypeInNoQuirksMode
         && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
 }
 
