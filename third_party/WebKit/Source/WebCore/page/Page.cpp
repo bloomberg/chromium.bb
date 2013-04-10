@@ -553,36 +553,6 @@ bool Page::findString(const String& target, FindOptions options)
     return false;
 }
 
-void Page::findStringMatchingRanges(const String& target, FindOptions options, int limit, Vector<RefPtr<Range> >* matchRanges, int& indexForSelection)
-{
-    indexForSelection = 0;
-    if (!mainFrame())
-        return;
-
-    Frame* frame = mainFrame();
-    Frame* frameWithSelection = 0;
-    do {
-        frame->editor()->countMatchesForText(target, 0, options, limit ? (limit - matchRanges->size()) : 0, true, matchRanges);
-        if (frame->selection()->isRange())
-            frameWithSelection = frame;
-        frame = incrementFrame(frame, true, false);
-    } while (frame);
-
-    if (matchRanges->isEmpty())
-        return;
-
-    if (frameWithSelection) {
-        indexForSelection = NoMatchBeforeUserSelection;
-        RefPtr<Range> selectedRange = frameWithSelection->selection()->selection().firstRange();
-        for (size_t i = 0; i < matchRanges->size(); ++i) {
-            if (selectedRange->compareBoundaryPoints(Range::START_TO_END, matchRanges->at(i).get(), IGNORE_EXCEPTION) < 0) {
-                indexForSelection = i;
-                break;
-            }
-        }
-    }
-}
-
 PassRefPtr<Range> Page::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
 {
     if (target.isEmpty() || !mainFrame())
@@ -609,28 +579,6 @@ PassRefPtr<Range> Page::rangeOfString(const String& target, Range* referenceRang
     }
 
     return 0;
-}
-
-unsigned int Page::markAllMatchesForText(const String& target, TextCaseSensitivity caseSensitivity, bool shouldHighlight, unsigned limit)
-{
-    return markAllMatchesForText(target, caseSensitivity == TextCaseInsensitive ? CaseInsensitive : 0, shouldHighlight, limit);
-}
-
-unsigned int Page::markAllMatchesForText(const String& target, FindOptions options, bool shouldHighlight, unsigned limit)
-{
-    if (target.isEmpty() || !mainFrame())
-        return 0;
-
-    unsigned matches = 0;
-
-    Frame* frame = mainFrame();
-    do {
-        frame->editor()->setMarkedTextMatchesAreHighlighted(shouldHighlight);
-        matches += frame->editor()->countMatchesForText(target, 0, options, limit ? (limit - matches) : 0, true, 0);
-        frame = incrementFrame(frame, true, false);
-    } while (frame);
-
-    return matches;
 }
 
 void Page::unmarkAllTextMatches()
