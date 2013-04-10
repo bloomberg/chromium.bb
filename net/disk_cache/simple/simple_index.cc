@@ -46,7 +46,7 @@ SimpleIndex::SimpleIndex(
     const base::FilePath& path)
     : path_(path),
       cache_thread_(cache_thread) {
-  index_filename_ = path_.AppendASCII("simple-index");
+  index_filename_ = path_.AppendASCII("index");
 }
 
 bool SimpleIndex::Initialize() {

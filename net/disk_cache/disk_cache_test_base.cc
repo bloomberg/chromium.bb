@@ -268,11 +268,10 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
 
   if (simple_cache_mode_) {
     net::TestCompletionCallback cb;
-    disk_cache::Backend* simple_backend;
-    // TODO(pasko): split Simple Backend construction from initialization.
-    int rv = disk_cache::SimpleBackendImpl::CreateBackend(cache_path_, size_,
-        type_, disk_cache::kNone, make_scoped_refptr(runner), NULL,
-        &simple_backend, cb.callback());
+    disk_cache::SimpleBackendImpl* simple_backend =
+        new disk_cache::SimpleBackendImpl(cache_path_, size_, type_,
+                                          make_scoped_refptr(runner), NULL);
+    int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     cache_ = simple_backend;
     return;

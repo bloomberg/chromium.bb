@@ -29,16 +29,14 @@ class SimpleIndex;
 
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
  public:
-  virtual ~SimpleBackendImpl();
+  SimpleBackendImpl(const base::FilePath& path, int max_bytes,
+                    net::CacheType type,
+                    const scoped_refptr<base::TaskRunner>& cache_thread,
+                    net::NetLog* net_log);
 
-  static int CreateBackend(const base::FilePath& full_path,
-                           int max_bytes,
-                           net::CacheType type,
-                           uint32 flags,
-                           scoped_refptr<base::TaskRunner> cache_thread,
-                           net::NetLog* net_log,
-                           Backend** backend,
-                           const CompletionCallback& callback);
+  int Init(const CompletionCallback& callback);
+
+  virtual ~SimpleBackendImpl();
 
   // From Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
@@ -63,25 +61,14 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend {
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  SimpleBackendImpl(
-      const scoped_refptr<base::TaskRunner>& cache_thread,
-      const base::FilePath& path);
-
-  // Creates the Cache directory if needed. Performs blocking IO, so it cannot
-  // be called on IO thread.
-  static void EnsureCachePathExists(
-      const base::FilePath& path,
-      const scoped_refptr<base::TaskRunner>& cache_thread,
-      const scoped_refptr<base::TaskRunner>& io_thread,
-      const CompletionCallback& callback,
-      Backend** backend);
-
   // Must run on Cache Thread.
-  void Initialize();
+  void InitializeIndex(base::MessageLoopProxy* io_thread,
+                       const CompletionCallback& callback);
 
   const base::FilePath path_;
 
   scoped_ptr<SimpleIndex> index_;
+  const scoped_refptr<base::TaskRunner> cache_thread_;
 };
 
 }  // namespace disk_cache

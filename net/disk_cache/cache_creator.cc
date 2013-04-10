@@ -45,7 +45,6 @@ class CacheCreator {
   net::CompletionCallback callback_;
   disk_cache::Backend* created_cache_;
   net::NetLog* net_log_;
-  bool use_simple_cache_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheCreator);
 };
@@ -66,8 +65,7 @@ CacheCreator::CacheCreator(
       backend_(backend),
       callback_(callback),
       created_cache_(NULL),
-      net_log_(net_log),
-      use_simple_cache_backend_(false) {
+      net_log_(net_log) {
   }
 
 CacheCreator::~CacheCreator() {
@@ -82,12 +80,12 @@ int CacheCreator::Run() {
     // testing it against net::DISK_CACHE. Turn it on for more cache types as
     // appropriate.
     if (type_ == net::DISK_CACHE) {
-      VLOG(1) << "Using the Simple Cache Backend.";
-      use_simple_cache_backend_ = true;
-      return disk_cache::SimpleBackendImpl::CreateBackend(
-          path_, max_bytes_, type_, disk_cache::kNone, thread_, net_log_,
-          backend_, base::Bind(&CacheCreator::OnIOComplete,
-                               base::Unretained(this)));
+      disk_cache::SimpleBackendImpl* simple_cache =
+          new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_, thread_,
+                                            net_log_);
+      created_cache_ = simple_cache;
+      return simple_cache->Init(
+          base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
     }
   }
   disk_cache::BackendImpl* new_cache =
@@ -104,14 +102,9 @@ int CacheCreator::Run() {
 
 void CacheCreator::DoCallback(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  if (result == net::OK) {
-    // TODO(pasko): Separate creation of the Simple Backend from its
-    // initialization, eliminate unnecessary use_simple_cache_backend_.
-    if (use_simple_cache_backend_)
-      created_cache_ = *backend_;
-    else
-      *backend_ = created_cache_;
-  } else {
+  if (result == net::OK)
+    *backend_ = created_cache_;
+  else {
     LOG(ERROR) << "Unable to create cache";
     *backend_ = NULL;
     delete created_cache_;
@@ -159,6 +152,5 @@ int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
                                            thread, net_log, backend, callback);
   return creator->Run();
 }
-
 
 }  // namespace disk_cache

@@ -51,8 +51,7 @@ int32 DataSizeFromKeyAndFileSize(size_t key_size, int64 file_size) {
 }
 
 int64 FileOffsetFromDataOffset(size_t key_size, int data_offset) {
-  const int64 headers_size = sizeof(disk_cache::SimpleFileHeader) +
-                             key_size;
+  const int64 headers_size = sizeof(disk_cache::SimpleFileHeader) + key_size;
   return headers_size + data_offset;
 }
 
