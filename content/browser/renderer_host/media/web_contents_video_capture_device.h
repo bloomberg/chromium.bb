@@ -74,7 +74,8 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
 class CONTENT_EXPORT SmoothEventSampler {
  public:
   explicit SmoothEventSampler(base::TimeDelta capture_period,
-                              bool events_are_reliable);
+                              bool events_are_reliable,
+                              int redundant_capture_goal);
 
   // Add a new event to the event history, and return whether it ought to be
   // sampled per to the sampling frequency limit. Even if this method returns
@@ -95,8 +96,10 @@ class CONTENT_EXPORT SmoothEventSampler {
  private:
   const bool events_are_reliable_;
   const base::TimeDelta capture_period_;
+  const int redundant_capture_goal_;
   base::Time current_event_;
   base::Time last_sample_;
+  int last_sample_count_;
   DISALLOW_COPY_AND_ASSIGN(SmoothEventSampler);
 };
 

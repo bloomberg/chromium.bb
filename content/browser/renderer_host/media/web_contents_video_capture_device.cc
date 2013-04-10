@@ -103,6 +103,17 @@ const int kMinFrameHeight = 2;
 const int kMaxFramesInFlight = 2;
 const int kMaxSnapshotsInFlight = 1;
 
+// This value controls how many redundant, timer-base captures occur when the
+// content is static. Redundantly capturing the same frame allows iterative
+// quality enhancement, and also allows the buffer to fill in "buffered mode".
+//
+// TODO(nick): Controlling this here is a hack and a layering violation, since
+// it's a strategy specific to the WebRTC consumer, and probably just papers
+// over some frame dropping and quality bugs. It should either be controlled at
+// a higher level, or else redundant frame generation should be pushed down
+// further into the WebRTC encoding stack.
+const int kNumRedundantCapturesOfStaticContent = 200;
+
 // TODO(nick): Remove this once frame subscription is supported on Aura and
 // Linux.
 #if (defined(OS_WIN) || defined(OS_MACOSX)) || defined(USE_AURA)
@@ -419,7 +430,8 @@ CaptureOracle::CaptureOracle(media::VideoCaptureDevice::EventHandler* consumer,
       consumer_(consumer),
       frame_number_(0),
       is_started_(false),
-      sampler_(capture_period_, kAcceleratedSubscriberIsSupported) {}
+      sampler_(capture_period_, kAcceleratedSubscriberIsSupported,
+               kNumRedundantCapturesOfStaticContent) {}
 
 bool CaptureOracle::ObserveEventAndDecideCapture(
       Event event,
@@ -1253,15 +1265,18 @@ WebContentsVideoCaptureDevice::device_name() {
 }
 
 SmoothEventSampler::SmoothEventSampler(base::TimeDelta capture_period,
-                                       bool events_are_reliable)
+                                       bool events_are_reliable,
+                                       int redundant_capture_goal)
     :  events_are_reliable_(events_are_reliable),
-       capture_period_(capture_period) {}
+       capture_period_(capture_period),
+       redundant_capture_goal_(redundant_capture_goal),
+       last_sample_count_(0) {}
 
 bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time now) {
   current_event_ = now;
 
   // If we've never sampled, then the choice is obvious.
-  if (last_sample_.is_null())
+  if (last_sample_count_ == 0)
     return true;
 
   // TODO(nick): Actually track the effective frame rate here, and use an
@@ -1276,20 +1291,25 @@ bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time now) {
 }
 
 void SmoothEventSampler::RecordSample() {
-  if (!current_event_.is_null())
+  if (!current_event_.is_null()) {
+    last_sample_count_ = 0;
     last_sample_ = current_event_;
+  }
+  last_sample_count_++;
   current_event_ = base::Time();
 }
 
 bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time now) const {
-  if (last_sample_.is_null())
+  if (last_sample_count_ == 0)
     return true;  // Definitely old and dirty.
 
   // If we don't get events on compositor updates on this platform, then we
   // don't reliably know whether we're dirty.
   if (events_are_reliable_) {
-    if (current_event_.is_null())
+    if (current_event_.is_null() &&
+        last_sample_count_ >= redundant_capture_goal_) {
       return false;  // Not dirty.
+    }
   }
 
   // If we're dirty but not yet old, then we've recently gotten updates, so we
