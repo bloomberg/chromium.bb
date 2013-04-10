@@ -31,12 +31,6 @@
 #include "DragImage.h"
 #include "IntPoint.h"
 
-#if PLATFORM(MAC)
-OBJC_CLASS DOMElement;
-OBJC_CLASS NSURL;
-OBJC_CLASS NSString;
-#endif
-
 namespace WebCore {
     
     class Clipboard;
@@ -57,12 +51,6 @@ namespace WebCore {
         
         virtual void dragControllerDestroyed() = 0;
 
-#if PLATFORM(MAC)
-        // Mac-specific helper function to allow access to web archives and NSPasteboard extras in WebKit.
-        // This is not abstract as that would require another #if PLATFORM(MAC) for the SVGImage client empty implentation.
-        virtual void declareAndWriteDragImage(const String&, DOMElement*, NSURL *, NSString *, Frame*) { }
-#endif
-        
         virtual void dragEnded() { }
 
         virtual ~DragClient() { }

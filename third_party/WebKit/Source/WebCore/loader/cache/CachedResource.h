@@ -259,10 +259,6 @@ public:
 
     virtual bool canReuse(const ResourceRequest&) const { return true; }
 
-#if PLATFORM(MAC)
-    void tryReplaceEncodedData(PassRefPtr<SharedBuffer>);
-#endif
-
 protected:
     virtual void checkNotify();
 

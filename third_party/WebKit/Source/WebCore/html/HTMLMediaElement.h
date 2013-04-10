@@ -55,9 +55,6 @@ class MediaError;
 class KURL;
 class TextTrackList;
 class TimeRanges;
-#if PLATFORM(MAC)
-class DisplaySleepDisabler;
-#endif
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 class MediaKeys;
 #endif
@@ -558,11 +555,6 @@ private:
     bool isLiveStream() const { return movieLoadType() == MediaPlayer::LiveStream; }
     bool isAutoplaying() const { return m_autoplaying; }
 
-#if PLATFORM(MAC)
-    void updateDisableSleep();
-    bool shouldDisableSleep() const;
-#endif
-
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;
     Timer<HTMLMediaElement> m_playbackProgressTimer;
@@ -677,10 +669,6 @@ private:
     String m_mediaGroup;
     friend class MediaController;
     RefPtr<MediaController> m_mediaController;
-
-#if PLATFORM(MAC)
-    OwnPtr<DisplaySleepDisabler> m_sleepDisabler;
-#endif
 
     friend class TrackDisplayUpdateScope;
 

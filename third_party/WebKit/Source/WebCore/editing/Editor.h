@@ -42,11 +42,6 @@
 #include "VisibleSelection.h"
 #include "WritingDirection.h"
 
-#if PLATFORM(MAC) && !defined(__OBJC__)
-class NSDictionary;
-typedef int NSWritingDirection;
-#endif
-
 namespace WebCore {
 
 class Clipboard;
@@ -208,10 +203,6 @@ public:
     bool insertLineBreak();
     bool insertParagraphSeparator();
 
-#if PLATFORM(MAC)
-    bool insertParagraphSeparatorInQuotedContent();
-#endif
-    
     bool isContinuousSpellCheckingEnabled() const;
     void toggleContinuousSpellChecking();
     bool isGrammarCheckingEnabled();
@@ -377,17 +368,6 @@ public:
     void textWillBeDeletedInTextField(Element* input);
     void textDidChangeInTextArea(Element*);
     WritingDirection baseWritingDirectionForSelectionStart() const;
-
-#if PLATFORM(MAC)
-    const SimpleFontData* fontForSelection(bool&) const;
-    NSDictionary* fontAttributesForSelectionStart() const;
-    bool canCopyExcludingStandaloneImages();
-    void takeFindStringFromSelection();
-    void writeSelectionToPasteboard(const String& pasteboardName, const Vector<String>& pasteboardTypes);
-    void readSelectionFromPasteboard(const String& pasteboardName);
-    String stringSelectionForPasteboard();
-    PassRefPtr<SharedBuffer> dataSelectionForPasteboard(const String& pasteboardName);
-#endif
 
     void replaceSelectionWithFragment(PassRefPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);

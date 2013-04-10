@@ -35,12 +35,6 @@
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSAttributedString;
-OBJC_CLASS NSString;
-OBJC_CLASS NSURL;
-#endif
-
 namespace WebCore {
 
 class ArchiveResource;
@@ -115,14 +109,6 @@ public:
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) = 0;
     virtual void textWillBeDeletedInTextField(Element*) = 0;
     virtual void textDidChangeInTextArea(Element*) = 0;
-
-#if PLATFORM(MAC)
-    virtual NSString* userVisibleString(NSURL*) = 0;
-    virtual DocumentFragment* documentFragmentFromAttributedString(NSAttributedString*, Vector< RefPtr<ArchiveResource> >&) = 0;
-    virtual void setInsertionPasteboard(const String& pasteboardName) = 0;
-    virtual NSURL* canonicalizeURL(NSURL*) = 0;
-    virtual NSURL* canonicalizeURLString(NSString*) = 0;
-#endif
 
 #if USE(APPKIT)
     virtual void uppercaseWord() = 0;

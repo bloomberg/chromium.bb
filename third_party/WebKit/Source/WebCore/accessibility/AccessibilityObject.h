@@ -625,11 +625,7 @@ public:
     virtual void updateChildrenIfNecessary();
     virtual void setNeedsToUpdateChildren() { }
     virtual void clearChildren();
-#if PLATFORM(MAC)
-    virtual void detachFromParent();
-#else
     virtual void detachFromParent() { }
-#endif
 
     virtual void selectedChildren(AccessibilityChildrenVector&) { }
     virtual void visibleChildren(AccessibilityChildrenVector&) { }

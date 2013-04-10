@@ -379,11 +379,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             return;
         }
 
-#if PLATFORM(MAC)
-        if (style()->highlight() != nullAtom && !paintInfo.context->paintingDisabled())
-            paintCustomHighlight(toPoint(paintOffset - location()), style()->highlight(), true);
-#endif
-
         LayoutSize contentSize(cWidth, cHeight);
         LayoutPoint contentLocation = paintOffset;
         contentLocation.move(leftBorder + leftPad, topBorder + topPad);

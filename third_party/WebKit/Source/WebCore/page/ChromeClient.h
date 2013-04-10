@@ -281,14 +281,6 @@ public:
     virtual void fullScreenRendererChanged(RenderBox*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }
 
-#if PLATFORM(MAC)
-    virtual NSResponder *firstResponder() { return 0; }
-    virtual void makeFirstResponder(NSResponder *) { }
-    // Focuses on the containing view associated with this page.
-    virtual void makeFirstResponder() { }
-    virtual void willPopUpMenu(NSMenu *) { }
-#endif
-
 #if PLATFORM(WIN)
     virtual void setLastSetCursorToCurrentCursor() = 0;
 #endif

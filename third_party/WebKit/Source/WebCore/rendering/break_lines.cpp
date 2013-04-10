@@ -32,10 +32,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 
-#if PLATFORM(MAC)
-#include <CoreServices/CoreServices.h>
-#endif
-
 namespace WebCore {
 
 template<bool treatNoBreakSpaceAsBreak>

@@ -42,10 +42,6 @@
 #include <sys/time.h> // For time_t structure.
 #endif
 
-#if PLATFORM(MAC)
-#include <wtf/SchedulePair.h>
-#endif
-
 namespace WebCore {
 
 class AlternativeTextClient;
@@ -235,13 +231,6 @@ public:
     // NoMatchBeforeUserSelection if there is no matching text after the user selection.
     enum { NoMatchBeforeUserSelection = -1 };
     void findStringMatchingRanges(const String&, FindOptions, int maxCount, Vector<RefPtr<Range> >*, int& indexForSelection);
-#if PLATFORM(MAC)
-    void addSchedulePair(PassRefPtr<SchedulePair>);
-    void removeSchedulePair(PassRefPtr<SchedulePair>);
-    SchedulePairHashSet* scheduledRunLoopPairs() { return m_scheduledRunLoopPairs.get(); }
-
-    OwnPtr<SchedulePairHashSet> m_scheduledRunLoopPairs;
-#endif
 
     const VisibleSelection& selection() const;
 

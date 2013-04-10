@@ -199,12 +199,10 @@ double Settings::hiddenPageDOMTimerAlignmentInterval()
     return gHiddenPageDOMTimerAlignmentInterval;
 }
 
-#if !PLATFORM(MAC)
 void Settings::initializeDefaultFontFamilies()
 {
     // Other platforms can set up fonts from a client, but on Mac, we want it in WebCore to share code between WebKit1 and WebKit2.
 }
-#endif
 
 const AtomicString& Settings::standardFontFamily(UScriptCode script) const
 {

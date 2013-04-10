@@ -260,9 +260,6 @@ private:
     void addCanvasChildren();
     void addAttachmentChildren();
     void addRemoteSVGChildren();
-#if PLATFORM(MAC)
-    void updateAttachmentViewParents();
-#endif
 
     void ariaSelectedRows(AccessibilityChildrenVector&);
     

@@ -1178,7 +1178,7 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
     if (AXObjectCache* cache = root->document()->existingAXObjectCache())
         cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
 #endif

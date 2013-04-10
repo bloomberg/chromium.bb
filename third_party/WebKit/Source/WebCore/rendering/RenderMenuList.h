@@ -29,11 +29,7 @@
 #include "PopupMenuClient.h"
 #include "RenderFlexibleBox.h"
 
-#if PLATFORM(MAC)
-#define POPUP_MENU_PULLS_DOWN 0
-#else
 #define POPUP_MENU_PULLS_DOWN 1
-#endif
 
 namespace WebCore {
 

@@ -707,10 +707,6 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
             return false;
     }
 
-#if PLATFORM(MAC) // FIXME: Why does this assertion fire on other platforms?
-    ASSERT(m_mouseDownMayStartSelect || m_mouseDownMayStartAutoscroll);
-#endif
-
     m_mouseDownMayStartDrag = false;
 
     if (m_mouseDownMayStartAutoscroll && !panScrollInProgress()) {
@@ -2980,12 +2976,10 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
     return true;
 }
 
-#if !PLATFORM(MAC)
 bool EventHandler::needsKeyboardEventDisambiguationQuirks() const
 {
     return false;
 }
-#endif
 
 bool EventHandler::isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent& keyEvent) const
 {
@@ -3112,9 +3106,6 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keypress->setTarget(node);
     if (keydownResult)
         keypress->setDefaultPrevented(true);
-#if PLATFORM(MAC)
-    keypress->keypressCommands() = keydown->keypressCommands();
-#endif
     node->dispatchEvent(keypress, IGNORE_EXCEPTION);
 
     return keydownResult || keypress->defaultPrevented() || keypress->defaultHandled();

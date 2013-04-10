@@ -288,11 +288,6 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     if (!m_frameView || paintInfo.phase != PaintPhaseForeground)
         return;
 
-#if PLATFORM(MAC)
-    if (style()->highlight() != nullAtom && !paintInfo.context->paintingDisabled())
-        paintCustomHighlight(paintOffset, style()->highlight(), true);
-#endif
-
     if (style()->hasBorderRadius()) {
         LayoutRect borderRect = LayoutRect(adjustedPaintOffset, size());
 

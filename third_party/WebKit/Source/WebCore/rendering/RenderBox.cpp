@@ -692,11 +692,6 @@ bool RenderBox::logicalScroll(ScrollLogicalDirection direction, ScrollGranularit
     
     RenderLayer* l = layer();
     if (l) {
-#if PLATFORM(MAC)
-        // On Mac only we reset the inline direction position when doing a document scroll (e.g., hitting Home/End).
-        if (granularity == ScrollByDocument)
-            scrolled = l->scroll(logicalToPhysical(ScrollInlineDirectionBackward, isHorizontalWritingMode(), style()->isFlippedBlocksWritingMode()), ScrollByDocument, multiplier);
-#endif
         if (l->scroll(logicalToPhysical(direction, isHorizontalWritingMode(), style()->isFlippedBlocksWritingMode()), granularity, multiplier))
             scrolled = true;
         
@@ -1465,31 +1460,6 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
     }
     return false;
 }
-
-#if PLATFORM(MAC)
-
-void RenderBox::paintCustomHighlight(const LayoutPoint& paintOffset, const AtomicString& type, bool behindText)
-{
-    Frame* frame = this->frame();
-    if (!frame)
-        return;
-    Page* page = frame->page();
-    if (!page)
-        return;
-
-    InlineBox* boxWrap = inlineBoxWrapper();
-    RootInlineBox* r = boxWrap ? boxWrap->root() : 0;
-    if (r) {
-        FloatRect rootRect(paintOffset.x() + r->x(), paintOffset.y() + r->selectionTop(), r->logicalWidth(), r->selectionHeight());
-        FloatRect imageRect(paintOffset.x() + x(), rootRect.y(), width(), rootRect.height());
-        page->chrome()->client()->paintCustomHighlight(node(), type, imageRect, rootRect, behindText, false);
-    } else {
-        FloatRect imageRect(paintOffset.x() + x(), paintOffset.y() + y(), width(), height());
-        page->chrome()->client()->paintCustomHighlight(node(), type, imageRect, imageRect, behindText, false);
-    }
-}
-
-#endif
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset)
 {

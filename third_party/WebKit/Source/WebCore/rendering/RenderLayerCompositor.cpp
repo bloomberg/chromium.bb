@@ -75,7 +75,7 @@
 bool WebCoreHas3DRendering = true;
 #endif
 
-#if !PLATFORM(MAC) && !PLATFORM(IOS)
+#if !PLATFORM(IOS)
 #define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1
 #endif
 
@@ -1852,10 +1852,8 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
     if (AnimationController* animController = renderer->animation()) {
         return (animController->isRunningAnimationOnRenderer(renderer, CSSPropertyOpacity) && inCompositingMode())
 #if ENABLE(CSS_FILTERS)
-#if !PLATFORM(MAC) || (!PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080)
             // <rdar://problem/10907251> - WebKit2 doesn't support CA animations of CI filters on Lion and below
             || animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitFilter)
-#endif // !PLATFORM(MAC) || (!PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080)
 #endif // CSS_FILTERS
             || animController->isRunningAnimationOnRenderer(renderer, CSSPropertyWebkitTransform);
     }
@@ -2174,15 +2172,6 @@ bool RenderLayerCompositor::requiresContentShadowLayer() const
     // We don't want a layer if this is a subframe.
     if (!isMainFrame())
         return false;
-
-#if PLATFORM(MAC)
-    if (viewHasTransparentBackground())
-        return false;
-
-    // On Mac, we want a content shadow layer if we have a scrolling coordinator and can scroll.
-    if (scrollingCoordinator() && !m_renderView->frameView()->prohibitsScrolling())
-        return true;
-#endif
 
     return false;
 }

@@ -1088,14 +1088,6 @@ static bool executeSwapWithMark(Frame* frame, Event*, EditorCommandSource, const
     return true;
 }
 
-#if PLATFORM(MAC)
-static bool executeTakeFindStringFromSelection(Frame* frame, Event*, EditorCommandSource, const String&)
-{
-    frame->editor()->takeFindStringFromSelection();
-    return true;
-}
-#endif
-
 static bool executeToggleBold(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
     return executeToggleStyle(frame, source, EditActionBold, CSSPropertyFontWeight, "normal", "bold");
@@ -1291,13 +1283,6 @@ static bool enabledRedo(Frame* frame, Event*, EditorCommandSource)
 {
     return frame->editor()->canRedo();
 }
-
-#if PLATFORM(MAC)
-static bool enabledTakeFindStringFromSelection(Frame* frame, Event*, EditorCommandSource)
-{
-    return frame->editor()->canCopyExcludingStandaloneImages();
-}
-#endif
 
 static bool enabledUndo(Frame* frame, Event*, EditorCommandSource)
 {
@@ -1595,10 +1580,6 @@ static const CommandMap& createCommandMap()
         { "UseCSS", { executeUseCSS, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "Yank", { executeYank, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "YankAndSelect", { executeYankAndSelect, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-
-#if PLATFORM(MAC)
-        { "TakeFindStringFromSelection", { executeTakeFindStringFromSelection, supportedFromMenuOrKeyBinding, enabledTakeFindStringFromSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-#endif
     };
 
     // These unsupported commands are listed here since they appear in the Microsoft

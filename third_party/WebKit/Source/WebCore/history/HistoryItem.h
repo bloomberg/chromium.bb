@@ -35,11 +35,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-#import <wtf/RetainPtr.h>
-typedef struct objc_object* id;
-#endif
-
 namespace WebCore {
 
 class CachedPage;
@@ -177,16 +172,6 @@ public:
     void setRedirectURLs(PassOwnPtr<Vector<String> >);
 
     bool isCurrentDocument(Document*) const;
-    
-#if PLATFORM(MAC)
-    id viewState() const;
-    void setViewState(id);
-    
-    // Transient properties may be of any ObjC type.  They are intended to be used to store state per back/forward list entry.
-    // The properties will not be persisted; when the history item is removed, the properties will be lost.
-    id getTransientProperty(const String&) const;
-    void setTransientProperty(const String&, id);
-#endif
 
 #ifndef NDEBUG
     int showTree() const;
@@ -262,12 +247,6 @@ private:
     HistoryItem* m_next;
     HistoryItem* m_prev;
     RefPtr<CachedPage> m_cachedPage;
-    
-#if PLATFORM(MAC)
-    RetainPtr<id> m_viewState;
-    OwnPtr<HashMap<String, RetainPtr<id> > > m_transientProperties;
-#endif
-
 }; //class HistoryItem
 
 } //namespace WebCore

@@ -1352,11 +1352,8 @@ bool RenderLayerBacking::containsPaintedContent() const
     if (renderer()->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer->hasBoxDecorationsOrBackground();
 #endif
-#if PLATFORM(MAC) && USE(CA) && (PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)
-#else
     if (isAcceleratedCanvas(renderer()))
         return m_owningLayer->hasBoxDecorationsOrBackground();
-#endif
 
     return true;
 }

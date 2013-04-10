@@ -36,37 +36,6 @@
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/Collator.h>
 
-#if PLATFORM(MAC)
-#include "SoftLinking.h"
-#endif
-
-#if PLATFORM(MAC)
-
-SOFT_LINK_LIBRARY(libxslt)
-SOFT_LINK(libxslt, xsltComputeSortResult, xmlXPathObjectPtr*, (xsltTransformContextPtr ctxt, xmlNodePtr sort), (ctxt, sort))
-SOFT_LINK(libxslt, xsltEvalAttrValueTemplate, xmlChar*, (xsltTransformContextPtr ctxt, xmlNodePtr node, const xmlChar *name, const xmlChar *ns), (ctxt, node, name, ns))
-
-static void xsltTransformErrorTrampoline(xsltTransformContextPtr, xsltStylesheetPtr, xmlNodePtr, const char* message, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
-
-void xsltTransformErrorTrampoline(xsltTransformContextPtr context, xsltStylesheetPtr style, xmlNodePtr node, const char* message, ...)
-{
-    va_list args;
-    va_start(args, message);
-    char* messageWithArgs;
-    vasprintf(&messageWithArgs, message, args);
-    va_end(args);
-
-    static void (*xsltTransformErrorPointer)(xsltTransformContextPtr, xsltStylesheetPtr, xmlNodePtr, const char*, ...) WTF_ATTRIBUTE_PRINTF(4, 5)
-        = reinterpret_cast<void (*)(xsltTransformContextPtr, xsltStylesheetPtr, xmlNodePtr, const char*, ...)>(dlsym(libxsltLibrary(), "xsltTransformError"));
-    xsltTransformErrorPointer(context, style, node, "%s", messageWithArgs);
-
-    free(messageWithArgs);
-}
-
-#define xsltTransformError xsltTransformErrorTrampoline
-
-#endif
-
 namespace WebCore {
 
 // Based on default implementation from libxslt 1.1.22 and xsltICUSort.c example.

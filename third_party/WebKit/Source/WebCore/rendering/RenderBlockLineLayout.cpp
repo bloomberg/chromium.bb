@@ -1390,12 +1390,7 @@ RootInlineBox* RenderBlock::createLineBoxesFromBidiRuns(BidiRunList<BidiRun>& bi
     
     // Compute our overflow now.
     lineBox->computeOverflow(lineBox->lineTop(), lineBox->lineBottom(), textBoxDataMap);
-    
-#if PLATFORM(MAC)
-    // Highlight acts as an overflow inflation.
-    if (style()->highlight() != nullAtom)
-        lineBox->addHighlightOverflow();
-#endif
+
     return lineBox;
 }
 

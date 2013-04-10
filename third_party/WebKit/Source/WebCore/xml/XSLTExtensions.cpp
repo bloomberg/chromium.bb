@@ -35,16 +35,6 @@
 #include <libxslt/extensions.h>
 #include <libxslt/extra.h>
 
-#if PLATFORM(MAC)
-#include "SoftLinking.h"
-#endif
-
-#if PLATFORM(MAC)
-SOFT_LINK_LIBRARY(libxslt)
-SOFT_LINK(libxslt, xsltRegisterExtFunction, int, (xsltTransformContextPtr ctxt, const xmlChar *name, const xmlChar *URI, xmlXPathFunction function), (ctxt, name, URI, function))
-SOFT_LINK(libxslt, xsltFunctionNodeSet, void, (xmlXPathParserContextPtr ctxt, int nargs), (ctxt, nargs))
-#endif
-
 namespace WebCore {
 
 // FIXME: This code is taken from libexslt 1.1.11; should sync with newer versions.

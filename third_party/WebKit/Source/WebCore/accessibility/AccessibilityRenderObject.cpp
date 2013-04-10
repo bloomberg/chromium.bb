@@ -818,9 +818,6 @@ IntPoint AccessibilityRenderObject::clickPoint()
     VisibleSelection visSelection = selection();
     VisiblePositionRange range = VisiblePositionRange(visSelection.visibleStart(), visSelection.visibleEnd());
     IntRect bounds = boundsForVisiblePositionRange(range);
-#if PLATFORM(MAC)
-    bounds.setLocation(m_renderer->document()->view()->screenToContents(bounds.location()));
-#endif        
     return IntPoint(bounds.x() + (bounds.width() / 2), bounds.y() - (bounds.height() / 2));
 }
     
@@ -1883,12 +1880,8 @@ IntRect AccessibilityRenderObject::boundsForVisiblePositionRange(const VisiblePo
         if (rangeString.length() > 1 && !boundingBox.isEmpty())
             ourrect = boundingBox;
     }
-    
-#if PLATFORM(MAC)
-    return m_renderer->document()->view()->contentsToScreen(pixelSnappedIntRect(ourrect));
-#else
+
     return pixelSnappedIntRect(ourrect);
-#endif
 }
     
 void AccessibilityRenderObject::setSelectedVisiblePositionRange(const VisiblePositionRange& range) const
@@ -1925,11 +1918,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForPoint(const IntPoin
     LayoutPoint pointResult;
     while (1) {
         LayoutPoint ourpoint;
-#if PLATFORM(MAC)
-        ourpoint = frameView->screenToContents(point);
-#else
         ourpoint = point;
-#endif
         HitTestRequest request(HitTestRequest::ReadOnly |
                                HitTestRequest::Active);
         HitTestResult result(ourpoint);
@@ -2807,22 +2796,6 @@ void AccessibilityRenderObject::addAttachmentChildren()
         m_children.append(axWidget);
 }
 
-#if PLATFORM(MAC)
-void AccessibilityRenderObject::updateAttachmentViewParents()
-{
-    // Only the unignored parent should set the attachment parent, because that's what is reflected in the AX 
-    // hierarchy to the client.
-    if (accessibilityIsIgnored())
-        return;
-    
-    size_t length = m_children.size();
-    for (size_t k = 0; k < length; k++) {
-        if (m_children[k]->isAttachment())
-            m_children[k]->overrideAttachmentParent(this);
-    }
-}
-#endif
-
 // Hidden children are those that are not rendered or visible, but are specifically marked as aria-hidden=false,
 // meaning that they should be exposed to the AX hierarchy.
 void AccessibilityRenderObject::addHiddenChildren()
@@ -2896,10 +2869,6 @@ void AccessibilityRenderObject::addChildren()
     addTextFieldChildren();
     addCanvasChildren();
     addRemoteSVGChildren();
-    
-#if PLATFORM(MAC)
-    updateAttachmentViewParents();
-#endif
 }
 
 bool AccessibilityRenderObject::canHaveChildren() const

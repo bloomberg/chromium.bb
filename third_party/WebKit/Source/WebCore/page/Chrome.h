@@ -28,12 +28,6 @@
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 
-#if PLATFORM(MAC)
-#ifndef __OBJC__
-class NSView;
-#endif
-#endif
-
 namespace WebCore {
 
 class ChromeClient;
@@ -156,10 +150,6 @@ public:
     void dispatchViewportPropertiesDidChange(const ViewportArguments&) const;
 
     bool requiresFullscreenForVideoPlayback();
-
-#if PLATFORM(MAC)
-    void focusNSView(NSView*);
-#endif
 
     bool selectItemWritingDirectionIsNatural();
     bool selectItemAlignmentFollowsMenuWritingDirection();

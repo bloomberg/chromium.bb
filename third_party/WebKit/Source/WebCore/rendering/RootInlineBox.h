@@ -116,11 +116,6 @@ public:
     virtual int baselinePosition(FontBaseline baselineType) const;
     virtual LayoutUnit lineHeight() const;
 
-#if PLATFORM(MAC)
-    void addHighlightOverflow();
-    void paintCustomHighlight(PaintInfo&, const LayoutPoint&, const AtomicString& highlightType);
-#endif
-
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
 

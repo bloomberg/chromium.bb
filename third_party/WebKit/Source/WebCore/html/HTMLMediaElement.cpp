@@ -105,10 +105,6 @@
 #include "MediaElementAudioSourceNode.h"
 #endif
 
-#if PLATFORM(MAC)
-#include "DisplaySleepDisabler.h"
-#endif
-
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStreamRegistry.h"
 #endif
@@ -386,10 +382,6 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
     } else if (name == controlsAttr)
         configureMediaControls();
-#if PLATFORM(MAC)
-    else if (name == loopAttr)
-        updateDisableSleep();
-#endif
     else if (name == preloadAttr) {
         if (equalIgnoringCase(value, "none"))
             m_preload = MediaPlayer::None;
@@ -3387,10 +3379,6 @@ void HTMLMediaElement::mediaPlayerRateChanged(MediaPlayer*)
     if (m_playing)
         invalidateCachedTime();
 
-#if PLATFORM(MAC)
-    updateDisableSleep();
-#endif
-
     endProcessingMediaPlayerCallback();
 }
 
@@ -4404,21 +4392,6 @@ void HTMLMediaElement::applyMediaFragmentURI()
         seek(m_fragmentStartTime, IGNORE_EXCEPTION);
     }
 }
-
-#if PLATFORM(MAC)
-void HTMLMediaElement::updateDisableSleep()
-{
-    if (!shouldDisableSleep() && m_sleepDisabler)
-        m_sleepDisabler = nullptr;
-    else if (shouldDisableSleep() && !m_sleepDisabler)
-        m_sleepDisabler = DisplaySleepDisabler::create("com.apple.WebCore: HTMLMediaElement playback");
-}
-
-bool HTMLMediaElement::shouldDisableSleep() const
-{
-    return m_player && !m_player->paused() && hasVideo() && hasAudio() && !loop();
-}
-#endif
 
 String HTMLMediaElement::mediaPlayerReferrer() const
 {

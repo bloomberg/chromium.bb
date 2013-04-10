@@ -297,17 +297,8 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (!frame)
         return;
 
-#if PLATFORM(MAC)
-    if (!frame->editor()->isContinuousSpellCheckingEnabled()
-     && !frame->editor()->isAutomaticQuoteSubstitutionEnabled()
-     && !frame->editor()->isAutomaticLinkDetectionEnabled()
-     && !frame->editor()->isAutomaticDashSubstitutionEnabled()
-     && !frame->editor()->isAutomaticTextReplacementEnabled())
-        return;
-#else
     if (!frame->editor()->isContinuousSpellCheckingEnabled())
         return;
-#endif
     // Take a look at the selection that results after typing and determine whether we need to spellcheck. 
     // Since the word containing the current selection is never marked, this does a check to
     // see if typing made a new word that is not in the current selection. Basically, you
@@ -336,16 +327,9 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
 
     updatePreservesTypingStyle(commandTypeForAddedTyping);
 
-#if PLATFORM(MAC)
-    frame->editor()->appliedEditing(this);
-    // Since the spellchecking code may also perform corrections and other replacements, it should happen after the typing changes.
-    if (!m_shouldPreventSpellChecking)
-        markMisspellingsAfterTyping(commandTypeForAddedTyping);
-#else
     // The old spellchecking code requires that checking be done first, to prevent issues like that in 6864072, where <doesn't> is marked as misspelled.
     markMisspellingsAfterTyping(commandTypeForAddedTyping);
     frame->editor()->appliedEditing(this);
-#endif
 }
 
 void TypingCommand::insertText(const String &text, bool selectInsertedText)
