@@ -262,6 +262,26 @@ void ChangeListLoader::StartLoadChangeListFromServer(
   }
 }
 
+void ChangeListLoader::SearchFromServerAfterGetResourceList(
+    const LoadFeedListCallback& callback,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(ScopedVector<ChangeList>(), error);
+    return;
+  }
+
+  DCHECK(resource_list);
+
+  ScopedVector<ChangeList> change_lists;
+  change_lists.push_back(new ChangeList(*resource_list));
+  callback.Run(change_lists.Pass(), DRIVE_FILE_OK);
+}
+
 void ChangeListLoader::OnGetAppList(google_apis::GDataErrorCode status,
                                     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -486,14 +506,22 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
 void ChangeListLoader::SearchFromServer(
     const std::string& search_query,
     const GURL& next_feed,
-    const LoadFeedListCallback& feed_load_callback) {
-  DCHECK(!feed_load_callback.is_null());
+    const LoadFeedListCallback& callback) {
+  DCHECK(!callback.is_null());
 
-  scoped_ptr<LoadFeedParams> params(new LoadFeedParams);
-  params->search_query = search_query;
-  params->feed_to_load = next_feed;
-  params->load_subsequent_feeds = false;
-  LoadFromServer(params.Pass(), feed_load_callback);
+  if (next_feed.is_empty()) {
+    // This is first request for the |search_query|.
+    scheduler_->Search(
+        search_query,
+        base::Bind(&ChangeListLoader::SearchFromServerAfterGetResourceList,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  } else {
+    // There is the remaining result so fetch it.
+    scheduler_->ContinueGetResourceList(
+        next_feed,
+        base::Bind(&ChangeListLoader::SearchFromServerAfterGetResourceList,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
 }
 
 void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(

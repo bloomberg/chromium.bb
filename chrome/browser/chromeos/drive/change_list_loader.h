@@ -82,11 +82,11 @@ class ChangeListLoader {
   // Starts retrieving search results for |search_query| from the server.
   // If |next_feed| is set, this is the feed url that will be fetched.
   // If |next_feed| is an empty string, the default URL is used.
-  // Upon completion, |feed_load_callback| is invoked.
-  // |feed_load_callback| must not be null.
+  // Upon completion, |callback| is invoked.
+  // |callback| must not be null.
   void SearchFromServer(const std::string& search_query,
                         const GURL& next_feed,
-                        const LoadFeedListCallback& feed_load_callback);
+                        const LoadFeedListCallback& callback);
 
   // Initiates the change list loading from the server if the local
   // changestamp is older than the server changestamp.
@@ -230,6 +230,14 @@ class ChangeListLoader {
   // Drive webapps registry.
   void OnGetAppList(google_apis::GDataErrorCode status,
                     scoped_ptr<google_apis::AppList> app_list);
+
+  // Part of SearchFromServer. Called when ResourceList is fetched from the
+  // server.
+  // |callback| must not be null.
+  void SearchFromServerAfterGetResourceList(
+      const LoadFeedListCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Callback for handling feed content fetching while searching for file info.
   // This callback is invoked after async feed fetch operation that was
