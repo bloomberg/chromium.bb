@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-
 // Interface class for Parts owned by ChromeBrowserMainParts.
 // The default implementation for all methods is empty.
 
@@ -36,11 +33,11 @@ class ChromeBrowserMainExtraParts {
   virtual void PostMainMessageLoopStart() {}
 
   // MainMessageLoopRun methods.
+  virtual void PreCreateThreads() {}
   virtual void PreProfileInit() {}
   virtual void PostProfileInit() {}
   virtual void PreBrowserStart() {}
   virtual void PostBrowserStart() {}
-  virtual void PreCreateThreads() {}
   virtual void PreMainMessageLoopRun() {}
   virtual void PostMainMessageLoopRun() {}
 };
