@@ -467,7 +467,6 @@
 
 /* We can't override the global operator new and delete on OS(DARWIN) because
  * some object are allocated by WebKit and deallocated by the embedder. */
-#define ENABLE_GLOBAL_FASTMALLOC_NEW 0
 #else /* !OS(DARWIN) */
 /* On non-OS(DARWIN), the "system malloc" is actually TCMalloc anyway, so there's
  * no need to use WebKit's copy of TCMalloc. */
@@ -550,10 +549,6 @@
 
 /* Include feature macros */
 #include <wtf/FeatureDefines.h>
-
-#if !defined(ENABLE_GLOBAL_FASTMALLOC_NEW)
-#define ENABLE_GLOBAL_FASTMALLOC_NEW 1
-#endif
 
 #define ENABLE_DEBUG_WITH_BREAKPOINT 0
 #define ENABLE_SAMPLING_COUNTERS 0
