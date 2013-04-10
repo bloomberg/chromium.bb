@@ -1211,8 +1211,6 @@ void ScrollView::platformDestroy()
 {
 }
 
-#if !PLATFORM(MAC)
-
 void ScrollView::platformSetScrollbarsSuppressed(bool)
 {
 }
@@ -1224,10 +1222,6 @@ void ScrollView::platformSetScrollOrigin(const IntPoint&, bool, bool)
 void ScrollView::platformSetScrollbarOverlayStyle(ScrollbarOverlayStyle)
 {
 }
-
-#endif
-
-#if !PLATFORM(MAC)
 
 void ScrollView::platformSetScrollbarModes()
 {
@@ -1285,6 +1279,5 @@ bool ScrollView::platformIsOffscreen() const
     return false;
 }
 
-#endif
 
 }

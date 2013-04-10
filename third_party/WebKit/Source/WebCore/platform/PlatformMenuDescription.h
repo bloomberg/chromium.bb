@@ -26,23 +26,13 @@
 #ifndef PlatformMenuDescription_h
 #define PlatformMenuDescription_h
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSMutableArray;
-#elif PLATFORM(CHROMIUM)
 #include <wtf/Vector.h>
-#endif
 
 namespace WebCore {
 
 #if !USE(CROSS_PLATFORM_CONTEXT_MENUS)
-#if PLATFORM(MAC)
-    typedef NSMutableArray* PlatformMenuDescription;
-#elif PLATFORM(CHROMIUM)
     class ContextMenuItem;
     typedef const Vector<ContextMenuItem>* PlatformMenuDescription;
-#else
-    typedef void* PlatformMenuDescription;
-#endif
 #else
 // FIXME: When more platforms switch over, and PlatformMenuDescription
 // is not used anymore, we should rename this header to PlatformContextMenu.

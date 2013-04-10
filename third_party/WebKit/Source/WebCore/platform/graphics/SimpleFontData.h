@@ -41,10 +41,6 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/text/StringHash.h>
 
-#if PLATFORM(MAC)
-#include "WebCoreSystemInterface.h"
-#endif
-
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
 #include <wtf/RetainPtr.h>
 #endif
@@ -191,16 +187,11 @@ public:
 
     bool applyTransforms(GlyphBufferGlyph* glyphs, GlyphBufferAdvance* advances, size_t glyphCount, TypesettingFeatures typesettingFeatures) const
     {
-#if PLATFORM(MAC) && __MAC_OS_X_VERSION_MIN_REQUIRED > 1080
-        wkCTFontTransformOptions options = (typesettingFeatures & Kerning ? wkCTFontTransformApplyPositioning : 0) | (typesettingFeatures & Ligatures ? wkCTFontTransformApplyShaping : 0);
-        return wkCTFontTransformGlyphs(m_platformData.ctFont(), glyphs, reinterpret_cast<CGSize*>(advances), glyphCount, options);
-#else
         UNUSED_PARAM(glyphs);
         UNUSED_PARAM(advances);
         UNUSED_PARAM(glyphCount);
         UNUSED_PARAM(typesettingFeatures);
         return false;
-#endif
     }
 
 #if PLATFORM(WIN)

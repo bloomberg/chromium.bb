@@ -31,10 +31,6 @@
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSPasteboard;
-#endif
-
 namespace WebCore {
 
 class Color;
@@ -59,11 +55,6 @@ public:
     void setBufferForType(PassRefPtr<SharedBuffer>, const String& pasteboardType);
     void setPathnamesForType(const Vector<String>& pathnames, const String& pasteboardType);
     void setStringForType(const String&, const String& pasteboardType);
-
-private:
-#if PLATFORM(MAC)
-    RetainPtr<NSPasteboard> m_pasteboard;
-#endif
 };
 
 }

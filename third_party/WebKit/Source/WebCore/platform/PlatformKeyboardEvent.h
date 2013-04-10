@@ -30,11 +30,6 @@
 #include "PlatformEvent.h"
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS NSEvent;
-#endif
-
 namespace WebCore {
 
     class PlatformKeyboardEvent : public PlatformEvent {

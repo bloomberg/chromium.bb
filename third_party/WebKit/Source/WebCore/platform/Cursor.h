@@ -31,24 +31,6 @@
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
 
-#if PLATFORM(WIN)
-typedef struct HICON__* HICON;
-typedef HICON HCURSOR;
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#elif PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#endif
-
-#if PLATFORM(MAC) && !PLATFORM(IOS)
-OBJC_CLASS NSCursor;
-#endif
-
-#if PLATFORM(WIN)
-typedef struct HICON__ *HICON;
-typedef HICON HCURSOR;
-#endif
-
 namespace WebCore {
 
     class Image;

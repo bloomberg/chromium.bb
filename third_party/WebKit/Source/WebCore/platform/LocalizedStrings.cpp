@@ -38,10 +38,6 @@
 #include <wtf/RetainPtr.h>
 #endif
 
-#if PLATFORM(MAC)
-#include "WebCoreSystemInterface.h"
-#endif
-
 namespace WebCore {
 
 // We can't use String::format for two reasons:
@@ -72,7 +68,6 @@ static String formatLocalizedString(String format, ...)
 #endif
 }
 
-#if !PLATFORM(MAC) || PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 static String truncatedStringForLookupMenuItem(const String& original)
 {
     if (original.isEmpty())
@@ -86,7 +81,6 @@ static String truncatedStringForLookupMenuItem(const String& original)
     unsigned numberOfCharacters = numCharactersInGraphemeClusters(trimmed, maxNumberOfGraphemeClustersInLookupMenuItem);
     return numberOfCharacters == trimmed.length() ? trimmed : trimmed.left(numberOfCharacters) + ellipsis;
 }
-#endif
 
 String inputElementAltText()
 {
@@ -133,13 +127,6 @@ String defaultDetailsSummaryText()
 {
     return WEB_UI_STRING("Details", "text to display in <details> tag when it has no <summary> child");
 }
-
-#if PLATFORM(MAC)
-String copyImageUnknownFileLabel()
-{
-    return WEB_UI_STRING("unknown", "Unknown filename");
-}
-#endif
 
 #if ENABLE(CONTEXT_MENUS)
 String contextMenuItemTagOpenLinkInNewWindow()
@@ -227,35 +214,18 @@ String contextMenuItemTagLearnSpelling()
     return WEB_UI_STRING("Learn Spelling", "Learn Spelling context menu item");
 }
 
-#if PLATFORM(MAC)
-String contextMenuItemTagSearchInSpotlight()
-{
-    return WEB_UI_STRING("Search in Spotlight", "Search in Spotlight context menu item");
-}
-#endif
-
 String contextMenuItemTagSearchWeb()
 {
-#if PLATFORM(MAC) && (PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070)
-    RetainPtr<CFStringRef> searchProviderName(AdoptCF, wkCopyDefaultSearchProviderDisplayName());
-    return formatLocalizedString(WEB_UI_STRING("Search with %@", "Search with search provider context menu item with provider name inserted"), searchProviderName.get());
-#else
     return WEB_UI_STRING("Search with Google", "Search with Google context menu item");
-#endif
 }
 
 String contextMenuItemTagLookUpInDictionary(const String& selectedString)
 {
-#if PLATFORM(MAC) && !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
-    UNUSED_PARAM(selectedString);
-    return WEB_UI_STRING("Look Up in Dictionary", "Look Up in Dictionary context menu item");
-#else
 #if USE(CF)
     RetainPtr<CFStringRef> selectedCFString = truncatedStringForLookupMenuItem(selectedString).createCFString();
     return formatLocalizedString(WEB_UI_STRING("Look Up “%@”", "Look Up context menu item with selected word"), selectedCFString.get());
 #else
     return WEB_UI_STRING("Look Up “<selection>”", "Look Up context menu item with selected word").replace("<selection>", truncatedStringForLookupMenuItem(selectedString));
-#endif
 #endif
 }
 
@@ -301,13 +271,6 @@ String contextMenuItemTagFontMenu()
     return WEB_UI_STRING("Font", "Font context sub-menu item");
 }
 
-#if PLATFORM(MAC)
-String contextMenuItemTagShowFonts()
-{
-    return WEB_UI_STRING("Show Fonts", "Show fonts context menu item");
-}
-#endif
-
 String contextMenuItemTagBold()
 {
     return WEB_UI_STRING("Bold", "Bold context menu item");
@@ -327,33 +290,6 @@ String contextMenuItemTagOutline()
 {
     return WEB_UI_STRING("Outline", "Outline context menu item");
 }
-
-#if PLATFORM(MAC)
-String contextMenuItemTagStyles()
-{
-    return WEB_UI_STRING("Styles...", "Styles context menu item");
-}
-
-String contextMenuItemTagShowColors()
-{
-    return WEB_UI_STRING("Show Colors", "Show colors context menu item");
-}
-
-String contextMenuItemTagSpeechMenu()
-{
-    return WEB_UI_STRING("Speech", "Speech context sub-menu item");
-}
-
-String contextMenuItemTagStartSpeaking()
-{
-    return WEB_UI_STRING("Start Speaking", "Start speaking context menu item");
-}
-
-String contextMenuItemTagStopSpeaking()
-{
-    return WEB_UI_STRING("Stop Speaking", "Stop speaking context menu item");
-}
-#endif
 
 String contextMenuItemTagWritingDirectionMenu()
 {
@@ -379,78 +315,6 @@ String contextMenuItemTagRightToLeft()
 {
     return WEB_UI_STRING("Right to Left", "Right to Left context menu item");
 }
-
-#if PLATFORM(MAC)
-
-String contextMenuItemTagCorrectSpellingAutomatically()
-{
-    return WEB_UI_STRING("Correct Spelling Automatically", "Correct Spelling Automatically context menu item");
-}
-
-String contextMenuItemTagSubstitutionsMenu()
-{
-    return WEB_UI_STRING("Substitutions", "Substitutions context sub-menu item");
-}
-
-String contextMenuItemTagShowSubstitutions(bool show)
-{
-    if (show)
-        return WEB_UI_STRING("Show Substitutions", "menu item title");
-    return WEB_UI_STRING("Hide Substitutions", "menu item title");
-}
-
-String contextMenuItemTagSmartCopyPaste()
-{
-    return WEB_UI_STRING("Smart Copy/Paste", "Smart Copy/Paste context menu item");
-}
-
-String contextMenuItemTagSmartQuotes()
-{
-    return WEB_UI_STRING("Smart Quotes", "Smart Quotes context menu item");
-}
-
-String contextMenuItemTagSmartDashes()
-{
-    return WEB_UI_STRING("Smart Dashes", "Smart Dashes context menu item");
-}
-
-String contextMenuItemTagSmartLinks()
-{
-    return WEB_UI_STRING("Smart Links", "Smart Links context menu item");
-}
-
-String contextMenuItemTagTextReplacement()
-{
-    return WEB_UI_STRING("Text Replacement", "Text Replacement context menu item");
-}
-
-String contextMenuItemTagTransformationsMenu()
-{
-    return WEB_UI_STRING("Transformations", "Transformations context sub-menu item");
-}
-
-String contextMenuItemTagMakeUpperCase()
-{
-    return WEB_UI_STRING("Make Upper Case", "Make Upper Case context menu item");
-}
-
-String contextMenuItemTagMakeLowerCase()
-{
-    return WEB_UI_STRING("Make Lower Case", "Make Lower Case context menu item");
-}
-
-String contextMenuItemTagCapitalize()
-{
-    return WEB_UI_STRING("Capitalize", "Capitalize context menu item");
-}
-
-String contextMenuItemTagChangeBack(const String& replacedString)
-{
-    notImplemented();
-    return replacedString;
-}
-
-#endif // PLATFORM(MAC)
 
 String contextMenuItemTagOpenVideoInNewWindow()
 {
@@ -574,55 +438,6 @@ String AXFileUploadButtonText()
     return WEB_UI_STRING("file upload button", "accessibility role description for a file upload button");
 }
 
-#if PLATFORM(MAC)
-String AXARIAContentGroupText(const String& ariaType)
-{
-    if (ariaType == "ARIAApplicationAlert")
-        return WEB_UI_STRING("alert", "An ARIA accessibility group that acts as an alert.");
-    if (ariaType == "ARIAApplicationAlertDialog")
-        return WEB_UI_STRING("alert dialog", "An ARIA accessibility group that acts as an alert dialog.");
-    if (ariaType == "ARIAApplicationDialog")
-        return WEB_UI_STRING("dialog", "An ARIA accessibility group that acts as an dialog.");
-    if (ariaType == "ARIAApplicationLog")
-        return WEB_UI_STRING("log", "An ARIA accessibility group that acts as a console log.");
-    if (ariaType == "ARIAApplicationMarquee")
-        return WEB_UI_STRING("marquee", "An ARIA accessibility group that acts as a marquee.");
-    if (ariaType == "ARIAApplicationStatus")
-        return WEB_UI_STRING("application status", "An ARIA accessibility group that acts as a status update.");
-    if (ariaType == "ARIAApplicationTimer")
-        return WEB_UI_STRING("timer", "An ARIA accessibility group that acts as an updating timer.");
-    if (ariaType == "ARIADocument")
-        return WEB_UI_STRING("document", "An ARIA accessibility group that acts as a document.");
-    if (ariaType == "ARIADocumentArticle")
-        return WEB_UI_STRING("article", "An ARIA accessibility group that acts as an article.");
-    if (ariaType == "ARIADocumentNote")
-        return WEB_UI_STRING("note", "An ARIA accessibility group that acts as a note in a document.");
-    if (ariaType == "ARIADocumentRegion")
-        return WEB_UI_STRING("region", "An ARIA accessibility group that acts as a distinct region in a document.");
-    if (ariaType == "ARIALandmarkApplication")
-        return WEB_UI_STRING("application", "An ARIA accessibility group that acts as an application.");
-    if (ariaType == "ARIALandmarkBanner")
-        return WEB_UI_STRING("banner", "An ARIA accessibility group that acts as a banner.");
-    if (ariaType == "ARIALandmarkComplementary")
-        return WEB_UI_STRING("complementary", "An ARIA accessibility group that acts as a region of complementary information.");
-    if (ariaType == "ARIALandmarkContentInfo")
-        return WEB_UI_STRING("content information", "An ARIA accessibility group that contains content.");
-    if (ariaType == "ARIALandmarkMain")
-        return WEB_UI_STRING("main", "An ARIA accessibility group that is the main portion of the website.");
-    if (ariaType == "ARIALandmarkNavigation")
-        return WEB_UI_STRING("navigation", "An ARIA accessibility group that contains the main navigation elements of a website.");
-    if (ariaType == "ARIALandmarkSearch")
-        return WEB_UI_STRING("search", "An ARIA accessibility group that contains a search feature of a website.");
-    if (ariaType == "ARIAUserInterfaceTooltip")
-        return WEB_UI_STRING("tooltip", "An ARIA accessibility group that acts as a tooltip.");
-    if (ariaType == "ARIATabPanel")
-        return WEB_UI_STRING("tab panel", "An ARIA accessibility group that contains the content of a tab.");
-    if (ariaType == "ARIADocumentMath")
-        return WEB_UI_STRING("math", "An ARIA accessibility group that contains mathematical symbols.");
-    return String();
-}
-#endif
-    
 String AXButtonActionVerb()
 {
     return WEB_UI_STRING("press", "Verb stating the action that will occur when a button is pressed, as used by accessibility");
@@ -714,47 +529,6 @@ String allFilesText()
 }
 #endif
 
-#if PLATFORM(MAC)
-String builtInPDFPluginName()
-{
-    // Also exposed to DOM.
-    return WEB_UI_STRING("WebKit built-in PDF", "Pseudo plug-in name, visible in the Installed Plug-ins page in Safari.");
-}
-
-String pdfDocumentTypeDescription()
-{
-    // Also exposed to DOM.
-    return WEB_UI_STRING("Portable Document Format", "Description of the primary type supported by the PDF pseudo plug-in. Visible in the Installed Plug-ins page in Safari.");
-}
-
-String postScriptDocumentTypeDescription()
-{
-    // Also exposed to DOM.
-    return WEB_UI_STRING("PostScript", "Description of the PostScript type supported by the PDF pseudo plug-in. Visible in the Installed Plug-ins page in Safari.");
-}
-
-String keygenMenuItem512()
-{
-    return WEB_UI_STRING("512 (Low Grade)", "Menu item title for KEYGEN pop-up menu");
-}
-
-String keygenMenuItem1024()
-{
-    return WEB_UI_STRING("1024 (Medium Grade)", "Menu item title for KEYGEN pop-up menu");
-}
-
-String keygenMenuItem2048()
-{
-    return WEB_UI_STRING("2048 (High Grade)", "Menu item title for KEYGEN pop-up menu");
-}
-
-String keygenKeychainItemName(const String& host)
-{
-    return formatLocalizedString(WEB_UI_STRING("Key from %@", "Name of keychain key generated by the KEYGEN tag"), host.createCFString().get());
-}
-
-#endif
-
 #if PLATFORM(IOS)
 String htmlSelectMultipleItems(size_t count)
 {
@@ -772,7 +546,6 @@ String htmlSelectMultipleItems(size_t count)
 String imageTitle(const String& filename, const IntSize& size)
 {
 #if USE(CF)
-#if !PLATFORM(MAC) || PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
     RetainPtr<CFLocaleRef> locale = adoptCF(CFLocaleCopyCurrent());
     RetainPtr<CFNumberFormatterRef> formatter(AdoptCF, CFNumberFormatterCreate(0, locale.get(), kCFNumberFormatterDecimalStyle));
 
@@ -785,10 +558,6 @@ String imageTitle(const String& filename, const IntSize& size)
     RetainPtr<CFStringRef> heightString(AdoptCF, CFNumberFormatterCreateStringWithNumber(0, formatter.get(), height.get()));
 
     return formatLocalizedString(WEB_UI_STRING("%@ %@×%@ pixels", "window title for a standalone image (uses multiplication symbol, not x)"), filename.createCFString().get(), widthString.get(), heightString.get());
-#else
-    RetainPtr<CFStringRef> filenameCFString(AdoptCF, filename.createCFString());
-    return formatLocalizedString(WEB_UI_STRING("%@ %d×%d pixels", "window title for a standalone image (uses multiplication symbol, not x)"), filenameCFString.get(), size.width(), size.height());
-#endif
 #else
     return formatLocalizedString(WEB_UI_STRING("<filename> %d×%d pixels", "window title for a standalone image (uses multiplication symbol, not x)"), size.width(), size.height()).replace("<filename>", filename);
 #endif
@@ -1021,33 +790,6 @@ String textTrackNoLabelText()
 {
     return WEB_UI_STRING_KEY("Unknown", "Unknown (text track)", "Menu item label for a text track that has no other name");
 }
-    
-#if PLATFORM(MAC)
-String textTrackCountryAndLanguageMenuItemText(const String& title, const String& country, const String& language)
-{
-    return formatLocalizedString(WEB_UI_STRING("%@ (%@-%@)", "Text track display name format that includes the country and language of the subtitle, in the form of 'Title (Language-Country)'"), title.createCFString().get(), language.createCFString().get(), country.createCFString().get());
-}
-
-String textTrackLanguageMenuItemText(const String& title, const String& language)
-{
-    return formatLocalizedString(WEB_UI_STRING("%@ (%@)", "Text track display name format that includes the language of the subtitle, in the form of 'Title (Language)'"), title.createCFString().get(), language.createCFString().get());
-}
-
-String closedCaptionTrackMenuItemText(const String& title)
-{
-    return formatLocalizedString(WEB_UI_STRING("%@ CC", "Text track contains closed captions"), title.createCFString().get());
-}
-
-String sdhTrackMenuItemText(const String& title)
-{
-    return formatLocalizedString(WEB_UI_STRING("%@ SDH", "Text track contains subtitles for the deaf and hard of hearing"), title.createCFString().get());
-}
-
-String easyReaderTrackMenuItemText(const String& title)
-{
-    return formatLocalizedString(WEB_UI_STRING("%@ Easy Reader", "Text track contains simplified (3rd grade level) subtitles"), title.createCFString().get());
-}
-#endif
 
 #endif
 

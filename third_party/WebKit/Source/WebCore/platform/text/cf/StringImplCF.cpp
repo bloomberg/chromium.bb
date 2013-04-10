@@ -29,17 +29,9 @@
 #include <wtf/RetainPtr.h>
 #include <wtf/Threading.h>
 
-#if PLATFORM(MAC) && !PLATFORM(IOS)
-#include <objc/objc-auto.h>
-#endif
-
 static inline bool garbageCollectionEnabled()
 {
-#if PLATFORM(MAC) && !PLATFORM(IOS)
-    return objc_collectingEnabled();
-#else
     return false;
-#endif
 }
 
 namespace WTF {

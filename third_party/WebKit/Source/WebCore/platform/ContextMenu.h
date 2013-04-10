@@ -34,12 +34,6 @@
 #include "PlatformMenuDescription.h"
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-#elif PLATFORM(WIN)
-#include <windows.h>
-#endif
-
 namespace WebCore {
 
     class ContextMenuController;
@@ -85,22 +79,7 @@ namespace WebCore {
 #endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
 
     private:
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
         Vector<ContextMenuItem> m_items;
-#else
-#if PLATFORM(MAC)
-        // Keep this in sync with the PlatformMenuDescription typedef
-        RetainPtr<NSMutableArray> m_platformDescription;
-#elif PLATFORM(CHROMIUM)
-        Vector<ContextMenuItem> m_items;
-#else
-        PlatformMenuDescription m_platformDescription;
-#if OS(WINCE)
-        unsigned m_itemCount;
-#endif
-#endif
-
-#endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
     };
 
 #if !USE(CROSS_PLATFORM_CONTEXT_MENUS)

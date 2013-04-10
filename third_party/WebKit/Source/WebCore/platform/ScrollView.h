@@ -35,10 +35,6 @@
 
 #include <wtf/HashSet.h>
 
-#if PLATFORM(MAC) && defined __OBJC__
-@protocol WebCoreFrameScrollView;
-#endif
-
 namespace WebCore {
 
 class HostWindow;
@@ -380,14 +376,6 @@ private:
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();
-
-#if PLATFORM(MAC) && defined __OBJC__
-public:
-    NSView* documentView() const;
-
-private:
-    NSScrollView<WebCoreFrameScrollView>* scrollView() const;
-#endif
 }; // class ScrollView
 
 inline ScrollView* toScrollView(Widget* widget)

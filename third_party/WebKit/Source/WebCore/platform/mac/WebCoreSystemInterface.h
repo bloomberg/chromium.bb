@@ -58,10 +58,6 @@ typedef UInt32 FMFont;
 typedef FMFont ATSUFontID;
 typedef UInt16 ATSGlyphRef;
 
-#if PLATFORM(MAC) && USE(CA) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-typedef struct __IOSurface *IOSurfaceRef;
-#endif
-
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGPoint NSPoint;
 typedef struct CGRect NSRect;
@@ -192,11 +188,7 @@ extern void (*wkQTMovieViewSetDrawSynchronously)(QTMovieView*, BOOL);
 extern NSArray *(*wkQTGetSitesInMediaDownloadCache)();
 extern void (*wkQTClearMediaDownloadCacheForSite)(NSString *site);
 extern void (*wkQTClearMediaDownloadCache)();
-#if PLATFORM(MAC)
-extern void (*wkSetCGFontRenderingMode)(CGContextRef, NSFont*, BOOL);
-#else
 extern void (*wkSetCGFontRenderingMode)(CGContextRef, NSFont*);
-#endif
 extern void (*wkSetDragImage)(NSImage*, NSPoint offset);
 extern void (*wkSetNSURLConnectionDefersCallbacks)(NSURLConnection *, BOOL);
 extern void (*wkSetNSURLRequestShouldContentSniff)(NSMutableURLRequest *, BOOL);
@@ -252,11 +244,6 @@ extern bool (*wkCTFontTransformGlyphs)(CTFontRef font, CGGlyph glyphs[], CGSize 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 
 extern CTTypesetterRef (*wkCreateCTTypesetterWithUniCharProviderAndOptions)(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*, CFDictionaryRef options);
-
-#if PLATFORM(MAC) && USE(CA)
-extern CGContextRef (*wkIOSurfaceContextCreate)(IOSurfaceRef surface, unsigned width, unsigned height, CGColorSpaceRef colorSpace);
-extern CGImageRef (*wkIOSurfaceContextCreateImage)(CGContextRef context);
-#endif
 
 extern int (*wkRecommendedScrollerStyle)(void);
 

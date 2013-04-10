@@ -41,11 +41,6 @@ namespace WebCore {
             , m_button(NoButton)
             , m_clickCount(0)
             , m_modifierFlags(0)
-#if PLATFORM(MAC)
-            , m_eventNumber(0)
-#elif PLATFORM(WIN)
-            , m_didActivateWebView(false)
-#endif
         {
         }
 
@@ -57,11 +52,6 @@ namespace WebCore {
             , m_button(button)
             , m_clickCount(clickCount)
             , m_modifierFlags(0)
-#if PLATFORM(MAC)
-            , m_eventNumber(0)
-#elif PLATFORM(WIN)
-            , m_didActivateWebView(false)
-#endif
         {
         }
 
@@ -74,10 +64,6 @@ namespace WebCore {
         MouseButton button() const { return m_button; }
         int clickCount() const { return m_clickCount; }
         unsigned modifierFlags() const { return m_modifierFlags; }
-        
-#if PLATFORM(MAC)
-        int eventNumber() const { return m_eventNumber; }
-#endif
 
 #if PLATFORM(WIN)
         PlatformMouseEvent(HWND, UINT, WPARAM, LPARAM, bool didActivateWebView = false);
@@ -94,12 +80,6 @@ namespace WebCore {
         MouseButton m_button;
         int m_clickCount;
         unsigned m_modifierFlags;
-
-#if PLATFORM(MAC)
-        int m_eventNumber;
-#elif PLATFORM(WIN)
-        bool m_didActivateWebView;
-#endif
     };
 
 } // namespace WebCore

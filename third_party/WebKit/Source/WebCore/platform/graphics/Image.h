@@ -39,10 +39,6 @@
 #include <wtf/RetainPtr.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSImage;
-#endif
-
 namespace WebCore {
 
 class AffineTransform;
@@ -115,12 +111,6 @@ public:
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
     virtual PassNativeImagePtr nativeImageForCurrentFrame() { return 0; }
-    
-#if PLATFORM(MAC)
-    // Accessors for native image formats.
-    virtual NSImage* getNSImage() { return 0; }
-    virtual CFDataRef getTIFFRepresentation() { return 0; }
-#endif
 
     virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform,
         const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator, const FloatRect& destRect, BlendMode = BlendModeNormal);

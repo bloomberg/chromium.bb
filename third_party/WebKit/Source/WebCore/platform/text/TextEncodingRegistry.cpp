@@ -42,9 +42,6 @@
 #if USE(ICU_UNICODE)
 #include "TextCodecICU.h"
 #endif
-#if PLATFORM(MAC)
-#include "TextCodecMac.h"
-#endif
 
 #include <wtf/CurrentTime.h>
 #include <wtf/text/CString.h>
@@ -288,11 +285,6 @@ static void extendTextCodecMaps()
 #if USE(ICU_UNICODE)
     TextCodecICU::registerEncodingNames(addToTextEncodingNameMap);
     TextCodecICU::registerCodecs(addToTextCodecMap);
-#endif
-
-#if PLATFORM(MAC)
-    TextCodecMac::registerEncodingNames(addToTextEncodingNameMap);
-    TextCodecMac::registerCodecs(addToTextCodecMap);
 #endif
 
     pruneBlacklistedCodecs();

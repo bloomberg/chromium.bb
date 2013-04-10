@@ -64,10 +64,6 @@ namespace WebCore {
         ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
 #endif
 
-#if PLATFORM(MAC)
-        TECConverterWrapper& cachedConverterTEC() { return *m_cachedConverterTEC; }
-#endif
-
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
 
     private:
@@ -82,10 +78,6 @@ namespace WebCore {
 
 #if USE(ICU_UNICODE)
         OwnPtr<ICUConverterWrapper> m_cachedConverterICU;
-#endif
-
-#if PLATFORM(MAC)
-        OwnPtr<TECConverterWrapper> m_cachedConverterTEC;
 #endif
 
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;

@@ -58,9 +58,6 @@ void InitWebCoreSystemInterface(void)
     INIT(CopyCFLocalizationPreferredName);
     INIT(CopyCONNECTProxyResponse);
     INIT(CopyNSURLResponseStatusLine);
-#if PLATFORM(MAC)
-    INIT(CopyNSURLResponseCertificateChain);
-#endif
     INIT(CreateCustomCFReadStream);
     INIT(DrawCapsLockIndicator);
     INIT(DrawBezeledTextArea);
@@ -79,9 +76,6 @@ void InitWebCoreSystemInterface(void)
     INIT(SignedPublicKeyAndChallengeString);
     INIT(GetPreferredExtensionForMIMEType);
     INIT(GetWheelEventDeltas);
-#if PLATFORM(MAC)
-    INIT(GetNSEventKeyChar);
-#endif
     INIT(HitTestMediaUIPart);
     INIT(InitializeMaximumHTTPConnectionCountPerHost);
     INIT(MeasureMediaUIPart);
@@ -167,14 +161,8 @@ void InitWebCoreSystemInterface(void)
     INIT(CopyRequestWithStorageSession);
     INIT(CopyHTTPCookieStorage);
     INIT(GetHTTPCookieAcceptPolicy);
-#if PLATFORM(MAC)
-    INIT(HTTPCookies);
-#endif
     INIT(HTTPCookiesForURL);
     INIT(SetHTTPCookiesForURL);
-#if PLATFORM(MAC)
-    INIT(DeleteAllHTTPCookies);
-#endif
     INIT(DeleteHTTPCookie);
 
     INIT(GetCFURLResponseMIMEType);
@@ -185,50 +173,5 @@ void InitWebCoreSystemInterface(void)
 
     INIT(SetMetadataURL);
 
-#if PLATFORM(MAC)
-    // FIXME: We should stop using this file in Chromium.
-
-    INIT(DestroyRenderingResources);
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    INIT(CreateVMPressureDispatchOnMainQueue);
-#endif
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-    INIT(ExecutableWasLinkedOnOrBeforeLion);
-#endif
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    INIT(CGPathAddRoundedRect);
-#endif
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    INIT(CFURLRequestAllowAllPostCaching);
-#endif
-
-#if USE(CONTENT_FILTERING)
-    INIT(FilterIsManagedSession);
-    INIT(FilterCreateInstance);
-    INIT(FilterWasBlocked);
-    INIT(FilterIsBuffering);
-    INIT(FilterAddData);
-    INIT(FilterDataComplete);
-#endif
-
-#if !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-    INIT(NSElasticDeltaForTimeDelta);
-    INIT(NSElasticDeltaForReboundDelta);
-    INIT(NSReboundDeltaForElasticDelta);
-#endif
-
-#if ENABLE(PUBLIC_SUFFIX_LIST)
-    INIT(IsPublicSuffix);
-#endif
-
-#if ENABLE(CACHE_PARTITIONING)
-    INIT(CachePartitionKey);
-#endif
-
-#endif
     didInit = true;
 }

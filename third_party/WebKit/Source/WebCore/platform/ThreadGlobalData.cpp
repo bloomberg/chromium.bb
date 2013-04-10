@@ -41,10 +41,6 @@
 #include "TextCodecICU.h"
 #endif
 
-#if PLATFORM(MAC)
-#include "TextCodecMac.h"
-#endif
-
 #include <wtf/Threading.h>
 #include <wtf/ThreadSpecific.h>
 using namespace WTF;
@@ -64,9 +60,6 @@ ThreadGlobalData::ThreadGlobalData()
 #if USE(ICU_UNICODE)
     , m_cachedConverterICU(adoptPtr(new ICUConverterWrapper))
 #endif
-#if PLATFORM(MAC)
-    , m_cachedConverterTEC(adoptPtr(new TECConverterWrapper))
-#endif
     , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on
@@ -83,9 +76,6 @@ ThreadGlobalData::~ThreadGlobalData()
 
 void ThreadGlobalData::destroy()
 {
-#if PLATFORM(MAC)
-    m_cachedConverterTEC.clear();
-#endif
 
 #if USE(ICU_UNICODE)
     m_cachedConverterICU.clear();

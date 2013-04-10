@@ -35,9 +35,6 @@ static URLSchemesMap& localURLSchemes()
 
     if (localSchemes.isEmpty()) {
         localSchemes.add("file");
-#if PLATFORM(MAC)
-        localSchemes.add("applewebdata");
-#endif
     }
 
     return localSchemes;
@@ -120,10 +117,6 @@ void SchemeRegistry::removeURLSchemeRegisteredAsLocal(const String& scheme)
 {
     if (scheme == "file")
         return;
-#if PLATFORM(MAC)
-    if (scheme == "applewebdata")
-        return;
-#endif
     localURLSchemes().remove(scheme);
 }
 

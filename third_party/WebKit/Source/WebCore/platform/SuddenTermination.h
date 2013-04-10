@@ -34,7 +34,7 @@ namespace WebCore {
     void disableSuddenTermination();
     void enableSuddenTermination();
 
-#if !PLATFORM(MAC) && !PLATFORM(CHROMIUM)
+#if !PLATFORM(CHROMIUM)
     inline void disableSuddenTermination() { }
     inline void enableSuddenTermination() { }
 #endif

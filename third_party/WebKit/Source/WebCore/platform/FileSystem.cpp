@@ -100,8 +100,6 @@ String encodeForFileName(const String& inputStr)
     return String(buffer.data(), p - buffer.data());
 }
 
-#if !PLATFORM(MAC) || PLATFORM(IOS)
-
 bool canExcludeFromBackup()
 {
     return false;
@@ -112,6 +110,5 @@ bool excludeFromBackup(const String&)
     return false;
 }
 
-#endif
 
 } // namespace WebCore

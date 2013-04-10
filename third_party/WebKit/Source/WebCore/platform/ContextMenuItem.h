@@ -33,12 +33,6 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS NSMenuItem;
-#elif PLATFORM(WIN)
-typedef struct tagMENUITEMINFOW MENUITEMINFO;
-#endif // PLATFORM(MAC)
 #endif // ENABLE(CONTEXT_MENUS)
 
 namespace WebCore {
@@ -111,21 +105,6 @@ namespace WebCore {
         ContextMenuItemTagTextDirectionDefault,
         ContextMenuItemTagTextDirectionLeftToRight,
         ContextMenuItemTagTextDirectionRightToLeft,
-#if PLATFORM(MAC)
-        ContextMenuItemTagCorrectSpellingAutomatically,
-        ContextMenuItemTagSubstitutionsMenu,
-        ContextMenuItemTagShowSubstitutions,
-        ContextMenuItemTagSmartCopyPaste,
-        ContextMenuItemTagSmartQuotes,
-        ContextMenuItemTagSmartDashes,
-        ContextMenuItemTagSmartLinks,
-        ContextMenuItemTagTextReplacement,
-        ContextMenuItemTagTransformationsMenu,
-        ContextMenuItemTagMakeUpperCase,
-        ContextMenuItemTagMakeLowerCase,
-        ContextMenuItemTagCapitalize,
-        ContextMenuItemTagChangeBack,
-#endif
         ContextMenuItemTagOpenMediaInNewWindow,
         ContextMenuItemTagCopyMediaLinkToClipboard,
         ContextMenuItemTagToggleMediaControls,
@@ -149,9 +128,6 @@ namespace WebCore {
     };
 
 #if ENABLE(CONTEXT_MENUS)
-#if PLATFORM(MAC)
-    typedef NSMenuItem* PlatformMenuItemDescription;
-#elif PLATFORM(CHROMIUM)
     struct PlatformMenuItemDescription {
         PlatformMenuItemDescription()
             : type(ActionType)
@@ -165,9 +141,6 @@ namespace WebCore {
         bool checked;
         bool enabled;
     };
-#else
-    typedef void* PlatformMenuItemDescription;
-#endif
 
     class ContextMenuItem {
         WTF_MAKE_FAST_ALLOCATED;
@@ -227,11 +200,7 @@ namespace WebCore {
         bool m_checked;
         Vector<ContextMenuItem> m_subMenuItems;
 #else
-#if PLATFORM(MAC)
-        RetainPtr<NSMenuItem> m_platformDescription;
-#else
         PlatformMenuItemDescription m_platformDescription;
-#endif
 #endif // USE(CROSS_PLATFORM_CONTEXT_MENUS)
     };
 

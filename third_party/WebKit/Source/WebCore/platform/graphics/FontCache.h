@@ -105,9 +105,7 @@ public:
     size_t inactiveFontDataCount();
     void purgeInactiveFontData(int count = INT_MAX);
 
-#if PLATFORM(WIN)
-    PassRefPtr<SimpleFontData> fontDataFromDescriptionAndLogFont(const FontDescription&, ShouldRetain, const LOGFONT&, AtomicString& outFontFamilyName);
-#elif PLATFORM(CHROMIUM) && OS(WINDOWS)
+#if PLATFORM(CHROMIUM) && OS(WINDOWS)
     PassRefPtr<SimpleFontData> fontDataFromDescriptionAndLogFont(const FontDescription&, ShouldRetain, const LOGFONT&, wchar_t* outFontFamilyName);
 #endif
 

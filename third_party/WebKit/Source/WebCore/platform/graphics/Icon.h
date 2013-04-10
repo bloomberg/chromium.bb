@@ -26,13 +26,8 @@
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS NSImage;
-#elif PLATFORM(CHROMIUM)
 #include "Image.h"
 #include "PlatformIcon.h"
-#endif
 
 namespace WebCore {
 
@@ -50,13 +45,8 @@ public:
     static PassRefPtr<Icon> create(PassRefPtr<PlatformIcon> icon) { return adoptRef(new Icon(icon)); }
 
 private:
-#if PLATFORM(MAC)
-    Icon(NSImage*);
-    RetainPtr<NSImage> m_nsImage;
-#elif PLATFORM(CHROMIUM)
     Icon(PassRefPtr<PlatformIcon>);
     RefPtr<PlatformIcon> m_icon;
-#endif
 };
 
 }

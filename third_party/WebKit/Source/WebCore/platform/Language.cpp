@@ -30,10 +30,6 @@
 #include <wtf/RetainPtr.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC)
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 namespace WebCore {
 
 typedef HashMap<void*, LanguageChangeObserverFunction> ObserverMap;
@@ -147,12 +143,6 @@ size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<St
 
 String displayNameForLanguageLocale(const String& localeName)
 {
-#if PLATFORM(MAC)
-    if (!localeName.isNull() && !localeName.isEmpty()) {
-        RetainPtr<CFLocaleRef> currentLocale(AdoptCF, CFLocaleCopyCurrent());
-        return CFLocaleCopyDisplayNameForPropertyValue(currentLocale.get(), kCFLocaleIdentifier, localeName.createCFString().get());
-    }
-#endif
     return localeName;
 }
 

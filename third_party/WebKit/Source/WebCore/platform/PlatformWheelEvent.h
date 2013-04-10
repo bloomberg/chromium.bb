@@ -66,7 +66,7 @@ namespace WebCore {
             , m_wheelTicksY(0)
             , m_granularity(ScrollByPixelWheelEvent)
             , m_directionInvertedFromDevice(false)
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
             , m_hasPreciseScrollingDeltas(false)
 #endif
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
@@ -89,7 +89,7 @@ namespace WebCore {
             , m_wheelTicksY(wheelTicksY)
             , m_granularity(granularity)
             , m_directionInvertedFromDevice(false)
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
             , m_hasPreciseScrollingDeltas(false)
 #endif
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
@@ -127,7 +127,7 @@ namespace WebCore {
 
         bool directionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
         bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
         void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
 #endif
@@ -156,7 +156,7 @@ namespace WebCore {
         float m_wheelTicksY;
         PlatformWheelEventGranularity m_granularity;
         bool m_directionInvertedFromDevice;
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(CHROMIUM)
         bool m_hasPreciseScrollingDeltas;
 #endif
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))

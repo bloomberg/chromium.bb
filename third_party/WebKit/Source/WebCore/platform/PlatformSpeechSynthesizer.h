@@ -32,11 +32,6 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(MAC)
-#include <wtf/RetainPtr.h>
-OBJC_CLASS WebSpeechSynthesisWrapper;
-#endif
-
 #if PLATFORM(CHROMIUM)
 namespace WebKit {
 class WebSpeechSynthesizer;
@@ -89,10 +84,7 @@ protected:
     
 private:
     PlatformSpeechSynthesizerClient* m_speechSynthesizerClient;
-    
-#if PLATFORM(MAC)
-    RetainPtr<WebSpeechSynthesisWrapper> m_platformSpeechWrapper;
-#endif
+
 #if PLATFORM(CHROMIUM)
     OwnPtr<WebKit::WebSpeechSynthesizer> m_webSpeechSynthesizer;
     OwnPtr<WebKit::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;

@@ -30,11 +30,6 @@
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 
-#if PLATFORM(MAC)
-OBJC_CLASS NSScreen;
-OBJC_CLASS NSWindow;
-#endif
-
 typedef uint32_t PlatformDisplayID;
 
 typedef WTF::Vector<char> ColorProfile;
@@ -51,16 +46,6 @@ namespace WebCore {
     FloatRect screenRect(Widget*);
     FloatRect screenAvailableRect(Widget*);
     void screenColorProfile(ColorProfile&);
-
-#if PLATFORM(MAC)
-    NSScreen *screenForWindow(NSWindow *);
-
-    FloatRect toUserSpace(const NSRect&, NSWindow *destination);
-    NSRect toDeviceSpace(const FloatRect&, NSWindow *source);
-
-    NSPoint flipScreenPoint(const NSPoint&, NSScreen *);
-#endif
-
 } // namespace WebCore
 
 #endif // PlatformScreen_h
