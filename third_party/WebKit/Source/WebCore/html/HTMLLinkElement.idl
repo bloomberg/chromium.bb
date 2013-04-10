@@ -35,10 +35,5 @@ interface HTMLLinkElement : HTMLElement {
 
     // DOM Level 2 Style
     readonly attribute StyleSheet sheet;
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extension:
-    readonly attribute URL absoluteLinkURL;
-#endif
 };
 

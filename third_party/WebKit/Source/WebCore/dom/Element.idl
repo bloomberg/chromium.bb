@@ -36,11 +36,9 @@
     [RaisesException] Attr removeAttributeNode([Optional=DefaultIsUndefined] Attr oldAttr);
     [PerWorldBindings] NodeList getElementsByTagName([Optional=DefaultIsUndefined] DOMString name);
 
-#if !defined(LANGUAGE_OBJECTIVE_C)
     // For ObjC this is defined on Node for legacy support.
     [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
     boolean            hasAttributes();
-#endif
 
     // DOM Level 2 Core
 
@@ -129,11 +127,6 @@
     ClientRect getBoundingClientRect();
 #endif
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extensions
-    [PerWorldBindings] readonly attribute DOMString innerText;
-#endif
-
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
     [EnabledAtRuntime] void webkitRequestFullScreen([Optional=DefaultIsUndefined] unsigned short flags);
@@ -147,7 +140,6 @@
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] sequence<Range> webkitGetRegionFlowRanges();
 
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     // Event handler DOM attributes
     [NotEnumerable, PerWorldBindings] attribute EventListener onabort;
     [NotEnumerable, PerWorldBindings] attribute EventListener onblur;
@@ -219,6 +211,5 @@
     [NotEnumerable,Conditional=TOUCH_EVENTS,EnabledAtRuntime=touch, PerWorldBindings] attribute EventListener ontouchcancel;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
-#endif
 };
 

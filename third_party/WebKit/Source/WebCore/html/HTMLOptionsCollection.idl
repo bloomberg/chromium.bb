@@ -33,9 +33,5 @@
     [Custom, RaisesException] void add([Optional=DefaultIsUndefined] HTMLOptionElement option, 
                       [Optional] unsigned long index);
     [Custom] void remove([Optional=DefaultIsUndefined] unsigned long index);
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    Node item(unsigned long index);
-#endif
 };
 

@@ -36,9 +36,7 @@ interface HTMLFrameElement : HTMLElement {
     readonly attribute DOMWindow contentWindow;
 
 #if defined(ENABLE_SVG) && ENABLE_SVG
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C || defined(ENABLE_SVG_DOM_OBJC_BINDINGS) && ENABLE_SVG_DOM_OBJC_BINDINGS
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
-#endif
 #endif
 
     [TreatNullAs=NullString, CustomSetter] attribute DOMString location;

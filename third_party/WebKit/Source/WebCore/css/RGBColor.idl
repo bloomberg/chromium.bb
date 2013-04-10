@@ -18,7 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
 [
     ImplementationLacksVTable
 ] interface RGBColor {
@@ -29,9 +28,6 @@
     // WebKit extensions
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
     readonly attribute CSSPrimitiveValue  alpha;
-#endif
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    readonly attribute Color              color;
 #endif
 };
 

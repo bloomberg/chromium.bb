@@ -57,15 +57,7 @@ interface HTMLTextAreaElement : HTMLElement {
                         unsigned long end,
                         [Optional=DefaultIsNullString] DOMString selectionMode);
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    void setSelectionRange(long start, long end);
-#else
     void setSelectionRange([Optional=DefaultIsUndefined] long start,
                            [Optional=DefaultIsUndefined] long end,
                            [Optional] DOMString direction);
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Reflect] attribute DOMString accessKey;
-#endif
 };

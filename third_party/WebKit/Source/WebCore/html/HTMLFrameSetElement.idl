@@ -24,7 +24,6 @@
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     // Event handler attributes
     [NotEnumerable] attribute EventListener onbeforeunload;
     [NotEnumerable] attribute EventListener onhashchange;
@@ -49,6 +48,5 @@
     // attribute [NotEnumerable] EventListener onbeforeprint;
     // attribute [NotEnumerable] EventListener onredo;
     // attribute [NotEnumerable] EventListener onundo;
-#endif
 };
 

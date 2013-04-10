@@ -49,11 +49,7 @@
     [Reflect] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    attribute DOMString size; // DOM level 2 changed this to a long, but ObjC API is a string
-#else
     [SetterRaisesException] attribute unsigned long size; // Changed string -> long -> unsigned long
-#endif
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString step;
     [TreatNullAs=NullString] attribute DOMString type; // readonly dropped as part of DOM level 2
@@ -90,13 +86,9 @@
                         unsigned long end,
                         [Optional=DefaultIsNullString] DOMString selectionMode);
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Custom] void setSelectionRange(long start, long end);
-#else
     [Custom] void setSelectionRange([Optional=DefaultIsUndefined] long start, 
                                     [Optional=DefaultIsUndefined] long end, 
                                     [Optional] DOMString direction);
-#endif
 
     // Non-standard attributes
     [Reflect] attribute DOMString align;
@@ -107,22 +99,8 @@
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitGrammar;
     [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventListener onwebkitspeechchange;
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Reflect] attribute DOMString accessKey;
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    void click();
-#endif
-
 #if !defined(LANGUAGE_JAVASCRIPT) || !LANGUAGE_JAVASCRIPT
     void setValueForUser([TreatNullAs=NullString] DOMString value);
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extension:
-    readonly attribute DOMString altDisplayString;
-    readonly attribute URL absoluteImageURL;
 #endif
 
     // See http://www.w3.org/TR/html-media-capture/

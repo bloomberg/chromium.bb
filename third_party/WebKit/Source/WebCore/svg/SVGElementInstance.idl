@@ -27,12 +27,7 @@
 [
     Conditional=SVG,
     EventTarget
-] interface SVGElementInstance
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    : Object, EventTarget
-#else
-    : EventTarget
-#endif /* defined(LANGUAGE_OBJECTIVE_C) */
+] interface SVGElementInstance : EventTarget
 {
     readonly attribute SVGElement correspondingElement;
     readonly attribute SVGUseElement correspondingUseElement;
@@ -44,7 +39,6 @@
     readonly attribute SVGElementInstance nextSibling;
 
     // EventTarget
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     [NotEnumerable] attribute EventListener onabort;
     [NotEnumerable] attribute EventListener onblur;
     [NotEnumerable] attribute EventListener onchange;
@@ -85,5 +79,4 @@
     [NotEnumerable] attribute EventListener onselectstart;
     [NotEnumerable] attribute EventListener onsubmit;
     [NotEnumerable] attribute EventListener onunload;
-#endif /* defined(LANGUAGE_OBJECTIVE_C) */
 };

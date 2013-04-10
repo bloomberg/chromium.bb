@@ -27,9 +27,6 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString shape;
     [Reflect] attribute DOMString target;
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Reflect] attribute DOMString accessKey;
-#endif
     // IE Extensions
     readonly attribute DOMString hash;
     readonly attribute DOMString host;
@@ -38,10 +35,5 @@ interface HTMLAreaElement : HTMLElement {
     readonly attribute DOMString port;
     readonly attribute DOMString protocol;
     readonly attribute DOMString search;
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extension:
-    readonly attribute URL absoluteLinkURL;
-#endif
 };
 

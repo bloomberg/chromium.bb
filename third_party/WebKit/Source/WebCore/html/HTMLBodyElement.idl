@@ -26,7 +26,6 @@ interface HTMLBodyElement : HTMLElement {
     [Reflect] attribute DOMString text;
     [Reflect] attribute DOMString vLink;
 
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     // Event handler attributes
     [NotEnumerable] attribute EventListener onbeforeunload;
     [NotEnumerable] attribute EventListener onhashchange;
@@ -51,6 +50,5 @@ interface HTMLBodyElement : HTMLElement {
     // attribute [NotEnumerable] EventListener onbeforeprint;
     // attribute [NotEnumerable] EventListener onredo;
     // attribute [NotEnumerable] EventListener onundo;
-#endif
 };
 

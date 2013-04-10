@@ -32,19 +32,6 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString target;
     [Reflect] attribute DOMString type;
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    [Reflect] attribute DOMString accessKey;
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    readonly attribute DOMString hash;
-    readonly attribute DOMString host;
-    readonly attribute DOMString hostname;
-    readonly attribute DOMString pathname;
-    readonly attribute DOMString port;
-    readonly attribute DOMString protocol;
-    readonly attribute DOMString search;
-#else
     [TreatNullAs=NullString] attribute DOMString hash;
     [TreatNullAs=NullString] attribute DOMString host;
     [TreatNullAs=NullString] attribute DOMString hostname;
@@ -54,17 +41,11 @@ interface HTMLAnchorElement : HTMLElement {
     [TreatNullAs=NullString] attribute DOMString search;
 
     [TreatNullAs=NullString] readonly attribute DOMString origin;
-#endif
 
     readonly attribute DOMString text;
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
     [NotEnumerable] DOMString toString();
-#endif
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extension:
-    readonly attribute URL absoluteLinkURL;
 #endif
 };
 

@@ -35,13 +35,8 @@
     readonly attribute DOMString type;
 
     readonly attribute HTMLOptionsCollection options;
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // DOM Level 2 changes type of length attribute to unsigned long, 
-    // for compatibility we keep DOM Level 1 definition.
-    readonly attribute long length;
-#else
     [SetterRaisesException] attribute unsigned long length;
-#endif
+
     Node item([IsIndex,Optional=DefaultIsUndefined] unsigned long index);
     Node namedItem([Optional=DefaultIsUndefined] DOMString name);
      [RaisesException] void add([Optional=DefaultIsUndefined] HTMLElement element,

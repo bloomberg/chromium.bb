@@ -30,9 +30,5 @@
     readonly attribute unsigned long length;
     Node item([Optional=DefaultIsUndefined] unsigned long index);
     Node namedItem([Optional=DefaultIsUndefined] DOMString name);
-
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    NodeList tags([Optional=DefaultIsUndefined] DOMString name);
-#endif
 };
 

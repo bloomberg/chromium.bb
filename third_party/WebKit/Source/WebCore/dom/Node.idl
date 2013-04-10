@@ -18,15 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// FIXME: Node should inherit EventTarget.
 [
     CustomToJSObject,
     EventTarget,
     DependentLifetime
-] interface Node
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    : Object, EventTarget
-#endif /* defined(LANGUAGE_OBJECTIVE_C) */
- {
+] interface Node {
     // NodeType
     const unsigned short      ELEMENT_NODE                   = 1;
     const unsigned short      ATTRIBUTE_NODE                 = 2;
@@ -66,7 +63,6 @@
     void               normalize();
 
     // Introduced in DOM Level 2:
-
      boolean isSupported([Optional=DefaultIsUndefined] DOMString feature, 
                                        [TreatNullAs=NullString,Optional=DefaultIsUndefined] DOMString version);
 
@@ -74,14 +70,7 @@
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        localName;
 
-#if defined(LANGUAGE_OBJECTIVE_C)
-    [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
-    boolean            hasAttributes();
-#endif
-
-
     // Introduced in DOM Level 3:
-
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;
 
              // FIXME: the spec says this can also raise on retrieval.
@@ -109,14 +98,6 @@
     // IE extensions
     [PerWorldBindings] readonly attribute Element          parentElement;
 
-#if defined(LANGUAGE_OBJECTIVE_C) && LANGUAGE_OBJECTIVE_C
-    // Objective-C extensions
-    [PerWorldBindings] readonly attribute boolean          isContentEditable;
-
-    void inspect();
-#endif /* defined(LANGUAGE_OBJECTIVE_C) */
-
-#if !defined(LANGUAGE_OBJECTIVE_C) || !LANGUAGE_OBJECTIVE_C
     void addEventListener(DOMString type, 
                           EventListener listener, 
                           [Optional] boolean useCapture);
@@ -124,5 +105,4 @@
                              EventListener listener, 
                              [Optional] boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event event);
-#endif
 };
