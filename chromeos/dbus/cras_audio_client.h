@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/volume_state.h"
 
@@ -45,12 +46,21 @@ class CHROMEOS_EXPORT CrasAudioClient {
   virtual bool HasObserver(Observer* observer) = 0;
 
   // GetVolumeStateCallback is used for GetVolumeState method. It receives
-  // 1 argument, |volume_state| which containing both input and  output volume
-  // state data.
-  typedef base::Callback<void(const VolumeState&)> GetVolumeStateCallback;
+  // 2 arguments, |volume_state| which containing both input and  output volume
+  // state data, and |success| which indicates whether or not the request
+  // succeeded.
+  typedef base::Callback<void(const VolumeState&, bool)> GetVolumeStateCallback;
+
+  // GetNodesCallback is used for GetNodes method. It receives 2 arguments,
+  // |audio_nodes| which containing a list of audio nodes data and
+  // |success| which indicates whether or not the request succeeded.
+  typedef base::Callback<void(const AudioNodeList&, bool)> GetNodesCallback;
 
   // Gets the volume state, asynchronously.
   virtual void GetVolumeState(const GetVolumeStateCallback& callback) = 0;
+
+  // Gets an array of audio input and output nodes.
+  virtual void GetNodes(const GetNodesCallback& callback) = 0;
 
   // Sets output volume to |volume|, in the range of [0, 100].
   virtual void  SetOutputVolume(int32 volume) = 0;

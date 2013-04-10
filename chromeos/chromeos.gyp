@@ -38,6 +38,8 @@
         'chromeos_switches.h',
         'cryptohome/async_method_caller.cc',
         'cryptohome/async_method_caller.h',
+        'dbus/audio_node.cc',
+        'dbus/audio_node.h',
         'dbus/blocking_method_caller.cc',
         'dbus/blocking_method_caller.h',
         'dbus/bluetooth_adapter_client.cc',

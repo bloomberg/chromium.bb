@@ -19,6 +19,7 @@ class MockCrasAudioClient : public CrasAudioClient {
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD1(HasObserver, bool(Observer*));
   MOCK_METHOD1(GetVolumeState, void(const GetVolumeStateCallback&));
+  MOCK_METHOD1(GetNodes, void(const GetNodesCallback&));
   MOCK_METHOD1(SetOutputVolume, void(int32));
   MOCK_METHOD1(SetOutputMute, void(bool));
   MOCK_METHOD1(SetInputGain, void(int32));

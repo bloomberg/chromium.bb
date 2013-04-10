@@ -12,6 +12,17 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
+
+// TODO(jennyz): Remove this section and use the dbus properties constants
+// defined in service_constants.h, once the change is done in cros side for
+// service_constants.h and rolled down to chrome.
+const char kIsInputProperty[] = "IsInput";
+const char kIdProperty[] = "Id";
+const char kDeviceNameProperty[] = "DeviceName";
+const char kTypeProperty[] = "Type";
+const char kNameProperty[] = "Name";
+const char kActiveProperty[] = "Active";
+
 }  // namespace
 
 namespace chromeos {
@@ -113,6 +124,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&CrasAudioClientImpl::OnGetVolumeState,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  virtual void GetNodes(const GetNodesCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kGetNodes);
+    cras_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&CrasAudioClientImpl::OnGetNodes,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
@@ -261,21 +282,94 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   void OnGetVolumeState(const GetVolumeStateCallback& callback,
                         dbus::Response* response) {
-    if (!response) {
+    bool success = true;
+    VolumeState volume_state;
+    if (response) {
+      dbus::MessageReader reader(response);
+      if (!reader.PopInt32(&volume_state.output_volume) ||
+          !reader.PopBool(&volume_state.output_mute) ||
+          !reader.PopInt32(&volume_state.input_gain) ||
+          !reader.PopBool(&volume_state.input_mute)) {
+        success = false;
+        LOG(ERROR) << "Error reading response from cras: "
+                   << response->ToString();
+      }
+    } else {
+      success = false;
       LOG(ERROR) << "Error calling " << cras::kGetVolumeState;
-      return;
     }
 
-    dbus::MessageReader reader(response);
-    VolumeState volume_state;
-    if (!reader.PopInt32(&volume_state.output_volume) ||
-        !reader.PopBool(&volume_state.output_mute) ||
-        !reader.PopInt32(&volume_state.input_gain) ||
-        !reader.PopBool(&volume_state.input_mute)) {
-      LOG(ERROR) << "Error reading response from cras: "
-                 << response->ToString();
+    callback.Run(volume_state, success);
+  }
+
+  void OnGetNodes(const GetNodesCallback& callback,
+                  dbus::Response* response) {
+    bool success = true;
+    AudioNodeList node_list;
+    if (response) {
+      dbus::MessageReader response_reader(response);
+      dbus::MessageReader array_reader(response);
+      while(response_reader.HasMoreData()) {
+        if (!response_reader.PopArray(&array_reader)) {
+          success = false;
+          LOG(ERROR) << "Error reading response from cras: "
+                     << response->ToString();
+          break;
+        }
+
+        AudioNode node;
+        if (!GetAudioNode(response, &array_reader, &node)) {
+          success = false;
+          LOG(WARNING) << "Error reading audio node data from cras: "
+                       << response->ToString();
+          break;
+        }
+
+        node_list.push_back(node);
+      }
+    } else {
+      success = false;
+      LOG(ERROR) << "Error calling " << cras::kGetNodes;
     }
-    callback.Run(volume_state);
+
+    callback.Run(node_list, success);
+  }
+
+  bool GetAudioNode(dbus::Response* response,
+                    dbus::MessageReader* array_reader,
+                    AudioNode *node) {
+    while (array_reader->HasMoreData()) {
+      dbus::MessageReader dict_entry_reader(response);
+      dbus::MessageReader value_reader(response);
+      std::string key;
+      if (!array_reader->PopDictEntry(&dict_entry_reader) ||
+          !dict_entry_reader.PopString(&key) ||
+          !dict_entry_reader.PopVariant(&value_reader)) {
+         return false;
+      }
+
+      if (key == kIsInputProperty) {
+        if (!value_reader.PopBool(&node->is_input))
+          return false;
+      } else if (key == kIdProperty) {
+        if (!value_reader.PopUint64(&node->id))
+          return false;
+      } else if (key == kDeviceNameProperty) {
+        if (!value_reader.PopString(&node->device_name))
+          return false;
+      } else if (key == kTypeProperty) {
+        if (!value_reader.PopString(&node->type))
+          return false;
+      } else if (key == kNameProperty) {
+        if (!value_reader.PopString(&node->name))
+          return false;
+      } else if (key == kActiveProperty) {
+        if (!value_reader.PopBool(&node->active))
+          return false;
+      }
+    }
+
+    return true;
   }
 
   dbus::ObjectProxy* cras_proxy_;
@@ -305,6 +399,7 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
   virtual void GetVolumeState(const GetVolumeStateCallback& callback) OVERRIDE {
   }
+  virtual void GetNodes(const GetNodesCallback& callback)OVERRIDE {}
   virtual void SetOutputVolume(int32 volume) OVERRIDE {}
   virtual void SetOutputMute(bool mute_on) OVERRIDE {}
   virtual void SetInputGain(int32 input_gain) OVERRIDE {}
