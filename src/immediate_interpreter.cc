@@ -2150,15 +2150,11 @@ void ImmediateInterpreter::UpdateButtonsTimeout(stime_t now) {
     Err("How is sent_button_down_ set?");
     return;
   }
-  if (button_type_ != GESTURES_BUTTON_LEFT) {
-    Err("How is button_type_ not GESTURES_BUTTON_LEFT?");
-    return;
-  }
   sent_button_down_ = true;
   result_ = Gesture(kGestureButtonsChange,
                     state_buffer_.Get(1)->timestamp,
                     now,
-                    GESTURES_BUTTON_LEFT,
+                    button_type_,
                     0);
 }
 

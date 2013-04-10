@@ -2485,9 +2485,9 @@ TEST(ImmediateInterpreterTest, ClickTest) {
 
     // button down with 2 fingers, timeout, button up, fingers lift
     {{11,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
-    {{0,0,0,0,NULL,0,0,0,0},11.5,0,0},
+    {{0,0,0,0,NULL,0,0,0,0},11.5,GESTURES_BUTTON_RIGHT,0},
     {{12,0,2,2,&finger_states[4],0,0,0,0},
-      -1,GESTURES_BUTTON_RIGHT,GESTURES_BUTTON_RIGHT},
+      -1,0,GESTURES_BUTTON_RIGHT},
     {{10,0,0,0,NULL,0,0,0,0},-1,0,0}
   };
 
