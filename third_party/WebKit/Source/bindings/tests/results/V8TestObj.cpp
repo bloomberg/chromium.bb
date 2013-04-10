@@ -2928,6 +2928,21 @@ static v8::Handle<v8::Value> enabledPerContextMethod2MethodCallback(const v8::Ar
     return TestObjV8Internal::enabledPerContextMethod2Method(args);
 }
 
+static v8::Handle<v8::Value> methodWithUnsignedLongSequenceMethod(const v8::Arguments& args)
+{
+    if (args.Length() < 1)
+        return throwNotEnoughArgumentsError(args.GetIsolate());
+    TestObj* imp = V8TestObj::toNative(args.Holder());
+    V8TRYCATCH(Vector<unsigned>, unsignedLongSequence, toNativeArray<unsigned>(args[0]));
+    imp->methodWithUnsignedLongSequence(unsignedLongSequence);
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> methodWithUnsignedLongSequenceMethodCallback(const v8::Arguments& args)
+{
+    return TestObjV8Internal::methodWithUnsignedLongSequenceMethod(args);
+}
+
 static v8::Handle<v8::Value> stringArrayFunctionMethod(const v8::Arguments& args)
 {
     if (args.Length() < 1)
@@ -3613,6 +3628,12 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
         proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod1MethodCallback, v8Undefined(), defaultSignature));
     if (RuntimeEnabledFeatures::featureNameEnabled())
         proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod2MethodCallback, v8Undefined(), defaultSignature));
+
+    // Custom Signature 'methodWithUnsignedLongSequence'
+    const int methodWithUnsignedLongSequenceArgc = 1;
+    v8::Handle<v8::FunctionTemplate> methodWithUnsignedLongSequenceArgv[methodWithUnsignedLongSequenceArgc] = { v8::Handle<v8::FunctionTemplate>() };
+    v8::Handle<v8::Signature> methodWithUnsignedLongSequenceSignature = v8::Signature::New(desc, methodWithUnsignedLongSequenceArgc, methodWithUnsignedLongSequenceArgv);
+    proto->Set(v8::String::NewSymbol("methodWithUnsignedLongSequence"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, v8Undefined(), methodWithUnsignedLongSequenceSignature));
 
     // Custom Signature 'stringArrayFunction'
     const int stringArrayFunctionArgc = 1;
