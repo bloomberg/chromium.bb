@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/json/json_reader.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -241,7 +241,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   return result.release();
 }
 
-void OpenNewTab(const GURL& url, Profile* profile) {
+void OpenNewTab(Profile* profile, const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord(),
@@ -500,46 +500,35 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   return true;
 }
 
-// Reads an entire file into a string. Fails is the file is 4K or longer.
-bool ReadSmallFileToString(const base::FilePath& path, std::string* contents) {
-  FILE* file = file_util::OpenFile(path, "rb");
-  if (!file) {
-    return false;
+// Reads JSON from a Google Docs file and extracts a document url. When the file
+// is not in GDoc format, returns a file URL for |file_path| as fallback.
+GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
+  const int64 kMaxGDocSize = 4096;
+  int64 file_size = 0;
+  if (!file_util::GetFileSize(file_path, &file_size) ||
+      file_size > kMaxGDocSize) {
+    DLOG(INFO) << "File too large to be a GDoc file " << file_path.value();
+    return net::FilePathToFileURL(file_path);
   }
 
-  char buf[1 << 12];  // 4K
-  size_t len = fread(buf, 1, sizeof(buf), file);
-  if (len > 0) {
-    contents->append(buf, len);
-  }
-  file_util::CloseFile(file);
-
-  return len < sizeof(buf);
-}
-
-// Reads JSON from a Google Docs file, extracts a document url and opens it
-// in a tab.
-void ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
-  std::string contents;
-  if (!ReadSmallFileToString(file_path, &contents)) {
-    LOG(ERROR) << "Error reading " << file_path.value();
-    return;
+  JSONFileValueSerializer reader(file_path);
+  std::string error_message;
+  scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
+  if (!root_value.get()) {
+    DLOG(INFO) << "Failed to parse " << file_path.value() << "as JSON."
+               << " error = " << error_message;
+    return net::FilePathToFileURL(file_path);
   }
 
-  scoped_ptr<base::Value> root_value;
-  root_value.reset(base::JSONReader::Read(contents));
-
-  DictionaryValue* dictionary_value;
+  base::DictionaryValue* dictionary_value = NULL;
   std::string edit_url_string;
-  if (!root_value.get() ||
-      !root_value->GetAsDictionary(&dictionary_value) ||
+  if (!root_value->GetAsDictionary(&dictionary_value) ||
       !dictionary_value->GetString("url", &edit_url_string)) {
-    LOG(ERROR) << "Invalid JSON in " << file_path.value();
-    return;
+    DLOG(INFO) << "Non GDoc JSON in " << file_path.value();
+    return net::FilePathToFileURL(file_path);
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(OpenNewTab, GURL(edit_url_string), (Profile*)NULL));
+  return GURL(edit_url_string);
 }
 
 // Used to implement ViewItem().
@@ -867,7 +856,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
       page_url = drive::util::FilePathToDriveURL(
           drive::util::ExtractDrivePath(path));
     }
-    OpenNewTab(page_url, NULL);
+    OpenNewTab(profile, page_url);
     return true;
   }
 
@@ -876,12 +865,15 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
       // The file is on Google Docs. Open with drive URL.
       GURL url = drive::util::FilePathToDriveURL(
           drive::util::ExtractDrivePath(path));
-      OpenNewTab(url, NULL);
+      OpenNewTab(profile, url);
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
-      BrowserThread::PostBlockingPoolTask(
-          FROM_HERE, base::Bind(&ReadUrlFromGDocOnBlockingPool, path));
+      base::PostTaskAndReplyWithResult(
+          BrowserThread::GetBlockingPool(),
+          FROM_HERE,
+          base::Bind(&ReadUrlFromGDocOnBlockingPool, path),
+          base::Bind(&OpenNewTab, static_cast<Profile*>(NULL)));
     }
     return true;
   }
