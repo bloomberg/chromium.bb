@@ -3777,7 +3777,6 @@
             'platform/graphics/TextRun.cpp',
             'platform/graphics/TextTrackRepresentation.cpp',
             'platform/graphics/TextTrackRepresentation.h',
-            'platform/graphics/Tile.h',
             'platform/graphics/UnitBezier.h',
             'platform/graphics/WOFFFileFormat.cpp',
             'platform/graphics/WOFFFileFormat.h',
