@@ -225,6 +225,12 @@ const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
     cc::switches::kMaxTilesForInterestArea, "512"}
 };
 
+const Experiment::Choice kSimpleCacheBackendChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "off" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kUseSimpleCacheBackend, "on"}
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1326,6 +1332,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)
   },
 #endif
+  {
+    "enable-simple-cache-backend",
+    IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME,
+    IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_DESCRIPTION,
+    kOsAndroid,
+    MULTI_VALUE_TYPE(kSimpleCacheBackendChoices)
+  },
 };
 
 const Experiment* experiments = kExperiments;
