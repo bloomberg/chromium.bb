@@ -8,7 +8,7 @@ var galleries;
 var testResults = [];
 
 function testGalleries(expectedFileSystems, testGalleryName) {
-//  chrome.test.assertEq(expectedFileSystems, galleries.length);
+  chrome.test.assertEq(expectedFileSystems, galleries.length);
 
   for (var i = 0; i < galleries.length; i++) {
     var metadata = mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
