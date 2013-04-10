@@ -156,7 +156,7 @@ void HTMLEmbedElement::updateWidget(PluginCreationOption pluginCreationOption)
     parametersForPlugin(paramNames, paramValues);
 
     RefPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
-    bool beforeLoadAllowedLoad = guardedDispatchBeforeLoadEvent(m_url);
+    bool beforeLoadAllowedLoad = dispatchBeforeLoadEvent(m_url);
     if (!beforeLoadAllowedLoad) {
         if (document()->isPluginDocument()) {
             // Plugins inside plugin documents load differently than other plugins. By the time

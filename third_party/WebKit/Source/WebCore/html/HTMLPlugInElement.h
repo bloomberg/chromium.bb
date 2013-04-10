@@ -80,14 +80,9 @@ protected:
 
     virtual bool useFallbackContent() const { return false; }
 
-    // Subclasses should use guardedDispatchBeforeLoadEvent instead of calling dispatchBeforeLoadEvent directly.
-    bool guardedDispatchBeforeLoadEvent(const String& sourceURL);
-
-    bool m_inBeforeLoadEventHandler;
+    virtual bool dispatchBeforeLoadEvent(const String& sourceURL) OVERRIDE;
 
 private:
-    bool dispatchBeforeLoadEvent(const String& sourceURL); // Not implemented, generates a compile error if subclasses call this by mistake.
-
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     virtual void defaultEventHandler(Event*);
@@ -104,7 +99,7 @@ private:
     NPObject* m_NPObject;
 #endif
     bool m_isCapturingMouseEvents;
-
+    bool m_inBeforeLoadEventHandler;
     DisplayState m_displayState;
 };
 

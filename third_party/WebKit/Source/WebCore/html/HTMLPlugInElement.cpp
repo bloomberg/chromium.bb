@@ -51,11 +51,11 @@ using namespace HTMLNames;
 
 HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document* doc)
     : HTMLFrameOwnerElement(tagName, doc)
-    , m_inBeforeLoadEventHandler(false)
 #if ENABLE(NETSCAPE_PLUGIN_API)
     , m_NPObject(0)
 #endif
     , m_isCapturingMouseEvents(false)
+    , m_inBeforeLoadEventHandler(false)
     , m_displayState(Playing)
 {
 }
@@ -132,7 +132,7 @@ PassScriptInstance HTMLPlugInElement::getInstance()
     return m_instance;
 }
 
-bool HTMLPlugInElement::guardedDispatchBeforeLoadEvent(const String& sourceURL)
+bool HTMLPlugInElement::dispatchBeforeLoadEvent(const String& sourceURL)
 {
     // FIXME: Our current plug-in loading design can't guarantee the following
     // assertion is true, since plug-in loading can be initiated during layout,
@@ -140,9 +140,7 @@ bool HTMLPlugInElement::guardedDispatchBeforeLoadEvent(const String& sourceURL)
     // See <http://webkit.org/b/71264>.
     // ASSERT(!m_inBeforeLoadEventHandler);
     m_inBeforeLoadEventHandler = true;
-    // static_cast is used to avoid a compile error since dispatchBeforeLoadEvent
-    // is intentionally undefined on this class.
-    bool beforeLoadAllowedLoad = static_cast<HTMLFrameOwnerElement*>(this)->dispatchBeforeLoadEvent(sourceURL);
+    bool beforeLoadAllowedLoad = HTMLFrameOwnerElement::dispatchBeforeLoadEvent(sourceURL);
     m_inBeforeLoadEventHandler = false;
     return beforeLoadAllowedLoad;
 }
