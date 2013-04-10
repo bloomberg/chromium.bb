@@ -35,12 +35,10 @@ const char kProfileDownloadReason[] = "OOBE";
 UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
                                  UserImageScreenActor* actor)
     : WizardScreen(screen_observer),
-      actor_(actor) {
+      actor_(actor),
+      profile_picture_enabled_(false) {
   actor_->SetDelegate(this);
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-      content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-      content::NotificationService::AllSources());
+  SetProfilePictureEnabled(true);
 }
 
 UserImageScreen::~UserImageScreen() {
