@@ -1067,24 +1067,6 @@ void HttpNetworkTransaction::LogTransactionConnectedMetrics() {
         100);
   }
 
-  static const bool use_spdy_histogram =
-      base::FieldTrialList::TrialExists("SpdyImpact");
-  if (use_spdy_histogram && response_.was_npn_negotiated) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-      base::FieldTrial::MakeName("Net.Transaction_Connected",
-                                 "SpdyImpact"),
-        total_duration, base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromMinutes(10), 100);
-
-    if (!reused_socket) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          base::FieldTrial::MakeName("Net.Transaction_Connected_New_b",
-                                     "SpdyImpact"),
-          total_duration, base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10), 100);
-    }
-  }
-
   // Currently, non-HIGHEST priority requests are frame or sub-frame resource
   // types.  This will change when we also prioritize certain subresources like
   // css, js, etc.

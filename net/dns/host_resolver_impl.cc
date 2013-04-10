@@ -789,18 +789,6 @@ class HostResolverImpl::ProcTask
     DCHECK_LT(category, static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
 
     UMA_HISTOGRAM_ENUMERATION("DNS.ResolveCategory", category, RESOLVE_MAX);
-
-    static const bool show_parallelism_experiment_histograms =
-        base::FieldTrialList::TrialExists("DnsParallelism");
-    if (show_parallelism_experiment_histograms) {
-      UMA_HISTOGRAM_ENUMERATION(
-          base::FieldTrial::MakeName("DNS.ResolveCategory", "DnsParallelism"),
-          category, RESOLVE_MAX);
-      if (RESOLVE_SUCCESS == category) {
-        DNS_HISTOGRAM(base::FieldTrial::MakeName("DNS.ResolveSuccess",
-                                                 "DnsParallelism"), duration);
-      }
-    }
   }
 
   void RecordAttemptHistograms(const base::TimeTicks& start_time,
