@@ -30,6 +30,7 @@ from webkitpy.common.system import executive, filesystem
 from webkitpy.layout_tests.layout_package import json_results_generator
 
 #TODO(craigdh): pylib/utils/ should not depend on pylib/.
+from pylib import cmd_helper
 from pylib import constants
 
 
@@ -97,9 +98,7 @@ class JSONResultsGenerator(json_results_generator.JSONResultsGeneratorBase):
         in_directory: The directory where git is to be run.
       """
       command_line = ['git', 'log', '-1', '--pretty=format:%H']
-      output = subprocess.Popen(command_line,
-                                cwd=in_directory,
-                                stdout=subprocess.PIPE).communicate()[0]
+      output = cmd_helper.GetCmdOutput(command_line, cwd=in_directory)
       return output[0:40]
 
     in_directory = os.path.join(constants.CHROME_DIR, in_directory)
@@ -110,10 +109,7 @@ class JSONResultsGenerator(json_results_generator.JSONResultsGeneratorBase):
       else:
         return ''
 
-    # Note: Not thread safe: http://bugs.python.org/issue2320
-    output = subprocess.Popen(['svn', 'info', '--xml'],
-                              cwd=in_directory,
-                              stdout=subprocess.PIPE).communicate()[0]
+    output = cmd_helper.GetCmdOutput(['svn', 'info', '--xml'], cwd=in_directory)
     try:
       dom = xml.dom.minidom.parseString(output)
       return dom.getElementsByTagName('entry')[0].getAttribute('revision')

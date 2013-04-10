@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 
+from pylib import cmd_helper
 from pylib import constants
 
 
@@ -73,10 +74,7 @@ def _GetChromeClasses(release_version):
     version = 'Release'
   path = os.path.join(constants.CHROME_DIR, 'out', version)
   cmd = 'find %s -name "*.class"' % path
-  proc = subprocess.Popen(shlex.split(cmd),
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, err = proc.communicate()
-
+  out = cmd_helper.GetCmdOutput(shlex.split(cmd))
   if not out:
     print 'No classes found in %s' % path
   return out

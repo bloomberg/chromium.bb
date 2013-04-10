@@ -204,6 +204,7 @@ class AndroidCommands(object):
     self._device = device
     self._logcat = None
     self.logcat_process = None
+    self._logcat_tmpoutfile = None
     self._pushed_files = []
     self._device_utc_offset = self.RunShellCommand('date +%z')[0]
     self._md5sum_path = ''
@@ -955,8 +956,9 @@ class AndroidCommands(object):
       self._adb.SendCommand('logcat -c')
     logcat_command = 'adb %s logcat -v threadtime %s' % (self._adb._target_arg,
                                                          ' '.join(filters))
+    self._logcat_tmpoutfile = tempfile.TemporaryFile(bufsize=0)
     self.logcat_process = subprocess.Popen(logcat_command, shell=True,
-                                           stdout=subprocess.PIPE)
+                                           stdout=self._logcat_tmpoutfile)
 
   def StopRecordingLogcat(self):
     """Stops an existing logcat recording subprocess and returns output.
@@ -972,8 +974,11 @@ class AndroidCommands(object):
     # Otherwise the communicate may return incomplete output due to pipe break.
     if self.logcat_process.poll() is None:
       self.logcat_process.kill()
-    (output, _) = self.logcat_process.communicate()
+    self.logcat_process.wait()
     self.logcat_process = None
+    self._logcat_tmpoutfile.seek(0)
+    output = self._logcat_tmpoutfile.read()
+    self._logcat_tmpoutfile.close()
     return output
 
   def SearchLogcatRecord(self, record, message, thread_id=None, proc_id=None,

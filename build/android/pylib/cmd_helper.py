@@ -6,9 +6,18 @@
 
 import os
 import logging
+import signal
 import subprocess
+import tempfile
 
 import constants
+
+
+def _Call(args, stdout=None, stderr=None, shell=None, cwd=None):
+  return subprocess.call(
+      args=args, cwd=cwd, stdout=stdout, stderr=stderr,
+      shell=shell, close_fds=True,
+      preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 
 
 def RunCmd(args, cwd=None):
@@ -24,7 +33,7 @@ def RunCmd(args, cwd=None):
     Return code from the command execution.
   """
   logging.info(str(args) + ' ' + (cwd or ''))
-  return subprocess.call(args, cwd=cwd)
+  return _Call(args, cwd=cwd)
 
 
 def GetCmdOutput(args, cwd=None, shell=False):
@@ -59,12 +68,17 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     The tuple (exit code, output).
   """
   logging.info(str(args) + ' ' + (cwd or ''))
-  p = subprocess.Popen(args=args, cwd=cwd, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE, shell=shell)
-  stdout, stderr = p.communicate()
-  exit_code = p.returncode
+  tmpout = tempfile.TemporaryFile(bufsize=0)
+  tmperr = tempfile.TemporaryFile(bufsize=0)
+  exit_code = _Call(args, cwd=cwd, stdout=tmpout, stderr=tmperr, shell=shell)
+  tmperr.seek(0)
+  stderr = tmperr.read()
+  tmperr.close()
   if stderr:
     logging.critical(stderr)
+  tmpout.seek(0)
+  stdout = tmpout.read()
+  tmpout.close()
   logging.info(stdout[:4096])  # Truncate output longer than 4k.
   return (exit_code, stdout)
 
