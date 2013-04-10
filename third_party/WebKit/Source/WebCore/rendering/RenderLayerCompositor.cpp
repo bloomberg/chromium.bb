@@ -2040,7 +2040,7 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
         transformedClip.moveBy(scrollCorner.location());
         m_renderView->frameView()->paintScrollCorner(&context, transformedClip);
         context.restore();
-#if PLATFORM(CHROMIUM) && ENABLE(RUBBER_BANDING)
+#if ENABLE(RUBBER_BANDING)
     } else if (graphicsLayer == layerForOverhangAreas()) {
         ScrollView* view = m_renderView->frameView();
         view->calculateAndPaintOverhangAreas(&context, clip);
@@ -2138,10 +2138,6 @@ static bool shouldCompositeOverflowControls(FrameView* view)
                 return true;
     }
 
-#if !PLATFORM(CHROMIUM)
-    if (!view->hasOverlayScrollbars())
-        return false;
-#endif
     return true;
 }
 
@@ -2175,11 +2171,7 @@ bool RenderLayerCompositor::requiresOverhangAreasLayer() const
         return true;
 
     // Chromium always wants a layer.
-#if PLATFORM(CHROMIUM)
     return true;
-#endif
-
-    return false;
 }
 
 bool RenderLayerCompositor::requiresContentShadowLayer() const

@@ -2268,11 +2268,7 @@ RespectImageOrientationEnum RenderObject::shouldRespectImageOrientation() const
 {
     // Respect the image's orientation if it's being used as a full-page image or it's
     // an <img> and the setting to respect it everywhere is set.
-    return
-#if PLATFORM(CHROMIUM)
-        // This can only be enabled for ports which honor the orientation flag in their drawing code.
-        document()->isImageDocument() ||
-#endif
+    return document()->isImageDocument() ||
         (document()->settings() && document()->settings()->shouldRespectImageOrientation() && node() && node()->hasTagName(HTMLNames::imgTag)) ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
