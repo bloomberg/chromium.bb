@@ -1776,12 +1776,6 @@ webkit.org/b/71758 fast/url/idna2003.html [ Failure Pass ]
 # New testRunner function added at r57993
 crbug.com/42696 http/tests/xmlhttprequest/cross-origin-authorization-with-embedder.html [ Timeout ]
 
-# WebKit roll 58304:58400
-
-# These 5,000+ tests are already being run by the V8 team (and have no chromium expectations).
-# They should be moved to the JavaScriptCore test suite.
-crbug.com/42875 sputnik [ WontFix ]
-
 # WebKit roll 58791:58807
 crbug.com/43319 [ Linux Debug ] fast/forms/select-empty-option-height.html [ Pass Timeout ]
 
