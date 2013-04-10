@@ -1681,7 +1681,6 @@
             'loader/SinkDocument.cpp',
             'loader/SinkDocument.h',
             'loader/SubframeLoader.cpp',
-            'loader/SubresourceLoader.cpp',
             'loader/SubstituteData.cpp',
             'loader/SubstituteData.h',
             'loader/TextResourceDecoder.cpp',

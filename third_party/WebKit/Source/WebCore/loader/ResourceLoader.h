@@ -51,15 +51,12 @@ class ResourceHandle;
 
 class ResourceLoader : public RefCounted<ResourceLoader>, protected ResourceHandleClient {
 public:
+    static PassRefPtr<ResourceLoader> create(Frame*, CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
 
     void cancel();
     void cancel(const ResourceError&);
     void cancelIfNotFinishing();
-
-    virtual bool init(const ResourceRequest&);
-
-    void start();
 
     FrameLoader* frameLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
@@ -69,21 +66,17 @@ public:
     ResourceError cancelledError();
     ResourceError cannotShowURLError();
     
-    virtual void setDefersLoading(bool);
+    void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
 
     unsigned long identifier() const { return m_identifier; }
 
-    virtual void releaseResources();
+    void releaseResources();
 
     PassRefPtr<ResourceBuffer> resourceData();
     void clearResourceData();
 
-    virtual void didFinishLoading(double finishTime);
-    virtual void didFail(const ResourceError&);
     void didChangePriority(ResourceLoadPriority);
-
-    virtual bool shouldUseCredentialStorage();
 
     // ResourceHandleClient
     virtual void willSendRequest(ResourceHandle*, ResourceRequest&, const ResourceResponse& redirectResponse) OVERRIDE;
@@ -93,7 +86,7 @@ public:
     virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE;
     virtual void didFinishLoading(ResourceHandle*, double finishTime) OVERRIDE;
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
-    virtual bool shouldUseCredentialStorage(ResourceHandle*) OVERRIDE { return shouldUseCredentialStorage(); }
+    virtual bool shouldUseCredentialStorage(ResourceHandle*) OVERRIDE;
     virtual void didDownloadData(ResourceHandle*, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); } 
@@ -110,8 +103,11 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-protected:
+private:
     ResourceLoader(Frame*, CachedResource*, ResourceLoaderOptions);
+
+    bool init(const ResourceRequest&);
+    void start();
 
     void didFinishLoadingOnePart(double finishTime);
 

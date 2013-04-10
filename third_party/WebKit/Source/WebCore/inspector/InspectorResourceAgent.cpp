@@ -60,7 +60,6 @@
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptableDocumentParser.h"
-#include "SubresourceLoader.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
@@ -248,7 +247,7 @@ void InspectorResourceAgent::didReceiveResponse(unsigned long identifier, Docume
 
     CachedResource* cachedResource = 0;
     if (resourceLoader && !isNotModified)
-        cachedResource = static_cast<SubresourceLoader*>(resourceLoader)->cachedResource();
+        cachedResource = resourceLoader->cachedResource();
     if (!cachedResource)
         cachedResource = InspectorPageAgent::cachedResource(loader->frame(), response.url());
 

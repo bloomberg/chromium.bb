@@ -66,6 +66,15 @@ PassRefPtr<ResourceBuffer> ResourceLoader::resourceData()
     return m_resourceData;
 }
 
+PassRefPtr<ResourceLoader> ResourceLoader::create(Frame* frame, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+{
+    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(frame, resource, options)));
+    if (!loader->init(request))
+        return 0;
+    loader->start();
+    return loader.release();
+}
+
 ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceLoaderOptions options)
     : m_frame(frame)
     , m_documentLoader(frame->loader()->activeDocumentLoader())
@@ -84,11 +93,22 @@ ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceL
 
 ResourceLoader::~ResourceLoader()
 {
+    ASSERT(m_state != Initialized);
     ASSERT(m_reachedTerminalState);
 }
 
 void ResourceLoader::releaseResources()
 {
+    ASSERT(!reachedTerminalState());
+    if (m_state != Uninitialized) {
+        m_requestCountTracker.clear();
+        m_documentLoader->cachedResourceLoader()->loadDone(m_resource);
+        if (reachedTerminalState())
+            return;
+        m_resource->stopLoading();
+        m_documentLoader->removeResourceLoader(this);
+    }
+
     ASSERT(!m_reachedTerminalState);
     
     // It's possible that when we release the handle, it will be
@@ -149,8 +169,11 @@ bool ResourceLoader::init(const ResourceRequest& r)
         cancel();
         return false;
     }
+    ASSERT(!reachedTerminalState());
 
     m_originalRequest = m_request = clientRequest;
+    m_state = Initialized;
+    m_documentLoader->addResourceLoader(this);
     return true;
 }
 
@@ -231,17 +254,6 @@ void ResourceLoader::didDownloadData(ResourceHandle*, int length)
     m_resource->didDownloadData(length);
 }
 
-void ResourceLoader::didFinishLoading(double finishTime)
-{
-    didFinishLoadingOnePart(finishTime);
-
-    // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
-    // the resources a second time, they have been released by cancel.
-    if (m_cancelled)
-        return;
-    releaseResources();
-}
-
 void ResourceLoader::didFinishLoadingOnePart(double finishTime)
 {
     // If load has been cancelled after finishing (which could happen with a
@@ -255,28 +267,6 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime)
     m_notifiedLoadComplete = true;
     if (m_options.sendLoadCallbacks == SendCallbacks)
         frameLoader()->notifier()->didFinishLoad(this, finishTime);
-}
-
-void ResourceLoader::didFail(const ResourceError& error)
-{
-    if (m_cancelled)
-        return;
-    ASSERT(!m_reachedTerminalState);
-
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
-
-    if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
-        if (m_options.sendLoadCallbacks == SendCallbacks)
-            frameLoader()->notifier()->didFailToLoad(this, error);
-    }
-
-    releaseResources();
 }
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
@@ -535,17 +525,62 @@ void ResourceLoader::sendDataToResource(const char* data, int length)
 
 void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 {
-    didFinishLoading(finishTime);
+    if (m_state != Initialized)
+        return;
+    ASSERT(!reachedTerminalState());
+    ASSERT(!m_resource->resourceToRevalidate());
+    ASSERT(!m_resource->errorOccurred());
+    LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
+
+    RefPtr<ResourceLoader> protect(this);
+    CachedResourceHandle<CachedResource> protectResource(m_resource);
+    m_state = Finishing;
+    m_resource->setLoadFinishTime(finishTime);
+    m_resource->data(resourceData(), true);
+    m_resource->finish();
+    didFinishLoadingOnePart(finishTime);
+
+    // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
+    // the resources a second time, they have been released by cancel.
+    if (m_cancelled)
+        return;
+    releaseResources();
 }
 
 void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
-    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error))
+    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error) || m_state != Initialized)
         return;
-    didFail(error);
+    ASSERT(!reachedTerminalState());
+    LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
+
+    RefPtr<ResourceLoader> protect(this);
+    CachedResourceHandle<CachedResource> protectResource(m_resource);
+    m_state = Finishing;
+    if (m_resource->resourceToRevalidate())
+        memoryCache()->revalidationFailed(m_resource);
+    m_resource->setResourceError(error);
+    m_resource->error(CachedResource::LoadError);
+    if (!m_resource->isPreloaded())
+        memoryCache()->remove(m_resource);
+
+    if (m_cancelled)
+        return;
+    ASSERT(!m_reachedTerminalState);
+
+    if (FormData* data = m_request.httpBody())
+        data->removeGeneratedFilesIfNeeded();
+
+    if (!m_notifiedLoadComplete) {
+        m_notifiedLoadComplete = true;
+        if (m_options.sendLoadCallbacks == SendCallbacks)
+            frameLoader()->notifier()->didFailToLoad(this, error);
+    }
+
+    releaseResources();
 }
 
-bool ResourceLoader::shouldUseCredentialStorage()
+bool ResourceLoader::shouldUseCredentialStorage(ResourceHandle*)
 {
     if (m_options.allowCredentials == DoNotAllowStoredCredentials)
         return false;

@@ -36,8 +36,8 @@
 #include "Page.h"
 #include "RenderObject.h"
 #include "ResourceBuffer.h"
+#include "ResourceLoader.h"
 #include "Settings.h"
-#include "SubresourceLoader.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryObjectInfo.h>
