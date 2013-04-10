@@ -78,12 +78,12 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context,
       base::PlatformFileError* error_code) const OVERRIDE;
-  virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
+  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const fileapi::FileSystemURL& path,
       int64 offset,
       const base::Time& expected_modification_time,
       fileapi::FileSystemContext* context) const OVERRIDE;
-  virtual fileapi::FileStreamWriter* CreateFileStreamWriter(
+  virtual scoped_ptr<fileapi::FileStreamWriter> CreateFileStreamWriter(
       const fileapi::FileSystemURL& url,
       int64 offset,
       fileapi::FileSystemContext* context) const OVERRIDE;

@@ -8,8 +8,10 @@
 #include "base/stl_util.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/blob/file_stream_reader.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"
 #include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -291,29 +293,30 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
   return operation;
 }
 
-webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(
+scoped_ptr<webkit_blob::FileStreamReader>
+FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
-    return NULL;
+    return scoped_ptr<webkit_blob::FileStreamReader>();
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(url.type());
   if (!mount_point_provider)
-    return NULL;
+    return scoped_ptr<webkit_blob::FileStreamReader>();
   return mount_point_provider->CreateFileStreamReader(
       url, offset, expected_modification_time, this);
 }
 
-FileStreamWriter* FileSystemContext::CreateFileStreamWriter(
+scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset) {
   if (!url.is_valid())
-    return NULL;
+    return scoped_ptr<FileStreamWriter>();
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(url.type());
   if (!mount_point_provider)
-    return NULL;
+    return scoped_ptr<FileStreamWriter>();
   return mount_point_provider->CreateFileStreamWriter(url, offset, this);
 }
 

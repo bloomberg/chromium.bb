@@ -279,7 +279,8 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
                                                operation_context.Pass());
 }
 
-webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
+scoped_ptr<webkit_blob::FileStreamReader>
+CrosMountPointProvider::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -287,11 +288,13 @@ webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
   // For now we return a generic Reader implementation which utilizes
   // CreateSnapshotFile internally (i.e. will download everything first).
   // TODO(satorux,zel): implement more efficient reader for remote cases.
-  return new fileapi::FileSystemFileStreamReader(
-      context, url, offset, expected_modification_time);
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new fileapi::FileSystemFileStreamReader(
+          context, url, offset, expected_modification_time));
 }
 
-fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
+scoped_ptr<fileapi::FileStreamWriter>
+CrosMountPointProvider::CreateFileStreamWriter(
     const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
@@ -301,15 +304,17 @@ fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
     fileapi::RemoteFileSystemProxyInterface* remote_proxy =
         GetRemoteProxy(url.filesystem_id());
     if (!remote_proxy)
-      return NULL;
-    return new fileapi::RemoteFileStreamWriter(remote_proxy, url, offset);
+      return scoped_ptr<fileapi::FileStreamWriter>();
+    return scoped_ptr<fileapi::FileStreamWriter>(
+        new fileapi::RemoteFileStreamWriter(remote_proxy, url, offset));
   }
 
   if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal)
-    return NULL;
+    return scoped_ptr<fileapi::FileStreamWriter>();
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
-  return new fileapi::LocalFileStreamWriter(url.path(), offset);
+  return scoped_ptr<fileapi::FileStreamWriter>(
+      new fileapi::LocalFileStreamWriter(url.path(), offset));
 }
 
 bool CrosMountPointProvider::GetVirtualPath(

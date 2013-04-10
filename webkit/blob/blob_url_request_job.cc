@@ -595,7 +595,7 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
       reader = file_system_context_->CreateFileStreamReader(
           fileapi::FileSystemURL(file_system_context_->CrackURL(item.url())),
           item.offset() + additional_offset,
-          item.expected_modification_time());
+          item.expected_modification_time()).release();
       break;
     default:
       NOTREACHED();

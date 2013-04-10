@@ -181,22 +181,24 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 
-webkit_blob::FileStreamReader*
+scoped_ptr<webkit_blob::FileStreamReader>
 IsolatedMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return new webkit_blob::LocalFileStreamReader(
-      context->task_runners()->file_task_runner(),
-      url.path(), offset, expected_modification_time);
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new webkit_blob::LocalFileStreamReader(
+          context->task_runners()->file_task_runner(),
+          url.path(), offset, expected_modification_time));
 }
 
-FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
+scoped_ptr<FileStreamWriter> IsolatedMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return new LocalFileStreamWriter(url.path(), offset);
+  return scoped_ptr<FileStreamWriter>(
+      new LocalFileStreamWriter(url.path(), offset));
 }
 
 FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {

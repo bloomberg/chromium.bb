@@ -104,10 +104,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   // file's actual modification time to see if the file has been modified, and
   // if it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
-  // The returned object must be owned and managed by the caller.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
-  virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
+  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -115,10 +114,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
 
   // Creates a new file stream writer for a given filesystem URL |url| with an
   // offset |offset|.
-  // The returned object must be owned and managed by the caller.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
-  virtual FileStreamWriter* CreateFileStreamWriter(
+  virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
       int64 offset,
       FileSystemContext* context) const = 0;

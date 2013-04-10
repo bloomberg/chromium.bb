@@ -39,11 +39,11 @@ int UploadFileSystemFileElementReader::Init(
   position_ = 0;
 
   // Initialize the stream reader and the length.
-  stream_reader_.reset(
+  stream_reader_ =
       file_system_context_->CreateFileStreamReader(
           file_system_context_->CrackURL(url_),
           range_offset_,
-          expected_modification_time_));
+          expected_modification_time_);
   DCHECK(stream_reader_);
 
   const int64 result = stream_reader_->GetLength(

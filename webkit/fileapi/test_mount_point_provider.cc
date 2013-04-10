@@ -140,20 +140,24 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 
-webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(
+scoped_ptr<webkit_blob::FileStreamReader>
+TestMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return new FileSystemFileStreamReader(
-      context, url, offset, expected_modification_time);
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new FileSystemFileStreamReader(
+          context, url, offset, expected_modification_time));
 }
 
-fileapi::FileStreamWriter* TestMountPointProvider::CreateFileStreamWriter(
+scoped_ptr<fileapi::FileStreamWriter>
+TestMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return new SandboxFileStreamWriter(context, url, offset, observers_);
+  return scoped_ptr<fileapi::FileStreamWriter>(
+      new SandboxFileStreamWriter(context, url, offset, observers_));
 }
 
 FileSystemQuotaUtil* TestMountPointProvider::GetQuotaUtil() {

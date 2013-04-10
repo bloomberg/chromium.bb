@@ -332,22 +332,24 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 
-webkit_blob::FileStreamReader*
+scoped_ptr<webkit_blob::FileStreamReader>
 SandboxMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return new FileSystemFileStreamReader(
-      context, url, offset, expected_modification_time);
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new FileSystemFileStreamReader(
+          context, url, offset, expected_modification_time));
 }
 
-fileapi::FileStreamWriter* SandboxMountPointProvider::CreateFileStreamWriter(
+scoped_ptr<fileapi::FileStreamWriter>
+SandboxMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return new SandboxFileStreamWriter(
-      context, url, offset, update_observers_);
+  return scoped_ptr<fileapi::FileStreamWriter>(
+      new SandboxFileStreamWriter(context, url, offset, update_observers_));
 }
 
 FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {

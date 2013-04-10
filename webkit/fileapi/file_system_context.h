@@ -181,14 +181,14 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // MountPointProvider for the URL and call the provider's CreateFileReader.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  webkit_blob::FileStreamReader* CreateFileStreamReader(
+  scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time);
 
   // Creates new FileStreamWriter instance to write into a file pointed by
   // |url| from |offset|.
-  FileStreamWriter* CreateFileStreamWriter(
+  scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
       int64 offset);
 
