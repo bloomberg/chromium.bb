@@ -194,7 +194,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_compositedLayerCount(0)
     , m_showDebugBorders(false)
     , m_showRepaintCounter(false)
-    , m_acceleratedDrawingEnabled(false)
     , m_compositingConsultsOverlap(true)
     , m_reevaluateCompositingAfterLayout(false)
     , m_compositing(false)
@@ -237,7 +236,6 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     bool showDebugBorders = false;
     bool showRepaintCounter = false;
     bool forceCompositingMode = false;
-    bool acceleratedDrawingEnabled = false;
 
     if (Settings* settings = m_renderView->document()->settings()) {
         hasAcceleratedCompositing = settings->acceleratedCompositingEnabled();
@@ -258,8 +256,6 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
 
         if (forceCompositingMode && !isMainFrame())
             forceCompositingMode = requiresCompositingForScrollableFrame();
-
-        acceleratedDrawingEnabled = settings->acceleratedDrawingEnabled();
     }
 
     if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || showDebugBorders != m_showDebugBorders || showRepaintCounter != m_showRepaintCounter || forceCompositingMode != m_forceCompositingMode)
@@ -270,7 +266,6 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     m_showDebugBorders = showDebugBorders;
     m_showRepaintCounter = showRepaintCounter;
     m_forceCompositingMode = forceCompositingMode;
-    m_acceleratedDrawingEnabled = acceleratedDrawingEnabled;
     
     if (debugBordersChanged) {
         if (m_layerForHorizontalScrollbar)

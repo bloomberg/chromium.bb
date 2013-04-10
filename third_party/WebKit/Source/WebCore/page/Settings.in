@@ -73,7 +73,6 @@ offlineWebApplicationCacheEnabled initial=false
 enforceCSSMIMETypeInNoQuirksMode initial=true
 usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
-acceleratedDrawingEnabled initial=false
 acceleratedFiltersEnabled initial=false
 regionBasedColumnsEnabled initial=false
 cssGridLayoutEnabled initial=false

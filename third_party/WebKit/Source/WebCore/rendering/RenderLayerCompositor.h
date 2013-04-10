@@ -220,7 +220,6 @@ public:
     virtual void didCommitChangesForLayer(const GraphicsLayer*) const OVERRIDE;
 
     bool keepLayersPixelAligned() const;
-    bool acceleratedDrawingEnabled() const { return m_acceleratedDrawingEnabled; }
 
     void deviceOrPageScaleFactorChanged();
 
@@ -358,7 +357,6 @@ private:
     int m_compositedLayerCount;
     bool m_showDebugBorders;
     bool m_showRepaintCounter;
-    bool m_acceleratedDrawingEnabled;
     bool m_compositingConsultsOverlap;
 
     // When true, we have to wait until layout has happened before we can decide whether to enter compositing mode,
