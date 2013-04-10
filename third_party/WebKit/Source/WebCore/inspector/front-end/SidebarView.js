@@ -120,9 +120,10 @@ WebInspector.SidebarView.prototype = {
      */
     applyConstraints: function(size)
     {
-        var minSidebarSize = this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight;
+        var from = this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight;
         var minMainSizePercent = this.isVertical() ? this._minimumMainWidthPercent : this._minimumMainHeightPercent;
-        return Number.constrain(size, minSidebarSize, this.totalSize() * (100 - minMainSizePercent) / 100);
+        var to = this.totalSize() * (100 - minMainSizePercent) / 100;
+        return from > to ? -1 : Number.constrain(size, from, to);
     },
 
     hideMainElement: function()

@@ -249,6 +249,11 @@ WebInspector.SplitView.prototype = {
             return;
 
         size = this.applyConstraints(size);
+        if (size < 0) {
+            // Never apply bad values, fix it upon onResize instead.
+            this._sidebarSize = size;
+            return;
+        }
         this._innerSetSidebarSize(size);
         this._saveSidebarSize(size);
     },
@@ -335,7 +340,7 @@ WebInspector.SplitView.prototype = {
         size = Math.max(size, minSize);
         if (this._totalSize - size < minSize)
             size = this._totalSize - minSize;
-        return size;
+        return size < minSize ? -1 : size;
     },
 
     wasShown: function()
@@ -345,7 +350,10 @@ WebInspector.SplitView.prototype = {
 
     onResize: function()
     {
-        this._updateTotalSize();
+        if (this._sidebarSize < 0)
+            this._updateLayout();
+        else
+            this._updateTotalSize();
     },
 
     /**
