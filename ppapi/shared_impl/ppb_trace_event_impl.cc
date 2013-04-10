@@ -43,7 +43,7 @@ void TraceEventImpl::AddTraceEvent(int8_t phase,
       // an unsigned long int, but trace_event internals are hermetic and
       // accepts an |unsigned long long*|.  The pointer types are compatible but
       // the compiler throws an error without an explicit cast.
-      reinterpret_cast<const unsigned long long*>(arg_values), flags);
+      reinterpret_cast<const unsigned long long*>(arg_values), NULL, flags);
 }
 
 // static
