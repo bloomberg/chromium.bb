@@ -28,7 +28,7 @@
 [
     Constructor(DOMString scriptUrl),
     CallWith=ScriptExecutionContext,
-    ConstructorRaisesException
+    RaisesException
 ] interface Worker : AbstractWorker {
 
     attribute EventListener onmessage;

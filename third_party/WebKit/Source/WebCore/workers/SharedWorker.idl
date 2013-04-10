@@ -33,7 +33,7 @@
     Conditional=SHARED_WORKERS,
     Constructor(DOMString scriptURL, [Optional=DefaultIsNullString] DOMString name),
     CallWith=ScriptExecutionContext,
-    ConstructorRaisesException
+    RaisesException
 ] interface SharedWorker : AbstractWorker {
     readonly attribute MessagePort port;
 };

@@ -33,7 +33,7 @@
     ActiveDOMObject,
     Constructor(DOMString url, [Optional] Dictionary eventSourceInit),
     CallWith=ScriptExecutionContext,
-    ConstructorRaisesException,
+    RaisesException,
     EventTarget
 ] interface EventSource {
 

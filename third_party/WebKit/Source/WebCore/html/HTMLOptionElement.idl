@@ -20,7 +20,7 @@
 
 [
     NamedConstructor=Option([Optional=DefaultIsNullString] DOMString data, [Optional=DefaultIsNullString] DOMString value, [Optional=DefaultIsUndefined] boolean defaultSelected, [Optional=DefaultIsUndefined] boolean selected),
-    ConstructorRaisesException
+    RaisesException
 ] interface HTMLOptionElement : HTMLElement {
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;

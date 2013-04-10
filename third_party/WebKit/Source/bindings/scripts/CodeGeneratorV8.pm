@@ -2059,7 +2059,7 @@ sub GenerateSingleConstructorCallback
     }
 
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         $raisesExceptions = 1;
     }
     if (!$raisesExceptions) {
@@ -2100,7 +2100,7 @@ END
 END
     }
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         push(@afterArgumentList, "ec");
     }
 
@@ -2121,7 +2121,7 @@ END
     push(@implContentInternals, "    RefPtr<${interfaceName}> impl = ${interfaceName}::create(${argumentString});\n");
     push(@implContentInternals, "    v8::Handle<v8::Object> wrapper = args.Holder();\n");
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         push(@implContentInternals, "    if (ec)\n");
         push(@implContentInternals, "        goto fail;\n");
     }
@@ -2256,7 +2256,7 @@ sub GenerateNamedConstructor
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         $raisesExceptions = 1;
     }
     if (!$raisesExceptions) {
@@ -2314,7 +2314,7 @@ END
 
     push(@beforeArgumentList, "document");
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         push(@afterArgumentList, "ec");
     }
 
@@ -2335,7 +2335,7 @@ END
     push(@implContent, "    RefPtr<${interfaceName}> impl = ${interfaceName}::createForJSConstructor(${argumentString});\n");
     push(@implContent, "    v8::Handle<v8::Object> wrapper = args.Holder();\n");
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($interface->extendedAttributes->{"RaisesException"}) {
         push(@implContent, "    if (ec)\n");
         push(@implContent, "        goto fail;\n");
     }

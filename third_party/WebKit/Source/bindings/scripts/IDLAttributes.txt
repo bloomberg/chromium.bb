@@ -30,7 +30,7 @@ Conditional=*
 Constructor
 ConstructorConditional=*
 ConstructorParameters=*
-ConstructorRaisesException
+RaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomCall
