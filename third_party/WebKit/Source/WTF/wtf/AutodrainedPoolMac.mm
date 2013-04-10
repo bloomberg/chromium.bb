@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,41 +26,32 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AutodrainedPool_h
-#define AutodrainedPool_h
+#import "config.h"
+#import "AutodrainedPool.h"
 
-#include <wtf/Noncopyable.h>
-
-OBJC_CLASS NSAutoreleasePool;
+#import <Foundation/Foundation.h>
 
 namespace WTF {
 
-class AutodrainedPool {
-    WTF_MAKE_NONCOPYABLE(AutodrainedPool);
-public:
-    WTF_EXPORT_PRIVATE explicit AutodrainedPool(int iterationLimit = 1);
-    WTF_EXPORT_PRIVATE ~AutodrainedPool();
-    
-    WTF_EXPORT_PRIVATE void cycle();
-    
-private:
-#if OS(DARWIN)
-    int m_iterationLimit;
-    int m_iterationCount;
-    NSAutoreleasePool* m_pool;
-#endif
-};
+AutodrainedPool::AutodrainedPool(int iterationLimit)
+    : m_iterationLimit(iterationLimit)
+    , m_iterationCount(0)
+    , m_pool([[NSAutoreleasePool alloc] init])
+{
+}
 
-#if !OS(DARWIN)
-inline AutodrainedPool::AutodrainedPool(int) { }
-inline AutodrainedPool::~AutodrainedPool() { }
-inline void AutodrainedPool::cycle() { }
-#endif
+AutodrainedPool::~AutodrainedPool()
+{
+    [m_pool drain];
+}
+
+void AutodrainedPool::cycle()
+{
+    if (++m_iterationCount == m_iterationLimit) {
+        [m_pool drain];
+        m_pool = [[NSAutoreleasePool alloc] init];
+        m_iterationCount = 0;
+    }
+}
 
 } // namespace WTF
-
-using WTF::AutodrainedPool;
-
-#endif
-
-
