@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFilter.h"
 
 namespace WebCore {
@@ -57,4 +57,4 @@ PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

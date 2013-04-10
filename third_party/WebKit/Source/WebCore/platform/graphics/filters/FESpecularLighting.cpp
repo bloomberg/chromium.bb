@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FESpecularLighting.h"
 
 #include "LightSource.h"
@@ -153,3 +154,5 @@ TextStream& FESpecularLighting::externalRepresentation(TextStream& ts, int inden
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

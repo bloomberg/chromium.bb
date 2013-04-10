@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEConvolveMatrix.h"
 
 #include "SkMatrixConvolutionImageFilter.h"
@@ -69,3 +70,5 @@ SkImageFilter* FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* build
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

@@ -180,6 +180,10 @@
 #define ENABLE_FAST_MOBILE_SCROLLING 0
 #endif
 
+#if !defined(ENABLE_FILTERS)
+#define ENABLE_FILTERS 0
+#endif
+
 #if !defined(ENABLE_FONT_LOAD_EVENTS)
 #define ENABLE_FONT_LOAD_EVENTS 0
 #endif

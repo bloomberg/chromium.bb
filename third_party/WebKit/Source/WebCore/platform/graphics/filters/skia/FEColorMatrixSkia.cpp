@@ -24,6 +24,7 @@
  */
 
 #include "config.h"
+#if ENABLE(FILTERS) && USE(SKIA)
 #include "FEColorMatrix.h"
 
 #include "NativeImageSkia.h"
@@ -141,3 +142,6 @@ SkImageFilter* FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS) && USE(SKIA)
+

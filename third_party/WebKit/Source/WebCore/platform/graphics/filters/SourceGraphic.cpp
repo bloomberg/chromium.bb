@@ -19,6 +19,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "SourceGraphic.h"
 
 #include "Filter.h"
@@ -71,3 +72,5 @@ TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) co
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

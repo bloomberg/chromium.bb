@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFETileElement.h"
 
 #include "Attribute.h"

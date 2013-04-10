@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFELightElement.h"
 
 #include "Attribute.h"

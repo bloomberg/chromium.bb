@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG&FILTERS,
     DoNotCheckConstants
 ] interface SVGFEMorphologyElement : SVGStyledElement,
                            SVGFilterPrimitiveStandardAttributes {

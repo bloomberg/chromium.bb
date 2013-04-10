@@ -21,7 +21,7 @@
 #ifndef SVGFECompositeElement_h
 #define SVGFECompositeElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEComposite.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"

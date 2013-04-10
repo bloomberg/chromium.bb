@@ -21,7 +21,7 @@
 #ifndef SVGFETileElement_h
 #define SVGFETileElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FETile.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 

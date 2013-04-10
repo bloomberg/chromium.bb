@@ -20,7 +20,7 @@
 #ifndef SVGFilter_h
 #define SVGFilter_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "AffineTransform.h"
 #include "Filter.h"
 #include "FilterEffect.h"
@@ -62,6 +62,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif // SVGFilter_h

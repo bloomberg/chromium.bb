@@ -20,7 +20,7 @@
 #ifndef SVGFEDropShadowElement_h
 #define SVGFEDropShadowElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEDropShadow.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"

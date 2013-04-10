@@ -22,6 +22,7 @@
 #ifndef FEBlend_h
 #define FEBlend_h
 
+#if ENABLE(FILTERS)
 #include "FilterEffect.h"
 
 #include "Filter.h"
@@ -63,5 +64,7 @@ private:
 };
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)
 
 #endif // FEBlend_h

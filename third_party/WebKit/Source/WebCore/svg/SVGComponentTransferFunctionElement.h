@@ -21,7 +21,7 @@
 #ifndef SVGComponentTransferFunctionElement_h
 #define SVGComponentTransferFunctionElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEComponentTransfer.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"
@@ -95,5 +95,5 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 #endif

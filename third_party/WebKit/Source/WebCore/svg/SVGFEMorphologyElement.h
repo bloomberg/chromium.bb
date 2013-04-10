@@ -20,7 +20,7 @@
 #ifndef SVGFEMorphologyElement_h
 #define SVGFEMorphologyElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEMorphology.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"

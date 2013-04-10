@@ -19,6 +19,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEDropShadow.h"
 
 #include "ColorSpace.h"
@@ -133,3 +134,5 @@ TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) con
 }
     
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

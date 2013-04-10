@@ -25,7 +25,7 @@
  */
 
 [
-    Conditional=SVG
+    Conditional=SVG&FILTERS
 ] interface SVGFilterElement : SVGStyledElement,
                                                SVGURIReference,
                                                SVGLangSpace,

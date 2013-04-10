@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FETurbulence.h"
 
 #include "Filter.h"
@@ -435,3 +436,5 @@ TextStream& FETurbulence::externalRepresentation(TextStream& ts, int indent) con
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

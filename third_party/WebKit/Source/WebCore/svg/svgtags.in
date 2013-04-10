@@ -23,6 +23,7 @@ cursor
 defs
 desc
 ellipse
+#if ENABLE_FILTERS
 feBlend
 feColorMatrix
 feComponentTransfer
@@ -49,6 +50,7 @@ feSpotLight
 feTile
 feTurbulence
 filter
+#endif
 #if ENABLE_SVG_FONTS
 font
 font_face

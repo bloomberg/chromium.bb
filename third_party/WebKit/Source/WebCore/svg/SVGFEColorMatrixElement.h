@@ -21,7 +21,7 @@
 #ifndef SVGFEColorMatrixElement_h
 #define SVGFEColorMatrixElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEColorMatrix.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumberList.h"

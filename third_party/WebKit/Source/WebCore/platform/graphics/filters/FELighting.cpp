@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FELighting.h"
 
 #include "FELightingNEON.h"
@@ -407,3 +408,5 @@ void FELighting::platformApplySoftware()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

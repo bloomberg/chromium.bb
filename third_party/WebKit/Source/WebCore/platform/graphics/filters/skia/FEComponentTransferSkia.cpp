@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEComponentTransfer.h"
 
 #include "NativeImageSkia.h"
@@ -70,3 +71,5 @@ SkImageFilter* FEComponentTransfer::createImageFilter(SkiaImageFilterBuilder* bu
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

@@ -21,7 +21,7 @@
 #ifndef SVGFEBlendElement_h
 #define SVGFEBlendElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEBlend.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"

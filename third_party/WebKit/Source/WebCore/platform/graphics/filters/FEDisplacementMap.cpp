@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEDisplacementMap.h"
 
 #include "Filter.h"
@@ -190,3 +191,5 @@ TextStream& FEDisplacementMap::externalRepresentation(TextStream& ts, int indent
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

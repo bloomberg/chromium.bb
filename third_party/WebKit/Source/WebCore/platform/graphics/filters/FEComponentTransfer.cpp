@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEComponentTransfer.h"
 
 #include "Filter.h"
@@ -246,3 +247,5 @@ TextStream& FEComponentTransfer::externalRepresentation(TextStream& ts, int inde
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

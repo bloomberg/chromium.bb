@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG
+    Conditional=SVG&FILTERS
 ] interface SVGFEMergeElement : SVGStyledElement,
                            SVGFilterPrimitiveStandardAttributes {
 };

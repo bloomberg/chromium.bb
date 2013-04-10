@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEOffset.h"
 
 #include "Filter.h"
@@ -107,3 +108,5 @@ TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

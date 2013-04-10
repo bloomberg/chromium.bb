@@ -20,7 +20,7 @@
 #ifndef SVGFEPointLightElement_h
 #define SVGFEPointLightElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFELightElement.h"
 
 namespace WebCore {

@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#if ENABLE(FILTERS)
 #include "FEComposite.h"
 
 #include "FECompositeArithmeticNEON.h"
@@ -363,3 +364,5 @@ TextStream& FEComposite::externalRepresentation(TextStream& ts, int indent) cons
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(FILTERS)

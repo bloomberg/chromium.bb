@@ -23,7 +23,7 @@
 #ifndef SVGFilterElement_h
 #define SVGFilterElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedInteger.h"

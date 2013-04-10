@@ -21,7 +21,7 @@
 #ifndef SVGFETurbulenceElement_h
 #define SVGFETurbulenceElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FETurbulence.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedInteger.h"

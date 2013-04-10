@@ -21,7 +21,7 @@
 #ifndef SVGFEGaussianBlurElement_h
 #define SVGFEGaussianBlurElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEGaussianBlur.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"

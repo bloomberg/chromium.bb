@@ -20,7 +20,7 @@
 #ifndef SVGFEDisplacementMapElement_h
 #define SVGFEDisplacementMapElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEDisplacementMap.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"

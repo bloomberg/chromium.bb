@@ -21,7 +21,7 @@
 #ifndef SVGFEMergeNodeElement_h
 #define SVGFEMergeNodeElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGAnimatedString.h"
 #include "SVGElement.h"
 

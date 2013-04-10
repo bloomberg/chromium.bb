@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFESpotLightElement.h"
 #include "SVGNames.h"
 

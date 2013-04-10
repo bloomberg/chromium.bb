@@ -20,7 +20,7 @@
 #ifndef SVGFEConvolveMatrixElement_h
 #define SVGFEConvolveMatrixElement_h
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FEConvolveMatrix.h"
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedEnumeration.h"

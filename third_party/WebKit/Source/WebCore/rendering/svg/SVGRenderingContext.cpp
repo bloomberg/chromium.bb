@@ -58,12 +58,14 @@ SVGRenderingContext::~SVGRenderingContext()
 
     ASSERT(m_object && m_paintInfo);
 
+#if ENABLE(FILTERS)
     if (m_renderingFlags & EndFilterLayer) {
         ASSERT(m_filter);
         m_filter->postApplyResource(m_object, m_paintInfo->context, ApplyToDefaultMode, 0, 0);
         m_paintInfo->context = m_savedContext;
         m_paintInfo->rect = m_savedPaintRect;
     }
+#endif
 
     if (m_renderingFlags & EndOpacityLayer)
         m_paintInfo->context->endTransparencyLayer();
@@ -87,7 +89,9 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     m_object = object;
     m_paintInfo = &paintInfo;
+#if ENABLE(FILTERS)
     m_filter = 0;
+#endif
 
     // We need to save / restore the context even if the initialization failed.
     if (needsGraphicsContextSave == SaveGraphicsContext) {
@@ -130,9 +134,10 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
     if (!resources) {
+#if ENABLE(FILTERS)
         if (svgStyle->hasFilter())
             return;
-
+#endif
         m_renderingFlags |= RenderingPrepared;
         return;
     }
@@ -150,6 +155,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             return;
     }
 
+#if ENABLE(FILTERS)
     if (!isRenderingMask) {
         m_filter = resources->filter();
         if (m_filter) {
@@ -168,6 +174,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             m_paintInfo->rect = IntRect(m_filter->drawingRegion(m_object));
         }
     }
+#endif
 
     m_renderingFlags |= RenderingPrepared;
 }

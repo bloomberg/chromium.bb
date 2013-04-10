@@ -37,7 +37,6 @@
 #include "RenderSVGContainer.h"
 #include "RenderSVGResource.h"
 #include "RenderSVGResourceContainer.h"
-#include "RenderSVGResourceFilter.h"
 #include "RenderView.h"
 #include "SVGLength.h"
 #include "SVGRenderingContext.h"
@@ -47,6 +46,10 @@
 #include "SVGStyledElement.h"
 #include "SVGViewSpec.h"
 #include "TransformState.h"
+
+#if ENABLE(FILTERS)
+#include "RenderSVGResourceFilter.h"
+#endif
 
 using namespace std;
 

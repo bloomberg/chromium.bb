@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#if ENABLE(SVG)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFilterPrimitiveStandardAttributes.h"
 
 #include "Attribute.h"
