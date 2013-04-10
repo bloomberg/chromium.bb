@@ -844,28 +844,6 @@ bool FrameView::hasCompositedContent() const
     return false;
 }
 
-bool FrameView::hasCompositingAncestor() const
-{
-    for (Frame* frame = m_frame->tree()->parent(); frame; frame = frame->tree()->parent()) {
-        if (FrameView* view = frame->view()) {
-            if (view->hasCompositedContent())
-                return true;
-        }
-    }
-
-    return false;
-}
-
-// Sometimes (for plug-ins) we need to eagerly go into compositing mode.
-void FrameView::enterCompositingMode()
-{
-    if (RenderView* renderView = this->renderView()) {
-        renderView->compositor()->enableCompositingMode();
-        if (!needsLayout())
-            renderView->compositor()->scheduleCompositingLayerUpdate();
-    }
-}
-
 bool FrameView::isEnclosedInCompositingLayer() const
 {
     RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();

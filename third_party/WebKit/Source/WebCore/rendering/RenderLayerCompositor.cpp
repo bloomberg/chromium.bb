@@ -186,7 +186,6 @@ static inline bool compositingLogEnabled()
 
 RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     : m_renderView(renderView)
-    , m_updateCompositingLayersTimer(this, &RenderLayerCompositor::updateCompositingLayersTimerFired)
     , m_hasAcceleratedCompositing(true)
     , m_compositingTriggers(static_cast<ChromeClient::CompositingTriggerFlags>(ChromeClient::AllTriggers))
     , m_compositedLayerCount(0)
@@ -305,17 +304,6 @@ void RenderLayerCompositor::didChangeVisibleRect()
     }
 }
 
-void RenderLayerCompositor::scheduleCompositingLayerUpdate()
-{
-    if (!m_updateCompositingLayersTimer.isActive())
-        m_updateCompositingLayersTimer.startOneShot(0);
-}
-
-void RenderLayerCompositor::updateCompositingLayersTimerFired(Timer<RenderLayerCompositor>*)
-{
-    updateCompositingLayers(CompositingUpdateAfterLayout);
-}
-
 bool RenderLayerCompositor::hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const
 {
     return m_compositedLayerCount > (rootLayer->isComposited() ? 1 : 0);
@@ -323,8 +311,6 @@ bool RenderLayerCompositor::hasAnyAdditionalCompositedLayers(const RenderLayer* 
 
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
 {
-    m_updateCompositingLayersTimer.stop();
-    
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
         return;
@@ -2786,7 +2772,6 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
     info.addWeakPointer(m_renderView);
     info.addMember(m_rootContentLayer, "rootContentLayer");
-    info.addMember(m_updateCompositingLayersTimer, "updateCompositingLayersTimer");
     info.addMember(m_clipLayer, "clipLayer");
     info.addMember(m_scrollLayer, "scrollLayer");
     info.addMember(m_viewportConstrainedLayers, "viewportConstrainedLayers");

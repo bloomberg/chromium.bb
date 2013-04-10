@@ -119,8 +119,6 @@ public:
     void updateCompositingLayersAfterLayout();
 
     bool hasCompositedContent() const;
-    bool hasCompositingAncestor() const;
-    void enterCompositingMode();
     bool isEnclosedInCompositingLayer() const;
 
     // Returns true when a paint with the PaintBehaviorFlattenCompositingLayers flag set gives
