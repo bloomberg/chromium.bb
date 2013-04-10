@@ -83,6 +83,9 @@ void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   frame_ = provider_client_impl_->AcquireLockAndCurrentFrame();
 
   if (!frame_) {
+    // Drop any resources used by the updater if there is no frame to display.
+    updater_.reset();
+
     provider_client_impl_->ReleaseLock();
     return;
   }
