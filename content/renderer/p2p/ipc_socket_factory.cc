@@ -16,8 +16,8 @@ namespace content {
 
 namespace {
 
-// TODO(sergeyu): Try adjusting these parameters to achieve optimal performance.
-const int kMaxPendingPackets = 8;
+// TODO(hclam): This shouldn't be a pre-defined value. Bug: crbug.com/181321.
+const int kMaxPendingPackets = 32;
 const int kWritableSignalThreshold = 0;
 
 // IpcPacketSocket implements talk_base::AsyncPacketSocket interface
