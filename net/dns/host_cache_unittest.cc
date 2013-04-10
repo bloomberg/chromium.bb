@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/host_cache.h"
+#include "net/dns/host_cache.h"
 
 #include "base/format_macros.h"
 #include "base/stl_util.h"

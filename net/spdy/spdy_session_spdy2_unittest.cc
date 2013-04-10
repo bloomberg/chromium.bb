@@ -4,11 +4,11 @@
 
 #include "net/spdy/spdy_session.h"
 
-#include "net/base/host_cache.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
+#include "net/dns/host_cache.h"
 #include "net/spdy/spdy_io_buffer.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"

@@ -14,10 +14,11 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"
-#include "net/base/host_cache.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/host_cache.h"
+
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"
 #endif

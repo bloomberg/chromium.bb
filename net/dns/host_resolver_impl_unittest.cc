@@ -19,11 +19,11 @@
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "net/base/address_list.h"
-#include "net/base/host_cache.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

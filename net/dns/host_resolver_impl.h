@@ -15,10 +15,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "net/base/capturing_net_log.h"
-#include "net/base/host_cache.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/prioritized_dispatcher.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 

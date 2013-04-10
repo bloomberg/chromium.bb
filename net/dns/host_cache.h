@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_HOST_CACHE_H_
-#define NET_BASE_HOST_CACHE_H_
+#ifndef NET_DNS_HOST_CACHE_H_
+#define NET_DNS_HOST_CACHE_H_
 
 #include <functional>
 #include <string>
@@ -121,4 +121,4 @@ class NET_EXPORT HostCache : NON_EXPORTED_BASE(public base::NonThreadSafe) {
 
 }  // namespace net
 
-#endif  // NET_BASE_HOST_CACHE_H_
+#endif  // NET_DNS_HOST_CACHE_H_
