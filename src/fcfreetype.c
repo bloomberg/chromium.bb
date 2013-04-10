@@ -1666,17 +1666,29 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	goto bail1;
 
     err = FT_Load_Sfnt_Table (face, 0, 0, NULL, &len);
-    if (err != FT_Err_Ok)
+    if (err == FT_Err_Ok)
+    {
+	alen = (len + 63) & ~63;
+	fontdata = malloc (alen);
+	if (!fontdata)
+	    goto bail1;
+	err = FT_Load_Sfnt_Table (face, 0, 0, (FT_Byte *)fontdata, &len);
+	if (err != FT_Err_Ok)
+	    goto bail1;
+	memset (&fontdata[len], 0, alen - len);
+	hashstr = FcHashGetSHA256DigestFromMemory (fontdata, len);
+    }
+    else if (err == FT_Err_Invalid_Face_Handle)
+    {
+	/* font may not support SFNT. falling back to
+	 * read the font data from file directly
+	 */
+	hashstr = FcHashGetSHA256DigestFromFile (file);
+    }
+    else
+    {
 	goto bail1;
-    alen = (len + 63) & ~63;
-    fontdata = malloc (alen);
-    if (!fontdata)
-	goto bail1;
-    err = FT_Load_Sfnt_Table (face, 0, 0, (FT_Byte *)fontdata, &len);
-    if (err != FT_Err_Ok)
-	goto bail1;
-    memset (&fontdata[len], 0, alen - len);
-    hashstr = FcHashGetSHA256DigestFromMemory (fontdata, len);
+    }
     if (!hashstr)
 	goto bail1;
     if (!FcPatternAddString (pat, FC_HASH, hashstr))
