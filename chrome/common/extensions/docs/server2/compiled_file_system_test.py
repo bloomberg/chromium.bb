@@ -49,13 +49,16 @@ class CompiledFileSystemTest(unittest.TestCase):
 
   def testIdentityFromFileListing(self):
     compiled_fs = _CreateFactory().GetOrCreateIdentity()
-    self.assertEqual({'404.html', 'apps/a11y.html', 'apps/about_apps.html',
-                      'apps/fakedir/file.html',
-                      'extensions/activeTab.html', 'extensions/alarms.html'},
+    self.assertEqual(set(('404.html',
+                          'apps/a11y.html',
+                          'apps/about_apps.html',
+                          'apps/fakedir/file.html',
+                          'extensions/activeTab.html',
+                          'extensions/alarms.html')),
                      set(compiled_fs.GetFromFileListing('/')))
-    self.assertEqual({'a11y.html', 'about_apps.html', 'fakedir/file.html'},
+    self.assertEqual(set(('a11y.html', 'about_apps.html', 'fakedir/file.html')),
                      set(compiled_fs.GetFromFileListing('apps/')))
-    self.assertEqual({'file.html'},
+    self.assertEqual(set(('file.html',)),
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
 
   def testPopulateNamespace(self):
@@ -92,18 +95,18 @@ class CompiledFileSystemTest(unittest.TestCase):
   def testCaching(self):
     compiled_fs = _CreateFactory().GetOrCreateIdentity()
     self.assertEqual('404.html contents', compiled_fs.GetFromFile('404.html'))
-    self.assertEqual({'file.html'},
+    self.assertEqual(set(('file.html',)),
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
 
     compiled_fs._file_system._obj['404.html'] = 'boom'
     compiled_fs._file_system._obj['apps']['fakedir']['boom.html'] = 'blam'
     self.assertEqual('404.html contents', compiled_fs.GetFromFile('404.html'))
-    self.assertEqual({'file.html'},
+    self.assertEqual(set(('file.html',)),
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
 
     compiled_fs._file_system.IncrementStat()
     self.assertEqual('boom', compiled_fs.GetFromFile('404.html'))
-    self.assertEqual({'file.html', 'boom.html'},
+    self.assertEqual(set(('file.html', 'boom.html')),
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
 
   def testFailures(self):

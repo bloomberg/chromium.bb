@@ -15,7 +15,8 @@ SRC_DIR = os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir, os.pardir,
 THIRD_PARTY_DIR = os.path.join(SRC_DIR, 'third_party')
 LOCAL_THIRD_PARTY_DIR = os.path.join(sys.path[0], 'third_party')
 TOOLS_DIR = os.path.join(SRC_DIR, 'tools')
-SCHEMA_COMPILER_FILES = ['model.py',
+SCHEMA_COMPILER_FILES = ['memoize.py',
+                         'model.py',
                          'idl_schema.py',
                          'schema_util.py',
                          'json_parse.py']
@@ -64,7 +65,9 @@ def main():
   CopyThirdParty(os.path.join(TOOLS_DIR, 'json_schema_compiler'),
                  'json_schema_compiler',
                  SCHEMA_COMPILER_FILES)
-  CopyThirdParty(TOOLS_DIR, 'json_schema_compiler', ['json_comment_eater.py'])
+  CopyThirdParty(os.path.join(TOOLS_DIR, 'json_comment_eater'),
+                 'json_schema_compiler',
+                 ['json_comment_eater.py'])
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'simplejson'),
                  os.path.join('json_schema_compiler', 'simplejson'),
                  make_init=False)

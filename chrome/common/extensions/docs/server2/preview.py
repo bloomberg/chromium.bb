@@ -34,6 +34,7 @@ import os
 import shutil
 from StringIO import StringIO
 import sys
+import time
 import urlparse
 
 import build_server
@@ -96,6 +97,8 @@ if __name__ == '__main__':
            'the server, e.g. apps/storage.html. The path may optionally end '
            'with #n where n is the number of times to render the page before '
            'printing it, e.g. apps/storage.html#50, to use for profiling.')
+  parser.add_option('-t', '--time', action='store_true',
+      help='Print the time taken rendering rather than the result.')
 
   (opts, argv) = parser.parse_args()
 
@@ -117,6 +120,9 @@ if __name__ == '__main__':
       path = opts.render
       extra_iterations = 0
 
+    if opts.time:
+      start_time = time.time()
+
     content, status, headers = _Render(path)
     if status in [301, 302]:
       # Handle a single level of redirection.
@@ -130,9 +136,12 @@ if __name__ == '__main__':
     for _ in range(extra_iterations):
       _Render(path)
 
-    # Static paths will show up as /stable/static/foo but this only makes sense
-    # from a webserver.
-    print(content.replace('/stable/static', 'static'))
+    if opts.time:
+      print('Took %s seconds' % (time.time() - start_time))
+    else:
+      # Static paths will show up as /stable/static/foo but this only makes
+      # sense from a webserver.
+      print(content.replace('/stable/static', 'static'))
     exit()
 
   print('Starting previewserver on port %s' % opts.port)

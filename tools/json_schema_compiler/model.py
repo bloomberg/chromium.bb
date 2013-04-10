@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
 import os.path
-import re
 
 from json_parse import OrderedDict
+from memoize import memoize
 
 class ParseException(Exception):
   """Thrown when data in the model is invalid.
@@ -373,15 +372,26 @@ class PropertyType(object):
   BINARY = _PropertyTypeInfo(False, "binary")
   ANY = _PropertyTypeInfo(False, "any")
 
+@memoize
 def UnixName(name):
-  """Returns the unix_style name for a given lowerCamelCase string.
-  """
-  # First replace any lowerUpper patterns with lower_Upper.
-  s1 = re.sub('([a-z])([A-Z])', r'\1_\2', name)
-  # Now replace any ACMEWidgets patterns with ACME_Widgets
-  s2 = re.sub('([A-Z]+)([A-Z][a-z])', r'\1_\2', s1)
-  # Finally, replace any remaining periods, and make lowercase.
-  return s2.replace('.', '_').lower()
+  '''Returns the unix_style name for a given lowerCamelCase string.
+  '''
+  unix_name = []
+  for i, c in enumerate(name):
+    if c.isupper() and i > 0:
+      # Replace lowerUpper with lower_Upper.
+      if name[i - 1].islower():
+        unix_name.append('_')
+      # Replace ACMEWidgets with ACME_Widgets
+      elif i + 1 < len(name) and name[i + 1].islower():
+        unix_name.append('_')
+    if c == '.':
+      # Replace hello.world with hello_world.
+      unix_name.append('_')
+    else:
+      # Everything is lowercase.
+      unix_name.append(c.lower())
+  return ''.join(unix_name)
 
 def _StripNamespace(name, namespace):
   if name.startswith(namespace.name + '.'):

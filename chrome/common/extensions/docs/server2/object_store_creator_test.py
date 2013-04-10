@@ -32,10 +32,10 @@ class ObjectStoreCreatorTest(unittest.TestCase):
     self.assertEqual('_FooClass/mat/43', store.namespace)
 
   def testIllegalIinput(self):
-    self.assertRaises(self.creator.Create, category='5')
-    self.assertRaises(self.creator.Create, category='forty2')
-    self.assertRaises(self.creator.Create, version='twenty')
-    self.assertRaises(self.creator.Create, version='7a')
+    self.assertRaises(AssertionError, self.creator.Create, category='5')
+    self.assertRaises(AssertionError, self.creator.Create, category='forty2')
+    self.assertRaises(AssertionError, self.creator.Create, version='twenty')
+    self.assertRaises(AssertionError, self.creator.Create, version='7a')
 
 if __name__ == '__main__':
   unittest.main()

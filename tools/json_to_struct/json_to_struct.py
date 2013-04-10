@@ -54,7 +54,7 @@ import optparse
 import re
 _script_path = os.path.realpath(__file__)
 
-sys.path.insert(0, os.path.normpath(_script_path + "/../../"))
+sys.path.insert(0, os.path.normpath(_script_path + "/../../json_comment_eater"))
 try:
   import json_comment_eater
 finally:
