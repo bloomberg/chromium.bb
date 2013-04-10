@@ -144,7 +144,7 @@ bool ResourceLoader::init(const ResourceRequest& r)
             clientRequest.setFirstPartyForCookies(document->firstPartyForCookies());
     }
 
-    willSendRequest(clientRequest, ResourceResponse());
+    willSendRequest(0, clientRequest, ResourceResponse());
     if (clientRequest.isNull()) {
         cancel();
         return false;
@@ -219,53 +219,6 @@ void ResourceLoader::clearResourceData()
 {
     if (m_resourceData)
         m_resourceData->clear();
-}
-
-void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceResponse& redirectResponse)
-{
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-
-    ASSERT(!m_reachedTerminalState);
-
-    // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
-    bool createdResourceIdentifier = false;
-    if (!m_identifier) {
-        m_identifier = m_frame->page()->progress()->createUniqueIdentifier();
-        createdResourceIdentifier = true;
-    }
-
-    if (m_options.sendLoadCallbacks == SendCallbacks) {
-        if (createdResourceIdentifier)
-            frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifier, documentLoader(), request);
-
-        frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
-    }
-    else
-        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
-
-    m_request = request;
-
-    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
-        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-}
-
-void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
-{
-    ASSERT(!m_reachedTerminalState);
-
-    // Protect this in this delegate method since the additional processing can do
-    // anything including possibly derefing this; one example of this is Radar 3266216.
-    RefPtr<ResourceLoader> protector(this);
-
-    m_response = r;
-
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
-        
-    if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->didReceiveResponse(this, m_response);
 }
 
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
@@ -408,7 +361,57 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 {
     if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForRedirect(this, request, redirectResponse))
         return;
-    willSendRequest(request, redirectResponse);
+
+    // Store the previous URL because we may modify it.
+    KURL previousURL = m_request.url();
+    RefPtr<ResourceLoader> protect(this);
+
+    ASSERT(!request.isNull());
+    if (!redirectResponse.isNull()) {
+        if (!m_documentLoader->cachedResourceLoader()->canRequest(m_resource->type(), request.url())) {
+            cancel();
+            return;
+        }
+        if (m_resource->type() == CachedResource::ImageResource && m_documentLoader->cachedResourceLoader()->shouldDeferImageLoad(request.url())) {
+            cancel();
+            return;
+        }
+        m_resource->willSendRequest(request, redirectResponse);
+    }
+
+    if (request.isNull() || reachedTerminalState())
+        return;
+
+    // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
+    bool createdResourceIdentifier = false;
+    if (!m_identifier) {
+        m_identifier = m_frame->page()->progress()->createUniqueIdentifier();
+        createdResourceIdentifier = true;
+    }
+
+    if (m_options.sendLoadCallbacks == SendCallbacks) {
+        if (createdResourceIdentifier)
+            frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifier, documentLoader(), request);
+
+        frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
+    }
+    else
+        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
+
+    m_request = request;
+
+    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
+        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+
+    if (request.isNull())
+        cancel();
+}
+
+void ResourceLoader::didReceiveCachedMetadata(ResourceHandle*, const char* data, int length)
+{
+    ASSERT(m_state == Initialized);
+    ASSERT(!m_resource->resourceToRevalidate());
+    m_resource->setSerializedCachedMetadata(data, length);
 }
 
 void ResourceLoader::didSendData(ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -422,7 +425,69 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
 {
     if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForResponse(this, response))
         return;
-    didReceiveResponse(response);
+    ASSERT(!response.isNull());
+    ASSERT(m_state == Initialized);
+
+    // Reference the object in this method since the additional processing can do
+    // anything including removing the last reference to this object.
+    RefPtr<ResourceLoader> protect(this);
+
+    if (m_resource->resourceToRevalidate()) {
+        if (response.httpStatusCode() == 304) {
+            // 304 Not modified / Use local copy
+            // Existing resource is ok, just use it updating the expiration time.
+            m_resource->setResponse(response);
+            memoryCache()->revalidationSucceeded(m_resource, response);
+            if (reachedTerminalState())
+                return;
+
+            if (FormData* data = m_request.httpBody())
+                data->removeGeneratedFilesIfNeeded();
+            if (m_options.sendLoadCallbacks == SendCallbacks)
+                frameLoader()->notifier()->didReceiveResponse(this, response);
+            return;
+        }
+        // Did not get 304 response, continue as a regular resource load.
+        memoryCache()->revalidationFailed(m_resource);
+    }
+
+    m_resource->responseReceived(response);
+    if (reachedTerminalState())
+        return;
+
+    if (FormData* data = m_request.httpBody())
+        data->removeGeneratedFilesIfNeeded();
+    if (m_options.sendLoadCallbacks == SendCallbacks)
+        frameLoader()->notifier()->didReceiveResponse(this, response);
+
+    // FIXME: Main resources have a different set of rules for multipart than images do.
+    // Hopefully we can merge those 2 paths.
+    if (response.isMultipart() && m_resource->type() != CachedResource::MainResource) {
+        m_loadingMultipartContent = true;
+
+        // We don't count multiParts in a CachedResourceLoader's request count
+        m_requestCountTracker.clear();
+        if (!m_resource->isImage()) {
+            cancel();
+            return;
+        }
+    }
+
+    RefPtr<ResourceBuffer> buffer = resourceData();
+    if (m_loadingMultipartContent && buffer && buffer->size()) {
+        sendDataToResource(buffer->data(), buffer->size());
+        clearResourceData();
+        // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
+        // After the first multipart section is complete, signal to delegates that this load is "finished"
+        m_documentLoader->subresourceLoaderFinishedLoadingOnePart(this);
+        didFinishLoadingOnePart(0);
+    }
+
+    if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
+        return;
+    m_state = Finishing;
+    m_resource->error(CachedResource::LoadError);
+    cancel();
 }
 
 void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int length, int encodedDataLength)

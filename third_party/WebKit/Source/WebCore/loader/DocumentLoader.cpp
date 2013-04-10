@@ -929,7 +929,7 @@ void DocumentLoader::substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*
         if (resource) {
             SharedBuffer* data = resource->data();
         
-            loader->didReceiveResponse(resource->response());
+            loader->didReceiveResponse(0, resource->response());
 
             // Calling ResourceLoader::didReceiveResponse can end up cancelling the load,
             // so we need to check if the loader has reached its terminal state.

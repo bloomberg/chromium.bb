@@ -46,14 +46,9 @@ private:
 
     virtual bool init(const ResourceRequest&) OVERRIDE;
 
-    virtual void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse) OVERRIDE;
-    virtual void didReceiveResponse(const ResourceResponse&) OVERRIDE;
-    virtual void didReceiveCachedMetadata(const char*, int) OVERRIDE;
     virtual void didFinishLoading(double finishTime) OVERRIDE;
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void releaseResources() OVERRIDE;
-
-    bool checkForHTTPStatusCodeError();
 };
 
 }

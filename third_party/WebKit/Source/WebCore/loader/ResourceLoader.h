@@ -75,14 +75,10 @@ public:
     unsigned long identifier() const { return m_identifier; }
 
     virtual void releaseResources();
-    const ResourceResponse& response() const;
 
     PassRefPtr<ResourceBuffer> resourceData();
     void clearResourceData();
-    
-    virtual void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
-    virtual void didReceiveResponse(const ResourceResponse&);
-    virtual void didReceiveCachedMetadata(const char*, int) { }
+
     virtual void didFinishLoading(double finishTime);
     virtual void didFail(const ResourceError&);
     void didChangePriority(ResourceLoadPriority);
@@ -94,7 +90,7 @@ public:
     virtual void didSendData(ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didReceiveResponse(ResourceHandle*, const ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(ResourceHandle*, const char*, int, int encodedDataLength) OVERRIDE;
-    virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE { didReceiveCachedMetadata(data, length); }
+    virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE;
     virtual void didFinishLoading(ResourceHandle*, double finishTime) OVERRIDE;
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
     virtual bool shouldUseCredentialStorage(ResourceHandle*) OVERRIDE { return shouldUseCredentialStorage(); }
@@ -126,7 +122,6 @@ protected:
     RefPtr<ResourceHandle> m_handle;
     RefPtr<Frame> m_frame;
     RefPtr<DocumentLoader> m_documentLoader;
-    ResourceResponse m_response;
 
     void addData(const char*, int);
 
@@ -164,11 +159,6 @@ protected:
     ResourceLoaderState m_state;
     OwnPtr<RequestCountTracker> m_requestCountTracker;
 };
-
-inline const ResourceResponse& ResourceLoader::response() const
-{
-    return m_response;
-}
 
 }
 
