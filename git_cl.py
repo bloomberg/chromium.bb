@@ -828,7 +828,7 @@ class ChangeDescription(object):
     self.description = self.description.strip('\n') + '\n'
     # Retrieves all reviewer lines
     regexp = re.compile(r'^\s*(TBR|R)=(.+)$', re.MULTILINE)
-    reviewers = ','.join(
+    reviewers = ', '.join(
         i.group(2).strip() for i in regexp.finditer(self.description))
     if reviewers:
       self.reviewers = reviewers
@@ -1106,8 +1106,8 @@ def GerritUpload(options, args, cl):
   if CHANGE_ID not in log_desc:
     AddChangeIdToCommitMessage(options, args)
   if options.reviewers:
-    log_desc += '\nR=' + options.reviewers
-  change_desc = ChangeDescription(log_desc, options.reviewers)
+    log_desc += '\nR=' + ', '.join(options.reviewers)
+  change_desc = ChangeDescription(log_desc, ', '.join(options.reviewers))
   change_desc.ParseDescription()
   if change_desc.IsEmpty():
     print "Description is empty; aborting."
@@ -1116,12 +1116,13 @@ def GerritUpload(options, args, cl):
   receive_options = []
   cc = cl.GetCCList().split(',')
   if options.cc:
-    cc += options.cc.split(',')
+    cc.extend(options.cc)
   cc = filter(None, cc)
   if cc:
     receive_options += ['--cc=' + email for email in cc]
   if change_desc.reviewers:
-    reviewers = filter(None, change_desc.reviewers.split(','))
+    reviewers = filter(
+        None, (r.strip() for r in change_desc.reviewers.split(',')))
     if reviewers:
       receive_options += ['--reviewer=' + email for email in reviewers]
 
@@ -1159,7 +1160,7 @@ def RietveldUpload(options, args, cl):
     if options.title:
       upload_args.extend(['--title', options.title])
     message = options.title or options.message or CreateDescriptionFromLog(args)
-    change_desc = ChangeDescription(message, options.reviewers)
+    change_desc = ChangeDescription(message, ','.join(options.reviewers))
     if not options.force:
       change_desc.Prompt()
     change_desc.ParseDescription()
@@ -1170,12 +1171,16 @@ def RietveldUpload(options, args, cl):
 
     upload_args.extend(['--message', change_desc.description])
     if change_desc.reviewers:
-      upload_args.extend(['--reviewers', change_desc.reviewers])
+      upload_args.extend(
+          [
+            '--reviewers',
+            ','.join(r.strip() for r in change_desc.reviewers.split(',')),
+          ])
     if options.send_mail:
       if not change_desc.reviewers:
         DieWithError("Must specify reviewers to send email.")
       upload_args.append('--send_mail')
-    cc = ','.join(filter(None, (cl.GetCCList(), options.cc)))
+    cc = ','.join(filter(None, (cl.GetCCList(), ','.join(options.cc))))
     if cc:
       upload_args.extend(['--cc', cc])
 
@@ -1228,6 +1233,17 @@ def RietveldUpload(options, args, cl):
   return 0
 
 
+def cleanup_list(l):
+  """Fixes a list so that comma separated items are put as individual items.
+
+  So that "--reviewers joe@c,john@c --reviewers joa@c" results in
+  options.reviewers == sorted(['joe@c', 'john@c', 'joa@c']).
+  """
+  items = sum((i.split(',') for i in l), [])
+  stripped_items = (i.strip() for i in items)
+  return sorted(filter(None, stripped_items))
+
+
 @usage('[args to "git diff"]')
 def CMDupload(parser, args):
   """upload the current changelist to codereview"""
@@ -1238,8 +1254,10 @@ def CMDupload(parser, args):
   parser.add_option('-m', dest='message', help='message for patchset')
   parser.add_option('-t', dest='title', help='title for patchset')
   parser.add_option('-r', '--reviewers',
+                    action='append', default=[],
                     help='reviewer email addresses')
   parser.add_option('--cc',
+                    action='append', default=[],
                     help='cc email addresses')
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer immediately')
@@ -1268,6 +1286,9 @@ def CMDupload(parser, args):
   if is_dirty_git_tree('upload'):
     return 1
 
+  options.reviewers = cleanup_list(options.reviewers)
+  options.cc = cleanup_list(options.cc)
+
   cl = Changelist()
   if args:
     # TODO(ukai): is it ok for gerrit case?
@@ -1291,7 +1312,7 @@ def CMDupload(parser, args):
     if not hook_results.should_continue():
       return 1
     if not options.reviewers and hook_results.reviewers:
-      options.reviewers = hook_results.reviewers
+      options.reviewers = hook_results.reviewers.split(',')
 
   if cl.GetIssue():
     latest_patchset = cl.GetMostRecentPatchset(cl.GetIssue())
