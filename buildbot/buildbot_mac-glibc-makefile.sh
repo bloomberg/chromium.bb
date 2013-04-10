@@ -95,10 +95,20 @@ else
   )
 fi
 
+# The script should exit nonzero if any test run fails.
+# But that should not short-circuit the script due to the 'set -e' behavior.
+exit_status=0
+fail() {
+  exit_status=1
+  return 0
+}
+
 export INSIDE_TOOLCHAIN=1
-python buildbot/buildbot_standard.py opt 32 glibc
+python buildbot/buildbot_standard.py opt 32 glibc || fail
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
   echo @@@BUILD_STEP sync backports@@@
   tools/BACKPORTS/build_backports.sh VERSIONS mac glibc
 fi
+
+exit $exit_status
