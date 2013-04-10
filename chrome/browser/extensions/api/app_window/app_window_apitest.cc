@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
 // don't work under ubuntu unity.
 // (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
 // TODO(linux_aura) http://crbug.com/163931
-#if (defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(TOOLKIT_VIEWS) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
   EXPECT_TRUE(
