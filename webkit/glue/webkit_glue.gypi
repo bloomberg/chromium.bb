@@ -317,6 +317,7 @@
         'webcursor_aura.cc',
         'webcursor_aurawin.cc',
         'webcursor_aurax11.cc',
+        'webcursor_null.cc',
         'webcursor_gtk.cc',
         'webcursor_gtk_data.h',
         'webcursor_mac.mm',
@@ -409,6 +410,11 @@
           'link_settings': {
             'libraries': [ '-lXcursor', ],
           },
+        }],
+        ['use_messagepump_linux==0', {
+          'sources!': [
+            'webcursor_null.cc',
+          ],
         }],
         ['use_aura==1 and OS=="win"', {
           'sources/': [

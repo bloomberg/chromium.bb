@@ -114,7 +114,10 @@
         'base/cocoa/window_size_constants.mm',
         'base/cursor/cursor.cc',
         'base/cursor/cursor.h',
+        'base/cursor/cursor_null.cc',
         'base/cursor/cursor_loader.h',
+        'base/cursor/cursor_loader_null.cc',
+        'base/cursor/cursor_loader_null.h',
         'base/cursor/cursor_loader_win.cc',
         'base/cursor/cursor_loader_win.h',
         'base/cursor/cursor_loader_x11.cc',
@@ -791,6 +794,13 @@
           'sources/': [
             ['exclude', 'base/keycodes/keyboard_code_conversion_x.*'],
             ['exclude', 'base/x/*'],
+          ],
+        }],
+        ['use_messagepump_linux==0', {
+          'sources!': [
+            'base/cursor/cursor_null.cc',
+            'base/cursor/cursor_loader_null.cc',
+            'base/cursor/cursor_loader_null.h',
           ],
         }],
         ['toolkit_views==0', {
