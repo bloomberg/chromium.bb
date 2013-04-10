@@ -43,11 +43,6 @@ class RenderStyle;
 
 class RenderMediaControls {
 public:
-
-#if PLATFORM(WIN)
-    static bool paintMediaControlsPart(MediaControlElementType, RenderObject*, const PaintInfo&, const IntRect&);
-    static void adjustMediaSliderThumbSize(RenderStyle*);
-#endif
 };
 
 } // namespace WebCore

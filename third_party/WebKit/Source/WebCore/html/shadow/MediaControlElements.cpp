@@ -432,13 +432,8 @@ const AtomicString& MediaControlOverlayPlayButtonElement::shadowPseudoId() const
 
 MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement(Document* document, MediaControls* controls)
     : MediaControlInputElement(document, MediaShowClosedCaptionsButton)
-#if PLATFORM(WIN)
-    , m_controls(controls)
-#endif
 {
-#if !PLATFORM(WIN)
     UNUSED_PARAM(controls);
-#endif
 }
 
 PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClosedCaptionsButtonElement::create(Document* document, MediaControls* controls)
@@ -466,13 +461,9 @@ void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* e
         // UI. Not all ports may want the closed captions button to toggle a list of tracks, so
         // we have to use #if.
         // https://bugs.webkit.org/show_bug.cgi?id=101877
-#if !PLATFORM(WIN)
         mediaController()->setClosedCaptionsVisible(!mediaController()->closedCaptionsVisible());
         setChecked(mediaController()->closedCaptionsVisible());
         updateDisplayType();
-#else
-        m_controls->toggleClosedCaptionTrackList();
-#endif
         event->setDefaultHandled();
     }
 

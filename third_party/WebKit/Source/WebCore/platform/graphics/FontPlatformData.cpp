@@ -41,18 +41,13 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_orientation(Horizontal)
     , m_size(0)
     , m_widthVariant(RegularWidth)
-#if PLATFORM(WIN)
-    , m_font(WTF::HashTableDeletedValue)
-#elif OS(DARWIN)
+#if OS(DARWIN)
     , m_font(hashTableDeletedFontValue())
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
 #if OS(DARWIN)
     , m_isPrinterFont(false)
-#endif
-#if PLATFORM(WIN)
-    , m_useGDI(false)
 #endif
 {
 }
@@ -71,9 +66,6 @@ FontPlatformData::FontPlatformData()
 #if OS(DARWIN)
     , m_isPrinterFont(false)
 #endif
-#if PLATFORM(WIN)
-    , m_useGDI(false)
-#endif
 {
 }
 
@@ -90,9 +82,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
     , m_isCompositeFontReference(false)
 #if OS(DARWIN)
     , m_isPrinterFont(false)
-#endif
-#if PLATFORM(WIN)
-    , m_useGDI(false)
 #endif
 {
 }

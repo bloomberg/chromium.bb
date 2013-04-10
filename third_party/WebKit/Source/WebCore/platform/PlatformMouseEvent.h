@@ -63,12 +63,6 @@ namespace WebCore {
         int clickCount() const { return m_clickCount; }
         unsigned modifierFlags() const { return m_modifierFlags; }
 
-#if PLATFORM(WIN)
-        PlatformMouseEvent(HWND, UINT, WPARAM, LPARAM, bool didActivateWebView = false);
-        void setClickCount(int count) { m_clickCount = count; }
-        bool didActivateWebView() const { return m_didActivateWebView; }
-#endif
-
     protected:
         IntPoint m_position;
         IntPoint m_globalPosition;

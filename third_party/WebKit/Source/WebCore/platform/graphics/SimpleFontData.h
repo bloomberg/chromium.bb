@@ -194,17 +194,6 @@ public:
         return false;
     }
 
-#if PLATFORM(WIN)
-    bool isSystemFont() const { return m_isSystemFont; }
-#if !OS(WINCE)
-    SCRIPT_FONTPROPERTIES* scriptFontProperties() const;
-    SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
-#endif
-    static void setShouldApplyMacAscentHack(bool);
-    static bool shouldApplyMacAscentHack();
-    static float ascentConsideringMacAscentHack(const WCHAR*, float ascent, float descent);
-#endif
-
 private:
     SimpleFontData(const FontPlatformData&, bool isCustomFont = false, bool isLoading = false, bool isTextOrientationFallback = false);
 
@@ -290,14 +279,6 @@ private:
 
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN)) || USE(HARFBUZZ)
     mutable OwnPtr<HashMap<String, bool> > m_combiningCharacterSequenceSupport;
-#endif
-
-#if PLATFORM(WIN)
-    bool m_isSystemFont;
-#if !OS(WINCE)
-    mutable SCRIPT_CACHE m_scriptCache;
-    mutable SCRIPT_FONTPROPERTIES* m_scriptFontProperties;
-#endif
 #endif
 };
 

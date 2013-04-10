@@ -515,20 +515,6 @@ String unknownFileSizeText()
     return WEB_UI_STRING_KEY("Unknown", "Unknown (filesize)", "Unknown filesize FTP directory listing item");
 }
 
-#if PLATFORM(WIN)
-String uploadFileText()
-{
-    notImplemented();
-    return "upload";
-}
-
-String allFilesText()
-{
-    notImplemented();
-    return "all files";
-}
-#endif
-
 String imageTitle(const String& filename, const IntSize& size)
 {
 #if USE(CF)

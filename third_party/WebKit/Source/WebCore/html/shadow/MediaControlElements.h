@@ -175,10 +175,6 @@ private:
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
-
-#if PLATFORM(WIN)
-    MediaControls* m_controls;
-#endif
 };
 
 // ----------------------------

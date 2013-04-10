@@ -281,10 +281,6 @@ public:
     virtual void fullScreenRendererChanged(RenderBox*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }
 
-#if PLATFORM(WIN)
-    virtual void setLastSetCursorToCurrentCursor() = 0;
-#endif
-
 #if ENABLE(TOUCH_EVENTS)
     virtual void needTouchEvents(bool) = 0;
 #endif

@@ -53,10 +53,6 @@ typedef const struct __CTFont* CTFontRef;
 #include "CrossProcessFontLoading.h"  
 #endif
 
-#if PLATFORM(WIN)
-typedef struct HFONT__* HFONT;
-#endif
-
 #if USE(SKIA_ON_MAC_CHROMIUM)
 typedef struct CGFont* CGFontRef;
 #if OS(DARWIN)
