@@ -167,6 +167,14 @@ void DriveFileSyncService::OnIncomingInvalidation(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
       kDriveInvalidationObjectId);
   DCHECK_EQ(1U, invalidation_map.count(object_id));
+  // TODO(dcheng): Only acknowledge the invalidation once the fetch has
+  // completed. http://crbug.com/156843
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  CHECK(profile_sync_service);
+  profile_sync_service->AcknowledgeInvalidation(
+      invalidation_map.begin()->first,
+      invalidation_map.begin()->second.ack_handle);
 
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
