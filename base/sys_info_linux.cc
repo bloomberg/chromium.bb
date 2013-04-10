@@ -10,28 +10,30 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
-namespace base {
+namespace {
 
-int64 SysInfo::AmountOfPhysicalMemory() {
-  long pages = sysconf(_SC_PHYS_PAGES);
-  long page_size = sysconf(_SC_PAGE_SIZE);
+int64 AmountOfMemory(int pages_name) {
+  long pages = sysconf(pages_name);
+  long page_size = sysconf(_SC_PAGESIZE);
   if (pages == -1 || page_size == -1) {
     NOTREACHED();
     return 0;
   }
-
   return static_cast<int64>(pages) * page_size;
+}
+
+}  // namespace
+
+namespace base {
+
+// static
+int64 SysInfo::AmountOfPhysicalMemory() {
+  return AmountOfMemory(_SC_PHYS_PAGES);
 }
 
 // static
 int64 SysInfo::AmountOfAvailablePhysicalMemory() {
-  long available_pages = sysconf(_SC_AVPHYS_PAGES);
-  long page_size = sysconf(_SC_PAGE_SIZE);
-  if (available_pages == -1 || page_size == -1) {
-    NOTREACHED();
-    return 0;
-  }
-  return static_cast<int64>(available_pages) * page_size;
+  return AmountOfMemory(_SC_AVPHYS_PAGES);
 }
 
 // static

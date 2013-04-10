@@ -13,6 +13,24 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 
+namespace {
+
+int64 AmountOfMemory(DWORDLONG MEMORYSTATUSEX::* memory_field) {
+  MEMORYSTATUSEX memory_info;
+  memory_info.dwLength = sizeof(memory_info);
+  if (!GlobalMemoryStatusEx(&memory_info)) {
+    NOTREACHED();
+    return 0;
+  }
+
+  int64 rv = static_cast<int64>(memory_info.*memory_field);
+  if (rv < 0)
+    rv = kint64max;
+  return rv;
+}
+
+}  // namespace
+
 namespace base {
 
 // static
@@ -22,32 +40,12 @@ int SysInfo::NumberOfProcessors() {
 
 // static
 int64 SysInfo::AmountOfPhysicalMemory() {
-  MEMORYSTATUSEX memory_info;
-  memory_info.dwLength = sizeof(memory_info);
-  if (!GlobalMemoryStatusEx(&memory_info)) {
-    NOTREACHED();
-    return 0;
-  }
-
-  int64 rv = static_cast<int64>(memory_info.ullTotalPhys);
-  if (rv < 0)
-    rv = kint64max;
-  return rv;
+  return AmountOfMemory(&MEMORYSTATUSEX::ullTotalPhys);
 }
 
 // static
 int64 SysInfo::AmountOfAvailablePhysicalMemory() {
-  MEMORYSTATUSEX memory_info;
-  memory_info.dwLength = sizeof(memory_info);
-  if (!GlobalMemoryStatusEx(&memory_info)) {
-    NOTREACHED();
-    return 0;
-  }
-
-  int64 rv = static_cast<int64>(memory_info.ullAvailPhys);
-  if (rv < 0)
-    rv = kint64max;
-  return rv;
+  return AmountOfMemory(&MEMORYSTATUSEX::ullAvailPhys);
 }
 
 // static
