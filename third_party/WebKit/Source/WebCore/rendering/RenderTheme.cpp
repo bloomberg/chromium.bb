@@ -820,18 +820,7 @@ bool RenderTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
 
 bool RenderTheme::isDefault(const RenderObject* o) const
 {
-    // A button should only have the default appearance if the page is active
-    if (!isActive(o))
-        return false;
-
-    if (!o->document())
-        return false;
-
-    Settings* settings = o->document()->settings();
-    if (!settings || !settings->applicationChromeMode())
-        return false;
-    
-    return o->style()->appearance() == DefaultButtonPart;
+    return false;
 }
 
 #if !USE(NEW_THEME)

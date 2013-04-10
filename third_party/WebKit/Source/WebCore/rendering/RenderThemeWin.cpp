@@ -142,12 +142,6 @@ static const float defaultSearchFieldResultsButtonWidth = 18;
 
 static bool gWebKitIsBeingUnloaded;
 
-static bool documentIsInApplicationChromeMode(const Document* document)
-{
-    Settings* settings = document->settings();
-    return settings && settings->applicationChromeMode();
-}
-
 void RenderThemeWin::setWebKitIsBeingUnloaded()
 {
     gWebKitIsBeingUnloaded = true;
@@ -575,13 +569,7 @@ ThemeData RenderThemeWin::getThemeData(RenderObject* o, ControlSubPart subPart)
         case MenulistButtonPart: {
             const bool isVistaOrLater = (windowsVersion() >= WindowsVista);
             result.m_part = isVistaOrLater ? CP_DROPDOWNBUTTONRIGHT : CP_DROPDOWNBUTTON;
-            if (isVistaOrLater && documentIsInApplicationChromeMode(o->document())) {
-                // The "readonly" look we use in application chrome mode
-                // only uses a "normal" look for the drop down button.
-                result.m_state = TS_NORMAL;
-            } else
-                result.m_state = determineState(o);
-            break;
+            result.m_state = determineState(o);
         }
         case RadioPart:
             result.m_part = BP_RADIO;
@@ -741,10 +729,7 @@ bool RenderThemeWin::paintMenuList(RenderObject* o, const PaintInfo& i, const In
     int part;
     if (haveTheme && (windowsVersion() >= WindowsVista)) {
         theme = menuListTheme();
-        if (documentIsInApplicationChromeMode(o->document()))
-            part = CP_READONLY;
-        else
-            part = CP_BORDER;
+        part = CP_BORDER;
     } else {
         theme = textFieldTheme();
         part = TFP_TEXTFIELD;
