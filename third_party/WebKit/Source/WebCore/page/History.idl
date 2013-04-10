@@ -30,7 +30,6 @@
     CustomNamedSetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    OmitConstructor
 ] interface History {
     readonly attribute unsigned long length;
     [CachedAttribute, Custom] readonly attribute SerializedScriptValue state;

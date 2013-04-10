@@ -25,7 +25,6 @@
 
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
-    OmitConstructor
 ] interface Geolocation {
     [Custom] void getCurrentPosition(PositionCallback successCallback,
                                      [Optional] PositionErrorCallback errorCallback,

@@ -30,7 +30,6 @@
 
 [
     IsWorkerContext,
-    OmitConstructor
 ] interface DedicatedWorkerContext : WorkerContext {
 
 #if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT

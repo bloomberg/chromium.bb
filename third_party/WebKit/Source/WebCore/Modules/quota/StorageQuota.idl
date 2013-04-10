@@ -24,7 +24,6 @@
  */
 
 [
-    OmitConstructor,
     ImplementationLacksVTable
 ] interface StorageQuota {
     [CallWith=ScriptExecutionContext] void queryUsageAndQuota([Callback] StorageUsageCallback usageCallback, [Callback, Optional] StorageErrorCallback errorCallback);

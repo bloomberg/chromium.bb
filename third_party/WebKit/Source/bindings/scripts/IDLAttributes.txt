@@ -75,7 +75,6 @@ NamedGetter
 NoWrapperCache
 NotEnumerable
 NumericIndexedGetter
-OmitConstructor
 Optional=|DefaultIsNullString|DefaultIsUndefined
 PerWorldBindings
 RaisesException

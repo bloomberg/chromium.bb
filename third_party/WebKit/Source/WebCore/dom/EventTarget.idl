@@ -19,7 +19,6 @@
  */
 
 [
-    OmitConstructor,
     CustomToJSObject,
     NoWrapperCache,
     EventTarget

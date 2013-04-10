@@ -27,7 +27,6 @@
 [
     Conditional=SVG,
     
-    OmitConstructor
 ] interface ElementTimeControl { 
     void beginElement();
     void beginElementAt([Optional=DefaultIsUndefined] float offset);

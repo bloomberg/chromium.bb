@@ -25,7 +25,6 @@
  */
 
 [
-    OmitConstructor
 ] interface ScriptProfileNode {
     readonly attribute DOMString functionName;
     readonly attribute DOMString url;

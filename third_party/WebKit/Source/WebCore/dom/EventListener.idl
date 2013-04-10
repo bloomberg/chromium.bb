@@ -19,7 +19,6 @@
  */
 
 [
-    OmitConstructor
 ] interface EventListener {
     void               handleEvent(Event evt);
 };

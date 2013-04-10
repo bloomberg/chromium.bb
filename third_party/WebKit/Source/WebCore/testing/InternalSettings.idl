@@ -24,7 +24,6 @@
  */
 
 [
-    OmitConstructor
 ] interface InternalSettings : InternalSettingsGenerated {
     [RaisesException] void setMockScrollbarsEnabled(boolean enabled);
     [RaisesException] void setTouchEventEmulationEnabled(boolean enabled);

@@ -28,7 +28,6 @@
     Conditional=SVG,
     
     SuppressToJSObject,
-    OmitConstructor
 ] interface SVGLocatable {
     readonly attribute SVGElement nearestViewportElement;
     readonly attribute SVGElement farthestViewportElement;

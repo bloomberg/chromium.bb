@@ -27,7 +27,6 @@
 // Introduced in DOM Level 2:
 [
     
-    OmitConstructor
 ] interface AbstractView {
     readonly attribute Document document;
     readonly attribute StyleMedia styleMedia;

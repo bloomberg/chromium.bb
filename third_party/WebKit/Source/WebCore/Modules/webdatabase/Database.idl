@@ -27,7 +27,6 @@
  */
 
 [
-    OmitConstructor
 ] interface Database {
     readonly attribute DOMString version;
     void changeVersion(DOMString oldVersion, DOMString newVersion, [Callback, Optional] SQLTransactionCallback callback, [Callback, Optional] SQLTransactionErrorCallback errorCallback, [Callback, Optional] VoidCallback successCallback);

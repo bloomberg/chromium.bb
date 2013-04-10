@@ -25,7 +25,6 @@
 
 [
     Conditional=SVG,
-    OmitConstructor
 ] interface SVGAnimationElement : SVGElement,
                                                   SVGTests,
                                                   SVGExternalResourcesRequired,

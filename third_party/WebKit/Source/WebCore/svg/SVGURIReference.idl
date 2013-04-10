@@ -28,7 +28,6 @@
     Conditional=SVG,
     
     SuppressToJSObject,
-    OmitConstructor
 ] interface SVGURIReference {
     readonly attribute SVGAnimatedString href;
 };

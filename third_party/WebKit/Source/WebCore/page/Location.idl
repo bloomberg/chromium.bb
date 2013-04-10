@@ -33,7 +33,6 @@
     CustomNamedSetter,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    OmitConstructor
 ] interface Location {
     [DoNotCheckSecurityOnSetter, CustomSetter, Unforgeable] attribute DOMString href;
 

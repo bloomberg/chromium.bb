@@ -32,7 +32,6 @@
 [
     Conditional=LEGACY_NOTIFICATIONS,
     ActiveDOMObject,
-    OmitConstructor
 ] interface NotificationCenter {
 #if !defined(ENABLE_TEXT_NOTIFICATIONS_ONLY) || !ENABLE_TEXT_NOTIFICATIONS_ONLY
    [EnabledPerContext=htmlNotifications, MeasureAs=LegacyHTMLNotifications, RaisesException] Notification createHTMLNotification(DOMString url);

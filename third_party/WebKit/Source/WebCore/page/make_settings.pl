@@ -351,9 +351,7 @@ sub generateInternalSettingsIdlFile($)
     open my $file, ">$filename" or die "Failed to open file: $!";
     print $file $InCompiler->license();
 
-    print $file "[\n";
-    print $file "    OmitConstructor\n";
-    print $file "] interface InternalSettingsGenerated {\n";
+    print $file "interface InternalSettingsGenerated {\n";
 
     sub writeIdlSetter($$$) {
         my ($file, $parsedItemsRef, $settingName) = @_;

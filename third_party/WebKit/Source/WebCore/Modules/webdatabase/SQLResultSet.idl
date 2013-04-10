@@ -27,7 +27,6 @@
  */
 
 [
-    OmitConstructor,
     ImplementationLacksVTable
 ] interface SQLResultSet {
     readonly attribute SQLResultSetRowList rows;

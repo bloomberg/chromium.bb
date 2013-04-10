@@ -24,7 +24,6 @@
  */
 
 [
-    OmitConstructor,
     ImplementationLacksVTable
 ] interface StorageInfo {
     const unsigned short TEMPORARY = 0;

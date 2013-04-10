@@ -25,7 +25,6 @@
  */
 
 [
-    OmitConstructor
 ] interface Internals {
     DOMString address(Node node);
 

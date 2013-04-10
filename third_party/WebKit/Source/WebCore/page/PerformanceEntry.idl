@@ -32,7 +32,6 @@
 [
     Conditional=PERFORMANCE_TIMELINE,
     CustomToJSObject,
-    OmitConstructor
 ] interface PerformanceEntry {
     readonly attribute DOMString name;
     readonly attribute DOMString entryType;

@@ -25,6 +25,5 @@
 
 [
     Conditional=WEBGL,
-    OmitConstructor
 ] interface OESTextureFloat {
 };

@@ -24,7 +24,6 @@
  */
 
 [
-    OmitConstructor,
     ImplementationLacksVTable
 ] interface Coordinates {
     readonly attribute double latitude;
