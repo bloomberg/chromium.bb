@@ -875,9 +875,8 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         // Resize gaps first.
-        const top = (startIndex * rowHeight) + "px";
-        this._topGapElement.style.height = top;
-        this.sidebarElement.style.top = top;
+        this._topGapElement.style.height = (startIndex * rowHeight) + "px";
+        this.sidebarTreeElement.style.height = ((startIndex + this._headerLineCount) * rowHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
 
         // Update visible rows.
