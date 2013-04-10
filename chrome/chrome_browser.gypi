@@ -1320,6 +1320,8 @@
         'browser/policy/policy_types.h',
         'browser/policy/preferences_mac.cc',
         'browser/policy/preferences_mac.h',
+        'browser/policy/preg_parser_win.cc',
+        'browser/policy/preg_parser_win.h',
         'browser/policy/url_blacklist_manager.cc',
         'browser/policy/url_blacklist_manager.h',
         'browser/predictors/autocomplete_action_predictor.cc',
