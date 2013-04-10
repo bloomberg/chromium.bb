@@ -140,11 +140,6 @@ html[dir=rtl] #range-next {
   width: 45px;
 }
 
-.entry {
-  display: -webkit-flex;
-  overflow: auto;
-}
-
 .entry-box,
 .site-domain-wrapper {
   -webkit-align-items: center;
@@ -254,6 +249,7 @@ html[dir='rtl'] .site-domain {
 
 .search-results .time,
 .month-results .time {
+  min-width: 110px;
   width: 110px;
 }
 
@@ -285,11 +281,12 @@ html[dir='rtl'] .site-domain {
 
 .filter-status {
   display: -webkit-flex;
-  -webkit-flex-grow: 1;
+  -webkit-flex: 1 0 auto;
   -webkit-justify-content: flex-end;
 }
 
 .filter-status > div {
+  -webkit-flex: 0 0 auto;
   -webkit-transition: background-color 500ms ease-in-out;
   border-radius: 3px;
   font-size: 11px;
@@ -340,6 +337,10 @@ html[dir='rtl'] .site-domain {
 .entry-box.contains-focus {
   background-color: rgb(252, 252, 252);
   border-radius: 2px;
+}
+
+.entry-box-container {
+  display: -webkit-flex;
 }
 
 .entry .title-and-domain {

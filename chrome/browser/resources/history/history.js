@@ -198,9 +198,13 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     this.classList.remove('contains-focus');
   }, true);
 
-  node.appendChild(entryBox);
-  if (this.model_.isManagedProfile && this.model_.getGroupByDomain()) {
-    node.appendChild(
+  var entryBoxContainer =
+      createElementWithClassName('div', 'entry-box-container');
+  node.appendChild(entryBoxContainer);
+  entryBoxContainer.appendChild(entryBox);
+  if (!isSearchResult && this.model_.isManagedProfile &&
+      this.model_.getGroupByDomain()) {
+    entryBoxContainer.appendChild(
         getManagedStatusDOM(this.urlManualBehavior, this.urlInContentPack));
   }
 
