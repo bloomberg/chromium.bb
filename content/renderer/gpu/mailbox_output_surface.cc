@@ -27,6 +27,7 @@ MailboxOutputSurface::MailboxOutputSurface(
       fbo_(0),
       is_backbuffer_discarded_(false) {
   pending_textures_.push_back(TransferableFrame());
+  capabilities_.max_frames_pending = 1;
 }
 
 MailboxOutputSurface::~MailboxOutputSurface() {
@@ -191,7 +192,7 @@ void MailboxOutputSurface::PostSubBuffer(gfx::Rect rect) {
       << "Partial swap not supported with composite-to-mailbox yet.";
 
   // The browser only copies damage correctly for two buffers in use.
-  DCHECK(GetNumAcksPending() < 3);
+  DCHECK(GetNumAcksPending() < 2);
 }
 
 void MailboxOutputSurface::ConsumeTexture(const TransferableFrame& frame) {
