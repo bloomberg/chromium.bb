@@ -392,17 +392,17 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-
-  int x_offset = shelf_layout_manager_->SelectValueForShelfAlignment(
-      0, kIconPad, kIconPad, 0);
-  int y_offset = shelf_layout_manager_->SelectValueForShelfAlignment(
-      kIconPad, 0, 0, kIconPad);
-
-  int icon_width = std::min(kIconSize, button_bounds.width() - x_offset);
-  int icon_height = std::min(kIconSize, button_bounds.height() - y_offset);
-
-  x_offset = std::max(x_offset, (button_bounds.width() - icon_width) / 2);
-  y_offset = std::max(y_offset, (button_bounds.height() - icon_height) / 2);
+   int x_offset = 0, y_offset = 0;
+   gfx::Rect icon_bounds;
+   if (shelf_layout_manager_->IsHorizontalAlignment()) {
+    icon_bounds.SetRect(
+        button_bounds.x(), button_bounds.y() + kIconPad,
+        button_bounds.width(), kIconSize);
+  } else {
+    icon_bounds.SetRect(
+        button_bounds.x() + kIconPad, button_bounds.y(),
+        kIconSize, button_bounds.height());
+  }
 
   if (ShouldHop(state_)) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
@@ -411,11 +411,7 @@ void LauncherButton::Layout() {
         -kHopSpacing, 0, 0, kHopSpacing);
   }
 
-  gfx::Rect icon_bounds(
-        button_bounds.x() + x_offset,
-        button_bounds.y() + y_offset,
-        icon_width,
-        icon_height);
+  icon_bounds.Offset(x_offset, y_offset);
   icon_view_->SetBoundsRect(icon_bounds);
   bar_->SetBarBoundsRect(GetContentsBounds());
   UpdateState();
