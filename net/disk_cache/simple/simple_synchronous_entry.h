@@ -35,12 +35,12 @@ class SimpleSynchronousEntry {
   // objects, for instance after OpenEntry() or CreateEntry(). |new_entry| is
   // the newly created SimpleSynchronousEntry, constructed on the worker pool
   // thread. |new_entry| == NULL in the case of error.
-  typedef base::Callback<void(SimpleSynchronousEntry* /* new_entry */)>
+  typedef base::Callback<void(SimpleSynchronousEntry* new_entry)>
       SynchronousCreationCallback;
 
   // Callback type for IO operations on an entry not requiring special callback
   // arguments (e.g. Write). |result| is a net::Error result code.
-  typedef base::Callback<void(int /* result */)> SynchronousOperationCallback;
+  typedef base::Callback<void(int result)> SynchronousOperationCallback;
 
   static void OpenEntry(
       const base::FilePath& path,
