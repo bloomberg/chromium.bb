@@ -18,9 +18,10 @@
 
 namespace {
 
-int table_key = 0;
-
 WebDatabaseTable::TypeKey GetKey() {
+  // We just need a unique constant. Use the address of a static that
+  // COMDAT folding won't touch in an optimizing linker.
+  static int table_key = 0;
   return reinterpret_cast<void*>(&table_key);
 }
 
