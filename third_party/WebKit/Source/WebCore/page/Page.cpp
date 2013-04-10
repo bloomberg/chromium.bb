@@ -71,6 +71,7 @@
 #include "Settings.h"
 #include "SharedBuffer.h"
 #include "StorageArea.h"
+#include "StorageMap.h"
 #include "StorageNamespace.h"
 #include "TextResourceDecoder.h"
 #include "VisitedLinkState.h"
@@ -926,7 +927,7 @@ void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
 StorageNamespace* Page::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)
-        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this, m_settings->sessionStorageQuota());
+        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this, StorageMap::noQuota);
 
     return m_sessionStorage.get();
 }
