@@ -258,7 +258,7 @@ class COMPOSITOR_EXPORT Compositor
              gfx::AcceleratedWidget widget);
   virtual ~Compositor();
 
-  static void Initialize(bool useThread);
+  static void Initialize();
   static bool WasInitializedWithThread();
   static void Terminate();
 

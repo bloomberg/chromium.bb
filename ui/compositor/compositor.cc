@@ -535,7 +535,17 @@ Compositor::~Compositor() {
 }
 
 // static
-void Compositor::Initialize(bool use_thread) {
+void Compositor::Initialize() {
+#if defined(OS_CHROMEOS)
+  bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUIDisableThreadedCompositing);
+#else
+  bool use_thread =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUIEnableThreadedCompositing) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUIDisableThreadedCompositing);
+#endif
   if (use_thread) {
     g_compositor_thread = new base::Thread("Browser Compositor");
     g_compositor_thread->Start();

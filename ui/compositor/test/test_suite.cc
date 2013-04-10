@@ -26,11 +26,8 @@ CompositorTestSuite::CompositorTestSuite(int argc, char** argv)
 CompositorTestSuite::~CompositorTestSuite() {}
 
 void CompositorTestSuite::Initialize() {
-  bool use_threaded_compositing = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kUIEnableThreadedCompositing);
 #if defined(USE_X11)
-  if (use_threaded_compositing)
-    XInitThreads();
+  XInitThreads();
 #endif
 #if defined(OS_LINUX)
   gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
@@ -41,7 +38,7 @@ void CompositorTestSuite::Initialize() {
 
   message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   CompositorTestSupport::Initialize();
-  Compositor::Initialize(use_threaded_compositing);
+  Compositor::Initialize();
 }
 
 void CompositorTestSuite::Shutdown() {
