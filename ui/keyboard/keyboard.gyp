@@ -14,6 +14,7 @@
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
+        '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
       ],
       'defines': [
