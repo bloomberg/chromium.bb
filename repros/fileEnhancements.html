@@ -1,0 +1,22 @@
+<html>
+<body></body>
+<script>
+    document.addEventListener('dragover', function (event) {
+        event.preventDefault();
+
+        console.log("DragOver Length = " + event.dataTransfer.files.length);
+        for (var i = 0; i < event.dataTransfer.files.length; ++i) {
+            console.log("DragOver[" + i + "].blpPath: " + event.dataTransfer.files[i].blpPath);
+        }
+    }, true);
+
+    document.addEventListener('drop', function (event) {
+        event.preventDefault();
+
+        console.log("Drop Length = " + event.dataTransfer.files.length);
+        for (var i = 0; i < event.dataTransfer.files.length; ++i) {
+            console.log("Drop[" + i + "].blpPath: " + event.dataTransfer.files[i].blpPath);
+        }
+    }, true);
+</script>
+</html>
