@@ -125,6 +125,7 @@ public:
     void didScheduleStyleRecalculation(Frame*);
     void willRecalculateStyle(Frame*);
     void didRecalculateStyle();
+    void didRecalculateStyleForElement();
 
     void willPaint(Frame*);
     void didPaint(RenderObject*, const LayoutRect&);
@@ -257,6 +258,7 @@ private:
     InspectorClient* m_client;
     WeakPtrFactory<InspectorTimelineAgent> m_weakFactory;
     RefPtr<TimelineTraceEventProcessor> m_traceEventProcessor;
+    unsigned m_styleRecalcElementCounter;
 };
 
 } // namespace WebCore

@@ -1052,7 +1052,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 }
                 break;
             case recordTypes.RecalculateStyles: // We don't want to see default details.
-                callSiteStackTraceLabel = WebInspector.UIString("Styles invalidated");
+                if (this.data["elementCount"])
+                    contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), this.data["elementCount"]);
                 callStackLabel = WebInspector.UIString("Styles recalculation forced");
                 break;
             case recordTypes.Layout:

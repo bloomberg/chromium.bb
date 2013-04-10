@@ -174,6 +174,8 @@ public:
     static void didComposite(Page*);
     static InspectorInstrumentationCookie willRecalculateStyle(Document*);
     static void didRecalculateStyle(const InspectorInstrumentationCookie&);
+    static void didRecalculateStyleForElement(Element*);
+
     static void didScheduleStyleRecalculation(Document*);
     static InspectorInstrumentationCookie willMatchRule(Document*, StyleRule*, InspectorCSSOMWrappers&, DocumentStyleSheetCollection*);
     static void didMatchRule(const InspectorInstrumentationCookie&, bool matched);
@@ -350,6 +352,7 @@ private:
     static void didPaintImpl(InstrumentingAgents*, RenderObject*, GraphicsContext*, const LayoutRect&);
     static InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents*, Frame*);
     static void didRecalculateStyleImpl(const InspectorInstrumentationCookie&);
+    static void didRecalculateStyleForElementImpl(InstrumentingAgents*);
     static void didScheduleStyleRecalculationImpl(InstrumentingAgents*, Document*);
     static InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents*, StyleRule*, InspectorCSSOMWrappers&, DocumentStyleSheetCollection*);
     static void didMatchRuleImpl(const InspectorInstrumentationCookie&, bool matched);
@@ -866,6 +869,13 @@ inline void InspectorInstrumentation::didRecalculateStyle(const InspectorInstrum
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (cookie.isValid())
         didRecalculateStyleImpl(cookie);
+}
+
+inline void InspectorInstrumentation::didRecalculateStyleForElement(Element* element)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(element->document()))
+        didRecalculateStyleForElementImpl(instrumentingAgents);
 }
 
 inline void InspectorInstrumentation::didScheduleStyleRecalculation(Document* document)

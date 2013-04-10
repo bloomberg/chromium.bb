@@ -558,6 +558,12 @@ void InspectorInstrumentation::didRecalculateStyleImpl(const InspectorInstrument
         pageAgent->didRecalculateStyle();
 }
 
+void InspectorInstrumentation::didRecalculateStyleForElementImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didRecalculateStyleForElement();
+}
+
 void InspectorInstrumentation::didScheduleStyleRecalculationImpl(InstrumentingAgents* instrumentingAgents, Document* document)
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())

@@ -96,6 +96,8 @@ namespace WebCore {
 
         static void appendLayoutRoot(InspectorObject* data, const FloatQuad&);
 
+        static void appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount);
+
         static inline PassRefPtr<InspectorObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
         {
             RefPtr<InspectorObject> data = InspectorObject::create();

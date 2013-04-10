@@ -289,11 +289,23 @@ void InspectorTimelineAgent::didScheduleStyleRecalculation(Frame* frame)
 void InspectorTimelineAgent::willRecalculateStyle(Frame* frame)
 {
     pushCurrentRecord(InspectorObject::create(), TimelineRecordType::RecalculateStyles, true, frame);
+    ASSERT(!m_styleRecalcElementCounter);
 }
 
 void InspectorTimelineAgent::didRecalculateStyle()
 {
+    if (m_recordStack.isEmpty())
+        return;
+    TimelineRecordEntry& entry = m_recordStack.last();
+    ASSERT(entry.type == TimelineRecordType::RecalculateStyles);
+    TimelineRecordFactory::appendStyleRecalcDetails(entry.data.get(), m_styleRecalcElementCounter);
+    m_styleRecalcElementCounter = 0;
     didCompleteCurrentRecord(TimelineRecordType::RecalculateStyles);
+}
+
+void InspectorTimelineAgent::didRecalculateStyleForElement()
+{
+    ++m_styleRecalcElementCounter;
 }
 
 void InspectorTimelineAgent::willPaint(Frame* frame)
@@ -648,6 +660,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_inspectorType(type)
     , m_client(client)
     , m_weakFactory(this)
+    , m_styleRecalcElementCounter(0)
 {
 }
 

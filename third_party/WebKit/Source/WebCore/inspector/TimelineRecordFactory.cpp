@@ -246,5 +246,10 @@ void TimelineRecordFactory::appendLayoutRoot(InspectorObject* data, const FloatQ
     data->setArray("root", createQuad(quad));
 }
 
+void TimelineRecordFactory::appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount)
+{
+    data->setNumber("elementCount", elementCount);
+}
+
 } // namespace WebCore
 

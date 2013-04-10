@@ -6,6 +6,7 @@ RecalculateStyles Properties:
     children : <object>
     counters : <object>
     data : {
+        elementCount : 2
     }
     endTime : <number>
     frameId : <string>

@@ -1465,6 +1465,7 @@ void Element::recalcStyle(StyleChange change)
     
     if (hasCustomStyleCallbacks())
         didRecalcStyle(change);
+    InspectorInstrumentation::didRecalculateStyleForElement(this);
 }
 
 ElementShadow* Element::shadow() const
