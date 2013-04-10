@@ -5,10 +5,12 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
 #include <string>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -88,6 +90,10 @@ class FakeDriveServiceTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   FakeDriveService fake_service_;
 };
+
+void AppendProgressCallbackResult(std::vector<int64>* values, int64 progress) {
+  values->push_back(progress);
+}
 
 TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
@@ -1893,6 +1899,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
+  std::vector<int64> upload_progress_values;
   fake_service_.ResumeUpload(
       UPLOAD_EXISTING_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
@@ -1900,7 +1907,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       0, 13, 15, "text/plain",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
-      ProgressCallback());
+      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
@@ -1913,13 +1920,17 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       14, 15, 15, "text/plain",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
-      ProgressCallback());
+      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, response.code);
   EXPECT_TRUE(entry.get());
   EXPECT_EQ(15L, entry->file_size());
   EXPECT_TRUE(Exists(entry->resource_id()));
+  ASSERT_TRUE(!upload_progress_values.empty());
+  EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
+  EXPECT_GE(upload_progress_values.front(), 0);
+  EXPECT_LE(upload_progress_values.back(), entry->file_size());
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
@@ -1944,6 +1955,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
+  std::vector<int64> upload_progress_values;
   fake_service_.ResumeUpload(
       UPLOAD_NEW_FILE,
       base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
@@ -1951,7 +1963,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       0, 13, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
-      ProgressCallback());
+      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
@@ -1964,13 +1976,17 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       14, 15, 15, "test/foo",
       scoped_refptr<net::IOBuffer>(),
       test_util::CreateCopyResultCallback(&response, &entry),
-      ProgressCallback());
+      base::Bind(&AppendProgressCallbackResult, &upload_progress_values));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, response.code);
   EXPECT_TRUE(entry.get());
   EXPECT_EQ(15L, entry->file_size());
   EXPECT_TRUE(Exists(entry->resource_id()));
+  ASSERT_TRUE(!upload_progress_values.empty());
+  EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
+  EXPECT_GE(upload_progress_values.front(), 0);
+  EXPECT_LE(upload_progress_values.back(), entry->file_size());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {

@@ -916,6 +916,19 @@ void FakeDriveService::ResumeUpload(
 
   entry->SetString("docs$size.$t", base::Int64ToString(end_position));
 
+  if (!progress_callback.is_null()) {
+    // In the real GDataWapi/Drive DriveService, progress is reported in
+    // nondeterministic timing. In this fake implementation, we choose to call
+    // it twice per one ResumeUpload. This is for making sure that client code
+    // works fine even if the callback is invoked more than once; it is the
+    // crucial difference of the progress callback from others.
+    int64 mid_position = start_position + (end_position - start_position) / 2;
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(progress_callback, mid_position));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(progress_callback, end_position));
+  }
+
   if (content_length != end_position) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
