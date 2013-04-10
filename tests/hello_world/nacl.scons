@@ -19,10 +19,10 @@ env.AddNodeToTestSuite(node,
                        'run_hello_world_test')
 
 if not env.Bit('nacl_static_link') and not env.Bit('bitcode'):
-  # Check the (unstripped) executable size.  This is just a rough sanity
-  # check.  The minimal size with today's toolchain is a little over 128k
-  # due to alignment padding for the code segment.
-  expected_max = 145000
+  # Check the (unstripped) executable size.  The main purpose of this
+  # is to check that we have not acquired any 64k-page-size padding,
+  # which would bump the size above 64k.
+  expected_max = 16000
 else:
   expected_max = None
 

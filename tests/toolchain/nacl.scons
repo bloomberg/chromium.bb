@@ -339,21 +339,3 @@ if env.Bit('bitcode'):
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
                          'run_printf_to_puts_test')
-
-if env.Bit('nacl_glibc'):
-  def AddAlignedCodeTest(name, object_file):
-    node = env.CommandTest(name + '.out',
-                           ['${PYTHON}', env.File('aligned_code.py'),
-                            '${OBJDUMP}', nexe],
-                           # don't run ${PYTHON} under the emulator.
-                           direct_emulation=False)
-    env.AddNodeToTestSuite(node,
-                           ['toolchain_tests', 'small_tests'],
-                           'run_' + name + '_test')
-  AddAlignedCodeTest('aligned_code',
-                     env.ComponentProgram('aligned_code', ['aligned_code.c'],
-                                          EXTRA_LIBS=['${NONIRT_LIBS}']))
-  if not env.Bit('nacl_disable_shared'):
-    AddAlignedCodeTest('aligned_code_lib',
-                       env.NaClSharedLibrary('aligned_code_lib',
-                                             ['aligned_code_lib.c']))
