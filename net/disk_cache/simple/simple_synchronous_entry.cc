@@ -50,6 +50,10 @@ int32 DataSizeFromKeyAndFileSize(size_t key_size, int64 file_size) {
   return data_size;
 }
 
+int64 FileSizeFromKeyAndDataSize(size_t key_size, int32 data_size) {
+  return data_size + key_size + sizeof(disk_cache::SimpleFileHeader);
+}
+
 int64 FileOffsetFromDataOffset(size_t key_size, int data_offset) {
   const int64 headers_size = sizeof(disk_cache::SimpleFileHeader) + key_size;
   return headers_size + data_offset;
@@ -210,6 +214,14 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
   }
 
   return true;
+}
+
+int64 SimpleSynchronousEntry::GetFileSize() const {
+  int64 file_size = 0;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    file_size += FileSizeFromKeyAndDataSize(key_.size(), data_size_[i]);
+  }
+  return file_size;
 }
 
 bool SimpleSynchronousEntry::InitializeForOpen() {

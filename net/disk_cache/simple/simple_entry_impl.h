@@ -100,6 +100,7 @@ class SimpleEntryImpl : public Entry {
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
   // If |entry| no longer exists, then it ensures |sync_entry| is closed.
   static void EntryOperationComplete(
+      base::WeakPtr<SimpleIndex> index,
       const CompletionCallback& completion_callback,
       base::WeakPtr<SimpleEntryImpl> entry,
       SimpleSynchronousEntry* sync_entry,

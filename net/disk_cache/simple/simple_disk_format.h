@@ -56,12 +56,15 @@ namespace SimpleIndexFile {
     uint64 initial_magic_number;
     uint32 version;
     uint64 number_of_entries;
+    uint64 cache_size;  // Total cache storage size in bytes.
   };
 
   // We must keep this struct a POD.
   struct EntryMetadata {
     EntryMetadata();
-    EntryMetadata(const std::string& hash_key_p, base::Time last_used_time_p);
+    EntryMetadata(const std::string& hash_key_p,
+                  base::Time last_used_time_p,
+                  uint64 entry_size_p);
 
     base::Time GetLastUsedTime() const;
     std::string GetHashKey() const;
@@ -79,6 +82,8 @@ namespace SimpleIndexFile {
     // If you want to make calculations/comparisons, you should use the
     // base::Time() class. Use the GetLastUsedTime() method above.
     int64 last_used_time;
+
+    uint64 entry_size;  // Storage size in bytes.
   };
 
   const size_t kEntryMetadataSize = sizeof(EntryMetadata);

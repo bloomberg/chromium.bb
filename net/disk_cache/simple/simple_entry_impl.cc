@@ -150,7 +150,8 @@ int SimpleEntryImpl::ReadData(int index,
   index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);
+                 index_, callback, weak_ptr_factory_.GetWeakPtr(),
+                 synchronous_entry_);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::ReadData,
                                   base::Unretained(synchronous_entry_),
@@ -175,7 +176,8 @@ int SimpleEntryImpl::WriteData(int index,
   index_->UseIfExists(key_);
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);
+                 index_, callback, weak_ptr_factory_.GetWeakPtr(),
+                 synchronous_entry_);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::WriteData,
                                   base::Unretained(synchronous_entry_),
@@ -273,10 +275,15 @@ void SimpleEntryImpl::CreationOperationComplete(
 
 // static
 void SimpleEntryImpl::EntryOperationComplete(
+    base::WeakPtr<SimpleIndex> index,
     const CompletionCallback& completion_callback,
     base::WeakPtr<SimpleEntryImpl> entry,
     SimpleSynchronousEntry* sync_entry,
     int result) {
+  DCHECK(sync_entry);
+  if (index)
+    index->UpdateEntrySize(sync_entry->key(), sync_entry->GetFileSize());
+
   if (entry) {
     DCHECK(entry->synchronous_entry_in_use_by_worker_);
     entry->synchronous_entry_in_use_by_worker_ = false;

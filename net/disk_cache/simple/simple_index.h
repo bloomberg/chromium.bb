@@ -47,6 +47,11 @@ class SimpleIndex
 
   void Cleanup();
 
+  // Update the size (in bytes) of an entry, in the metadata stored in the
+  // index. This should be the total disk-file size including all streams of the
+  // entry.
+  bool UpdateEntrySize(const std::string& key, uint64 entry_size);
+
  private:
   // TODO(felipeg): This way we are storing the hash_key string twice (as the
   // hash_map::key and as a member of EntryMetadata. We could save space if we
@@ -73,6 +78,7 @@ class SimpleIndex
   const base::FilePath path_;
 
   EntrySet entries_set_;
+  uint64 cache_size_;  // Total cache storage size in bytes.
 
   base::FilePath index_filename_;
   base::PlatformFile index_file_;

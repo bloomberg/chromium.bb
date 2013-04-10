@@ -83,6 +83,8 @@ class SimpleSynchronousEntry {
   base::Time last_modified() const { return last_modified_; }
   int32 data_size(int index) const { return data_size_[index]; }
 
+  int64 GetFileSize() const;
+
  private:
   SimpleSynchronousEntry(
       const scoped_refptr<base::TaskRunner>& callback_runner,

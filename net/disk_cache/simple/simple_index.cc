@@ -112,11 +112,15 @@ bool SimpleIndex::Initialize() {
 }
 
 void SimpleIndex::Insert(const std::string& key) {
+  // Upon insert we don't know yet the size of the entry.
+  // It will be updated later when the SimpleEntryImpl finishes opening or
+  // creating the new entry, and then UpdateEntrySize will be called.
   InsertInternal(SimpleIndexFile::EntryMetadata(GetEntryHashForKey(key),
-                                                base::Time::Now()));
+                                                base::Time::Now(), 0));
 }
 
 void SimpleIndex::Remove(const std::string& key) {
+  UpdateEntrySize(key, 0);
   entries_set_.erase(GetEntryHashForKey(key));
 }
 
@@ -132,6 +136,19 @@ bool SimpleIndex::UseIfExists(const std::string& key) {
   return true;
 }
 
+bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
+  EntrySet::iterator it = entries_set_.find(GetEntryHashForKey(key));
+  if (it == entries_set_.end())
+    return false;
+
+  // Update the total cache size with the new entry size.
+  cache_size_ -= it->second.entry_size;
+  cache_size_ += entry_size;
+  it->second.entry_size = entry_size;
+
+  return true;
+}
+
 void SimpleIndex::InsertInternal(
     const SimpleIndexFile::EntryMetadata& entry_metadata) {
   entries_set_.insert(make_pair(entry_metadata.GetHashKey(), entry_metadata));
@@ -143,11 +160,16 @@ bool SimpleIndex::RestoreFromDisk() {
   CloseIndexFile();
   file_util::Delete(index_filename_, /* recursive = */ false);
   entries_set_.clear();
-  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_0");
+
+  // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
+  COMPILE_ASSERT(kSimpleEntryFileCount == 3,
+                 file_pattern_must_match_file_count);
+  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
   FileEnumerator enumerator(path_,
                             false /* recursive */,
                             FileEnumerator::FILES,
                             file_pattern);
+
   for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     const base::FilePath::StringType base_name = file_path.BaseName().value();
@@ -166,8 +188,18 @@ bool SimpleIndex::RestoreFromDisk() {
 #endif
     if (last_used_time.is_null())
       last_used_time = FileEnumerator::GetLastModifiedTime(find_info);
-    InsertInternal(SimpleIndexFile::EntryMetadata(hash_key, last_used_time));
+
+    int64 file_size = FileEnumerator::GetFilesize(find_info);
+    EntrySet::iterator it = entries_set_.find(hash_key);
+    if (it == entries_set_.end()) {
+      InsertInternal(SimpleIndexFile::EntryMetadata(
+          hash_key, last_used_time, file_size));
+    } else {
+      // Summing up the total size of the entry through all the *_[0-2] files
+      it->second.entry_size += file_size;
+    }
   }
+
   // TODO(felipeg): Detect unrecoverable problems and return false here.
   return true;
 }

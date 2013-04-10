@@ -28,11 +28,15 @@ std::string GetEntryHashForKey(const std::string& key) {
 namespace SimpleIndexFile {
 
 EntryMetadata::EntryMetadata() :
-    last_used_time(0) {}
+    last_used_time(0),
+    entry_size(0) {
+}
 
 EntryMetadata::EntryMetadata(const std::string& hash_key_p,
-                             base::Time last_used_time_p) :
-    last_used_time(last_used_time_p.ToInternalValue()) {
+                             base::Time last_used_time_p,
+                             uint64 entry_size_p) :
+    last_used_time(last_used_time_p.ToInternalValue()),
+    entry_size(entry_size_p) {
   DCHECK_EQ(kEntryHashKeySize, implicit_cast<int>(hash_key_p.size()));
   hash_key_p.copy(hash_key, kEntryHashKeySize);
 }
