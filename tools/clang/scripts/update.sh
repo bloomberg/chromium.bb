@@ -117,8 +117,12 @@ function on_asan_mac_host {
   if [[ "${HOST}" == "mini11-a1" ]]; then
     return 0
   fi
-  # mac_asan trybots.
-  for num in $(jot - 600 655)
+  # mac_asan trybots. These share machines with the mac_layout bots, so only
+  # pin clang if the slave is used for an _asan build, not for a layout build.
+  if [[ "${PWD}" != *asan* ]]; then
+    return 1
+  fi
+  for num in {600..655}
   do
     if [[ "${HOST}" == "vm${num}-m4" ]]; then
       return 0
