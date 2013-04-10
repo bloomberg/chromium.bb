@@ -249,7 +249,13 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_WebGLAllowed DISABLED_WebGLAllowed
+#else
+#define MAYBE_WebGLAllowed WebGLAllowed
+#endif
+// Times out on CrOS: http://crbug.com/166060
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLAllowed) {
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
       content::GPU_FEATURE_TYPE_WEBGL));
 
