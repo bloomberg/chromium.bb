@@ -1,8 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -13,18 +11,19 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "net/base/net_errors.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-class NetworkPortalDetectorTest
+class NetworkPortalDetectorImplTest
     : public testing::Test,
       public captive_portal::CaptivePortalDetectorTestBase {
  public:
-  NetworkPortalDetectorTest() {}
-  virtual ~NetworkPortalDetectorTest() {}
+  NetworkPortalDetectorImplTest() {}
+  virtual ~NetworkPortalDetectorImplTest() {}
 
   virtual void SetUp() {
     CrosLibrary::Initialize(true);
@@ -42,9 +41,9 @@ class NetworkPortalDetectorTest
 
     profile_.reset(new TestingProfile());
     network_portal_detector_.reset(
-        new NetworkPortalDetector(profile_->GetRequestContext()));
+        new NetworkPortalDetectorImpl(profile_->GetRequestContext()));
     network_portal_detector_->Init();
-    network_portal_detector_->set_enabled(true);
+    network_portal_detector_->Enable(false);
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
 
@@ -73,11 +72,11 @@ class NetworkPortalDetectorTest
 
   Profile* profile() { return profile_.get(); }
 
-  NetworkPortalDetector* network_portal_detector() {
+  NetworkPortalDetectorImpl* network_portal_detector() {
     return network_portal_detector_.get();
   }
 
-  NetworkPortalDetector::State state() {
+  NetworkPortalDetectorImpl::State state() {
     return network_portal_detector()->state();
   }
 
@@ -99,15 +98,15 @@ class NetworkPortalDetectorTest
   }
 
   bool is_state_idle() {
-    return (NetworkPortalDetector::STATE_IDLE == state());
+    return (NetworkPortalDetectorImpl::STATE_IDLE == state());
   }
 
   bool is_state_portal_detection_pending() {
-    return (NetworkPortalDetector::STATE_PORTAL_CHECK_PENDING == state());
+    return (NetworkPortalDetectorImpl::STATE_PORTAL_CHECK_PENDING == state());
   }
 
   bool is_state_checking_for_portal() {
-    return (NetworkPortalDetector::STATE_CHECKING_FOR_PORTAL == state());
+    return (NetworkPortalDetectorImpl::STATE_CHECKING_FOR_PORTAL == state());
   }
 
   void set_request_timeout(const base::TimeDelta& timeout) {
@@ -165,10 +164,10 @@ class NetworkPortalDetectorTest
   MessageLoop message_loop_;
 
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<NetworkPortalDetector> network_portal_detector_;
+  scoped_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
 };
 
-TEST_F(NetworkPortalDetectorTest, NoPortal) {
+TEST_F(NetworkPortalDetectorImplTest, NoPortal) {
   ASSERT_TRUE(is_state_idle());
 
   SetConnected(wifi1_network());
@@ -184,7 +183,7 @@ TEST_F(NetworkPortalDetectorTest, NoPortal) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, Portal) {
+TEST_F(NetworkPortalDetectorImplTest, Portal) {
   ASSERT_TRUE(is_state_idle());
 
   // Check HTTP 200 response code.
@@ -218,7 +217,7 @@ TEST_F(NetworkPortalDetectorTest, Portal) {
                    ethernet_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, TwoNetworks) {
+TEST_F(NetworkPortalDetectorImplTest, TwoNetworks) {
   ASSERT_TRUE(is_state_idle());
 
   SetConnected(wifi1_network());
@@ -240,7 +239,7 @@ TEST_F(NetworkPortalDetectorTest, TwoNetworks) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, NetworkChanged) {
+TEST_F(NetworkPortalDetectorImplTest, NetworkChanged) {
   ASSERT_TRUE(is_state_idle());
 
   SetConnected(wifi1_network());
@@ -268,7 +267,7 @@ TEST_F(NetworkPortalDetectorTest, NetworkChanged) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, NetworkStateNotChanged) {
+TEST_F(NetworkPortalDetectorImplTest, NetworkStateNotChanged) {
   ASSERT_TRUE(is_state_idle());
 
   SetConnected(wifi1_network());
@@ -284,7 +283,7 @@ TEST_F(NetworkPortalDetectorTest, NetworkStateNotChanged) {
   ASSERT_TRUE(is_state_idle());
 }
 
-TEST_F(NetworkPortalDetectorTest, NetworkStateChanged) {
+TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
   // Test for Portal -> Online -> Portal network state transitions.
   ASSERT_TRUE(is_state_idle());
 
@@ -316,7 +315,7 @@ TEST_F(NetworkPortalDetectorTest, NetworkStateChanged) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, PortalDetectionTimeout) {
+TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
   ASSERT_TRUE(is_state_idle());
 
   // For instantaneous timeout.
@@ -335,7 +334,7 @@ TEST_F(NetworkPortalDetectorTest, PortalDetectionTimeout) {
   ASSERT_EQ(base::TimeDelta::FromSeconds(3), next_attempt_delay());
 }
 
-TEST_F(NetworkPortalDetectorTest, PortalDetectionRetryAfter) {
+TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
   ASSERT_TRUE(is_state_idle());
 
   const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 101\n\n";
@@ -353,7 +352,7 @@ TEST_F(NetworkPortalDetectorTest, PortalDetectionRetryAfter) {
   ASSERT_EQ(base::TimeDelta::FromSeconds(101), next_attempt_delay());
 }
 
-TEST_F(NetworkPortalDetectorTest, PortalDetectorRetryAfterIsSmall) {
+TEST_F(NetworkPortalDetectorImplTest, PortalDetectorRetryAfterIsSmall) {
   ASSERT_TRUE(is_state_idle());
 
   const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 1\n\n";
@@ -372,7 +371,7 @@ TEST_F(NetworkPortalDetectorTest, PortalDetectorRetryAfterIsSmall) {
   ASSERT_EQ(base::TimeDelta::FromSeconds(3), next_attempt_delay());
 }
 
-TEST_F(NetworkPortalDetectorTest, FirstAttemptFailed) {
+TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   ASSERT_TRUE(is_state_idle());
 
   set_min_time_between_attempts(base::TimeDelta());
@@ -398,7 +397,7 @@ TEST_F(NetworkPortalDetectorTest, FirstAttemptFailed) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, AllAttemptsFailed) {
+TEST_F(NetworkPortalDetectorImplTest, AllAttemptsFailed) {
   ASSERT_TRUE(is_state_idle());
 
   set_min_time_between_attempts(base::TimeDelta());
@@ -432,7 +431,7 @@ TEST_F(NetworkPortalDetectorTest, AllAttemptsFailed) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, ProxyAuthRequired) {
+TEST_F(NetworkPortalDetectorImplTest, ProxyAuthRequired) {
   ASSERT_TRUE(is_state_idle());
   set_min_time_between_attempts(base::TimeDelta());
 
@@ -463,7 +462,7 @@ TEST_F(NetworkPortalDetectorTest, ProxyAuthRequired) {
       wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, NoResponseButBehindPortal) {
+TEST_F(NetworkPortalDetectorImplTest, NoResponseButBehindPortal) {
   ASSERT_TRUE(is_state_idle());
   set_min_time_between_attempts(base::TimeDelta());
 
@@ -499,7 +498,7 @@ TEST_F(NetworkPortalDetectorTest, NoResponseButBehindPortal) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, LazyDetectionForOnlineNetwork) {
+TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForOnlineNetwork) {
   ASSERT_TRUE(is_state_idle());
   set_min_time_between_attempts(base::TimeDelta());
   set_lazy_check_interval(base::TimeDelta());
@@ -540,7 +539,7 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForOnlineNetwork) {
       wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, LazyDetectionForPortalNetwork) {
+TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForPortalNetwork) {
   ASSERT_TRUE(is_state_idle());
   set_min_time_between_attempts(base::TimeDelta());
   set_lazy_check_interval(base::TimeDelta());
@@ -590,7 +589,7 @@ TEST_F(NetworkPortalDetectorTest, LazyDetectionForPortalNetwork) {
                    wifi1_network());
 }
 
-TEST_F(NetworkPortalDetectorTest, DetectionTimeoutIsCancelled) {
+TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
   ASSERT_TRUE(is_state_idle());
   set_min_time_between_attempts(base::TimeDelta());
 

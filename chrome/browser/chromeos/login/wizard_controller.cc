@@ -603,8 +603,8 @@ void WizardController::PerformPostEulaActions() {
       SetDefaultCheckPortalList();
   host_->CheckForAutoEnrollment();
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (detector)
-    detector->set_enabled(true);
+  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
+    detector->Enable(true);
 }
 
 void WizardController::PerformPostUpdateActions() {
