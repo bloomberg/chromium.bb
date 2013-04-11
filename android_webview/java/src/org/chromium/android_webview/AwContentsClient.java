@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.graphics.Rect;
@@ -286,19 +287,21 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onReceivedError(int errorCode, String description, String failingUrl);
 
-    public abstract void onShowCustomView(View view,
-           int requestedOrientation, WebChromeClient.CustomViewCallback callback);
-
-    // TODO (michaelbai): This method should be abstract, having empty body here
-    // makes the merge to the Android easy.
-    public void onHideCustomView() {
+    // TODO (michaelbai): Remove this method once the same method remove from
+    // WebViewContentsClientAdapter.
+    public void onShowCustomView(View view,
+           int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
     }
 
     // TODO (michaelbai): This method should be abstract, having empty body here
     // makes the merge to the Android easy.
-    public Bitmap getDefaultVideoPoster() {
-        return null;
+    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+        onShowCustomView(view, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, callback);
     }
+
+    public abstract void onHideCustomView();
+
+    public abstract Bitmap getDefaultVideoPoster();
 
     //--------------------------------------------------------------------------------------------
     //                              Other WebView-specific methods

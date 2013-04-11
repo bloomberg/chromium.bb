@@ -32,9 +32,7 @@ public class AwContentVideoViewDelegate implements ContentVideoViewContextDelega
                 // TODO: we need to invoke ContentVideoView.onDestroyContentVideoView() here.
             }
         };
-        mAwContentsClient.onShowCustomView(view,
-                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED,
-                cb);
+        mAwContentsClient.onShowCustomView(view, cb);
     }
 
     @Override

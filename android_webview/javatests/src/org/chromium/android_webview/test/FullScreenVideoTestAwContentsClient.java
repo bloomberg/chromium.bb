@@ -32,8 +32,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     }
 
     @Override
-    public void onShowCustomView(View view, int requestedOrientation,
-            WebChromeClient.CustomViewCallback callback) {
+    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
