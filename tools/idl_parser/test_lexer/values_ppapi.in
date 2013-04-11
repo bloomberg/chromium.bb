@@ -30,6 +30,8 @@ COMMENT /*MULTI LINE*/
 > >
 < <
 
+LSHIFT <<
+RSHIFT >>
 ELLIPSIS ...
 
 float 1.1

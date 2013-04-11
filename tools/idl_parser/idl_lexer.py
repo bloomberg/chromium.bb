@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -45,17 +44,12 @@ class IDLLexer(object):
       'integer',
       'string',
 
-    # Operators
-      'ELLIPSIS',
-      'LSHIFT',
-      'RSHIFT',
-
     # Symbol and keywords types
       'COMMENT',
       'identifier',
 
-    # Pepper Extras
-      'INLINE',
+    # MultiChar operators
+      'ELLIPSIS',
   ]
 
   # 'keywords' is a map of string to token type.  All tokens matching
@@ -83,10 +77,8 @@ class IDLLexer(object):
     'Infinity' : 'INFINITY',
     'inherit' : 'INHERIT',
     'interface' : 'INTERFACE',
-    'label' : 'LABEL',
     'legacycaller' : 'LEGACYCALLER',
     'long' : 'LONG',
-    'namespace' : 'NAMESPACE',
     'Nan' : 'NAN',
     'null' : 'NULL',
     'object' : 'OBJECT',
@@ -100,7 +92,6 @@ class IDLLexer(object):
     'short' : 'SHORT',
     'static' : 'STATIC',
     'stringifier' : 'STRINGIFIER',
-    'struct' : 'STRUCT',
     'typedef' : 'TYPEDEF',
     'true' : 'TRUE',
     'unsigned' : 'UNSIGNED',
@@ -126,15 +117,13 @@ class IDLLexer(object):
   # 't_ignore' is a special match of items to ignore
   t_ignore = ' \t'
 
+  # Ellipsis operator
+  t_ELLIPSIS = r'\.\.\.'
+
   # Constant values
   t_integer = r'-?(0([0-7]*|[Xx][0-9A-Fa-f]+)|[1-9][0-9]*)'
   t_float = r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)'
   t_float += r'([Ee][+-]?[0-9]+)?|[0-9]+[Ee][+-]?[0-9]+)'
-
-  # Special multi-character operators
-  t_ELLIPSIS = r'\.\.\.'
-  t_LSHIFT = r'<<'
-  t_RSHIFT = r'>>'
 
   # A line ending '\n', we use this to increment the line number
   def t_LINE_END(self, t):
@@ -152,12 +141,6 @@ class IDLLexer(object):
   # A C or C++ style comment:  /* xxx */ or //
   def t_COMMENT(self, t):
     r'(/\*(.|\n)*?\*/)|(//.*(\n[ \t]*//.*)*)'
-    self.AddLines(t.value.count('\n'))
-    return t
-
-  # Return a "preprocessor" inline block
-  def t_INLINE(self, t):
-    r'\#inline (.|\n)*?\#endinl.*'
     self.AddLines(t.value.count('\n'))
     return t
 
@@ -191,7 +174,7 @@ class IDLLexer(object):
     pos = self.lexobj.lexpos - self.index[line]
     out = self.ErrorMessage(line, pos, msg)
     sys.stderr.write(out + '\n')
-    self.lex_errors += 1
+    self._lex_errors += 1
 
 
   def AddLines(self, count):
@@ -212,7 +195,7 @@ class IDLLexer(object):
 
   def SourceLine(self, line, pos):
     # Create a source line marker
-    caret = '\t^'.expandtabs(pos)
+    caret = ' ' * pos + '^'
     # We decrement the line number since the array is 0 based while the
     # line numbers are 1 based.
     return "%s\n%s" % (self.lines[line - 1], caret)
@@ -221,6 +204,19 @@ class IDLLexer(object):
     return "\n%s\n%s" % (
         self.FileLineMsg(line, msg),
         self.SourceLine(line, pos))
+
+#
+# Tokenizer
+#
+# The token function returns the next token provided by IDLLexer for matching
+# against the leaf paterns.
+#
+  def token(self):
+    tok = self.lexobj.token()
+    if tok:
+      self.last = tok
+    return tok
+
 
   def GetTokens(self):
     outlist = []
@@ -231,120 +227,15 @@ class IDLLexer(object):
       outlist.append(t)
     return outlist
 
-  def __init__(self, filename, data):
-    self.index = [0]
-    self.lex_errors = 0
-    self.lines = data.split('\n')
-    self.lexobj = lex.lex(object=self, lextab=None, optimize=0)
+  def Tokenize(self, data, filename='__no_file__'):
     self.lexobj.filename = filename
     self.lexobj.input(data)
+    self.lines = data.split('\n')
 
+  def __init__(self):
+    self.index = [0]
+    self._lex_errors = 0
+    self.linex = []
+    self.filename = None
+    self.lexobj = lex.lex(object=self, lextab=None, optimize=0)
 
-#
-# FileToTokens
-#
-# From a source file generate a list of tokens.
-#
-def FileToTokens(filename):
-  with open(filename, 'rb') as srcfile:
-    lexer = IDLLexer(filename, srcfile.read())
-    return lexer.GetTokens()
-
-
-#
-# TextToTokens
-#
-# From a source file generate a list of tokens.
-#
-def TextToTokens(text):
-  lexer = IDLLexer(None, text)
-  return lexer.GetTokens()
-
-
-#
-# TestSameText
-#
-# From a set of tokens, generate a new source text by joining with a
-# single space.  The new source is then tokenized and compared against the
-# old set.
-#
-def TestSameText(filename):
-  tokens1 = FileToTokens(filename)
-  to_text = '\n'.join(['%s' % t.value for t in tokens1])
-  tokens2 = TextToTokens(to_text)
-
-  count1 = len(tokens1)
-  count2 = len(tokens2)
-  if count1 != count2:
-    print "Size mismatch original %d vs %d\n" % (count1, count2)
-    if count1 > count2:
-      count1 = count2
-
-  failed = 0
-  for i in range(count1):
-    if tokens1[i].value != tokens2[i].value:
-      print "%d >>%s<< >>%s<<" % (i, tokens1[i].type, tokens2[i].value)
-      failed = failed + 1
-
-  return failed
-
-
-#
-# TestExpectedText
-#
-# From a set of tokens pairs, verify the type field of the second matches
-# the value of the first, so that:
-# integer 123 float 1.1
-# will generate a passing test, where the first token has both the type and
-# value of the keyword integer and the second has the type of integer and
-# value of 123.
-#
-def TestExpect(filename):
-  tokens = FileToTokens(filename)
-  count = len(tokens)
-  index = 0
-  errors = 0
-  while index < count:
-    expect_type = tokens[index].value
-    actual_type = tokens[index + 1].type
-    index += 2
-
-    if expect_type != actual_type:
-      sys.stderr.write('Mismatch:  Expected %s, but got %s.\n' %
-                       (expect_type, actual_type))
-      errors += 1
-
-  return errors
-
-
-def Main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('--test', help='Run tests.', action='store_true')
-
-  # If no arguments are provided, run tests.
-  if len(args) == 0:
-    args = ['--test', 'test_lexer/values.in', 'test_lexer/keywords.in']
-
-  options, filenames = parser.parse_args(args)
-  if not filenames:
-    parser.error('No files specified.')
-
-  for filename in filenames:
-    try:
-      if options.test:
-        if TestSameText(filename):
-          sys.stderr.write('Failed text match on %s.\n' % filename)
-          return -1
-        if TestExpect(filename):
-          sys.stderr.write('Failed expected type match on %s.\n' % filename)
-          return -1
-        print 'Passed: ' + filename
-
-    except lex.LexError as le:
-      sys.stderr.write('%s\n' % str(le))
-
-  return 0
-
-
-if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
