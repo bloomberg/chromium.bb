@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
-import android.graphics.PointF;
 import android.view.View;
 
 /**
  * CursorController for selecting a range of text.
  */
-abstract class SelectionHandleController implements CursorController {
+public abstract class SelectionHandleController implements CursorController {
 
     // The following constants match the ones in
     // third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h
@@ -32,17 +31,17 @@ abstract class SelectionHandleController implements CursorController {
     private int mFixedHandleX;
     private int mFixedHandleY;
 
-    SelectionHandleController(View parent) {
+    public SelectionHandleController(View parent) {
         mParent = parent;
     }
 
     /** Automatically show selection anchors when text is selected. */
-    void allowAutomaticShowing() {
+    public void allowAutomaticShowing() {
         mAllowAutomaticShowing = true;
     }
 
     /** Hide selection anchors, and don't automatically show them. */
-    void hideAndDisallowAutomaticShowing() {
+    public void hideAndDisallowAutomaticShowing() {
         hide();
         mAllowAutomaticShowing = false;
     }
@@ -101,7 +100,7 @@ abstract class SelectionHandleController implements CursorController {
     /**
      * @return true iff this controller is being used to drag either the selection start or end.
      */
-    boolean isDragging() {
+    public boolean isDragging() {
         return (mStartHandle != null && mStartHandle.isDragging()) ||
                (mEndHandle != null && mEndHandle.isDragging());
     }
@@ -121,17 +120,8 @@ abstract class SelectionHandleController implements CursorController {
      * @param x The start handle position X in physical pixels.
      * @param y The start handle position Y in physical pixels.
      */
-    void setStartHandlePosition(int x, int y) {
-        mStartHandle.positionAt(x, y);
-    }
-
-    /**
-     * Moves the start handle so that it points at the given coordinates.
-     * @param x The start handle position X in physical pixels.
-     * @param y The start handle position Y in physical pixels.
-     */
-    void setStartHandlePosition(float x, float y) {
-        setStartHandlePosition((int) x, (int) y);
+    public void setStartHandlePosition(float x, float y) {
+        mStartHandle.positionAt((int) x, (int) y);
     }
 
     /**
@@ -139,24 +129,15 @@ abstract class SelectionHandleController implements CursorController {
      * @param x The end handle position X in physical pixels.
      * @param y The end handle position Y in physical pixels.
      */
-    void setEndHandlePosition(int x, int y) {
-        mEndHandle.positionAt(x, y);
-    }
-
-    /**
-     * Moves the end handle so that it points at the given coordinates.
-     * @param x The end handle position X in physical pixels.
-     * @param y The end handle position Y in physical pixels.
-     */
-    void setEndHandlePosition(float x, float y) {
-        setEndHandlePosition((int) x, (int) y);
+    public void setEndHandlePosition(float x, float y) {
+        mEndHandle.positionAt((int) x, (int) y);
     }
 
     /**
      * If the handles are not visible, sets their visibility to View.VISIBLE and begins fading them
      * in.
      */
-    void beginHandleFadeIn() {
+    public void beginHandleFadeIn() {
         mStartHandle.beginFadeIn();
         mEndHandle.beginFadeIn();
     }
@@ -164,7 +145,7 @@ abstract class SelectionHandleController implements CursorController {
     /**
      * Sets the start and end handles to the given visibility.
      */
-    void setHandleVisibility(int visibility) {
+    public void setHandleVisibility(int visibility) {
         mStartHandle.setVisibility(visibility);
         mEndHandle.setVisibility(visibility);
     }
@@ -175,7 +156,7 @@ abstract class SelectionHandleController implements CursorController {
      * @param startDir Direction (left/right) of start handle.
      * @param endDir Direction (left/right) of end handle.
      */
-    void onSelectionChanged(int startDir, int endDir) {
+    public void onSelectionChanged(int startDir, int endDir) {
         if (mAllowAutomaticShowing) {
             showHandles(startDir, endDir);
         }
@@ -189,7 +170,7 @@ abstract class SelectionHandleController implements CursorController {
      * @param startDir Direction (left/right) of start handle.
      * @param endDir Direction (left/right) of end handle.
      */
-    void showHandles(int startDir, int endDir) {
+    public void showHandles(int startDir, int endDir) {
         createHandlesIfNeeded(startDir, endDir);
         showHandlesIfNeeded();
     }

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
+
+import org.chromium.content.browser.ContentViewCore;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -18,7 +20,7 @@ import android.widget.ListView;
 /**
  * Handles the popup dialog for the <select> HTML tag support.
  */
-class SelectPopupDialog {
+public class SelectPopupDialog {
     // The currently showing popup dialog, null if none is showing.
     private static SelectPopupDialog sShownDialog;
 
@@ -211,7 +213,7 @@ class SelectPopupDialog {
     }
 
     // The methods below are used by tests.
-    static SelectPopupDialog getCurrent() {
+    public static SelectPopupDialog getCurrent() {
         return sShownDialog;
     }
 }

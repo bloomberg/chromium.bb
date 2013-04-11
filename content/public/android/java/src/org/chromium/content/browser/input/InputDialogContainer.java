@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -18,8 +18,8 @@ import android.text.format.Time;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
 
-import org.chromium.content.browser.DateTimePickerDialog.OnDateTimeSetListener;
-import org.chromium.content.browser.MonthPickerDialog.OnMonthSetListener;
+import org.chromium.content.browser.input.DateTimePickerDialog.OnDateTimeSetListener;
+import org.chromium.content.browser.input.MonthPickerDialog.OnMonthSetListener;
 import org.chromium.content.R;
 
 import java.text.ParseException;
@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-class InputDialogContainer {
+public class InputDialogContainer {
 
     interface InputActionDelegate {
         void cancelDateTimeDialog();

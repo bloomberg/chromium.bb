@@ -25,11 +25,9 @@ M C RCN: Nullcheck of GestureDetector.mVelocityTracker at line 630 of value prev
 M C USELESS_STRING: Invocation of toString on certChain in org.chromium.net.X509Util.verifyServerCertificates(byte[][], String)  At X509Util.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
-M D ICAST: integral division result cast to double or float in org.chromium.content.browser.HandleView.setOrientation(int)  At HandleView.java
 M D SF: Switch statement found in org.chromium.chrome.browser.ChromeBrowserProvider.insert(Uri, ContentValues) where one case falls through to the next case  At ChromeBrowserProvider.java
 M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCursor.fillWindow(int, CursorWindow) where default case is missing  At SQLiteCursor.java
 M D SF: Switch statement found in org.chromium.content.browser.ContentSettings$EventHandler$1.handleMessage(Message) where default case is missing  At ContentSettings.java
-M D SF: Switch statement found in org.chromium.content.browser.HandleView.onTouchEvent(MotionEvent) where default case is missing  At HandleView.java
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M D ST: Write to static field org.chromium.content.browser.ContentSettings.sAppCachePathIsSet from instance method org.chromium.content.browser.ContentSettings.setAppCachePath(String)  At ContentSettings.java
 M M LI: Incorrect lazy initialization and update of static field org.chromium.content.browser.ContentVideoView.sContentVideoView in org.chromium.content.browser.ContentVideoView.createContentVideoView(int)  At ContentVideoView.java

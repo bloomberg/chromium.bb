@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -27,7 +27,7 @@ import android.widget.TextView;
 /**
  * View that displays a selection or insertion handle for text editing.
  */
-class HandleView extends View {
+public class HandleView extends View {
     private static final float FADE_DURATION = 200.f;
 
     private Drawable mDrawable;
@@ -113,7 +113,7 @@ class HandleView extends View {
             }
             mDrawable = mSelectHandleLeft;
             handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = (handleWidth * 3) / 4;
+            mHotspotX = (handleWidth * 3) / 4f;
             break;
         }
 
@@ -124,7 +124,7 @@ class HandleView extends View {
             }
             mDrawable = mSelectHandleRight;
             handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = handleWidth / 4;
+            mHotspotX = handleWidth / 4f;
             break;
         }
 
@@ -136,7 +136,7 @@ class HandleView extends View {
             }
             mDrawable = mSelectHandleCenter;
             handleWidth = mDrawable.getIntrinsicWidth();
-            mHotspotX = handleWidth / 2;
+            mHotspotX = handleWidth / 2f;
             mIsInsertionHandle = true;
             break;
         }
@@ -306,6 +306,9 @@ class HandleView extends View {
             case MotionEvent.ACTION_CANCEL:
                 mIsDragging = false;
                 break;
+
+            default:
+                return false;
         }
         return true;
     }

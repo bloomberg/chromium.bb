@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.graphics.PointF;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,7 @@ import android.widget.PopupWindow;
 /**
  * CursorController for inserting text at the cursor position.
  */
-abstract class InsertionHandleController implements CursorController {
+public abstract class InsertionHandleController implements CursorController {
 
     /** The handle view, lazily created when first shown */
     private HandleView mHandle;
@@ -36,18 +35,18 @@ abstract class InsertionHandleController implements CursorController {
 
     private Context mContext;
 
-    InsertionHandleController(View parent) {
+    public InsertionHandleController(View parent) {
         mParent = parent;
         mContext = parent.getContext();
     }
 
     /** Allows the handle to be shown automatically when cursor position changes */
-    void allowAutomaticShowing() {
+    public void allowAutomaticShowing() {
         mAllowAutomaticShowing = true;
     }
 
     /** Disallows the handle from being shown automatically when cursor position changes */
-    void hideAndDisallowAutomaticShowing() {
+    public void hideAndDisallowAutomaticShowing() {
         hide();
         mAllowAutomaticShowing = false;
     }
@@ -55,7 +54,7 @@ abstract class InsertionHandleController implements CursorController {
     /**
      * Shows the handle.
      */
-    void showHandle() {
+    public void showHandle() {
         createHandleIfNeeded();
         showHandleIfNeeded();
     }
@@ -66,13 +65,13 @@ abstract class InsertionHandleController implements CursorController {
         }
     }
 
-    void showHandleWithPastePopup() {
+    public void showHandleWithPastePopup() {
         showHandle();
         showPastePopup();
     }
 
     /** Shows the handle at the given coordinates, as long as automatic showing is allowed */
-    void onCursorPositionChanged() {
+    public void onCursorPositionChanged() {
         if (mAllowAutomaticShowing) {
             showHandle();
         }
@@ -83,25 +82,21 @@ abstract class InsertionHandleController implements CursorController {
      * @param x Handle x in physical pixels.
      * @param y Handle y in physical pixels.
      */
-    void setHandlePosition(int x, int y) {
-        mHandle.positionAt(x, y);
-    }
-
-    void setHandlePosition(float x, float y) {
-        setHandlePosition((int) x, (int) y);
+    public void setHandlePosition(float x, float y) {
+        mHandle.positionAt((int) x, (int) y);
     }
 
     /**
      * If the handle is not visible, sets its visibility to View.VISIBLE and begins fading it in.
      */
-    void beginHandleFadeIn() {
+    public void beginHandleFadeIn() {
         mHandle.beginFadeIn();
     }
 
     /**
      * Sets the handle to the given visibility.
      */
-    void setHandleVisibility(int visibility) {
+    public void setHandleVisibility(int visibility) {
         mHandle.setVisibility(visibility);
     }
 

@@ -2,33 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test;
+package org.chromium.chrome.browser.autofill;
 
-import android.app.Activity;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
-import android.os.SystemClock;
-import android.test.ActivityInstrumentationTestCase2;
-import android.test.IsolatedContext;
-import android.test.mock.MockContentResolver;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Pair;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.ExtractedText;
-import android.view.inputmethod.ExtractedTextRequest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.browser.autofill.AutofillListAdapter;
 import org.chromium.chrome.browser.autofill.AutofillPopup;
 import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.chrome.browser.autofill.AutofillSuggestion;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.ContainerViewDelegate;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.browser.test.util.Criteria;

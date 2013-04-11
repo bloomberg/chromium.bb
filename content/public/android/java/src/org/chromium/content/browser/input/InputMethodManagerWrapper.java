@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.content.Context;
 import android.os.IBinder;
@@ -13,7 +13,7 @@ import android.view.inputmethod.InputMethodManager;
 /**
  * Wrapper around Android's InputMethodManager
  */
-public class InputMethodManagerWrapper {
+class InputMethodManagerWrapper {
     private final Context mContext;
 
     public InputMethodManagerWrapper(Context context) {

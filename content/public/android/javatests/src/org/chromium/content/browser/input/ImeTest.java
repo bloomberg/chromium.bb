@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -20,7 +20,8 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ImeAdapter.AdapterInputConnection;
+import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -31,8 +32,6 @@ import java.util.concurrent.Callable;
 
 public class ImeTest extends ContentShellTestBase {
 
-    private static final int INVALID_SELECTION = -2;
-    private static final int INVALID_COMPOSITION = -2;
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\"" +
             "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
@@ -406,7 +405,7 @@ public class ImeTest extends ContentShellTestBase {
         return getContentViewCore().getImeAdapterForTest();
     }
 
-    private ImeAdapter.AdapterInputConnection getAdapterInputConnection() {
+    private AdapterInputConnection getAdapterInputConnection() {
         return getContentViewCore().getInputConnectionForTest();
     }
 
@@ -419,7 +418,7 @@ public class ImeTest extends ContentShellTestBase {
         }
     }
 
-    private static class TestAdapterInputConnection extends ImeAdapter.AdapterInputConnection {
+    private static class TestAdapterInputConnection extends AdapterInputConnection {
         private int mSetEditableTextCallCounter = 0;
         private int mUpdateSelectionCounter = 0;
         private String mText;

@@ -42,8 +42,14 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
-import org.chromium.content.browser.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
+import org.chromium.content.browser.input.AdapterInputConnection;
+import org.chromium.content.browser.input.HandleView;
+import org.chromium.content.browser.input.ImeAdapter;
+import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
+import org.chromium.content.browser.input.InsertionHandleController;
+import org.chromium.content.browser.input.SelectPopupDialog;
+import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -192,7 +198,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
     private ImeAdapter.AdapterInputConnectionFactory mAdapterInputConnectionFactory;
-    private ImeAdapter.AdapterInputConnection mInputConnection;
+    private AdapterInputConnection mInputConnection;
 
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
@@ -326,17 +332,17 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     @VisibleForTesting
-    protected ImeAdapter getImeAdapterForTest() {
+    public ImeAdapter getImeAdapterForTest() {
         return mImeAdapter;
     }
 
     @VisibleForTesting
-    protected void setAdapterInputConnectionFactory(AdapterInputConnectionFactory factory) {
+    public void setAdapterInputConnectionFactory(AdapterInputConnectionFactory factory) {
         mAdapterInputConnectionFactory = factory;
     }
 
     @VisibleForTesting
-    protected ImeAdapter.AdapterInputConnection getInputConnectionForTest() {
+    public AdapterInputConnection getInputConnectionForTest() {
         return mInputConnection;
     }
 
@@ -1293,8 +1299,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
             mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                    ImeAdapter.sTextInputTypeNone, ImeAdapter.INVALID_SELECTION,
-                    ImeAdapter.INVALID_SELECTION);
+                    ImeAdapter.getTextInputTypeNone(),
+                    AdapterInputConnection.INVALID_SELECTION,
+                    AdapterInputConnection.INVALID_SELECTION);
             InputMethodManager manager = (InputMethodManager)
                     getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             manager.restartInput(mContainerView);
@@ -1662,7 +1669,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         return mZoomManager.isMultiTouchZoomSupported();
     }
 
-    void selectPopupMenuItems(int[] indices) {
+    public void selectPopupMenuItems(int[] indices) {
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
         }
@@ -2057,11 +2064,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded) {
         TraceEvent.begin();
-
-        // Non-breaking spaces can cause the IME to get confused. Replace with normal spaces.
-        text = text.replace('\u00A0', ' ');
-
-        mSelectionEditable = (textInputType != ImeAdapter.sTextInputTypeNone);
+        mSelectionEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
 
         if (mActionMode != null) mActionMode.invalidate();
 
@@ -2069,12 +2072,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 selectionStart, selectionEnd, showImeIfNeeded);
 
         if (mInputConnection != null) {
-            // In WebKit if there's a composition then the selection will usually be the
-            // same as the composition, whereas Android IMEs expect the selection to be
-            // just a caret at the end of the composition.
-            if (selectionStart == compositionStart && selectionEnd == compositionEnd) {
-                selectionStart = selectionEnd;
-            }
             mInputConnection.setEditableText(text, selectionStart, selectionEnd,
                     compositionStart, compositionEnd);
         }

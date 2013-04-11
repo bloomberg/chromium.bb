@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.input;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -12,7 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
-import org.chromium.content.browser.MonthPicker.OnMonthChangedListener;
+import org.chromium.content.browser.input.MonthPicker.OnMonthChangedListener;
 import org.chromium.content.R;
 
 public class MonthPickerDialog extends AlertDialog implements OnClickListener,
