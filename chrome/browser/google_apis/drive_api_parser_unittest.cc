@@ -409,6 +409,19 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ(change4.file_id(), entry4->resource_id());
   EXPECT_EQ(change4.is_deleted(), entry4->deleted());
 }
+
+TEST(DriveAPIParserTest, HasKind) {
+  scoped_ptr<base::Value> change_list_json(
+      test_util::LoadJSONFile("chromeos/drive/changelist.json"));
+  scoped_ptr<base::Value> file_list_json(
+      test_util::LoadJSONFile("chromeos/drive/filelist.json"));
+
+  EXPECT_TRUE(ChangeList::HasChangeListKind(*change_list_json));
+  EXPECT_FALSE(ChangeList::HasChangeListKind(*file_list_json));
+
+  EXPECT_FALSE(FileList::HasFileListKind(*change_list_json));
+  EXPECT_TRUE(FileList::HasFileListKind(*file_list_json));
+}
 #endif  // OS_CHROMEOS
 
 }  // namespace google_apis

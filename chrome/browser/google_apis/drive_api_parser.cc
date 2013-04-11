@@ -623,10 +623,14 @@ void FileList::RegisterJSONConverter(
 }
 
 // static
+bool FileList::HasFileListKind(const base::Value& value) {
+  return IsResourceKindExpected(value, kFileListKind);
+}
+
+// static
 scoped_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
   scoped_ptr<FileList> resource(new FileList());
-  if (!IsResourceKindExpected(value, kFileListKind) ||
-      !resource->Parse(value)) {
+  if (!HasFileListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileList JSON!";
     return scoped_ptr<FileList>(NULL);
   }
@@ -703,10 +707,14 @@ void ChangeList::RegisterJSONConverter(
 }
 
 // static
+bool ChangeList::HasChangeListKind(const base::Value& value) {
+  return IsResourceKindExpected(value, kChangeListKind);
+}
+
+// static
 scoped_ptr<ChangeList> ChangeList::CreateFrom(const base::Value& value) {
   scoped_ptr<ChangeList> resource(new ChangeList());
-  if (!IsResourceKindExpected(value, kChangeListKind) ||
-      !resource->Parse(value)) {
+  if (!HasChangeListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ChangeList JSON!";
     return scoped_ptr<ChangeList>(NULL);
   }

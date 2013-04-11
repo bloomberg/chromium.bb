@@ -631,6 +631,9 @@ class FileList {
   static void RegisterJSONConverter(
       base::JSONValueConverter<FileList>* converter);
 
+  // Returns true if the |value| has kind field for FileList.
+  static bool HasFileListKind(const base::Value& value);
+
   // Creates file list from parsed JSON.
   static scoped_ptr<FileList> CreateFrom(const base::Value& value);
 
@@ -745,6 +748,9 @@ class ChangeList {
   // class.
   static void RegisterJSONConverter(
       base::JSONValueConverter<ChangeList>* converter);
+
+  // Returns true if the |value| has kind field for ChangeList.
+  static bool HasChangeListKind(const base::Value& value);
 
   // Creates change list from parsed JSON.
   static scoped_ptr<ChangeList> CreateFrom(const base::Value& value);
