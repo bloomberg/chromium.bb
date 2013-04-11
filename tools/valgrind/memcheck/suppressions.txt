@@ -4317,14 +4317,6 @@
    fun:_ZN7WebCore25WebKitBlobBuilderInternal*
 }
 {
-   bug_108627
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore15V8ParameterBase8toStringIN3WTF6StringEEET_v
-   fun:_ZN7WebCore15V8ParameterBasecvN3WTF6StringEEv
-}
-{
    bug_108628
    Memcheck:Leak
    fun:_Znw*
