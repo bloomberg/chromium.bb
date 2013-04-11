@@ -303,7 +303,7 @@ VisiblePositionRange AccessibilityObject::visiblePositionRangeForUnorderedPositi
     return VisiblePositionRange(startPos, endPos);
 }
 
-static VisiblePosition startOfStyleRange(const VisiblePosition visiblePos)
+static VisiblePosition startOfStyleRange(const VisiblePosition& visiblePos)
 {
     RenderObject* renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();
     RenderObject* startRenderer = renderer;
