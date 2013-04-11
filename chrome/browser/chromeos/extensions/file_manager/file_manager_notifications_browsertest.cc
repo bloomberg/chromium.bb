@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 
 #include <gtest/gtest.h>
 #include <string>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
@@ -18,9 +18,9 @@
 
 namespace chromeos {
 
-class FileBrowserNotificationsTest : public InProcessBrowserTest {
+class FileManagerNotificationsTest : public InProcessBrowserTest {
  public:
-  FileBrowserNotificationsTest() {}
+  FileManagerNotificationsTest() {}
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     notifications_.reset();
@@ -30,37 +30,37 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
   // This must be initialized late in test startup.
   void InitNotifications() {
     Profile* profile = browser()->profile();
-    notifications_.reset(new FileBrowserNotifications(profile));
+    notifications_.reset(new FileManagerNotifications(profile));
   }
 
   bool FindNotification(const std::string& id) {
     return notifications_->HasNotificationForTest(id);
   }
 
-  scoped_ptr<FileBrowserNotifications> notifications_;
+  scoped_ptr<FileManagerNotifications> notifications_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, TestBasic) {
+IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, TestBasic) {
   InitNotifications();
   // Showing a notification adds a new notification.
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // Updating the same notification maintains the same count.
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // A new notification increases the count.
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("DeviceFail_path"));
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // Hiding a notification removes it from our data.
-  notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->HideNotification(FileManagerNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_FALSE(FindNotification("DeviceFail_path"));
@@ -69,10 +69,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, TestBasic) {
 
 // Note: Delayed tests use a delay time of 0 so that tasks wille execute
 // when RunAllPendingInMessageLoop() is called.
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, ShowDelayedTest) {
   InitNotifications();
   // Adding a delayed notification does not create a notification.
-  notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
+  notifications_->ShowNotificationDelayed(FileManagerNotifications::DEVICE,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
@@ -85,10 +85,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
 
   // Showing a notification both immediately and delayed results in one
   // additional notification.
-  notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->ShowNotificationDelayed(FileManagerNotifications::DEVICE_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("DeviceFail_path"));
@@ -101,10 +101,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
 
   // If we schedule a show for later, then hide before it becomes visible,
   // the notification should not be added.
-  notifications_->ShowNotificationDelayed(FileBrowserNotifications::FORMAT_FAIL,
+  notifications_->ShowNotificationDelayed(FileManagerNotifications::FORMAT_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
-  notifications_->HideNotification(FileBrowserNotifications::FORMAT_FAIL,
+  notifications_->HideNotification(FileManagerNotifications::FORMAT_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
@@ -119,11 +119,11 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   EXPECT_FALSE(FindNotification("Format_path"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, HideDelayedTest) {
   InitNotifications();
   // Showing now, and scheduling a hide for later, results in one notification.
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
-  notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE,
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
+  notifications_->HideNotificationDelayed(FileManagerNotifications::DEVICE,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
@@ -134,15 +134,15 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Immediate show then hide results in no notification.
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
                                    "path");
-  notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->HideNotification(FileManagerNotifications::DEVICE_FAIL,
                                    "path");
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Delayed hide for a notification that doesn't exist does nothing.
-  notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
+  notifications_->HideNotificationDelayed(FileManagerNotifications::DEVICE_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   content::RunAllPendingInMessageLoop();
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
 // different messages results in showing the second notification's message.
 // This situation can be encountered while showing notifications for
 // MountCompletedEvent.
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, IdenticalNotificationIds) {
+IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, IdenticalNotificationIds) {
   InitNotifications();
   notifications_->RegisterDevice("path");
 

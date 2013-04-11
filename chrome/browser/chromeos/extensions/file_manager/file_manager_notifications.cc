@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -24,7 +24,7 @@
 namespace {
 
 struct NotificationTypeInfo {
-  FileBrowserNotifications::NotificationType type;
+  FileManagerNotifications::NotificationType type;
   const char* notification_id_prefix;
   int icon_id;
   int title_id;
@@ -37,49 +37,49 @@ struct NotificationTypeInfo {
 // kNotificationTypes[type].type == type).
 const NotificationTypeInfo kNotificationTypes[] = {
     {
-      FileBrowserNotifications::DEVICE,  // type
+      FileManagerNotifications::DEVICE,  // type
       "Device_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
       IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::DEVICE_FAIL,  // type
+      FileManagerNotifications::DEVICE_FAIL,  // type
       "DeviceFail_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
       IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,  // type
+      FileManagerNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,  // type
       "DeviceFail_",  // nottification_id_prefix; same as for DEVICE_FAIL.
       IDR_FILES_APP_ICON,  // icon_id
       IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
       IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::FORMAT_START,  // type
+      FileManagerNotifications::FORMAT_START,  // type
       "FormatStart_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_FORMATTING_OF_DEVICE_PENDING_TITLE,  // title_id
       IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::FORMAT_START_FAIL,  // type
+      FileManagerNotifications::FORMAT_START_FAIL,  // type
       "FormatComplete_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
       IDS_FORMATTING_STARTED_FAILURE_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::FORMAT_SUCCESS,  // type
+      FileManagerNotifications::FORMAT_SUCCESS,  // type
       "FormatComplete_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
       IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::FORMAT_FAIL,  // type
+      FileManagerNotifications::FORMAT_FAIL,  // type
       "FormatComplete_",  // notifications_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
       IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
@@ -87,7 +87,7 @@ const NotificationTypeInfo kNotificationTypes[] = {
     },
 };
 
-int GetIconId(FileBrowserNotifications::NotificationType type) {
+int GetIconId(FileManagerNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -95,7 +95,7 @@ int GetIconId(FileBrowserNotifications::NotificationType type) {
   return kNotificationTypes[type].icon_id;
 }
 
-string16 GetTitle(FileBrowserNotifications::NotificationType type) {
+string16 GetTitle(FileManagerNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -106,7 +106,7 @@ string16 GetTitle(FileBrowserNotifications::NotificationType type) {
   return l10n_util::GetStringUTF16(id);
 }
 
-string16 GetMessage(FileBrowserNotifications::NotificationType type) {
+string16 GetMessage(FileManagerNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -117,7 +117,7 @@ string16 GetMessage(FileBrowserNotifications::NotificationType type) {
   return l10n_util::GetStringUTF16(id);
 }
 
-std::string GetNotificationId(FileBrowserNotifications::NotificationType type,
+std::string GetNotificationId(FileManagerNotifications::NotificationType type,
                                const std::string& path) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
@@ -131,11 +131,11 @@ std::string GetNotificationId(FileBrowserNotifications::NotificationType type,
 
 // Manages file browser notifications. Generates a desktop notification on
 // construction and removes it from the host when closed. Owned by the host.
-class FileBrowserNotifications::NotificationMessage {
+class FileManagerNotifications::NotificationMessage {
  public:
   class Delegate : public NotificationDelegate {
    public:
-    Delegate(const base::WeakPtr<FileBrowserNotifications>& host,
+    Delegate(const base::WeakPtr<FileManagerNotifications>& host,
              const std::string& id)
         : host_(host),
           id_(id) {}
@@ -156,13 +156,13 @@ class FileBrowserNotifications::NotificationMessage {
    private:
     virtual ~Delegate() {}
 
-    base::WeakPtr<FileBrowserNotifications> host_;
+    base::WeakPtr<FileManagerNotifications> host_;
     std::string id_;
 
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  NotificationMessage(FileBrowserNotifications* host,
+  NotificationMessage(FileManagerNotifications* host,
                       Profile* profile,
                       NotificationType type,
                       const std::string& notification_id,
@@ -190,7 +190,7 @@ class FileBrowserNotifications::NotificationMessage {
   DISALLOW_COPY_AND_ASSIGN(NotificationMessage);
 };
 
-struct FileBrowserNotifications::MountRequestsInfo {
+struct FileManagerNotifications::MountRequestsInfo {
   bool mount_success_exists;
   bool fail_message_finalized;
   bool fail_notification_shown;
@@ -205,25 +205,25 @@ struct FileBrowserNotifications::MountRequestsInfo {
   }
 };
 
-FileBrowserNotifications::FileBrowserNotifications(Profile* profile)
+FileManagerNotifications::FileManagerNotifications(Profile* profile)
     : profile_(profile) {
 }
 
-FileBrowserNotifications::~FileBrowserNotifications() {
+FileManagerNotifications::~FileManagerNotifications() {
   STLDeleteContainerPairSecondPointers(notification_map_.begin(),
                                        notification_map_.end());
 }
 
-void FileBrowserNotifications::RegisterDevice(const std::string& path) {
+void FileManagerNotifications::RegisterDevice(const std::string& path) {
   mount_requests_.insert(MountRequestsMap::value_type(path,
                                                       MountRequestsInfo()));
 }
 
-void FileBrowserNotifications::UnregisterDevice(const std::string& path) {
+void FileManagerNotifications::UnregisterDevice(const std::string& path) {
   mount_requests_.erase(path);
 }
 
-void FileBrowserNotifications::ManageNotificationsOnMountCompleted(
+void FileManagerNotifications::ManageNotificationsOnMountCompleted(
     const std::string& system_path, const std::string& label, bool is_parent,
     bool success, bool is_unsupported) {
   MountRequestsMap::iterator it = mount_requests_.find(system_path);
@@ -299,12 +299,12 @@ void FileBrowserNotifications::ManageNotificationsOnMountCompleted(
   }
 }
 
-void FileBrowserNotifications::ShowNotification(NotificationType type,
+void FileManagerNotifications::ShowNotification(NotificationType type,
                                                 const std::string& path) {
   ShowNotificationWithMessage(type, path, GetMessage(type));
 }
 
-void FileBrowserNotifications::ShowNotificationWithMessage(
+void FileManagerNotifications::ShowNotificationWithMessage(
     NotificationType type,
     const std::string& path,
     const string16& message) {
@@ -313,7 +313,7 @@ void FileBrowserNotifications::ShowNotificationWithMessage(
   ShowNotificationById(type, notification_id, message);
 }
 
-void FileBrowserNotifications::ShowNotificationDelayed(
+void FileManagerNotifications::ShowNotificationDelayed(
     NotificationType type,
     const std::string& path,
     base::TimeDelta delay) {
@@ -321,27 +321,27 @@ void FileBrowserNotifications::ShowNotificationDelayed(
   hidden_notifications_.erase(notification_id);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FileBrowserNotifications::ShowNotificationById, AsWeakPtr(),
+      base::Bind(&FileManagerNotifications::ShowNotificationById, AsWeakPtr(),
                  type, notification_id, GetMessage(type)),
       delay);
 }
 
-void FileBrowserNotifications::HideNotification(NotificationType type,
+void FileManagerNotifications::HideNotification(NotificationType type,
                                                 const std::string& path) {
   std::string notification_id = GetNotificationId(type, path);
   HideNotificationById(notification_id);
 }
 
-void FileBrowserNotifications::HideNotificationDelayed(
+void FileManagerNotifications::HideNotificationDelayed(
     NotificationType type, const std::string& path, base::TimeDelta delay) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FileBrowserNotifications::HideNotification, AsWeakPtr(),
+      base::Bind(&FileManagerNotifications::HideNotification, AsWeakPtr(),
                  type, path),
       delay);
 }
 
-void FileBrowserNotifications::ShowNotificationById(
+void FileManagerNotifications::ShowNotificationById(
     NotificationType type,
     const std::string& notification_id,
     const string16& message) {
@@ -363,7 +363,7 @@ void FileBrowserNotifications::ShowNotificationById(
   notification_map_[notification_id] = new_message;
 }
 
-void FileBrowserNotifications::HideNotificationById(
+void FileManagerNotifications::HideNotificationById(
     const std::string& notification_id) {
   NotificationMap::iterator it = notification_map_.find(notification_id);
   if (it != notification_map_.end()) {
@@ -375,7 +375,7 @@ void FileBrowserNotifications::HideNotificationById(
   }
 }
 
-void FileBrowserNotifications::RemoveNotificationById(
+void FileManagerNotifications::RemoveNotificationById(
     const std::string& notification_id) {
   NotificationMap::iterator it = notification_map_.find(notification_id);
   if (it != notification_map_.end()) {
@@ -385,7 +385,7 @@ void FileBrowserNotifications::RemoveNotificationById(
   }
 }
 
-string16 FileBrowserNotifications::GetNotificationMessageForTest(
+string16 FileManagerNotifications::GetNotificationMessageForTest(
     const std::string& id) const {
   NotificationMap::const_iterator it = notification_map_.find(id);
   if (it == notification_map_.end())

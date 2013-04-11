@@ -323,7 +323,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // Set up cache root and documents service to be used when creating gdata
     // system service. This has to be done early on (before the browser is
     // created) because the system service instance is initialized very early
-    // by FileBrowserEventRouter.
+    // by FileManagerEventRouter.
     base::FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));

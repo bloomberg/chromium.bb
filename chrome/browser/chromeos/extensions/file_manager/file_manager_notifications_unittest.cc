@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,13 +22,13 @@ namespace chromeos {
 
 namespace {
 
-class MockFileBrowserNotificationsOnMount : public FileBrowserNotifications {
+class MockFileManagerNotificationsOnMount : public FileManagerNotifications {
  public:
-  explicit MockFileBrowserNotificationsOnMount(Profile* profile)
-      : FileBrowserNotifications(profile) {
+  explicit MockFileManagerNotificationsOnMount(Profile* profile)
+      : FileManagerNotifications(profile) {
   }
 
-  virtual ~MockFileBrowserNotificationsOnMount() {}
+  virtual ~MockFileManagerNotificationsOnMount() {}
 
   MOCK_METHOD3(ShowNotificationWithMessage, void(NotificationType,
       const std::string&, const string16&));
@@ -41,10 +41,10 @@ MATCHER_P2(String16Equals, id, label, "") {
 
 }  // namespace
 
-TEST(FileBrowserMountNotificationsTest, GoodDevice) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, GoodDevice) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -52,16 +52,16 @@ TEST(FileBrowserMountNotificationsTest, GoodDevice) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, true, true, false);
 };
 
-TEST(FileBrowserMountNotificationsTest, GoodDeviceWithBadParent) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, GoodDeviceWithBadParent) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -69,15 +69,15 @@ TEST(FileBrowserMountNotificationsTest, GoodDeviceWithBadParent) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
 
   {
     InSequence s;
 
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path), _));
+        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path), _));
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileBrowserNotifications::DEVICE_FAIL,
+        FileManagerNotifications::DEVICE_FAIL,
         StrEq(notification_path)));
   }
 
@@ -89,10 +89,10 @@ TEST(FileBrowserMountNotificationsTest, GoodDeviceWithBadParent) {
       device_label, false, true, false);
 }
 
-TEST(FileBrowserMountNotificationsTest, UnsupportedDevice) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -100,19 +100,19 @@ TEST(FileBrowserMountNotificationsTest, UnsupportedDevice) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
       String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE, device_label)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, false, false, true);
 }
 
-TEST(FileBrowserMountNotificationsTest, UnsupportedWithUnknownParent) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -120,17 +120,17 @@ TEST(FileBrowserMountNotificationsTest, UnsupportedWithUnknownParent) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
 
   {
     InSequence s;
 
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path), _));
+        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path), _));
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path)));
+        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path)));
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
         String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE,
         device_label)));
   }
@@ -141,19 +141,19 @@ TEST(FileBrowserMountNotificationsTest, UnsupportedWithUnknownParent) {
       device_label, false, false, true);
 }
 
-TEST(FileBrowserMountNotificationsTest, MountPartialSuccess) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, MountPartialSuccess) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
           String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
           device_label)));
 
@@ -163,51 +163,51 @@ TEST(FileBrowserMountNotificationsTest, MountPartialSuccess) {
       device_label, false, false, true);
 }
 
-TEST(FileBrowserMountNotificationsTest, Unknown) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, Unknown) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
       String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, false, false, false);
 }
 
-TEST(FileBrowserMountNotificationsTest, MulitpleFail) {
-  MockFileBrowserNotificationsOnMount* mocked_notifications =
-      new MockFileBrowserNotificationsOnMount(NULL);
-  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+TEST(FileManagerMountNotificationsTest, MulitpleFail) {
+  MockFileManagerNotificationsOnMount* mocked_notifications =
+      new MockFileManagerNotificationsOnMount(NULL);
+  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileBrowserNotifications::DEVICE, StrEq(notification_path)));
+              FileManagerNotifications::DEVICE, StrEq(notification_path)));
   {
     InSequence s;
       EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-          FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+          FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
               String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)))
           .RetiresOnSaturation();
       EXPECT_CALL(*mocked_notifications, HideNotification(
-          FileBrowserNotifications::DEVICE_FAIL, notification_path));
+          FileManagerNotifications::DEVICE_FAIL, notification_path));
       EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-          FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+          FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
               String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
       EXPECT_CALL(*mocked_notifications, HideNotification(
-          FileBrowserNotifications::DEVICE_FAIL, notification_path));
+          FileManagerNotifications::DEVICE_FAIL, notification_path));
       EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-          FileBrowserNotifications::DEVICE_FAIL, StrEq(notification_path),
+          FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
               String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
               device_label)));
   }

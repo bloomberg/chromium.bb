@@ -355,7 +355,7 @@ void DriveFileSystem::StopPolling() {
   // twice. First is just after unmounting on filesystem, second is after
   // unmounting on filemanager on JS. In other words, if this is called from
   // DriveSystemService::RemoveDriveMountPoint(), this will be called again from
-  // FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread().
+  // FileManagerEventRouter::HandleRemoteUpdateRequestOnUIThread().
   // We choose to stopping updates asynchronous without waiting for filemanager,
   // rather than waiting for completion of unmounting on filemanager.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

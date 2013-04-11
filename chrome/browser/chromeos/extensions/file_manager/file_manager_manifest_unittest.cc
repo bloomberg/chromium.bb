@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"

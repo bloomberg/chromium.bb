@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -57,12 +57,12 @@ class FileBrowserPrivateAPI : public ProfileKeyedService {
   // Convenience function to return the FileBrowserPrivateAPI for a Profile.
   static FileBrowserPrivateAPI* Get(Profile* profile);
 
-  FileBrowserEventRouter* event_router() {
+  FileManagerEventRouter* event_router() {
     return event_router_.get();
   }
 
  private:
-  scoped_ptr<FileBrowserEventRouter> event_router_;
+  scoped_ptr<FileManagerEventRouter> event_router_;
 };
 
 // Implements the chrome.fileBrowserPrivate.logoutUser method.

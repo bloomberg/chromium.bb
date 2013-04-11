@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_NOTIFICATIONS_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_NOTIFICATIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_
 
 #include <map>
 #include <set>
@@ -16,8 +16,8 @@
 
 class Profile;
 
-class FileBrowserNotifications
-    : public base::SupportsWeakPtr<FileBrowserNotifications> {
+class FileManagerNotifications
+    : public base::SupportsWeakPtr<FileManagerNotifications> {
  public:
   // If changing the enum, please also update kNotificationTypes in .cc file.
   enum NotificationType {
@@ -30,8 +30,8 @@ class FileBrowserNotifications
     FORMAT_FAIL,
   };
 
-  explicit FileBrowserNotifications(Profile* profile);
-  virtual ~FileBrowserNotifications();
+  explicit FileManagerNotifications(Profile* profile);
+  virtual ~FileManagerNotifications();
 
   // Registers the removable device whose mount events will be handled in
   // |ManageNotificationsOnMountComplete|.
@@ -94,7 +94,7 @@ class FileBrowserNotifications
   MountRequestsMap mount_requests_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileBrowserNotifications);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerNotifications);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_NOTIFICATIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_

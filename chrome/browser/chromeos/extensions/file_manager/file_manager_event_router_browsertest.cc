@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
@@ -20,7 +20,7 @@ namespace chromeos {
 namespace disks {
 namespace {
 
-class FileBrowserEventRouterBrowserTest : public InProcessBrowserTest {
+class FileManagerEventRouterBrowserTest : public InProcessBrowserTest {
  public:
   // ExtensionApiTest override
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -35,11 +35,11 @@ class FileBrowserEventRouterBrowserTest : public InProcessBrowserTest {
   MockDiskMountManager* disk_mount_manager_mock_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserEventRouterBrowserTest,
+IN_PROC_BROWSER_TEST_F(FileManagerEventRouterBrowserTest,
                        ExternalStoragePolicyTest) {
   FileBrowserPrivateAPI* file_browser =
       FileBrowserPrivateAPIFactory::GetForProfile(browser()->profile());
-  FileBrowserEventRouter* event_router =
+  FileManagerEventRouter* event_router =
       file_browser->event_router();
 
   DiskMountManager::DiskEvent event = DiskMountManager::DISK_ADDED;

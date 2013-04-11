@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_EVENT_ROUTER_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
 
 #include <map>
 #include <set>
@@ -22,7 +22,7 @@
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
-class FileBrowserNotifications;
+class FileManagerNotifications;
 class PrefChangeRegistrar;
 class Profile;
 
@@ -33,7 +33,7 @@ class DriveFileSystemInterface;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class FileBrowserEventRouter
+class FileManagerEventRouter
     : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
       public chromeos::SystemKeyEventListener::ModifiersObserver,
@@ -56,8 +56,8 @@ class FileBrowserEventRouter
         const chromeos::disks::DiskMountManager::Disk& disk) const = 0;
   };
 
-  explicit FileBrowserEventRouter(Profile* profile);
-  virtual ~FileBrowserEventRouter();
+  explicit FileManagerEventRouter(Profile* profile);
+  virtual ~FileManagerEventRouter();
 
   void Shutdown();
 
@@ -183,8 +183,8 @@ class FileBrowserEventRouter
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
 
-  // Called when prefs related to file browser change.
-  void OnFileBrowserPrefsChanged();
+  // Called when prefs related to file manager change.
+  void OnFileManagerPrefsChanged();
 
   // Process file watch notifications.
   void HandleFileWatchNotification(const base::FilePath& path,
@@ -216,10 +216,10 @@ class FileBrowserEventRouter
   // zero.
   void HandleRemoteUpdateRequestOnUIThread(bool start);
 
-  base::WeakPtrFactory<FileBrowserEventRouter> weak_factory_;
+  base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
   base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
-  scoped_ptr<FileBrowserNotifications> notifications_;
+  scoped_ptr<FileManagerNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
@@ -231,7 +231,7 @@ class FileBrowserEventRouter
   // for power users.
   bool shift_pressed_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerEventRouter);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_EVENT_ROUTER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_

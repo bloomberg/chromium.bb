@@ -31,8 +31,8 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
@@ -565,7 +565,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
 };
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
-    : event_router_(new FileBrowserEventRouter(profile)) {
+    : event_router_(new FileManagerEventRouter(profile)) {
   (new FileBrowserHandlerParser)->Register();
 
   ExtensionFunctionRegistry* registry =
@@ -728,7 +728,7 @@ void AddFileWatchBrowserFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileBrowserEventRouter* event_router =
+  FileManagerEventRouter* event_router =
       FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->AddFileWatch(
       local_path,
@@ -743,7 +743,7 @@ void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileBrowserEventRouter* event_router =
+  FileManagerEventRouter* event_router =
       FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
