@@ -713,7 +713,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
     return string16();
 
   // Allocate enough space to hold the signer info.
-  scoped_array<BYTE> signer_info_buffer(new BYTE[signer_info_size]);
+  scoped_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
   CMSG_SIGNER_INFO* signer_info =
       reinterpret_cast<CMSG_SIGNER_INFO*>(signer_info_buffer.get());
 

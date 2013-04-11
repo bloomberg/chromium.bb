@@ -1158,7 +1158,7 @@ void ExternalTabContainerWin::LoadAccelerators() {
     return;
   }
 
-  scoped_array<ACCEL> scoped_accelerators(new ACCEL[count]);
+  scoped_ptr<ACCEL[]> scoped_accelerators(new ACCEL[count]);
   ACCEL* accelerators = scoped_accelerators.get();
   DCHECK(accelerators != NULL);
 

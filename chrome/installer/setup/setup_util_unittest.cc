@@ -61,7 +61,7 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
   DWORD size;
   EXPECT_FALSE(::GetTokenInformation(token, TokenPrivileges, NULL, 0, &size));
 
-  scoped_array<BYTE> privileges_bytes(new BYTE[size]);
+  scoped_ptr<BYTE[]> privileges_bytes(new BYTE[size]);
   TOKEN_PRIVILEGES* privileges =
       reinterpret_cast<TOKEN_PRIVILEGES*>(privileges_bytes.get());
 
@@ -74,7 +74,7 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
   // anything longer will obviously not be equal to |privilege_name|.
   const DWORD desired_size = wcslen(privilege_name);
   const DWORD buffer_size = desired_size + 1;
-  scoped_array<wchar_t> name_buffer(new wchar_t[buffer_size]);
+  scoped_ptr<wchar_t[]> name_buffer(new wchar_t[buffer_size]);
   for (int i = privileges->PrivilegeCount - 1; i >= 0 ; --i) {
     LUID_AND_ATTRIBUTES& luid_and_att = privileges->Privileges[i];
     DWORD size = buffer_size;

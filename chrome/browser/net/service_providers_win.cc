@@ -23,7 +23,7 @@ void GetWinsockNamespaceProviders(
     return;
   }
 
-  scoped_array<char> namespace_provider_bytes(new char[size]);
+  scoped_ptr<char[]> namespace_provider_bytes(new char[size]);
   WSANAMESPACE_INFO* namespace_providers =
       reinterpret_cast<WSANAMESPACE_INFO*>(namespace_provider_bytes.get());
 
@@ -58,7 +58,7 @@ void GetWinsockLayeredServiceProviders(
     return;
   }
 
-  scoped_array<char> service_provider_bytes(new char[size]);
+  scoped_ptr<char[]> service_provider_bytes(new char[size]);
   WSAPROTOCOL_INFOW* service_providers =
       reinterpret_cast<WSAPROTOCOL_INFOW*>(service_provider_bytes.get());
 

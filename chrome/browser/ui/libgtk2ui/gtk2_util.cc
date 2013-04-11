@@ -20,7 +20,7 @@ void CommonInitFromCommandLine(const CommandLine& command_line,
                                void (*init_func)(gint*, gchar***)) {
   const std::vector<std::string>& args = command_line.argv();
   int argc = args.size();
-  scoped_array<char *> argv(new char *[argc + 1]);
+  scoped_ptr<char *[]> argv(new char *[argc + 1]);
   for (size_t i = 0; i < args.size(); ++i) {
     // TODO(piman@google.com): can gtk_init modify argv? Just being safe
     // here.

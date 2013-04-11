@@ -36,7 +36,7 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
   CHECK(NtQuerySystemInformation != NULL);
 
   int num_of_processors = base::SysInfo::NumberOfProcessors();
-  scoped_array<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION> processor_info(
+  scoped_ptr<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[]> processor_info(
       new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[num_of_processors]);
 
   ULONG returned_bytes = 0, bytes =

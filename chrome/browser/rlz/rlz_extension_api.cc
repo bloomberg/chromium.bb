@@ -212,7 +212,7 @@ bool RlzClearProductStateFunction::RunImpl() {
   // Allocate an access point array to pass to ClearProductState().  The array
   // must be termindated with the value rlz_lib::NO_ACCESS_POINT, hence + 1
   // when allocating the array.
-  scoped_array<rlz_lib::AccessPoint> access_points(
+  scoped_ptr<rlz_lib::AccessPoint[]> access_points(
       new rlz_lib::AccessPoint[access_points_list->GetSize() + 1]);
 
   size_t i;

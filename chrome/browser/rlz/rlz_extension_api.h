@@ -56,7 +56,7 @@ class RlzSendFinancialPingFunction : public AsyncExtensionFunction {
   void RespondOnUIThread();
 
   rlz_lib::Product product_;
-  scoped_array<rlz_lib::AccessPoint> access_points_;
+  scoped_ptr<rlz_lib::AccessPoint[]> access_points_;
   std::string signature_;
   std::string brand_;
   std::string id_;

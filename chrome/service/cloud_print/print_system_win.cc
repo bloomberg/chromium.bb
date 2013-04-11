@@ -837,7 +837,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
     if (ERROR_INVALID_PARAMETER != last_error) {
       // ERROR_INVALID_PARAMETER normally means that the job id is not valid.
       DCHECK(last_error == ERROR_INSUFFICIENT_BUFFER);
-      scoped_array<BYTE> job_info_buffer(new BYTE[bytes_needed]);
+      scoped_ptr<BYTE[]> job_info_buffer(new BYTE[bytes_needed]);
       if (GetJob(printer_handle, job_id, 1, job_info_buffer.get(), bytes_needed,
                 &bytes_needed)) {
         JOB_INFO_1 *job_info =

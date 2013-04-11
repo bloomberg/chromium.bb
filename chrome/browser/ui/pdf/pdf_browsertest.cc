@@ -130,7 +130,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     base::PlatformFileInfo info;
     ASSERT_TRUE(file_util::GetFileInfo(reference, &info));
     int size = static_cast<size_t>(info.size);
-    scoped_array<char> data(new char[size]);
+    scoped_ptr<char[]> data(new char[size]);
     ASSERT_EQ(size, file_util::ReadFile(reference, data.get(), size));
 
     int w, h;

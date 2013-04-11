@@ -214,7 +214,7 @@ bool ScreenCaptureNotificationUIWin::BeginDialog(const string16& title) {
   // The actual resource type is DLGTEMPLATEEX, but this is not defined in any
   // standard headers, so we treat it as a generic pointer and manipulate the
   // correct offsets explicitly.
-  scoped_array<unsigned char> rtl_dialog_template;
+  scoped_ptr<unsigned char[]> rtl_dialog_template;
   if (base::i18n::IsRTL()) {
     unsigned long dialog_template_size =
         SizeofResource(module, dialog_resource);
