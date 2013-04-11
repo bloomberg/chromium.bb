@@ -173,7 +173,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback1) {
   const DWORD data_size = small_html_meta_tag.size();
 
   DWORD read_size1 = data_size * 2;
-  scoped_array<char> read_buffer1(new char[read_size1]);
+  scoped_ptr<char[]> read_buffer1(new char[read_size1]);
   ZeroMemory(read_buffer1.get(), read_size1);
 
   char read_buffer2[10] = {0};
@@ -217,8 +217,8 @@ TEST_F(MonikerPatchTest, SniffDataPlayback2) {
 
   DWORD read_size1 = data_size / 2; // First read is half the data.
   DWORD read_size2 = data_size; // Second read, try to read past data.
-  scoped_array<char> read_buffer1(new char[read_size1]);
-  scoped_array<char> read_buffer2(new char[read_size2]);
+  scoped_ptr<char[]> read_buffer1(new char[read_size1]);
+  scoped_ptr<char[]> read_buffer2(new char[read_size2]);
   ZeroMemory(read_buffer1.get(), read_size1);
   ZeroMemory(read_buffer2.get(), read_size2);
 

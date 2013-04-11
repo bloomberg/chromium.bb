@@ -272,7 +272,7 @@ bool AccObject::GetChildren(RefCountedAccObjectVector* client_objects) {
 
   RefCountedAccObjectVector objects;
   // Find children using |AccessibleChildren|.
-  scoped_array<VARIANT> children(new VARIANT[child_count]);
+  scoped_ptr<VARIANT[]> children(new VARIANT[child_count]);
   long found_child_count;  // NOLINT
   if (FAILED(AccessibleChildren(accessible_, 0L, child_count,
                                 children.get(),

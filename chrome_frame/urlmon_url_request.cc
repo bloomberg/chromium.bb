@@ -1216,7 +1216,7 @@ void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
                                    &cookie_size);
   DWORD error = 0;
   if (cookie_size) {
-    scoped_array<char> cookies(new char[cookie_size + 1]);
+    scoped_ptr<char[]> cookies(new char[cookie_size + 1]);
     if (!InternetGetCookieA(url.spec().c_str(), NULL, cookies.get(),
                             &cookie_size)) {
       success = false;
