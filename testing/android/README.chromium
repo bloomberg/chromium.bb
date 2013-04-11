@@ -1,3 +1,2 @@
-apk-based runner for Chromium unit test bundles.  Many of these files
-are templates for generating an apk specific to a test bundle.
-See generate_native_test.py or discuss with OWNERS.
+apk-based runner for Chromium unit test bundles. This is a simple wrapper APK
+that should include a single gtest native library.

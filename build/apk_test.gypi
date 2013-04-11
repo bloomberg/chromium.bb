@@ -23,10 +23,6 @@
     '<(DEPTH)/base/base.gyp:base_java',
     '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
   ],
-  'variables': {
-    'generator_intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk/generated/',
-    'generate_native_test_stamp': '<(generator_intermediate_dir)/generate_native_test.stamp',
-  },
   'conditions': [
      ['OS == "android" and gtest_target_type == "shared_library"', {
        'variables': {
@@ -34,49 +30,10 @@
          'apk_name': '<(test_suite_name)',
          'intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk',
          'final_apk_path': '<(intermediate_dir)/<(test_suite_name)-debug.apk',
-         'java_in_dir': '<(DEPTH)/build/android/empty',
-         'android_manifest_path': '<(generator_intermediate_dir)/AndroidManifest.xml',
+         'java_in_dir': '<(DEPTH)/testing/android/java',
+         'android_manifest_path': '<(DEPTH)/testing/android/AndroidManifest.xml',
          'native_lib_target': 'lib<(test_suite_name)',
-         'generated_src_dirs': [
-           '<(generator_intermediate_dir)/java',
-         ],
-         'additional_input_paths': [
-           '<(generate_native_test_stamp)',
-         ],
-         'additional_res_dirs': [
-           '<(generator_intermediate_dir)/res',
-         ],
        },
-       'actions': [
-         {
-           'action_name': 'apk_<(test_suite_name)',
-           'message': 'Building <(test_suite_name) test apk.',
-           'inputs': [
-             '<(DEPTH)/testing/android/AndroidManifest.xml',
-             '<(DEPTH)/testing/android/generate_native_test.py',
-             '<(input_shlib_path)',
-             '>@(input_jars_paths)',
-             '<!@(find <(DEPTH)/testing/android/java)',
-           ],
-           'outputs': [
-             '<(generate_native_test_stamp)',
-             '<(android_manifest_path)',
-           ],
-           'action': [
-             '<(DEPTH)/testing/android/generate_native_test.py',
-             '--native_library',
-             '<(input_shlib_path)',
-             '--output',
-             '<(generator_intermediate_dir)',
-             '--strip-binary=<(android_strip)',
-             '--app_abi',
-             '<(android_app_abi)',
-             '--stamp-file',
-             '<(generate_native_test_stamp)',
-             '--no-compile',
-           ],
-         },
-       ],
        'includes': [ 'java_apk.gypi' ],
      }],  # 'OS == "android" and gtest_target_type == "shared_library"
   ],  # conditions
