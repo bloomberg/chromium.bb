@@ -89,7 +89,7 @@ template<class Collection, class ItemType> static v8::Handle<v8::Value> getIndex
     Collection* collection = toNativeCollection<Collection>(object);
     if (index >= collection->length())
         return v8Undefined();
-    return getV8Object<ItemType>(collection->item(index), creationContext, isolate);
+    return toV8(collection->item(index), creationContext, isolate);
 }
 
 // A template of index interceptor of collections.
