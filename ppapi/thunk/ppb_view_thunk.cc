@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_view.idl modified Thu Mar 28 11:12:59 2013.
+// From ppb_view.idl modified Wed Apr 10 14:15:15 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_view.h"
@@ -65,6 +65,7 @@ PP_Bool GetClipRect(PP_Resource resource, struct PP_Rect* clip) {
 }
 
 float GetDeviceScale(PP_Resource resource) {
+  VLOG(4) << "PPB_View::GetDeviceScale()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return 0.0f;
@@ -72,6 +73,7 @@ float GetDeviceScale(PP_Resource resource) {
 }
 
 float GetCSSScale(PP_Resource resource) {
+  VLOG(4) << "PPB_View::GetCSSScale()";
   EnterResource<PPB_View_API> enter(resource, true);
   if (enter.failed())
     return 0.0f;
