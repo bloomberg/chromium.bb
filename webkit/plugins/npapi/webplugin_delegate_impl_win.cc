@@ -177,7 +177,7 @@ std::wstring GetKeyPath(HKEY key) {
   if (result != STATUS_BUFFER_TOO_SMALL)
     return L"";
 
-  scoped_array<char> buffer(new char[size]);
+  scoped_ptr<char[]> buffer(new char[size]);
   if (buffer.get() == NULL)
     return L"";
 
