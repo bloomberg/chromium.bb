@@ -332,7 +332,7 @@
             '<(final_apk_path)',
           ],
           'outputs': [
-            '<(apk_install_stamp)'
+            '<(apk_install_stamp)',
             # If a user switches the connected device, the APK may need to be
             # installed even if there have been no changes. To ensure that the
             # APK on the device is always up-to-date, this step should always
