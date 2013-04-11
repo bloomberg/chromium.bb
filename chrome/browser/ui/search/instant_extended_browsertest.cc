@@ -12,6 +12,8 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -1502,4 +1504,30 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_FALSE(tab0_helper->model()->top_bars_visible());
   EXPECT_TRUE(tab1_helper->model()->top_bars_visible());
+}
+
+// Test that the Bookmark provider is enabled, and returns results.
+// TODO(sreeram): Convert this to a unit test.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, HasBookmarkProvider) {
+  // No need to setup Instant.
+  set_browser(browser());
+
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(bookmark_model);
+  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmark_utils::AddIfNotBookmarked(bookmark_model, GURL("http://angeline/"),
+                                     ASCIIToUTF16("angeline"));
+
+  SetOmniboxText("angeline");
+
+  bool found_bookmark_match = false;
+
+  const AutocompleteResult& result = omnibox()->model()->result();
+  for (AutocompleteResult::const_iterator iter = result.begin();
+       !found_bookmark_match && iter != result.end(); ++iter) {
+    found_bookmark_match = iter->type == AutocompleteMatch::BOOKMARK_TITLE;
+  }
+
+  EXPECT_TRUE(found_bookmark_match);
 }

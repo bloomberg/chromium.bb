@@ -25,6 +25,7 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
 
 // static
 const int AutocompleteClassifier::kInstantExtendedOmniboxProviders =
+    AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_BUILTIN |
     AutocompleteProvider::TYPE_HISTORY_QUICK |
     AutocompleteProvider::TYPE_HISTORY_URL |
