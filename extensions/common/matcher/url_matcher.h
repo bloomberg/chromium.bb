@@ -53,6 +53,7 @@ class URLMatcherCondition {
     URL_CONTAINS,
     URL_EQUALS,
     URL_MATCHES,
+    ORIGIN_AND_PATH_MATCHES,  // Matches the URL minus its query string.
   };
 
   URLMatcherCondition();
@@ -76,6 +77,10 @@ class URLMatcherCondition {
   // Returns whether this URLMatcherCondition is a regular expression to be
   // handled by a regex matcher instead of a substring matcher.
   bool IsRegexCondition() const;
+
+  // Returns whether this URLMatcherCondition is a regular expression that shall
+  // be evaluated on the URL without the query parameter.
+  bool IsOriginAndPathRegexCondition() const;
 
   // Returns whether this condition is fulfilled according to
   // |matching_patterns| and |url|.
@@ -155,6 +160,9 @@ class URLMatcherConditionFactory {
 
   // Canonicalizes a URL for "CreateURLMatchesCondition" searches.
   std::string CanonicalizeURLForRegexSearches(const GURL& url) const;
+  // Canonicalizes a URL for "CreateOriginAndPathMatchesCondition" searches.
+  std::string CanonicalizeURLForOriginAndPathRegexSearches(
+      const GURL& url) const;
 
   URLMatcherCondition CreateURLPrefixCondition(const std::string& prefix);
   URLMatcherCondition CreateURLSuffixCondition(const std::string& suffix);
@@ -162,6 +170,8 @@ class URLMatcherConditionFactory {
   URLMatcherCondition CreateURLEqualsCondition(const std::string& str);
 
   URLMatcherCondition CreateURLMatchesCondition(const std::string& regex);
+  URLMatcherCondition CreateOriginAndPathMatchesCondition(
+      const std::string& regex);
 
   // Removes all patterns from |pattern_singletons_| that are not listed in
   // |used_patterns|. These patterns are not referenced any more and get
@@ -197,6 +207,7 @@ class URLMatcherConditionFactory {
       PatternSingletons;
   PatternSingletons substring_pattern_singletons_;
   PatternSingletons regex_pattern_singletons_;
+  PatternSingletons origin_and_path_regex_pattern_singletons_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionFactory);
 };
@@ -332,6 +343,7 @@ class URLMatcher {
   SubstringSetMatcher full_url_matcher_;
   SubstringSetMatcher url_component_matcher_;
   RegexSetMatcher regex_set_matcher_;
+  RegexSetMatcher origin_and_path_regex_set_matcher_;
   std::set<const StringPattern*> registered_full_url_patterns_;
   std::set<const StringPattern*> registered_url_component_patterns_;
 

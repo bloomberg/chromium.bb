@@ -489,6 +489,16 @@ TEST(URLMatcherConditionSetTest, Matching) {
   EXPECT_FALSE(condition_set6->IsMatch(matching_patterns, url1));
   matching_patterns.insert(m1.string_pattern()->id());
   EXPECT_TRUE(condition_set6->IsMatch(matching_patterns, url1));
+
+  matching_patterns.clear();
+  regex_conditions.clear();
+  URLMatcherCondition r2 = factory.CreateOriginAndPathMatchesCondition("b[a]r");
+  regex_conditions.insert(r2);
+  scoped_refptr<URLMatcherConditionSet> condition_set7(
+      new URLMatcherConditionSet(1, regex_conditions));
+  EXPECT_FALSE(condition_set7->IsMatch(matching_patterns, url1));
+  matching_patterns.insert(r2.string_pattern()->id());
+  EXPECT_TRUE(condition_set7->IsMatch(matching_patterns, url1));
 }
 
 
@@ -629,6 +639,42 @@ TEST(URLMatcherTest, TestComponentsImplyContains) {
       new URLMatcherConditionSet(kConditionSetId, conditions)));
   matcher.AddConditionSets(insert);
   EXPECT_EQ(1u, matcher.MatchURL(url).size());
+}
+
+// Check that matches in everything but the query are found.
+TEST(URLMatcherTest, TestOriginAndPathRegExPositive) {
+  GURL url("https://www.google.com:1234/webhp?test=val&a=b");
+
+  URLMatcher matcher;
+  URLMatcherConditionFactory* factory = matcher.condition_factory();
+
+  URLMatcherConditionSet::Conditions conditions;
+
+  conditions.insert(factory->CreateOriginAndPathMatchesCondition("w..hp"));
+  const int kConditionSetId = 1;
+  URLMatcherConditionSet::Vector insert;
+  insert.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId, conditions)));
+  matcher.AddConditionSets(insert);
+  EXPECT_EQ(1u, matcher.MatchURL(url).size());
+}
+
+// Check that matches in the query are ignored.
+TEST(URLMatcherTest, TestOriginAndPathRegExNegative) {
+  GURL url("https://www.google.com:1234/webhp?test=val&a=b");
+
+  URLMatcher matcher;
+  URLMatcherConditionFactory* factory = matcher.condition_factory();
+
+  URLMatcherConditionSet::Conditions conditions;
+
+  conditions.insert(factory->CreateOriginAndPathMatchesCondition("val"));
+  const int kConditionSetId = 1;
+  URLMatcherConditionSet::Vector insert;
+  insert.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId, conditions)));
+  matcher.AddConditionSets(insert);
+  EXPECT_EQ(0u, matcher.MatchURL(url).size());
 }
 
 }  // namespace extensions

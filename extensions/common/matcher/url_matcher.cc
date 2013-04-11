@@ -146,6 +146,10 @@ bool IsRegexCriterion(URLMatcherCondition::Criterion criterion) {
   return criterion == URLMatcherCondition::URL_MATCHES;
 }
 
+bool IsOriginAndPathRegexCriterion(URLMatcherCondition::Criterion criterion) {
+  return criterion == URLMatcherCondition::ORIGIN_AND_PATH_MATCHES;
+}
+
 }  // namespace
 
 //
@@ -209,6 +213,10 @@ bool URLMatcherCondition::IsRegexCondition() const {
   return IsRegexCriterion(criterion_);
 }
 
+bool URLMatcherCondition::IsOriginAndPathRegexCondition() const {
+  return IsOriginAndPathRegexCriterion(criterion_);
+}
+
 bool URLMatcherCondition::IsMatch(
     const std::set<StringPattern::ID>& matching_patterns,
     const GURL& url) const {
@@ -251,6 +259,7 @@ URLMatcherConditionFactory::URLMatcherConditionFactory() : id_counter_(0) {}
 URLMatcherConditionFactory::~URLMatcherConditionFactory() {
   STLDeleteElements(&substring_pattern_singletons_);
   STLDeleteElements(&regex_pattern_singletons_);
+  STLDeleteElements(&origin_and_path_regex_pattern_singletons_);
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
@@ -380,12 +389,15 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
       kEndOfURL;
 }
 
-std::string URLMatcherConditionFactory::CanonicalizeURLForRegexSearches(
-    const GURL& url) const {
+static std::string CanonicalizeURLForRegexSearchesHelper(
+    const GURL& url,
+    bool clear_query) {
   GURL::Replacements replacements;
   replacements.ClearPassword();
   replacements.ClearUsername();
   replacements.ClearRef();
+  if (clear_query)
+    replacements.ClearQuery();
   // Clear port if it is implicit from scheme.
   if (url.has_port()) {
     const std::string& port = url.scheme();
@@ -395,6 +407,17 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForRegexSearches(
     }
   }
   return url.ReplaceComponents(replacements).spec();
+}
+
+std::string URLMatcherConditionFactory::CanonicalizeURLForRegexSearches(
+    const GURL& url) const {
+  return CanonicalizeURLForRegexSearchesHelper(url, false);
+}
+
+std::string
+URLMatcherConditionFactory::CanonicalizeURLForOriginAndPathRegexSearches(
+    const GURL& url) const {
+  return CanonicalizeURLForRegexSearchesHelper(url, true);
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateURLPrefixCondition(
@@ -424,11 +447,17 @@ URLMatcherCondition URLMatcherConditionFactory::CreateURLMatchesCondition(
   return CreateCondition(URLMatcherCondition::URL_MATCHES, regex);
 }
 
+URLMatcherCondition
+URLMatcherConditionFactory::CreateOriginAndPathMatchesCondition(
+    const std::string& regex) {
+  return CreateCondition(URLMatcherCondition::ORIGIN_AND_PATH_MATCHES, regex);
+}
+
 void URLMatcherConditionFactory::ForgetUnusedPatterns(
       const std::set<StringPattern::ID>& used_patterns) {
   PatternSingletons::iterator i = substring_pattern_singletons_.begin();
   while (i != substring_pattern_singletons_.end()) {
-    if (used_patterns.find((*i)->id()) != used_patterns.end()) {
+    if (ContainsKey(used_patterns, (*i)->id())) {
       ++i;
     } else {
       delete *i;
@@ -437,27 +466,41 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
   }
   i = regex_pattern_singletons_.begin();
   while (i != regex_pattern_singletons_.end()) {
-    if (used_patterns.find((*i)->id()) != used_patterns.end()) {
+    if (ContainsKey(used_patterns, (*i)->id())) {
       ++i;
     } else {
       delete *i;
       regex_pattern_singletons_.erase(i++);
     }
   }
+  i = origin_and_path_regex_pattern_singletons_.begin();
+  while (i != origin_and_path_regex_pattern_singletons_.end()) {
+    if (ContainsKey(used_patterns, (*i)->id())) {
+      ++i;
+    } else {
+      delete *i;
+      origin_and_path_regex_pattern_singletons_.erase(i++);
+    }
+  }
 }
 
 bool URLMatcherConditionFactory::IsEmpty() const {
   return substring_pattern_singletons_.empty() &&
-      regex_pattern_singletons_.empty();
+      regex_pattern_singletons_.empty() &&
+      origin_and_path_regex_pattern_singletons_.empty();
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
     URLMatcherCondition::Criterion criterion,
     const std::string& pattern) {
   StringPattern search_pattern(pattern, 0);
-  PatternSingletons* pattern_singletons =
-      IsRegexCriterion(criterion) ? &regex_pattern_singletons_
-                                  : &substring_pattern_singletons_;
+  PatternSingletons* pattern_singletons = NULL;
+  if (IsRegexCriterion(criterion))
+    pattern_singletons = &regex_pattern_singletons_;
+  else if (IsOriginAndPathRegexCriterion(criterion))
+    pattern_singletons = &origin_and_path_regex_pattern_singletons_;
+  else
+    pattern_singletons = &substring_pattern_singletons_;
 
   PatternSingletons::const_iterator iter =
       pattern_singletons->find(&search_pattern);
@@ -618,12 +661,23 @@ std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(
   // See URLMatcherConditionFactory for the canonicalization of URLs and the
   // distinction between full url searches and url component searches.
   std::set<StringPattern::ID> matches;
-  full_url_matcher_.Match(
-      condition_factory_.CanonicalizeURLForFullSearches(url), &matches);
-  url_component_matcher_.Match(
-      condition_factory_.CanonicalizeURLForComponentSearches(url), &matches);
-  regex_set_matcher_.Match(
-      condition_factory_.CanonicalizeURLForRegexSearches(url), &matches);
+  if (!full_url_matcher_.IsEmpty()) {
+    full_url_matcher_.Match(
+        condition_factory_.CanonicalizeURLForFullSearches(url), &matches);
+  }
+  if (!url_component_matcher_.IsEmpty()) {
+    url_component_matcher_.Match(
+        condition_factory_.CanonicalizeURLForComponentSearches(url), &matches);
+  }
+  if (!regex_set_matcher_.IsEmpty()) {
+    regex_set_matcher_.Match(
+        condition_factory_.CanonicalizeURLForRegexSearches(url), &matches);
+  }
+  if (!origin_and_path_regex_set_matcher_.IsEmpty()) {
+    origin_and_path_regex_set_matcher_.Match(
+        condition_factory_.CanonicalizeURLForOriginAndPathRegexSearches(url),
+        &matches);
+  }
 
   // Calculate all URLMatcherConditionSets for which all URLMatcherConditions
   // were fulfilled.
@@ -659,6 +713,8 @@ bool URLMatcher::IsEmpty() const {
       substring_match_triggers_.empty() &&
       full_url_matcher_.IsEmpty() &&
       url_component_matcher_.IsEmpty() &&
+      regex_set_matcher_.IsEmpty() &&
+      origin_and_path_regex_set_matcher_.IsEmpty() &&
       registered_full_url_patterns_.empty() &&
       registered_url_component_patterns_.empty();
 }
@@ -683,6 +739,7 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
       // If we are called to process Full URL searches, ignore others, and
       // vice versa. (Regex conditions are updated in UpdateRegexSetMatcher.)
       if (!condition_iter->IsRegexCondition() &&
+          !condition_iter->IsOriginAndPathRegexCondition() &&
           full_url_conditions == condition_iter->IsFullURLCondition())
         new_patterns.insert(condition_iter->string_pattern());
     }
@@ -722,6 +779,7 @@ void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {
 
 void URLMatcher::UpdateRegexSetMatcher() {
   std::vector<const StringPattern*> new_patterns;
+  std::vector<const StringPattern*> new_origin_and_path_patterns;
 
   for (URLMatcherConditionSets::const_iterator condition_set_iter =
       url_matcher_condition_sets_.begin();
@@ -732,8 +790,12 @@ void URLMatcher::UpdateRegexSetMatcher() {
     for (URLMatcherConditionSet::Conditions::const_iterator condition_iter =
          conditions.begin(); condition_iter != conditions.end();
          ++condition_iter) {
-      if (condition_iter->IsRegexCondition())
+      if (condition_iter->IsRegexCondition()) {
         new_patterns.push_back(condition_iter->string_pattern());
+      } else if (condition_iter->IsOriginAndPathRegexCondition()) {
+        new_origin_and_path_patterns.push_back(
+            condition_iter->string_pattern());
+      }
     }
   }
 
@@ -741,6 +803,8 @@ void URLMatcher::UpdateRegexSetMatcher() {
   // FilteredRE2 backend doesn't support incremental updates.
   regex_set_matcher_.ClearPatterns();
   regex_set_matcher_.AddPatterns(new_patterns);
+  origin_and_path_regex_set_matcher_.ClearPatterns();
+  origin_and_path_regex_set_matcher_.AddPatterns(new_origin_and_path_patterns);
 }
 
 void URLMatcher::UpdateTriggers() {

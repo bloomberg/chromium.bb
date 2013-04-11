@@ -18,6 +18,7 @@ extern const char kHostEqualsKey[];
 extern const char kHostPrefixKey[];
 extern const char kHostSuffixKey[];
 extern const char kHostSuffixPathPrefixKey[];
+extern const char kOriginAndPathMatchesKey[];
 extern const char kPathContainsKey[];
 extern const char kPathEqualsKey[];
 extern const char kPathPrefixKey[];

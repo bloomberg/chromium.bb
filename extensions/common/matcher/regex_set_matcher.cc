@@ -61,6 +61,10 @@ bool RegexSetMatcher::Match(const std::string& text,
   return old_number_of_matches != matches->size();
 }
 
+bool RegexSetMatcher::IsEmpty() const {
+  return regexes_.empty();
+}
+
 std::vector<RegexSetMatcher::RE2ID> RegexSetMatcher::FindSubstringMatches(
     const std::string& text) const {
   std::set<int> atoms_set;

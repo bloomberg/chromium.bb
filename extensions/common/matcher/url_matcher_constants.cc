@@ -15,6 +15,7 @@ const char kHostEqualsKey[] = "hostEquals";
 const char kHostPrefixKey[] = "hostPrefix";
 const char kHostSuffixKey[] = "hostSuffix";
 const char kHostSuffixPathPrefixKey[] = "hostSuffixPathPrefix";
+const char kOriginAndPathMatchesKey[] = "originAndPathMatches";
 const char kPathContainsKey[] = "pathContains";
 const char kPathEqualsKey[] = "pathEquals";
 const char kPathPrefixKey[] = "pathPrefix";

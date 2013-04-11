@@ -43,6 +43,8 @@ class URLMatcherConditionFactoryMethods {
     factory_methods_[keys::kHostEqualsKey] = &F::CreateHostEqualsCondition;
     factory_methods_[keys::kHostPrefixKey] = &F::CreateHostPrefixCondition;
     factory_methods_[keys::kHostSuffixKey] = &F::CreateHostSuffixCondition;
+    factory_methods_[keys::kOriginAndPathMatchesKey] =
+        &F::CreateOriginAndPathMatchesCondition;
     factory_methods_[keys::kPathContainsKey] = &F::CreatePathContainsCondition;
     factory_methods_[keys::kPathEqualsKey] = &F::CreatePathEqualsCondition;
     factory_methods_[keys::kPathPrefixKey] = &F::CreatePathPrefixCondition;

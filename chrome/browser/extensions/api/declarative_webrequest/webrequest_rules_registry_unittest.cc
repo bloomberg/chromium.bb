@@ -661,5 +661,55 @@ TEST_F(WebRequestRulesRegistryTest, CheckConsistency) {
   EXPECT_TRUE(registry->IsEmpty());
 }
 
+TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
+  const char kRule[] =
+      "{                                                                 \n"
+      "  \"id\": \"rule1\",                                              \n"
+      "  \"conditions\": [                                               \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+      "      \"url\": {\"originAndPathMatches\": \"fo+.com\"}            \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"actions\": [                                                  \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
+      "      \"redirectUrl\": \"http://bar.com\"                         \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"priority\": 200                                               \n"
+      "}                                                                 ";
+
+  scoped_ptr<Value> value(base::JSONReader::Read(kRule));
+  ASSERT_TRUE(value.get());
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+  rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
+  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value, rules.back().get()));
+
+  scoped_refptr<WebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+
+  URLMatcher matcher;
+  std::string error = registry->AddRulesImpl(kExtensionId, rules);
+  EXPECT_EQ("", error);
+
+  net::TestURLRequestContext context;
+  std::list<LinkedPtrEventResponseDelta> deltas;
+
+  // No match because match is in the query parameter.
+  GURL url1("http://bar.com/index.html?foo.com");
+  net::TestURLRequest request1(url1, NULL, &context, NULL);
+  WebRequestData request_data1(&request1, ON_BEFORE_REQUEST);
+  deltas = registry->CreateDeltas(NULL, request_data1, false);
+  EXPECT_EQ(0u, deltas.size());
+
+  // This is a correct match.
+  GURL url2("http://foo.com/index.html");
+  net::TestURLRequest request2(url2, NULL, &context, NULL);
+  WebRequestData request_data2(&request2, ON_BEFORE_REQUEST);
+  deltas = registry->CreateDeltas(NULL, request_data2, false);
+  EXPECT_EQ(1u, deltas.size());
+}
 
 }  // namespace extensions

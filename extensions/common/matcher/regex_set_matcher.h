@@ -43,6 +43,8 @@ class RegexSetMatcher {
   bool Match(const std::string& text,
              std::set<StringPattern::ID>* matches) const;
 
+  bool IsEmpty() const;
+
  private:
   typedef int RE2ID;
   typedef std::map<StringPattern::ID, const StringPattern*> RegexMap;
