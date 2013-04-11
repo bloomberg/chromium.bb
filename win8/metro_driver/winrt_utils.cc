@@ -71,19 +71,6 @@ HRESULT Create ## Name ## Property(Type value, \
     *result = 0; \
   hr = S_OK
 
-
-BOOL CALLBACK CoreWindowFinder(HWND hwnd, LPARAM param) {
-  HWND* window = reinterpret_cast<HWND*>(param);
-  char classname[128];
-  if (::GetClassNameA(hwnd, classname, ARRAYSIZE(classname))) {
-    if (lstrcmpiA("Windows.UI.Core.CoreWindow", classname) == 0) {
-      *window = hwnd;
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
 }  // namespace
 
 namespace winrt_utils {
@@ -234,15 +221,6 @@ string16 ReadArgumentsFromPinnedTaskbarShortcut() {
   }
 
   return L"";
-}
-
-HWND FindCoreWindow(DWORD thread_id, int wait_ms) {
-  HWND window = NULL;
-    do {
-    ::Sleep(wait_ms);
-    ::EnumThreadWindows(thread_id, &CoreWindowFinder, LPARAM(&window));
-  } while (window == NULL);
-  return window;
 }
 
 }  // namespace winrt_utils

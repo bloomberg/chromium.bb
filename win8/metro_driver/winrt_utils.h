@@ -55,10 +55,6 @@ HRESULT CompareProperties(
 // empty string on failure.
 string16 ReadArgumentsFromPinnedTaskbarShortcut();
 
-// Looks for a Window with the right class name that belongs to |thread_id|
-// thread. It loops forever looking for it, waiting |wait_ms| between loops.
-HWND FindCoreWindow(DWORD thread_id, int wait_ms);
-
 }  // namespace winrt_utils
 
 #endif  // WIN8_METRO_DRIVER_WINRT_UTILS_H_
