@@ -744,6 +744,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableScriptedSpeech(true);
 #endif
 
+#if defined(OS_ANDROID)
+  // input[type=week] in Android is incomplete. crbug.com/135938
+  WebRuntimeFeatures::enableInputTypeWeek(false);
+#endif
+
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
 
