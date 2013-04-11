@@ -984,12 +984,12 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   // coordinates.
   if (!IsMinimized()) {
     if (delegate_->WidgetSizeIsClientSize()) {
-        GetClientRect(hwnd(), &r);
-        // This is needed due to a hack that works around a "feature" in
-        // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
-        // GetClientAreaInsets for more details.
-        if (remove_standard_frame_)
-          r.bottom += kClientAreaBottomInsetHack;
+      GetClientRect(hwnd(), &r);
+      // This is needed due to a hack that works around a "feature" in
+      // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
+      // GetClientAreaInsets for more details.
+      if (remove_standard_frame_ && !IsMaximized())
+        r.bottom += kClientAreaBottomInsetHack;
     } else {
       GetWindowRect(hwnd(), &r);
     }
@@ -1020,6 +1020,8 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
     // Windows automatically adds a standard width border to all sides when a
     // window is maximized.
     int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    if (remove_standard_frame_)
+      border_thickness -= 1;
     return gfx::Insets(border_thickness, border_thickness, border_thickness,
                        border_thickness);
   }
@@ -1039,7 +1041,7 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
   // user code has to compensate by making its content shorter if it wants
   // everything to appear inside the window.
   if (remove_standard_frame_)
-    return gfx::Insets(0, 0, kClientAreaBottomInsetHack, 0);
+    return gfx::Insets(0, 0, IsMaximized() ? 0 : kClientAreaBottomInsetHack, 0);
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
