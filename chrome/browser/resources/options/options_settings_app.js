@@ -19,6 +19,7 @@
 
     var whitelistedSections = [
       'advanced-settings',
+      'downloads-section',
       'handlers-section',
       'languages-section',
       'media-galleries-section',
