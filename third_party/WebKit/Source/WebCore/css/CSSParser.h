@@ -74,6 +74,7 @@ class CSSParser {
 
 public:
     struct Location;
+    class SourceDataHandler;
     enum SyntaxErrorType {
         PropertyDeclarationError,
         GeneralSyntaxError
@@ -83,7 +84,7 @@ public:
 
     ~CSSParser();
 
-    void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, RuleSourceDataList* = 0, bool = false);
+    void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, SourceDataHandler* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
 #if ENABLE(CSS3_CONDITIONAL_RULES)
@@ -94,7 +95,7 @@ public:
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
     static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(int ident, CSSParserValue*);
-    bool parseDeclaration(StylePropertySet*, const String&, PassRefPtr<CSSRuleSourceData>, StyleSheetContents* contextStyleSheet);
+    bool parseDeclaration(StylePropertySet*, const String&, SourceDataHandler*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<StylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassOwnPtr<MediaQuery> parseMediaQuery(const String&);
 
@@ -387,26 +388,17 @@ public:
 
     // tokenizer methods and data
     size_t m_parsedTextPrefixLength;
-    SourceRange m_selectorRange;
-    SourceRange m_propertyRange;
-    OwnPtr<RuleSourceDataList> m_currentRuleDataStack;
-    RefPtr<CSSRuleSourceData> m_currentRuleData;
-    RuleSourceDataList* m_ruleSourceDataResult;
+    SourceDataHandler* m_sourceDataHandler;
 
-    void fixUnparsedPropertyRanges(CSSRuleSourceData*);
-    void markRuleHeaderStart(CSSRuleSourceData::Type);
-    void markRuleHeaderEnd();
-    void markSelectorStart();
-    void markSelectorEnd();
-    void markRuleBodyStart();
-    void markRuleBodyEnd();
-    void markPropertyStart();
-    void markPropertyEnd(bool isImportantFound, bool isPropertyParsed);
-    void processAndAddNewRuleToSourceTreeIfNeeded();
-    void addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData>);
-    PassRefPtr<CSSRuleSourceData> popRuleData();
-    void resetPropertyRange() { m_propertyRange.start = m_propertyRange.end = UINT_MAX; }
-    bool isExtractingSourceData() const { return !!m_currentRuleDataStack; }
+    void startRuleHeader(CSSRuleSourceData::Type);
+    void endRuleHeader();
+    void startSelector();
+    void endSelector();
+    void startRuleBody();
+    void endRuleBody(bool discard = false);
+    void startProperty();
+    void endProperty(bool isImportantFound, bool isPropertyParsed);
+    void startEndUnknownRule();
     void syntaxError(const Location&, SyntaxErrorType = GeneralSyntaxError);
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
@@ -494,9 +486,6 @@ private:
     template <typename CharacterType>
     inline void detectSupportsToken(int);
 #endif
-
-    template <typename CharacterType>
-    inline void setRuleHeaderEnd(const CharacterType*);
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
@@ -681,6 +670,19 @@ private:
 struct CSSParser::Location {
     int lineNumber;
     CSSParserString token;
+};
+
+class CSSParser::SourceDataHandler {
+public:
+    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned offset) = 0;
+    virtual void endRuleHeader(unsigned offset) = 0;
+    virtual void startSelector(unsigned offset) = 0;
+    virtual void endSelector(unsigned offset) = 0;
+    virtual void startRuleBody(unsigned offset) = 0;
+    virtual void endRuleBody(unsigned offset, bool error) = 0;
+    virtual void startEndUnknownRule() = 0;
+    virtual void startProperty(unsigned offset) = 0;
+    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset) = 0;
 };
 
 String quoteCSSString(const String&);
