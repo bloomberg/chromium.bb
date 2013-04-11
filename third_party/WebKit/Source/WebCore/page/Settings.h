@@ -226,7 +226,6 @@ namespace WebCore {
         bool m_isCSSCustomFilterEnabled : 1;
         bool m_cssStickyPositionEnabled : 1;
         bool m_cssVariablesEnabled : 1;
-        bool m_tiledBackingStoreEnabled : 1;
         bool m_dnsPrefetchingEnabled : 1;
 
 #if ENABLE(TOUCH_EVENTS)
