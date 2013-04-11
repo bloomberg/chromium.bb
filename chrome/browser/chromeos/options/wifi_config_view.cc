@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -546,7 +546,7 @@ void WifiConfigView::RefreshShareCheckbox() {
     // user certificates are enabled.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(false);
-  } else if (!LoginState::Get()->IsUserLoggedIn()) {
+  } else if (!UserManager::Get()->IsUserLoggedIn()) {
     // If not logged in, networks must be shared.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(true);
@@ -560,7 +560,7 @@ void WifiConfigView::UpdateErrorLabel() {
   std::string error_msg;
   if (UserCertRequired() && cert_library_->CertificatesLoaded()) {
     if (!HaveUserCerts()) {
-      if (!LoginState::Get()->IsUserLoggedIn()) {
+      if (!UserManager::Get()->IsUserLoggedIn()) {
         error_msg = l10n_util::GetStringUTF8(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
       } else {

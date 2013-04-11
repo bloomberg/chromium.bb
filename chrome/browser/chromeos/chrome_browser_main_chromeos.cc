@@ -91,7 +91,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/ime/xkeyboard.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
@@ -293,8 +292,6 @@ class DBusServices {
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    chromeos::LoginState::Initialize();
-
     // Always initialize these handlers which should not conflict with
     // NetworkLibrary.
     chromeos::network_event_log::Initialize();
@@ -348,8 +345,6 @@ class DBusServices {
     chromeos::NetworkStateHandler::Shutdown();
     chromeos::GeolocationHandler::Shutdown();
     chromeos::network_event_log::Shutdown();
-
-    chromeos::LoginState::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();

@@ -5,11 +5,12 @@
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,10 +21,29 @@ namespace chromeos {
 namespace {
 
 ash::user::LoginStatus GetCurrentLoginStatus() {
-  if (!ash::Shell::GetInstance()->system_tray_delegate())
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager->IsUserLoggedIn())
     return ash::user::LOGGED_IN_NONE;
-  return ash::Shell::GetInstance()->system_tray_delegate()->
-      GetUserLoginStatus();
+  if (user_manager->IsCurrentUserOwner())
+    return ash::user::LOGGED_IN_OWNER;
+
+  switch (user_manager->GetLoggedInUser()->GetType()) {
+    case User::USER_TYPE_REGULAR:
+      return ash::user::LOGGED_IN_USER;
+    case User::USER_TYPE_GUEST:
+      return ash::user::LOGGED_IN_GUEST;
+    case User::USER_TYPE_RETAIL_MODE:
+      return ash::user::LOGGED_IN_RETAIL_MODE;
+    case User::USER_TYPE_PUBLIC_ACCOUNT:
+      return ash::user::LOGGED_IN_PUBLIC;
+    case User::USER_TYPE_LOCALLY_MANAGED:
+      return ash::user::LOGGED_IN_LOCALLY_MANAGED;
+    case User::USER_TYPE_KIOSK_APP:
+      return ash::user::LOGGED_IN_KIOSK_APP;
+  }
+
+  NOTREACHED();
+  return ash::user::LOGGED_IN_USER;
 }
 
 }  // namespace

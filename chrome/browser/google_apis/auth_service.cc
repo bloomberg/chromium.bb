@@ -26,7 +26,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif  // OS_CHROMEOS
 
 using content::BrowserThread;
@@ -290,9 +290,9 @@ void AuthService::Observe(int type,
 // static
 bool AuthService::CanAuthenticate(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::LoginState::IsInitialized())
-    return false;
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated())
+  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
+      chromeos::UserManager::Get()->IsLoggedInAsGuest() ||
+      chromeos::UserManager::Get()->IsLoggedInAsDemoUser())
     return false;
 #endif  // OS_CHROMEOS
 
