@@ -337,6 +337,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DiskCache.TotalIOTime" units="milliseconds">
+  <obsolete>
+    Deprecated.
+  </obsolete>
+  <summary>
+    The total time it takes to perform a payload IO operation, for the regular
+    disk cache.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies">
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
@@ -346,6 +356,12 @@ other types of suffix sets.
 
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
   <summary>Number of calls to extension functions.</summary>
+</histogram>
+
+<histogram name="HttpCache.EntryLockWait" units="milliseconds">
+  <summary>
+    The time spent waiting for write lock on a disk cache entry.
+  </summary>
 </histogram>
 
 <histogram name="Import.ImporterType" enum="ImporterType">
@@ -2278,6 +2294,452 @@ other types of suffix sets.
   <summary>The time that a Wi-fi scan takes.</summary>
 </histogram>
 
+<histogram name="PLT.Abandoned" enum="Abandoned">
+  <summary>
+    Distribution of actual finished pages, vs abandoned pages, where we needed
+    to declare a finish time prematurely since the page was being closed
+    (exited).
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish" units="milliseconds">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_ContentPrefetcher" units="milliseconds">
+  <summary>
+    PLT.BeginToFinish, but for pages which contained prefetch links.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinish_ContentPrefetcherReferrer"
+    units="milliseconds">
+  <summary>
+    PLT.BeginToFinish, but for pages which were referred to by pages which
+    contained prefetch links.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinishDoc">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinishDoc_ContentPrefetcher" units="milliseconds">
+  <summary>
+    PLT.BeginToFinishDoc, but for pages which contained prefetch links.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinishDoc_ContentPrefetcherReferrer"
+    units="milliseconds">
+  <summary>
+    PLT.BeginToFinishDoc, but for pages which were referred to by pages which
+    contained prefetch links.
+  </summary>
+</histogram>
+
+<histogram name="PLT.BeginToFirstPaint" units="milliseconds">
+  <summary>
+    Time from &quot;begin&quot; to &quot;first paint.&quot;  &quot;Begin&quot;==
+    &quot;request&quot; if user requested, and &quot;start&quot; otherwise.
+    &quot;Request&quot;== time when user requested document. &quot;Start&quot;==
+    time when renderer requested load of document, after any unload of last
+    document. &quot;First paint&quot;== time when first paint operation was
+    performed.
+  </summary>
+</histogram>
+
+<histogram name="PLT.CommitToFirstPaint" units="milliseconds">
+  <summary>
+    Time from &quot;commit&quot; to &quot;first paint.&quot;
+    &quot;Commit&quot;== time when renderer got first byte of document.
+    &quot;First paint&quot;== time when first paint operation was performed.
+  </summary>
+</histogram>
+
+<histogram name="PLT.LoadType" enum="LoadType">
+  <summary>
+    Probability distribution for enumerated varieties of page loads.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PerceivedLoadTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 5/02/2011, replaced by Prerender.RendererPLT.
+  </obsolete>
+  <summary>
+    Perceived load time of a page. For non-prerendered pages, this is just
+    BeginToFinish. For displayed prerendered pages, this is the time from when
+    the prerendered page is moved into a TabContents until finish.
+    &quot;Finish&quot; == after onload() and all resources are loaded. Note that
+    this is 0 if the loading finishes before the page is moved into a
+    TabContents.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PerceivedLoadTime_PrerenderLoad" units="milliseconds">
+  <obsolete>
+    Deprecated as of 5/02/2011, replaced by
+    Prerender.RendererPerceivedPLTMatched.
+  </obsolete>
+  <summary>
+    Perceived load time of a prerendered page that is displayed. This is the
+    time from when the prerendered page is moved into a TabContents until
+    finish. &quot;Finish&quot; == after onload() and all resources are loaded.
+    Note that this is 0 if the loading finishes before the the page is moved
+    into a TabContents.
+  </summary>
+</histogram>
+
+<histogram name="PLT.RequestToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot; ==
+    time when user requested document.  &quot;Finish&quot; == after onload() and
+    all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="PLT.StartToCommit" units="milliseconds">
+  <summary>
+    Time from &quot;start&quot; to &quot;commit.&quot; &quot;Start&quot;== time
+    when renderer requested load of document, after any unload of last document.
+    &quot;Commit&quot;== time when renderer got first byte of document.
+  </summary>
+</histogram>
+
+<histogram name="PLT.StartToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;start&quot; to &quot;finish.&quot; &quot;Start&quot;== time
+    when renderer requested load of document, after any unload of last document.
+    &quot;Finish&quot;==after onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
+  <summary>
+    Final status for prerender pages - either success, or why it was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.FinalStatusMatchComplete"
+    enum="PrerenderFinalStatus">
+  <summary>
+    Final status for prerender pages - either success, or why it was canceled.
+    This is for the MatchComplete set of pages (including some pages that were
+    not actually prerendered), to match the control group.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.FractionPixelsFinalAtSwapin">
+  <summary>
+    For prerenders that are swapped in, the percentage of pixels that is already
+    final at swap-in time compared to when the spinner stops.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.LocalPredictorEvent"
+    enum="PrerenderLocalPredictorEvents">
+  <summary>
+    Enumeration of what events related to the local predictor have occurred
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLT" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded for all pages loaded in a session.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTFirstAfterMiss" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded for the first page load completing immediately after a
+    prerender.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTFirstAfterMissAnyOnly"
+    units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    &quot;FirstAfterMiss&quot; means the first pageload after a prerender miss.
+    There are two types: Any, and Non-overlapping.  The latter only applies to
+    page loads initiated after the prerender.  This variable records cases where
+    only Any triggered.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTFirstAfterMissBoth" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    &quot;FirstAfterMiss&quot; means the first pageload after a prerender miss.
+    There are two types: Any, and Non-overlapping.  The latter only applies to
+    page loads initiated after the prerender.  This variable records cases where
+    both triggered.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping"
+    units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded for the first page load completing immediately after a
+    prerender, but which has also started after the prerender has been
+    initiated.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly"
+    units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    &quot;FirstAfterMiss&quot; means the first pageload after a prerender miss.
+    There are two types: Any, and Non-overlapping.  The latter only applies to
+    page loads initiated after the prerender.  This variable records cases where
+    only Non-overlapping triggered.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTMatched" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded only for prerendered pages, or for pages which would have
+    been prerendered in the control case.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTMatchedComplete" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded only for prerendered pages, or for pages which would have
+    been prerendered in the control case.
+
+    In MatchedComplete, the prerender group also contains cancelled prerenders,
+    so as to produce a perfect match of page views attributed this group in the
+    prerender group with those attributed to this group in the control group.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTWindowed" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded for all page loads which happen within 30 seconds after a
+    prefetch tag is observed.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PerceivedPLTWindowNotMatched" units="milliseconds">
+  <summary>
+    Time from when a user navigates to a page to when it loads. Since the pages
+    may start loading before the user navigates to it, this does not include any
+    portion of load prior to navigation.
+
+    This is recorded for all page loads which happen within 30 seconds after a
+    prefetch tag is observed and which do not correspond to a prerender tag.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PercentLoadDoneAtSwapin">
+  <summary>
+    For prerenders that are swapped in, the percentage of the time from load
+    start until the onload event fires that has elapsed at the time of the
+    swapin.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PrerenderCountOf3Max">
+  <summary>
+    After launching a prerender, how many simultanious prerenders are recorded
+    as running, out of a maximum of three.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PrerenderNotSwappedInPLT" units="milliseconds">
+  <summary>
+    For prerenders that finish loading before they are ever swapped in, their
+    page load time until the onload event fires.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.RendererIdleTime" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    This is the time from when a prerendered page finishes loading to when it is
+    displayed, as measured by the renderer process. When a page is displayed
+    before it finishes loading, no value is recorded in this histogram.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.RendererPerceivedPLT" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    Perceived load time of a page, as measured by the renderer process. For
+    non-prerendered pages, this is just BeginToFinish. For displayed prerendered
+    pages, this is the time from when the prerendered page is moved into a
+    TabContents until finish. &quot;Finish&quot; == after onload() and all
+    resources are loaded. Note that this is 0 if the loading finishes before the
+    page is moved into a TabContents.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.RendererPerceivedPLTMatched" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    Perceived load time of a prerendered page that is displayed, as measured by
+    the renderer process. This is the time from when the prerendered page is
+    moved into a TabContents until finish. &quot;Finish&quot; == after onload()
+    and all resources are loaded. Note that this is 0 if the loading finishes
+    before the the page is moved into a TabContents.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.RendererTimeUntilDisplay" units="milliseconds">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
+  <summary>
+    The time elapsed between when the prerendering of a page starts and when the
+    page is displayed, as measured by the renderer process. Prerendered pages
+    discarded without being displayed are excluded from this count.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"
+    units="milliseconds">
+  <summary>
+    For simulated local browsing prerendering, the baseline PLT of pages without
+    any prerendering for pages that would be prerendered.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.SimulatedLocalBrowsingPLT" units="milliseconds">
+  <summary>
+    For simulated local browsing prerendering, the estimated PLT of pages with
+    prerendering enabled for pages that would be prerendered.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.FinishDocToFinish">
+  <summary>
+    The time from when a document finished loading to when all it's resources
+    are also loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.RequestToFinish">
+  <obsolete>
+    Deprecated 6/15/09.  Replaced by Renderer2.RequestToFinish_L
+  </obsolete>
+  <summary>
+    The time from when a page was requested by a user to when it is fully
+    loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.RequestToFinish_L">
+  <summary>
+    The time from when a page was requested by a user to when it is fully
+    loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.RequestToFirstLayout">
+  <summary>
+    The time from when a page was requested by a user to its first layout.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.RequestToStart">
+  <summary>
+    The time from when a page was requested by a user to when it starts loading.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.StartToFinish">
+  <summary>
+    The time from when a page started loading to when it is fully loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.StartToFinishDoc">
+  <summary>
+    The time from when a page starts loading to when the main document is
+    finished loading.
+  </summary>
+</histogram>
+
+<histogram name="Renderer2.StartToFirstLayout">
+  <summary>
+    The time from when a page starts loading to its first layout.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.Abandoned" enum="Abandoned">
+  <summary>
+    Distribution of actual finished pages, vs abandoned pages, where we needed
+    to declare a finish time prematurely since the page was being closed
+    (exited).
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.BeginToFinish">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="Renderer4.BeginToFinishDoc">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="Renderer4.RequestToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot;==
+    time when user requested document.  &quot;Finish&quot;==after onload() and
+    all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.StartToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;start&quot; to &quot;finish.&quot; &quot;Start&quot;== time
+    when renderer requested load of document, after any unload of last document.
+    &quot;Finish&quot;==after onload() and all resources are loaded.
+  </summary>
+</histogram>
+
 <histogram name="RequestAutocomplete.InitialUserState"
     enum="AutofillDialogInitialUserState">
   <summary>
@@ -2341,6 +2803,11 @@ other types of suffix sets.
 <!-- Enum types -->
 
 <enums>
+
+<enum name="Abandoned" type="int">
+  <int value="0" label="Finished"/>
+  <int value="1" label="Abandoned"/>
+</enum>
 
 <enum name="AutocheckoutBubble" type="int">
   <int value="0" label="Created"/>
@@ -3542,6 +4009,23 @@ other types of suffix sets.
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
 </enum>
 
+<enum name="LoadType" type="int">
+  <int value="0" label="UNDEFINED_LOAD">Not yet initialized</int>
+  <int value="1" label="RELOAD">User pressed reload</int>
+  <int value="2" label="HISTORY_LOAD">Back or forward</int>
+  <int value="3" label="NORMAL_LOAD">User entered URL, or omnibox search</int>
+  <int value="4" label="LINK_LOAD">(deprecated) Included next 4 categories</int>
+  <int value="5" label="LINK_LOAD_NORMAL">Commonly following of link</int>
+  <int value="6" label="LINK_LOAD_RELOAD">JS/link directed reload</int>
+  <int value="7" label="LINK_LOAD_CACHE_STALE_OK">
+    back/forward or encoding change
+  </int>
+  <int value="8" label="LINK_LOAD_CACHE_ONLY">
+    Allow stale data (avoid doing a re-post)
+  </int>
+  <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
 <enum name="NetErrorCodes" type="int">
   <int value="0" label="OK"/>
   <int value="1" label="IO_PENDING"/>
@@ -3740,6 +4224,68 @@ other types of suffix sets.
   <int value="2" label="TOO_NEW"/>
 </enum>
 
+<enum name="PrerenderFinalStatus" type="int">
+  <int value="0" label="USED"/>
+  <int value="1" label="TIMED_OUT"/>
+  <int value="2" label="EVICTED"/>
+  <int value="3" label="MANAGER_SHUTDOWN"/>
+  <int value="4" label="CLOSED"/>
+  <int value="5" label="CREATE_NEW_WINDOW"/>
+  <int value="6" label="PROFILE_DESTROYED"/>
+  <int value="7" label="APP_TERMINATING"/>
+  <int value="8" label="JAVASCRIPT_ALERT"/>
+  <int value="9" label="AUTH_NEEDED"/>
+  <int value="10" label="HTTPS"/>
+  <int value="11" label="DOWNLOAD"/>
+  <int value="12" label="MEMORY_LIMIT_EXCEEDED"/>
+  <int value="13" label="JS_OUT_OF_MEMORY"/>
+  <int value="14" label="RENDERER_UNRESPONSIVE"/>
+  <int value="15" label="TOO_MANY_PROCESSES"/>
+  <int value="16" label="RATE_LIMIT_EXCEEDED"/>
+  <int value="17" label="PENDING_SKIPPED"/>
+  <int value="18" label="CONTROL_GROUP"/>
+  <int value="19" label="HTML5_MEDIA"/>
+  <int value="20" label="SOURCE_RENDER_VIEW_CLOSED"/>
+  <int value="21" label="RENDERER_CRASHED"/>
+  <int value="22" label="UNSUPPORTED_SCHEME"/>
+  <int value="23" label="INVALID_HTTP_METHOD"/>
+  <int value="24" label="WINDOW_PRINT"/>
+  <int value="25" label="RECENTLY_VISITED"/>
+  <int value="26" label="WINDOW_OPENER"/>
+  <int value="27" label="PAGE_ID_CONFLICT"/>
+  <int value="28" label="SAFE_BROWSING"/>
+  <int value="29" label="FRAGMENT_MISMATCH"/>
+  <int value="30" label="SSL_CLIENT_CERTIFICATE_REQUESTED"/>
+  <int value="31" label="CACHE_OR_HISTORY_CLEARED"/>
+  <int value="32" label="CANCELLED"/>
+  <int value="33" label="SSL_ERROR"/>
+  <int value="34" label="CROSS_SITE_NAVIGATION_PENDING"/>
+  <int value="35" label="DEVTOOLS_ATTACHED"/>
+  <int value="36" label="SESSION_STORAGE_NAMESPACE_MISMATCH"/>
+  <int value="37" label="NO_USE_GROUP"/>
+  <int value="38" label="MATCH_COMPLETE_DUMMY"/>
+  <int value="39" label="DUPLICATE"/>
+  <int value="40" label="OPEN_URL"/>
+  <int value="41" label="WOULD_HAVE_BEEN_USED"/>
+  <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
+</enum>
+
+<enum name="PrerenderLocalPredictorEvents" type="int">
+  <int value="0" label="EVENT_CONSTRUCTED"/>
+  <int value="1" label="EVENT_INIT_SCHEDULED"/>
+  <int value="2" label="EVENT_INIT_STARTED"/>
+  <int value="3" label="EVENT_INIT_FAILED_NO_HISTORY"/>
+  <int value="4" label="EVENT_INIT_SUCCEEDED"/>
+  <int value="5" label="EVENT_ADD_VISIT"/>
+  <int value="6" label="EVENT_ADD_VISIT_INITIALIZED"/>
+  <int value="7" label="EVENT_ADD_VISIT_PRERENDER_IDENTIFIED"/>
+  <int value="8" label="EVENT_ADD_VISIT_RELEVANT_TRANSITION"/>
+  <int value="9" label="EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE"/>
+  <int value="10" label="EVENT_ADD_VISIT_PRERENDERING"/>
+  <int value="11" label="EVENT_GOT_PRERENDER_URL"/>
+  <int value="12" label="EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT"/>
+</enum>
+
 <enum name="ProtocolVersion" type="int">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="HTTP 1.1"/>
@@ -3889,6 +4435,14 @@ other types of suffix sets.
 
 <fieldtrials>
 
+<fieldtrial name="AsyncSlowStart">
+  <group name="AsyncSlowStart" label="Async Slow Start on"/>
+  <group name="AsyncSlowStart_off" label="Async Slow Start off"/>
+  <group name="AsyncSlowStart_on" label="Async Slow Start on"/>
+  <affected-histogram name="Net.Transaction_Connected_New"/>
+  <affected-histogram name="Renderer4.StartToFinish"/>
+</fieldtrial>
+
 <fieldtrial name="AutofillServerExperiments">
   <group name="ar06" label="Acceptance ratio: 0.6"/>
   <group name="ar1" label="Acceptance ratio: 1.0"/>
@@ -3926,6 +4480,372 @@ other types of suffix sets.
   <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
   <affected-histogram name="Autofill.Quality.ServerType"/>
   <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
+</fieldtrial>
+
+<fieldtrial name="CacheListSize">
+  <group name="CacheListSize_12" label="Control"/>
+  <group name="CacheListSize_13" label="Extended deleted list (2x)"/>
+  <group name="CacheListSize_14" label="Out of the experiment"/>
+  <affected-histogram name="DiskCache.TotalIOTime"/>
+  <affected-histogram name="Net.HttpJob.TotalTime"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCancel"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeNotCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinish_HistoryLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadCacheOnly"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.BeginToFinish_Reload"/>
+</fieldtrial>
+
+<fieldtrial name="CacheSensitivityAnalysis">
+  <group name="No" label="Turned off"/>
+  <group name="Control" label="Control group"/>
+  <group name="ControlA" label="Control, Group A"/>
+  <group name="ControlB" label="Control, Group B"/>
+  <group name="100" label="100% slowdown"/>
+  <group name="100A" label="100% slowdown, Group A"/>
+  <group name="100B" label="100% slowdown, Group B"/>
+  <group name="200A" label="200% slowdown, Group A"/>
+  <group name="200B" label="200% slowdown, Group B"/>
+  <group name="400A" label="400% slowdown, Group A"/>
+  <group name="400B" label="400% slowdown, Group B"/>
+  <affected-histogram name="Net.HttpJob.TotalTime"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCancel"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeNotCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
+  <affected-histogram name="PLT.BeginToFinish_CacheSensitivity"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_CacheSensitivity"/>
+  <affected-histogram name="PLT.BeginToFirstPaint_CacheSensitivity"/>
+  <affected-histogram name="PLT.CommitToFirstPaint_CacheSensitivity"/>
+</fieldtrial>
+
+<fieldtrial name="CacheSensitivityHistograms">
+  <group name="CacheSensitivity" label="Cache Sensivitiy Analysis"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.BeginToFirstPaint"/>
+  <affected-histogram name="PLT.CommitToFirstPaint"/>
+</fieldtrial>
+
+<fieldtrial name="ConnCountImpact">
+  <group name="conn_count_16" label="with 16 persistent connections per host"/>
+  <group name="conn_count_4" label="with 4 persistent connections per host"/>
+  <group name="conn_count_5" label="with 5 persistent connections per host"/>
+  <group name="conn_count_6" label="with 6 persistent connections per host"/>
+  <group name="conn_count_7" label="with 7 persistent connections per host"/>
+  <group name="conn_count_8" label="with 8 persistent connections per host"/>
+  <group name="conn_count_9" label="with 9 persistent connections per host"/>
+  <affected-histogram name="Net.Transaction_Connected_New"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="Renderer4.Abandoned"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="ConnnectBackupJobs">
+  <group name="ConnectBackupJobsEnabled"/>
+  <group name="ConnectBackupJobsDisabled"/>
+  <affected-histogram name="Net.PreconnectUtilization"/>
+  <affected-histogram name="Net.PreconnectUtilization2"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.LoadType"/>
+</fieldtrial>
+
+<fieldtrial name="DnsImpact2">
+  <group name="disabled_prefetch"
+      label="DNS pre-resolving is disabled in these clients"/>
+  <group name="disabled_prefetch_4_connections"
+      label="DNS pre-resolving is disabled in these clients, and a maximum of
+             4 connections per host was allowed"/>
+  <group name="enabled_prefetch_4_connections"
+      label="a maximum of 4 connections per host was allowed in these clients"/>
+  <group name="parallel_4_prefetch"
+      label="DNS pre-resolving was only doing 4 concurrent speculative
+             resolutions in this test"/>
+  <affected-histogram name="Net.Dns_Resolution_And_TCP_Connection_Latency"/>
+  <affected-histogram name="Net.TCP_Connection_Idle_Sockets">
+    <with-group name="disabled_prefetch"/>
+    <with-group name="disabled_prefetch_4_connections"/>
+    <with-group name="enabled_prefetch_4_connections"/>
+  </affected-histogram>
+  <affected-histogram name="Net.TCP_Connection_Latency"/>
+  <affected-histogram name="Net.Transaction_Connected"/>
+  <affected-histogram name="Net.Transaction_Connected_New"/>
+  <affected-histogram name="Net.Transaction_Connected_New_b"/>
+  <affected-histogram name="Net.Transaction_Connected_Under_10"/>
+  <affected-histogram name="Net.Transaction_Latency"/>
+  <affected-histogram name="Net.Transaction_Latency_b"/>
+  <affected-histogram name="Net.Transaction_Latency_Total"/>
+  <affected-histogram name="Net.Transaction_Latency_Total_New_Connection"/>
+  <affected-histogram
+      name="Net.Transaction_Latency_Total_New_Connection_Under_10"/>
+  <affected-histogram name="Net.Transaction_Latency_Total_Under_10"/>
+  <affected-histogram name="Net.Transaction_Latency_Under_10"/>
+  <affected-histogram name="PLT.RequestToFinish">
+    <with-group name="parallel_4_prefetch"/>
+  </affected-histogram>
+</fieldtrial>
+
+<fieldtrial name="DnsImpact3">
+  <group name="disabled_prefetch" label="with DNS pre-resolving disabled"/>
+  <group name="parallel_4_prefetch"
+      label="with only 4 concurrent speculative resolutions done in parallel"/>
+  <affected-histogram name="Net.Transaction_Connected_New">
+    <with-group name="disabled_prefetch"/>
+  </affected-histogram>
+  <affected-histogram name="Renderer2.FinishDocToFinish"/>
+  <affected-histogram name="Renderer2.RequestToFinish"/>
+  <affected-histogram name="Renderer2.RequestToFinish_L">
+    <with-group name="disabled_prefetch"/>
+  </affected-histogram>
+  <affected-histogram name="Renderer2.RequestToFirstLayout"/>
+  <affected-histogram name="Renderer2.RequestToStart"/>
+  <affected-histogram name="Renderer2.StartToFinish"/>
+  <affected-histogram name="Renderer2.StartToFinishDoc"/>
+  <affected-histogram name="Renderer2.StartToFirstLayout"/>
+  <affected-histogram name="Renderer4.RequestToFinish">
+    <with-group name="parallel_4_prefetch"/>
+  </affected-histogram>
+  <affected-histogram name="Renderer4.StartToFinish">
+    <with-group name="parallel_4_prefetch"/>
+  </affected-histogram>
+</fieldtrial>
+
+<fieldtrial name="LateBindingExperiment">
+  <group name="disable_late_binding" label="socket late binding is disabled"/>
+  <group name="enable_late_binding" label="socket late binding is enabled"/>
+  <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket"/>
+  <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_UnusedSocket"/>
+  <affected-histogram name="Net.SocketIdleTimeOnIOError2_ReusedSocket"/>
+  <affected-histogram name="Net.SocketIdleTimeOnIOError2_UnusedSocket"/>
+  <affected-histogram name="Net.TCPSocketType"/>
+  <affected-histogram name="Net.Transaction_Connected"/>
+  <affected-histogram name="Net.Transaction_Connected_Under_10"/>
+  <affected-histogram name="Net.TransportSocketRequestTime"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoad"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadNormal"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_LinkLoadReload"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc_NormalLoad"/>
+  <affected-histogram name="Renderer4.RequestToFinish"/>
+  <affected-histogram name="Renderer4.StartToFinish"/>
+</fieldtrial>
+
+<fieldtrial name="OverlappedReadImpact">
+  <group name="OverlappedReadDisabled" label="Non-blocking reads"/>
+  <group name="OverlappedReadEnabled" label="Default, async reads"/>
+  <affected-histogram name="Net.HttpJob.TotalTime"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCancel"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeNotCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.LoadType"/>
+</fieldtrial>
+
+<fieldtrial name="PageLoadType">
+  <group name="HistoryLoad" label="but only for user pressing back or forward"/>
+  <group name="LinkLoad"
+      label="deprecated - see LinkLoadReload, LinkLoadNormal,
+             LinkLoadStaleOk, LinkLoadCacheOnly; content initiated, commonly
+             back to a posted page"/>
+  <group name="LinkLoadCacheOnly"
+      label="content initiated, commonly back to a posted page, where browser
+             must ONLY use cache"/>
+  <group name="LinkLoadNormal"
+      label="content initiated, ordinary link traversal or post"/>
+  <group name="LinkLoadReload" label="content initiated, calling reload()"/>
+  <group name="LinkLoadStaleOk"
+      label="content initiated, commonly forward or back where stale cached
+             data is very acceptable"/>
+  <group name="NormalLoad"
+      label="but only for user entered URL or omnibox search"/>
+  <group name="Reload" label="but only for user pressed reload"/>
+  <group name="UndefLoad"
+      label="should never happen... as it is only for an client-code error
+             case which should not exist"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.StartToCommit">
+    <with-group name="LinkLoadNormal"/>
+    <with-group name="NormalLoad"/>
+  </affected-histogram>
+  <affected-histogram name="PLT.StartToFinish">
+    <with-group name="LinkLoadNormal"/>
+    <with-group name="NormalLoad"/>
+  </affected-histogram>
+  <affected-histogram name="Renderer4.BeginToFinish"/>
+  <affected-histogram name="Renderer4.BeginToFinishDoc"/>
+</fieldtrial>
+
+<fieldtrial name="Prefetch">
+  <group name="ContentPrefetchPrefetchOff"
+      label="Prefetch is completely disabled."/>
+  <group name="ContentPrefetchPrefetchOn"
+      label="prefetch is enabled but prerender is disabled."/>
+  <affected-histogram name="HttpCache.EntryLockWait"/>
+  <affected-histogram name="Net.HttpTimeToFirstByte"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinish_ContentPrefetcher"/>
+  <affected-histogram name="PLT.BeginToFinish_ContentPrefetcherReferrer"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_ContentPrefetcher"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_ContentPrefetcherReferrer"/>
+  <affected-histogram name="PLT.PerceivedLoadTime"/>
+  <affected-histogram name="PLT.PerceivedLoadTime_PrerenderLoad"/>
+</fieldtrial>
+
+<fieldtrial name="Prerender">
+  <group name="PrerenderEnabled" label="prerender is enabled."/>
+  <group name="PrerenderControl" label="prerender is disabled."/>
+  <group name="PrerenderNoUse"
+      label="prerender is enabled, but pages are not swapped in."/>
+  <group name="PrerenderMulti"
+      label="prerender is enabled with multiple simultanious prerenders."/>
+  <group name="Prerender5minTTL"
+      label="prerender is enabled, and the TTL is extended to 5 minutes."/>
+  <affected-histogram name="HttpCache.EntryLockWait"/>
+  <affected-histogram name="Net.HttpTimeToFirstByte"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinish_ContentPrefetcher"/>
+  <affected-histogram name="PLT.BeginToFinish_ContentPrefetcherReferrer"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_ContentPrefetcher"/>
+  <affected-histogram name="PLT.BeginToFinishDoc_ContentPrefetcherReferrer"/>
+  <affected-histogram name="PLT.PerceivedLoadTime"/>
+  <affected-histogram name="PLT.PerceivedLoadTime_PrerenderLoad"/>
+  <affected-histogram name="Prerender.FinalStatus"/>
+  <affected-histogram name="Prerender.FinalStatusMatchComplete"/>
+  <affected-histogram name="Prerender.FractionPixelsFinalAtSwapin"/>
+  <affected-histogram name="Prerender.LocalPredictorEvent"/>
+  <affected-histogram name="Prerender.PerceivedPLT"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMiss"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMissAnyOnly"/>
+  <affected-histogram name="Prerender.PerceivedPLTFirstAfterMissBoth"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping"/>
+  <affected-histogram
+      name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatched"/>
+  <affected-histogram name="Prerender.PerceivedPLTMatchedComplete"/>
+  <affected-histogram name="Prerender.PerceivedPLTWindowed"/>
+  <affected-histogram name="Prerender.PerceivedPLTWindowNotMatched"/>
+  <affected-histogram name="Prerender.PercentLoadDoneAtSwapin"/>
+  <affected-histogram name="Prerender.PrerenderNotSwappedInPLT"/>
+  <affected-histogram name="Prerender.RendererIdleTime"/>
+  <affected-histogram name="Prerender.RendererPerceivedPLT"/>
+  <affected-histogram name="Prerender.RendererPerceivedPLTMatched"/>
+  <affected-histogram name="Prerender.RendererTimeUntilDisplay"/>
+  <affected-histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"/>
+  <affected-histogram name="Prerender.SimulatedLocalBrowsingPLT"/>
+</fieldtrial>
+
+<fieldtrial name="ProxyConnectionImpact">
+  <group name="proxy_connections_16"
+      label="with 16 connections per proxy server"/>
+  <group name="proxy_connections_32"
+      label="with 32 connections per proxy server"/>
+  <group name="proxy_connections_64"
+      label="with 64 connections per proxy server"/>
+  <group name="proxy_connections_8"
+      label="with 8 connections per proxy server"/>
+  <affected-histogram name="Net.HttpProxySocketRequestTime"/>
+  <affected-histogram name="Net.SocksSocketRequestTime"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="SocketType">
+  <group name="HTTPProxy" label="HTTP proxy socket"/>
+  <group name="SOCK" label="SOCKS socket"/>
+  <group name="SSL" label="(Obsolete, SSL socket)"/>
+  <group name="SSL2" label="SSL2 socket"/>
+  <group name="SSLForProxies"
+      label="SSLClientSocket wrapping the TCPClient socket eventually used
+             for connection to a proxy"/>
+  <group name="SSLforHTTPSProxy"
+      label="SSLClientSocket wrapping the TCPClient socket eventually used
+             for connection to an HTTPS proxy"/>
+  <group name="TCP" label="plain, no proxy, no SSL socket"/>
+  <group name="TCPforHTTPProxy"
+      label="TCPClientSocket eventually used for connection to an HTTP proxy"/>
+  <group name="TCPforHTTPSProxy"
+      label="TCPClientSocket eventually used for connection to an HTTPS proxy"/>
+  <group name="TCPforSOCKS"
+      label="TCPClientSocket eventually used for connection to a SOCKS proxy"/>
+  <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket"/>
+  <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_UnusedSocket"/>
+  <affected-histogram name="Net.SocketInitErrorCodes"/>
+  <affected-histogram name="Net.SocketRequestTime"/>
+  <affected-histogram name="Net.SocketType"/>
+</fieldtrial>
+
+<fieldtrial name="SpdyImpact">
+  <group name="npn_with_http"
+      label="with NPN negotiated but using HTTP instead of SPDY"/>
+  <group name="npn_with_spdy" label="with NPN negotiated and using SPDY"/>
+  <affected-histogram name="Net.Transaction_Connected"/>
+  <affected-histogram name="Net.Transaction_Connected_New"/>
+  <affected-histogram name="Net.Transaction_Connected_New_b"/>
+  <affected-histogram name="Net.Transaction_Connected_Under_10"/>
+  <affected-histogram name="PLT.Abandoned"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+  <affected-histogram name="PLT.StartToCommit_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToCommit_NormalLoad"/>
+  <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="SpdySettingsCwnd" separator="">
+  <group name="10K" label="where at least 10KB was transferred."/>
+  <group name="25K" label="where at least 25KB was transferred."/>
+  <group name="50K" label="where at least 50KB was transferred."/>
+  <group name="100K" label="where at least 100KB was transferred."/>
+  <affected-histogram name="Net.SpdySettingsCwnd"/>
+</fieldtrial>
+
+<fieldtrial name="SSLFalseStart">
+  <group name="FalseStart_enabled"/>
+  <group name="FalseStart_disabled"/>
+  <affected-histogram name="Net.SSL_Connection_Latency"/>
+  <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
+  <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="SSLResumption">
+  <group name="Resume_Handshake" label="Session Resumption"/>
+  <group name="Full_Handshake" label="Full"/>
+  <affected-histogram name="Net.SSL_Connection_Latency"/>
+  <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
 </fieldtrial>
 
 </fieldtrials>
