@@ -371,10 +371,7 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
   }
 
   DCHECK(parent_entry_proto);
-  drive_service_->GetResourceList(
-      GURL(),
-      0,
-      "",
+  drive_service_->GetResourceListInDirectory(
       parent_entry_proto->resource_id(),
       base::Bind(
           &FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList,
