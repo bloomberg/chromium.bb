@@ -368,6 +368,10 @@ other types of suffix sets.
   <summary>The importer used for an import session.</summary>
 </histogram>
 
+<histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
+  <summary>The scheme of the URL for each main-frame navigation.</summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <summary>
     The count of unacknowledged ResourceMsg_DataReceived messages.  This message
@@ -4024,6 +4028,18 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="NavigationScheme" type="int">
+  <int value="0" label="(Unknown)"/>
+  <int value="1" label="http"/>
+  <int value="2" label="https"/>
+  <int value="3" label="file"/>
+  <int value="4" label="ftp"/>
+  <int value="5" label="data"/>
+  <int value="6" label="javascript"/>
+  <int value="7" label="about"/>
+  <int value="8" label="chrome"/>
 </enum>
 
 <enum name="NetErrorCodes" type="int">
