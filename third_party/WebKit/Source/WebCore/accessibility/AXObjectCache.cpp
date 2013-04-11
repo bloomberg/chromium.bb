@@ -55,6 +55,8 @@
 #include "AccessibilityTableColumn.h"
 #include "AccessibilityTableHeaderContainer.h"
 #include "AccessibilityTableRow.h"
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "Document.h"
 #include "FocusController.h"
 #include "Frame.h"
@@ -521,7 +523,6 @@ void AXObjectCache::remove(Widget* view)
 }
     
     
-#if !PLATFORM(WIN) || OS(WINCE)
 AXID AXObjectCache::platformGenerateAXID() const
 {
     static AXID lastUsedID = 0;
@@ -536,7 +537,6 @@ AXID AXObjectCache::platformGenerateAXID() const
 
     return objID;
 }
-#endif
 
 AXID AXObjectCache::getAXID(AccessibilityObject* obj)
 {
@@ -937,6 +937,101 @@ bool isNodeAriaVisible(Node* node)
         return false;
     
     return equalIgnoringCase(toElement(node)->getAttribute(aria_hiddenAttr), "false");
+}
+
+void AXObjectCache::detachWrapper(AccessibilityObject* obj)
+{
+    // In Chromium, AccessibilityObjects are not wrapped.
+}
+
+void AXObjectCache::attachWrapper(AccessibilityObject*)
+{
+    // In Chromium, AccessibilityObjects are not wrapped.
+}
+
+void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotification notification)
+{
+    if (obj && obj->isAccessibilityScrollbar() && notification == AXValueChanged) {
+        // Send document value changed on scrollbar value changed notification.
+        Scrollbar* scrollBar = static_cast<AccessibilityScrollbar*>(obj)->scrollbar();
+        if (!scrollBar || !scrollBar->parent() || !scrollBar->parent()->isFrameView())
+            return;
+        Document* document = toFrameView(scrollBar->parent())->frame()->document();
+        if (document != document->topDocument())
+            return;
+        obj = get(document->renderer());
+    }
+
+    if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame() || !obj->documentFrameView()->frame()->page())
+        return;
+
+    ChromeClient* client = obj->documentFrameView()->frame()->page()->chrome()->client();
+    if (!client)
+        return;
+
+    switch (notification) {
+    case AXActiveDescendantChanged:
+        if (!obj->document()->focusedNode() || (obj->node() != obj->document()->focusedNode()))
+            break;
+
+        // Calling handleFocusedUIElementChanged will focus the new active
+        // descendant and send the AXFocusedUIElementChanged notification.
+        handleFocusedUIElementChanged(0, obj->document()->focusedNode());
+        break;
+    case AXAriaAttributeChanged:
+    case AXAutocorrectionOccured:
+    case AXCheckedStateChanged:
+    case AXChildrenChanged:
+    case AXFocusedUIElementChanged:
+    case AXInvalidStatusChanged:
+    case AXLayoutComplete:
+    case AXLiveRegionChanged:
+    case AXLoadComplete:
+    case AXMenuListItemSelected:
+    case AXMenuListValueChanged:
+    case AXRowCollapsed:
+    case AXRowCountChanged:
+    case AXRowExpanded:
+    case AXScrolledToAnchor:
+    case AXSelectedChildrenChanged:
+    case AXSelectedTextChanged:
+    case AXTextChanged:
+    case AXValueChanged:
+        break;
+    }
+
+    client->postAccessibilityNotification(obj, notification);
+}
+
+void AXObjectCache::nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned, const String&)
+{
+}
+
+void AXObjectCache::frameLoadingEventPlatformNotification(AccessibilityObject*, AXLoadingEvent)
+{
+}
+
+void AXObjectCache::handleFocusedUIElementChanged(Node*, Node* newFocusedNode)
+{
+    if (!newFocusedNode)
+        return;
+
+    Page* page = newFocusedNode->document()->page();
+    if (!page)
+        return;
+
+    AccessibilityObject* focusedObject = focusedUIElementForPage(page);
+    if (!focusedObject)
+        return;
+
+    postPlatformNotification(focusedObject, AXFocusedUIElementChanged);
+}
+
+void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
+{
+    // The anchor node may not be accessible. Post the notification for the
+    // first accessible object.
+    postPlatformNotification(AccessibilityObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
 }
 
 } // namespace WebCore
