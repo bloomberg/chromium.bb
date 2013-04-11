@@ -681,7 +681,7 @@
                 # These sources can't be built with coverage due to a toolchain
                 # bug: http://openradar.appspot.com/radar?id=1499403
                 'json/json_reader_unittest.cc',
-                'string_piece_unittest.cc',
+                'strings/string_piece_unittest.cc',
 
                 # These tests crash when run with coverage turned on due to an
                 # issue with llvm_gcda_increment_indirect_counter:
