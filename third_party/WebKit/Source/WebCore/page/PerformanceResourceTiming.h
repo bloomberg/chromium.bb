@@ -32,8 +32,6 @@
 #ifndef PerformanceResourceTiming_h
 #define PerformanceResourceTiming_h
 
-#if ENABLE(RESOURCE_TIMING)
-
 #include "PerformanceEntry.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -85,7 +83,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(RESOURCE_TIMING)
 
 #endif // !defined(PerformanceResourceTiming_h)

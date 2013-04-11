@@ -110,9 +110,7 @@ void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsig
     if (loader && !request.isNull() && request.url() == loader->requestURL())
         request.setReportLoadTiming(true);
 
-#if ENABLE(RESOURCE_TIMING)
     request.setReportLoadTiming(true);
-#endif
 }
 
 void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)

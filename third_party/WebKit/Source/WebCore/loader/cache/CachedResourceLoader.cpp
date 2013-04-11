@@ -34,6 +34,7 @@
 #include "CachedRawResource.h"
 #include "CachedResourceRequest.h"
 #include "CachedScript.h"
+#include "CachedShader.h"
 #include "CachedXSLStyleSheet.h"
 #include "Console.h"
 #include "ContentSecurityPolicy.h"
@@ -47,6 +48,7 @@
 #include "HTMLFrameOwnerElement.h"
 #include "Logging.h"
 #include "MemoryCache.h"
+#include "Performance.h"
 #include "PingLoader.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
@@ -59,12 +61,6 @@
 
 #if ENABLE(VIDEO_TRACK)
 #include "CachedTextTrack.h"
-#endif
-
-#include "CachedShader.h"
-
-#if ENABLE(RESOURCE_TIMING)
-#include "Performance.h"
 #endif
 
 #define PRELOAD_DEBUG 0
@@ -500,11 +496,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(co
     
     memoryCache()->remove(resource);
     memoryCache()->add(newResource.get());
-#if ENABLE(RESOURCE_TIMING)
     storeResourceTimingInitiatorInformation(resource, request);
-#else
-    UNUSED_PARAM(request);
-#endif
     return newResource;
 }
 
@@ -518,13 +510,10 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
 
     if (!memoryCache()->add(resource.get()))
         resource->setOwningCachedResourceLoader(this);
-#if ENABLE(RESOURCE_TIMING)
     storeResourceTimingInitiatorInformation(resource, request);
-#endif
     return resource;
 }
 
-#if ENABLE(RESOURCE_TIMING)
 void CachedResourceLoader::storeResourceTimingInitiatorInformation(const CachedResourceHandle<CachedResource>& resource, const CachedResourceRequest& request)
 {
     if (resource->type() == CachedResource::MainResource) {
@@ -538,7 +527,6 @@ void CachedResourceLoader::storeResourceTimingInitiatorInformation(const CachedR
         m_initiatorMap.add(resource.get(), info);
     }
 }
-#endif // ENABLE(RESOURCE_TIMING)
 
 CachedResourceLoader::RevalidationPolicy CachedResourceLoader::determineRevalidationPolicy(CachedResource::Type type, ResourceRequest& request, bool forPreload, CachedResource* existingResource, CachedResourceRequest::DeferOption defer) const
 {
@@ -723,7 +711,6 @@ void CachedResourceLoader::loadDone(CachedResource* resource)
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
     RefPtr<Document> protectDocument(m_document);
 
-#if ENABLE(RESOURCE_TIMING)
     if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304)) {
         HashMap<CachedResource*, InitiatorInfo>::iterator initiatorIt = m_initiatorMap.find(resource);
         if (initiatorIt != m_initiatorMap.end()) {
@@ -737,9 +724,6 @@ void CachedResourceLoader::loadDone(CachedResource* resource)
             m_initiatorMap.remove(initiatorIt);
         }
     }
-#else
-    UNUSED_PARAM(resource);
-#endif // ENABLE(RESOURCE_TIMING)
 
     if (frame())
         frame()->loader()->loadDone();
@@ -970,11 +954,8 @@ void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
     info.addMember(m_preloads, "preloads");
     info.addMember(m_pendingPreloads, "pendingPreloads");
     info.addMember(m_garbageCollectDocumentResourcesTimer, "garbageCollectDocumentResourcesTimer");
-#if ENABLE(RESOURCE_TIMING)
     // FIXME: m_initiatorMap has pointers to already deleted CachedResources
     info.ignoreMember(m_initiatorMap);
-#endif
-
 }
 
 const ResourceLoaderOptions& CachedResourceLoader::defaultCachedResourceOptions()

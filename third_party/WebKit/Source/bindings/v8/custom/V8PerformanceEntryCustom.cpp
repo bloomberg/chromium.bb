@@ -50,10 +50,8 @@ namespace WebCore {
 v8::Handle<v8::Object> wrap(PerformanceEntry* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-#if ENABLE(RESOURCE_TIMING)
     if (impl->isResource())
         return wrap(static_cast<PerformanceResourceTiming*>(impl), creationContext, isolate);
-#endif
 
 #if ENABLE(USER_TIMING)
     if (impl->isMark())

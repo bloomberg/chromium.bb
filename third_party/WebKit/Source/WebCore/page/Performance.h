@@ -70,14 +70,12 @@ public:
     PassRefPtr<PerformanceEntryList> webkitGetEntriesByName(const String& name, const String& entryType);
 #endif
 
-#if ENABLE(RESOURCE_TIMING)
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned int);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
     void addResourceTiming(const String& initiatorName, Document*, const ResourceRequest&, const ResourceResponse&, double initiationTime, double finishTime);
-#endif
 
     using RefCounted<Performance>::ref;
     using RefCounted<Performance>::deref;
@@ -104,10 +102,8 @@ private:
     mutable RefPtr<PerformanceNavigation> m_navigation;
     mutable RefPtr<PerformanceTiming> m_timing;
 
-#if ENABLE(RESOURCE_TIMING)
     Vector<RefPtr<PerformanceEntry> > m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
-#endif
 
 #if ENABLE(USER_TIMING)
     RefPtr<UserTiming> m_userTiming;

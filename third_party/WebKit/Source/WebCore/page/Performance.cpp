@@ -47,15 +47,11 @@
 
 namespace WebCore {
 
-#if ENABLE(RESOURCE_TIMING)
 static const size_t defaultResourceTimingBufferSize = 150;
-#endif
 
 Performance::Performance(Frame* frame)
     : DOMWindowProperty(frame)
-#if ENABLE(RESOURCE_TIMING)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-#endif // ENABLE(RESOURCE_TIMING)
 #if ENABLE(USER_TIMING)
     , m_userTiming(0)
 #endif // ENABLE(USER_TIMING)
@@ -106,9 +102,7 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntries() const
 {
     RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
 
-#if ENABLE(RESOURCE_TIMING)
     entries->appendAll(m_resourceTimingBuffer);
-#endif // ENABLE(RESOURCE_TIMING)
 
 #if ENABLE(USER_TIMING)
     if (m_userTiming) {
@@ -125,11 +119,9 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByType(const Strin
 {
     RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
 
-#if ENABLE(RESOURCE_TIMING)
     if (equalIgnoringCase(entryType, "resource"))
         for (Vector<RefPtr<PerformanceEntry> >::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
             entries->append(*resource);
-#endif // ENABLE(RESOURCE_TIMING)
 
 #if ENABLE(USER_TIMING)
     if (m_userTiming) {
@@ -148,12 +140,10 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const Strin
 {
     RefPtr<PerformanceEntryList> entries = PerformanceEntryList::create();
 
-#if ENABLE(RESOURCE_TIMING)
     if (entryType.isNull() || equalIgnoringCase(entryType, "resource"))
         for (Vector<RefPtr<PerformanceEntry> >::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
             if ((*resource)->name() == name)
                 entries->append(*resource);
-#endif // ENABLE(RESOURCE_TIMING)
 
 #if ENABLE(USER_TIMING)
     if (m_userTiming) {
@@ -169,8 +159,6 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const Strin
 }
 
 #endif // ENABLE(PERFORMANCE_TIMELINE)
-
-#if ENABLE(RESOURCE_TIMING)
 
 void Performance::webkitClearResourceTimings()
 {
@@ -201,8 +189,6 @@ bool Performance::isResourceTimingBufferFull()
 {
     return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
 }
-
-#endif // ENABLE(RESOURCE_TIMING)
 
 EventTargetData* Performance::eventTargetData()
 {
