@@ -50,6 +50,9 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(GetTypeString(type), path);
   }
 
+  virtual void ProfileListChanged() OVERRIDE {
+  }
+
   virtual void UpdateNetworkServiceProperty(
       const std::string& service_path,
       const std::string& key,
