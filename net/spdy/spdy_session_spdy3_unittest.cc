@@ -120,6 +120,39 @@ class SpdySessionSpdy3Test : public PlatformTest {
   HostPortProxyPair pair_;
 };
 
+// Test the SpdyIOBuffer class.
+TEST_F(SpdySessionSpdy3Test, SpdyIOBuffer) {
+  std::priority_queue<SpdyIOBuffer> queue_;
+  const size_t kQueueSize = 100;
+
+  // Insert items with random priority and increasing buffer size.
+  for (size_t index = 0; index < kQueueSize; ++index) {
+    queue_.push(SpdyIOBuffer(
+        new IOBufferWithSize(index + 1),
+        index + 1,
+        static_cast<RequestPriority>(rand() % NUM_PRIORITIES),
+        NULL));
+  }
+
+  EXPECT_EQ(kQueueSize, queue_.size());
+
+  // Verify items come out with decreasing priority or FIFO order.
+  RequestPriority last_priority = NUM_PRIORITIES;
+  size_t last_size = 0;
+  for (size_t index = 0; index < kQueueSize; ++index) {
+    SpdyIOBuffer buffer = queue_.top();
+    EXPECT_LE(buffer.priority(), last_priority);
+    if (buffer.priority() < last_priority)
+      last_size = 0;
+    EXPECT_LT(last_size, buffer.size());
+    last_priority = buffer.priority();
+    last_size = buffer.size();
+    queue_.pop();
+  }
+
+  EXPECT_EQ(0u, queue_.size());
+}
+
 TEST_F(SpdySessionSpdy3Test, GoAway) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 

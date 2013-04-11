@@ -5,7 +5,7 @@
 #ifndef NET_SPDY_SPDY_STREAM_H_
 #define NET_SPDY_SPDY_STREAM_H_
 
-#include <deque>
+#include <list>
 #include <string>
 #include <vector>
 
@@ -101,6 +101,15 @@ class NET_EXPORT_PRIVATE SpdyStream
     TYPE_HEADERS,
     TYPE_DATA
   };
+
+  // Structure to contains pending frame information.
+  typedef struct {
+    FrameType type;
+    union {
+      SpdyHeaderBlock* header_block;
+      SpdyFrame* data_frame;
+    };
+  } PendingFrame;
 
   // SpdyStream constructor
   SpdyStream(SpdySession* session,
@@ -290,8 +299,7 @@ class NET_EXPORT_PRIVATE SpdyStream
   int GetProtocolVersion() const;
 
  private:
-  class SynStreamFrameProducer;
-  class HeaderFrameProducer;
+  class SpdyStreamIOBufferProducer;
 
   enum State {
     STATE_NONE,
@@ -338,14 +346,13 @@ class NET_EXPORT_PRIVATE SpdyStream
   // the MessageLoop to replay all the data that the server has already sent.
   void PushedStreamReplayData();
 
-  // Produces the SYN_STREAM frame for the stream. The stream must
-  // already be activated.
-  scoped_ptr<SpdyFrame> ProduceSynStreamFrame();
+  // Informs the SpdySession that this stream has a write available.
+  void SetHasWriteAvailable();
 
-  // Produce the initial HEADER frame for the stream with the given
-  // block. The stream must already be activated.
-  scoped_ptr<SpdyFrame> ProduceHeaderFrame(
-      scoped_ptr<SpdyHeaderBlock> header_block);
+  // Returns a newly created SPDY frame owned by the called that contains
+  // the next frame to be sent by this frame.  May return NULL if this
+  // stream has become stalled on flow control.
+  scoped_ptr<SpdyFrame> ProduceNextFrame();
 
   // If the stream is active and stream flow control is turned on,
   // called by OnDataReceived (which is in turn called by the session)
@@ -391,13 +398,14 @@ class NET_EXPORT_PRIVATE SpdyStream
   scoped_ptr<SpdyHeaderBlock> response_;
   base::Time response_time_;
 
-  // An in order list of sending frame types. Used communicate to the
-  // delegate which type of frame was sent in DoOpen().
-  //
-  // TODO(akalin): We can remove the need for this queue if we add an
-  // OnFrameSent() callback to SpdyFrameProducer and have the session
-  // call that instead of SpdyStream::OnWriteComplete().
-  std::deque<FrameType> waiting_completions_;
+  // An in order list of pending frame data that are going to be sent. HEADERS
+  // frames are queued as SpdyHeaderBlock structures because these must be
+  // compressed just before sending. Data frames are queued as SpdyDataFrame.
+  std::list<PendingFrame> pending_frames_;
+
+  // An in order list of sending frame types. It will be used to know which type
+  // of frame is sent and which callback should be invoked in OnOpen().
+  std::list<FrameType> waiting_completions_;
 
   State io_state_;
 

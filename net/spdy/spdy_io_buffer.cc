@@ -7,13 +7,23 @@
 
 namespace net {
 
-SpdyIOBuffer::SpdyIOBuffer() {}
+// static
+uint64 SpdyIOBuffer::order_ = 0;
 
-SpdyIOBuffer::SpdyIOBuffer(IOBuffer* buffer, int size, SpdyStream* stream)
-  : buffer_(new DrainableIOBuffer(buffer, size)), stream_(stream) {}
+SpdyIOBuffer::SpdyIOBuffer(
+    IOBuffer* buffer, int size, RequestPriority priority, SpdyStream* stream)
+  : buffer_(new DrainableIOBuffer(buffer, size)),
+    priority_(priority),
+    position_(++order_),
+    stream_(stream) {}
+
+SpdyIOBuffer::SpdyIOBuffer() : priority_(HIGHEST), position_(0), stream_(NULL) {
+}
 
 SpdyIOBuffer::SpdyIOBuffer(const SpdyIOBuffer& rhs) {
   buffer_ = rhs.buffer_;
+  priority_ = rhs.priority_;
+  position_ = rhs.position_;
   stream_ = rhs.stream_;
 }
 
@@ -21,16 +31,13 @@ SpdyIOBuffer::~SpdyIOBuffer() {}
 
 SpdyIOBuffer& SpdyIOBuffer::operator=(const SpdyIOBuffer& rhs) {
   buffer_ = rhs.buffer_;
+  priority_ = rhs.priority_;
+  position_ = rhs.position_;
   stream_ = rhs.stream_;
   return *this;
 }
 
-void SpdyIOBuffer::Swap(SpdyIOBuffer* other) {
-  buffer_.swap(other->buffer_);
-  stream_.swap(other->stream_);
-}
-
-void SpdyIOBuffer::Release() {
+void SpdyIOBuffer::release() {
   buffer_ = NULL;
   stream_ = NULL;
 }
