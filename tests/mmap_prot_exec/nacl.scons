@@ -73,4 +73,19 @@ node = env.CommandSelLdrTestNacl(
            'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
            'MMAP_STUBOUT_EMULATION=GF'])
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_prot_exec_test',
+                       is_broken=env.Bit('nacl_glibc'))
+
+disabled_syscall_node = env.CommandSelLdrTestNacl(
+    'mmap_prot_exec_disabled.out',
+    nexe,
+    nexe_command_line + ['-d'],
+    sel_ldr_flags=['-a'],
+    osenv=['NACL_FAULT_INJECTION=' +
+           'MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK=GP1F/100:' +
+           'MMAP_STUBOUT_EMULATION=GF',
+           'NACL_DISABLE_DYNCODE_SYSCALLS=1'])
+
+env.AddNodeToTestSuite(disabled_syscall_node, ['small_tests'],
+                       'run_mmap_prot_exec_disabled_test',
+                       is_broken=env.Bit('nacl_glibc'))

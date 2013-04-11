@@ -32,6 +32,8 @@
 
 int g_mach_copy_on_write_behavior = 0;
 
+int g_prot_exec_disabled = 0;
+
 /*
  * mmap PROT_EXEC test
  *
@@ -103,16 +105,29 @@ int prot_exec_test(int d, size_t file_size, void *test_specifics) {
               spec->map_flags,
               d,
               /* offset */ 0);
-  if (0 != spec->expected_errno) {
+  if (g_prot_exec_disabled) {
     if (MAP_FAILED != addr) {
       fprintf(stderr,
-              "prot_exec_test: expected mmap to failed but did not."
+              "prot_exec_test: expected mmap to fail but did not."
+              "  errno %d, but may not be valid.\n", errno);
+      return 1;
+    }
+    if (EINVAL != errno) {
+      fprintf(stderr,
+              "prot_exec_test: expected mmap to fail with errno %d,"
+              " got %d instead\n", EINVAL, errno);
+      return 1;
+    }
+  } else if (0 != spec->expected_errno) {
+    if (MAP_FAILED != addr) {
+      fprintf(stderr,
+              "prot_exec_test: expected mmap to fail but did not."
               "  errno %d, but may not be valid.\n", errno);
       return 1;
     }
     if (spec->expected_errno != errno) {
       fprintf(stderr,
-              "prot_exec_test: expected mmap to failed with errno %d,"
+              "prot_exec_test: expected mmap to fail with errno %d,"
               " got %d instead\n", spec->expected_errno, errno);
       return 1;
     }
@@ -628,10 +643,13 @@ int main(int ac, char **av) {
   int num_runs = 1;
   int test_run;
 
-  while (EOF != (opt = getopt(ac, av, "c:f:m"))) {
+  while (EOF != (opt = getopt(ac, av, "c:df:m"))) {
     switch (opt) {
       case 'c':
         num_runs = atoi(optarg);
+        break;
+      case 'd':
+        g_prot_exec_disabled = 1;
         break;
       case 'f':
         test_file_name = optarg;
