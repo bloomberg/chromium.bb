@@ -18,7 +18,12 @@ void AnalyzeZipFile(base::PlatformFile zip_file, Results* results) {
     return;
   }
 
-  for (; reader.HasMore(); reader.AdvanceToNextEntry()) {
+  bool advanced = true;
+  for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
+    if (!advanced) {
+      VLOG(1) << "Could not advance to next entry, aborting zip scan.";
+      return;
+    }
     if (!reader.OpenCurrentEntryInZip()) {
       VLOG(1) << "Failed to open current entry in zip file";
       continue;
