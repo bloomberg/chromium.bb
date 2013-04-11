@@ -54,7 +54,8 @@ def DieWithError(message):
 def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
     return subprocess2.check_output(args, shell=False, **kwargs)
-  except subprocess2.CalledProcessError, e:
+  except subprocess2.CalledProcessError as e:
+    logging.debug('Failed running %s', args)
     if not error_ok:
       DieWithError(
           'Command "%s" failed.\n%s' % (
@@ -797,44 +798,79 @@ def GetCodereviewSettingsInteractively():
 
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
-  def __init__(self, log_desc, reviewers):
-    self.log_desc = log_desc
-    self.reviewers = reviewers
-    self.description = self.log_desc
+  R_LINE = r'^\s*(TBR|R)\s*=\s*(.+)\s*$'
 
-  def Prompt(self):
-    content = """# Enter a description of the change.
-# This will displayed on the codereview site.
-# The first line will also be used as the subject of the review.
-"""
-    content += self.description
-    if ('\nR=' not in self.description and
-        '\nTBR=' not in self.description and
-        self.reviewers):
-      content += '\nR=' + self.reviewers
-    if '\nBUG=' not in self.description:
-      content += '\nBUG='
-    content = content.rstrip('\n') + '\n'
-    content = gclient_utils.RunEditor(content, True)
+  def __init__(self, description):
+    self._description = (description or '').strip()
+
+  @property
+  def description(self):
+    return self._description
+
+  def update_reviewers(self, reviewers):
+    """Rewrites the R=/TBR= line(s) as a single line."""
+    assert isinstance(reviewers, list), reviewers
+    if not reviewers:
+      return
+    regexp = re.compile(self.R_LINE, re.MULTILINE)
+    matches = list(regexp.finditer(self._description))
+    is_tbr = any(m.group(1) == 'TBR' for m in matches)
+    if len(matches) > 1:
+      # Erase all except the first one.
+      for i in xrange(len(matches) - 1, 0, -1):
+        self._description = (
+            self._description[:matches[i].start()] +
+            self._description[matches[i].end()+1:])
+
+    if is_tbr:
+      new_r_line = 'TBR=' + ', '.join(reviewers)
+    else:
+      new_r_line = 'R=' + ', '.join(reviewers)
+
+    if matches:
+      self._description = (
+        self._description[:matches[0].start()] + new_r_line +
+        self._description[matches[0].end()+1:])
+    else:
+      self.append_footer(new_r_line)
+
+  def prompt(self):
+    """Asks the user to update the description."""
+    self._description = (
+      '# Enter a description of the change.\n'
+      '# This will displayed on the codereview site.\n'
+      '# The first line will also be used as the subject of the review.\n'
+    ) + self._description
+
+    if '\nBUG=' not in self._description:
+      self.append_footer('BUG=')
+    content = gclient_utils.RunEditor(self._description, True)
     if not content:
       DieWithError('Running editor failed')
+
+    # Strip off comments.
     content = re.compile(r'^#.*$', re.MULTILINE).sub('', content).strip()
-    if not content.strip():
+    if not content:
       DieWithError('No CL description, aborting')
-    self.description = content
+    self._description = content
 
-  def ParseDescription(self):
-    """Updates the list of reviewers and subject from the description."""
-    self.description = self.description.strip('\n') + '\n'
-    # Retrieves all reviewer lines
-    regexp = re.compile(r'^\s*(TBR|R)=(.+)$', re.MULTILINE)
-    reviewers = ', '.join(
-        i.group(2).strip() for i in regexp.finditer(self.description))
-    if reviewers:
-      self.reviewers = reviewers
+  def append_footer(self, line):
+    # Adds a LF if the last line did not have 'FOO=BAR' or if the new one isn't.
+    if self._description:
+      if '\n' not in self._description:
+        self._description += '\n'
+      else:
+        last_line = self._description.rsplit('\n', 1)[1]
+        if (not presubmit_support.Change.TAG_LINE_RE.match(last_line) or
+            not presubmit_support.Change.TAG_LINE_RE.match(line)):
+          self._description += '\n'
+    self._description += '\n' + line
 
-  def IsEmpty(self):
-    return not self.description
+  def get_reviewers(self):
+    """Retrieves the list of reviewers."""
+    regexp = re.compile(self.R_LINE, re.MULTILINE)
+    reviewers = [i.group(2) for i in regexp.finditer(self._description)]
+    return cleanup_list(reviewers)
 
 
 def FindCodereviewSettingsFile(filename='codereview.settings'):
@@ -1102,16 +1138,15 @@ def GerritUpload(options, args, cl):
   if options.target_branch:
     branch = options.target_branch
 
-  log_desc = options.message or CreateDescriptionFromLog(args)
-  if CHANGE_ID not in log_desc:
-    AddChangeIdToCommitMessage(options, args)
-  if options.reviewers:
-    log_desc += '\nR=' + ', '.join(options.reviewers)
-  change_desc = ChangeDescription(log_desc, ', '.join(options.reviewers))
-  change_desc.ParseDescription()
-  if change_desc.IsEmpty():
+  change_desc = ChangeDescription(
+      options.message or CreateDescriptionFromLog(args))
+  if not change_desc.description:
     print "Description is empty; aborting."
     return 1
+  if CHANGE_ID not in change_desc.description:
+    AddChangeIdToCommitMessage(options, args)
+  if options.reviewers:
+    change_desc.update_reviewers(options.reviewers)
 
   receive_options = []
   cc = cl.GetCCList().split(',')
@@ -1120,11 +1155,9 @@ def GerritUpload(options, args, cl):
   cc = filter(None, cc)
   if cc:
     receive_options += ['--cc=' + email for email in cc]
-  if change_desc.reviewers:
-    reviewers = filter(
-        None, (r.strip() for r in change_desc.reviewers.split(',')))
-    if reviewers:
-      receive_options += ['--reviewer=' + email for email in reviewers]
+  if change_desc.get_reviewers():
+    receive_options.extend(
+        '--reviewer=' + email for email in change_desc.get_reviewers())
 
   git_command = ['push']
   if receive_options:
@@ -1160,24 +1193,21 @@ def RietveldUpload(options, args, cl):
     if options.title:
       upload_args.extend(['--title', options.title])
     message = options.title or options.message or CreateDescriptionFromLog(args)
-    change_desc = ChangeDescription(message, ','.join(options.reviewers))
+    change_desc = ChangeDescription(message)
+    if options.reviewers:
+      change_desc.update_reviewers(options.reviewers)
     if not options.force:
-      change_desc.Prompt()
-    change_desc.ParseDescription()
+      change_desc.prompt()
 
-    if change_desc.IsEmpty():
+    if not change_desc.description:
       print "Description is empty; aborting."
       return 1
 
     upload_args.extend(['--message', change_desc.description])
-    if change_desc.reviewers:
-      upload_args.extend(
-          [
-            '--reviewers',
-            ','.join(r.strip() for r in change_desc.reviewers.split(',')),
-          ])
+    if change_desc.get_reviewers():
+      upload_args.append('--reviewers=' + ','.join(change_desc.get_reviewers()))
     if options.send_mail:
-      if not change_desc.reviewers:
+      if not change_desc.get_reviewers():
         DieWithError("Must specify reviewers to send email.")
       upload_args.append('--send_mail')
     cc = ','.join(filter(None, (cl.GetCCList(), ','.join(options.cc))))
@@ -1440,24 +1470,28 @@ def SendUpstream(parser, args, cmd):
         (cl.GetRietveldServer(), cl.GetIssue()),
         verbose=False)
 
-  description = options.message
-  if not description and cl.GetIssue():
-    description = cl.GetDescription()
+  change_desc = ChangeDescription(options.message)
+  if not change_desc.description and cl.GetIssue():
+    change_desc = ChangeDescription(cl.GetDescription())
 
-  if not description:
+  if not change_desc.description:
     if not cl.GetIssue() and options.bypass_hooks:
-      description = CreateDescriptionFromLog([base_branch])
+      change_desc = ChangeDescription(CreateDescriptionFromLog([base_branch]))
     else:
       print 'No description set.'
       print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
       return 1
 
+  # Keep a separate copy for the commit message, because the commit message
+  # contains the link to the Rietveld issue, while the Rietveld message contains
+  # the commit viewvc url.
+  commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
-    description += "\n\nReview URL: %s" % cl.GetIssueURL()
-
+    commit_desc.append_footer('Review URL: %s' % cl.GetIssueURL())
   if options.contributor:
-    description += "\nPatch from %s." % options.contributor
-  print 'Description:', repr(description)
+    commit_desc.append_footer('Patch from %s.' % options.contributor)
+
+  print 'Description:', repr(commit_desc.description)
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
@@ -1493,9 +1527,13 @@ def SendUpstream(parser, args, cmd):
     RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
     RunGit(['reset', '--soft', base_branch])
     if options.contributor:
-      RunGit(['commit', '--author', options.contributor, '-m', description])
+      RunGit(
+          [
+            'commit', '--author', options.contributor,
+            '-m', commit_desc.description,
+          ])
     else:
-      RunGit(['commit', '-m', description])
+      RunGit(['commit', '-m', commit_desc.description])
     if base_has_submodules:
       cherry_pick_commit = RunGit(['rev-list', 'HEAD^!']).rstrip()
       RunGit(['branch', CHERRY_PICK_BRANCH, svn_head])
@@ -1534,12 +1572,12 @@ def SendUpstream(parser, args, cmd):
       return 1
     viewvc_url = settings.GetViewVCUrl()
     if viewvc_url and revision:
-      cl.description += ('\n\nCommitted: ' + viewvc_url + revision)
+      change_desc.append_footer('Committed: ' + viewvc_url + revision)
     elif revision:
-      cl.description += ('\n\nCommitted: ' + revision)
+      change_desc.append_footer('Committed: ' + revision)
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
-    cl.UpdateDescription(cl.description)
+    cl.UpdateDescription(change_desc.description)
     cl.CloseIssue()
     props = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
     patch_num = len(props['patchsets'])

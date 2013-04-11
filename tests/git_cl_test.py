@@ -30,9 +30,22 @@ class PresubmitMock(object):
 class RietveldMock(object):
   def __init__(self, *args, **kwargs):
     pass
+
   @staticmethod
   def get_description(issue):
     return 'Issue: %d' % issue
+
+  @staticmethod
+  def get_issue_properties(_issue, _messages):
+    return {
+      'reviewers': ['joe@chromium.org', 'john@chromium.org'],
+      'messages': [
+        {
+          'approval': True,
+          'sender': 'john@chromium.org',
+        },
+      ],
+    }
 
 
 class WatchlistsMock(object):
@@ -271,7 +284,8 @@ class TestGitCl(TestCase):
       ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
-         'Issue: 12345\n\nReview URL: https://codereview.example.com/12345'],),
+         'Issue: 12345\n\n'
+         'Review URL: https://codereview.example.com/12345'],),
        ''),
       ((['git', 'svn', 'dcommit', '-C50', '--no-rebase', '--rmdir'],),
        (('', None), 0)),
@@ -334,68 +348,68 @@ class TestGitCl(TestCase):
   def test_no_reviewer(self):
     self._run_reviewer_test(
         [],
-        'desc\n\nBUG=\n',
-        '# Blah blah comment.\ndesc\n\nBUG=\n',
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
+        '# Blah blah comment.\ndesc\n\nBUG=',
+        'desc\n\nBUG=',
         [])
 
   def test_keep_similarity(self):
     self._run_reviewer_test(
         ['--similarity', '70'],
-        'desc\n\nBUG=\n',
-        '# Blah blah comment.\ndesc\n\nBUG=\n',
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
+        '# Blah blah comment.\ndesc\n\nBUG=',
+        'desc\n\nBUG=',
         [])
 
   def test_keep_find_copies(self):
     self._run_reviewer_test(
         ['--no-find-copies'],
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
         '# Blah blah comment.\ndesc\n\nBUG=\n',
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
         [])
 
   def test_reviewers_cmd_line(self):
     # Reviewer is passed as-is
-    description = 'desc\n\nR=foo@example.com\nBUG=\n'
+    description = 'desc\n\nR=foo@example.com\nBUG='
     self._run_reviewer_test(
         ['-r' 'foo@example.com'],
         description,
         '\n%s\n' % description,
         description,
-        ['--reviewers', 'foo@example.com'])
+        ['--reviewers=foo@example.com'])
 
   def test_reviewer_tbr_overriden(self):
     # Reviewer is overriden with TBR
     # Also verifies the regexp work without a trailing LF
-    description = 'Foo Bar\nTBR=reviewer@example.com\n'
+    description = 'Foo Bar\n\nTBR=reviewer@example.com'
     self._run_reviewer_test(
         ['-r' 'foo@example.com'],
-        'desc\n\nR=foo@example.com\nBUG=\n',
+        'desc\n\nR=foo@example.com\nBUG=',
         description.strip('\n'),
         description,
-        ['--reviewers', 'reviewer@example.com'])
+        ['--reviewers=reviewer@example.com'])
 
   def test_reviewer_multiple(self):
     # Handles multiple R= or TBR= lines.
     description = (
-        'Foo Bar\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n')
+        'Foo Bar\nTBR=reviewer@example.com\nBUG=\nR=another@example.com')
     self._run_reviewer_test(
         [],
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
         description,
         description,
-        ['--reviewers', 'reviewer@example.com,another@example.com'])
+        ['--reviewers=another@example.com,reviewer@example.com'])
 
   def test_reviewer_send_mail(self):
     # --send-mail can be used without -r if R= is used
-    description = 'Foo Bar\nR=reviewer@example.com\n'
+    description = 'Foo Bar\nR=reviewer@example.com'
     self._run_reviewer_test(
         ['--send-mail'],
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=',
         description.strip('\n'),
         description,
-        ['--reviewers', 'reviewer@example.com', '--send_mail'])
+        ['--reviewers=reviewer@example.com', '--send_mail'])
 
   def test_reviewer_send_mail_no_rev(self):
     # Fails without a reviewer.
@@ -490,7 +504,8 @@ class TestGitCl(TestCase):
     receive_pack += '--cc=joe@example.com'  # from watch list
     if reviewers:
       receive_pack += ' '
-      receive_pack += ' '.join(['--reviewer=' + email for email in reviewers])
+      receive_pack += ' '.join(
+          '--reviewer=' + email for email in sorted(reviewers))
     receive_pack += ''
     calls += [
         ((['git', 'push', receive_pack, 'origin', 'HEAD:refs/for/master'],),
@@ -590,6 +605,21 @@ class TestGitCl(TestCase):
         ]
     git_cl.main(['config'])
 
+  def test_update_reviewers(self):
+    data = [
+      ('foo', [], 'foo'),
+      ('foo', ['a@c'], 'foo\n\nR=a@c'),
+      ('foo\nBUG=', ['a@c'], 'foo\nBUG=\nR=a@c'),
+      ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], 'foo\nTBR=a@c'),
+      ('foo', ['a@c', 'b@c'], 'foo\n\nR=a@c, b@c'),
+    ]
+    for orig, reviewers, expected in data:
+      obj = git_cl.ChangeDescription(orig)
+      obj.update_reviewers(reviewers)
+      self.assertEqual(expected, obj.description)
+
 
 if __name__ == '__main__':
+  git_cl.logging.basicConfig(
+      level=git_cl.logging.DEBUG if '-v' in sys.argv else git_cl.logging.ERROR)
   unittest.main()
