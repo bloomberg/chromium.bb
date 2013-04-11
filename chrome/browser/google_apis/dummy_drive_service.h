@@ -29,12 +29,6 @@ class DummyDriveService : public DriveServiceInterface {
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;
-  virtual void GetResourceList(
-      const GURL& url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetAllResourceList(
       const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceListInDirectory(

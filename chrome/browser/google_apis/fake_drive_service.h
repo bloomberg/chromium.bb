@@ -87,19 +87,13 @@ class FakeDriveService : public DriveServiceInterface {
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
-  // See the comment for EntryMatchWidthQuery() in .cc file for details about
-  // the supported search query types.
-  virtual void GetResourceList(
-      const GURL& url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetAllResourceList(
       const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceListInDirectory(
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback) OVERRIDE;
+  // See the comment for EntryMatchWidthQuery() in .cc file for details about
+  // the supported search query types.
   virtual void Search(
       const std::string& search_query,
       const GetResourceListCallback& callback) OVERRIDE;

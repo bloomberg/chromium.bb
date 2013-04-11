@@ -65,12 +65,6 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;
-  virtual void GetResourceList(
-      const GURL& url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetAllResourceList(
       const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceListInDirectory(
@@ -165,25 +159,6 @@ class DriveAPIService : public DriveServiceInterface,
 
  private:
   OperationRegistry* operation_registry() const;
-
-  // Fetches a changelist from |url| with |start_changestamp|, using Drive V2
-  // API. If this URL is empty the call will use the default URL. Specify |url|
-  // when pagenated request should be issued.
-  // |start_changestamp| specifies the starting point of change list or 0 if
-  // all changes are necessary.
-  // Upon completion, invokes |callback| with results on calling thread.
-  void GetChangelist(const GURL& url,
-                     int64 start_changestamp,
-                     const GetResourceListCallback& callback);
-
-  // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
-  // this URL is empty the call will use the default URL. Specify |url| when
-  // pagenated request should be issued.
-  // |search_query| specifies query string, whose syntax is described at
-  // https://developers.google.com/drive/search-parameters
-  void GetFilelist(const GURL& url,
-                   const std::string& search_query,
-                   const GetResourceListCallback& callback);
 
   // AuthServiceObserver override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;

@@ -132,27 +132,6 @@ void DriveScheduler::GetAppList(
   StartJobLoop(GetJobQueueType(TYPE_GET_APP_LIST));
 }
 
-void DriveScheduler::GetResourceList(
-    const GURL& feed_url,
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_RESOURCE_LIST));
-  new_job->feed_url = feed_url;
-  new_job->start_changestamp = start_changestamp;
-  new_job->search_query = search_query;
-  new_job->directory_resource_id = directory_resource_id;
-  new_job->get_resource_list_callback = callback;
-
-  QueueJob(new_job.Pass());
-
-  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_LIST));
-}
-
 void DriveScheduler::GetAllResourceList(
     const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -479,18 +458,6 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
     case TYPE_GET_APP_LIST: {
       drive_service_->GetAppList(
           base::Bind(&DriveScheduler::OnGetAppListJobDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&queue_entry)));
-    }
-    break;
-
-    case TYPE_GET_RESOURCE_LIST: {
-      drive_service_->GetResourceList(
-          entry->feed_url,
-          entry->start_changestamp,
-          entry->search_query,
-          entry->directory_resource_id,
-          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&queue_entry)));
     }
@@ -917,7 +884,6 @@ DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
     case TYPE_GET_ABOUT_RESOURCE:
     case TYPE_GET_ACCOUNT_METADATA:
     case TYPE_GET_APP_LIST:
-    case TYPE_GET_RESOURCE_LIST:
     case TYPE_GET_ALL_RESOURCE_LIST:
     case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY:
     case TYPE_SEARCH:

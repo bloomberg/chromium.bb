@@ -274,26 +274,6 @@ std::string DriveAPIService::GetRootResourceId() const {
   return kDriveApiRootDirectoryResourceId;
 }
 
-// TODO(hidehiko): Get rid of this method.
-void DriveAPIService::GetResourceList(
-    const GURL& url,
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (search_query.empty())
-    GetChangelist(url, start_changestamp, callback);
-  else
-    GetFilelist(url, search_query, callback);
-
-  return;
-  // TODO(kochi): Implement !directory_resource_id.empty() case.
-  NOTREACHED();
-}
-
 void DriveAPIService::GetAllResourceList(
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -398,40 +378,6 @@ void DriveAPIService::ContinueGetResourceList(
           operation_registry(),
           url_request_context_getter_,
           override_url,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
-}
-
-void DriveAPIService::GetFilelist(
-    const GURL& url,
-    const std::string& search_query,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  runner_->StartOperationWithRetry(
-      new GetFilelistOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          url,
-          search_query,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
-}
-
-void DriveAPIService::GetChangelist(
-    const GURL& url,
-    int64 start_changestamp,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  runner_->StartOperationWithRetry(
-      new GetChangelistOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          url,
-          start_changestamp,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 

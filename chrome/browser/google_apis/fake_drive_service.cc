@@ -220,35 +220,6 @@ std::string FakeDriveService::GetRootResourceId() const {
   return "fake_root";
 }
 
-void FakeDriveService::GetResourceList(
-    const GURL& url,
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // "start-offset" is a parameter only used in the FakeDriveService to
-  // implement pagenation.
-  int start_offset = 0;
-  int max_results = default_max_results_;
-  std::vector<std::pair<std::string, std::string> > parameters;
-  if (base::SplitStringIntoKeyValuePairs(
-          url.query(), '=', '&', &parameters)) {
-    for (size_t i = 0; i < parameters.size(); ++i) {
-      if (parameters[i].first == "start-offset")
-        base::StringToInt(parameters[i].second, &start_offset);
-      if (parameters[i].first == "max-results")
-        base::StringToInt(parameters[i].second, &max_results);
-    }
-  }
-
-  GetResourceListInternal(
-      start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, callback);
-}
-
 void FakeDriveService::GetAllResourceList(
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

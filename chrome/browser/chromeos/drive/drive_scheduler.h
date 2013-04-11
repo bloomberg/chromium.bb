@@ -31,7 +31,6 @@ class DriveScheduler
     TYPE_GET_ABOUT_RESOURCE,
     TYPE_GET_ACCOUNT_METADATA,
     TYPE_GET_APP_LIST,
-    TYPE_GET_RESOURCE_LIST,
     TYPE_GET_ALL_RESOURCE_LIST,
     TYPE_GET_RESOURCE_LIST_IN_DIRECTORY,
     TYPE_SEARCH,
@@ -104,14 +103,6 @@ class DriveScheduler
   // Adds a GetAboutResource operation to the queue.
   // |callback| must not be null.
   void GetAboutResource(const google_apis::GetAboutResourceCallback& callback);
-
-  // Adds a GetResourceList operation to the queue.
-  // |callback| must not be null.
-  void GetResourceList(const GURL& feed_url,
-                       int64 start_changestamp,
-                       const std::string& search_query,
-                       const std::string& directory_resource_id,
-                       const google_apis::GetResourceListCallback& callback);
 
   // Adds a GetAllResourceList operation to the queue.
   // |callback| must not be null.
@@ -250,26 +241,22 @@ class DriveScheduler
 
     // Parameter to get change list.
     // Used by:
-    //   TYPE_GET_RESOURCE_LIST
     //   TYPE_GET_CHANGE_LIST
     int64 start_changestamp;
 
     // Parameter to get a resource list in a particular directory.
     // Used by:
-    //   TYPE_GET_RESOURCE_LIST
     //   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY
     std::string directory_resource_id;
 
     // Parameter to search the resource list
     // Used by:
-    //   TYPE_GET_RESOURCE_LIST
     //   TYPE_SEARCH
     std::string search_query;
 
     // Parameter to get remaining results of an operation via
     // GetResourceListCallback.
     // Used by:
-    //   TYPE_GET_RESOURCE_LIST
     //   TYPE_CONTINUE_GET_RESOURCE_LIST
     GURL feed_url;
 
@@ -289,7 +276,10 @@ class DriveScheduler
 
     // Callback for operations that take a GetResourceListCallback.
     // Used by:
-    //   TYPE_GET_RESOURCE_LIST
+    //   TYPE_GET_ALL_RESOURCE_LIST
+    //   TYPE_GET_RESOURCE_LIST_IN_DIRECTORY
+    //   TYPE_SEARCH
+    //   TYPE_CONTINUE_GET_RESOURCE_LIST
     google_apis::GetResourceListCallback get_resource_list_callback;
 
     // Callback for operations that take a GetResourceEntryCallback.

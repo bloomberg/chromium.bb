@@ -162,25 +162,6 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   ASSERT_TRUE(account_metadata);
 }
 
-TEST_F(DriveSchedulerTest, GetResourceList) {
-  ConnectToWifi();
-
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceList> resource_list;
-
-  scheduler_->GetResourceList(
-      GURL("http://example.com/gdata/root_feed.json"),
-      0,
-      std::string(),
-      std::string(),
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
-}
-
 TEST_F(DriveSchedulerTest, GetAllResourceList) {
   ConnectToWifi();
 

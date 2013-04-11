@@ -166,29 +166,6 @@ std::string GDataWapiService::GetRootResourceId() const {
   return kWapiRootDirectoryResourceId;
 }
 
-void GDataWapiService::GetResourceList(
-    const GURL& url,
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Drive V2 API defines changestamp in int64, while DocumentsList API uses
-  // int32. This narrowing should not cause any trouble.
-  runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
-          operation_registry(),
-          url_request_context_getter_,
-          url_generator_,
-          url,
-          static_cast<int>(start_changestamp),
-          search_query,
-          directory_resource_id,
-          callback));
-}
-
 // Because GData WAPI support is expected to be gone somehow soon by migration
 // to the Drive API v2, so we'll reuse GetResourceListOperation to implement
 // following methods, instead of cleaning the operation class.

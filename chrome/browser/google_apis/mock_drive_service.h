@@ -37,12 +37,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_CONST_METHOD0(GetProgressStatusList,
       OperationProgressStatusList());
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
-  MOCK_METHOD5(GetResourceList,
-      void(const GURL& url,
-          int64 start_changestamp,
-          const std::string& search_string,
-          const std::string& directory_resource_id,
-          const GetResourceListCallback& callback));
   MOCK_METHOD1(GetAllResourceList,
       void(const GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceListInDirectory,
@@ -144,19 +138,9 @@ class MockDriveService : public DriveServiceInterface {
     file_data_.reset(file_data);
   }
 
-  void set_search_result(const std::string& search_result_file);
-
  private:
   // Helper stub methods for functions which take callbacks, so that
   // the callbacks get called with testable results.
-
-  // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
-  // value of |resource_list_data_|.
-  void GetResourceListStub(const GURL& url,
-      int64 start_changestamp,
-      const std::string& search_string,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |account_metadata_|.
@@ -209,18 +193,11 @@ class MockDriveService : public DriveServiceInterface {
   // Account meta data to be returned from GetAccountMetadata.
   scoped_ptr<base::Value> account_metadata_data_;
 
-  // JSON data to be returned from GetResourceList.
-  scoped_ptr<base::Value> resource_list_data_;
-
   // JSON data to be returned from CreateDirectory.
   scoped_ptr<base::Value> directory_data_;
 
   // JSON data to be returned from CopyHostedDocument.
   scoped_ptr<base::Value> document_data_;
-
-  // JSON data to be returned from GetResourceList if the search path is
-  // specified. The value contains subset of the resource_list_data_.
-  scoped_ptr<base::Value> search_result_;
 
   // File data to be written to the local temporary file when
   // DownloadFileStub is called.

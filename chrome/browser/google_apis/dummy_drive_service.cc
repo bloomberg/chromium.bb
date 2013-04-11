@@ -40,13 +40,6 @@ std::string DummyDriveService::GetRootResourceId() const {
   return "dummy_root";
 }
 
-void DummyDriveService::GetResourceList(
-    const GURL& url,
-    int64 start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {}
-
 void DummyDriveService::GetAllResourceList(
     const GetResourceListCallback& callback) {}
 
