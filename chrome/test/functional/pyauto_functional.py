@@ -65,9 +65,24 @@ def RunWithCorrectPythonIfNecessary():
     proc.wait()
     sys.exit(proc.returncode)
 
-  # Check this is the right python version.
-  if sys.version_info[0:2] != (2, 6):
-    RunAgain()
+  def IsChromeOS():
+    lsb_release = '/etc/lsb-release'
+    if sys.platform.startswith('linux') and os.path.isfile(lsb_release):
+      with open(lsb_release) as fp:
+        contents = fp.read()
+        return 'CHROMEOS_RELEASE_NAME=' in contents
+    return False
+
+  # Ensure this is the right python version (2.6 for chrome, 2.7 for chromeOS).
+  if IsChromeOS():
+    if sys.version_info[0:2] != (2, 7):
+      cmd = ['python2.7'] + sys.argv
+      print 'Running: ', ' '.join(cmd)
+      proc = subprocess.Popen(cmd)
+      proc.wait()
+  else:
+    if sys.version_info[0:2] != (2, 6):
+      RunAgain()
 
   # Check this is the right bitness on mac.
   # platform.architecture() will not help us on mac, since multiple binaries
