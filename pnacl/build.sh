@@ -41,6 +41,8 @@ SetLogDirectory "${PNACL_ROOT}/build/log"
 
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
+# Concurrency for builds using the host's system compiler (which might be goma)
+readonly PNACL_CONCURRENCY_HOST=${PNACL_CONCURRENCY_HOST:-${PNACL_CONCURRENCY}}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
 PNACL_BUILD_MIPS=${PNACL_BUILD_MIPS:-false}
@@ -71,6 +73,7 @@ readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
 
 readonly PNACL_MAKE_OPTS="${PNACL_MAKE_OPTS:-}"
 readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1 ${PNACL_MAKE_OPTS}"
+readonly MAKE_OPTS_HOST="-j${PNACL_CONCURRENCY_HOST} VERBOSE=1 ${PNACL_MAKE_OPTS}"
 
 readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 
@@ -1338,8 +1341,8 @@ llvm-configure() {
   # re: --enable-targets  "x86" brings in both i686 and x86_64.
   local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
-      env -i PATH=/usr/bin/:/bin \
-             MAKE_OPTS=${MAKE_OPTS} \
+      env -i PATH="${PATH}" \
+             MAKE_OPTS=${MAKE_OPTS_HOST} \
              CC="${CC}" \
              CXX="${CXX}" \
              ${srcdir}/configure \
@@ -1391,13 +1394,13 @@ llvm-make() {
   ts-touch-open "${objdir}"
 
   RunWithLog llvm.make \
-    env -i PATH=/usr/bin/:/bin \
-           MAKE_OPTS="${MAKE_OPTS}" \
+    env -i PATH="${PATH}" \
+           MAKE_OPTS="${MAKE_OPTS_HOST}" \
            NACL_SANDBOX=0 \
            NACL_SB_JIT=0 \
            CC="${CC}" \
            CXX="${CXX}" \
-           make ${MAKE_OPTS} all
+           make ${MAKE_OPTS_HOST} all
 
   ts-touch-commit  "${objdir}"
 
@@ -1938,7 +1941,7 @@ binutils-configure() {
   #                --enable-ld=no but the binutils build setup is buggy
   RunWithLog binutils.configure \
       env -i \
-      PATH="/usr/bin:/bin" \
+      PATH="${PATH}" \
       CC="${CC}" \
       CXX="${CXX}" \
       LDFLAGS="${flags}" \
@@ -1992,7 +1995,7 @@ binutils-make() {
     RunWithLog binutils.make \
       env -i PATH="/usr/bin:/bin" \
       ac_cv_search_zlibVersion=no \
-      make ${MAKE_OPTS}
+      make ${MAKE_OPTS_HOST}
   else
     local control_parallel=""
     if ${BUILD_PLATFORM_MAC}; then
@@ -2001,8 +2004,8 @@ binutils-make() {
       control_parallel="-j1"
     fi
     RunWithLog binutils.make \
-      env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS} ${control_parallel}
+      env -i PATH="${PATH}" \
+      make ${MAKE_OPTS_HOST} ${control_parallel}
   fi
 
   ts-touch-commit "${objdir}"
@@ -2096,7 +2099,7 @@ binutils-liberty-configure() {
   spushd "${objdir}"
   RunWithLog binutils.liberty.configure \
       env -i \
-      PATH="/usr/bin:/bin" \
+      PATH="${PATH}" \
       CC="${CC}" \
       CXX="${CXX}" \
       ${srcdir}/binutils-2.20/configure
@@ -2122,10 +2125,10 @@ binutils-liberty-make() {
 
   RunWithLog binutils.liberty.make \
       env -i \
-      PATH="/usr/bin:/bin" \
+      PATH="${PATH}" \
       CC="${CC}" \
       CXX="${CXX}" \
-      make ${MAKE_OPTS} all-libiberty
+      make ${MAKE_OPTS_HOST} all-libiberty
 
   ts-touch-commit "${objdir}"
 
@@ -2474,7 +2477,7 @@ binutils-gold-configure() {
   spushd "${objdir}/libiberty"
   RunWithLog gold.configure \
     env -i \
-    PATH="/usr/bin:/bin" \
+    PATH="${PATH}" \
     CC="${CC} ${flags}" \
     CXX="${CXX} ${flags}" \
     ${srcdir}/libiberty/configure --prefix="${BINUTILS_INSTALL_DIR}"
@@ -2493,7 +2496,7 @@ binutils-gold-configure() {
   spushd "${objdir}/gold"
   RunWithLog gold.configure \
     env -i \
-    PATH="/usr/bin:/bin" \
+    PATH="${PATH}" \
     CC="${CC}" \
     CXX="${CXX}" \
     ac_cv_search_zlibVersion=no \
@@ -2529,15 +2532,15 @@ binutils-gold-make() {
   spushd "${objdir}/libiberty"
 
   RunWithLog gold.make \
-      env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS}
+      env -i PATH="${PATH}" \
+      make ${MAKE_OPTS_HOST}
   spopd
 
   StepBanner "GOLD-NATIVE" "Make (gold)"
   spushd "${objdir}/gold"
   RunWithLog gold.make \
-      env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS} ld-new${EXEC_EXT}
+      env -i PATH="${PATH}" \
+      make ${MAKE_OPTS_HOST} ld-new${EXEC_EXT}
   spopd
 
   ts-touch-commit "${objdir}"

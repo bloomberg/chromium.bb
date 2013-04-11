@@ -39,6 +39,17 @@ readonly PNACL_BUILD="pnacl/build.sh"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.sh"
 readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=55
 
+setup-goma() {
+  echo "@@@BUILD_STEP goma_setup@@@"
+  if /b/build/goma/goma_ctl.sh ensure_start ; then
+    PATH=/b/build/goma:$PATH
+    export PNACL_CONCURRENCY_HOST=100
+  else
+    # For now, don't make the bot go red if goma fails to start, just fall back
+    echo "@@@STEP_WARNINGS@@@"
+  fi
+}
+
 tc-clobber() {
   local label=$1
   local clobber_translators=$2
@@ -569,6 +580,7 @@ tc-tests-fast() {
 }
 
 mode-buildbot-tc-x8664-linux() {
+  setup-goma
   local is_try=$1
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
@@ -577,6 +589,7 @@ mode-buildbot-tc-x8664-linux() {
 }
 
 mode-buildbot-tc-x8632-linux() {
+  setup-goma
   local is_try=$1
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
