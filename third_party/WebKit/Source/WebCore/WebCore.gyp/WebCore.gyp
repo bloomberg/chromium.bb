@@ -351,9 +351,11 @@
         {
           'action_name': 'generateInspectorProtocolSources',
           'inputs': [
-            # First input. It stands for python script in action below.
+            # The python script in action below.
             '../inspector/CodeGeneratorInspector.py',
-            # Other inputs. They go as arguments to the python script.
+            # The helper script imported by CodeGeneratorInspector.py.
+            '../inspector/CodeGeneratorInspectorStrings.py',
+            # Input file for the script.
             '../../devtools/protocol.json',
           ],
           'outputs': [
@@ -371,7 +373,8 @@
           },
           'action': [
             'python',
-            '<@(_inputs)',
+            '../inspector/CodeGeneratorInspector.py',
+            '../../devtools/protocol.json',
             '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
           ],
