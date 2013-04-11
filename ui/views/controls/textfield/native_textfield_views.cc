@@ -263,12 +263,8 @@ bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
 
 int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
-
-  const gfx::Point& location = event.location();
-  bool in_selection = GetRenderText()->IsPointInSelection(location);
+  bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   is_drop_cursor_visible_ = !in_selection;
-  if (is_drop_cursor_visible_)
-    drop_cursor_position_ = GetRenderText()->FindCursorPosition(location);
   // TODO(msw): Pan over text when the user drags to the visible text edge.
   OnCaretBoundsChanged();
   SchedulePaint();
@@ -280,11 +276,6 @@ int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
                                    ui::DragDropTypes::DRAG_MOVE;
   }
   return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
-}
-
-void NativeTextfieldViews::OnDragExited() {
-  is_drop_cursor_visible_ = false;
-  SchedulePaint();
 }
 
 int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
@@ -1090,14 +1081,10 @@ void NativeTextfieldViews::RepaintCursor() {
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   TRACE_EVENT0("views", "NativeTextfieldViews::PaintTextAndCursor");
   canvas->Save();
-  GetRenderText()->set_cursor_visible(!is_drop_cursor_visible_ &&
-      is_cursor_visible_ && !model_->HasSelection());
+  GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
+      (is_cursor_visible_ && !model_->HasSelection()));
   // Draw the text, cursor, and selection.
   GetRenderText()->Draw(canvas);
-
-  // Draw the detached drop cursor that marks where the text will be dropped.
-  if (is_drop_cursor_visible_)
-    GetRenderText()->DrawCursor(canvas, drop_cursor_position_);
 
   // Draw placeholder text if needed.
   if (model_->GetText().empty() &&
