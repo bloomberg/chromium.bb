@@ -92,7 +92,7 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
     return true;
   }
 
-  scoped_array<char> buf(new char[len]);
+  scoped_ptr<char[]> buf(new char[len]);
   IP_ADAPTER_ADDRESSES *adapters =
       reinterpret_cast<IP_ADAPTER_ADDRESSES *>(buf.get());
   result = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, adapters, &len);

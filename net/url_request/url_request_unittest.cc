@@ -856,7 +856,7 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
                              FILE_SHARE_READ, NULL, OPEN_EXISTING,
                              FILE_ATTRIBUTE_NORMAL, NULL);
     EXPECT_NE(INVALID_HANDLE_VALUE, file);
-    scoped_array<char> buffer(new char[data.nFileSizeLow]);
+    scoped_ptr<char[]> buffer(new char[data.nFileSizeLow]);
     DWORD read_size;
     BOOL result;
     result = ReadFile(file, buffer.get(), data.nFileSizeLow,

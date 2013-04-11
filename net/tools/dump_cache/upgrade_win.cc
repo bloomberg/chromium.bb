@@ -133,8 +133,8 @@ class BaseSM : public MessageLoopForIO::IOHandler {
   HANDLE channel_;
   int state_;
   int pending_count_;
-  scoped_array<char> in_buffer_;
-  scoped_array<char> out_buffer_;
+  scoped_ptr<char[]> in_buffer_;
+  scoped_ptr<char[]> out_buffer_;
   IoBuffer* input_;
   IoBuffer* output_;
   base::Thread cache_thread_;
