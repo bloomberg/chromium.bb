@@ -24,7 +24,6 @@ import breakpad  # pylint: disable=W0611
 
 import fix_encoding
 import gclient_utils
-import git_cl
 import presubmit_support
 import rietveld
 from scm import SVN
@@ -59,6 +58,8 @@ FILES_CACHE = {}
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
+
+REVIEWERS_REGEX = r'\s*R=(.+)'
 
 def CheckHomeForFile(filename):
   """Checks the users home dir for the existence of the given file.  Returns
@@ -272,12 +273,15 @@ class ChangeInfo(object):
 
   def __init__(self, name, issue, patchset, description, files, local_root,
                rietveld_url, needs_upload):
-    # Defer the description processing to git_cl.ChangeDescription.
-    self._desc = git_cl.ChangeDescription(description)
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
-    self._files = files or  []
+    self._description = None
+    self._reviewers = None
+    self._set_description(description)
+    if files is None:
+      files = []
+    self._files = files
     self.patch = None
     self._local_root = local_root
     self.needs_upload = needs_upload
@@ -285,19 +289,31 @@ class ChangeInfo(object):
         rietveld_url or GetCodeReviewSetting('CODE_REVIEW_SERVER'))
     self._rpc_server = None
 
+  def _get_description(self):
+    return self._description
+
+  def _set_description(self, description):
+    # TODO(dpranke): Cloned from git_cl.py. These should be shared.
+    if not description:
+      self._description = description
+      return
+
+    parsed_lines = []
+    reviewers_re = re.compile(REVIEWERS_REGEX)
+    reviewers = ''
+    for l in description.splitlines():
+      matched_reviewers = reviewers_re.match(l)
+      if matched_reviewers:
+        reviewers = matched_reviewers.group(1).split(',')
+      parsed_lines.append(l)
+    self._reviewers = reviewers
+    self._description = '\n'.join(parsed_lines)
+
+  description = property(_get_description, _set_description)
+
   @property
-  def description(self):
-    return self._desc.description
-
-  def force_description(self, new_description):
-    self._desc = git_cl.ChangeDescription(new_description)
-    self.needs_upload = True
-
-  def append_footer(self, line):
-    self._desc.append_footer(line)
-
-  def get_reviewers(self):
-    return self._desc.get_reviewers()
+  def reviewers(self):
+    return self._reviewers
 
   def NeedsUpload(self):
     return self.needs_upload
@@ -372,12 +388,10 @@ class ChangeInfo(object):
     ctype, body = upload.EncodeMultipartFormData(data, [])
     self.SendToRietveld('/%d/description' % self.issue, payload=body,
         content_type=ctype)
-    self.needs_upload = False
 
-  def UpdateDescriptionFromIssue(self):
-    """Updates self.description with the issue description from Rietveld."""
-    self._desc = git_cl.ChangeDescription(
-        self.SendToRietveld('/%d/description' % self.issue))
+  def GetIssueDescription(self):
+    """Returns the issue description from Rietveld."""
+    return self.SendToRietveld('/%d/description' % self.issue)
 
   def AddComment(self, comment):
     """Adds a comment for an issue on Rietveld.
@@ -837,7 +851,7 @@ def CMDupload(change_info, args):
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=%s" % change_info.rietveld)
 
-  reviewers = change_info.get_reviewers() or output.reviewers
+  reviewers = change_info.reviewers or output.reviewers
   if (reviewers and
       not any(arg.startswith('-r') or arg.startswith('--reviewer') for
               arg in args)):
@@ -989,17 +1003,17 @@ def CMDcommit(change_info, args):
   commit_cmd = ["svn", "commit"]
   if change_info.issue:
     # Get the latest description from Rietveld.
-    change_info.UpdateDescriptionFromIssue()
+    change_info.description = change_info.GetIssueDescription()
 
-  commit_desc = git_cl.ChangeDescription(change_info.description)
+  commit_message = change_info.description.replace('\r\n', '\n')
   if change_info.issue:
     server = change_info.rietveld
     if not server.startswith("http://") and not server.startswith("https://"):
       server = "http://" + server
-    commit_desc.append_footer('Review URL: %s/%d' % (server, change_info.issue))
+    commit_message += ('\nReview URL: %s/%d' % (server, change_info.issue))
 
   handle, commit_filename = tempfile.mkstemp(text=True)
-  os.write(handle, commit_desc.description)
+  os.write(handle, commit_message)
   os.close(handle)
   try:
     handle, targets_filename = tempfile.mkstemp(text=True)
@@ -1025,10 +1039,11 @@ def CMDcommit(change_info, args):
       revision = re.compile(".*?\nCommitted revision (\d+)",
                             re.DOTALL).match(output).group(1)
       viewvc_url = GetCodeReviewSetting('VIEW_VC')
+      change_info.description += '\n'
       if viewvc_url and revision:
-        change_info.append_footer('Committed: ' + viewvc_url + revision)
+        change_info.description += "\nCommitted: " + viewvc_url + revision
       elif revision:
-        change_info.append_footer('Committed: ' + revision)
+        change_info.description += "\nCommitted: " + revision
       change_info.CloseIssue()
       props = change_info.RpcServer().get_issue_properties(
           change_info.issue, False)
@@ -1123,7 +1138,8 @@ def CMDchange(args):
   new_description = split_result[0]
   cl_files_text = split_result[1]
   if new_description != description or override_description:
-    change_info.force_description(new_description)
+    change_info.description = new_description
+    change_info.needs_upload = True
 
   new_cl_files = []
   for line in cl_files_text.splitlines():
@@ -1152,6 +1168,7 @@ def CMDchange(args):
   # Update the Rietveld issue.
   if change_info.issue and change_info.NeedsUpload():
     change_info.UpdateRietveldDescription()
+    change_info.needs_upload = False
     change_info.Save()
   return 0
 
