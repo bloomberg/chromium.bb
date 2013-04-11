@@ -6,6 +6,7 @@
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -86,12 +87,15 @@ string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 
 bool SessionCrashedInfoBarDelegate::Accept() {
   uint32 behavior = 0;
-  if (browser_->tab_strip_model()->count() == 1 &&
-      browser_->tab_strip_model()->GetWebContentsAt(0)->GetURL() ==
-          GURL(chrome::kChromeUINewTabURL)) {
-    // There is only one tab and its the new tab page, make session restore
-    // clobber it.
-    behavior = SessionRestore::CLOBBER_CURRENT_TAB;
+  if (browser_->tab_strip_model()->count() == 1) {
+    const content::WebContents* active_tab =
+        browser_->tab_strip_model()->GetWebContentsAt(0);
+    if (active_tab->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
+        chrome::IsInstantNTP(active_tab)) {
+      // There is only one tab and its the new tab page, make session restore
+      // clobber it.
+      behavior = SessionRestore::CLOBBER_CURRENT_TAB;
+    }
   }
   SessionRestore::RestoreSession(
       browser_->profile(), browser_, browser_->host_desktop_type(), behavior,
