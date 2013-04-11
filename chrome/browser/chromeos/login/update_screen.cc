@@ -76,6 +76,12 @@ void StartUpdateCallback(UpdateScreen* screen,
   }
 }
 
+// Returns true if blocking AU is enabled in command line.
+bool IsBlockingUpdateEnabledInCommandLine() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableOOBEBlockingUpdate);
+}
+
 }  // anonymous namespace
 
 // static
@@ -266,15 +272,13 @@ void UpdateScreen::StartNetworkCheck() {
   // If portal detector is enabled and portal detection before AU is
   // allowed, initiate network state check. Otherwise, directly
   // proceed to update.
-  if (!NetworkPortalDetector::IsEnabled() || !detector ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableOOBEBlockingUpdate)) {
+  if (!NetworkPortalDetector::IsEnabledInCommandLine() || !detector ||
+      !IsBlockingUpdateEnabledInCommandLine()) {
     StartUpdateCheck();
     return;
   }
   state_ = STATE_FIRST_PORTAL_CHECK;
-  detector->AddObserver(this);
-  detector->ForcePortalDetection();
+  detector->AddAndFireObserver(this);
 }
 
 void UpdateScreen::CancelUpdate() {
@@ -307,6 +311,8 @@ void UpdateScreen::PrepareToShow() {
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+  if (NetworkPortalDetector::GetInstance())
+    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:

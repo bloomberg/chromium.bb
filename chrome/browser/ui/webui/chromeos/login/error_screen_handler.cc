@@ -25,13 +25,13 @@ namespace {
 
 void EnableLazyDetection() {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabled() && detector)
+  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
     detector->EnableLazyDetection();
 }
 
 void DisableLazyDetection() {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (NetworkPortalDetector::IsEnabled() && detector)
+  if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)
     detector->DisableLazyDetection();
 }
 
