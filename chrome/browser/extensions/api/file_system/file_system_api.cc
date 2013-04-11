@@ -53,11 +53,6 @@ const char kUserCancelled[] = "User cancelled";
 const char kWritableFileError[] = "Invalid file for writing";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystem.write permission";
-const char kUnknownChooseEntryType[] = "Unknown type";
-
-const char kOpenFileOption[] = "openFile";
-const char kOpenWritableFileOption[] ="openWritableFile";
-const char kSaveFileOption[] = "saveFile";
 
 namespace file_system = extensions::api::file_system;
 namespace ChooseEntry = file_system::ChooseEntry;
@@ -632,16 +627,11 @@ bool FileSystemChooseEntryFunction::RunImpl() {
 
   file_system::ChooseEntryOptions* options = params->options.get();
   if (options) {
-    if (options->type.get()) {
-      if (*options->type == kOpenWritableFileOption) {
-        entry_type = WRITABLE;
-      } else if (*options->type == kSaveFileOption) {
-        entry_type = WRITABLE;
-        picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
-      } else if (*options->type != kOpenFileOption) {
-        error_ = kUnknownChooseEntryType;
-        return false;
-      }
+    if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENWRITABLEFILE) {
+      entry_type = WRITABLE;
+    } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_SAVEFILE) {
+      entry_type = WRITABLE;
+      picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
     }
 
     base::FilePath::StringType suggested_extension;

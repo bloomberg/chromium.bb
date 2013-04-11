@@ -4,7 +4,12 @@
 
 chrome.test.runTests([
   function saveFile() {
-    chrome.fileSystem.chooseEntry({type: 'invalid'}, chrome.test.callbackFail(
-        'Unknown type',  function() {}));
+    try {
+      chrome.fileSystem.chooseEntry({type: 'invalid'}, function() {});
+       // Should not reach this line since the above call throws.
+      chrome.test.fail();
+    } catch (ex) {
+    }
+    chrome.test.succeed();
   }
 ]);
