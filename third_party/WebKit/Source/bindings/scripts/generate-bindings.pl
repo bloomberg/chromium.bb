@@ -42,7 +42,6 @@ use CodeGenerator;
 my @idlDirectories;
 my $outputDirectory;
 my $outputHeadersDirectory;
-my $generator;
 my $defines;
 my $filename;
 my $prefix;
@@ -56,7 +55,6 @@ my $idlAttributesFile;
 GetOptions('include=s@' => \@idlDirectories,
            'outputDir=s' => \$outputDirectory,
            'outputHeadersDir=s' => \$outputHeadersDirectory,
-           'generator=s' => \$generator,
            'defines=s' => \$defines,
            'filename=s' => \$filename,
            'prefix=s' => \$prefix,
@@ -70,7 +68,6 @@ GetOptions('include=s@' => \@idlDirectories,
 my $targetIdlFile = $ARGV[0];
 
 die('Must specify input file.') unless defined($targetIdlFile);
-die('Must specify generator') unless defined($generator);
 die('Must specify output directory.') unless defined($outputDirectory);
 $defines = "" unless defined($defines);
 
@@ -79,7 +76,7 @@ if (!$outputHeadersDirectory) {
 }
 $targetIdlFile = Cwd::realpath($targetIdlFile);
 if ($verbose) {
-    print "$generator: $targetIdlFile\n";
+    print "$targetIdlFile\n";
 }
 my $targetInterfaceName = fileparse(basename($targetIdlFile), ".idl");
 
@@ -115,7 +112,7 @@ if ($supplementalDependencyFile) {
     }
 
     if (!$idlFound) {
-        my $codeGen = CodeGenerator->new(\@idlDirectories, $generator, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose);
+        my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose);
 
         # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
         generateEmptyHeaderAndCpp($targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
@@ -195,7 +192,7 @@ foreach my $idlFile (@supplementedIdlFiles) {
 }
 
 # Generate desired output for the target IDL file.
-my $codeGen = CodeGenerator->new(\@idlDirectories, $generator, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose, $targetIdlFile);
+my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose, $targetIdlFile);
 $codeGen->ProcessDocument($targetDocument, $defines);
 
 sub generateEmptyHeaderAndCpp

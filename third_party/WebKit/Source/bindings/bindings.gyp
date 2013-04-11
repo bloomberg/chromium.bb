@@ -267,8 +267,6 @@
           'scripts/IDLAttributes.txt',
           '--defines',
           '<(feature_defines)',
-          '--generator',
-          'V8',
           '<@(generator_include_dirs)',
           '--supplementalDependencyFile',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',

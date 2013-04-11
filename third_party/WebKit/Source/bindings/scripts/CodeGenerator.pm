@@ -30,7 +30,6 @@ use strict;
 use File::Find;
 
 my $useDocument = "";
-my $useGenerator = "";
 my $useOutputDir = "";
 my $useOutputHeadersDir = "";
 my $useDirectories = "";
@@ -104,7 +103,6 @@ sub new
     my $reference = { };
 
     $useDirectories = shift;
-    $useGenerator = shift;
     $useOutputDir = shift;
     $useOutputHeadersDir = shift;
     $useLayerOnTop = shift;
@@ -123,7 +121,7 @@ sub ProcessDocument
     $useDocument = shift;
     $defines = shift;
 
-    my $ifaceName = "CodeGenerator" . $useGenerator;
+    my $ifaceName = "CodeGeneratorV8";
     require $ifaceName . ".pm";
 
     %enumTypeHash = map { $_->name => $_->values } @{$useDocument->enumerations};
@@ -133,14 +131,14 @@ sub ProcessDocument
     unless (defined($codeGenerator)) {
         my $interfaces = $useDocument->interfaces;
         foreach my $interface (@$interfaces) {
-            print "Skipping $useGenerator code generation for IDL interface \"" . $interface->name . "\".\n" if $verbose;
+            print "Skipping code generation for IDL interface \"" . $interface->name . "\".\n" if $verbose;
         }
         return;
     }
 
     my $interfaces = $useDocument->interfaces;
     foreach my $interface (@$interfaces) {
-        print "Generating $useGenerator bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
+        print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
         $codeGenerator->GenerateInterface($interface, $defines);
         $codeGenerator->WriteData($interface, $useOutputDir, $useOutputHeadersDir);
     }
