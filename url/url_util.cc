@@ -27,15 +27,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "url/url_util.h"
+
 #include <string.h>
+
 #include <vector>
 
-#include "googleurl/src/url_util.h"
-
 #include "base/logging.h"
-#include "googleurl/src/url_canon_internal.h"
-#include "googleurl/src/url_file.h"
-#include "googleurl/src/url_util_internal.h"
+#include "url/url_canon_internal.h"
+#include "url/url_file.h"
+#include "url/url_util_internal.h"
 
 namespace url_util {
 

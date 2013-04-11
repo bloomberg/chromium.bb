@@ -26,15 +26,16 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifndef GOOGLEURL_SRC_URL_CANON_H__
-#define GOOGLEURL_SRC_URL_CANON_H__
 
-#include <string.h>
+#ifndef URL_URL_CANON_H_
+#define URL_URL_CANON_H_
+
 #include <stdlib.h>
+#include <string.h>
 
 #include "base/string16.h"
-#include "googleurl/src/url_common.h"
-#include "googleurl/src/url_parse.h"
+#include "url/url_common.h"
+#include "url/url_parse.h"
 
 namespace url_canon {
 
@@ -909,4 +910,4 @@ GURL_API bool ResolveRelativeURL(const char* base_url,
 
 }  // namespace url_canon
 
-#endif  // GOOGLEURL_SRC_URL_CANON_H__
+#endif  // URL_URL_CANON_H_

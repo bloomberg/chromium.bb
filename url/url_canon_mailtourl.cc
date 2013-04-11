@@ -29,10 +29,10 @@
 
 // Functions for canonicalizing "mailto:" URLs.
 
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_internal.h"
-#include "googleurl/src/url_file.h"
-#include "googleurl/src/url_parse_internal.h"
+#include "url/url_canon.h"
+#include "url/url_canon_internal.h"
+#include "url/url_file.h"
+#include "url/url_parse_internal.h"
 
 namespace url_canon {
 

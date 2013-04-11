@@ -27,12 +27,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cstdio>
 #include <errno.h>
 #include <stdlib.h>
+
+#include <cstdio>
 #include <string>
 
-#include "googleurl/src/url_canon_internal.h"
+#include "url/url_canon_internal.h"
 
 namespace url_canon {
 

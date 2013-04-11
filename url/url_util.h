@@ -27,15 +27,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLEURL_SRC_URL_UTIL_H__
-#define GOOGLEURL_SRC_URL_UTIL_H__
+#ifndef URL_URL_UTIL_H_
+#define URL_URL_UTIL_H_
 
 #include <string>
 
 #include "base/string16.h"
-#include "googleurl/src/url_common.h"
-#include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_canon.h"
+#include "url/url_canon.h"
+#include "url/url_common.h"
+#include "url/url_parse.h"
 
 namespace url_util {
 
@@ -225,4 +225,4 @@ GURL_API void EncodeURIComponent(const char* input, int length,
 
 }  // namespace url_util
 
-#endif  // GOOGLEURL_SRC_URL_UTIL_H__
+#endif  // URL_URL_UTIL_H_

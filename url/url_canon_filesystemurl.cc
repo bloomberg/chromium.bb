@@ -29,12 +29,12 @@
 
 // Functions for canonicalizing "filesystem:file:" URLs.
 
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_internal.h"
-#include "googleurl/src/url_file.h"
-#include "googleurl/src/url_parse_internal.h"
-#include "googleurl/src/url_util.h"
-#include "googleurl/src/url_util_internal.h"
+#include "url/url_canon.h"
+#include "url/url_canon_internal.h"
+#include "url/url_file.h"
+#include "url/url_parse_internal.h"
+#include "url/url_util.h"
+#include "url/url_util_internal.h"
 
 namespace url_canon {
 

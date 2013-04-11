@@ -36,11 +36,11 @@
 // *** This file must be included after url_canon_internal as we depend on some
 // functions in it. ***
 
-#ifndef GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
-#define GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
+#ifndef URL_URL_CANON_INTERNAL_FILE_H_
+#define URL_URL_CANON_INTERNAL_FILE_H_
 
-#include "googleurl/src/url_file.h"
-#include "googleurl/src/url_parse_internal.h"
+#include "url/url_file.h"
+#include "url/url_parse_internal.h"
 
 using namespace url_canon;
 
@@ -154,4 +154,4 @@ static bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
   return success;
 }
 
-#endif  // GOOGLEURL_SRC_URL_CANON_INTERNAL_FILE_H__
+#endif  // URL_URL_CANON_INTERNAL_FILE_H_

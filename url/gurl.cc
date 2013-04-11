@@ -27,6 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "url/gurl.h"
+
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -36,11 +38,9 @@
 #include <algorithm>
 #include <ostream>
 
-#include "googleurl/src/gurl.h"
-
 #include "base/logging.h"
-#include "googleurl/src/url_canon_stdstring.h"
-#include "googleurl/src/url_util.h"
+#include "url/url_canon_stdstring.h"
+#include "url/url_util.h"
 
 namespace {
 
