@@ -167,6 +167,9 @@ class DriveUploader : public DriveUploaderInterface {
       scoped_ptr<UploadFileInfo> upload_file_info,
       const UploadRangeResponse& response,
       scoped_ptr<ResourceEntry> entry);
+  void OnUploadProgress(const ProgressCallback& callback,
+                        int64 progress,
+                        int64 start_position);
 
   // Handle failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,

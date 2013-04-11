@@ -370,7 +370,10 @@ void DriveUploader::ReadCompletionCallback(
       base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info)),
-      ProgressCallback());
+      base::Bind(&DriveUploader::OnUploadProgress,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 info_ptr->progress_callback,
+                 start_position));
 }
 
 void DriveUploader::OnUploadRangeResponseReceived(
@@ -424,6 +427,13 @@ void DriveUploader::OnUploadRangeResponseReceived(
 
   // Continue uploading.
   UploadNextChunk(upload_file_info.Pass());
+}
+
+void DriveUploader::OnUploadProgress(const ProgressCallback& callback,
+                                     int64 progress,
+                                     int64 start_position) {
+  if (!callback.is_null())
+    callback.Run(start_position + progress);
 }
 
 void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
