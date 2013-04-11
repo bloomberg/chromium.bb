@@ -1306,6 +1306,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
     SendDidLoseOutputSurfaceRecursive(pending_tree_->root_layer());
   if (recycle_tree_ && recycle_tree_->root_layer())
     SendDidLoseOutputSurfaceRecursive(recycle_tree_->root_layer());
+  if (resource_provider_)
+    resource_provider_->DidLoseOutputSurface();
 
   // Note: order is important here.
   renderer_.reset();

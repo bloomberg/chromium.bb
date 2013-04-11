@@ -60,6 +60,8 @@ class CC_EXPORT ResourceProvider {
 
   virtual ~ResourceProvider();
 
+  void DidLoseOutputSurface() { lost_output_surface_ = true; }
+
   WebKit::WebGraphicsContext3D* GraphicsContext3D();
   TextureCopier* texture_copier() const { return texture_copier_.get(); }
   int max_texture_size() const { return max_texture_size_; }
@@ -369,10 +371,15 @@ class CC_EXPORT ResourceProvider {
   bool TransferResource(WebKit::WebGraphicsContext3D* context,
                         ResourceId id,
                         TransferableResource* resource);
-  void DeleteResourceInternal(ResourceMap::iterator it);
+  enum DeleteStyle {
+    Normal,
+    ForShutdown,
+  };
+  void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
   void LazyAllocate(Resource* resource);
 
   OutputSurface* output_surface_;
+  bool lost_output_surface_;
   ResourceId next_id_;
   ResourceMap resources_;
   int next_child_;

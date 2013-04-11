@@ -143,6 +143,9 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
 }
 
 ResourceProvider::~ResourceProvider() {
+  while (!resources_.empty())
+    DeleteResourceInternal(resources_.begin(), ForShutdown);
+
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent())
     return;
@@ -283,12 +286,19 @@ void ResourceProvider::DeleteResource(ResourceId id) {
     resource->marked_for_deletion = true;
     return;
   } else {
-    DeleteResourceInternal(it);
+    DeleteResourceInternal(it, Normal);
   }
 }
 
-void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it) {
+void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
+                                              DeleteStyle style) {
   Resource* resource = &it->second;
+  bool lost_resource = lost_output_surface_;
+
+  DCHECK(!resource->exported || style != Normal);
+  if (style == ForShutdown && resource->exported)
+    lost_resource = true;
+
   if (resource->gl_id && !resource->external) {
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
@@ -308,14 +318,16 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it) {
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
     unsigned sync_point = resource->mailbox.sync_point();
-    if (resource->gl_id) {
+    if (!lost_resource && resource->gl_id) {
       GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
       GLC(context3d, context3d->produceTextureCHROMIUM(
           GL_TEXTURE_2D, resource->mailbox.data()));
-      GLC(context3d, context3d->deleteTexture(resource->gl_id));
-      sync_point = context3d->insertSyncPoint();
     }
-    resource->mailbox.RunReleaseCallback(sync_point);
+    if (resource->gl_id)
+      GLC(context3d, context3d->deleteTexture(resource->gl_id));
+    if (!lost_resource && resource->gl_id)
+      sync_point = context3d->insertSyncPoint();
+    resource->mailbox.RunReleaseCallback(sync_point, lost_resource);
   }
   if (resource->pixels)
     delete[] resource->pixels;
@@ -590,6 +602,7 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
 
 ResourceProvider::ResourceProvider(OutputSurface* output_surface)
     : output_surface_(output_surface),
+      lost_output_surface_(false),
       next_id_(1),
       next_child_(1),
       default_resource_type_(GLTexture),
@@ -809,7 +822,7 @@ void ResourceProvider::ReceiveFromParent(
                                          it->sync_point);
     }
     if (resource->marked_for_deletion)
-      DeleteResourceInternal(map_iterator);
+      DeleteResourceInternal(map_iterator, Normal);
   }
 }
 

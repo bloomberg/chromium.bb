@@ -68,7 +68,7 @@ void VideoLayerImpl::DidBecomeActive() {
   provider_client_impl_->set_active_video_layer(this);
 }
 
-static void EmptyCallback(unsigned sync_point) {}
+static void EmptyCallback(unsigned sync_point, bool lost_resource) {}
 
 void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   LayerImpl::WillDraw(resource_provider);
@@ -276,7 +276,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (frame_resource_type_ ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
     for (size_t i = 0; i < software_resources_.size(); ++i)
-      software_release_callback_.Run(0);
+      software_release_callback_.Run(0, false);
 
     software_resources_.clear();
     software_release_callback_.Reset();

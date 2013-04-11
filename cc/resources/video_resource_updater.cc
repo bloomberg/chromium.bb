@@ -213,14 +213,16 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // will be called directly from the resource provider, same as 3d
     // compositing mode, so this raw unretained resource_provider will always
     // be valid when the callback is fired.
+    RecycleResourceData recycle_data = {
+      plane_resources[0].resource_id,
+      plane_resources[0].resource_size,
+      plane_resources[0].resource_format,
+    };
     TextureMailbox::ReleaseCallback callback_to_free_resource =
         base::Bind(&RecycleResource,
                    AsWeakPtr(),
                    base::Unretained(resource_provider_),
-                   plane_resources[0].resource_id,
-                   plane_resources[0].resource_size,
-                   plane_resources[0].resource_format,
-                   gpu::Mailbox());
+                   recycle_data);
     external_resources.software_resources.push_back(
         plane_resources[0].resource_id);
     external_resources.software_release_callback = callback_to_free_resource;
@@ -265,14 +267,17 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     // This callback is called by the resource provider itself, so it's okay to
     // use an unretained raw pointer here.
+    RecycleResourceData recycle_data = {
+      plane_resources[i].resource_id,
+      plane_resources[i].resource_size,
+      plane_resources[i].resource_format,
+      mailbox
+    };
     TextureMailbox::ReleaseCallback callback_to_free_resource =
         base::Bind(&RecycleResource,
                    AsWeakPtr(),
                    base::Unretained(resource_provider_),
-                   plane_resources[i].resource_id,
-                   plane_resources[i].resource_size,
-                   plane_resources[i].resource_format,
-                   mailbox);
+                   recycle_data);
     external_resources.mailboxes.push_back(
         TextureMailbox(mailbox,
                        callback_to_free_resource,
@@ -340,50 +345,53 @@ void VideoResourceUpdater::ReturnTexture(
     TextureMailbox::ReleaseCallback callback,
     unsigned texture_id,
     gpu::Mailbox mailbox,
-    unsigned sync_point) {
+    unsigned sync_point,
+    bool lost_resource) {
   WebKit::WebGraphicsContext3D* context =
       resource_provider->GraphicsContext3D();
   GLC(context, context->bindTexture(GL_TEXTURE_2D, texture_id));
   GLC(context, context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
   GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
-  callback.Run(sync_point);
+  callback.Run(sync_point, lost_resource);
 }
 
 // static
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
     ResourceProvider* resource_provider,
-    unsigned resource_id,
-    gfx::Size resource_size,
-    unsigned resource_format,
-    gpu::Mailbox mailbox,
-    unsigned sync_point) {
+    RecycleResourceData data,
+    unsigned sync_point,
+    bool lost_resource) {
   WebKit::WebGraphicsContext3D* context =
       resource_provider->GraphicsContext3D();
-  if (context) {
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider, resource_id);
+  if (context && sync_point)
+      GLC(context, context->waitSyncPoint(sync_point));
+  if (context && !lost_resource) {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider,
+                                             data.resource_id);
     GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
-    GLC(context, context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+    GLC(context, context->consumeTextureCHROMIUM(GL_TEXTURE_2D,
+                                                 data.mailbox.name));
     GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
   }
 
-  if (!updater) {
-    resource_provider->DeleteResource(resource_id);
+  if (!updater || lost_resource) {
+    resource_provider->DeleteResource(data.resource_id);
     return;
   }
 
   // Drop recycled resources that are the wrong format.
   while (!updater->recycled_resources_.empty() &&
          updater->recycled_resources_.back().resource_format !=
-         resource_format) {
+         data.resource_format) {
     resource_provider->DeleteResource(
         updater->recycled_resources_.back().resource_id);
     updater->recycled_resources_.pop_back();
   }
 
-  PlaneResource recycled_resource(resource_id,
-                                  resource_size,
-                                  resource_format,
+  PlaneResource recycled_resource(data.resource_id,
+                                  data.resource_size,
+                                  data.resource_format,
                                   sync_point);
   updater->recycled_resources_.push_back(recycled_resource);
 }

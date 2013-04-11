@@ -57,9 +57,10 @@ bool TextureMailbox::IsEmpty() const {
   return name_.IsZero();
 }
 
-void TextureMailbox::RunReleaseCallback(unsigned sync_point) const {
+void TextureMailbox::RunReleaseCallback(unsigned sync_point,
+                                        bool lost_resource) const {
   if (!callback_.is_null())
-    callback_.Run(sync_point);
+    callback_.Run(sync_point, lost_resource);
 }
 
 void TextureMailbox::SetName(const gpu::Mailbox& other) {

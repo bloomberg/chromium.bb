@@ -724,8 +724,12 @@ TEST_P(ResourceProviderTest, TextureFilters) {
             GetResourceFilter(child_resource_provider.get(), id));
 }
 
-void ReleaseTextureMailbox(unsigned* release_sync_point, unsigned sync_point) {
+void ReleaseTextureMailbox(unsigned* release_sync_point,
+                           bool* release_lost_resource,
+                           unsigned sync_point,
+                           bool lost_resource) {
   *release_sync_point = sync_point;
+  *release_lost_resource = lost_resource;
 }
 
 TEST_P(ResourceProviderTest, TransferMailboxResources) {
@@ -746,8 +750,9 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   EXPECT_LT(0u, sync_point);
 
   unsigned release_sync_point = 0;
+  bool lost_resource = false;
   TextureMailbox::ReleaseCallback callback =
-      base::Bind(ReleaseTextureMailbox, &release_sync_point);
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
   ResourceProvider::ResourceId resource =
       resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(mailbox, callback, sync_point));
@@ -785,6 +790,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     resource_provider_->DeleteResource(resource);
     EXPECT_LE(list[0].sync_point, release_sync_point);
+    EXPECT_FALSE(lost_resource);
   }
 
   // We're going to do the same thing as above, but testing the case where we
@@ -829,12 +835,109 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     // sync points to be consistent.
     resource_provider_->ReceiveFromParent(list);
     EXPECT_LE(list[0].sync_point, release_sync_point);
+    EXPECT_FALSE(lost_resource);
   }
 
   context()->waitSyncPoint(release_sync_point);
   context()->bindTexture(GL_TEXTURE_2D, texture);
   context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   context()->deleteTexture(texture);
+}
+
+TEST_P(ResourceProviderTest, Shutdown) {
+  // TextureMailbox callbacks only exist for GL textures for now.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  unsigned texture = context()->createTexture();
+  context()->bindTexture(GL_TEXTURE_2D, texture);
+  gpu::Mailbox mailbox;
+  context()->genMailboxCHROMIUM(mailbox.name);
+  context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  unsigned sync_point = context()->insertSyncPoint();
+
+  EXPECT_LT(0u, sync_point);
+
+  unsigned release_sync_point = 0;
+  bool lost_resource = false;
+  TextureMailbox::ReleaseCallback callback =
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  resource_provider_->CreateResourceFromTextureMailbox(
+      TextureMailbox(mailbox, callback, sync_point));
+
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+
+  resource_provider_.reset();
+
+  EXPECT_LE(sync_point, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+}
+
+TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
+  // TextureMailbox callbacks only exist for GL textures for now.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  unsigned texture = context()->createTexture();
+  context()->bindTexture(GL_TEXTURE_2D, texture);
+  gpu::Mailbox mailbox;
+  context()->genMailboxCHROMIUM(mailbox.name);
+  context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  unsigned sync_point = context()->insertSyncPoint();
+
+  EXPECT_LT(0u, sync_point);
+
+  unsigned release_sync_point = 0;
+  bool lost_resource = false;
+  TextureMailbox::ReleaseCallback callback =
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  ResourceProvider::ResourceId resource =
+      resource_provider_->CreateResourceFromTextureMailbox(
+          TextureMailbox(mailbox, callback, sync_point));
+
+  // Transfer the resource, so we can't release it properly on shutdown.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(resource);
+  TransferableResourceArray list;
+  resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
+
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+
+  resource_provider_.reset();
+
+  // Since the resource is in the parent, the child considers it lost.
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_TRUE(lost_resource);
+}
+
+TEST_P(ResourceProviderTest, LostContext) {
+  // TextureMailbox callbacks only exist for GL textures for now.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  unsigned texture = context()->createTexture();
+  context()->bindTexture(GL_TEXTURE_2D, texture);
+  gpu::Mailbox mailbox;
+  context()->genMailboxCHROMIUM(mailbox.name);
+  context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  unsigned sync_point = context()->insertSyncPoint();
+
+  EXPECT_LT(0u, sync_point);
+
+  unsigned release_sync_point = 0;
+  bool lost_resource = false;
+  TextureMailbox::ReleaseCallback callback =
+      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  resource_provider_->CreateResourceFromTextureMailbox(
+      TextureMailbox(mailbox, callback, sync_point));
+
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+
+  resource_provider_->DidLoseOutputSurface();
+  resource_provider_.reset();
+
+  EXPECT_LE(sync_point, release_sync_point);
+  EXPECT_TRUE(lost_resource);
 }
 
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {

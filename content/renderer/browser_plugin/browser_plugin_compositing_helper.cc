@@ -124,7 +124,14 @@ void BrowserPluginCompositingHelper::MailboxReleased(
     const std::string& mailbox_name,
     int gpu_route_id,
     int gpu_host_id,
-    unsigned sync_point) {
+    unsigned sync_point,
+    bool lost_resource) {
+  if (lost_resource) {
+    // Recurse with an empty mailbox if the one being released was lost.
+    MailboxReleased(std::string(), gpu_route_id, gpu_host_id, 0, false);
+    return;
+  }
+
   // This means the GPU process crashed and we have nothing further to do.
   // Nobody is expecting an ACK and the buffer doesn't need to be deleted
   // because it went away with the GPU process.
@@ -208,7 +215,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   ack_pending_ = true;
   // Browser plugin getting destroyed, do a fast ACK.
   if (!background_layer_) {
-    MailboxReleased(mailbox_name, gpu_route_id, gpu_host_id, 0);
+    MailboxReleased(mailbox_name, gpu_route_id, gpu_host_id, 0, false);
     return;
   }
 
@@ -236,7 +243,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
 
   bool current_mailbox_valid = !mailbox_name.empty();
   if (!last_mailbox_valid_) {
-    MailboxReleased(std::string(), gpu_route_id, gpu_host_id, 0);
+    MailboxReleased(std::string(), gpu_route_id, gpu_host_id, 0, false);
     if (!current_mailbox_valid)
       return;
   }

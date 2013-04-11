@@ -183,7 +183,9 @@ TEST_F(TextureLayerTest, SyncImplWhenRemovingFromTree) {
 
 class MockMailboxCallback {
  public:
-  MOCK_METHOD2(Release, void(const std::string& mailbox, unsigned sync_point));
+  MOCK_METHOD3(Release, void(const std::string& mailbox,
+                             unsigned sync_point,
+                             bool lost_resource));
 };
 
 struct CommonMailboxObjects {
@@ -223,7 +225,8 @@ class TextureLayerWithMailboxTest : public TextureLayerTest {
     Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
     EXPECT_CALL(test_data_.mock_callback_,
                 Release(test_data_.mailbox_name1_,
-                        test_data_.sync_point1_)).Times(1);
+                        test_data_.sync_point1_,
+                        false)).Times(1);
     TextureLayerTest::TearDown();
   }
 
@@ -247,7 +250,9 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, test_data_.sync_point1_))
+              Release(test_data_.mailbox_name1_,
+                      test_data_.sync_point1_,
+                      false))
       .Times(1);
   test_layer->SetTextureMailbox(test_data_.mailbox2_);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -256,7 +261,9 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name2_, test_data_.sync_point2_))
+              Release(test_data_.mailbox_name2_,
+                      test_data_.sync_point2_,
+                      false))
       .Times(1);
   test_layer->SetTextureMailbox(TextureMailbox());
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -274,8 +281,9 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         commit_count_(0) {}
 
   // Make sure callback is received on main and doesn't block the impl thread.
-  void ReleaseCallback(unsigned sync_point) {
+  void ReleaseCallback(unsigned sync_point, bool lost_resource) {
     EXPECT_EQ(true, proxy()->IsMainThread());
+    EXPECT_FALSE(lost_resource);
     ++callback_count_;
   }
 
@@ -407,7 +415,9 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
 
   // Test multiple commits without an activation.
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, test_data_.sync_point1_))
+              Release(test_data_.mailbox_name1_,
+                      test_data_.sync_point1_,
+                      false))
       .Times(1);
   pending_layer->SetTextureMailbox(test_data_.mailbox2_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -416,18 +426,20 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   pending_layer->PushPropertiesTo(active_layer.get());
   active_layer->DidBecomeActive();
 
-  EXPECT_CALL(test_data_.mock_callback_, Release(_, _)).Times(0);
+  EXPECT_CALL(test_data_.mock_callback_, Release(_, _, _)).Times(0);
   pending_layer->SetTextureMailbox(test_data_.mailbox1_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
-  EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name2_, _))
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release(test_data_.mailbox_name2_, _, false))
       .Times(1);
   pending_layer->PushPropertiesTo(active_layer.get());
   active_layer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // Test resetting the mailbox.
-  EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release(test_data_.mailbox_name1_, _, false))
       .Times(1);
   pending_layer->SetTextureMailbox(TextureMailbox());
   pending_layer->PushPropertiesTo(active_layer.get());
@@ -436,7 +448,9 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
 
   // Test destructor.
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, test_data_.sync_point1_))
+              Release(test_data_.mailbox_name1_,
+                      test_data_.sync_point1_,
+                      false))
       .Times(1);
   pending_layer->SetTextureMailbox(test_data_.mailbox1_);
 }
@@ -447,7 +461,8 @@ TEST_F(TextureLayerImplWithMailboxTest,
   impl_layer = TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
   ASSERT_TRUE(impl_layer);
 
-  EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release(test_data_.mailbox_name1_, _, false))
       .Times(1);
   impl_layer->SetTextureMailbox(test_data_.mailbox1_);
   impl_layer->WillDraw(host_impl_.active_tree()->resource_provider());
@@ -467,19 +482,20 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   TransferableResourceArray list;
   provider->PrepareSendToParent(resource_ids_to_transfer, &list);
   EXPECT_TRUE(provider->InUseByConsumer(id));
-  EXPECT_CALL(test_data_.mock_callback_, Release(_, _)).Times(0);
+  EXPECT_CALL(test_data_.mock_callback_, Release(_, _, _)).Times(0);
   provider->DeleteResource(id);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
-  EXPECT_CALL(test_data_.mock_callback_, Release(test_data_.mailbox_name1_, _))
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release(test_data_.mailbox_name1_, _, false))
       .Times(1);
   provider->ReceiveFromParent(list);
 }
 
 // Check that ClearClient correctly clears the state so that the impl side
 // doesn't try to use a texture that could have been destroyed.
-class TextureLayerClientTest :
-    public LayerTreeTest,
-    public TextureLayerClient {
+class TextureLayerClientTest
+    : public LayerTreeTest,
+      public TextureLayerClient {
  public:
   TextureLayerClientTest()
       : context_(NULL),

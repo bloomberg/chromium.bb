@@ -61,7 +61,8 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   void MailboxReleased(const std::string& mailbox_name,
                        int gpu_route_id,
                        int gpu_host_id,
-                       unsigned sync_point);
+                       unsigned sync_point,
+                       bool lost_resource);
   int instance_id_;
   int host_routing_id_;
   int last_route_id_;

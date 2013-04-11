@@ -150,7 +150,7 @@ void TextureLayerImpl::FreeTextureMailbox() {
     return;
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
-    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point(), false);
   } else if (external_texture_resource_) {
     DCHECK(!own_mailbox_);
     ResourceProvider* resource_provider =

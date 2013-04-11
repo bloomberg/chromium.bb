@@ -14,16 +14,20 @@ namespace cc {
 
 static void RunCallbackOnMainThread(
     const TextureMailbox::ReleaseCallback& callback,
-    unsigned sync_point) {
-  callback.Run(sync_point);
+    unsigned sync_point,
+    bool lost_resource) {
+  callback.Run(sync_point, lost_resource);
 }
 
 static void PostCallbackToMainThread(
     Thread* main_thread,
     const TextureMailbox::ReleaseCallback& callback,
-    unsigned sync_point) {
-  main_thread->PostTask(
-      base::Bind(&RunCallbackOnMainThread, callback, sync_point));
+    unsigned sync_point,
+    bool lost_resource) {
+  main_thread->PostTask(base::Bind(&RunCallbackOnMainThread,
+                                   callback,
+                                   sync_point,
+                                   lost_resource));
 }
 
 scoped_refptr<TextureLayer> TextureLayer::Create(TextureLayerClient* client) {
@@ -61,7 +65,7 @@ TextureLayer::~TextureLayer() {
       layer_tree_host()->StopRateLimiter(client_->Context3d());
   }
   if (own_mailbox_)
-    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point(), false);
 }
 
 void TextureLayer::ClearClient() {
@@ -127,7 +131,7 @@ void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
   DCHECK(mailbox.IsEmpty() || !mailbox.Equals(texture_mailbox_));
   // If we never commited the mailbox, we need to release it here
   if (own_mailbox_)
-    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point());
+    texture_mailbox_.RunReleaseCallback(texture_mailbox_.sync_point(), false);
   texture_mailbox_ = mailbox;
   own_mailbox_ = true;
 

@@ -89,18 +89,23 @@ class VideoResourceUpdater
 
   bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
 
+  struct RecycleResourceData {
+    unsigned resource_id;
+    gfx::Size resource_size;
+    unsigned resource_format;
+    gpu::Mailbox mailbox;
+  };
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
                               ResourceProvider* resource_provider,
-                              unsigned resource_id,
-                              gfx::Size resource_size,
-                              unsigned resource_format,
-                              gpu::Mailbox mailbox,
-                              unsigned sync_point);
+                              RecycleResourceData data,
+                              unsigned sync_point,
+                              bool lost_resource);
   static void ReturnTexture(ResourceProvider* resource_provider,
                             TextureMailbox::ReleaseCallback callback,
                             unsigned texture_id,
                             gpu::Mailbox mailbox,
-                            unsigned sync_point);
+                            unsigned sync_point,
+                            bool lost_resource);
 
   ResourceProvider* resource_provider_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
