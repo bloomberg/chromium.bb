@@ -23,7 +23,13 @@ IN_PROC_BROWSER_TEST_F(AdViewTest, LoadEventIsCalled) {
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(AdViewTest, AdNetworkIsLoaded) {
+#if defined(OS_WIN)
+// Flaky, or takes too long time on Win7. (http://crbug.com/230271)
+#define MAYBE_AdNetworkIsLoaded DISABLED_AdNetworkIsLoaded
+#else
+#define MAYBE_AdNetworkIsLoaded AdNetworkIsLoaded
+#endif
+IN_PROC_BROWSER_TEST_F(AdViewTest, MAYBE_AdNetworkIsLoaded) {
   ASSERT_TRUE(StartTestServer());
 
   ExtensionTestMessageListener listener("ad-network-loaded", false);
