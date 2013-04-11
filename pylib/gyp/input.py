@@ -223,6 +223,9 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
     gyp.common.ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
+  if not isinstance(build_file_data, dict):
+    raise GypError("%s does not evaluate to a dictionary." % build_file_path)
+
   data[build_file_path] = build_file_data
   aux_data[build_file_path] = {}
 
