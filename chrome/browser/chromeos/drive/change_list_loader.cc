@@ -301,19 +301,64 @@ void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params,
   DCHECK(!callback.is_null());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-
-  // base::Passed() may get evaluated first, so get a pointer to params.
-  LoadFeedParams* params_ptr = params.get();
   scheduler_->GetResourceList(
-      params_ptr->feed_to_load,
-      params_ptr->start_changestamp,
-      params_ptr->search_query,
-      params_ptr->directory_resource_id,
-      base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
+      params->feed_to_load,
+      params->start_changestamp,
+      params->search_query,
+      params->directory_resource_id,
+      base::Bind(&ChangeListLoader::OnGetResourceList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
+                 base::Passed(ScopedVector<ChangeList>()),
                  callback,
                  start_time));
+}
+
+void ChangeListLoader::OnGetResourceList(
+    ScopedVector<ChangeList> change_lists,
+    const LoadFeedListCallback& callback,
+    base::TimeTicks start_time,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // Looks the UMA stats we take here is useless as many methods use this
+  // callback. crbug.com/229407
+  if (change_lists.empty()) {
+    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
+                        base::TimeTicks::Now() - start_time);
+  }
+
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(ScopedVector<ChangeList>(), error);
+    return;
+  }
+
+  // Add the current resource list to the list of collected feeds.
+  DCHECK(resource_list);
+  change_lists.push_back(new ChangeList(*resource_list));
+
+  GURL next_feed_url;
+  if (resource_list->GetNextFeedURL(&next_feed_url) &&
+      !next_feed_url.is_empty()) {
+    // There is the remaining result so fetch it.
+    scheduler_->ContinueGetResourceList(
+        next_feed_url,
+        base::Bind(&ChangeListLoader::OnGetResourceList,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&change_lists),
+                   callback,
+                   start_time));
+    return;
+  }
+
+  // This UMA stats looks also different from what we want. crbug.com/229407
+  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
+                      base::TimeTicks::Now() - start_time);
+
+  // Run the callback so the client can process the retrieved feeds.
+  callback.Run(change_lists.Pass(), DRIVE_FILE_OK);
 }
 
 void ChangeListLoader::LoadDirectoryFromServer(
@@ -546,61 +591,6 @@ void ChangeListLoader::UpdateMetadataFromFeedAfterLoadFromServer(
                             weak_ptr_factory_.GetWeakPtr(),
                             !loaded(),  // is_initial_load
                             callback));
-}
-
-void ChangeListLoader::LoadFromServerAfterGetResourceList(
-    scoped_ptr<LoadFeedParams> params,
-    const LoadFeedListCallback& callback,
-    base::TimeTicks start_time,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (params->change_lists.empty()) {
-    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
-                        base::TimeTicks::Now() - start_time);
-  }
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(params->change_lists.Pass(), error);
-    return;
-  }
-  DCHECK(resource_list);
-
-  GURL next_feed_url;
-  const bool has_next_feed_url =
-      params->load_subsequent_feeds &&
-      resource_list->GetNextFeedURL(&next_feed_url);
-
-  // Add the current feed to the list of collected feeds for this directory.
-  params->change_lists.push_back(new ChangeList(*resource_list));
-
-  // Check if we need to collect more data to complete the directory list.
-  if (has_next_feed_url && !next_feed_url.is_empty()) {
-    // |params| will be passed to the callback and thus nulled. Extract the
-    // pointer so we can use it bellow.
-    LoadFeedParams* params_ptr = params.get();
-    // Kick off the remaining part of the feeds.
-    scheduler_->GetResourceList(
-        next_feed_url,
-        params_ptr->start_changestamp,
-        params_ptr->search_query,
-        params_ptr->directory_resource_id,
-        base::Bind(&ChangeListLoader::LoadFromServerAfterGetResourceList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&params),
-                   callback,
-                   start_time));
-    return;
-  }
-
-  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
-                      base::TimeTicks::Now() - start_time);
-
-  // Run the callback so the client can process the retrieved feeds.
-  callback.Run(params->change_lists.Pass(), DRIVE_FILE_OK);
 }
 
 void ChangeListLoader::LoadIfNeeded(

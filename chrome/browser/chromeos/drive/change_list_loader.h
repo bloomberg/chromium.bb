@@ -130,10 +130,12 @@ class ChangeListLoader {
   void LoadFromServer(scoped_ptr<LoadFeedParams> params,
                       const LoadFeedListCallback& callback);
 
-  // Part of LoadFromServer. Called when DriveScheduler::GetResourceList() is
-  // complete. |callback| must not be null.
-  void LoadFromServerAfterGetResourceList(
-      scoped_ptr<LoadFeedParams> params,
+  // Callback to fetch all the resource list response from the server.
+  // After all the resource list are fetched, |callback|
+  // will be invoked with the collected change lists.
+  // |callback| must not be null.
+  void OnGetResourceList(
+      ScopedVector<ChangeList> change_lists,
       const LoadFeedListCallback& callback,
       base::TimeTicks start_time,
       google_apis::GDataErrorCode status,
