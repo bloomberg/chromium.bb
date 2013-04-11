@@ -6,6 +6,8 @@
 
 import os
 
+USE_GOB = False
+
 SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
 SOURCE_ROOT = os.path.realpath(os.path.join(SOURCE_ROOT, '..', '..'))
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
@@ -33,6 +35,17 @@ CHROMIUM_EMAIL = '@chromium.org'
 CORP_DOMAIN = 'corp.google.com'
 GOLO_DOMAIN = 'golo.chromium.org'
 
+GOB_URL = 'https://%s.googlesource.com'
+GOB_REVIEW_URL = 'https://%s-review.googlesource.com'
+
+PUBLIC_GOB_HOST = 'chromium'
+PUBLIC_GOB_URL = GOB_URL % PUBLIC_GOB_HOST
+PUBLIC_GOB_REVIEW_URL = GOB_REVIEW_URL % PUBLIC_GOB_HOST
+
+INTERNAL_GOB_HOST = 'chrome-internal'
+INTERNAL_GOB_URL = GOB_URL % INTERNAL_GOB_HOST
+INTERNAL_GOB_REVIEW_URL = GOB_REVIEW_URL % INTERNAL_GOB_HOST
+
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
 
@@ -40,11 +53,17 @@ GERRIT_HOST = 'gerrit.chromium.org'
 GERRIT_INT_HOST = 'gerrit-int.chromium.org'
 GIT_HOST = 'git.chromium.org'
 
-GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
-GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
-GERRIT_HTTP_URL = 'https://%s' % GERRIT_HOST
-GIT_HTTP_URL = 'http://%s/git' % GIT_HOST
-CHROMIUM_GOOGLESOURCE_URL = 'https://chromium.googlesource.com/'
+# TODO(szager): Deprecate these variables in favor of (PUBLIC|INTERNAL)_GOB_*
+# once the migration to git-on-borg is complete.  Leaving them intact now to
+# make the transition easier.
+if USE_GOB:
+  GERRIT_SSH_URL = PUBLIC_GOB_URL
+  GERRIT_INT_SSH_URL = INTERNAL_GOB_URL
+  GIT_HTTP_URL = PUBLIC_GOB_URL
+else:
+  GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
+  GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
+  GIT_HTTP_URL = 'http://%s/git' % GIT_HOST
 
 REPO_PROJECT = 'external/repo'
 REPO_URL = '%s/%s' % (GIT_HTTP_URL, REPO_PROJECT)

@@ -214,8 +214,8 @@ class BaseParser(object):
       path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
     if path is None:
       logging.debug(debug_msg, 'git submodule')
-      chrome_url = os.path.join(constants.CHROMIUM_GOOGLESOURCE_URL,
-                                '%s.git' % constants.CHROMIUM_SRC_PROJECT)
+      chrome_url = '%s/%s.git' % (
+          constants.PUBLIC_GOB_URL, constants.CHROMIUM_SRC_PROJECT)
       path = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
       path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
     if path is None:
