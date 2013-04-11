@@ -107,6 +107,7 @@
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'source_dir': '<(java_in_dir)/src',
     'apk_install_stamp': '<(intermediate_dir)/apk_install.stamp',
+    'strip_output_paths': [],
     'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
@@ -135,7 +136,15 @@
     ['native_lib_target != "" and component == "shared_library"', {
       'dependencies': [
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
-      ]
+      ],
+      'variables': {
+        # Add a fake output to force the build to always re-run this step. This
+        # is required because the real inputs are not known at gyp-time and
+        # changing base.so may not trigger changes to dependent libraries.
+        'strip_output_paths': [
+          '<(intermediate_dir)/<(strip_stamp).fake',
+        ],
+      },
     }],
     ['native_lib_target != ""', {
       'variables': {
@@ -210,6 +219,7 @@
           ],
           'outputs': [
             '<(strip_stamp)',
+            '<@(strip_output_paths)',
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/strip_library_for_apk.py',
@@ -243,7 +253,12 @@
                 '<(strip_stamp)',
               ],
               'outputs': [
-                '<(push_stamp)'
+                '<(push_stamp)',
+                # If a user switches the connected device, new libraries may
+                # need to be pushed even if there have been no changes. To
+                # ensure that the libraries on the device are always
+                # up-to-date, this step should always be triggered.
+                '<(push_stamp).fake',
               ],
               'action': [
                 'python', '<(DEPTH)/build/android/gyp/push_libraries.py',
@@ -318,6 +333,11 @@
           ],
           'outputs': [
             '<(apk_install_stamp)'
+            # If a user switches the connected device, the APK may need to be
+            # installed even if there have been no changes. To ensure that the
+            # APK on the device is always up-to-date, this step should always
+            # be triggered.
+            '<(apk_install_stamp).fake',
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/apk_install.py',
