@@ -15,6 +15,20 @@
 
 namespace gestures {
 
+class Origin {
+  // Origin keeps track of the origins of certin events.
+ public:
+  void PushGesture(const Gesture& result);
+
+  // Return the last time when the buttons go up
+  stime_t ButtonGoingUp(int button) const;
+
+ private:
+  stime_t button_going_up_left_;
+  stime_t button_going_up_middle_;
+  stime_t button_going_up_right_;
+};
+
 class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(MultitouchMouseInterpreterTest, SimpleTest);
  public:
@@ -44,6 +58,17 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   Gesture extra_result_;
 
   ScrollManager scroll_manager_;
+
+  Origin origin_;
+
+  // Depth of recent scroll event buffer used to compute click.
+  IntProperty click_buffer_depth_;
+  // Maximum distance for a click
+  DoubleProperty click_max_distance_;
+
+  // Lead time of a button going up versus a finger lifting off
+  DoubleProperty click_left_button_going_up_lead_time_;
+  DoubleProperty click_right_button_going_up_lead_time_;
 };
 
 }  // namespace gestures

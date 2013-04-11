@@ -11,6 +11,27 @@
 
 namespace gestures {
 
+void Origin::PushGesture(const Gesture& result) {
+  if (result.type == kGestureTypeButtonsChange) {
+    if (result.details.buttons.up & GESTURES_BUTTON_LEFT)
+      button_going_up_left_ = result.end_time;
+    if (result.details.buttons.up & GESTURES_BUTTON_MIDDLE)
+      button_going_up_middle_ = result.end_time;
+    if (result.details.buttons.up & GESTURES_BUTTON_RIGHT)
+      button_going_up_right_ = result.end_time;
+  }
+}
+
+stime_t Origin::ButtonGoingUp(int button) const {
+  if (button == GESTURES_BUTTON_LEFT)
+    return button_going_up_left_;
+  if (button == GESTURES_BUTTON_MIDDLE)
+    return button_going_up_middle_;
+  if (button == GESTURES_BUTTON_RIGHT)
+    return button_going_up_right_;
+  return 0;
+}
+
 MultitouchMouseInterpreter::MultitouchMouseInterpreter(
     PropRegistry* prop_reg,
     Tracer* tracer)
@@ -19,7 +40,13 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
       scroll_buffer_(15),
       prev_gesture_type_(kGestureTypeNull),
       current_gesture_type_(kGestureTypeNull),
-      scroll_manager_(prop_reg) {
+      scroll_manager_(prop_reg),
+      click_buffer_depth_(prop_reg, "Click Buffer Depth", 10),
+      click_max_distance_(prop_reg, "Click Max Distance", 1.0),
+      click_left_button_going_up_lead_time_(prop_reg,
+          "Click Left Button Going Up Lead Time", 0.01),
+      click_right_button_going_up_lead_time_(prop_reg,
+          "Click Right Button Going Up Lead Time", 0.1) {
   InitName();
 }
 
@@ -48,11 +75,15 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   extra_result_.type = kGestureTypeNull;
 
   InterpretMouseEvent(*state_buffer_.Get(1), *state_buffer_.Get(0), &result_);
+  origin_.PushGesture(result_);
 
+  Gesture* result;
   if (result_.type == kGestureTypeNull)
-    InterpretMultitouchEvent(&result_);
+    result = &result_;
   else
-    InterpretMultitouchEvent(&extra_result_);
+    result = &extra_result_;
+  InterpretMultitouchEvent(result);
+  origin_.PushGesture(*result);
 
   prev_gs_fingers_ = gs_fingers_;
   prev_gesture_type_ = current_gesture_type_;
@@ -81,17 +112,56 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
     if (result && result->type == kGestureTypeFling)
       result->details.fling.vx = 0.0;
   } else if (gs_fingers_.size() > 0) {
-    // TODO(clchiou): For now, any finger movements are interpreted as
-    // scrolling.
-    current_gesture_type_ = kGestureTypeScroll;
-    if (!scroll_manager_.ComputeScroll(state_buffer_,
-                                       prev_gs_fingers_,
-                                       gs_fingers_,
-                                       prev_gesture_type_,
-                                       prev_result_,
-                                       result,
-                                       &scroll_buffer_))
+    // In general, finger movements are interpreted as scroll, but as
+    // clicks and scrolls on multi-touch mice are both single-finger
+    // gesture, we have to recognize and separate clicks from scrolls,
+    // when a user is actually clicking.
+    //
+    // This is how we do for now: We look for characteristic patterns of
+    // clicks, and if we find one, we hold off emitting scroll gesture for
+    // a few time frames to prevent premature scrolls.
+    //
+    // The patterns we look for:
+    // * Small finger movements when button is down
+    // * Finger movements after button goes up
+
+    bool update_scroll_buffer =
+        scroll_manager_.ComputeScroll(state_buffer_,
+                                      prev_gs_fingers_,
+                                      gs_fingers_,
+                                      prev_gesture_type_,
+                                      prev_result_,
+                                      result,
+                                      &scroll_buffer_);
+    current_gesture_type_ = result->type;
+
+    bool hold_off_scroll = false;
+    const HardwareState& state = *state_buffer_.Get(0);
+    // Check small finger movements when button is down
+    if (state.buttons_down) {
+      float dist_sq, dt;
+      scroll_buffer_.GetSpeedSq(click_buffer_depth_.val_, &dist_sq, &dt);
+      if (dist_sq < click_max_distance_.val_ * click_max_distance_.val_)
+        hold_off_scroll = true;
+    }
+    // Check button going up lead time
+    stime_t now = state.timestamp;
+    stime_t button_left_age =
+        now - origin_.ButtonGoingUp(GESTURES_BUTTON_LEFT);
+    stime_t button_right_age =
+        now - origin_.ButtonGoingUp(GESTURES_BUTTON_RIGHT);
+    hold_off_scroll = hold_off_scroll ||
+        (button_left_age < click_left_button_going_up_lead_time_.val_) ||
+        (button_right_age < click_right_button_going_up_lead_time_.val_);
+
+    if (hold_off_scroll && result->type == kGestureTypeScroll) {
+      current_gesture_type_ = kGestureTypeNull;
+      result->type = kGestureTypeNull;
+    }
+    if (current_gesture_type_ == kGestureTypeScroll &&
+        !update_scroll_buffer) {
       return;
+    }
   }
   scroll_manager_.UpdateScrollEventBuffer(current_gesture_type_,
                                           &scroll_buffer_);
