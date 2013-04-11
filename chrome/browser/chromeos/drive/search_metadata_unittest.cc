@@ -4,26 +4,21 @@
 
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
-#include "chrome/browser/google_apis/fake_drive_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 
 namespace {
+
 const int kDefaultAtMostNumMatches = 10;
-}
+
+}  // namespace
 
 class SearchMetadataTest : public testing::Test {
  protected:
@@ -32,40 +27,16 @@ class SearchMetadataTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
-    fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
-
-    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
-
-    drive_cache_.reset(new DriveCache(
-        DriveCache::GetCacheRootPath(profile_.get()),
-        blocking_task_runner_,
-        fake_free_disk_space_getter_.get()));
-
-    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
-
     resource_metadata_.reset(new DriveResourceMetadata(
-        drive_cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+        temp_dir_.path(),
         blocking_task_runner_));
-
-    file_system_.reset(new DriveFileSystem(profile_.get(),
-                                           drive_cache_.get(),
-                                           fake_drive_service_.get(),
-                                           drive_webapps_registry_.get(),
-                                           resource_metadata_.get(),
-                                           blocking_task_runner_));
-    file_system_->Initialize();
 
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
@@ -73,29 +44,83 @@ class SearchMetadataTest : public testing::Test {
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_EQ(DRIVE_FILE_OK, error);
 
-    file_system_->change_list_loader()->LoadFromServerIfNeeded(
-        DirectoryFetchInfo(),
-        google_apis::test_util::CreateCopyResultCallback(&error));
+    AddEntriesToMetadata();
+  }
+
+  void AddEntriesToMetadata() {
+    DriveEntryProto entry;
+
+    AddEntryToMetadata(GetDirectoryEntry(
+        util::kDriveMyDriveRootDirName, "root", 100,
+        util::kDriveGrandRootSpecialResourceId));
+
+    AddEntryToMetadata(GetDirectoryEntry(
+        "Directory 1", "dir1", 1, "root"));
+    AddEntryToMetadata(GetFileEntry(
+        "SubDirectory File 1.txt", "file1a", 2, "dir1"));
+
+    entry = GetFileEntry(
+        "Shared To The Account Owner.txt", "file1b", 3, "dir1");
+    entry.set_shared_with_me(true);
+    AddEntryToMetadata(entry);
+
+    AddEntryToMetadata(GetDirectoryEntry(
+        "Directory 2 excludeDir-test", "dir2", 4, "root"));
+
+    AddEntryToMetadata(GetDirectoryEntry(
+        "Slash \xE2\x88\x95 in directory", "dir3", 5, "root"));
+    AddEntryToMetadata(GetFileEntry(
+        "Slash SubDir File.txt", "file3a", 6, "dir3"));
+
+    entry = GetFileEntry(
+        "Document 1 excludeDir-test", "doc1", 7, "root");
+    entry.mutable_file_specific_info()->set_is_hosted_document(true);
+    entry.mutable_file_specific_info()->set_document_extension(".gdoc");
+    AddEntryToMetadata(entry);
+  }
+
+  DriveEntryProto GetFileEntry(const std::string& name,
+                               const std::string& resource_id,
+                               int64 last_accessed,
+                               const std::string& parent_resource_id) {
+    DriveEntryProto entry;
+    entry.set_title(name);
+    entry.set_resource_id(resource_id);
+    entry.set_parent_resource_id(parent_resource_id);
+    entry.mutable_file_info()->set_last_accessed(last_accessed);
+    return entry;
+  }
+
+  DriveEntryProto GetDirectoryEntry(const std::string& name,
+                                    const std::string& resource_id,
+                                    int64 last_accessed,
+                                    const std::string& parent_resource_id) {
+    DriveEntryProto entry;
+    entry.set_title(name);
+    entry.set_resource_id(resource_id);
+    entry.set_parent_resource_id(parent_resource_id);
+    entry.mutable_file_info()->set_last_accessed(last_accessed);
+    entry.mutable_file_info()->set_is_directory(true);
+    return entry;
+  }
+
+  void AddEntryToMetadata(const DriveEntryProto& entry) {
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    base::FilePath drive_path;
+
+    resource_metadata_->AddEntry(
+        entry,
+        google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(DRIVE_FILE_OK, error);
   }
 
-  virtual void TearDown() OVERRIDE {
-    drive_cache_.reset();
-  }
-
- protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> drive_cache_;
-  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
-  scoped_ptr<DriveFileSystem> file_system_;
 };
 
 TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
@@ -126,8 +151,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
+  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 // This test checks if |FindAndHighlight| does case-insensitive search.
@@ -146,8 +171,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(0).path);
+  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
@@ -164,19 +189,15 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(2U, result->size());
 
-  // The results should be sorted by the last accessed time.
-  EXPECT_EQ(12970368000000000LL,
-            result->at(0).entry_proto.file_info().last_accessed());
-  EXPECT_EQ(12969849600000000LL,
-            result->at(1).entry_proto.file_info().last_accessed());
+  // The results should be sorted by the last accessed time in descending order.
+  EXPECT_EQ(6, result->at(0).entry_proto.file_info().last_accessed());
+  EXPECT_EQ(2, result->at(1).entry_proto.file_info().last_accessed());
 
   // All base names should contain "File".
-  EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe(
-          "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
-      result->at(0).path);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-      "drive/root/Directory 1/SubDirectory File 1.txt"), result->at(1).path);
+  EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",
+            result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
+            result->at(1).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
@@ -194,10 +215,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe(
-          "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt"),
-      result->at(0).path);
+  EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
@@ -213,9 +232,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1"),
-      result->at(0).path);
+  EXPECT_EQ("drive/root/Directory 1", result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
@@ -232,9 +249,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
 
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-                "drive/root/Document 1 excludeDir-test.gdoc"),
-            result->at(0).path);
+  EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
@@ -265,9 +281,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-                "drive/root/Directory 1/Shared To The Account Owner.txt"),
-            result->at(0).path);
+  EXPECT_EQ("drive/root/Directory 1/Shared To The Account Owner.txt",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
@@ -285,12 +300,10 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(2U, result->size());
 
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-                "drive/root/Document 1 excludeDir-test.gdoc"),
-            result->at(0).path);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-                "drive/root/Directory 2 excludeDir-test"),
-            result->at(1).path);
+  EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
+            result->at(0).path.AsUTF8Unsafe());
+  EXPECT_EQ("drive/root/Directory 2 excludeDir-test",
+            result->at(1).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
@@ -308,9 +321,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_EQ(1U, result->size());
 
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(
-                "drive/root/Document 1 excludeDir-test.gdoc"),
-            result->at(0).path);
+  EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
+            result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_ZeroMatches) {
