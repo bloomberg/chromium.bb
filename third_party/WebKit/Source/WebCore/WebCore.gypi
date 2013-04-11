@@ -1145,8 +1145,6 @@
             'page/DOMTimer.cpp',
             'page/DOMTimer.h',
             'page/DOMWindow.cpp',
-            'page/DOMWindowExtension.cpp',
-            'page/DOMWindowExtension.h',
             'page/DOMWindowPagePopup.cpp',
             'page/DOMWindowPagePopup.h',
             'page/DOMWindowProperty.cpp',
