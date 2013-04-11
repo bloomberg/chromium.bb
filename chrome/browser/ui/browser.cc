@@ -413,8 +413,7 @@ Browser::Browser(const CreateParams& params)
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
-  base::FilePath profile_path = profile_->GetPath();
-  ProfileMetrics::LogProfileLaunch(profile_path);
+  ProfileMetrics::LogProfileLaunch(profile_);
 
   window_ = params.window ? params.window : CreateBrowserWindow(this);
 

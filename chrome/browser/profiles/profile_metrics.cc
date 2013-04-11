@@ -8,10 +8,14 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace {
 
@@ -223,10 +227,18 @@ void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
                             NUM_PROFILE_SYNC_METRICS);
 }
 
-void ProfileMetrics::LogProfileLaunch(const base::FilePath& profile_path) {
+void ProfileMetrics::LogProfileLaunch(Profile* profile) {
+  base::FilePath profile_path = profile->GetPath();
   UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
+
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  if (service->ProfileIsManaged()) {
+    content::RecordAction(
+        content::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
+  }
 }
 
 void ProfileMetrics::LogProfileSyncSignIn(const base::FilePath& profile_path) {

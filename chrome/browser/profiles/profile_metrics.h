@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 
+class Profile;
 class ProfileManager;
 
 namespace base {
@@ -76,7 +77,7 @@ class ProfileMetrics {
 
   // These functions should only be called on the UI thread because they hook
   // into g_browser_process through a helper function.
-  static void LogProfileLaunch(const base::FilePath& profile_path);
+  static void LogProfileLaunch(Profile* profile);
   static void LogProfileSyncSignIn(const base::FilePath& profile_path);
   static void LogProfileUpdate(const base::FilePath& profile_path);
 };

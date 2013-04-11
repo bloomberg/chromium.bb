@@ -272,13 +272,6 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
     }
   }
 
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  if (service->ProfileIsManaged()) {
-    content::RecordAction(
-        UserMetricsAction("ManagedMode_NewManagedUserWindow"));
-  }
-
   if (incognito) {
     content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
     OpenEmptyWindow(profile->GetOffTheRecordProfile(), desktop_type);
