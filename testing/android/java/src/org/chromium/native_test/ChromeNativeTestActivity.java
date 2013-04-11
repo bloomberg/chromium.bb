@@ -15,6 +15,9 @@ import org.chromium.base.ChromiumActivity;
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
 
+// TODO(cjhopman): This should not refer to content. NativeLibraries should be moved to base.
+import org.chromium.content.app.NativeLibraries;
+
 import java.io.File;
 
 // Android's NativeActivity is mostly useful for pure-native code.
@@ -26,27 +29,16 @@ public class ChromeNativeTestActivity extends ChromiumActivity {
     // We post a delayed task to run tests so that we do not block onCreate().
     private static final long RUN_TESTS_DELAY_IN_MS = 300;
 
-    // Name of our shlib as obtained from a string resource.
-    private String mLibrary;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mLibrary = getResources().getString(R.string.native_library);
-        if ((mLibrary == null) || mLibrary.startsWith("replace")) {
-            nativeTestFailed();
-            return;
-        }
-
         // Needed by path_utils_unittest.cc
         PathUtils.setPrivateDataDirectorySuffix("chrome");
 
         // Needed by system_monitor_unittest.cc
         PowerMonitor.createForTests(this);
 
-
-        loadLibrary();
+        loadLibraries();
         Bundle extras = this.getIntent().getExtras();
         if (extras != null && extras.containsKey(EXTRA_RUN_IN_SUB_THREAD)) {
             // Create a new thread and run tests on it.
@@ -80,10 +72,12 @@ public class ChromeNativeTestActivity extends ChromiumActivity {
         Log.e(TAG, "[ RUNNER_FAILED ] could not load native library");
     }
 
-    private void loadLibrary() {
-        Log.i(TAG, "loading: " + mLibrary);
-        System.loadLibrary(mLibrary);
-        Log.i(TAG, "loaded: " + mLibrary);
+    private void loadLibraries() {
+        for (String library: NativeLibraries.libraries) {
+            Log.i(TAG, "loading: " + library);
+            System.loadLibrary(library);
+            Log.i(TAG, "loaded: " + library);
+        }
     }
 
     private native void nativeRunTests(String filesDir, Context appContext);

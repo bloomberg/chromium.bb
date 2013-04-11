@@ -1254,9 +1254,6 @@
 
         'p2p_apis%' : 0,
 
-        # TODO(jrg): when 'gtest_target_type'=='shared_library' and
-        # OS==android, make all gtest_targets depend on
-        # testing/android/native_test.gyp:native_test_apk.
         'gtest_target_type%': 'shared_library',
 
         # Uses system APIs for decoding audio and video.

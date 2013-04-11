@@ -84,11 +84,6 @@
         }],
         ['"<(gtest_target_type)"=="shared_library"', {
           'dependencies': [
-            # The first item is simply the template.  We add as a dep
-            # to make sure it builds in ungenerated form.  TODO(jrg):
-            # once stable, transition to a test-only (optional)
-            # target.
-            '../testing/android/native_test.gyp:native_test_apk',
             # Unit test bundles packaged as an apk.
             '../android_webview/android_webview.gyp:android_webview_unittests_apk',
             '../base/base.gyp:base_unittests_apk',

@@ -56,6 +56,7 @@
              '<(DEPTH)/testing/android/generate_native_test.py',
              '<(input_shlib_path)',
              '>@(input_jars_paths)',
+             '<!@(find <(DEPTH)/testing/android/java)',
            ],
            'outputs': [
              '<(generate_native_test_stamp)',

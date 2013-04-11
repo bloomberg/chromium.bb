@@ -10,7 +10,9 @@ public class NativeLibraries {
     // array defined, and then the build system creates a version of the file
     // with the real list of libraries required (which changes based upon which
     // .apk is being built).
-    static String[] libraries
+    // TODO(cjhopman): This is public since it is referenced by ChromeNativeTestActivity.java
+    // directly. The two ways of library loading should be refactored into one.
+    public static String[] libraries
 #include <native_libraries_array.h>
       ;
 }
