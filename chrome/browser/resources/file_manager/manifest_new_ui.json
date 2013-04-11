@@ -193,6 +193,7 @@
         "js/file_copy_manager.js",
         "js/path_util.js",
         "js/util.js",
+        "js/test_util.js",
         "js/background.js"]
     },
     // chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp is the image loader extension.

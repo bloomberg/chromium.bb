@@ -192,6 +192,7 @@
     "persistent": false,
     "scripts": ["js/file_copy_manager.js",
                 "js/path_util.js",
-                "js/util.js"]
+                "js/util.js",
+                "js/test_util.js"]
   }
 }

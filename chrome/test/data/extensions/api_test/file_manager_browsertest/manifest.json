@@ -1,15 +1,16 @@
 {
+  // chrome-extension://hoobinhbdbiehknkpbpejbbpdbkdjmoco/
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBjsTE4ocXJWzgcCDCUcsPASoRCGaTHrHn6b4zDTCayTuJtyGKzw4xZPMiG4dbEbmSAwEU7UCoyJAM1XfLS7UQ/Zz7ft8wpZkSS8/PJW+E4Qu++tMS0csj2Wdrrd2c5yyWxlJ+H9o2ivwtwuxs7pd+LXt+gsBA0epnT04T9EvOTQIDAQAB",
   "name": "chrome file manager browser tests",
   "version": "0.1",
+  "incognito": "split",  // Run a separate instance for the incognito mode.
   "manifest_version": 2,
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js", "test_cases.js"]
   },
   "permissions": [
     "tabs",
     "chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco/*",
-    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/*",
-    "chrome://files/*"
+    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/*"
   ]
 }

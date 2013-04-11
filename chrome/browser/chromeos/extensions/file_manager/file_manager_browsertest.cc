@@ -72,8 +72,14 @@ struct TestDirectoryInfo {
 // The base test class. Used by FileManagerBrowserLocalTest and
 // FileManagerBrowserDriveTest.
 // TODO(satorux): Add the latter: crbug.com/224534.
-class FileManagerBrowserTestBase : public ExtensionApiTest {
+// The boolean parameter, retrieved by GetParam(), is true if testing in the
+// guest mode. See SetUpCommandLine() below for details.
+class FileManagerBrowserTestBase : public ExtensionApiTest,
+                                   public ::testing::WithParamInterface<bool> {
  protected:
+  // Adds an incognito and guest-mode flags for tests in the guest mode.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
   // Loads the file manager extension, navigating it to |directory_path| for
   // testing, and waits for it to finish initializing. This is invoked at the
   // start of each test (it crashes if run in SetUp).
@@ -121,6 +127,15 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   void DoTestKeyboardDelete();
 };
 
+void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
+  bool in_guest_mode = GetParam();
+  if (in_guest_mode) {
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+  ExtensionApiTest::SetUpCommandLine(command_line);
+}
+
 void FileManagerBrowserTestBase::StartFileManager(
     const std::string& directory_path) {
   std::string file_manager_url =
@@ -141,7 +156,9 @@ void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
   const extensions::Extension* extension = LoadExtensionAsComponent(path);
   ASSERT_TRUE(extension);
 
-  ExtensionTestMessageListener listener("which test", true);
+  bool in_guest_mode = GetParam();
+  ExtensionTestMessageListener listener(
+      in_guest_mode ? "which test guest" : "which test non-guest", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply(test_name);
 }
@@ -161,7 +178,7 @@ void FileManagerBrowserTestBase::CreateTestFilesAndDirectories() {
 void FileManagerBrowserTestBase::DoTestFileDisplay() {
   ResultCatcher catcher;
 
-  StartTest("file display");
+  StartTest("fileDisplay");  // Run testcase.fileDisplay in test_cases.js.
 
   ExtensionTestMessageListener listener("initial check done", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -177,7 +194,7 @@ void FileManagerBrowserTestBase::DoTestKeyboardCopy() {
   ASSERT_FALSE(PathExists(copy_path));
 
   ResultCatcher catcher;
-  StartTest("keyboard copy");
+  StartTest("keyboardCopy");  // Run testcase.keyboardCopy in test_cases.js.
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
@@ -195,7 +212,7 @@ void FileManagerBrowserTestBase::DoTestKeyboardDelete() {
   ASSERT_TRUE(PathExists(delete_path));
 
   ResultCatcher catcher;
-  StartTest("keyboard delete");
+  StartTest("keyboardDelete");  // Run testcase.keyboardDelete in test_cases.js.
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   ASSERT_TRUE(WaitUntilFileNotPresent(delete_path));
@@ -310,10 +327,7 @@ bool FileNotPresent(const base::FilePath& path) {
   return !file_util::PathExists(path);
 };
 
-// The boolean parameter, retrieved by GetParam(), is true if testing in the
-// guest mode. See SetUpCommandLine() below for details.
-class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
-                                    public ::testing::WithParamInterface<bool> {
+class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
@@ -325,15 +339,6 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase,
     CreateTestFilesAndDirectories();
 
     ExtensionApiTest::SetUp();
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    bool in_guest_mode = GetParam();
-    if (in_guest_mode) {
-      command_line->AppendSwitch(chromeos::switches::kGuestSession);
-      command_line->AppendSwitch(switches::kIncognito);
-    }
-    ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
  protected:
@@ -500,6 +505,11 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase,
   drive::DriveSystemService* system_service_;
   bool waiting_for_directory_change_;
 };
+
+// Don't test Drive in the guest mode as it's not supported.
+INSTANTIATE_TEST_CASE_P(InNonGuestMode,
+                        FileManagerBrowserDriveTest,
+                        ::testing::Values(false));
 
 void FileManagerBrowserDriveTest::CreateTestFile(
     const std::string& name,
@@ -693,19 +703,19 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
   DoTestKeyboardDelete();
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestFileDisplay) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestFileDisplay) {
   StartFileManager("/drive/root");
 
   DoTestFileDisplay();
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestKeyboardCopy) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   StartFileManager("/drive/root");
 
   DoTestKeyboardCopy();
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerBrowserDriveTest, TestKeyboardDelete) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
   StartFileManager("/drive/root");
 
   DoTestKeyboardDelete();
