@@ -126,13 +126,13 @@ static inline bool isCSSTokenAString(int yytype)
 %token CHARSET_SYM
 %token NAMESPACE_SYM
 %token VARFUNCTION
-%token WEBKIT_RULE_SYM
-%token WEBKIT_DECLS_SYM
+%token INTERNAL_DECLS_SYM
+%token INTERNAL_RULE_SYM
+%token INTERNAL_SELECTOR_SYM
+%token INTERNAL_VALUE_SYM
 %token WEBKIT_KEYFRAME_RULE_SYM
 %token WEBKIT_KEYFRAMES_SYM
-%token WEBKIT_VALUE_SYM
 %token WEBKIT_MEDIAQUERY_SYM
-%token WEBKIT_SELECTOR_SYM
 %token WEBKIT_REGION_RULE_SYM
 %token WEBKIT_VIEWPORT_RULE_SYM
 #if ENABLE_CSS3_CONDITIONAL_RULES
@@ -332,19 +332,19 @@ static inline bool isCSSTokenAString(int yytype)
 
 stylesheet:
     maybe_space maybe_charset maybe_sgml rule_list
-  | webkit_rule maybe_space
-  | webkit_decls maybe_space
-  | webkit_value maybe_space
+  | internal_decls maybe_space
+  | internal_rule maybe_space
+  | internal_selector maybe_space
+  | internal_value maybe_space
   | webkit_mediaquery maybe_space
-  | webkit_selector maybe_space
   | webkit_keyframe_rule maybe_space
 #if ENABLE_CSS3_CONDITIONAL_RULES
   | webkit_supports_condition maybe_space
 #endif
   ;
 
-webkit_rule:
-    WEBKIT_RULE_SYM '{' maybe_space valid_rule maybe_space '}' {
+internal_rule:
+    INTERNAL_RULE_SYM '{' maybe_space valid_rule maybe_space '}' {
         parser->m_rule = $4;
     }
 ;
@@ -355,14 +355,14 @@ webkit_keyframe_rule:
     }
 ;
 
-webkit_decls:
-    WEBKIT_DECLS_SYM '{' maybe_space_before_declaration declaration_list '}' {
+internal_decls:
+    INTERNAL_DECLS_SYM '{' maybe_space_before_declaration declaration_list '}' {
         /* can be empty */
     }
 ;
 
-webkit_value:
-    WEBKIT_VALUE_SYM '{' maybe_space expr '}' {
+internal_value:
+    INTERNAL_VALUE_SYM '{' maybe_space expr '}' {
         if ($4) {
             parser->m_valueList = parser->sinkFloatingValueList($4);
             int oldParsedProperties = parser->m_parsedProperties.size();
@@ -379,8 +379,8 @@ webkit_mediaquery:
      }
 ;
 
-webkit_selector:
-    WEBKIT_SELECTOR_SYM '{' maybe_space selector_list '}' {
+internal_selector:
+    INTERNAL_SELECTOR_SYM '{' maybe_space selector_list '}' {
         if ($4) {
             if (parser->m_selectorListForParseSelector)
                 parser->m_selectorListForParseSelector->adoptSelectorVector(*$4);

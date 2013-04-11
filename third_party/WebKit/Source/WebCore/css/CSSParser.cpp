@@ -463,7 +463,7 @@ PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const 
 {
     setStyleSheet(sheet);
     m_allowNamespaceDeclarations = false;
-    setupParser("@-webkit-rule{", string, "} ");
+    setupParser("@-internal-rule{", string, "} ");
     cssyyparse(this);
     return m_rule.release();
 }
@@ -1302,7 +1302,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
 {
     setStyleSheet(contextStyleSheet);
 
-    setupParser("@-webkit-value{", string, "} ");
+    setupParser("@-internal-value{", string, "} ");
 
     m_id = propertyID;
     m_important = important;
@@ -1351,7 +1351,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
 
 bool CSSParser::parseColor(const String& string)
 {
-    setupParser("@-webkit-decls{color:", string, "} ");
+    setupParser("@-internal-decls{color:", string, "} ");
     cssyyparse(this);
     m_rule = 0;
 
@@ -1377,7 +1377,7 @@ void CSSParser::parseSelector(const String& string, CSSSelectorList& selectorLis
 {
     m_selectorListForParseSelector = &selectorList;
 
-    setupParser("@-webkit-selector{", string, "}");
+    setupParser("@-internal-selector{", string, "}");
 
     cssyyparse(this);
 
@@ -1395,7 +1395,7 @@ PassRefPtr<StylePropertySet> CSSParser::parseDeclaration(const String& string, S
 {
     setStyleSheet(contextStyleSheet);
 
-    setupParser("@-webkit-decls{", string, "} ");
+    setupParser("@-internal-decls{", string, "} ");
     cssyyparse(this);
     m_rule = 0;
 
@@ -1410,8 +1410,8 @@ PassRefPtr<StylePropertySet> CSSParser::parseDeclaration(const String& string, S
 
 bool CSSParser::parseDeclaration(StylePropertySet* declaration, const String& string, PassRefPtr<CSSRuleSourceData> prpRuleSourceData, StyleSheetContents* contextStyleSheet)
 {
-    // Length of the "@-webkit-decls{" prefix.
-    static const unsigned prefixLength = 15;
+    // Length of the "@-internal-decls{" prefix.
+    static const unsigned prefixLength = 17;
 
     setStyleSheet(contextStyleSheet);
 
@@ -1421,7 +1421,7 @@ bool CSSParser::parseDeclaration(StylePropertySet* declaration, const String& st
         m_currentRuleDataStack->append(ruleSourceData);
     }
 
-    setupParser("@-webkit-decls{", string, "} ");
+    setupParser("@-internal-decls{", string, "} ");
     cssyyparse(this);
     m_rule = 0;
 
@@ -8763,7 +8763,7 @@ bool CSSParser::cssGridLayoutEnabled() const
 #if ENABLE(CSS_REGIONS)
 bool CSSParser::parseFlowThread(const String& flowName)
 {
-    setupParser("@-webkit-decls{-webkit-flow-into:", flowName, "}");
+    setupParser("@-internal-decls{-webkit-flow-into:", flowName, "}");
     cssyyparse(this);
 
     m_rule = 0;
@@ -10289,25 +10289,14 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
 
     case '-':
         switch (length) {
-        case 13:
-            if (!hasEscape && isEqualToCSSIdentifier(name + 2, "webkit-rule"))
-                m_token = WEBKIT_RULE_SYM;
-            return;
-
-        case 14:
-            if (hasEscape)
-                return;
-
-            // Checking the last character first could further reduce the possibile cases.
-            if (isASCIIAlphaCaselessEqual(name[13], 's') && isEqualToCSSIdentifier(name + 2, "webkit-decl"))
-                m_token = WEBKIT_DECLS_SYM;
-            else if (isASCIIAlphaCaselessEqual(name[13], 'e') && isEqualToCSSIdentifier(name + 2, "webkit-valu"))
-                m_token = WEBKIT_VALUE_SYM;
-            return;
-
         case 15:
             if (hasEscape)
                 return;
+
+            if (isEqualToCSSIdentifier(name + 2, "internal-rule")) {
+                m_token = INTERNAL_RULE_SYM;
+                return;
+            }
 
 #if ENABLE(CSS_REGIONS)
             if (isASCIIAlphaCaselessEqual(name[14], 'n') && isEqualToCSSIdentifier(name + 2, "webkit-regio")) {
@@ -10321,12 +10310,21 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             }
             return;
 
+        case 16:
+            if (hasEscape)
+                return;
+
+            // Checking the last character first could further reduce the possibile cases.
+            if (isASCIIAlphaCaselessEqual(name[15], 's') && isEqualToCSSIdentifier(name + 2, "internal-decl"))
+                m_token = INTERNAL_DECLS_SYM;
+            else if (isASCIIAlphaCaselessEqual(name[15], 'e') && isEqualToCSSIdentifier(name + 2, "internal-valu"))
+                m_token = INTERNAL_VALUE_SYM;
+            return;
+
         case 17:
             if (hasEscape)
                 return;
 
-            if (isASCIIAlphaCaselessEqual(name[16], 'r') && isEqualToCSSIdentifier(name + 2, "webkit-selecto"))
-                m_token = WEBKIT_SELECTOR_SYM;
 #if ENABLE(CSS_DEVICE_ADAPTATION)
             else if (isASCIIAlphaCaselessEqual(name[16], 't') && isEqualToCSSIdentifier(name + 2, "webkit-viewpor"))
                 m_token = WEBKIT_VIEWPORT_RULE_SYM;
@@ -10339,6 +10337,11 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             return;
 
         case 19:
+            if (!hasEscape && isASCIIAlphaCaselessEqual(name[18], 'r') && isEqualToCSSIdentifier(name + 2, "internal-selecto")) {
+                m_token = INTERNAL_SELECTOR_SYM;
+                return;
+            }
+
             if (isEqualToCSSIdentifier(name + 2, "webkit-mediaquery")) {
                 m_parsingMode = MediaQueryMode;
                 m_token = WEBKIT_MEDIAQUERY_SYM;
