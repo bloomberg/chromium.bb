@@ -27,6 +27,12 @@
 #include "googleurl/src/gurl.h"
 #include "net/dns/mock_host_resolver.h"
 
+// !!! IMPORTANT !!!
+// These tests are run against a mock GWS using the web-page-replay system.
+// If you change a test, you MUST re-record the mock GWS session.
+// See: src/chrome/test/data/search/tools/instant_extended_manual_tests.py
+// for details.
+
 // Instant extended tests that need to be run manually because they need to
 // talk to the external network. All tests in this file should be marked as
 // "MANUAL_" unless they are disabled.
@@ -152,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromQueryToSameQueryAndSearch) {
+                       DISABLED_BackspaceFromQueryToSameQueryAndSearch) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -175,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromQueryToOtherQueryAndSearch) {
+                       DISABLED_BackspaceFromQueryToOtherQueryAndSearch) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -199,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromUrlToNonSelectedUrlAndSearch) {
+                       DISABLED_BackspaceFromUrlToNonSelectedUrlAndSearch) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -229,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromUrlToUrlAndNavigate) {
+                       DISABLED_BackspaceFromUrlToUrlAndNavigate) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -315,7 +321,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
       ASCIIToUTF16("e.co - Google Search")));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
+                       DISABLED_TypeURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -335,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_TypeAutocompletedURLAndPressEnter) {
+                       DISABLED_TypeAutocompletedURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -355,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_PasteURLAndPressEnter) {
+                       DISABLED_PasteURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -380,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, DISABLED_PasteAndGo) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -395,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_TypeSearchAndPressControlEnter) {
+                       DISABLED_TypeSearchAndPressControlEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
