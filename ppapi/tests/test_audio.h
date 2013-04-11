@@ -49,7 +49,7 @@ class TestAudio : public TestCase {
   void AudioCallbackTest(void* sample_buffer, uint32_t buffer_size_in_bytes);
 
   // Used by |TestAudioCallbackN()|.
-  PP_CompletionCallback test_callback_;
+  NestedEvent audio_callback_event_;
 
   bool test_done_;
   bool callback_fired_;

@@ -792,12 +792,12 @@ std::string TestURLLoader::TestUntendedLoad() {
           total_bytes_to_be_received);
     if (bytes_received == total_bytes_to_be_received)
       break;
-    // TODO(dmichael): This should probably compare pp::MessageLoop::GetCurrent
-    //                 with GetForMainThread. We only need to yield on the main
-    //                 thread.
-    if (callback_type() != PP_BLOCKING) {
-      pp::Module::Get()->core()->CallOnMainThread(10, callback.GetCallback());
-      callback.WaitForResult();
+    // Yield if we're on the main thread, so that URLLoader can receive more
+    // data.
+    if (pp::Module::Get()->core()->IsMainThread()) {
+      NestedEvent event(instance_->pp_instance());
+      event.PostSignal(10);
+      event.Wait();
     }
   }
 

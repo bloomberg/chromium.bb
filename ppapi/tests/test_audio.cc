@@ -23,7 +23,7 @@ const int32_t kMagicValue = 12345;
 TestAudio::TestAudio(TestingInstance* instance)
     : TestCase(instance),
       audio_callback_method_(NULL),
-      test_callback_(),
+      audio_callback_event_(instance->pp_instance()),
       test_done_(false) {
 }
 
@@ -212,29 +212,19 @@ std::string TestAudio::TestAudioCallback1() {
   core_interface_->ReleaseResource(ac);
   ac = 0;
 
-  // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
-  // |test_done_|.
-  TestCompletionCallback test_callback(instance_->pp_instance());
-  test_callback_ = test_callback.GetCallback().pp_completion_callback();
+  audio_callback_event_.Reset();
   test_done_ = false;
-  callback_fired_ = false;
 
   audio_callback_method_ = &TestAudio::AudioCallbackTest;
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
 
   // Wait for the audio callback to be called.
-  test_callback.WaitForResult();
-  ASSERT_EQ(kMagicValue, test_callback.result());
-
+  audio_callback_event_.Wait();
   ASSERT_TRUE(audio_interface_->StopPlayback(audio));
-
-  // |StopPlayback()| should wait for the audio callback to finish.
-  ASSERT_TRUE(callback_fired_);
   test_done_ = true;
 
   // If any more audio callbacks are generated, we should crash (which is good).
   audio_callback_method_ = NULL;
-  test_callback_ = PP_CompletionCallback();
 
   core_interface_->ReleaseResource(audio);
 
@@ -258,10 +248,7 @@ std::string TestAudio::TestAudioCallback2() {
   core_interface_->ReleaseResource(ac);
   ac = 0;
 
-  // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
-  // |test_done_|.
-  TestCompletionCallback test_callback(instance_->pp_instance());
-  test_callback_ = test_callback.GetCallback().pp_completion_callback();
+  audio_callback_event_.Reset();
   test_done_ = false;
   callback_fired_ = false;
 
@@ -269,18 +256,14 @@ std::string TestAudio::TestAudioCallback2() {
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
 
   // Wait for the audio callback to be called.
-  test_callback.WaitForResult();
-  ASSERT_EQ(kMagicValue, test_callback.result());
+  audio_callback_event_.Wait();
 
   core_interface_->ReleaseResource(audio);
 
-  // The final release should wait for the audio callback to finish.
-  ASSERT_TRUE(callback_fired_);
   test_done_ = true;
 
   // If any more audio callbacks are generated, we should crash (which is good).
   audio_callback_method_ = NULL;
-  test_callback_ = PP_CompletionCallback();
 
   PASS();
 }
@@ -303,10 +286,7 @@ std::string TestAudio::TestAudioCallback3() {
   core_interface_->ReleaseResource(ac);
   ac = 0;
 
-  // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
-  // |test_done_|.
-  TestCompletionCallback test_callback_1(instance_->pp_instance());
-  test_callback_ = test_callback_1.GetCallback().pp_completion_callback();
+  audio_callback_event_.Reset();
   test_done_ = false;
   callback_fired_ = false;
 
@@ -314,36 +294,22 @@ std::string TestAudio::TestAudioCallback3() {
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
 
   // Wait for the audio callback to be called.
-  test_callback_1.WaitForResult();
-  ASSERT_EQ(kMagicValue, test_callback_1.result());
+  audio_callback_event_.Wait();
 
   ASSERT_TRUE(audio_interface_->StopPlayback(audio));
-
-  // |StopPlayback()| should wait for the audio callback to finish.
-  ASSERT_TRUE(callback_fired_);
-
-  TestCompletionCallback test_callback_2(instance_->pp_instance());
-  test_callback_ = test_callback_2.GetCallback().pp_completion_callback();
 
   // Repeat one more |StartPlayback| & |StopPlayback| cycle, and verify again
   // that the callback function was invoked.
-  callback_fired_ = false;
+  audio_callback_event_.Reset();
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
 
   // Wait for the audio callback to be called.
-  test_callback_2.WaitForResult();
-  ASSERT_EQ(kMagicValue, test_callback_2.result());
-
+  audio_callback_event_.Wait();
   ASSERT_TRUE(audio_interface_->StopPlayback(audio));
-
-  // |StopPlayback()| should wait for the audio callback to finish.
-  ASSERT_TRUE(callback_fired_);
-
   test_done_ = true;
 
   // If any more audio callbacks are generated, we should crash (which is good).
   audio_callback_method_ = NULL;
-  test_callback_ = PP_CompletionCallback();
 
   core_interface_->ReleaseResource(audio);
 
@@ -363,7 +329,7 @@ void TestAudio::AudioCallbackTrampoline(void* sample_buffer,
                                         void* user_data) {
   TestAudio* thiz = static_cast<TestAudio*>(user_data);
 
-  // Crash if not on the main thread.
+  // Crash if on the main thread.
   if (thiz->core_interface_->IsMainThread())
     Crash();
 
@@ -381,9 +347,6 @@ void TestAudio::AudioCallbackTest(void* sample_buffer,
   if (test_done_)
     Crash();
 
-  if (!callback_fired_) {
-    memset(sample_buffer, 0, buffer_size_in_bytes);
-    core_interface_->CallOnMainThread(0, test_callback_, kMagicValue);
-    callback_fired_ = true;
-  }
+  memset(sample_buffer, 0, buffer_size_in_bytes);
+  audio_callback_event_.Signal();
 }

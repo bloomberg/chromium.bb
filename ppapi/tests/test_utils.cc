@@ -72,6 +72,7 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
 }
 
 void NestedEvent::Wait() {
+  PP_DCHECK(pp::Module::Get()->core()->IsMainThread());
   // Don't allow nesting more than once; it doesn't work with the code as-is,
   // and probably is a bad idea most of the time anyway.
   PP_DCHECK(!waiting_);
@@ -84,17 +85,35 @@ void NestedEvent::Wait() {
 }
 
 void NestedEvent::Signal() {
+  if (pp::Module::Get()->core()->IsMainThread())
+    SignalOnMainThread();
+  else
+    PostSignal(0);
+}
+
+void NestedEvent::PostSignal(int32_t wait_ms) {
+  pp::Module::Get()->core()->CallOnMainThread(
+      wait_ms,
+      pp::CompletionCallback(&SignalThunk, this),
+      0);
+}
+
+void NestedEvent::Reset() {
+  PP_DCHECK(pp::Module::Get()->core()->IsMainThread());
+  // It doesn't make sense to reset when we're still waiting.
+  PP_DCHECK(!waiting_);
+  signalled_ = false;
+}
+
+void NestedEvent::SignalOnMainThread() {
+  PP_DCHECK(pp::Module::Get()->core()->IsMainThread());
   signalled_ = true;
   if (waiting_)
     GetTestingInterface()->QuitMessageLoop(instance_);
 }
 
-void NestedEvent::Reset() {
-  // It doesn't make sense to reset when we're still waiting.
-  PP_DCHECK(!waiting_);
-  // We must have already been Signalled().
-  PP_DCHECK(signalled_);
-  signalled_ = false;
+void NestedEvent::SignalThunk(void* event, int32_t /* result */) {
+  static_cast<NestedEvent*>(event)->SignalOnMainThread();
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)

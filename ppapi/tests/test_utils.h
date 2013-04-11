@@ -41,6 +41,10 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port);
 //  void TestFullscreen::DidChangeView(const pp::View& view) {
 //    nested_event_.Signal();
 //  }
+//
+// All methods except Signal and PostSignal must be invoked on the main thread.
+// It's OK to signal from a background thread, so you can (for example) Signal()
+// from the Audio thread.
 class NestedEvent {
  public:
   explicit NestedEvent(PP_Instance instance)
@@ -50,10 +54,18 @@ class NestedEvent {
   // has already been called, return immediately without running a nested loop.
   void Wait();
   // Signal the NestedEvent. If Wait() has been called, quit the message loop.
+  // This can be called from any thread.
   void Signal();
+  // Signal the NestedEvent in |wait_ms| milliseconds. This can be called from
+  // any thread.
+  void PostSignal(int32_t wait_ms);
+
   // Reset the NestedEvent so it can be used again.
   void Reset();
  private:
+  void SignalOnMainThread();
+  static void SignalThunk(void* async_event, int32_t result);
+
   PP_Instance instance_;
   bool waiting_;
   bool signalled_;
