@@ -31,6 +31,7 @@
       border-style: solid;
       border-color: rgb(100, 100, 100);
       border-width: 0px 0px 2px 0px;
+      text-align: center;
     }
 
     tbody tr:nth-child(odd) {
@@ -85,7 +86,9 @@
 
         // Create the column headers.
         var tr = document.createElement('tr');
-        var columns = ['name', 'version', 'revision', 'win', 'mac', 'linux'];
+        var columns = [
+          'name', 'version', 'revision', 'win', 'mac', 'linux', 'all'
+        ];
         for (var i = 0; i < columns.length; ++i) {
           var td = document.createElement('td');
           var text = document.createTextNode(columns[i]);
@@ -94,7 +97,7 @@
         }
         columnsElm.appendChild(tr);
 
-        var platforms = ['win', 'mac', 'linux'];
+        var platforms = ['win', 'mac', 'linux', 'all'];
 
         for (var i = 0; i < data.length; ++i) {
           var tr = document.createElement('tr');
@@ -105,9 +108,13 @@
               var archives = data[i].archives;
               for (var k = 0; k < archives.length; ++k) {
                 if (columns[j] == archives[k].host_os) {
+                  var url = archives[k].url;
+                  var lastSlash = url.lastIndexOf('/');
+                  var nextDot = url.indexOf('.', lastSlash);
+                  name = url.substr(lastSlash + 1, nextDot - lastSlash - 1);
                   node = document.createElement('a');
-                  node.setAttribute('href', archives[k].url);
-                  node.appendChild(document.createTextNode(columns[j]));
+                  node.setAttribute('href', url);
+                  node.appendChild(document.createTextNode(name));
                   td.appendChild(node);
                 }
               }
