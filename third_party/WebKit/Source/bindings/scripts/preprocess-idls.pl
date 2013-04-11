@@ -36,7 +36,6 @@ GetOptions('defines=s' => \$defines,
            'supplementalDependencyFile=s' => \$supplementalDependencyFile,
            'supplementalMakefileDeps=s' => \$supplementalMakefileDeps);
 
-die('Must specify #define macros using --defines.') unless defined($defines);
 die('Must specify an output file using --supplementalDependencyFile.') unless defined($supplementalDependencyFile);
 die('Must specify the file listing all IDLs using --idlFilesList.') unless defined($idlFilesList);
 

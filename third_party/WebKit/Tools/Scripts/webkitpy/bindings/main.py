@@ -73,7 +73,6 @@ class BindingsTests:
                '-Ibindings/scripts',
                'bindings/scripts/preprocess-idls.pl',
                '--idlFilesList', idl_files_list[1],
-               '--defines', '',
                '--supplementalDependencyFile', supplemental_dependency_file]
 
         exit_code = 0

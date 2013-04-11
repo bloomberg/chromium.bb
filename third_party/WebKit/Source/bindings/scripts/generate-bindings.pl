@@ -72,6 +72,7 @@ my $targetIdlFile = $ARGV[0];
 die('Must specify input file.') unless defined($targetIdlFile);
 die('Must specify generator') unless defined($generator);
 die('Must specify output directory.') unless defined($outputDirectory);
+$defines = "" unless defined($defines);
 
 if (!$outputHeadersDirectory) {
     $outputHeadersDirectory = $outputDirectory;
