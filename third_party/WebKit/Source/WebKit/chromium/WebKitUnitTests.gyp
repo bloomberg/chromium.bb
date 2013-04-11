@@ -72,7 +72,6 @@
                 }, {
                     'dependencies': [
                         '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
-                        '../../bindings/bindings.gyp:bindings',
                     ],
                     'defines': [
                         'WEBKIT_IMPLEMENTATION=1',
