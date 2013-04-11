@@ -29,6 +29,7 @@
 namespace WebCore {
 class CachedRawResourceCallback;
 class CachedRawResourceClient;
+class SubresourceLoader;
 
 class CachedRawResource : public CachedResource {
 public:
@@ -44,6 +45,7 @@ public:
     // FIXME: This is exposed for the InpsectorInstrumentation for preflights in DocumentThreadableLoader. It's also really lame.
     unsigned long identifier() const { return m_identifier; }
 
+    SubresourceLoader* loader() const;
     void clear();
 
     virtual bool canReuse(const ResourceRequest&) const;

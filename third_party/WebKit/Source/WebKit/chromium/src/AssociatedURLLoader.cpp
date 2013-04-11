@@ -36,7 +36,7 @@
 #include "DocumentThreadableLoaderClient.h"
 #include "HTTPParsers.h"
 #include "ResourceError.h"
-#include "ResourceLoader.h"
+#include "SubresourceLoader.h"
 #include "Timer.h"
 #include "WebApplicationCacheHost.h"
 #include "WebDataSource.h"

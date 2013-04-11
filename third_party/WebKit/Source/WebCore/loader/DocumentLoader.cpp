@@ -54,10 +54,10 @@
 #include "Page.h"
 #include "ProgressTracker.h"
 #include "ResourceBuffer.h"
-#include "ResourceLoader.h"
 #include "SchemeRegistry.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
+#include "SubresourceLoader.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/Assertions.h>
@@ -255,7 +255,7 @@ void DocumentLoader::stopLoading()
     }
 
     // Always cancel multipart loaders
-    cancelAll(m_multipartResourceLoaders);
+    cancelAll(m_multipartSubresourceLoaders);
 
     // Appcache uses ResourceHandle directly, DocumentLoader doesn't count these loads.
     m_applicationCacheHost->stopLoadingInFrame(m_frame);
@@ -282,9 +282,9 @@ void DocumentLoader::stopLoading()
     if (isLoadingMainResource())
         // Stop the main resource loader and let it send the cancelled message.
         cancelMainResourceLoad(frameLoader->cancelledError(m_request));
-    else if (!m_resourceLoaders.isEmpty())
+    else if (!m_subresourceLoaders.isEmpty())
         // The main resource loader already finished loading. Set the cancelled error on the 
-        // document and let the resourceLoaders send individual cancelled messages below.
+        // document and let the subresourceLoaders send individual cancelled messages below.
         setMainDocumentError(frameLoader->cancelledError(m_request));
     else
         // If there are no resource loaders, we need to manufacture a cancelled message.
@@ -313,7 +313,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 #endif
-    return isLoadingMainResource() || !m_resourceLoaders.isEmpty();
+    return isLoadingMainResource() || !m_subresourceLoaders.isEmpty();
 }
 
 void DocumentLoader::notifyFinished(CachedResource* resource)
@@ -718,8 +718,8 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_frame, "frame");
     info.addMember(m_cachedResourceLoader, "cachedResourceLoader");
     info.addMember(m_mainResource, "mainResource");
-    info.addMember(m_resourceLoaders, "resourceLoaders");
-    info.addMember(m_multipartResourceLoaders, "multipartResourceLoaders");
+    info.addMember(m_subresourceLoaders, "subresourceLoaders");
+    info.addMember(m_multipartSubresourceLoaders, "multipartSubresourceLoaders");
     info.addMember(m_substituteData, "substituteData");
     info.addMember(m_pageTitle.string(), "pageTitle.string()");
     info.addMember(m_overrideEncoding, "overrideEncoding");
@@ -923,7 +923,7 @@ void DocumentLoader::substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*
         if (resource) {
             SharedBuffer* data = resource->data();
         
-            loader->didReceiveResponse(0, resource->response());
+            loader->didReceiveResponse(resource->response());
 
             // Calling ResourceLoader::didReceiveResponse can end up cancelling the load,
             // so we need to check if the loader has reached its terminal state.
@@ -937,11 +937,11 @@ void DocumentLoader::substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*
             if (loader->reachedTerminalState())
                 return;
 
-            loader->didFinishLoading(0, 0);
+            loader->didFinishLoading(0);
         } else {
             // A null resource means that we should fail the load.
             // FIXME: Maybe we should use another error here - something like "not in cache".
-            loader->didFail(0, loader->cannotShowURLError());
+            loader->didFail(loader->cannotShowURLError());
         }
     }
 }
@@ -1039,7 +1039,7 @@ void DocumentLoader::setDefersLoading(bool defers)
     if (mainResourceLoader() && mainResourceLoader()->documentLoader() == this)
         mainResourceLoader()->setDefersLoading(defers);
 
-    setAllDefersLoading(m_resourceLoaders, defers);
+    setAllDefersLoading(m_subresourceLoaders, defers);
     if (!defers)
         deliverSubstituteResourcesAfterDelay();
 }
@@ -1052,10 +1052,10 @@ void DocumentLoader::setMainResourceDataBufferingPolicy(DataBufferingPolicy data
 
 void DocumentLoader::stopLoadingSubresources()
 {
-    cancelAll(m_resourceLoaders);
+    cancelAll(m_subresourceLoaders);
 }
 
-void DocumentLoader::addResourceLoader(ResourceLoader* loader)
+void DocumentLoader::addSubresourceLoader(ResourceLoader* loader)
 {
     // The main resource's underlying ResourceLoader will ask to be added here.
     // It is much simpler to handle special casing of main resource loads if we don't
@@ -1064,16 +1064,16 @@ void DocumentLoader::addResourceLoader(ResourceLoader* loader)
     // if we are just starting the main resource load.
     if (!m_gotFirstByte)
         return;
-    ASSERT(!m_resourceLoaders.contains(loader));
+    ASSERT(!m_subresourceLoaders.contains(loader));
     ASSERT(!mainResourceLoader() || mainResourceLoader() != loader);
-    m_resourceLoaders.add(loader);
+    m_subresourceLoaders.add(loader);
 }
 
-void DocumentLoader::removeResourceLoader(ResourceLoader* loader)
+void DocumentLoader::removeSubresourceLoader(ResourceLoader* loader)
 {
-    if (!m_resourceLoaders.contains(loader))
+    if (!m_subresourceLoaders.contains(loader))
         return;
-    m_resourceLoaders.remove(loader);
+    m_subresourceLoaders.remove(loader);
     checkLoadComplete();
     if (Frame* frame = m_frame)
         frame->loader()->checkLoadComplete();
@@ -1186,8 +1186,8 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
 
 void DocumentLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
 {
-    m_multipartResourceLoaders.add(loader);
-    m_resourceLoaders.remove(loader);
+    m_multipartSubresourceLoaders.add(loader);
+    m_subresourceLoaders.remove(loader);
     checkLoadComplete();
     if (Frame* frame = m_frame)
         frame->loader()->checkLoadComplete();    

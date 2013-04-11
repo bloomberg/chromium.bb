@@ -66,15 +66,6 @@ PassRefPtr<ResourceBuffer> ResourceLoader::resourceData()
     return m_resourceData;
 }
 
-PassRefPtr<ResourceLoader> ResourceLoader::create(Frame* frame, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
-{
-    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(frame, resource, options)));
-    if (!loader->init(request))
-        return 0;
-    loader->start();
-    return loader.release();
-}
-
 ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceLoaderOptions options)
     : m_frame(frame)
     , m_documentLoader(frame->loader()->activeDocumentLoader())
@@ -93,22 +84,11 @@ ResourceLoader::ResourceLoader(Frame* frame, CachedResource* resource, ResourceL
 
 ResourceLoader::~ResourceLoader()
 {
-    ASSERT(m_state != Initialized);
     ASSERT(m_reachedTerminalState);
 }
 
 void ResourceLoader::releaseResources()
 {
-    ASSERT(!reachedTerminalState());
-    if (m_state != Uninitialized) {
-        m_requestCountTracker.clear();
-        m_documentLoader->cachedResourceLoader()->loadDone(m_resource);
-        if (reachedTerminalState())
-            return;
-        m_resource->stopLoading();
-        m_documentLoader->removeResourceLoader(this);
-    }
-
     ASSERT(!m_reachedTerminalState);
     
     // It's possible that when we release the handle, it will be
@@ -164,16 +144,13 @@ bool ResourceLoader::init(const ResourceRequest& r)
             clientRequest.setFirstPartyForCookies(document->firstPartyForCookies());
     }
 
-    willSendRequest(0, clientRequest, ResourceResponse());
+    willSendRequest(clientRequest, ResourceResponse());
     if (clientRequest.isNull()) {
         cancel();
         return false;
     }
-    ASSERT(!reachedTerminalState());
 
     m_originalRequest = m_request = clientRequest;
-    m_state = Initialized;
-    m_documentLoader->addResourceLoader(this);
     return true;
 }
 
@@ -244,6 +221,53 @@ void ResourceLoader::clearResourceData()
         m_resourceData->clear();
 }
 
+void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceResponse& redirectResponse)
+{
+    // Protect this in this delegate method since the additional processing can do
+    // anything including possibly derefing this; one example of this is Radar 3266216.
+    RefPtr<ResourceLoader> protector(this);
+
+    ASSERT(!m_reachedTerminalState);
+
+    // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
+    bool createdResourceIdentifier = false;
+    if (!m_identifier) {
+        m_identifier = m_frame->page()->progress()->createUniqueIdentifier();
+        createdResourceIdentifier = true;
+    }
+
+    if (m_options.sendLoadCallbacks == SendCallbacks) {
+        if (createdResourceIdentifier)
+            frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifier, documentLoader(), request);
+
+        frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
+    }
+    else
+        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
+
+    m_request = request;
+
+    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
+        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+}
+
+void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
+{
+    ASSERT(!m_reachedTerminalState);
+
+    // Protect this in this delegate method since the additional processing can do
+    // anything including possibly derefing this; one example of this is Radar 3266216.
+    RefPtr<ResourceLoader> protector(this);
+
+    m_response = r;
+
+    if (FormData* data = m_request.httpBody())
+        data->removeGeneratedFilesIfNeeded();
+        
+    if (m_options.sendLoadCallbacks == SendCallbacks)
+        frameLoader()->notifier()->didReceiveResponse(this, m_response);
+}
+
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
 {
     if (!m_cancelled && !fastMallocSize(documentLoader()->applicationCacheHost()))
@@ -252,6 +276,17 @@ void ResourceLoader::didDownloadData(ResourceHandle*, int length)
         CRASH();
     RefPtr<ResourceLoader> protect(this);
     m_resource->didDownloadData(length);
+}
+
+void ResourceLoader::didFinishLoading(double finishTime)
+{
+    didFinishLoadingOnePart(finishTime);
+
+    // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
+    // the resources a second time, they have been released by cancel.
+    if (m_cancelled)
+        return;
+    releaseResources();
 }
 
 void ResourceLoader::didFinishLoadingOnePart(double finishTime)
@@ -267,6 +302,28 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime)
     m_notifiedLoadComplete = true;
     if (m_options.sendLoadCallbacks == SendCallbacks)
         frameLoader()->notifier()->didFinishLoad(this, finishTime);
+}
+
+void ResourceLoader::didFail(const ResourceError& error)
+{
+    if (m_cancelled)
+        return;
+    ASSERT(!m_reachedTerminalState);
+
+    // Protect this in this delegate method since the additional processing can do
+    // anything including possibly derefing this; one example of this is Radar 3266216.
+    RefPtr<ResourceLoader> protector(this);
+
+    if (FormData* data = m_request.httpBody())
+        data->removeGeneratedFilesIfNeeded();
+
+    if (!m_notifiedLoadComplete) {
+        m_notifiedLoadComplete = true;
+        if (m_options.sendLoadCallbacks == SendCallbacks)
+            frameLoader()->notifier()->didFailToLoad(this, error);
+    }
+
+    releaseResources();
 }
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
@@ -351,57 +408,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 {
     if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForRedirect(this, request, redirectResponse))
         return;
-
-    // Store the previous URL because we may modify it.
-    KURL previousURL = m_request.url();
-    RefPtr<ResourceLoader> protect(this);
-
-    ASSERT(!request.isNull());
-    if (!redirectResponse.isNull()) {
-        if (!m_documentLoader->cachedResourceLoader()->canRequest(m_resource->type(), request.url())) {
-            cancel();
-            return;
-        }
-        if (m_resource->type() == CachedResource::ImageResource && m_documentLoader->cachedResourceLoader()->shouldDeferImageLoad(request.url())) {
-            cancel();
-            return;
-        }
-        m_resource->willSendRequest(request, redirectResponse);
-    }
-
-    if (request.isNull() || reachedTerminalState())
-        return;
-
-    // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
-    bool createdResourceIdentifier = false;
-    if (!m_identifier) {
-        m_identifier = m_frame->page()->progress()->createUniqueIdentifier();
-        createdResourceIdentifier = true;
-    }
-
-    if (m_options.sendLoadCallbacks == SendCallbacks) {
-        if (createdResourceIdentifier)
-            frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifier, documentLoader(), request);
-
-        frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
-    }
-    else
-        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
-
-    m_request = request;
-
-    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
-        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-
-    if (request.isNull())
-        cancel();
-}
-
-void ResourceLoader::didReceiveCachedMetadata(ResourceHandle*, const char* data, int length)
-{
-    ASSERT(m_state == Initialized);
-    ASSERT(!m_resource->resourceToRevalidate());
-    m_resource->setSerializedCachedMetadata(data, length);
+    willSendRequest(request, redirectResponse);
 }
 
 void ResourceLoader::didSendData(ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -415,69 +422,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
 {
     if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForResponse(this, response))
         return;
-    ASSERT(!response.isNull());
-    ASSERT(m_state == Initialized);
-
-    // Reference the object in this method since the additional processing can do
-    // anything including removing the last reference to this object.
-    RefPtr<ResourceLoader> protect(this);
-
-    if (m_resource->resourceToRevalidate()) {
-        if (response.httpStatusCode() == 304) {
-            // 304 Not modified / Use local copy
-            // Existing resource is ok, just use it updating the expiration time.
-            m_resource->setResponse(response);
-            memoryCache()->revalidationSucceeded(m_resource, response);
-            if (reachedTerminalState())
-                return;
-
-            if (FormData* data = m_request.httpBody())
-                data->removeGeneratedFilesIfNeeded();
-            if (m_options.sendLoadCallbacks == SendCallbacks)
-                frameLoader()->notifier()->didReceiveResponse(this, response);
-            return;
-        }
-        // Did not get 304 response, continue as a regular resource load.
-        memoryCache()->revalidationFailed(m_resource);
-    }
-
-    m_resource->responseReceived(response);
-    if (reachedTerminalState())
-        return;
-
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
-    if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->didReceiveResponse(this, response);
-
-    // FIXME: Main resources have a different set of rules for multipart than images do.
-    // Hopefully we can merge those 2 paths.
-    if (response.isMultipart() && m_resource->type() != CachedResource::MainResource) {
-        m_loadingMultipartContent = true;
-
-        // We don't count multiParts in a CachedResourceLoader's request count
-        m_requestCountTracker.clear();
-        if (!m_resource->isImage()) {
-            cancel();
-            return;
-        }
-    }
-
-    RefPtr<ResourceBuffer> buffer = resourceData();
-    if (m_loadingMultipartContent && buffer && buffer->size()) {
-        sendDataToResource(buffer->data(), buffer->size());
-        clearResourceData();
-        // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
-        // After the first multipart section is complete, signal to delegates that this load is "finished"
-        m_documentLoader->subresourceLoaderFinishedLoadingOnePart(this);
-        didFinishLoadingOnePart(0);
-    }
-
-    if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
-        return;
-    m_state = Finishing;
-    m_resource->error(CachedResource::LoadError);
-    cancel();
+    didReceiveResponse(response);
 }
 
 void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int length, int encodedDataLength)
@@ -525,62 +470,17 @@ void ResourceLoader::sendDataToResource(const char* data, int length)
 
 void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 {
-    if (m_state != Initialized)
-        return;
-    ASSERT(!reachedTerminalState());
-    ASSERT(!m_resource->resourceToRevalidate());
-    ASSERT(!m_resource->errorOccurred());
-    LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
-
-    RefPtr<ResourceLoader> protect(this);
-    CachedResourceHandle<CachedResource> protectResource(m_resource);
-    m_state = Finishing;
-    m_resource->setLoadFinishTime(finishTime);
-    m_resource->data(resourceData(), true);
-    m_resource->finish();
-    didFinishLoadingOnePart(finishTime);
-
-    // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
-    // the resources a second time, they have been released by cancel.
-    if (m_cancelled)
-        return;
-    releaseResources();
+    didFinishLoading(finishTime);
 }
 
 void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
-    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error) || m_state != Initialized)
+    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error))
         return;
-    ASSERT(!reachedTerminalState());
-    LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
-
-    RefPtr<ResourceLoader> protect(this);
-    CachedResourceHandle<CachedResource> protectResource(m_resource);
-    m_state = Finishing;
-    if (m_resource->resourceToRevalidate())
-        memoryCache()->revalidationFailed(m_resource);
-    m_resource->setResourceError(error);
-    m_resource->error(CachedResource::LoadError);
-    if (!m_resource->isPreloaded())
-        memoryCache()->remove(m_resource);
-
-    if (m_cancelled)
-        return;
-    ASSERT(!m_reachedTerminalState);
-
-    if (FormData* data = m_request.httpBody())
-        data->removeGeneratedFilesIfNeeded();
-
-    if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
-        if (m_options.sendLoadCallbacks == SendCallbacks)
-            frameLoader()->notifier()->didFailToLoad(this, error);
-    }
-
-    releaseResources();
+    didFail(error);
 }
 
-bool ResourceLoader::shouldUseCredentialStorage(ResourceHandle*)
+bool ResourceLoader::shouldUseCredentialStorage()
 {
     if (m_options.allowCredentials == DoNotAllowStoredCredentials)
         return false;

@@ -30,7 +30,7 @@
 #include "CachedResourceClientWalker.h"
 #include "CachedResourceLoader.h"
 #include "ResourceBuffer.h"
-#include "ResourceLoader.h"
+#include "SubresourceLoader.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/PassRefPtr.h>
 
@@ -230,6 +230,11 @@ bool CachedRawResource::canReuse(const ResourceRequest& newRequest) const
     }
 
     return true;
+}
+
+SubresourceLoader* CachedRawResource::loader() const
+{
+    return m_loader.get();
 }
 
 void CachedRawResource::clear()

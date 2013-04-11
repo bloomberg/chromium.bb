@@ -49,9 +49,9 @@ class CachedResourceLoader;
 class InspectorResource;
 class PurgeableBuffer;
 class ResourceBuffer;
-class ResourceLoader;
 class SecurityOrigin;
 class SharedBuffer;
+class SubresourceLoader;
 
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from CachedResourceClient, to get the function calls in case the requested data has arrived.
@@ -147,7 +147,7 @@ public:
     void setLoading(bool b) { m_loading = b; }
     virtual bool stillNeedsLoad() const { return false; }
 
-    ResourceLoader* loader() { return m_loader.get(); }
+    SubresourceLoader* loader() { return m_loader.get(); }
 
     virtual bool isImage() const { return false; }
     bool ignoreForRequestCount() const
@@ -282,7 +282,7 @@ protected:
 
     ResourceRequest m_resourceRequest;
     String m_accept;
-    RefPtr<ResourceLoader> m_loader;
+    RefPtr<SubresourceLoader> m_loader;
     ResourceLoaderOptions m_options;
     ResourceLoadPriority m_loadPriority;
 
