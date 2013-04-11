@@ -206,13 +206,6 @@ SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
   return cur;
 }
 
-void RenderTextLinux::SetSelectionModel(const SelectionModel& model) {
-  if (selection() != model.selection())
-    selection_visual_bounds_.clear();
-
-  RenderText::SetSelectionModel(model);
-}
-
 void RenderTextLinux::GetGlyphBounds(size_t index,
                                      ui::Range* xspan,
                                      int* height) {
@@ -225,14 +218,33 @@ void RenderTextLinux::GetGlyphBounds(size_t index,
 
 std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {
   DCHECK_LE(range.GetMax(), text().length());
-
   if (range.is_empty())
     return std::vector<Rect>();
 
   EnsureLayout();
-  if (range == selection())
-    return GetSelectionBounds();
-  return CalculateSubstringBounds(range);
+  int* ranges = NULL;
+  int n_ranges = 0;
+  pango_layout_line_get_x_ranges(current_line_,
+                                 TextIndexToLayoutIndex(range.GetMin()),
+                                 TextIndexToLayoutIndex(range.GetMax()),
+                                 &ranges,
+                                 &n_ranges);
+
+  int height = 0;
+  pango_layout_get_pixel_size(layout_, NULL, &height);
+  int y = (display_rect().height() - height) / 2;
+
+  std::vector<Rect> bounds;
+  for (int i = 0; i < n_ranges; ++i) {
+    // TODO(derat): Support fractional bounds for subpixel positioning?
+    int x = PANGO_PIXELS(ranges[2 * i]);
+    int width = PANGO_PIXELS(ranges[2 * i + 1]) - x;
+    Rect rect(x, y, width, height);
+    rect.set_origin(ToViewPoint(rect.origin()));
+    bounds.push_back(rect);
+  }
+  g_free(ranges);
+  return bounds;
 }
 
 size_t RenderTextLinux::TextIndexToLayoutIndex(size_t index) const {
@@ -278,8 +290,6 @@ void RenderTextLinux::ResetLayout() {
     log_attrs_ = NULL;
     num_log_attrs_ = 0;
   }
-  if (!selection_visual_bounds_.empty())
-    selection_visual_bounds_.clear();
   layout_text_ = NULL;
   layout_text_len_ = 0;
 }
@@ -483,40 +493,6 @@ SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
   size_t caret = IndexOfAdjacentGrapheme(
       LayoutIndexToTextIndex(item->offset + item->length), CURSOR_BACKWARD);
   return SelectionModel(caret, CURSOR_FORWARD);
-}
-
-std::vector<Rect> RenderTextLinux::CalculateSubstringBounds(ui::Range range) {
-  int* ranges;
-  int n_ranges;
-  pango_layout_line_get_x_ranges(
-      current_line_,
-      TextIndexToLayoutIndex(range.GetMin()),
-      TextIndexToLayoutIndex(range.GetMax()),
-      &ranges,
-      &n_ranges);
-
-  int height;
-  pango_layout_get_pixel_size(layout_, NULL, &height);
-
-  int y = (display_rect().height() - height) / 2;
-
-  std::vector<Rect> bounds;
-  for (int i = 0; i < n_ranges; ++i) {
-    // TODO(derat): Support fractional bounds for subpixel positioning?
-    int x = PANGO_PIXELS(ranges[2 * i]);
-    int width = PANGO_PIXELS(ranges[2 * i + 1]) - x;
-    Rect rect(x, y, width, height);
-    rect.set_origin(ToViewPoint(rect.origin()));
-    bounds.push_back(rect);
-  }
-  g_free(ranges);
-  return bounds;
-}
-
-std::vector<Rect> RenderTextLinux::GetSelectionBounds() {
-  if (selection_visual_bounds_.empty())
-    selection_visual_bounds_ = CalculateSubstringBounds(selection());
-  return selection_visual_bounds_;
 }
 
 size_t RenderTextLinux::GetGlyphTextIndex(PangoLayoutRun* run,

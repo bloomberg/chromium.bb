@@ -32,7 +32,6 @@ class RenderTextLinux : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
-  virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual void GetGlyphBounds(size_t index,
                               ui::Range* xspan,
                               int* height) OVERRIDE;
@@ -67,13 +66,6 @@ class RenderTextLinux : public RenderText {
                             PangoAttribute* pango_attr,
                             PangoAttrList* attrs);
 
-  // Calculate the visual bounds containing the logical substring within the
-  // given range.
-  std::vector<Rect> CalculateSubstringBounds(ui::Range range);
-
-  // Get the visual bounds of the logical selection.
-  std::vector<Rect> GetSelectionBounds();
-
   // Get the text index corresponding to the |run|'s |glyph_index|.
   size_t GetGlyphTextIndex(PangoLayoutRun* run, int glyph_index) const;
 
@@ -86,9 +78,6 @@ class RenderTextLinux : public RenderText {
   PangoLogAttr* log_attrs_;
   // Number of attributes in |log_attrs_|.
   int num_log_attrs_;
-
-  // Vector of the visual bounds containing the logical substring of selection.
-  std::vector<Rect> selection_visual_bounds_;
 
   // The text in the |layout_|.
   const char* layout_text_;
