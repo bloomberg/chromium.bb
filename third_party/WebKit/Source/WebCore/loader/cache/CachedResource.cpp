@@ -130,12 +130,10 @@ static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type 
     case CachedResource::SVGDocumentResource:
         return ResourceLoadPriorityLow;
 #endif
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
         return ResourceLoadPriorityVeryLow;
     case CachedResource::LinkSubresource:
         return ResourceLoadPriorityVeryLow;
-#endif
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:
         return ResourceLoadPriorityLow;
@@ -166,12 +164,10 @@ static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource
     case CachedResource::ShaderResource:
     case CachedResource::RawResource:
         return ResourceRequest::TargetIsSubresource;    
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
         return ResourceRequest::TargetIsPrefetch;
     case CachedResource::LinkSubresource:
         return ResourceRequest::TargetIsSubresource;
-#endif
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:
         return ResourceRequest::TargetIsTextTrack;
@@ -325,10 +321,8 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
         }
     }
 
-#if ENABLE(LINK_PREFETCH)
     if (type() == CachedResource::LinkPrefetch || type() == CachedResource::LinkSubresource)
         m_resourceRequest.setHTTPHeaderField("Purpose", "prefetch");
-#endif
     m_resourceRequest.setPriority(loadPriority());
 
     if (type() != MainResource)

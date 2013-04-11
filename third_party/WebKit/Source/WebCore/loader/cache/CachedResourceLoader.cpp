@@ -89,12 +89,10 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
     case CachedResource::XSLStyleSheet:
         return new CachedXSLStyleSheet(request);
 #endif
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
         return new CachedResource(request, CachedResource::LinkPrefetch);
     case CachedResource::LinkSubresource:
         return new CachedResource(request, CachedResource::LinkSubresource);
-#endif
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:
         return new CachedTextTrack(request);
@@ -225,14 +223,12 @@ CachedResourceHandle<CachedSVGDocument> CachedResourceLoader::requestSVGDocument
 }
 #endif
 
-#if ENABLE(LINK_PREFETCH)
 CachedResourceHandle<CachedResource> CachedResourceLoader::requestLinkResource(CachedResource::Type type, CachedResourceRequest& request)
 {
     ASSERT(frame());
     ASSERT(type == CachedResource::LinkPrefetch || type == CachedResource::LinkSubresource);
     return requestResource(type, request);
 }
-#endif
 
 CachedResourceHandle<CachedRawResource> CachedResourceLoader::requestRawResource(CachedResourceRequest& request)
 {
@@ -277,11 +273,9 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
         break;
     }
     case CachedResource::MainResource:
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
     case CachedResource::LinkSubresource:
         // Prefetch cannot affect the current document.
-#endif
         break;
     }
     return true;
@@ -309,10 +303,8 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
     case CachedResource::Script:
     case CachedResource::FontResource:
     case CachedResource::RawResource:
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
     case CachedResource::LinkSubresource:
-#endif
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:
 #endif
@@ -372,10 +364,8 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
     }
     case CachedResource::MainResource:
     case CachedResource::RawResource:
-#if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
     case CachedResource::LinkSubresource:
-#endif
         break;
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:

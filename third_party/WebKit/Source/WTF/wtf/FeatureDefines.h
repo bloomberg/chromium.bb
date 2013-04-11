@@ -248,10 +248,6 @@
 #define ENABLE_LEGACY_VIEWPORT_ADAPTION 0
 #endif
 
-#if !defined(ENABLE_LINK_PREFETCH)
-#define ENABLE_LINK_PREFETCH 0
-#endif
-
 #if !defined(ENABLE_LINK_PRERENDER)
 #define ENABLE_LINK_PRERENDER 0
 #endif

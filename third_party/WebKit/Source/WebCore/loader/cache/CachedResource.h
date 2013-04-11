@@ -75,10 +75,8 @@ public:
 #if ENABLE(XSLT)
         , XSLStyleSheet
 #endif
-#if ENABLE(LINK_PREFETCH)
         , LinkPrefetch
         , LinkSubresource
-#endif
 #if ENABLE(VIDEO_TRACK)
         , TextTrackResource
 #endif
@@ -155,10 +153,8 @@ public:
     bool ignoreForRequestCount() const
     {
         return type() == MainResource
-#if ENABLE(LINK_PREFETCH)
             || type() == LinkPrefetch
             || type() == LinkSubresource
-#endif
             || type() == RawResource;
     }
 

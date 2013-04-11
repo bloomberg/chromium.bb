@@ -39,10 +39,8 @@ LinkRelAttribute::LinkRelAttribute()
     , m_iconType(InvalidIcon)
     , m_isAlternate(false)
     , m_isDNSPrefetch(false)
-#if ENABLE(LINK_PREFETCH)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
-#endif
 #if ENABLE(LINK_PRERENDER)
     , m_isLinkPrerender(false)
 #endif
@@ -54,10 +52,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_iconType(InvalidIcon)
     , m_isAlternate(false)
     , m_isDNSPrefetch(false)
-#if ENABLE(LINK_PREFETCH)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
-#endif
 #if ENABLE(LINK_PRERENDER)
     , m_isLinkPrerender(false)
 #endif
@@ -97,12 +93,10 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
             else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed"))
                 m_iconType = TouchPrecomposedIcon;
 #endif
-#if ENABLE(LINK_PREFETCH)
             else if (equalIgnoringCase(*it, "prefetch"))
               m_isLinkPrefetch = true;
             else if (equalIgnoringCase(*it, "subresource"))
               m_isLinkSubresource = true;
-#endif
 #if ENABLE(LINK_PRERENDER)
             else if (equalIgnoringCase(*it, "prerender"))
               m_isLinkPrerender = true;

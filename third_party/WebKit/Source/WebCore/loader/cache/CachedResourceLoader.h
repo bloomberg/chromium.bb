@@ -86,9 +86,7 @@ public:
 #if ENABLE(XSLT)
     CachedResourceHandle<CachedXSLStyleSheet> requestXSLStyleSheet(CachedResourceRequest&);
 #endif
-#if ENABLE(LINK_PREFETCH)
     CachedResourceHandle<CachedResource> requestLinkResource(CachedResource::Type, CachedResourceRequest&);
-#endif
 #if ENABLE(VIDEO_TRACK)
     CachedResourceHandle<CachedTextTrack> requestTextTrack(CachedResourceRequest&);
 #endif

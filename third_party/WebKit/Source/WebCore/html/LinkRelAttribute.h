@@ -42,10 +42,8 @@ public:
     IconType m_iconType;
     bool m_isAlternate;
     bool m_isDNSPrefetch;
-#if ENABLE(LINK_PREFETCH)
     bool m_isLinkPrefetch;
     bool m_isLinkSubresource;
-#endif
 #if ENABLE(LINK_PRERENDER)
     bool m_isLinkPrerender;
 #endif

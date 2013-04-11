@@ -136,7 +136,6 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             prefetchDNS(href.host());
     }
 
-#if ENABLE(LINK_PREFETCH)
     if ((relAttribute.m_isLinkPrefetch || relAttribute.m_isLinkSubresource) && href.isValid() && document->frame()) {
         if (!m_client->shouldLoadLink())
             return false;
@@ -158,7 +157,6 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
         if (m_cachedLinkResource)
             m_cachedLinkResource->addClient(this);
     }
-#endif
 
 #if ENABLE(LINK_PRERENDER)
     if (relAttribute.m_isLinkPrerender) {
