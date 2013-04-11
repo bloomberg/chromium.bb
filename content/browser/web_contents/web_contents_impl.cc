@@ -2926,11 +2926,13 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
 }
 
 void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
-  // Clear our opener so that future cross-process navigations don't have an
-  // opener assigned.
-  registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    Source<WebContents>(opener_));
-  opener_ = NULL;
+  if (opener_) {
+    // Clear our opener so that future cross-process navigations don't have an
+    // opener assigned.
+    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      Source<WebContents>(opener_));
+    opener_ = NULL;
+  }
 
   // Notify all swapped out RenderViewHosts for this tab.  This is important
   // in case we go back to them, or if another window in those processes tries
