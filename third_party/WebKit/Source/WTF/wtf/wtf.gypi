@@ -28,7 +28,6 @@
             'Complex.h',
             'CryptographicallyRandomNumber.cpp',
             'CryptographicallyRandomNumber.h',
-            'CurrentTime.cpp',
             'CurrentTime.h',
             'DataLog.cpp',
             'DataLog.h',
