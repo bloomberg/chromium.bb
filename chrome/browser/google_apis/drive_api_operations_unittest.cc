@@ -357,6 +357,84 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
   EXPECT_FALSE(about_resource.get());
 }
 
+TEST_F(DriveApiOperationsTest, GetApplistOperation) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/drive/applist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result;
+
+  GetApplistOperation* operation = new GetApplistOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &result)));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/apps", http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
+TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/drive/changelist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result;
+
+  GetChangelistOperation* operation = new GetChangelistOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      100,
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &result)));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/changes?startChangeId=100", http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
+TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/drive/filelist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> result;
+
+  GetFilelistOperation* operation = new GetFilelistOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      "\"abcde\" in parents",
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &result)));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/files?q=%22abcde%22+in+parents",
+            http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
 TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(

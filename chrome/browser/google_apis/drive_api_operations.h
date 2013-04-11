@@ -78,14 +78,10 @@ class GetChangelistOperation : public GetDataOperation {
  public:
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
-  // |url| specifies URL for change list fetching operation. If empty URL is
-  // passed, the default URL is used and returns the first page of the result.
-  // When non-first page result is requested, |url| should be specified.
   GetChangelistOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
-      const GURL& url,
       int64 start_changestamp,
       const GetDataCallback& callback);
   virtual ~GetChangelistOperation();
@@ -96,7 +92,6 @@ class GetChangelistOperation : public GetDataOperation {
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  GURL url_;
   int64 start_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
@@ -113,7 +108,6 @@ class GetFilelistOperation : public GetDataOperation {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
-      const GURL& url,
       const std::string& search_string,
       const GetDataCallback& callback);
   virtual ~GetFilelistOperation();
@@ -124,13 +118,12 @@ class GetFilelistOperation : public GetDataOperation {
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  GURL url_;
   std::string search_string_;
 
   DISALLOW_COPY_AND_ASSIGN(GetFilelistOperation);
 };
 
-//=============================== GetFlieOperation =============================
+//=============================== GetFileOperation =============================
 
 // This class performs the operation for fetching a file.
 class GetFileOperation : public GetDataOperation {

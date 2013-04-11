@@ -284,7 +284,6 @@ void DriveAPIService::GetAllResourceList(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // override url
           "",  // search query
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
@@ -307,7 +306,6 @@ void DriveAPIService::GetResourceListInDirectory(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // override url
           base::StringPrintf(
               "'%s' in parents",
               EscapeQueryStringValue(directory_resource_id).c_str()),
@@ -325,7 +323,6 @@ void DriveAPIService::Search(const std::string& search_query,
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // override url
           search_query,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
@@ -344,7 +341,6 @@ void DriveAPIService::SearchInDirectory(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // override url
           base::StringPrintf(
               "%s and '%s' in parents",
               search_query.c_str(),
@@ -362,7 +358,6 @@ void DriveAPIService::GetChangeList(int64 start_changestamp,
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // override url
           start_changestamp,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }

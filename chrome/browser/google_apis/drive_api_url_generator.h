@@ -30,20 +30,14 @@ class DriveApiUrlGenerator {
   GURL GetApplistUrl() const;
 
   // Returns a URL to fetch a list of changes.
-  // override_url:
-  //   The base url for the fetch. If empty, the default url is used.
   // start_changestamp:
   //   The starting point of the requesting change list, or 0 if all changes
   //   are necessary.
-  GURL GetChangelistUrl(
-      const GURL& override_url, int64 start_changestamp) const;
+  GURL GetChangelistUrl(int64 start_changestamp) const;
 
   // Returns a URL to fetch a list of files with the given |search_string|.
-  // override_url:
-  //   The base url for the fetching. If empty, the default url is used.
   // search_string: The search query.
-  GURL GetFilelistUrl(
-      const GURL& override_url, const std::string& search_string) const;
+  GURL GetFilelistUrl(const std::string& search_string) const;
 
   // Returns a URL to fetch a file content.
   GURL GetFileUrl(const std::string& file_id) const;
