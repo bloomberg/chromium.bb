@@ -47,17 +47,6 @@ class TextInputClient;
 // ui::InputMethod and owns it.
 class InputMethod {
  public:
-  class Observer {
-   public:
-    // Called when either:
-    //  - the TextInputClient is changed (e.g. by a change of focus)
-    //  - the TextInputType of the TextInputClient changes
-    virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   virtual ~InputMethod() {}
 
   // Sets the delegate used by this InputMethod instance. It should only be
@@ -135,10 +124,6 @@ class InputMethod {
 
   // Checks if the focused text input client supports inline composition.
   virtual bool CanComposeInline() const = 0;
-
-  // Management of the observer list.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 };
 
 }  // namespace ui

@@ -43,9 +43,6 @@ void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
   OnWillChangeFocusedClient(old, client);
   text_input_client_ = client;  // NULL allowed.
   OnDidChangeFocusedClient(old, client);
-
-  if (old != text_input_client_)
-    NotifyTextInputStateChanged(text_input_client_);
 }
 
 TextInputClient* InputMethodBase::GetTextInputClient() const {
@@ -55,7 +52,6 @@ TextInputClient* InputMethodBase::GetTextInputClient() const {
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
-  NotifyTextInputStateChanged(client);
 }
 
 TextInputType InputMethodBase::GetTextInputType() const {
@@ -66,14 +62,6 @@ TextInputType InputMethodBase::GetTextInputType() const {
 bool InputMethodBase::CanComposeInline() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->CanComposeInline() : true;
-}
-
-void InputMethodBase::AddObserver(InputMethod::Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void InputMethodBase::RemoveObserver(InputMethod::Observer* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 bool InputMethodBase::IsTextInputClientFocused(const TextInputClient* client) {
@@ -100,13 +88,6 @@ bool InputMethodBase::DispatchFabricatedKeyEventPostIME(EventType type,
                                                         int flags) const {
   return delegate_ ? delegate_->DispatchFabricatedKeyEventPostIME
       (type, key_code, flags) : false;
-}
-
-void InputMethodBase::NotifyTextInputStateChanged(
-    const TextInputClient* client) {
-  FOR_EACH_OBSERVER(InputMethod::Observer,
-                    observer_list_,
-                    OnTextInputStateChanged(client));
 }
 
 }  // namespace ui

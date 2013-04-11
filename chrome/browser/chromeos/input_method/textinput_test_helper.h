@@ -70,14 +70,12 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
     WAIT_ON_TEXT_INPUT_TYPE_CHANGED,
   };
 
-  // ui::MockInputMethod::MockObserver overrides.
+  // ui::MockInputMethod::Observer overrides.
   virtual void OnTextInputTypeChanged(
       const ui::TextInputClient* client) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) OVERRIDE;
-  virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) OVERRIDE;
 
   // Represents waiting type of text input event.
   WaitImeEventType waiting_type_;

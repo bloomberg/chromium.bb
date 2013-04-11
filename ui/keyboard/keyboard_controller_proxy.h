@@ -11,10 +11,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class InputMethod;
-}
-
 namespace keyboard {
 
 // A proxy used by the KeyboardController to get access to the virtual
@@ -26,10 +22,6 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // Get the virtual keyboard window.  Ownership of the returned Window remains
   // with the proxy.
   virtual aura::Window* GetKeyboardWindow() = 0;
-
-  // Get the InputMethod that will provide notifications about changes in the
-  // text input context.
-  virtual ui::InputMethod* GetInputMethod() = 0;
 };
 
 }  // namespace keyboard

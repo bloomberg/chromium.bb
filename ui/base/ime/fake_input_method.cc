@@ -135,7 +135,4 @@ bool FakeInputMethod::CanComposeInline() const {
   return true;
 }
 
-void FakeInputMethod::AddObserver(Observer* observer) {}
-void FakeInputMethod::RemoveObserver(Observer* observer) {}
-
 }  // namespace ui

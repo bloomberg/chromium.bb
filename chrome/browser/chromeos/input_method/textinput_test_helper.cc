@@ -101,10 +101,6 @@ void TextInputTestHelper::OnCaretBoundsChanged(
     MessageLoop::current()->Quit();
 }
 
-void TextInputTestHelper::OnTextInputStateChanged(
-    const ui::TextInputClient* client) {
-}
-
 void TextInputTestHelper::WaitForTextInputStateChanged(
     ui::TextInputType expected_type) {
   CHECK_EQ(NO_WAIT, waiting_type_);

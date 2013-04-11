@@ -8,10 +8,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_base.h"
-#include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -113,12 +109,9 @@ namespace keyboard {
 KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy), container_(NULL) {
   CHECK(proxy);
-  proxy_->GetInputMethod()->AddObserver(this);
 }
 
-KeyboardController::~KeyboardController() {
-  proxy_->GetInputMethod()->RemoveObserver(this);
-}
+KeyboardController::~KeyboardController() {}
 
 aura::Window* KeyboardController::GetContainerWindow() {
   if (!container_) {
@@ -132,27 +125,8 @@ aura::Window* KeyboardController::GetContainerWindow() {
     container_->SetLayoutManager(
         new KeyboardLayoutManager(container_, keyboard));
     container_->AddChild(keyboard);
-
-    OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
   }
   return container_;
-}
-
-void KeyboardController::OnTextInputStateChanged(
-    const ui::TextInputClient* client) {
-  if (!container_)
-    return;
-
-  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
-    container_->Hide();
-  } else {
-    container_->parent()->StackChildAtTop(container_);
-    container_->Show();
-  }
-
-  // TODO(bryeung): whenever the TextInputClient changes we need to notify the
-  // keyboard (with the TextInputType) so that it can reset it's state (e.g.
-  // abandon compositions in progress)
 }
 
 }  // namespace keyboard

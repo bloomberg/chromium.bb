@@ -21,10 +21,6 @@ namespace extensions {
 class WindowController;
 }
 
-namespace ui {
-class InputMethod;
-}
-
 class AshKeyboardControllerProxy
     : public keyboard::KeyboardControllerProxy,
       public content::WebContentsObserver,
@@ -35,7 +31,6 @@ class AshKeyboardControllerProxy
 
   // keyboard::KeyboardControllerProxy overrides
   virtual aura::Window* GetKeyboardWindow() OVERRIDE;
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides
   virtual extensions::WindowController* GetExtensionWindowController() const

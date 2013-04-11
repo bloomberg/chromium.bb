@@ -20,19 +20,16 @@ class TextInputClient;
 
 // A mock ui::InputMethod implementation for testing. You can get the instance
 // of this class as the global input method with calling
-// SetUpInputMethodFacotryForTesting() which is declared in
+// SetUpInputMethodFacotryForTesting() which is decleared in
 // ui/base/ime/input_method_factory.h
 class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  public:
-  class Observer : public InputMethod::Observer {
+  class Observer {
    public:
     virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
     virtual void OnFocus() = 0;
     virtual void OnBlur() = 0;
     virtual void OnCaretBoundsChanged(const TextInputClient* client) = 0;
-
-    // InputMethod::Observer overrides
-    virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
   };
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
@@ -54,8 +51,9 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
-  virtual void AddObserver(InputMethod::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(InputMethod::Observer* observer) OVERRIDE;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   TextInputClient* text_input_client_;
