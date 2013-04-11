@@ -10,10 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -60,6 +63,9 @@
 using content::UserMetricsAction;
 
 namespace {
+
+// How long to delay showing the first run bubble (in milliseconds).
+const int kFirstRunBubbleDelayMs = 200;
 
 // Flags for functions of similar name.
 bool should_show_welcome_page_ = false;
@@ -512,12 +518,16 @@ void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
   new FirstRunBubbleLauncher();
 }
 
-FirstRunBubbleLauncher::FirstRunBubbleLauncher() {
+FirstRunBubbleLauncher::FirstRunBubbleLauncher()
+    : browser_(NULL) {
+  BrowserList::AddObserver(this);
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  content::NotificationService::AllSources());
 }
 
-FirstRunBubbleLauncher::~FirstRunBubbleLauncher() {}
+FirstRunBubbleLauncher::~FirstRunBubbleLauncher() {
+  BrowserList::RemoveObserver(this);
+}
 
 void FirstRunBubbleLauncher::Observe(
     int type,
@@ -570,12 +580,37 @@ void FirstRunBubbleLauncher::Observe(
   if (global_error_service->GetFirstGlobalErrorWithBubbleView() != NULL)
     return;
 
+  // Make sure we don't get notified again after resetting the
+  // kShowFirstRunBubbleOption preference below.
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                    content::NotificationService::AllSources());
+
   // Reset the preference and notifications to avoid showing the bubble again.
   prefs->SetInteger(prefs::kShowFirstRunBubbleOption,
                     FIRST_RUN_BUBBLE_DONT_SHOW);
 
+  // Show the bubble soon.
+  browser_ = browser;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(
+          &FirstRunBubbleLauncher::DoShowFirstRunBubble,
+          AsWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kFirstRunBubbleDelayMs));
+}
+
+void FirstRunBubbleLauncher::OnBrowserRemoved(Browser* browser) {
+  if (browser_ == browser) {
+    // Destroy this bubble launcher.
+    delete this;
+  }
+}
+
+void FirstRunBubbleLauncher::DoShowFirstRunBubble() {
+  DCHECK(browser_);
+
   // Show the bubble now and destroy this bubble launcher.
-  browser->ShowFirstRunBubble();
+  browser_->ShowFirstRunBubble();
   delete this;
 }
 
