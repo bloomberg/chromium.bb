@@ -52,7 +52,6 @@ private:
     virtual bool isVisible() const;
     virtual bool isOffScreen() const;
     virtual bool isSelected() const;
-    virtual String nameForMSAA() const;
     virtual void setSelected(bool);
     virtual bool canSetSelectedAttribute() const;
     virtual LayoutRect elementRect() const;

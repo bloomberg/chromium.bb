@@ -63,9 +63,6 @@ public:
     virtual String accessibilityDescription() const;
     virtual AccessibilityObject* parentObject() const;
     
-    virtual String stringValueForMSAA() const;
-    virtual String nameForMSAA() const;
-
     virtual LayoutRect elementRect() const;
 
 private:    

@@ -129,7 +129,6 @@ public:
     virtual Element* actionElement() const;
     Element* mouseButtonListener() const;
     virtual Element* anchorElement() const;
-    AccessibilityObject* menuForMenuButton() const;
    
     virtual void changeValueByPercent(float percentChange);
  
@@ -152,7 +151,6 @@ public:
 protected:
     AccessibilityRole m_ariaRole;
     bool m_childrenDirty;
-    mutable AccessibilityRole m_roleForMSAA;
 #ifndef NDEBUG
     bool m_initialized;
 #endif

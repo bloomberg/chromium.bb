@@ -148,14 +148,4 @@ LayoutRect AccessibilityImageMapLink::elementRect() const
     return m_areaElement->computeRect(renderer);
 }
     
-String AccessibilityImageMapLink::stringValueForMSAA() const
-{
-    return url();
-}
-
-String AccessibilityImageMapLink::nameForMSAA() const
-{
-    return accessibilityDescription();
-}
-
 } // namespace WebCore

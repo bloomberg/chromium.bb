@@ -232,67 +232,6 @@ enum AccessibilitySortDirection {
     SortDirectionDescending,
 };
 
-enum AccessibilitySearchDirection {
-    SearchDirectionNext = 1,
-    SearchDirectionPrevious
-};
-
-enum AccessibilitySearchKey {
-    AnyTypeSearchKey = 1,
-    BlockquoteSameLevelSearchKey,
-    BlockquoteSearchKey,
-    BoldFontSearchKey,
-    ButtonSearchKey,
-    CheckBoxSearchKey,
-    ControlSearchKey,
-    DifferentTypeSearchKey,
-    FontChangeSearchKey,
-    FontColorChangeSearchKey,
-    FrameSearchKey,
-    GraphicSearchKey,
-    HeadingLevel1SearchKey,
-    HeadingLevel2SearchKey,
-    HeadingLevel3SearchKey,
-    HeadingLevel4SearchKey,
-    HeadingLevel5SearchKey,
-    HeadingLevel6SearchKey,
-    HeadingSameLevelSearchKey,
-    HeadingSearchKey,
-    HighlightedSearchKey,
-    ItalicFontSearchKey,
-    LandmarkSearchKey,
-    LinkSearchKey,
-    ListSearchKey,
-    LiveRegionSearchKey,
-    MisspelledWordSearchKey,
-    PlainTextSearchKey,
-    RadioGroupSearchKey,
-    SameTypeSearchKey,
-    StaticTextSearchKey,
-    StyleChangeSearchKey,
-    TableSameLevelSearchKey,
-    TableSearchKey,
-    TextFieldSearchKey,
-    UnderlineSearchKey,
-    UnvisitedLinkSearchKey,
-    VisitedLinkSearchKey
-};
-
-struct AccessibilitySearchCriteria {
-    AccessibilityObject* startObject;
-    AccessibilitySearchDirection searchDirection;
-    Vector<AccessibilitySearchKey> searchKeys;
-    String* searchText;
-    unsigned resultsLimit;
-    
-    AccessibilitySearchCriteria(AccessibilityObject* o, AccessibilitySearchDirection d, String* t, unsigned l)
-    : startObject(o)
-    , searchDirection(d)
-    , searchText(t)
-    , resultsLimit(l)
-    { }
-};
-
 struct VisiblePositionRange {
 
     VisiblePosition start;
@@ -352,8 +291,6 @@ public:
     virtual bool isAccessibilityScrollView() const { return false; }
     virtual bool isAccessibilitySVGRoot() const { return false; }
 
-    bool accessibilityObjectContainsText(String *) const;
-    
     virtual bool isAnchor() const { return false; }
     virtual bool isAttachment() const { return false; }
     virtual bool isHeading() const { return false; }
@@ -413,7 +350,6 @@ public:
     bool isCheckboxOrRadio() const { return isCheckbox() || isRadioButton(); }
     bool isScrollView() const { return roleValue() == ScrollAreaRole; }
     bool isCanvas() const { return roleValue() == CanvasRole; }
-    bool isPopUpButton() const { return roleValue() == PopUpButtonRole; }
     bool isBlockquote() const;
     bool isLandmark() const;
     bool isColorWell() const { return roleValue() == ColorWellRole; }
@@ -436,7 +372,6 @@ public:
     virtual bool isExpanded() const;
     virtual bool isVisible() const { return true; }
     virtual bool isCollapsed() const { return false; }
-    virtual void setIsExpanded(bool) { }
 
     // In a multi-select list, many items can be selected but only one is active at a time.
     virtual bool isSelectedOptionActive() const { return false; }
@@ -448,7 +383,6 @@ public:
     virtual bool hasSameFont(RenderObject*) const { return false; }
     virtual bool hasSameFontColor(RenderObject*) const { return false; }
     virtual bool hasSameStyle(RenderObject*) const { return false; }
-    bool hasStaticText() const { return roleValue() == StaticTextRole; }
     virtual bool hasUnderline() const { return false; }
     bool hasHighlighting() const;
 
@@ -503,7 +437,6 @@ public:
     virtual bool supportsARIADropping() const { return false; }
     virtual bool supportsARIADragging() const { return false; }
     virtual bool isARIAGrabbed() { return false; }
-    virtual void setARIAGrabbed(bool) { }
     virtual void determineARIADropEffects(Vector<String>&) { }
     
     // Called on the root AX object to return the deepest available element.
@@ -521,7 +454,6 @@ public:
     virtual AccessibilityObject* parentObjectUnignored() const;
     virtual AccessibilityObject* parentObjectIfExists() const { return 0; }
     static AccessibilityObject* firstAccessibleObjectFromNode(const Node*);
-    void findMatchingObjects(AccessibilitySearchCriteria*, AccessibilityChildrenVector&);
 
     virtual AccessibilityObject* observableObject() const { return 0; }
     virtual void linkedUIElements(AccessibilityChildrenVector&) const { }
@@ -558,7 +490,6 @@ public:
     // Only if isColorWell()
     virtual void colorValue(int& r, int& g, int& b) const { r = 0; g = 0; b = 0; }
 
-    void setRoleValue(AccessibilityRole role) { m_role = role; }
     virtual AccessibilityRole roleValue() const { return m_role; }
 
     virtual AXObjectCache* axObjectCache() const;
@@ -634,9 +565,6 @@ public:
     virtual AccessibilityObject* activeDescendant() const { return 0; }    
     virtual void handleActiveDescendantChanged() { }
     virtual void handleAriaExpandedChanged() { }
-    bool isDescendantOfObject(const AccessibilityObject*) const;
-    bool isAncestorOfObject(const AccessibilityObject*) const;
-    AccessibilityObject* firstAnonymousBlockChild() const;
     
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
     bool hasAttribute(const QualifiedName&) const;
@@ -646,12 +574,6 @@ public:
     virtual VisiblePositionRange visiblePositionRangeForLine(unsigned) const { return VisiblePositionRange(); }
     
     VisiblePositionRange visiblePositionRangeForUnorderedPositions(const VisiblePosition&, const VisiblePosition&) const;
-    VisiblePositionRange positionOfLeftWord(const VisiblePosition&) const;
-    VisiblePositionRange positionOfRightWord(const VisiblePosition&) const;
-    VisiblePositionRange leftLineVisiblePositionRange(const VisiblePosition&) const;
-    VisiblePositionRange rightLineVisiblePositionRange(const VisiblePosition&) const;
-    VisiblePositionRange sentenceForPosition(const VisiblePosition&) const;
-    VisiblePositionRange paragraphForPosition(const VisiblePosition&) const;
     VisiblePositionRange styleRangeForPosition(const VisiblePosition&) const;
     VisiblePositionRange visiblePositionRangeForRange(const PlainTextRange&) const;
 
@@ -663,14 +585,7 @@ public:
     virtual VisiblePosition visiblePositionForPoint(const IntPoint&) const { return VisiblePosition(); }
     VisiblePosition nextVisiblePosition(const VisiblePosition& visiblePos) const { return visiblePos.next(); }
     VisiblePosition previousVisiblePosition(const VisiblePosition& visiblePos) const { return visiblePos.previous(); }
-    VisiblePosition nextWordEnd(const VisiblePosition&) const;
-    VisiblePosition previousWordStart(const VisiblePosition&) const;
-    VisiblePosition nextLineEndPosition(const VisiblePosition&) const;
-    VisiblePosition previousLineStartPosition(const VisiblePosition&) const;
-    VisiblePosition nextSentenceEndPosition(const VisiblePosition&) const;
-    VisiblePosition previousSentenceStartPosition(const VisiblePosition&) const;
-    VisiblePosition nextParagraphEndPosition(const VisiblePosition&) const;
-    VisiblePosition previousParagraphStartPosition(const VisiblePosition&) const;
+
     virtual VisiblePosition visiblePositionForIndex(unsigned, bool /*lastIndexOK */) const { return VisiblePosition(); }
     
     virtual VisiblePosition visiblePositionForIndex(int) const { return VisiblePosition(); }
@@ -692,12 +607,6 @@ public:
     String listMarkerTextForNodeAndPosition(Node*, const VisiblePosition&) const;
 
     unsigned doAXLineForIndex(unsigned);
-
-    virtual String stringValueForMSAA() const { return String(); }
-    virtual String stringRoleForMSAA() const { return String(); }
-    virtual String nameForMSAA() const { return String(); }
-    virtual String descriptionForMSAA() const { return String(); }
-    virtual AccessibilityRole roleValueForMSAA() const { return roleValue(); }
 
     // Used by an ARIA tree to get all its rows.
     void ariaTreeRows(AccessibilityChildrenVector&);
@@ -793,10 +702,6 @@ protected:
     virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
     virtual void scrollTo(const IntPoint&) const { }
 
-    static bool isAccessibilityObjectSearchMatchAtIndex(AccessibilityObject*, AccessibilitySearchCriteria*, size_t);
-    static bool isAccessibilityObjectSearchMatch(AccessibilityObject*, AccessibilitySearchCriteria*);
-    static bool isAccessibilityTextSearchMatch(AccessibilityObject*, AccessibilitySearchCriteria*);
-    static bool objectMatchesSearchCriteriaWithResultLimit(AccessibilityObject*, AccessibilitySearchCriteria*, AccessibilityChildrenVector&);
     virtual AccessibilityRole buttonRoleType() const;
     bool ariaIsHidden() const;
 

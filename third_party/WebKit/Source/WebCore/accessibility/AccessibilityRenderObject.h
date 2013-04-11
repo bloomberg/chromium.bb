@@ -119,7 +119,6 @@ public:
     // Should be called on the root accessibility object to kick off a hit test.
     virtual AccessibilityObject* accessibilityHitTest(const IntPoint&) const;
 
-    FrameView* frameViewIfRenderView() const;
     virtual Element* anchorElement() const;
     
     virtual LayoutRect boundingBoxRect() const;
@@ -135,7 +134,6 @@ public:
 
     RenderView* topRenderer() const;
     RenderTextControl* textControl() const;
-    FrameView* topDocumentFrameView() const;  
     Document* topDocument() const;
     HTMLLabelElement* labelElementContainer() const;
     
@@ -152,7 +150,6 @@ public:
     virtual const String& actionVerb() const;
     virtual Widget* widget() const;
     virtual Widget* widgetForAttachmentView() const;
-    virtual void getDocumentLinks(AccessibilityChildrenVector&);
     virtual FrameView* documentFrameView() const;
 
     virtual void clearChildren();
@@ -204,16 +201,9 @@ public:
     virtual String doAXStringForRange(const PlainTextRange&) const;
     virtual IntRect doAXBoundsForRange(const PlainTextRange&) const;
     
-    virtual String stringValueForMSAA() const;
-    virtual String stringRoleForMSAA() const;
-    virtual String nameForMSAA() const;
-    virtual String descriptionForMSAA() const;
-    virtual AccessibilityRole roleValueForMSAA() const;
-
 protected:
     RenderObject* m_renderer;
     
-    void setRenderObject(RenderObject* renderer) { m_renderer = renderer; }
     bool needsToUpdateChildren() const { return m_childrenDirty; }
     ScrollableArea* getScrollableAreaIfScrollable() const;
     void scrollTo(const IntPoint&) const;
@@ -228,7 +218,6 @@ private:
     void ariaListboxVisibleChildren(AccessibilityChildrenVector&);
     bool isAllowedChildOfTree() const;
     bool hasTextAlternative() const;
-    String positionalDescriptionForMSAA() const;
     PlainTextRange ariaSelectedTextRange() const;
     Element* rootEditableElementForPosition(const Position&) const;
     bool nodeIsTextControl(const Node*) const;
@@ -262,7 +251,6 @@ private:
     void ariaSelectedRows(AccessibilityChildrenVector&);
     
     bool elementAttributeValue(const QualifiedName&) const;
-    void setElementAttributeValue(const QualifiedName&, bool);
     
     virtual ESpeak speakProperty() const;
     

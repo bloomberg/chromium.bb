@@ -53,7 +53,6 @@ AccessibilityNodeObject::AccessibilityNodeObject(Node* node)
     : AccessibilityObject()
     , m_ariaRole(UnknownRole)
     , m_childrenDirty(false)
-    , m_roleForMSAA(UnknownRole)
 #ifndef NDEBUG
     , m_initialized(false)
 #endif
@@ -1078,11 +1077,6 @@ Element* AccessibilityNodeObject::menuElementForMenuButton() const
         return 0;
 
     return siblingWithAriaRole("menu", node());
-}
-
-AccessibilityObject* AccessibilityNodeObject::menuForMenuButton() const
-{
-    return axObjectCache()->getOrCreate(menuElementForMenuButton());
 }
 
 Element* AccessibilityNodeObject::menuItemElementForMenu() const
