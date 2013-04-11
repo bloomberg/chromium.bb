@@ -738,6 +738,12 @@ int32_t NaClSysDyncodeCreate(struct NaClAppThread *natp,
   uint8_t                     *code_copy;
   int32_t                     retval = -NACL_ABI_EINVAL;
 
+  if (!nap->enable_dyncode_syscalls) {
+    NaClLog(LOG_WARNING,
+            "NaClSysDyncodeCreate: Dynamic code syscalls are disabled\n");
+    return -NACL_ABI_ENOSYS;
+  }
+
   src_addr = NaClUserToSysAddrRange(nap, src, size);
   if (kNaClBadAddress == src_addr) {
     NaClLog(1, "NaClSysDyncodeCreate: Source address out of range\n");
@@ -777,6 +783,12 @@ int32_t NaClSysDyncodeModify(struct NaClAppThread *natp,
   int                         validator_result;
   int32_t                     retval = -NACL_ABI_EINVAL;
   struct NaClDynamicRegion    *region;
+
+  if (!nap->enable_dyncode_syscalls) {
+    NaClLog(LOG_WARNING,
+            "NaClSysDyncodeModify: Dynamic code syscalls are disabled\n");
+    return -NACL_ABI_ENOSYS;
+  }
 
   if (NULL == nap->text_shm) {
     NaClLog(1, "NaClSysDyncodeModify: Dynamic loading not enabled\n");
@@ -890,6 +902,12 @@ int32_t NaClSysDyncodeDelete(struct NaClAppThread *natp,
   uint8_t                     *mapped_addr;
   int32_t                     retval = -NACL_ABI_EINVAL;
   struct NaClDynamicRegion    *region;
+
+  if (!nap->enable_dyncode_syscalls) {
+    NaClLog(LOG_WARNING,
+            "NaClSysDyncodeDelete: Dynamic code syscalls are disabled\n");
+    return -NACL_ABI_ENOSYS;
+  }
 
   if (NULL == nap->text_shm) {
     NaClLog(1, "NaClSysDyncodeDelete: Dynamic loading not enabled\n");

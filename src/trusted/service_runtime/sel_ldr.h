@@ -309,6 +309,7 @@ struct NaClApp {
   /*
    * may reject nexes that are incompatible w/ dynamic-text in the near future
    */
+  int                       enable_dyncode_syscalls;
   int                       use_shm_for_dynamic_text;
   struct NaClDesc           *text_shm;
   struct NaClMutex          dynamic_load_mutex;

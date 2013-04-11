@@ -78,6 +78,11 @@ dyncode_disabled_test_nexe = env.ComponentProgram(
     ['dyncode_disabled_test.c'],
     EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
+dyncode_syscall_disabled_test_nexe = env.ComponentProgram(
+    env.ProgramNameForNmf('dyncode_syscall_disabled_test'),
+    ['dyncode_syscall_disabled.c', template_obj],
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}', '${TESTRUNNER_LIBS}'])
+
 debug_mode_test_nexe = env.ComponentProgram('debug_mode_test',
                                             ['debug_mode_test.c',
                                              template_obj],
@@ -137,6 +142,13 @@ if not env.Bit('tests_use_irt'):
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
   env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test',
                          is_broken=is_broken)
+
+node = env.CommandSelLdrTestNacl(
+    'dyncode_syscall_disabled_test.out',
+    dyncode_syscall_disabled_test_nexe,
+    osenv='NACL_DISABLE_DYNCODE_SYSCALLS=1')
+env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_syscall_disabled_test',
+                       is_broken=is_broken)
 
 node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
                                  dynamic_modify_test_nexe,

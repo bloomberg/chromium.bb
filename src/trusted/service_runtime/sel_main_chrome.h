@@ -53,6 +53,9 @@ struct NaClChromeMainArgs {
   /* Whether to enable NaCl's built-in GDB RSP debug stub.  Boolean. */
   int enable_debug_stub;
 
+  /* Whether to enable NaCl's dynamic code system calls.  Boolean. */
+  int enable_dyncode_syscalls;
+
 #if NACL_LINUX || NACL_OSX
   /*
    * Server socket that will be used by debug stub to accept connections

@@ -52,6 +52,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->initial_ipc_desc = NULL;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
+  args->enable_dyncode_syscalls = 1;
 #if NACL_LINUX || NACL_OSX
   args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
 #endif
@@ -189,6 +190,9 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   }
 
   errcode = LOAD_OK;
+
+  /* Allow or disallow dyncode API based on args. */
+  nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;
 
 #if NACL_LINUX
   g_prereserved_sandbox_size = args->prereserved_sandbox_size;

@@ -61,6 +61,10 @@ static int IsEnvironmentVariableSet(char const *env_name) {
   return NULL != getenv(env_name);
 }
 
+static int ShouldEnableDyncodeSyscalls(void) {
+  return !IsEnvironmentVariableSet("NACL_DISABLE_DYNCODE_SYSCALLS");
+}
+
 static int ShouldEnableDynamicLoading(void) {
   return !IsEnvironmentVariableSet("NACL_DISABLE_DYNAMIC_LOADING");
 }
@@ -146,6 +150,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   }
   nap->effp = (struct NaClDescEffector *) effp;
 
+  nap->enable_dyncode_syscalls = ShouldEnableDyncodeSyscalls();
   nap->use_shm_for_dynamic_text = ShouldEnableDynamicLoading();
   nap->text_shm = NULL;
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {

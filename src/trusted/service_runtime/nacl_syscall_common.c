@@ -1140,6 +1140,12 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     }
   }
 
+  if (0 != (NACL_ABI_PROT_EXEC & prot) && !nap->enable_dyncode_syscalls) {
+    NaClLog(LOG_WARNING,
+            "NaClSysMmap: PROT_EXEC when dyncode syscalls are disabled.\n");
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
   if (NULL == ndp && 0 != (NACL_ABI_PROT_EXEC & prot)) {
     NaClLog(3, "NaClSysMmap: asked for executable anonymous pages?!?\n");
     map_result = -NACL_ABI_EINVAL;
