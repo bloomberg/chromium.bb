@@ -15,7 +15,6 @@
 namespace gestures {
 
 using std::string;
-using std::vector;
 
 class ImmediateInterpreterTest : public ::testing::Test {};
 
@@ -2006,7 +2005,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full);
   std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex, hwsgs_full + arraysize(hwsgs));
 
-  vector<vector<FingerState> > thumb_fs(arraysize(hwsgs));
+  std::vector<std::vector<FingerState> > thumb_fs(arraysize(hwsgs));
   const FingerState& fs_thumb = fs[18];
   bool thumb_gestures = true;
   for (size_t i = 0; i < kT5R2TestFirstIndex; ++i) {
@@ -2015,7 +2014,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       thumb_gestures = true;  // Start out w/ thumb being able to gesture
     if (hs->finger_cnt > 0)
       thumb_gestures = false;  // Once a finger is present, thumb can't gesture
-    vector<FingerState>& newfs = thumb_fs[i];
+    std::vector<FingerState>& newfs = thumb_fs[i];
     newfs.resize(hs->finger_cnt + 1);
     newfs[0] = fs_thumb;
     for (size_t j = 0; j < hs->finger_cnt; ++j)

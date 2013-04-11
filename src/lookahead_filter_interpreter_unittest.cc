@@ -17,7 +17,6 @@
 
 using std::deque;
 using std::pair;
-using std::vector;
 
 namespace gestures {
 
@@ -305,7 +304,7 @@ class LookaheadFilterInterpreterNoTapSetTestInterpreter
 
   std::set<short> finger_ids_;
   size_t interpret_call_count_;
-  vector<short> expected_finger_cnts_;
+  std::vector<short> expected_finger_cnts_;
 };
 
 // Tests that with a zero delay, we can still avoid unnecessary splitting
