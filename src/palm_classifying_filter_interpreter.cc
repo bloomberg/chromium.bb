@@ -174,6 +174,10 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
   RemoveMissingIdsFromSet(&fingers_not_in_edge_, hwstate);
   RemoveMissingIdsFromSet(&was_near_other_fingers_, hwstate);
 
+  // Some finger(s) just leaves, skip this update for stability
+  if (prev_fingerstates_.size() > hwstate.finger_cnt)
+    return;
+
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     if (!(FingerInPalmEnvelope(fs) || FingerInBottomArea(fs)))
