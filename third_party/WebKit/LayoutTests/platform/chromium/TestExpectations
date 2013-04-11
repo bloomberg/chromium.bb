@@ -1619,9 +1619,6 @@ crbug.com/26737 fast/js/prototypes.html [ Failure ]
 # WebKit 47777:47790 - getOwnPropertyDescriptor
 crbug.com/20345 fast/js/getOwnPropertyDescriptor.html [ Failure ]
 
-# WebKit merge 48500:48585, newly implemented Object.defineProperty.
-crbug.com/22526 fast/js/Object-defineProperty.html [ Failure ]
-
 # Once chromium decides to definitely enable MathML, we can delete the old platform/chromium baseline for this:
 webkit.org/b/96960 http/tests/xmlviewer/dumpAsText/mathml.xml [ Pass Failure ]
 
