@@ -631,7 +631,8 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           entry->content_type,
           base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&queue_entry)));
+                     base::Passed(&queue_entry)),
+          google_apis::ProgressCallback());
     }
     break;
 
@@ -644,7 +645,8 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
           entry->etag,
           base::Bind(&DriveScheduler::OnUploadCompletionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&queue_entry)));
+                     base::Passed(&queue_entry)),
+          google_apis::ProgressCallback());
     }
     break;
 

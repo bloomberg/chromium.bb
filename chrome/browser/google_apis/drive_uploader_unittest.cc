@@ -303,7 +303,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
@@ -335,7 +336,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   // 512KB upload should not be split into multiple chunks.
@@ -368,7 +370,8 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
@@ -401,7 +404,8 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
       kTestDocumentTitle,
       kTestMimeType,
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
@@ -434,7 +438,8 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, error);
@@ -460,7 +465,8 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
       kTestMimeType,
       kTestETag,
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_UPLOAD_OK, error);
@@ -487,7 +493,8 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
       kTestMimeType,
       kDestinationETag,
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_UPLOAD_ERROR_CONFLICT, error);
@@ -513,7 +520,8 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       kTestMimeType,
       std::string(),  // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_UPLOAD_ERROR_ABORT, error);
@@ -533,7 +541,8 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       kTestMimeType,
       std::string(),             // etag
       test_util::CreateCopyResultCallback(
-          &error, &drive_path, &file_path, &resource_entry));
+          &error, &drive_path, &file_path, &resource_entry),
+      google_apis::ProgressCallback());
   test_util::RunBlockingPoolTask();
 
   // Should return failure without doing any attempt to connect to the server.

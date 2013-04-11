@@ -55,7 +55,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+      const google_apis::UploadCompletionCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
     scoped_ptr<base::Value> file_entry_data(
@@ -81,7 +82,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
-      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+      const google_apis::UploadCompletionCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
     scoped_ptr<base::Value> file_entry_data(

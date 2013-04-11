@@ -49,12 +49,14 @@ struct DriveUploader::UploadFileInfo {
                  const base::FilePath& drive_path,
                  const base::FilePath& local_path,
                  const std::string& content_type,
-                 const UploadCompletionCallback& callback)
+                 const UploadCompletionCallback& callback,
+                 const ProgressCallback& progress_callback)
       : upload_mode(upload_mode),
         drive_path(drive_path),
         file_path(local_path),
         content_type(content_type),
         completion_callback(callback),
+        progress_callback(progress_callback),
         content_length(0),
         next_send_position(0),
         file_stream(new net::FileStream(NULL)),
@@ -98,6 +100,9 @@ struct DriveUploader::UploadFileInfo {
 
   // Callback to be invoked once the upload has finished.
   const UploadCompletionCallback completion_callback;
+
+  // Callback to periodically notify the upload progress.
+  const ProgressCallback progress_callback;
 
   // Location URL where file is to be uploaded to, returned from
   // InitiateUpload. Used for the subsequent ResumeUpload requests.
@@ -143,7 +148,8 @@ void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
                                   const base::FilePath& local_file_path,
                                   const std::string& title,
                                   const std::string& content_type,
-                                  const UploadCompletionCallback& callback) {
+                                  const UploadCompletionCallback& callback,
+                                  const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!parent_resource_id.empty());
   DCHECK(!drive_file_path.empty());
@@ -158,7 +164,8 @@ void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
                                                     drive_file_path,
                                                     local_file_path,
                                                     content_type,
-                                                    callback)),
+                                                    callback,
+                                                    progress_callback)),
       base::Bind(&DriveUploader::StartInitiateUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  parent_resource_id,
@@ -171,7 +178,8 @@ void DriveUploader::UploadExistingFile(
     const base::FilePath& local_file_path,
     const std::string& content_type,
     const std::string& etag,
-    const UploadCompletionCallback& callback) {
+    const UploadCompletionCallback& callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!resource_id.empty());
   DCHECK(!drive_file_path.empty());
@@ -185,7 +193,8 @@ void DriveUploader::UploadExistingFile(
                                                     drive_file_path,
                                                     local_file_path,
                                                     content_type,
-                                                    callback)),
+                                                    callback,
+                                                    progress_callback)),
       base::Bind(&DriveUploader::StartInitiateUploadExistingFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id,

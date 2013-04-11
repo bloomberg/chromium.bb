@@ -442,7 +442,8 @@ void DriveFileSyncClient::UploadNewFile(
       local_file_path,
       title,
       mime_type,
-      base::Bind(&UploadResultAdapter, did_upload_callback));
+      base::Bind(&UploadResultAdapter, did_upload_callback),
+      google_apis::ProgressCallback());
 }
 
 void DriveFileSyncClient::UploadExistingFile(
@@ -737,7 +738,8 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       local_file_path,
       mime_type,
       entry->etag(),
-      base::Bind(&UploadResultAdapter, did_upload_callback));
+      base::Bind(&UploadResultAdapter, did_upload_callback),
+      google_apis::ProgressCallback());
 }
 
 bool DriveFileSyncClient::IsAuthenticated() const {
