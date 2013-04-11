@@ -31,7 +31,7 @@ NetworkStateInformer::NetworkStateInformer()
 NetworkStateInformer::~NetworkStateInformer() {
   CrosLibrary::Get()->GetNetworkLibrary()->
       RemoveNetworkManagerObserver(this);
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
+  if (NetworkPortalDetector::IsEnabled() &&
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->RemoveObserver(this);
   }
@@ -42,9 +42,9 @@ void NetworkStateInformer::Init() {
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
 
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
+  if (NetworkPortalDetector::IsEnabled() &&
       NetworkPortalDetector::GetInstance()) {
-    NetworkPortalDetector::GetInstance()->AddAndFireObserver(this);
+    NetworkPortalDetector::GetInstance()->AddObserver(this);
   }
 
   registrar_.Add(this,
@@ -172,7 +172,7 @@ void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     const Network* network) {
   DCHECK(network);
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
+  if (NetworkPortalDetector::IsEnabled() &&
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/error_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
@@ -81,8 +80,10 @@ void LocallyManagedUserCreationScreen::Show() {
   }
 
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  if (detector && !on_error_screen_)
-    detector->AddAndFireObserver(this);
+  if (detector && !on_error_screen_) {
+    detector->AddObserver(this);
+    detector->ForcePortalDetection();
+  }
   on_error_screen_ = false;
 }
 

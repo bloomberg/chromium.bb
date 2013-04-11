@@ -1184,8 +1184,6 @@
         'browser/chromeos/login/login_utils_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.cc',
         'browser/chromeos/login/mock_authenticator.h',
-        'browser/chromeos/login/mock_error_screen.cc',
-        'browser/chromeos/login/mock_error_screen.h',
         'browser/chromeos/login/mock_eula_screen.cc',
         'browser/chromeos/login/mock_eula_screen.h',
         'browser/chromeos/login/mock_network_screen.cc',
