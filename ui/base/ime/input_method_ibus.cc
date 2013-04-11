@@ -267,6 +267,13 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   previous_selection_range_ = selection_range;
   previous_surrounding_text_ = surrounding_text;
 
+  if (!selection_range.IsValid()) {
+    // TODO(nona): Ideally selection_range should not be invalid.
+    // TODO(nona): If javascript changes the focus on page loading, even (0,0)
+    //             can not be obtained. Need investigation.
+    return;
+  }
+
   // Here SetSurroundingText accepts relative position of |surrounding_text|, so
   // we have to convert |selection_range| from node coordinates to
   // |surrounding_text| coordinates.

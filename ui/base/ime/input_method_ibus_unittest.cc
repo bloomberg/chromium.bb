@@ -1219,6 +1219,42 @@ TEST_F(InputMethodIBusTest, SurroundingText_PartialText) {
             mock_ibus_input_context_client_->set_surrounding_text_call_count());
 }
 
+TEST_F(InputMethodIBusTest, SurroundingText_BecomeEmptyText) {
+  SetCreateContextSuccessHandler();
+  ime_->Init(true);
+  // Click a text input form.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+  // Start the daemon.
+  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address",
+                                                  base::Bind(&base::DoNothing));
+  mock_ibus_daemon_controller_->EmulateConnect();
+
+  // Set the TextInputClient behaviors.
+  // If the surrounding text becomes empty, text_range become (0, 0) and
+  // selection range become invalid.
+  surrounding_text_ = UTF8ToUTF16("");
+  text_range_ = ui::Range(0, 0);
+  selection_range_ = ui::Range::InvalidRange();
+
+  // Set the verifier for SetSurroundingText mock call.
+  SetSurroundingTextVerifier verifier("", 0, 0);
+
+  mock_ibus_input_context_client_->set_set_surrounding_text_handler(
+      base::Bind(&SetSurroundingTextVerifier::Verify,
+                 base::Unretained(&verifier)));
+  ime_->OnCaretBoundsChanged(this);
+
+  // Check the call count.
+  EXPECT_EQ(0,
+            mock_ibus_input_context_client_->set_surrounding_text_call_count());
+
+  // Should not be called twice with same condition.
+  ime_->OnCaretBoundsChanged(this);
+  EXPECT_EQ(0,
+            mock_ibus_input_context_client_->set_surrounding_text_call_count());
+}
+
 class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
  public:
   InputMethodIBusKeyEventTest() {}
