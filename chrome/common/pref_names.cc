@@ -2184,6 +2184,10 @@ const char kBackgroundModeEnabled[] = "background_mode.enabled";
 const char kHardwareAccelerationModeEnabled[] =
   "hardware_acceleration_mode.enabled";
 
+// Hardware acceleration mode from previous browser launch.
+const char kHardwareAccelerationModePrevious[] =
+  "hardware_acceleration_mode_previous";
+
 // List of protocol handlers.
 const char kRegisteredProtocolHandlers[] =
   "custom_handlers.registered_protocol_handlers";

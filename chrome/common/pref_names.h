@@ -788,6 +788,7 @@ extern const char kUserCreatedLoginItem[];
 extern const char kUserRemovedLoginItem[];
 extern const char kBackgroundModeEnabled[];
 extern const char kHardwareAccelerationModeEnabled[];
+extern const char kHardwareAccelerationModePrevious[];
 
 extern const char kDevicePolicyRefreshRate[];
 extern const char kUserPolicyRefreshRate[];
