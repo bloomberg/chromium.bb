@@ -20,10 +20,13 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManager} volumeManager The volume manager.
  * @param {boolean} isDriveEnabled True if DRIVE enabled (initial value).
+ * @param {boolean} showSpecialSearchRoots True if special-search roots are
+ *     available. They should be hidden for the dialogs to save files.
  * @constructor
  */
 function DirectoryModel(root, singleSelection, fileFilter,
-                        metadataCache, volumeManager, isDriveEnabled) {
+                        metadataCache, volumeManager, isDriveEnabled,
+                        showSpecialSearchRoots) {
   this.root_ = root;
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
@@ -33,6 +36,7 @@ function DirectoryModel(root, singleSelection, fileFilter,
   this.rescanTime_ = null;
   this.scanFailures_ = 0;
   this.driveEnabled_ = isDriveEnabled;
+  this.showSpecialSearchRoots_ = showSpecialSearchRoots;
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',
@@ -86,6 +90,19 @@ DirectoryModel.fakeDriveSharedWithMeEntry_ = {
   fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
   isDirectory: true
 };
+
+
+/**
+ * List of fake entries for special searches.
+ * TODO(haruki): Add the entry for "Recent".
+ *
+ * @type {Array.<Object>}
+ * @const
+ * @private
+ */
+DirectoryModel.fakeDriveSpecialSearchEntries_ =
+    [DirectoryModel.fakeDriveSharedWithMeEntry_,
+     DirectoryModel.fakeDriveOfflineEntry_];
 
 /**
  * DirectoryModel extends cr.EventTarget.
@@ -989,7 +1006,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     archives: null,
     removables: null,
     drive: null,
-    driveFakeRoots: null
+    driveSpecialSearchRoots: null
   };
   var self = this;
 
@@ -1001,7 +1018,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
 
     callback(groups.downloads.
              concat(groups.drive).
-             concat(groups.driveFakeRoots).
+             concat(groups.driveSpecialSearchRoots).
              concat(groups.archives).
              concat(groups.removables));
     metrics.recordInterval('Load.Roots');
@@ -1037,9 +1054,8 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
-    // TODO(haruki): Add fake special search entries.
-    // http://crbug.com/168742 http://crbug.com/168741 http://crbug.com/168739.
-    groups.driveFakeRoots = [];
+    groups.driveSpecialSearchRoots = this.showSpecialSearchRoots_ ?
+        DirectoryModel.fakeDriveSpecialSearchEntries_ : [];
     var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
       readSingle(DirectoryModel.fakeDriveEntry_.fullPath, 'drive', fake);
@@ -1048,7 +1064,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
       done();
     }
   } else {
-    groups.driveFakeRoots = [];
+    groups.driveSpecialSearchRoots = [];
     groups.drive = [];
     done();
   }

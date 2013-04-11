@@ -897,6 +897,11 @@ DialogType.isModal = function(type) {
         this.dialogType == DialogType.SELECT_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
+    var showSpecialSearchRoots =
+        this.dialogType == DialogType.SELECT_OPEN_FILE ||
+        this.dialogType == DialogType.SELECT_OPEN_MULTI_FILE ||
+        this.dialogType == DialogType.FULL_PAGE;
+
     this.fileFilter_ = new FileFilter(
         this.metadataCache_,
         false  /* Don't show dot files by default. */);
@@ -907,7 +912,8 @@ DialogType.isModal = function(type) {
         this.fileFilter_,
         this.metadataCache_,
         this.volumeManager_,
-        this.isDriveEnabled());
+        this.isDriveEnabled(),
+        showSpecialSearchRoots);
 
     this.directoryModel_.start();
 
