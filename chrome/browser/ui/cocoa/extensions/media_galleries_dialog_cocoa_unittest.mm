@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
@@ -21,6 +22,7 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
   gallery.device_id =
       MediaStorageUtil::MakeDeviceId(MediaStorageUtil::FIXED_MASS_STORAGE,
                                      base::Int64ToString(pref_id));
+  gallery.display_name = ASCIIToUTF16("name");
   return gallery;
 }
 
@@ -51,11 +53,10 @@ TEST_F(MediaGalleriesDialogTest, InitializeCheckboxes) {
           MediaGalleriesDialog::Create(&controller)));
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 
-  // Note that checkboxes_ is sorted from bottom up.
-  NSButton* checkbox1 = [dialog->checkboxes_ objectAtIndex:1];
+  NSButton* checkbox1 = [dialog->checkboxes_ objectAtIndex:0];
   EXPECT_EQ([checkbox1 state], NSOnState);
 
-  NSButton* checkbox2 = [dialog->checkboxes_ objectAtIndex:0];
+  NSButton* checkbox2 = [dialog->checkboxes_ objectAtIndex:1];
   EXPECT_EQ([checkbox2 state], NSOffState);
 }
 
@@ -104,6 +105,8 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   CGFloat old_container_height = NSHeight([dialog->checkbox_container_ frame]);
 
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
+  permissions[1] = MediaGalleriesDialogController::GalleryPermission(
+      gallery1, true);
   dialog->UpdateGallery(&gallery1, true);
   EXPECT_EQ(1U, [dialog->checkboxes_ count]);
 
@@ -113,6 +116,8 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   old_container_height = new_container_height;
 
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
+  permissions[2] = MediaGalleriesDialogController::GalleryPermission(
+      gallery2, true);
   dialog->UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 
@@ -121,6 +126,8 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   EXPECT_GT(new_container_height, old_container_height);
   old_container_height = new_container_height;
 
+  permissions[2] = MediaGalleriesDialogController::GalleryPermission(
+      gallery2, false);
   dialog->UpdateGallery(&gallery2, false);
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
 
@@ -142,13 +149,18 @@ TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
 
   // Add a couple of galleries.
   MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
+  permissions[1] = MediaGalleriesDialogController::GalleryPermission(
+      gallery1, true);
   dialog->UpdateGallery(&gallery1, true);
   MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
+  permissions[2] = MediaGalleriesDialogController::GalleryPermission(
+      gallery2, true);
   dialog->UpdateGallery(&gallery2, true);
   EXPECT_EQ(2U, [dialog->checkboxes_ count]);
   CGFloat old_container_height = NSHeight([dialog->checkbox_container_ frame]);
 
   // Remove a gallery.
+  permissions.erase(permissions.find(1));
   dialog->ForgetGallery(&gallery1);
   EXPECT_EQ(1U, [dialog->checkboxes_ count]);
 

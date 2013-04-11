@@ -56,13 +56,31 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
 
   NSButton* CheckboxForGallery(const MediaGalleryPrefInfo* gallery);
 
-  void UpdateGalleryCheckbox(NSButton* checkbox,
-                             const MediaGalleryPrefInfo* gallery,
-                             bool permitted);
-  void UpdateCheckboxContainerFrame();
+  void UpdateGalleryCheckbox(const MediaGalleryPrefInfo* gallery,
+                             bool permitted,
+                             CGFloat y_pos);
+
+  void InitDialogControls();
+  CGFloat CreateAddFolderButton();
+  CGFloat CreateAttachedCheckboxes(
+      CGFloat y_pos,
+      const MediaGalleriesDialogController::KnownGalleryPermissions&
+          permissions,
+      const MediaGalleriesDialogController::NewGalleryPermissions&
+          new_permissions);
+  CGFloat CreateUnattachedCheckboxes(
+      CGFloat y_pos,
+      const MediaGalleriesDialogController::KnownGalleryPermissions&
+          permissions,
+      const MediaGalleriesDialogController::NewGalleryPermissions&
+          new_permissions);
+  CGFloat CreateCheckboxSeparator(CGFloat y_pos);
 
   MediaGalleriesDialogController* controller_;  // weak
   scoped_ptr<ConstrainedWindowMac> window_;
+
+  // The alert that the dialog is being displayed as.
+  scoped_nsobject<ConstrainedWindowAlert> alert_;
 
   // True if the user has pressed accept.
   bool accepted_;
@@ -73,8 +91,8 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   // Container view for checkboxes.
   scoped_nsobject<NSView> checkbox_container_;
 
-  // The alert that the dialog is being displayed as.
-  scoped_nsobject<ConstrainedWindowAlert> alert_;
+  // Container view for the main dialog contents.
+  scoped_nsobject<NSBox> accessory_;
 
   // An Objective-C class to route callbacks from Cocoa code.
   scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller_;

@@ -6,14 +6,16 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-const CGFloat kCheckboxMargin = 5;
-const CGFloat kCheckboxMaxWidth = 350;
+#include "ui/base/resource/resource_bundle.h"
 
 @interface MediaGalleriesCocoaController : NSObject {
  @private
@@ -52,6 +54,10 @@ namespace chrome {
 
 namespace {
 
+const CGFloat kCheckboxMargin = 10;
+const CGFloat kCheckboxMaxWidth = 440;
+const CGFloat kScrollAreaHeight = 220;
+
 NSString* GetUniqueIDForGallery(const MediaGalleryPrefInfo* gallery) {
   return base::SysUTF8ToNSString(gallery->device_id + gallery->path.value());
 }
@@ -67,6 +73,7 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
   [cocoa_controller_ setDialog:this];
 
   alert_.reset([[ConstrainedWindowAlert alloc] init]);
+
   [alert_ setMessageText:base::SysUTF16ToNSString(controller_->GetHeader())];
   [alert_ setInformativeText:SysUTF16ToNSString(controller_->GetSubtext())];
   [alert_ addButtonWithTitle:
@@ -87,28 +94,7 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
   [[alert_ closeButton] setTarget:cocoa_controller_];
   [[alert_ closeButton] setAction:@selector(onCancelButton:)];
 
-  // Add gallery permission checkboxes inside an accessory view.
-  checkbox_container_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
-  checkboxes_.reset([[NSMutableArray alloc] init]);
-  const MediaGalleriesDialogController::KnownGalleryPermissions& permissions =
-      controller_->permissions();
-  for (MediaGalleriesDialogController::KnownGalleryPermissions::
-       const_reverse_iterator iter = permissions.rbegin();
-       iter != permissions.rend(); iter++) {
-    const MediaGalleriesDialogController::GalleryPermission& permission =
-        iter->second;
-    UpdateGalleryCheckbox(nil, &permission.pref_info, permission.allowed);
-  }
-  UpdateCheckboxContainerFrame();
-  [alert_ setAccessoryView:checkbox_container_];
-
-  // As a safeguard against the user skipping reading over the dialog and just
-  // confirming, the button will be unavailable for dialogs without any checks
-  // until the user toggles something.
-  [[[alert_ buttons] objectAtIndex:0] setEnabled:
-      controller_->HasPermittedGalleries()];
-
-  [alert_ layout];
+  InitDialogControls();
 
   // May be NULL during tests.
   if (controller->web_contents()) {
@@ -123,13 +109,181 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {
 }
 
+void MediaGalleriesDialogCocoa::InitDialogControls() {
+  accessory_.reset([[NSBox alloc] init]);
+  [accessory_ setBoxType:NSBoxCustom];
+  [accessory_ setBorderType:NSLineBorder];
+  [accessory_ setBorderWidth:1];
+  [accessory_ setCornerRadius:0];
+  [accessory_ setTitlePosition:NSNoTitle];
+  [accessory_ setBorderColor:[NSColor colorWithCalibratedRed:0.625
+                                                       green:0.625
+                                                        blue:0.625
+                                                       alpha:1.0]];
+
+  scoped_nsobject<NSScrollView> scroll_view(
+      [[NSScrollView alloc] initWithFrame:NSMakeRect(
+          0, 0, kCheckboxMaxWidth, kScrollAreaHeight)]);
+  [scroll_view setHasVerticalScroller:YES];
+  [scroll_view setHasHorizontalScroller:NO];
+  [scroll_view setBorderType:NSNoBorder];
+  [scroll_view setAutohidesScrollers:YES];
+  [[accessory_ contentView] addSubview:scroll_view];
+
+  // Add gallery permission checkboxes inside the scrolling view.
+  checkbox_container_.reset([[FlippedView alloc] initWithFrame:NSZeroRect]);
+  checkboxes_.reset([[NSMutableArray alloc] init]);
+  [scroll_view setDocumentView:checkbox_container_];
+
+  const MediaGalleriesDialogController::KnownGalleryPermissions& permissions =
+      controller_->permissions();
+  const MediaGalleriesDialogController::NewGalleryPermissions& new_permissions =
+      controller_->new_permissions();
+
+  CGFloat y_pos = kCheckboxMargin;
+
+  y_pos = CreateAttachedCheckboxes(y_pos, permissions, new_permissions);
+
+  y_pos = CreateCheckboxSeparator(y_pos);
+
+  y_pos = CreateUnattachedCheckboxes(y_pos, permissions, new_permissions);
+
+  [checkbox_container_ setFrame:NSMakeRect(0, 0, kCheckboxMaxWidth, y_pos + 2)];
+
+  // Resize to pack the scroll view if possible.
+  NSRect scroll_frame = [scroll_view frame];
+  if (NSHeight(scroll_frame) > NSHeight([checkbox_container_ frame])) {
+    scroll_frame.size.height = NSHeight([checkbox_container_ frame]);
+    [scroll_view setFrame:scroll_frame];
+  }
+
+  [accessory_ setFrame:NSMakeRect(
+      0, 0, kCheckboxMaxWidth, NSHeight(scroll_frame))];
+  [alert_ setAccessoryView:accessory_];
+
+  // As a safeguard against the user skipping reading over the dialog and just
+  // confirming, the button will be unavailable for dialogs without any checks
+  // until the user toggles something.
+  [[[alert_ buttons] objectAtIndex:0] setEnabled:
+      controller_->HasPermittedGalleries()];
+
+  [alert_ layout];
+}
+
+CGFloat MediaGalleriesDialogCocoa::CreateAttachedCheckboxes(
+    CGFloat y_pos,
+    const MediaGalleriesDialogController::KnownGalleryPermissions&
+        permissions,
+    const MediaGalleriesDialogController::NewGalleryPermissions&
+        new_permissions) {
+  y_pos += kCheckboxMargin;
+
+  // Add attached gallery checkboxes.
+  for (MediaGalleriesDialogController::NewGalleryPermissions::
+       const_iterator iter = new_permissions.begin();
+       iter != new_permissions.end(); iter++) {
+    const MediaGalleriesDialogController::GalleryPermission& permission = *iter;
+    if (MediaGalleriesDialogController::GetGalleryAttached(
+        permission.pref_info)) {
+      UpdateGalleryCheckbox(&permission.pref_info, permission.allowed, y_pos);
+      y_pos = NSMaxY([[checkboxes_ lastObject] frame]) + kCheckboxMargin;
+    }
+  }
+
+  for (MediaGalleriesDialogController::KnownGalleryPermissions::
+       const_iterator iter = permissions.begin();
+       iter != permissions.end(); iter++) {
+    const MediaGalleriesDialogController::GalleryPermission& permission =
+        iter->second;
+    if (MediaGalleriesDialogController::GetGalleryAttached(
+        permission.pref_info)) {
+      UpdateGalleryCheckbox(&permission.pref_info, permission.allowed, y_pos);
+      y_pos = NSMaxY([[checkboxes_ lastObject] frame]) + kCheckboxMargin;
+    }
+  }
+
+  return y_pos;
+}
+
+// Add checkboxes for galleries that aren't available (i.e. removable
+// volumes that are not currently attached).
+CGFloat MediaGalleriesDialogCocoa::CreateUnattachedCheckboxes(
+    CGFloat y_pos,
+    const MediaGalleriesDialogController::KnownGalleryPermissions&
+        permissions,
+    const MediaGalleriesDialogController::NewGalleryPermissions&
+        new_permissions) {
+  y_pos += kCheckboxMargin;
+
+  for (MediaGalleriesDialogController::NewGalleryPermissions::
+       const_iterator iter = new_permissions.begin();
+       iter != new_permissions.end(); iter++) {
+    const MediaGalleriesDialogController::GalleryPermission& permission = *iter;
+    if (!MediaGalleriesDialogController::GetGalleryAttached(
+        permission.pref_info)) {
+      UpdateGalleryCheckbox(&permission.pref_info, permission.allowed, y_pos);
+      y_pos = NSMaxY([[checkboxes_ lastObject] frame]) + kCheckboxMargin;
+    }
+  }
+
+  for (MediaGalleriesDialogController::KnownGalleryPermissions::
+       const_iterator iter = permissions.begin();
+       iter != permissions.end(); iter++) {
+    const MediaGalleriesDialogController::GalleryPermission& permission =
+        iter->second;
+    if (!MediaGalleriesDialogController::GetGalleryAttached(
+        permission.pref_info)) {
+      UpdateGalleryCheckbox(&permission.pref_info, permission.allowed, y_pos);
+      y_pos = NSMaxY([[checkboxes_ lastObject] frame]) + kCheckboxMargin;
+    }
+  }
+
+  return y_pos;
+}
+
+CGFloat MediaGalleriesDialogCocoa::CreateCheckboxSeparator(CGFloat y_pos) {
+  scoped_nsobject<NSBox> separator([[NSBox alloc] initWithFrame:NSMakeRect(
+          0, y_pos + kCheckboxMargin * 0.5, kCheckboxMaxWidth, 1.0)]);
+  [separator setBoxType:NSBoxSeparator];
+  [separator setBorderType:NSLineBorder];
+  [separator setAlphaValue:0.2];
+  [checkbox_container_ addSubview:separator];
+  y_pos += kCheckboxMargin * 0.5 + 4;
+
+  scoped_nsobject<NSTextField> unattached_label(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [unattached_label setEditable:NO];
+  [unattached_label setSelectable:NO];
+  [unattached_label setBezeled:NO];
+  [unattached_label setAttributedStringValue:
+      constrained_window::GetAttributedLabelString(
+          base::SysUTF16ToNSString(
+              controller_->GetUnattachedLocationsHeader()),
+          chrome_style::kTextFontStyle,
+          NSNaturalTextAlignment,
+          NSLineBreakByClipping
+      )];
+  [unattached_label sizeToFit];
+  NSSize unattached_label_size = [unattached_label frame].size;
+  [unattached_label setFrame:NSMakeRect(
+      kCheckboxMargin, y_pos + kCheckboxMargin,
+      kCheckboxMaxWidth, unattached_label_size.height)];
+  [checkbox_container_ addSubview:unattached_label];
+  y_pos = NSMaxY([unattached_label frame]) + kCheckboxMargin;
+
+  return y_pos;
+}
+
 void MediaGalleriesDialogCocoa::OnAcceptClicked() {
   accepted_ = true;
-  window_->CloseWebContentsModalDialog();
+
+  if (window_)
+    window_->CloseWebContentsModalDialog();
 }
 
 void MediaGalleriesDialogCocoa::OnCancelClicked() {
-  window_->CloseWebContentsModalDialog();
+  if (window_)
+    window_->CloseWebContentsModalDialog();
 }
 
 void MediaGalleriesDialogCocoa::OnAddFolderClicked() {
@@ -137,10 +291,10 @@ void MediaGalleriesDialogCocoa::OnAddFolderClicked() {
 }
 
 void MediaGalleriesDialogCocoa::OnCheckboxToggled(NSButton* checkbox) {
- const MediaGalleriesDialogController::KnownGalleryPermissions& permissions =
-      controller_->permissions();
   [[[alert_ buttons] objectAtIndex:0] setEnabled:YES];
 
+  const MediaGalleriesDialogController::KnownGalleryPermissions& permissions =
+      controller_->permissions();
   for (MediaGalleriesDialogController::KnownGalleryPermissions::
        const_reverse_iterator iter = permissions.rbegin();
        iter != permissions.rend(); iter++) {
@@ -151,6 +305,21 @@ void MediaGalleriesDialogCocoa::OnCheckboxToggled(NSButton* checkbox) {
       break;
     }
   }
+
+  const MediaGalleriesDialogController::NewGalleryPermissions& new_permissions =
+      controller_->new_permissions();
+  for (MediaGalleriesDialogController::NewGalleryPermissions::
+       const_reverse_iterator iter = new_permissions.rbegin();
+       iter != new_permissions.rend(); iter++) {
+    const MediaGalleryPrefInfo* gallery = &iter->pref_info;
+    NSString* unique_id = GetUniqueIDForGallery(gallery);
+    if ([[[checkbox cell] representedObject] isEqual:unique_id]) {
+      controller_->DidToggleGallery(
+          &(iter->pref_info), [checkbox state] == NSOnState);
+      break;
+    }
+  }
+
 }
 
 NSButton* MediaGalleriesDialogCocoa::CheckboxForGallery(
@@ -164,32 +333,22 @@ NSButton* MediaGalleriesDialogCocoa::CheckboxForGallery(
 }
 
 void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
-    NSButton* checkbox,
     const MediaGalleryPrefInfo* gallery,
-    bool permitted) {
-  CGFloat y_pos = 0;
-  if (checkbox) {
-    y_pos = NSMinY([checkbox frame]);
-  } else {
-    if ([checkboxes_ count] > 0)
-      y_pos = NSMaxY([[checkboxes_ lastObject] frame]) + kCheckboxMargin;
-
-    scoped_nsobject<NSButton> new_checkbox(
-        [[NSButton alloc] initWithFrame:NSZeroRect]);
-    NSString* unique_id = GetUniqueIDForGallery(gallery);
-    [[new_checkbox cell] setRepresentedObject:unique_id];
-    [[new_checkbox cell] setLineBreakMode:NSLineBreakByTruncatingMiddle];
-    [new_checkbox setButtonType:NSSwitchButton];
-    [new_checkbox setTarget:cocoa_controller_];
-    [new_checkbox setAction:@selector(onCheckboxToggled:)];
-
-    [checkbox_container_ addSubview:new_checkbox];
-    [checkboxes_ addObject:new_checkbox];
-    checkbox = new_checkbox.get();
-  }
+    bool permitted,
+    CGFloat y_pos) {
+  scoped_nsobject<NSButton> checkbox(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  NSString* unique_id = GetUniqueIDForGallery(gallery);
+  [[checkbox cell] setRepresentedObject:unique_id];
+  [[checkbox cell] setLineBreakMode:NSLineBreakByTruncatingMiddle];
+  [checkbox setButtonType:NSSwitchButton];
+  [checkbox setTarget:cocoa_controller_];
+  [checkbox setAction:@selector(onCheckboxToggled:)];
+  [checkboxes_ addObject:checkbox];
 
   [checkbox setTitle:base::SysUTF16ToNSString(
-      MediaGalleriesDialogController::GetGalleryDisplayName(*gallery))];
+      MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
+          *gallery))];
   [checkbox setToolTip:base::SysUTF16ToNSString(
       MediaGalleriesDialogController::GetGalleryTooltip(*gallery))];
   [checkbox setState:permitted ? NSOnState : NSOffState];
@@ -197,47 +356,48 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [checkbox sizeToFit];
   NSRect rect = [checkbox bounds];
   rect.origin.y = y_pos;
+  rect.origin.x = kCheckboxMargin;
   rect.size.width = std::min(NSWidth(rect), kCheckboxMaxWidth);
   [checkbox setFrame:rect];
-}
+  [checkbox_container_ addSubview:checkbox];
 
-void MediaGalleriesDialogCocoa::UpdateCheckboxContainerFrame() {
-  NSRect rect = NSMakeRect(
-      0, 0, kCheckboxMaxWidth, NSMaxY([[checkboxes_ lastObject] frame]));
-  [checkbox_container_ setFrame:rect];
+  scoped_nsobject<NSTextField> details(
+    [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [details setEditable:NO];
+  [details setSelectable:NO];
+  [details setBezeled:NO];
+  [details setAttributedStringValue:
+      constrained_window::GetAttributedLabelString(
+          base::SysUTF16ToNSString(
+              MediaGalleriesDialogController::GetGalleryAdditionalDetails(
+                  *gallery)),
+          chrome_style::kTextFontStyle,
+          NSNaturalTextAlignment,
+          NSLineBreakByClipping
+      )];
+  [details setTextColor:[NSColor colorWithCalibratedRed:0.625
+                                                  green:0.625
+                                                   blue:0.625
+                                                  alpha:1.0]];
+  [details sizeToFit];
+  NSRect details_rect = [details bounds];
+  details_rect.origin.y = y_pos - 1;
+  details_rect.origin.x = kCheckboxMargin + rect.size.width + kCheckboxMargin;
+  details_rect.size.width = kCheckboxMaxWidth - details_rect.origin.x;
+  [details setFrame:details_rect];
+
+  [checkbox_container_ addSubview:details];
 }
 
 void MediaGalleriesDialogCocoa::UpdateGallery(
     const MediaGalleryPrefInfo* gallery,
     bool permitted) {
-  NSButton* checkbox = CheckboxForGallery(gallery);
-  UpdateGalleryCheckbox(checkbox, gallery, permitted);
-  UpdateCheckboxContainerFrame();
-  [alert_ layout];
+  InitDialogControls();
 }
 
 void MediaGalleriesDialogCocoa::ForgetGallery(
     const MediaGalleryPrefInfo* gallery) {
-  NSButton* checkbox = CheckboxForGallery(gallery);
-  if (!checkbox)
-    return;
-
-  // Remove checkbox and reposition the entries below it.
-  NSUInteger i = [checkboxes_ indexOfObject:checkbox];
-  [checkboxes_ removeObjectAtIndex:i];
-  for (; i < [checkboxes_ count]; ++i) {
-    CGFloat y_pos = 0;
-    if (i > 0) {
-      y_pos = NSMaxY([[checkboxes_ objectAtIndex:i - 1] frame]) +
-          kCheckboxMargin;
-    }
-    checkbox = [checkboxes_ objectAtIndex:i];
-    NSRect rect = [checkbox bounds];
-    rect.origin.y = y_pos;
-    [checkbox setFrame:rect];
-  }
-  UpdateCheckboxContainerFrame();
-  [alert_ layout];
+  InitDialogControls();
 }
 
 void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(

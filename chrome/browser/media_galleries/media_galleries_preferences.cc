@@ -196,6 +196,7 @@ MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
 base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
   base::FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
+  DCHECK(!path.IsAbsolute());
   return base_path.empty() ? base_path : base_path.Append(path);
 }
 
@@ -518,8 +519,9 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
 
 void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
   PrefService* prefs = profile_->GetPrefs();
-  ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
-  ListValue* list = update.Get();
+  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
+      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  ListValue* list = update->Get();
 
   if (!ContainsKey(known_galleries_, pref_id))
     return;
@@ -538,6 +540,8 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
       } else {
         list->Erase(iter, NULL);
       }
+      update.reset(NULL);  // commits the update.
+
       InitFromPrefs(true /* notify observers */);
       return;
     }
