@@ -168,7 +168,6 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
 }
 
 #if ENABLE(TOUCH_EVENTS)
-#if ENABLE(TOUCH_SLIDER)
 void RangeInputType::handleTouchEvent(TouchEvent* event)
 {
     if (element()->isDisabledOrReadOnly())
@@ -192,7 +191,6 @@ bool RangeInputType::hasTouchEventHandler() const
 {
     return true;
 }
-#endif
 #endif
 
 void RangeInputType::handleKeydownEvent(KeyboardEvent* event)

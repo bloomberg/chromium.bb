@@ -54,10 +54,8 @@ private:
     virtual bool isSteppable() const OVERRIDE;
     virtual void handleMouseDownEvent(MouseEvent*) OVERRIDE;
 #if ENABLE(TOUCH_EVENTS)
-#if ENABLE(TOUCH_SLIDER)
     virtual void handleTouchEvent(TouchEvent*) OVERRIDE;
     virtual bool hasTouchEventHandler() const OVERRIDE;
-#endif
 #endif
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const OVERRIDE;
