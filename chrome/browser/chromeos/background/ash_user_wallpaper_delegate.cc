@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -27,7 +27,7 @@ namespace chromeos {
 namespace {
 
 bool IsNormalWallpaperChange() {
-  if (chromeos::UserManager::Get()->IsUserLoggedIn() ||
+  if (chromeos::LoginState::Get()->IsUserLoggedIn() ||
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot) ||
       WizardController::IsZeroDelayEnabled() ||
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
@@ -84,7 +84,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual bool CanOpenSetWallpaperPage() OVERRIDE {
-    return !chromeos::UserManager::Get()->IsLoggedInAsGuest();
+    return LoginState::Get()->IsUserAuthenticated();
   }
 
   virtual void OnWallpaperAnimationFinished() OVERRIDE {

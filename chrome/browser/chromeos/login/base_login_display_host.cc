@@ -42,6 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
@@ -423,6 +424,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   // Check whether we need to execute OOBE process.
   bool oobe_complete = chromeos::WizardController::IsOobeCompleted();
+  if (!oobe_complete) {
+    LoginState::Get()->SetLoggedInState(
+        LoginState::LOGGED_IN_OOBE, LoginState::LOGGED_IN_USER_NONE);
+  } else {
+    LoginState::Get()->SetLoggedInState(
+        LoginState::LOGGED_IN_NONE, LoginState::LOGGED_IN_USER_NONE);
+  }
   bool show_login_screen =
       (first_screen_name.empty() && oobe_complete) ||
       first_screen_name == chromeos::WizardController::kLoginScreenName;

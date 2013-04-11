@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -121,7 +121,7 @@ bool ScreenshotSource::GetScreenshotDirectory(base::FilePath* directory) {
   bool is_logged_in = true;
 
 #if defined(OS_CHROMEOS)
-  is_logged_in = chromeos::UserManager::Get()->IsUserLoggedIn();
+  is_logged_in = chromeos::LoginState::Get()->IsUserLoggedIn();
 #endif
 
   if (is_logged_in) {

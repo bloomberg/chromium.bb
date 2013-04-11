@@ -16,13 +16,13 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/login/login_state.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -137,11 +137,10 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     NetworkLibrary* cros,
     views::View* host,
     ash::NetworkTrayDelegate* listener) {
-  // Display one-time notification for non-Guest users on first use
+  // Display one-time notification for regular users on first use
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
-  if (UserManager::Get()->IsUserLoggedIn() &&
-      !UserManager::Get()->IsLoggedInAsGuest() &&
+  if (LoginState::Get()->IsUserAuthenticated() &&
       check_for_promo_ &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected() && !cros->wimax_connected()) {

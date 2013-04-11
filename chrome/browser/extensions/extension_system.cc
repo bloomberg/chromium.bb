@@ -50,8 +50,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #endif
 
 using content::BrowserThread;
@@ -164,7 +164,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool skip_session_extensions = false;
 #if defined(OS_CHROMEOS)
   // Skip loading session extensions if we are not in a user session.
-  skip_session_extensions = !chromeos::UserManager::Get()->IsUserLoggedIn();
+  skip_session_extensions = !chromeos::LoginState::Get()->IsUserLoggedIn();
   if (!chrome::IsRunningInForcedAppMode()) {
     extension_service_->component_loader()->AddDefaultComponentExtensions(
         skip_session_extensions);

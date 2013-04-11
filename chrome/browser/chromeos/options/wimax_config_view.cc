@@ -10,9 +10,9 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -294,7 +294,7 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
 
   // Checkboxes.
 
-  if (UserManager::Get()->IsUserLoggedIn()) {
+  if (LoginState::Get()->IsUserLoggedIn()) {
     // Save credentials
     layout->StartRow(0, column_view_set_id);
     save_credentials_checkbox_ = new views::Checkbox(

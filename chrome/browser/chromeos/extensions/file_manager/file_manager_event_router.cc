@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -34,6 +33,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -310,8 +310,10 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn())
+  if (!chromeos::LoginState::IsInitialized() ||
+      !chromeos::LoginState::Get()->IsUserLoggedIn()) {
     return;
+  }
 
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   if (disk_mount_manager) {

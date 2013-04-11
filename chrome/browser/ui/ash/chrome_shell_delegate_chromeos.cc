@@ -8,7 +8,6 @@
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
@@ -44,6 +43,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -51,16 +51,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 bool ChromeShellDelegate::IsUserLoggedIn() const {
-  // When running a Chrome OS build outside of a device (i.e. on a developer's
-  // workstation) and not running as login-manager, pretend like we're always
-  // logged in.
-  if (!base::chromeos::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kLoginManager)) {
-    return true;
-  }
-
-  return chromeos::UserManager::Get()->IsUserLoggedIn();
+  return chromeos::LoginState::Get()->IsUserLoggedIn();
 }
 
 bool ChromeShellDelegate::IsSessionStarted() const {

@@ -48,6 +48,7 @@
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -218,6 +219,7 @@ class LoginUtilsTest : public testing::Test,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
+    LoginState::Initialize();
     ConnectivityStateHelper::InitializeForTesting(
         &mock_connectivity_state_helper_);
 
@@ -321,6 +323,8 @@ class LoginUtilsTest : public testing::Test,
 
     // LoginUtils instance must not outlive Profile instances.
     LoginUtils::Set(NULL);
+
+    LoginState::Shutdown();
 
     // These trigger some tasks that have to run while BrowserThread::UI
     // exists. Delete all the profiles before deleting the connector.

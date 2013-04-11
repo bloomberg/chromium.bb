@@ -207,6 +207,9 @@ class UserManagerImpl
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 
+  // Update the global LoginState.
+  void UpdateLoginState();
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 

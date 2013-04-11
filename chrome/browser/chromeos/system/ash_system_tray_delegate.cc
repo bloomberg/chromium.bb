@@ -89,6 +89,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/ime/xkeyboard.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -364,7 +365,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from ash::SystemTrayDelegate:
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE {
     // In case of OOBE / sign in screen tray will be shown later.
-    return UserManager::Get()->IsUserLoggedIn();
+    return LoginState::Get()->IsUserLoggedIn();
   }
 
   virtual const string16 GetUserDisplayName() const OVERRIDE {
@@ -380,22 +381,37 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
-    UserManager* manager = UserManager::Get();
-    // At new user image screen manager->IsUserLoggedIn() would return true
-    // but there's no browser session available yet so use SessionStarted().
-    if (!manager->IsSessionStarted())
+    // Map ChromeOS specific LOGGED_IN states to Ash LOGGED_IN states.
+    LoginState::LoggedInState state = LoginState::Get()->GetLoggedInState();
+    if (state == LoginState::LOGGED_IN_OOBE ||
+        state == LoginState::LOGGED_IN_NONE) {
       return ash::user::LOGGED_IN_NONE;
+    }
     if (screen_locked_)
       return ash::user::LOGGED_IN_LOCKED;
-    if (manager->IsCurrentUserOwner())
-      return ash::user::LOGGED_IN_OWNER;
-    if (manager->IsLoggedInAsGuest())
-      return ash::user::LOGGED_IN_GUEST;
-    if (manager->IsLoggedInAsDemoUser())
-      return ash::user::LOGGED_IN_RETAIL_MODE;
-    if (manager->IsLoggedInAsPublicAccount())
-      return ash::user::LOGGED_IN_PUBLIC;
-    return ash::user::LOGGED_IN_USER;
+
+    LoginState::LoggedInUserType user_type =
+        LoginState::Get()->GetLoggedInUserType();
+    switch (user_type) {
+      case LoginState::LOGGED_IN_USER_NONE:
+        return ash::user::LOGGED_IN_NONE;
+      case LoginState::LOGGED_IN_USER_REGULAR:
+        return ash::user::LOGGED_IN_USER;
+      case LoginState::LOGGED_IN_USER_OWNER:
+        return ash::user::LOGGED_IN_OWNER;
+      case LoginState::LOGGED_IN_USER_GUEST:
+        return ash::user::LOGGED_IN_GUEST;
+      case LoginState::LOGGED_IN_USER_RETAIL_MODE:
+        return ash::user::LOGGED_IN_RETAIL_MODE;
+      case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
+        return ash::user::LOGGED_IN_PUBLIC;
+      case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
+        return ash::user::LOGGED_IN_LOCALLY_MANAGED;
+      case LoginState::LOGGED_IN_USER_KIOSK_APP:
+        return ash::user::LOGGED_IN_KIOSK_APP;
+    }
+    NOTREACHED();
+    return ash::user::LOGGED_IN_NONE;
   }
 
   virtual bool IsOobeCompleted() const OVERRIDE {

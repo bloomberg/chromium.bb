@@ -16,11 +16,11 @@
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/nss_util.h"
@@ -453,7 +453,7 @@ class CertLibraryImpl
 
     certificates_requested_ = true;
 
-    if (!UserManager::Get()->IsUserLoggedIn()) {
+    if (!LoginState::Get()->IsUserLoggedIn()) {
       // If we are not logged in, we cannot load any certificates.
       // Set 'loaded' to true for the UI, since we are not waiting on loading.
       LOG(WARNING) << "Requesting certificates before login.";
