@@ -296,7 +296,8 @@ FormStructure::FormStructure(const FormData& form,
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
       has_author_specified_types_(false),
-      autocheckout_url_prefix_(autocheckout_url_prefix) {
+      autocheckout_url_prefix_(autocheckout_url_prefix),
+      filled_by_autocheckout_(false) {
   // Copy the form fields.
   std::map<string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
@@ -745,6 +746,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 
   UpdateAutofillCount();
 
+  filled_by_autocheckout_ = cached_form.filled_by_autocheckout();
   server_experiment_id_ = cached_form.server_experiment_id();
 
   // The form signature should match between query and upload requests to the

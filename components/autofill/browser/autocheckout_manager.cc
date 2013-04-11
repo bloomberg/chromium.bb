@@ -114,12 +114,13 @@ void AutocheckoutManager::FillForms() {
     autofill_manager_->GetFormStructures();
   for (std::vector<FormStructure*>::const_iterator iter =
            form_structures.begin(); iter != form_structures.end(); ++iter) {
-    const FormStructure& form_structure = **iter;
-    FormData form = form_structure.ToFormData();
-    DCHECK_EQ(form_structure.field_count(), form.fields.size());
+    FormStructure* form_structure = *iter;
+    form_structure->set_filled_by_autocheckout(true);
+    FormData form = form_structure->ToFormData();
+    DCHECK_EQ(form_structure->field_count(), form.fields.size());
 
-    for (size_t i = 0; i < form_structure.field_count(); ++i) {
-      const AutofillField* field = form_structure.field(i);
+    for (size_t i = 0; i < form_structure->field_count(); ++i) {
+      const AutofillField* field = form_structure->field(i);
       SetValue(*field, &form.fields[i]);
     }
 

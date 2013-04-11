@@ -403,7 +403,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
     return false;
 
   submitted_form->UpdateFromCache(*cached_submitted_form);
-  if (submitted_form->IsAutofillable(true))
+  // Don't prompt the user to save data entered by Autocheckout.
+  if (submitted_form->IsAutofillable(true) &&
+      !submitted_form->filled_by_autocheckout())
     ImportFormData(*submitted_form);
 
   // Only upload server statistics and UMA metrics if at least some local data

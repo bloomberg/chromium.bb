@@ -165,6 +165,11 @@ class FormStructure {
   // |user_submitted| is currently always false.
   FormData ToFormData() const;
 
+  bool filled_by_autocheckout() const { return filled_by_autocheckout_; }
+  void set_filled_by_autocheckout(bool filled_by_autocheckout) {
+    filled_by_autocheckout_ = filled_by_autocheckout;
+  }
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -243,6 +248,9 @@ class FormStructure {
   // The URL prefix matched in autocheckout whitelist. An empty string implies
   // autocheckout is not enabled for this form.
   std::string autocheckout_url_prefix_;
+
+  // Whether or not this form was filled by Autocheckout.
+  bool filled_by_autocheckout_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
