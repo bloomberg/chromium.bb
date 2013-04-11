@@ -70,9 +70,6 @@ const char kDisableCheapnessEstimator[] = "disable-cheapness-estimator";
 const char kLowResolutionContentsScaleFactor[] =
     "low-resolution-contents-scale-factor";
 
-// Max distance from visible for prepaint tiles.
-const char kMaxPrepaintTileDistance[] = "max-prepaint-tile-distance";
-
 // Max tiles allowed for each tilings interest area.
 const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
 

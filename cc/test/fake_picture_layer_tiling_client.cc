@@ -26,7 +26,6 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(&tile_manager_client_,
                     NULL,
                     1,
-                    4096,
                     false,
                     false,
                     false,

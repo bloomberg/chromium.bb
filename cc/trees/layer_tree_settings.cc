@@ -49,7 +49,6 @@ LayerTreeSettings::LayerTreeSettings()
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
       use_pinch_zoom_scrollbars(false),
-      max_prepaint_tile_distance(4096),
       // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
       max_tiles_for_interest_area(128),
       max_unused_resource_memory_percentage(100),

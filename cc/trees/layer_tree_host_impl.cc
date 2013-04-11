@@ -1325,7 +1325,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     tile_manager_.reset(new TileManager(this,
                                         resource_provider.get(),
                                         settings_.num_raster_threads,
-                                        settings_.max_prepaint_tile_distance,
                                         settings_.use_cheapness_estimator,
                                         settings_.use_color_estimator,
                                         settings_.prediction_benchmarking,

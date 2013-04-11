@@ -201,18 +201,6 @@ const Experiment::Choice kImplSidePaintingChoices[] = {
     cc::switches::kDisableImplSidePainting, ""}
 };
 
-const Experiment::Choice kMaxPrepaintTileDistanceChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_SHORT,
-    cc::switches::kMaxPrepaintTileDistance, "2048"},
-  { IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_TALL,
-    cc::switches::kMaxPrepaintTileDistance, "4096"},
-  { IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_GRANDE,
-    cc::switches::kMaxPrepaintTileDistance, "8192"},
-  { IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_VENTI,
-    cc::switches::kMaxPrepaintTileDistance, "16384"}
-};
-
 const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT,
@@ -1264,13 +1252,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
     kOsAndroid | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
-  },
-  {
-    "max-prepaint-tile-distance",
-    IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_NAME,
-    IDS_FLAGS_MAX_PREPAINT_TILE_DISTANCE_DESCRIPTION,
-    kOsAndroid | kOsLinux | kOsCrOS,
-    MULTI_VALUE_TYPE(kMaxPrepaintTileDistanceChoices)
   },
   {
     "max-tiles-for-interest-area",

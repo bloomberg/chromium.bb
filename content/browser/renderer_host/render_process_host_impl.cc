@@ -926,7 +926,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kLowResolutionContentsScaleFactor,
     cc::switches::kMaxUnusedResourceMemoryUsagePercentage,
     cc::switches::kNumRasterThreads,
-    cc::switches::kMaxPrepaintTileDistance,
     cc::switches::kMaxTilesForInterestArea,
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowCompositedLayerTree,
