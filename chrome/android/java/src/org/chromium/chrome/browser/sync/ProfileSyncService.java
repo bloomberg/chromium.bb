@@ -192,28 +192,21 @@ public class ProfileSyncService {
         final Account account = getAccountOrNullFromUsername(username);
         if (account == null) return;
 
-        // Since this is blocking, do it in the background.
-        new AsyncTask<Void, Void, String>() {
-
-            @Override
-            public String doInBackground(Void... params) {
-                // Invalidate our old auth token and fetch a new one.
-                AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-                return accountManagerHelper.getNewAuthToken(
-                        account, invalidAuthToken, SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC);
-            }
-
-            @Override
-            public void onPostExecute(String authToken) {
-                if (authToken == null) {
-                    // TODO(sync): Need to hook LOGIN_ACCOUNTS_CHANGED_ACTION (http://b/5354713).
-                    Log.d(TAG, "Auth token for sync was null.");
-                } else {
-                    Log.d(TAG, "Successfully retrieved sync auth token.");
-                    nativeTokenAvailable(mNativeProfileSyncServiceAndroid, username, authToken);
-                }
-            }
-        }.execute();
+        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
+        // Invalidate our old auth token and fetch a new one.
+        accountManagerHelper.getNewAuthTokenFromForeground(
+                account, invalidAuthToken, SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC,
+                new AccountManagerHelper.GetAuthTokenCallback() {
+                    @Override
+                    public void tokenAvailable(String token) {
+                        if (token == null) {
+                            Log.d(TAG, "Auth token for sync was null.");
+                        } else {
+                            Log.d(TAG, "Successfully retrieved sync auth token.");
+                            nativeTokenAvailable(mNativeProfileSyncServiceAndroid, username, token);
+                        }
+                    }
+                });
     }
 
    /**
@@ -242,19 +235,15 @@ public class ProfileSyncService {
         }
         final String oauth2Scope = "oauth2:" + scope;
 
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            public String doInBackground(Void... params) {
-                AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-                return accountManagerHelper.getAuthTokenFromBackground(account, oauth2Scope);
-            }
-
-            @Override
-            public void onPostExecute(String authToken) {
-                nativeOAuth2TokenFetched(
-                    mNativeProfileSyncServiceAndroid, nativeCallback, authToken, authToken != null);
-            }
-        }.execute();
+        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
+        accountManagerHelper.getAuthTokenFromForeground(
+                null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
+                    @Override
+                    public void tokenAvailable(String token) {
+                        nativeOAuth2TokenFetched(
+                            mNativeProfileSyncServiceAndroid, nativeCallback, token, token != null);
+                    }
+                });
     }
 
     /**
