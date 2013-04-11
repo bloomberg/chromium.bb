@@ -29,8 +29,6 @@ package CodeGeneratorV8;
 
 use strict;
 
-use constant FileNamePrefix => "V8";
-
 my $codeGenerator;
 
 
@@ -4567,9 +4565,8 @@ sub WriteData
     my $outputHeadersDir = shift;
 
     my $name = $interface->name;
-    my $prefix = FileNamePrefix;
-    my $headerFileName = "$outputHeadersDir/$prefix$name.h";
-    my $implFileName = "$outputDir/$prefix$name.cpp";
+    my $headerFileName = "$outputHeadersDir/V8$name.h";
+    my $implFileName = "$outputDir/V8$name.cpp";
 
     # Update a .cpp file if the contents are changed.
     my $contents = join "", @implContentHeader;

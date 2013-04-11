@@ -118,7 +118,7 @@ if ($supplementalDependencyFile) {
         my $codeGen = CodeGenerator->new(\@idlDirectories, $generator, $outputDirectory, $outputHeadersDirectory, 0, $preprocessor, $writeDependencies, $verbose);
 
         # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
-        generateEmptyHeaderAndCpp($codeGen->FileNamePrefix(), $targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
+        generateEmptyHeaderAndCpp($targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
         exit 0;
     }
 }
@@ -200,10 +200,10 @@ $codeGen->ProcessDocument($targetDocument, $defines);
 
 sub generateEmptyHeaderAndCpp
 {
-    my ($prefix, $targetInterfaceName, $outputHeadersDirectory, $outputDirectory) = @_;
+    my ($targetInterfaceName, $outputHeadersDirectory, $outputDirectory) = @_;
 
-    my $headerName = "${prefix}${targetInterfaceName}.h";
-    my $cppName = "${prefix}${targetInterfaceName}.cpp";
+    my $headerName = "V8${targetInterfaceName}.h";
+    my $cppName = "V8${targetInterfaceName}.cpp";
     my $contents = "/*
     This file is generated just to tell build scripts that $headerName and
     $cppName are created for ${targetInterfaceName}.idl, and thus
