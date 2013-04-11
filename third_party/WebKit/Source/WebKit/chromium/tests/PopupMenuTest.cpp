@@ -111,7 +111,6 @@ public:
     virtual bool itemIsSeparator(unsigned listIndex) const { return false; }
     virtual bool itemIsLabel(unsigned listIndex) const { return false; }
     virtual bool itemIsSelected(unsigned listIndex) const { return listIndex == m_selectIndex; }
-    virtual bool shouldPopOver() const { return false; }
     virtual bool valueShouldChangeOnHotTrack() const { return false; }
     virtual void setTextFromItem(unsigned listIndex) { }
 

@@ -29,8 +29,6 @@
 #include "PopupMenuClient.h"
 #include "RenderFlexibleBox.h"
 
-#define POPUP_MENU_PULLS_DOWN 1
-
 namespace WebCore {
 
 class HTMLSelectElement;
