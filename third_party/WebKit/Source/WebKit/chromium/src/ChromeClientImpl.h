@@ -32,7 +32,7 @@
 #ifndef ChromeClientImpl_h
 #define ChromeClientImpl_h
 
-#include "ChromeClientChromium.h"
+#include "ChromeClient.h"
 #include "NavigatorContentUtilsClient.h"
 #include "PopupMenu.h"
 #include "SearchPopupMenu.h"
@@ -65,7 +65,7 @@ struct WebScreenInfo;
 struct WebPopupMenuInfo;
 
 // Handles window-level notifications from WebCore on behalf of a WebView.
-class ChromeClientImpl : public WebCore::ChromeClientChromium, public WebCore::PageClientChromium {
+class ChromeClientImpl : public WebCore::ChromeClient, public WebCore::PageClientChromium {
 public:
     explicit ChromeClientImpl(WebViewImpl* webView);
     virtual ~ChromeClientImpl();
@@ -178,7 +178,7 @@ public:
     virtual void exitFullScreenForElement(WebCore::Element*);
     virtual void fullScreenRendererChanged(WebCore::RenderBox*);
 
-    // ChromeClientChromium methods:
+    // ChromeClient methods:
     virtual void popupOpened(WebCore::PopupContainer* popupContainer,
                              const WebCore::IntRect& bounds,
                              bool handleExternally);

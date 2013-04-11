@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-class ChromeClientChromium;
 class FrameView;
 class IntRect;
 struct PopupItem;

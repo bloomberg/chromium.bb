@@ -32,7 +32,7 @@
 #include "PopupContainer.h"
 
 #include "Chrome.h"
-#include "ChromeClientChromium.h"
+#include "ChromeClient.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -187,19 +187,18 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
                        m_listBox->height() + kBorderSize * 2);
 
     IntRect widgetRectInScreen;
-    ChromeClientChromium* chromeClient = chromeClientChromium();
-    if (chromeClient) {
+    if (ChromeClient* client = chromeClient()) {
         // If the popup would extend past the bottom of the screen, open upwards
         // instead.
         FloatRect screen = screenAvailableRect(m_frameView.get());
         // Use popupInitialCoordinate.x() + rightOffset because RTL position
         // needs to be considered.
-        widgetRectInScreen = chromeClient->rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y(), targetSize.width(), targetSize.height()));
+        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y(), targetSize.width(), targetSize.height()));
 
         // If we have multiple screens and the browser rect is in one screen, we have
         // to clip the window width to the screen width.
         // When clipping, we also need to set a maximum width for the list box.
-        FloatRect windowRect = chromeClient->windowRect();
+        FloatRect windowRect = client->windowRect();
 
         bool needToResizeView = false;
         widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, m_listBox.get(), needToResizeView);
@@ -215,10 +214,9 @@ void PopupContainer::showPopup(FrameView* view)
     m_frameView = view;
     listBox()->m_focusedNode = m_frameView->frame()->document()->focusedNode();
 
-    ChromeClientChromium* chromeClient = chromeClientChromium();
-    if (chromeClient) {
+    if (ChromeClient* client = chromeClient()) {
         IntRect popupRect = m_originalFrameRect;
-        chromeClient->popupOpened(this, layoutAndCalculateWidgetRect(popupRect.height(), popupRect.location()), false);
+        client->popupOpened(this, layoutAndCalculateWidgetRect(popupRect.height(), popupRect.location()), false);
         m_popupOpen = true;
     }
 
@@ -244,7 +242,7 @@ void PopupContainer::notifyPopupHidden()
     if (!m_popupOpen)
         return;
     m_popupOpen = false;
-    chromeClientChromium()->popupClosed(this);
+    chromeClient()->popupClosed(this);
 }
 
 void PopupContainer::fitToListBox()
@@ -386,9 +384,9 @@ bool PopupContainer::isInterestedInEventForKey(int keyCode)
     return m_listBox->isInterestedInEventForKey(keyCode);
 }
 
-ChromeClientChromium* PopupContainer::chromeClientChromium()
+ChromeClient* PopupContainer::chromeClient()
 {
-    return static_cast<ChromeClientChromium*>(m_frameView->frame()->page()->chrome()->client());
+    return m_frameView->frame()->page()->chrome()->client();
 }
 
 void PopupContainer::showInRect(const IntRect& r, FrameView* v, int index)

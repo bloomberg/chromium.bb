@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ChromeClientChromium;
+class ChromeClient;
 class FrameView;
 class PopupMenuClient;
 
@@ -137,7 +137,7 @@ private:
     void fitToListBox();
 
     // Returns the ChromeClient of the page this popup is associated with.
-    ChromeClientChromium* chromeClientChromium();
+    ChromeClient* chromeClient();
 
     RefPtr<PopupListBox> m_listBox;
     RefPtr<FrameView> m_frameView;
@@ -148,7 +148,7 @@ private:
     // This contains the "ideal" dimensions and position for the popup
     // (PopupContainer's frameRect() location should always be (0, 0), since
     // it is rendered inside (and relative to) a WebWidget, which should get
-    // the actual popup position through chromeClientChromium()).
+    // the actual popup position through chromeClient()).
     IntRect m_originalFrameRect;
 
     // Whether the popup is currently open.

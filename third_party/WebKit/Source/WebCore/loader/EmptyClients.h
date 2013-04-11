@@ -194,6 +194,10 @@ public:
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { }
     virtual bool shouldNotifyOnFormChanges() { return false; }
+
+    virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds,
+                             bool handleExternal) { }
+    virtual void popupClosed(PopupContainer* popupContainer) { }
 };
 
 class EmptyFrameLoaderClient : public FrameLoaderClient {
