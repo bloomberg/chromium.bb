@@ -28,7 +28,7 @@
 //  - After the required file access permissions are granted, result object is
 //    created and returned back.
 
-#include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"

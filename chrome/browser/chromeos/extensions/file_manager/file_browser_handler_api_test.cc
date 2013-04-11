@@ -4,7 +4,7 @@
 
 // File contains browser tests for the fileBrowserHandler api.
 
-#include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
 
 #include <vector>
 
