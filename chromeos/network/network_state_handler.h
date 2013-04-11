@@ -173,10 +173,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void UpdateManagedList(ManagedState::ManagedType type,
                                  const base::ListValue& entries) OVERRIDE;
 
-  // The list of profiles changed (i.e. a user has logged in). Re-request
-  // properties for all services since they may have changed.
-  virtual void ProfileListChanged();
-
   // Parses the properties for the network service or device. Mostly calls
   // managed->PropertyChanged(key, value) for each dictionary entry.
   virtual void UpdateManagedStateProperties(

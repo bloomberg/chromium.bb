@@ -280,8 +280,6 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       UpdateUninitializedTechnologies(*vlist);
       notify_manager_changed = true;
     }
-  } else if (key == flimflam::kProfilesProperty) {
-    listener_->ProfileListChanged();
   }
   return notify_manager_changed;
 }

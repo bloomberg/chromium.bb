@@ -380,16 +380,6 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   STLDeleteContainerPairSecondPointers(managed_map.begin(), managed_map.end());
 }
 
-void NetworkStateHandler::ProfileListChanged() {
-  network_event_log::AddEntry(
-      kLogModule, "ProfileListChanged", "Re-Requesting Network Properties");
-  for (ManagedStateList::iterator iter = network_list_.begin();
-       iter != network_list_.end(); ++iter) {
-    shill_property_handler_->RequestProperties(
-        ManagedState::MANAGED_TYPE_NETWORK, (*iter)->path());
-  }
-}
-
 void NetworkStateHandler::UpdateManagedStateProperties(
     ManagedState::ManagedType type,
     const std::string& path,
