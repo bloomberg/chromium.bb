@@ -39,11 +39,19 @@ class CrosLanguageOptionsHandler
   static base::ListValue* GetInputMethodList(
       const input_method::InputMethodDescriptors& descriptors);
 
-  // Gets the list of languages from the given input descriptors.
+  // Gets the list of accept languages with the given input descriptors.
+  // Listed languages will be used as Accept-Language header.
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  static base::ListValue* GetLanguageList(
+  static base::ListValue* GetAcceptLanguageList(
+      const input_method::InputMethodDescriptors& descriptors);
+
+  // Gets the list of UI languages with the given input descriptors.
+  // The return value will look like:
+  // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
+  //  ...]
+  static base::ListValue* GetUILanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
   // Gets the list of input methods that are implemented in an extension.
@@ -77,6 +85,12 @@ class CrosLanguageOptionsHandler
   // Called when the input method options page is opened.
   // |args| will contain the input method ID as string (ex. "mozc").
   void InputMethodOptionsOpenCallback(const base::ListValue* args);
+
+  // Gets the list of languages with |descriptors| based on
+  // |base_language_codes|.
+  static base::ListValue* GetLanguageListInternal(
+      const input_method::InputMethodDescriptors& descriptors,
+      const std::vector<std::string>& base_language_codes);
 
   DISALLOW_COPY_AND_ASSIGN(CrosLanguageOptionsHandler);
 };

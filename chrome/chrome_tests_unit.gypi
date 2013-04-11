@@ -1452,6 +1452,7 @@
         'browser/ui/webui/history_ui_unittest.cc',
         'browser/ui/webui/ntp/android/partner_bookmarks_shim_unittest.cc',
         'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
+        'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
         'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
         'browser/ui/webui/performance_monitor/performance_monitor_ui_util_unittest.cc',

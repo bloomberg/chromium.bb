@@ -196,7 +196,7 @@ ListValue* NetworkScreenHandler::GetLanguageList() {
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
   ListValue* languages_list =
-      options::CrosLanguageOptionsHandler::GetLanguageList(*descriptors);
+      options::CrosLanguageOptionsHandler::GetUILanguageList(*descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
     DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))

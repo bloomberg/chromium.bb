@@ -84,7 +84,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
-  localized_strings->Set("languageList", GetLanguageList(*descriptors));
+  localized_strings->Set("languageList", GetAcceptLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
   localized_strings->Set("extensionImeList", GetExtensionImeList());
   localized_strings->Set("componentExtensionImeList",
@@ -145,8 +145,10 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
   return input_method_list;
 }
 
-ListValue* CrosLanguageOptionsHandler::GetLanguageList(
-    const input_method::InputMethodDescriptors& descriptors) {
+// static
+ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
+    const input_method::InputMethodDescriptors& descriptors,
+    const std::vector<std::string>& base_language_codes) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
 
   std::set<std::string> language_codes;
@@ -176,6 +178,13 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   // Build the list of display names, and build the language map.
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
+     // Exclude the language which is not in |base_langauge_codes| even it has
+     // input methods.
+    if (std::find(base_language_codes.begin(),
+                  base_language_codes.end(),
+                  *iter) == base_language_codes.end()) {
+      continue;
+    }
     input_method::InputMethodUtil* input_method_util =
         input_method::GetInputMethodManager()->GetInputMethodUtil();
     const string16 display_name =
@@ -189,24 +198,20 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   }
   DCHECK_EQ(display_names.size(), language_map.size());
 
-  // Collect the language codes from the supported accept-languages.
-  std::vector<std::string> accept_language_codes;
-  l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
-
   // Build the list of display names, and build the language map.
-  for (size_t i = 0; i < accept_language_codes.size(); ++i) {
+  for (size_t i = 0; i < base_language_codes.size(); ++i) {
     // Skip this language if it was already added.
-    if (language_codes.find(accept_language_codes[i]) != language_codes.end())
+    if (language_codes.find(base_language_codes[i]) != language_codes.end())
       continue;
     string16 display_name =
         l10n_util::GetDisplayNameForLocale(
-            accept_language_codes[i], app_locale, false);
+            base_language_codes[i], app_locale, false);
     string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(
-            accept_language_codes[i], accept_language_codes[i], false);
+            base_language_codes[i], base_language_codes[i], false);
     display_names.push_back(display_name);
     language_map[display_name] =
-        std::make_pair(accept_language_codes[i], native_display_name);
+        std::make_pair(base_language_codes[i], native_display_name);
   }
 
   // Sort display names using locale specific sorter.
@@ -233,6 +238,23 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   }
 
   return language_list;
+}
+
+// static
+base::ListValue* CrosLanguageOptionsHandler::GetAcceptLanguageList(
+    const input_method::InputMethodDescriptors& descriptors) {
+  // Collect the language codes from the supported accept-languages.
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  std::vector<std::string> accept_language_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
+  return GetLanguageListInternal(descriptors, accept_language_codes);
+}
+
+// static
+base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
+    const input_method::InputMethodDescriptors& descriptors) {
+  // Collect the language codes from the available locales.
+  return GetLanguageListInternal(descriptors, l10n_util::GetAvailableLocales());
 }
 
 base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
