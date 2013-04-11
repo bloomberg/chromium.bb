@@ -349,7 +349,11 @@ void Widget::Init(const InitParams& in_params) {
   params.top_level = is_top_level_;
 #if defined(OS_WIN) && defined(USE_AURA)
   // It'll need to be faded in if it's top level and not the main window.
-  params.transparent = is_top_level_ && params.type != InitParams::TYPE_WINDOW;
+  // Maintain transparent if the creator of the Widget specified transparent
+  // already.
+  params.transparent =
+      params.transparent ||
+      (is_top_level_ && params.type != InitParams::TYPE_WINDOW);
 #endif
 
   if (ViewsDelegate::views_delegate)
