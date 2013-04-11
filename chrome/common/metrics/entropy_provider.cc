@@ -44,12 +44,12 @@ uint32 SeededRandGenerator::operator()(uint32 range) {
   return value % range;
 }
 
-void PermuteMappingUsingTrialName(const std::string& trial_name,
-                                  std::vector<uint16>* mapping) {
+void PermuteMappingUsingRandomizationSeed(uint32 randomization_seed,
+                                          std::vector<uint16>* mapping) {
   for (size_t i = 0; i < mapping->size(); ++i)
     (*mapping)[i] = static_cast<uint16>(i);
 
-  SeededRandGenerator generator(HashName(trial_name));
+  SeededRandGenerator generator(randomization_seed);
   std::random_shuffle(mapping->begin(), mapping->end(), generator);
 }
 
@@ -63,7 +63,8 @@ SHA1EntropyProvider::~SHA1EntropyProvider() {
 }
 
 double SHA1EntropyProvider::GetEntropyForTrial(
-    const std::string& trial_name) const {
+    const std::string& trial_name,
+    uint32 randomization_seed) const {
   // Given enough input entropy, SHA-1 will produce a uniformly random spread
   // in its output space. In this case, the input entropy that is used is the
   // combination of the original |entropy_source_| and the |trial_name|.
@@ -99,9 +100,12 @@ PermutedEntropyProvider::~PermutedEntropyProvider() {
 }
 
 double PermutedEntropyProvider::GetEntropyForTrial(
-    const std::string& trial_name) const {
+    const std::string& trial_name,
+    uint32 randomization_seed) const {
   std::vector<uint16> mapping(low_entropy_source_max_);
-  internal::PermuteMappingUsingTrialName(trial_name, &mapping);
+  if (randomization_seed == 0)
+    randomization_seed = HashName(trial_name);
+  internal::PermuteMappingUsingRandomizationSeed(randomization_seed, &mapping);
 
   return mapping[low_entropy_source_] /
          static_cast<double>(low_entropy_source_max_);

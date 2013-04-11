@@ -75,6 +75,11 @@ FieldTrial::EntropyProvider::~EntropyProvider() {
 }
 
 void FieldTrial::UseOneTimeRandomization() {
+  UseOneTimeRandomizationWithCustomSeed(0);
+}
+
+void FieldTrial::UseOneTimeRandomizationWithCustomSeed(
+    uint32 randomization_seed) {
   // No need to specify randomization when the group choice was forced.
   if (forced_)
     return;
@@ -89,7 +94,8 @@ void FieldTrial::UseOneTimeRandomization() {
   }
 
   random_ = static_cast<Probability>(
-      divisor_ * entropy_provider->GetEntropyForTrial(trial_name_));
+      divisor_ * entropy_provider->GetEntropyForTrial(trial_name_,
+                                                      randomization_seed));
 }
 
 void FieldTrial::Disable() {

@@ -612,7 +612,10 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
 
   if (study.has_consistency() &&
       study.consistency() == Study_Consistency_PERMANENT) {
-    trial->UseOneTimeRandomization();
+    if (study.has_randomization_seed())
+      trial->UseOneTimeRandomizationWithCustomSeed(study.randomization_seed());
+    else
+      trial->UseOneTimeRandomization();
   }
 
   for (int i = 0; i < study.experiment_size(); ++i) {

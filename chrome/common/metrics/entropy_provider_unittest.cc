@@ -47,7 +47,7 @@ double ComputeChiSquare(const std::vector<int>& values,
 double GenerateSHA1Entropy(const std::string& entropy_source,
                            const std::string& trial_name) {
   SHA1EntropyProvider sha1_provider(entropy_source);
-  return sha1_provider.GetEntropyForTrial(trial_name);
+  return sha1_provider.GetEntropyForTrial(trial_name, 0);
 }
 
 // Generates permutation-based entropy for the given |trial_name| based on
@@ -56,7 +56,7 @@ double GeneratePermutedEntropy(uint16 entropy_source,
                                size_t entropy_max,
                                const std::string& trial_name) {
   PermutedEntropyProvider permuted_provider(entropy_source, entropy_max);
-  return permuted_provider.GetEntropyForTrial(trial_name);
+  return permuted_provider.GetEntropyForTrial(trial_name, 0);
 }
 
 // Helper interface for testing used to generate entropy values for a given
@@ -107,7 +107,9 @@ class PermutedEntropyGenerator : public TrialEntropyGenerator {
     // Note: Given a trial name, the computed mapping will be the same.
     // As a performance optimization, pre-compute the mapping once per trial
     // name and index into it for each entropy value.
-    internal::PermuteMappingUsingTrialName(trial_name, &mapping_);
+    const uint32 randomization_seed = HashName(trial_name);
+    internal::PermuteMappingUsingRandomizationSeed(randomization_seed,
+                                                   &mapping_);
   }
 
   virtual ~PermutedEntropyGenerator() {
@@ -235,6 +237,31 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   // different names.
   EXPECT_NE(trials[0]->group(), trials[1]->group());
   EXPECT_NE(trials[0]->group_name(), trials[1]->group_name());
+}
+
+TEST_F(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
+  // Ensures that two trials with different names but the same custom seed used
+  // for one time randomization produce the same group assignments.
+  base::FieldTrialList field_trial_list(
+      new PermutedEntropyProvider(1234, kMaxLowEntropySize));
+  scoped_refptr<base::FieldTrial> trials[] = {
+      base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
+      base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
+  const uint32 kCustomSeed = 9001;
+
+  for (size_t i = 0; i < arraysize(trials); ++i) {
+    trials[i]->UseOneTimeRandomizationWithCustomSeed(kCustomSeed);
+
+    for (int j = 0; j < 100; ++j)
+      trials[i]->AppendGroup(std::string(), 1);
+  }
+
+  // Normally, these trials should produce different groups, but if the same
+  // custom seed is used, they should produce the same group assignment.
+  EXPECT_EQ(trials[0]->group(), trials[1]->group());
+  EXPECT_EQ(trials[0]->group_name(), trials[1]->group_name());
 }
 
 TEST_F(EntropyProviderTest, SHA1Entropy) {

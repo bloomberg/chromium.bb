@@ -33,9 +33,9 @@ struct SeededRandGenerator : std::unary_function<uint32, uint32> {
 };
 
 // Fills |mapping| to create a bijection of values in the range of
-// [0, |mapping.size()|), permuted based on |trial_name|.
-void PermuteMappingUsingTrialName(const std::string& trial_name,
-                                  std::vector<uint16>* mapping);
+// [0, |mapping.size()|), permuted based on |randomization_seed|.
+void PermuteMappingUsingRandomizationSeed(uint32 randomization_seed,
+                                          std::vector<uint16>* mapping);
 
 }  // namespace internal
 
@@ -52,8 +52,8 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual ~SHA1EntropyProvider();
 
   // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name) const
-      OVERRIDE;
+  virtual double GetEntropyForTrial(const std::string& trial_name,
+                                    uint32 randomization_seed) const OVERRIDE;
 
  private:
   std::string entropy_source_;
@@ -75,8 +75,8 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual ~PermutedEntropyProvider();
 
   // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name) const
-      OVERRIDE;
+  virtual double GetEntropyForTrial(const std::string& trial_name,
+                                    uint32 randomization_seed) const OVERRIDE;
 
  private:
   uint16 low_entropy_source_;

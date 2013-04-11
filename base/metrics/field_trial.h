@@ -101,10 +101,13 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
    public:
     virtual ~EntropyProvider();
 
-    // Returns a double in the range of [0, 1) based on |trial_name| that will
-    // be used for the dice roll for the specified field trial. A given instance
-    // should always return the same value given the same input |trial_name|.
-    virtual double GetEntropyForTrial(const std::string& trial_name) const = 0;
+    // Returns a double in the range of [0, 1) to be used for the dice roll for
+    // the specified field trial. If |randomization_seed| is not 0, it will be
+    // used in preference to |trial_name| for generating the entropy by entropy
+    // providers that support it. A given instance should always return the same
+    // value given the same input |trial_name| and |randomization_seed| values.
+    virtual double GetEntropyForTrial(const std::string& trial_name,
+                                      uint32 randomization_seed) const = 0;
   };
 
   // A pair representing a Field Trial and its selected group.
@@ -121,8 +124,16 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Changes the field trial to use one-time randomization, i.e. produce the
   // same result for the current trial on every run of this client. Must be
-  // called right after construction.
+  // called right after construction, before any groups are added.
   void UseOneTimeRandomization();
+
+  // Changes the field trial to use one-time randomization, i.e. produce the
+  // same result for the current trial on every run of this client, with a
+  // custom randomization seed for the trial. The |randomization_seed| value
+  // should never be the same for two trials, else this would result in
+  // correlated group assignments. Must be called right after construction,
+  // before any groups are added.
+  void UseOneTimeRandomizationWithCustomSeed(uint32 randomization_seed);
 
   // Disables this trial, meaning it always determines the default group
   // has been selected. May be called immediately after construction, or

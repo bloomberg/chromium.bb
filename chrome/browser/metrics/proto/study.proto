@@ -11,7 +11,7 @@ package chrome_variations;
 // This defines the Protocol Buffer representation of a Chrome Variations study
 // as sent to clients of the Variations server.
 //
-// Next tag: 11
+// Next tag: 12
 message Study {
   // The name of the study. Should not contain spaces or special characters.
   // Ex: "my_study"
@@ -130,4 +130,8 @@ message Study {
   // Filtering criteria for this study. A study that is filtered out for a given
   // client is equivalent to that study not being sent at all.
   optional Filter filter = 10;
+
+  // Randomization seed to be used when |consistency| is set to PERMANENT. If
+  // not specified, randomization will be done using the trial name.
+  optional uint32 randomization_seed = 11;
 }
