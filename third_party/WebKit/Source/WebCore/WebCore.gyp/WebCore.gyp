@@ -354,7 +354,7 @@
             # First input. It stands for python script in action below.
             '../inspector/CodeGeneratorInspector.py',
             # Other inputs. They go as arguments to the python script.
-            '../inspector/Inspector.json',
+            '../../devtools/protocol.json',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
@@ -375,7 +375,7 @@
             '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
           ],
-          'message': 'Generating Inspector protocol sources from Inspector.json',
+          'message': 'Generating Inspector protocol sources from protocol.json',
           'msvs_cygwin_shell': 1,
         },
       ]
@@ -388,7 +388,7 @@
           'action_name': 'generateInspectorProtocolVersion',
           'inputs': [
             '../inspector/generate-inspector-protocol-version',
-            '../inspector/Inspector.json',
+            '../../devtools/protocol.json',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorProtocolVersion.h',

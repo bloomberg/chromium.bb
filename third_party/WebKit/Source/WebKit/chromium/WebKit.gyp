@@ -861,7 +861,7 @@
             'actions': [{
                 'action_name': 'devtools_html',
                 'script_name': 'scripts/generate_devtools_html.py',
-                'input_page': '../../WebCore/inspector/front-end/inspector.html',
+                'input_page': '../../devtools/front_end/inspector.html',
                 'inputs': [
                     '<@(_script_name)',
                     '<@(_input_page)',
@@ -936,7 +936,7 @@
                             '<@(_images)',
                         ],
                         'search_path': [
-                            '../../WebCore/inspector/front-end/Images',
+                            '../../devtools/front_end/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
                         'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
@@ -964,7 +964,7 @@
                             '<@(_images)',
                         ],
                         'search_path': [
-                            '../../WebCore/inspector/front-end/Images',
+                            '../../devtools/front_end/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
                         'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
@@ -1006,7 +1006,7 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_js',
                         'script_name': 'scripts/concatenate_js_files.py',
-                        'input_page': '../../WebCore/inspector/front-end/inspector.html',
+                        'input_page': '../../devtools/front_end/inspector.html',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_page)',
@@ -1014,7 +1014,7 @@
                             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js'
                         ],
                         'search_path': [
-                            '../../WebCore/inspector/front-end',
+                            '../../devtools/front_end',
                             '<(SHARED_INTERMEDIATE_DIR)/webcore',
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.js'],
@@ -1027,12 +1027,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_elements_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/ElementsPanel.js',
+                        'input_file': '../../devtools/front_end/ElementsPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_elements_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1043,12 +1043,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_resources_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/ResourcesPanel.js',
+                        'input_file': '../../devtools/front_end/ResourcesPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_resources_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ResourcesPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1059,12 +1059,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_network_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/NetworkPanel.js',
+                        'input_file': '../../devtools/front_end/NetworkPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_network_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/NetworkPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1075,12 +1075,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_scripts_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/ScriptsPanel.js',
+                        'input_file': '../../devtools/front_end/ScriptsPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_scripts_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ScriptsPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1091,12 +1091,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_timeline_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/TimelinePanel.js',
+                        'input_file': '../../devtools/front_end/TimelinePanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_timeline_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/TimelinePanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1107,12 +1107,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_profiles_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/ProfilesPanel.js',
+                        'input_file': '../../devtools/front_end/ProfilesPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_profiles_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ProfilesPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1123,12 +1123,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_audits_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/AuditsPanel.js',
+                        'input_file': '../../devtools/front_end/AuditsPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_audits_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/AuditsPanel.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1139,12 +1139,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_codemirror_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/CodeMirrorTextEditor.js',
+                        'input_file': '../../devtools/front_end/CodeMirrorTextEditor.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_codemirror_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)', 'true'],
                     }],
@@ -1155,12 +1155,12 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_ace_editor_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/AceTextEditor.js',
+                        'input_file': '../../devtools/front_end/AceTextEditor.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(webinspector_ace_editor_js_files)',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)', 'true'],
                     }],
@@ -1171,17 +1171,17 @@
                     'actions': [{
                         'action_name': 'concatenate_heap_snapshot_worker_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/HeapSnapshotWorker.js',
+                        'input_file': '../../devtools/front_end/HeapSnapshotWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
-                            '../../WebCore/inspector/front-end/HeapSnapshot.js',
-                            '../../WebCore/inspector/front-end/HeapSnapshotLoader.js',
-                            '../../WebCore/inspector/front-end/HeapSnapshotWorkerDispatcher.js',
-                            '../../WebCore/inspector/front-end/JSHeapSnapshot.js',
-                            '../../WebCore/inspector/front-end/utilities.js',
+                            '../../devtools/front_end/HeapSnapshot.js',
+                            '../../devtools/front_end/HeapSnapshotLoader.js',
+                            '../../devtools/front_end/HeapSnapshotWorkerDispatcher.js',
+                            '../../devtools/front_end/JSHeapSnapshot.js',
+                            '../../devtools/front_end/utilities.js',
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1192,13 +1192,13 @@
                     'actions': [{
                         'action_name': 'concatenate_script_formatter_worker_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': '../../WebCore/inspector/front-end/ScriptFormatterWorker.js',
+                        'input_file': '../../devtools/front_end/ScriptFormatterWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(webinspector_uglifyjs_files)'
                         ],
-                        'search_path': '../../WebCore/inspector/front-end',
+                        'search_path': '../../devtools/front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
@@ -1212,14 +1212,14 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_css',
                         'script_name': 'scripts/concatenate_css_files.py',
-                        'input_page': '../../WebCore/inspector/front-end/inspector.html',
+                        'input_page': '../../devtools/front_end/inspector.html',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(webinspector_files)',
                         ],
                         'search_path': [
-                            '../../WebCore/inspector/front-end',
+                            '../../devtools/front_end',
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.css'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
