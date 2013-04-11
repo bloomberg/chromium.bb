@@ -1,0 +1,32 @@
+Tests that CSSStyleDeclaration.setText() works.
+
+Text
+Before setStyleText:
+[expanded] 
+element.style  { ()
+
+======== Matched CSS Rules ========
+[expanded] 
+#inspected  { (set-style-text.html:4)
+color: green;
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+
+After setStyleText:
+[expanded] 
+element.style  { ()
+
+======== Matched CSS Rules ========
+[expanded] 
+#inspected  { (set-style-text.html:4)
+color: red;
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+
+

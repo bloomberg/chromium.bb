@@ -1,0 +1,78 @@
+<html>
+<head>
+<style>
+body {
+  color: green;
+}
+</style>
+<script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.sendCommand("CSS.getAllStyleSheets", {}, onGotStyleSheets);
+    var styleId;
+
+    function onGotStyleSheets(msg) {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        var headers = msg.result.headers;
+        for (var i = 0; i < headers.length; ++i) {
+            if (headers[i].origin === "regular") {
+                styleId = { "styleSheetId": headers[i].styleSheetId, "ordinal": 0 };
+                InspectorTest.sendCommand("CSS.setStyleText", { "styleId": styleId, "text": "color: red;" }, onTextSet);
+                return;
+            }
+        }
+        InspectorTest.log("Regular stylesheet not found");
+        InspectorTest.completeTest();
+    }
+
+    function onTextSet(msg) {
+        if (msg.error) {
+            InspectorTest.log(JSON.stringify(msg.error));
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.log("New cssText:");
+        InspectorTest.log(msg.result.style.cssText);
+        InspectorTest.sendCommand("DOM.undo", {}, onUndo);
+    }
+
+    function onUndo() {
+        InspectorTest.sendCommand("CSS.getStyleSheetText", { "styleSheetId": styleId.styleSheetId }, onUndoneText);
+        function onUndoneText(msg)
+        {
+            if (msg.error) {
+                InspectorTest.log(msg.error.message);
+                InspectorTest.completeTest();
+                return;
+            }
+            InspectorTest.log("StyleSheetText after undo:");
+            InspectorTest.log(msg.result.text);
+            InspectorTest.sendCommand("DOM.redo", {}, onRedo);
+        }
+    }
+
+    function onRedo() {
+        InspectorTest.sendCommand("CSS.getStyleSheetText", { "styleSheetId": styleId.styleSheetId }, onRedoneText);
+        function onRedoneText(msg)
+        {
+            if (msg.error) {
+                InspectorTest.log(msg.error.message);
+                InspectorTest.completeTest();
+                return;
+            }
+            InspectorTest.log("StyleSheetText after redo:");
+            InspectorTest.log(msg.result.text);
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

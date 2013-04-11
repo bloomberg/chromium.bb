@@ -674,7 +674,6 @@ bool InspectorStyle::toggleProperty(unsigned index, bool disable, ExceptionCode&
 
 bool InspectorStyle::styleText(String* result) const
 {
-    // Precondition: m_parentStyleSheet->ensureParsedDataReady() has been called successfully.
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (!sourceData)
         return false;
@@ -1319,6 +1318,28 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheet::buildObjectForStyle(
     }
 
     return result.release();
+}
+
+bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& text, String* oldText, ExceptionCode& ec)
+{
+    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
+    if (!inspectorStyle || !inspectorStyle->cssStyle()) {
+        ec = NOT_FOUND_ERR;
+        return false;
+    }
+
+    bool success = inspectorStyle->styleText(oldText);
+    if (!success) {
+        ec = NOT_FOUND_ERR;
+        return false;
+    }
+
+    success = setStyleText(inspectorStyle->cssStyle(), text);
+    if (success)
+        fireStyleSheetChanged();
+    else
+        ec = SYNTAX_ERR;
+    return success;
 }
 
 bool InspectorStyleSheet::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, String* oldText, ExceptionCode& ec)

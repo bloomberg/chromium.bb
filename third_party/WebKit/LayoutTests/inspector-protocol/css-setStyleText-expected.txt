@@ -1,0 +1,13 @@
+New cssText:
+color: red;
+StyleSheetText after undo:
+
+body {
+  color: green;
+}
+
+StyleSheetText after redo:
+
+body {color: red;}
+
+
