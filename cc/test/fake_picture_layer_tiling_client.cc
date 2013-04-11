@@ -53,9 +53,17 @@ void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
 }
 
 gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
-    gfx::Size /* current_tile_size */,
     gfx::Size /* content_bounds */) {
   return tile_size_;
+}
+
+const Region* FakePictureLayerTilingClient::GetInvalidation() {
+  return NULL;
+}
+
+const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
+      const PictureLayerTiling* tiling) {
+  return NULL;
 }
 
 }  // namespace cc

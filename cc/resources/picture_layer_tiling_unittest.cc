@@ -12,6 +12,27 @@
 namespace cc {
 namespace {
 
+class TestablePictureLayerTiling : public PictureLayerTiling {
+ public:
+  using PictureLayerTiling::SetLiveTilesRect;
+
+  static scoped_ptr<TestablePictureLayerTiling> Create(
+      float contents_scale,
+      gfx::Size layer_bounds,
+      PictureLayerTilingClient* client) {
+    return make_scoped_ptr(new TestablePictureLayerTiling(
+        contents_scale,
+        layer_bounds,
+        client));
+  }
+
+ protected:
+  TestablePictureLayerTiling(float contents_scale,
+                             gfx::Size layer_bounds,
+                             PictureLayerTilingClient* client)
+      : PictureLayerTiling(contents_scale, layer_bounds, client) { }
+};
+
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
   PictureLayerTilingIteratorTest() {}
@@ -21,9 +42,21 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                   float contents_scale,
                   gfx::Size layer_bounds) {
     client_.SetTileSize(tile_size);
-    tiling_ = PictureLayerTiling::Create(contents_scale);
-    tiling_->SetClient(&client_);
-    tiling_->SetLayerBounds(layer_bounds);
+    tiling_ = TestablePictureLayerTiling::Create(contents_scale,
+                                                 layer_bounds,
+                                                 &client_);
+    tiling_->CreateAllTilesForTesting();
+  }
+
+  void SetLiveRectAndVerifyTiles(gfx::Rect live_tiles_rect) {
+    tiling_->SetLiveTilesRect(live_tiles_rect);
+
+    std::vector<Tile*> tiles = tiling_->AllTilesForTesting();
+    for (std::vector<Tile*>::iterator iter = tiles.begin();
+         iter != tiles.end();
+         ++iter) {
+      EXPECT_TRUE(live_tiles_rect.Intersects((*iter)->content_rect()));
+    }
   }
 
   void VerifyTilesExactlyCoverRect(
@@ -92,10 +125,20 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 
  protected:
   FakePictureLayerTilingClient client_;
-  scoped_ptr<PictureLayerTiling> tiling_;
+  scoped_ptr<TestablePictureLayerTiling> tiling_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingIteratorTest);
 };
+
+TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
+  SetLiveRectAndVerifyTiles(gfx::Rect(100, 100));
+  SetLiveRectAndVerifyTiles(gfx::Rect(101, 99));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1099, 1));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1, 801));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1099, 1));
+  SetLiveRectAndVerifyTiles(gfx::Rect(201, 800));
+}
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsNoScale) {
   Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
@@ -448,7 +491,7 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       2.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(), base::Bind(&TileExists, false));
 }
 
 }  // namespace

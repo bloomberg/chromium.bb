@@ -61,8 +61,7 @@ scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
 void PictureLayerImpl::CreateTilingSet() {
   DCHECK(layer_tree_impl()->IsPendingTree());
   DCHECK(!tilings_);
-  tilings_.reset(new PictureLayerTilingSet(this));
-  tilings_->SetLayerBounds(bounds());
+  tilings_.reset(new PictureLayerTilingSet(this, bounds()));
 }
 
 void PictureLayerImpl::TransferTilingSet(
@@ -89,7 +88,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
   layer_impl->is_using_lcd_text_ = is_using_lcd_text_;
 }
-
 
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
@@ -386,8 +384,25 @@ void PictureLayerImpl::UpdatePile(Tile* tile) {
   tile->set_picture_pile(pile_);
 }
 
+const Region* PictureLayerImpl::GetInvalidation() {
+  return &invalidation_;
+}
+
+const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
+    const PictureLayerTiling* tiling) {
+
+  const PictureLayerImpl* other_layer = layer_tree_impl()->IsActiveTree() ?
+      PendingTwin() : ActiveTwin();
+  if (!other_layer)
+    return NULL;
+  for (size_t i = 0; i < other_layer->tilings_->num_tilings(); ++i)
+    if (other_layer->tilings_->tiling_at(i)->contents_scale() ==
+        tiling->contents_scale())
+      return other_layer->tilings_->tiling_at(i);
+  return NULL;
+}
+
 gfx::Size PictureLayerImpl::CalculateTileSize(
-    gfx::Size current_tile_size,
     gfx::Size content_bounds) {
   if (is_mask_) {
     int max_size = layer_tree_impl()->MaxTextureSize();
@@ -476,31 +491,20 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
     }
   }
 
-  tilings_->CloneAll(*other->tilings_, invalidation_, MinimumContentsScale());
-  DCHECK(bounds() == tilings_->LayerBounds());
+  // Union in the other newly exposed regions as invalid.
+  Region difference_region = Region(gfx::Rect(bounds()));
+  difference_region.Subtract(gfx::Rect(other->bounds()));
+  invalidation_.Union(difference_region);
 
-  // It's a sad but unfortunate fact that PicturePile tiling edges do not line
-  // up with PictureLayerTiling edges.  Tiles can only be added if they are
-  // entirely covered by recordings (that may come from multiple PicturePile
-  // tiles).  This check happens in this class's CreateTile() call.
-  for (int x = 0; x < pile_->num_tiles_x(); ++x) {
-    for (int y = 0; y < pile_->num_tiles_y(); ++y) {
-      bool previously_had = other->pile_->HasRecordingAt(x, y);
-      bool now_has = pile_->HasRecordingAt(x, y);
-      if (!now_has || previously_had)
-        continue;
-      gfx::Rect layer_rect = pile_->tile_bounds(x, y);
-      tilings_->CreateTilesFromLayerRect(layer_rect);
-    }
-  }
+  tilings_->CloneAll(*other->tilings_, MinimumContentsScale());
+  DCHECK(bounds() == tilings_->layer_bounds());
 }
 
 void PictureLayerImpl::SyncTiling(
-    const PictureLayerTiling* tiling,
-    const Region& pending_layer_invalidation) {
+    const PictureLayerTiling* tiling) {
   if (!DrawsContent() || tiling->contents_scale() < MinimumContentsScale())
     return;
-  tilings_->Clone(tiling, pending_layer_invalidation);
+  tilings_->Clone(tiling);
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {
@@ -600,18 +604,10 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   const Region& recorded = pile_->recorded_region();
   DCHECK(!recorded.IsEmpty());
 
-  for (Region::Iterator iter(recorded); iter.has_rect(); iter.next())
-    tiling->CreateTilesFromLayerRect(iter.rect());
-
   PictureLayerImpl* twin =
       layer_tree_impl()->IsPendingTree() ? ActiveTwin() : PendingTwin();
-  if (!twin)
-    return tiling;
-
-  if (layer_tree_impl()->IsPendingTree())
-    twin->SyncTiling(tiling, invalidation_);
-  else
-    twin->SyncTiling(tiling, twin->invalidation_);
+  if (twin)
+    twin->SyncTiling(tiling);
 
   return tiling;
 }
