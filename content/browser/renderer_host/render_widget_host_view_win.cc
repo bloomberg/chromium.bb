@@ -1310,7 +1310,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 
     // Blit only the damaged regions from the backing store.
     DWORD data_size = GetRegionData(damage_region, 0, NULL);
-    scoped_array<char> region_data_buf;
+    scoped_ptr<char[]> region_data_buf;
     RGNDATA* region_data = NULL;
     RECT* region_rects = NULL;
 

@@ -24,7 +24,7 @@ namespace {
 // times. This class incrementally counts the number of converted UTF-16
 // characters to avoid this problem.
 //
-//   scoped_array<size_t> position(new size_t[text.length()]);
+//   scoped_ptr<size_t[]> position(new size_t[text.length()]);
 //   for (size_t i = 0; i < text.length(); ++i)
 //     position[i] = UTF8ToUTF16(text.substr(0, i)).length();
 //

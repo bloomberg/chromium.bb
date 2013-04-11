@@ -608,7 +608,7 @@ void WebKitTestRunner::CaptureDump() {
       const uint8_t* raw_pixels =
           reinterpret_cast<const uint8_t*>(snapshot.getPixels());
       size_t snapshot_size = snapshot.getSize();
-      scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
+      scoped_ptr<uint8_t[]> reordered_pixels(new uint8_t[snapshot_size]);
       for (size_t i = 0; i < snapshot_size; i += 4) {
         reordered_pixels[i] = raw_pixels[i + 2];
         reordered_pixels[i + 1] = raw_pixels[i + 1];

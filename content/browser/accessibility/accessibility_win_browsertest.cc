@@ -184,7 +184,7 @@ void RecursiveFindNodeInAccessibilityTree(
   HRESULT hr = node->get_accChildCount(&child_count);
   ASSERT_EQ(S_OK, hr);
 
-  scoped_array<VARIANT> child_array(new VARIANT[child_count]);
+  scoped_ptr<VARIANT[]> child_array(new VARIANT[child_count]);
   LONG obtained_count = 0;
   hr = AccessibleChildren(
       node, 0, child_count, child_array.get(), &obtained_count);

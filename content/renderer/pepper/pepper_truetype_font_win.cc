@@ -148,7 +148,7 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   // The size in bytes of an entry in the table directory.
   static const DWORD kDirectoryEntrySize = 16;
   DWORD directory_size = num_tables * kDirectoryEntrySize;
-  scoped_array<uint8_t> directory(new uint8_t[directory_size]);
+  scoped_ptr<uint8_t[]> directory(new uint8_t[directory_size]);
   // Get the table directory entries after the font header.
   if (::GetFontData(hdc, 0 /* tag */, kFontHeaderSize,
                     directory.get(),
