@@ -83,33 +83,20 @@ class SvnCheckout(Checkout):
       return subprocess.check_call(('svn',) + cmd, **kwargs)
 
 
-class GclientGitSvnCheckout(GclientCheckout, GitCheckout, SvnCheckout):
+class GclientGitCheckout(GclientCheckout, GitCheckout):
 
   def __init__(self, dryrun, spec, root):
-    super(GclientGitSvnCheckout, self).__init__(dryrun, spec, root)
+    super(GclientGitCheckout, self).__init__(dryrun, spec, root)
     assert 'solutions' in self.spec
     keys = ['solutions', 'target_os', 'target_os_only']
     gclient_spec = '\n'.join('%s = %s' % (key, self.spec[key])
                              for key in self.spec if key in keys)
     self.spec['gclient_spec'] = gclient_spec
-    assert 'svn_url' in self.spec
-    assert 'svn_branch' in self.spec
-    assert 'svn_ref' in self.spec
 
   def exists(self):
     return os.path.exists(os.path.join(os.getcwd(), self.root))
 
   def init(self):
-    # Ensure we are authenticated with subversion for all submodules.
-    git_svn_dirs = json.loads(self.spec.get('submodule_git_svn_spec', '{}'))
-    git_svn_dirs.update({self.root: self.spec})
-    for _, svn_spec in git_svn_dirs.iteritems():
-      try:
-        self.run_svn('ls', '--non-interactive', svn_spec['svn_url'])
-      except subprocess.CalledProcessError:
-        print 'Please run `svn ls %s`' % svn_spec['svn_url']
-        return 1
-
     # TODO(dpranke): Work around issues w/ delta compression on big repos.
     self.run_git('config', '--global', 'core.deltaBaseCacheLimit', '1G')
 
@@ -126,6 +113,28 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout, SvnCheckout):
         'git config -f $toplevel/.git/config submodule.$name.ignore all',
         cwd=wd)
     self.run_git('config', 'diff.ignoreSubmodules', 'all', cwd=wd)
+
+
+class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
+
+  def __init__(self, dryrun, spec, root):
+    super(GclientGitSvnCheckout, self).__init__(dryrun, spec, root)
+    assert 'svn_url' in self.spec
+    assert 'svn_branch' in self.spec
+    assert 'svn_ref' in self.spec
+
+  def init(self):
+    # Ensure we are authenticated with subversion for all submodules.
+    git_svn_dirs = json.loads(self.spec.get('submodule_git_svn_spec', '{}'))
+    git_svn_dirs.update({self.root: self.spec})
+    for _, svn_spec in git_svn_dirs.iteritems():
+      try:
+        self.run_svn('ls', '--non-interactive', svn_spec['svn_url'])
+      except subprocess.CalledProcessError:
+        print 'Please run `svn ls %s`' % svn_spec['svn_url']
+        return 1
+
+    super(GclientGitSvnCheckout, self).init()
 
     # Configure git-svn.
     for path, svn_spec in git_svn_dirs.iteritems():
@@ -146,6 +155,7 @@ class GclientGitSvnCheckout(GclientCheckout, GitCheckout, SvnCheckout):
 
 CHECKOUT_TYPE_MAP = {
     'gclient':         GclientCheckout,
+    'gclient_git':     GclientGitCheckout,
     'gclient_git_svn': GclientGitSvnCheckout,
     'git':             GitCheckout,
 }

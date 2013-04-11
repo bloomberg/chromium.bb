@@ -30,9 +30,13 @@ class Chromium(recipe_util.Recipe):
     }
     if props.get('submodule_git_svn_spec'):
       spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']
+    checkout_type = 'gclient_git_svn'
+    if props.get('nosvn'):
+      checkout_type = 'gclient_git'
+    spec_type = '%s_spec' % checkout_type
     return {
-      'type': 'gclient_git_svn',
-      'gclient_git_svn_spec': spec
+      'type': checkout_type,
+      spec_type: spec
     }
 
   @staticmethod
