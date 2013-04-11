@@ -10,6 +10,7 @@
       'animation/animation.h',
       'animation/animation_curve.cc',
       'animation/animation_curve.h',
+      'animation/animation_events.cc',
       'animation/animation_events.h',
       'animation/animation_id_provider.cc',
       'animation/animation_id_provider.h',

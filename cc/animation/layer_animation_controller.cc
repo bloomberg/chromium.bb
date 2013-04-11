@@ -172,7 +172,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
                            monotonic_time);
       event.opacity = animation->curve()->ToFloatAnimationCurve()->GetValue(
           monotonic_time);
-
+      event.is_impl_only = true;
       events->push_back(event);
     } else if (animation->target_property() == Animation::Transform) {
       AnimationEvent event(AnimationEvent::PropertyUpdate,
@@ -183,6 +183,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
       event.transform =
           animation->curve()->ToTransformAnimationCurve()->GetValue(
               monotonic_time);
+      event.is_impl_only = true;
       events->push_back(event);
     }
   }
@@ -270,6 +271,15 @@ void LayerAnimationController::SetAnimationRegistrar(
 void LayerAnimationController::NotifyAnimationStarted(
     const AnimationEvent& event,
     double wall_clock_time) {
+  if (event.is_impl_only) {
+    FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
+                      OnAnimationStarted(event));
+    if (layer_animation_delegate_)
+      layer_animation_delegate_->notifyAnimationStarted(wall_clock_time);
+
+    return;
+  }
+
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (active_animations_[i]->group() == event.group_id &&
         active_animations_[i]->target_property() == event.target_property &&
@@ -290,6 +300,12 @@ void LayerAnimationController::NotifyAnimationStarted(
 void LayerAnimationController::NotifyAnimationFinished(
     const AnimationEvent& event,
     double wall_clock_time) {
+  if (event.is_impl_only) {
+    if (layer_animation_delegate_)
+      layer_animation_delegate_->notifyAnimationFinished(wall_clock_time);
+    return;
+  }
+
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (active_animations_[i]->group() == event.group_id &&
         active_animations_[i]->target_property() == event.target_property) {
@@ -490,12 +506,14 @@ void LayerAnimationController::PromoteStartedAnimations(
       if (!active_animations_[i]->has_set_start_time())
         active_animations_[i]->set_start_time(monotonic_time);
       if (events) {
-        events->push_back(AnimationEvent(
+        AnimationEvent started_event(
             AnimationEvent::Started,
             id_,
             active_animations_[i]->group(),
             active_animations_[i]->target_property(),
-            monotonic_time));
+            monotonic_time);
+        started_event.is_impl_only = active_animations_[i]->is_impl_only();
+        events->push_back(started_event);
       }
     }
   }
@@ -577,12 +595,14 @@ void LayerAnimationController::MarkAnimationsForDeletion(
       for (size_t j = i; j < active_animations_.size(); j++) {
         if (group_id == active_animations_[j]->group()) {
           if (events) {
-            events->push_back(AnimationEvent(
+            AnimationEvent finished_event(
                 AnimationEvent::Finished,
                 id_,
                 active_animations_[j]->group(),
                 active_animations_[j]->target_property(),
-                monotonic_time));
+                monotonic_time);
+            finished_event.is_impl_only = active_animations_[j]->is_impl_only();
+            events->push_back(finished_event);
           }
           active_animations_[j]->SetRunState(Animation::WaitingForDeletion,
                                              monotonic_time);
