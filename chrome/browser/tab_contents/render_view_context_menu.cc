@@ -177,33 +177,79 @@ const struct UmaEnumCommandIdPair {
   { 48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE },
   { 49, IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES },
   { 50, IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT },
+  { 51, IDC_SPEECH_INPUT_MENU },
+  { 52, IDC_CONTENT_CONTEXT_OPENLINKWITH },
+  { 53, IDC_CHECK_SPELLING_WHILE_TYPING },
+  { 54, IDC_SPELLCHECK_MENU },
+  { 55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE },
+  { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
   // Add new items here and use |enum_id| from the next line.
-  { 51, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+  { 57, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
-// Increments histogram value for context menu command specified by |id|.
-void RecordExecutedContextItem(int id) {
-  // Collapse large ranges of ids.
+// Collapses large ranges of ids before looking for UMA enum.
+int CollapleCommandsForUMA(int id) {
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-    id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-  } else if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-             id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
-  } else if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
-             id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
-    id = IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+    return IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
   }
+
+  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    return IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  }
+
+  if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
+    return IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+  }
+
+  if (id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
+      id <= IDC_SPELLCHECK_LANGUAGES_LAST) {
+    return IDC_SPELLCHECK_LANGUAGES_FIRST;
+  }
+
+  return id;
+}
+
+// Returns UMA enum value for command specified by |id| or -1 if not found.
+int FindUMAEnumValueForCommand(int id) {
+  id = CollapleCommandsForUMA(id);
   const size_t kMappingSize = arraysize(kUmaEnumToCommand);
   for (size_t i = 0; i < kMappingSize; ++i) {
     if (kUmaEnumToCommand[i].command_id == id) {
-      UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ExecuteCommand",
-                                kUmaEnumToCommand[i].enum_id,
-                                kUmaEnumToCommand[kMappingSize - 1].enum_id);
-      return;
+      return kUmaEnumToCommand[i].enum_id;
     }
   }
-  NOTREACHED() << "Update kUmaEnumToCommand";
+  return -1;
+}
+
+// Increments histogram value for executed command specified by |id|.
+void RecordExecutedCommand(int id) {
+  int enum_id = FindUMAEnumValueForCommand(id);
+  if (enum_id != -1) {
+    const size_t kMappingSize = arraysize(kUmaEnumToCommand);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ExecuteCommand",
+                              enum_id,
+                              kUmaEnumToCommand[kMappingSize - 1].enum_id);
+  } else {
+    NOTREACHED() << "Update kUmaEnumToCommand. Unhanded IDC: " << id;
+  }
+}
+
+// Increments histogram value for visible context menu item specified by |id|.
+void RecordShownItems(int id) {
+  int enum_id = FindUMAEnumValueForCommand(id);
+  if (enum_id != -1) {
+    const size_t kMappingSize = arraysize(kUmaEnumToCommand);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.ShowCommand",
+                              enum_id,
+                              kUmaEnumToCommand[kMappingSize - 1].enum_id);
+  } else {
+    // Just warning here. It's harder to maintain list of all possibly
+    // visible items than executable items.
+    DLOG(ERROR) << "Update kUmaEnumToCommand. Unhanded IDC: " << id;
+  }
 }
 
 // Usually a new tab is expected where this function is used,
@@ -1426,7 +1472,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       return observer->ExecuteCommand(id);
   }
 
-  RecordExecutedContextItem(id);
+  RecordExecutedCommand(id);
 
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
 
@@ -1877,6 +1923,13 @@ ProtocolHandlerRegistry::ProtocolHandlerList
 }
 
 void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
+  for (int i = 0; i < source->GetItemCount(); ++i) {
+    if (source->IsVisibleAt(i) &&
+        source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR) {
+      RecordShownItems(source->GetCommandIdAt(i));
+    }
+  }
+
   // Ignore notifications from submenus.
   if (source != &menu_model_)
     return;
