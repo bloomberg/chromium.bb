@@ -24,16 +24,21 @@
       <button id="export-view-send-data">Email Log</button>
     </div>
     <pre id="export-view-file-path-text"></pre>
-    <ul>
-      <li><b>INSTRUCTIONS</b>: Start logging, reproduce the problem,
+    <p>
+      <b>INSTRUCTIONS</b>: Start logging, reproduce the problem,
       and then stop logging.  Make sure to send the email before
       starting to log again. Otherwise, the log will be deleted.
-      </li>
-    </ul>
+    </p>
     <p>
       Logs can be loaded in
       <a href="chrome://net-internals" target="_blank">net-internals</a>
       of desktop Chrome.
+    </p>
+    <p>
+      <span class="warning">WARNING</span>: Logs contain a list of sites
+      visited, cookies, and credentials from when logging started to when
+      logging stopped.  They may also contain general network
+      configuration information, such as DNS and proxy configuration.
     </p>
   </div>
 </body>
