@@ -533,47 +533,25 @@ static Vector<KURL> allResourcesURLsForFrame(Frame* frame)
 
 void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies, WTF::String* cookiesString)
 {
-    // If we can get raw cookies.
     ListHashSet<Cookie> rawCookiesList;
-
-    // If we can't get raw cookies - fall back to String representation
-    StringBuilder stringCookiesList;
-
-    // Return value to getRawCookies should be the same for every call because
-    // the return value is platform/network backend specific, and the call will
-    // always return the same true/false value.
-    bool rawCookiesImplemented = false;
 
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext(mainFrame())) {
         Document* document = frame->document();
         Vector<KURL> allURLs = allResourcesURLsForFrame(frame);
         for (Vector<KURL>::const_iterator it = allURLs.begin(); it != allURLs.end(); ++it) {
             Vector<Cookie> docCookiesList;
-            rawCookiesImplemented = getRawCookies(document, KURL(ParsedURLString, *it), docCookiesList);
-            if (!rawCookiesImplemented) {
-                // FIXME: We need duplication checking for the String representation of cookies.
-                //
-                // Exceptions are thrown by cookie() in sandboxed frames. That won't happen here
-                // because "document" is the document of the main frame of the page.
-                stringCookiesList.append(document->cookie(ASSERT_NO_EXCEPTION));
-            } else {
-                int cookiesSize = docCookiesList.size();
-                for (int i = 0; i < cookiesSize; i++) {
-                    if (!rawCookiesList.contains(docCookiesList[i]))
-                        rawCookiesList.add(docCookiesList[i]);
-                }
+            getRawCookies(document, KURL(ParsedURLString, *it), docCookiesList);
+            int cookiesSize = docCookiesList.size();
+            for (int i = 0; i < cookiesSize; i++) {
+                if (!rawCookiesList.contains(docCookiesList[i]))
+                    rawCookiesList.add(docCookiesList[i]);
             }
         }
     }
 
-    // FIXME: Do not return empty string/empty array. Make returns optional instead. https://bugs.webkit.org/show_bug.cgi?id=80855
-    if (rawCookiesImplemented) {
-        cookies = buildArrayForCookies(rawCookiesList);
-        *cookiesString = "";
-    } else {
-        cookies = TypeBuilder::Array<TypeBuilder::Page::Cookie>::create();
-        *cookiesString = stringCookiesList.toString();
-    }
+    // FIXME: Remove "cookiesString" output.
+    cookies = buildArrayForCookies(rawCookiesList);
+    *cookiesString = "";
 }
 
 void InspectorPageAgent::deleteCookie(ErrorString*, const String& cookieName, const String& url)
