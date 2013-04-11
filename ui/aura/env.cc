@@ -91,7 +91,9 @@ void Env::Init() {
   base::MessagePumpAuraX11::Current()->AddObserver(
       &device_list_updater_aurax11_);
 #endif
-  ui::Compositor::Initialize();
+  ui::Compositor::Initialize(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUIEnableThreadedCompositing));
 }
 
 void Env::NotifyWindowInitialized(Window* window) {

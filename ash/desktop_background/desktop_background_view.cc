@@ -61,6 +61,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   }
 
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    DCHECK(desktop_widget_);
     GetRootWindowController(root_window_)->HandleDesktopBackgroundVisible();
     ash::Shell::GetInstance()->user_wallpaper_delegate()->
         OnWallpaperAnimationFinished();
