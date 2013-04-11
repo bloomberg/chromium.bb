@@ -34,6 +34,7 @@
     # FIXME: Sense whether upstream or downstream build, and
     # include the right features.gypi
     '../../WebKit/chromium/features.gypi',
+    '../../modules/modules.gypi',
     '../../bindings/bindings.gypi',
     '../WebCore.gypi',
   ],
@@ -52,24 +53,7 @@
     'webcore_include_dirs': [
       '../',
       '../..',
-      '../../modules/battery',
-      '../../modules/filesystem',
-      '../../modules/filesystem/chromium',
-      '../../modules/gamepad',
-      '../../modules/geolocation',
-      '../../modules/indexeddb',
-      '../../modules/indexeddb/chromium',
-      '../../modules/mediasource',
-      '../../modules/mediastream',
-      '../../modules/navigatorcontentutils',
-      '../../modules/notifications',
-      '../../modules/proximity',
-      '../../modules/quota',
-      '../../modules/speech',
-      '../../modules/webaudio',
-      '../../modules/webdatabase',
-      '../../modules/webdatabase/chromium',
-      '../../modules/websockets',
+      '<@(modules_include_dirs)',
       '../accessibility',
       '../accessibility/chromium',
       '<(bindings_dir)',
@@ -154,6 +138,7 @@
 
     'bindings_idl_files': [
       '<@(webcore_bindings_idl_files)',
+      '<@(modules_idl_files)',
     ],
 
     'bindings_idl_files!': [
@@ -2005,6 +1990,7 @@
       'hard_dependency': 1,
       'sources': [
         '<@(webcore_files)',
+        '<@(modules_files)',
       ],
       'sources/': [
         ['exclude', 'rendering/'],
